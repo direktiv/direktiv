@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -81,11 +80,6 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	id, err := uuid.Parse(req.GetRevision())
-	if err != nil {
-		return nil, err
-	}
-
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
@@ -102,12 +96,12 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, err
 	}
 
-	rev, err := fStore.ForFile(file).GetRevision(ctx, id)
+	rev, err := fStore.ForFile(file).GetRevision(ctx, req.GetRevision())
 	if err != nil {
 		return nil, err
 	}
 
-	err = fStore.ForRevision(rev).Delete(ctx, true)
+	err = fStore.ForRevision(rev).Delete(ctx)
 	if err != nil {
 		return nil, err
 	}

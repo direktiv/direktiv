@@ -3,7 +3,6 @@ package psql
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -94,29 +93,7 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	return q.setPathForFileType(ctx, path)
 }
 
-func (q *FileQuery) GetRevisionByTag(ctx context.Context, tag string) (*filestore.Revision, error) {
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Raw(`
-							SELECT * FROM filesystem_revisions WHERE "file_id" = ? AND
-							("tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? "tags" LIKE ?)`,
-		q.file.ID,
-		tag,
-		tag+",%",
-		"%,"+tag,
-		"%,"+tag+",%").
-		Scan(rev)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return rev, nil
-}
-
-func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
+func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
@@ -124,6 +101,39 @@ func (q *FileQuery) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.R
 	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("id", id).
+		First(rev)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return rev, nil
+}
+
+func (q *FileQuery) GetRevision(ctx context.Context, reference string) (*filestore.Revision, error) {
+	if reference == "" {
+		return nil, filestore.ErrNotFound
+	}
+	if reference == filestore.Latest {
+		return q.GetCurrentRevision(ctx)
+	}
+	id, err := uuid.Parse(reference)
+	if err == nil {
+		return q.getRevisionByID(ctx, id)
+	}
+
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return nil, filestore.ErrFileTypeIsDirectory
+	}
+
+	rev := &filestore.Revision{}
+	res := q.db.WithContext(ctx).Raw(`
+							SELECT * FROM filesystem_revisions WHERE "file_id" = ? AND
+							("tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? OR "tags" LIKE ?)`,
+		q.file.ID,
+		reference,
+		reference+",%",
+		"%,"+reference,
+		"%,"+reference+",%").
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -141,6 +151,7 @@ func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision,
 	var list []*filestore.Revision
 	res := q.db.WithContext(ctx).Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
+		Order("created_at desc").
 		Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
@@ -209,22 +220,9 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	}
 	newChecksum := string(q.checksumFunc(data))
 
-	// if newChecksum didn't change, then return the latest revision without creating a new one.
-	latestRev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("file_id", q.file.ID).
-		Where("is_current", true).
-		Where("checksum", newChecksum).
-		First(latestRev)
-	if res.Error != nil && !errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, res.Error
-	}
-	if res.Error == nil {
-		return latestRev, nil
-	}
-
 	// set current revisions 'is_current' flag to false.
-	res = q.db.WithContext(ctx).Table("filesystem_revisions").
+	res := q.db.WithContext(ctx).
+		Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).
 		Update("is_current", false)

@@ -69,11 +69,12 @@ type FileQuery interface {
 	// Delete deletes the file (or the directory).
 	Delete(ctx context.Context, force bool) error
 
-	// GetRevision returns queries a file revision by id, this method is not applicable for directory file type.
-	GetRevision(ctx context.Context, id uuid.UUID) (*Revision, error)
-
-	// GetRevisionByTag returns queries a file revision by tag, this method is not applicable for directory file type.
-	GetRevisionByTag(ctx context.Context, tag string) (*Revision, error)
+	// GetRevision queries a file revision by either:
+	// 		reference = 'latest' -> this will return the current revision,
+	// or:	reference = any tag string -> this will return a tagged revision,
+	// or:	reference = any uuid string -> this will return a revision by id.
+	// This method is not applicable for directory file type.
+	GetRevision(ctx context.Context, reference string) (*Revision, error)
 
 	// SetPath sets a new path for the file, this method is used to rename files and directories or move them
 	// to a new location. Param path should be a new path that doesn't already exist and the directory of Param path

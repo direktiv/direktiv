@@ -137,16 +137,7 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 	var ms *muxStart
 
 	for ref := range router.Routes {
-		var rev *filestore.Revision
-
-		uid, err := uuid.Parse(ref)
-		if err == nil {
-			rev, err = fStore.ForFile(file).GetRevision(ctx, uid)
-		} else if ref == filestore.Latest {
-			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
-		} else {
-			rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
-		}
+		rev, err := fStore.ForFile(file).GetRevision(ctx, ref)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -207,6 +198,8 @@ func (engine *engine) getAmbiguousFile(ctx context.Context, fStore filestore.Fil
 }
 
 func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
+	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
+
 	ns, err := engine.edb.NamespaceByName(ctx, namespace)
 	if err != nil {
 		return nil, err
@@ -239,7 +232,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			return nil, err
 		}
 	} else if ref != "" {
-		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
+		rev, err = fStore.ForFile(file).GetRevision(ctx, ref)
 		if err != nil {
 			return nil, err
 		}
@@ -257,7 +250,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			for k, v := range router.Routes {
 				id, err := uuid.Parse(k)
 				if err == nil {
-					rev, err = fStore.ForFile(file).GetRevision(ctx, id)
+					rev, err = fStore.ForFile(file).GetRevision(ctx, id.String())
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
@@ -271,7 +264,7 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 						allWeights = append(allWeights, v)
 					}
 				} else {
-					rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, k)
+					rev, err = fStore.ForFile(file).GetRevision(ctx, k)
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
