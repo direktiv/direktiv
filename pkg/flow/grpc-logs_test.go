@@ -91,12 +91,10 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	if len(resultList) != inLen {
 		t.Error("insert failed")
 	}
-	lq := internallogger.QueryLogs()
-	lq.WhereInstance(id)
 	page := grpc.Pagination{}
 	pi := grpc.PageInfo{}
 	ctx = context.Background()
-	logs, err := lq.GetAll(ctx, gdb)
+	logs, err := internallogger.GetInstanceLogsNoInheritance(ctx, gdb, id, 0, 0)
 	if err != nil {
 		t.Errorf("got an err: %v", err)
 	}

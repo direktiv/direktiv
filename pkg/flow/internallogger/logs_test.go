@@ -65,8 +65,8 @@ func TestStoringLogMsg(t *testing.T) {
 	logger.Infof(ctx, recipent, tags, msg)
 	logger.CloseLogWorkers()
 	lq := QueryLogs()
-	lq.WhereInstance(recipent)
-	logs, err := lq.GetAll(context.Background(), gorm)
+	lq.whereInstance(recipent)
+	logs, err := lq.getAll(context.Background(), gorm)
 	if err != nil {
 		t.Error(err)
 	}
@@ -166,8 +166,8 @@ func TestSendLogMsgToDB(t *testing.T) {
 		t.Errorf("database transaction failed %v", err)
 	}
 	lq := QueryLogs()
-	lq.WhereInstance(recipent)
-	logs, err := lq.GetAll(context.TODO(), gorm)
+	lq.whereInstance(recipent)
+	logs, err := lq.getAll(context.TODO(), gorm)
 	if err != nil {
 		t.Error(err)
 	}

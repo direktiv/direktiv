@@ -71,7 +71,7 @@ func (logger *Logger) CloseLogWorkers() {
 // Forexpl. /c1d87df6-56fb-4b03-a9e9-00e5122e4884/105cbf37-76b9-452a-b67d-5c9a8cd54ecc.
 // The callpath has to contain a rootInstanceID as first element. In this case the rootInstanceID would be
 // c1d87df6-56fb-4b03-a9e9-00e5122e4884.
-func GetRootinstanceID(callpath string) (string, error) {
+func getRootinstanceID(callpath string) (string, error) {
 	path := strings.Split(callpath, "/")
 	if len(path) < 2 {
 		return "", errors.New("instance Callpath is malformed")
@@ -89,6 +89,15 @@ func AppendInstanceID(callpath, instanceID string) string {
 		return "/" + instanceID
 	}
 	return callpath + "/" + instanceID
+}
+
+func IsCallerRoot(callpath, instanceID string) (bool, error) {
+	prefix := AppendInstanceID(callpath, instanceID)
+	root, err := getRootinstanceID(prefix)
+	if err != nil {
+		return false, err
+	}
+	return root == instanceID, nil
 }
 
 func (logger *Logger) Debug(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string) {
@@ -158,7 +167,7 @@ func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string
 	case recipient.Server:
 	case recipient.Instance:
 		callpath := AppendInstanceID(tags["callpath"], recipientID.String())
-		rootInstance, err := GetRootinstanceID(callpath)
+		rootInstance, err := getRootinstanceID(callpath)
 		if err != nil {
 			panic(err)
 		}

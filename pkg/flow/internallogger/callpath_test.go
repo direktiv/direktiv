@@ -38,7 +38,7 @@ func TestAppendInstanceID(t *testing.T) {
 
 func TestGetRootinstanceID(t *testing.T) {
 	expected := "c1d87df6-56fb-4b03-a9e9-00e5122e4884"
-	root, err := GetRootinstanceID(fmt.Sprintf("/%s/105cbf37-76b9-452a-b67d-5c9a8cd54ecc", expected))
+	root, err := getRootinstanceID(fmt.Sprintf("/%s/105cbf37-76b9-452a-b67d-5c9a8cd54ecc", expected))
 	if root != expected {
 		t.Errorf("got %s; want %s", root, expected)
 	}
@@ -46,11 +46,11 @@ func TestGetRootinstanceID(t *testing.T) {
 	if err != nil {
 		t.Errorf("got unexpected error %s", err)
 	}
-	_, err = GetRootinstanceID("/api")
+	_, err = getRootinstanceID("/api")
 	if err == nil {
 		t.Error("expected an error")
 	}
-	out, _ := GetRootinstanceID(fmt.Sprintf("/%s", expected))
+	out, _ := getRootinstanceID(fmt.Sprintf("/%s", expected))
 	if out != expected {
 		t.Errorf("got %s; want %s", out, expected)
 	}

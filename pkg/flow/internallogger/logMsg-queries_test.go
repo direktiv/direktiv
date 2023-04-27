@@ -1,11 +1,10 @@
-package internallogger_test
+package internallogger
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -15,9 +14,9 @@ func TestQueries(t *testing.T) {
 	db := setup()
 	id := uuid.New()
 	want := createLogmsg(id, db)
-	q := internallogger.QueryLogs()
-	q.WhereLogLevel("error")
-	got, err := q.GetAll(context.TODO(), db)
+	q := QueryLogs()
+	q.whereLogLevel("error")
+	got, err := q.getAll(context.TODO(), db)
 	if err != nil {
 		t.Error(err)
 	}
@@ -45,10 +44,10 @@ func setup() *gorm.DB {
 	return db
 }
 
-func createLogmsg(id uuid.UUID, db *gorm.DB) internallogger.LogMsgs {
+func createLogmsg(id uuid.UUID, db *gorm.DB) LogMsgs {
 	tags := make(map[string]interface{})
 	tags["test"] = "testvalue"
-	l := internallogger.LogMsgs{
+	l := LogMsgs{
 		Oid:                 uuid.New(),
 		T:                   time.Now(),
 		Tags:                tags,

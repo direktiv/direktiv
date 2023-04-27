@@ -4,28 +4,29 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type LogMsgQuery interface {
-	WhereWorkflow(workflowId uuid.UUID)
-	WhereNamespace(namespaceId uuid.UUID)
-	WhereInstance(instanceId uuid.UUID)
-	WhereRootInstanceIdEQ(rootId string)
-	WhereInstanceCallPathHasPrefix(prefix string)
-	WhereLogLevel(loglevel string)
-	WhereWorkflowIsNil()
-	WhereNamespaceIsNIl()
-	WhereInstanceIsNIl()
-	WhereMinumLogLevel(loglevel string)
-	WhereMirrorActivityID(id uuid.UUID)
-	WithLimit(limit int)
-	WithOffset(offset int)
+	whereWorkflow(workflowId uuid.UUID)
+	whereNamespace(namespaceId uuid.UUID)
+	whereInstance(instanceId uuid.UUID)
+	whereRootInstanceIdEQ(rootId string)
+	whereInstanceCallPathHasPrefix(prefix string)
+	whereLogLevel(loglevel string)
+	whereWorkflowIsNil()
+	whereNamespaceIsNIl()
+	whereInstanceIsNIl()
+	whereMinumLogLevel(loglevel string)
+	whereMirrorActivityID(id uuid.UUID)
+	withLimit(limit int)
+	withOffset(offset int)
 	// GetServerLogs(ctx context.Context) []*LogMsgs
-	GetLimit() int
-	GetOffset() int
-	GetAll(ctx context.Context, db *gorm.DB) ([]*LogMsgs, error)
+	getLimit() int
+	getOffset() int
+	getAll(ctx context.Context, db *gorm.DB) ([]*LogMsgs, error)
 }
 
 // type LogMsgStorer interface {
@@ -45,67 +46,67 @@ func QueryLogs() *LogMsgQueryBuilder {
 	}
 }
 
-func (b *LogMsgQueryBuilder) WhereWorkflow(workflowId uuid.UUID) {
+func (b *LogMsgQueryBuilder) whereWorkflow(workflowId uuid.UUID) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", workflowId.String()))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereWorkflowIsNil() {
+func (b *LogMsgQueryBuilder) whereWorkflowIsNil() {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, "workflow_id IS NULL")
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereNamespaceIsNIl() {
+func (b *LogMsgQueryBuilder) whereNamespaceIsNIl() {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, "namespace_logs IS NULL")
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereInstanceIsNIl() {
+func (b *LogMsgQueryBuilder) whereInstanceIsNIl() {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, "instance_logs IS NULL")
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereNamespace(namespaceId uuid.UUID) {
+func (b *LogMsgQueryBuilder) whereNamespace(namespaceId uuid.UUID) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", namespaceId.String()))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereInstance(instanceId uuid.UUID) {
+func (b *LogMsgQueryBuilder) whereInstance(instanceId uuid.UUID) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("instance_logs = '%s'", instanceId.String()))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereRootInstanceIdEQ(rootId string) {
+func (b *LogMsgQueryBuilder) whereRootInstanceIdEQ(rootId string) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", rootId))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereInstanceCallPathHasPrefix(prefix string) {
+func (b *LogMsgQueryBuilder) whereInstanceCallPathHasPrefix(prefix string) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereLogLevel(loglevel string) {
+func (b *LogMsgQueryBuilder) whereLogLevel(loglevel string) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("level = '%s'", loglevel))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereMirrorActivityID(id uuid.UUID) {
+func (b *LogMsgQueryBuilder) whereMirrorActivityID(id uuid.UUID) {
 	wEq := b.whereEQStatements
 	wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id.String()))
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WhereMinumLogLevel(loglevel string) {
+func (b *LogMsgQueryBuilder) whereMinumLogLevel(loglevel string) {
 	wEq := b.whereEQStatements
 	levels := []string{"debug", "info", "error", "panic"}
 	switch loglevel {
@@ -129,11 +130,11 @@ func (b *LogMsgQueryBuilder) WhereMinumLogLevel(loglevel string) {
 	b.whereEQStatements = wEq
 }
 
-func (b *LogMsgQueryBuilder) WithLimit(limit int) {
+func (b *LogMsgQueryBuilder) withLimit(limit int) {
 	b.limit = limit
 }
 
-func (b *LogMsgQueryBuilder) WithOffset(offset int) {
+func (b *LogMsgQueryBuilder) withOffset(offset int) {
 	b.offset = offset
 }
 
@@ -160,7 +161,7 @@ func (b *LogMsgQueryBuilder) build() (string, error) {
 	return q + ";", nil
 }
 
-func (b *LogMsgQueryBuilder) GetAll(ctx context.Context, db *gorm.DB) ([]*LogMsgs, error) {
+func (b *LogMsgQueryBuilder) getAll(ctx context.Context, db *gorm.DB) ([]*LogMsgs, error) {
 	query, err := b.build()
 	if err != nil {
 		return nil, err
@@ -177,12 +178,139 @@ func (b *LogMsgQueryBuilder) GetAll(ctx context.Context, db *gorm.DB) ([]*LogMsg
 	return resultList, nil
 }
 
-func (b *LogMsgQueryBuilder) GetLimit() int {
+func (b *LogMsgQueryBuilder) getLimit() int {
 	return b.limit
 }
 
-func (b *LogMsgQueryBuilder) GetOffset() int {
+func (b *LogMsgQueryBuilder) getOffset() int {
 	return b.offset
+}
+
+func GetInstanceLogs(ctx context.Context, db *gorm.DB, callpath, instanceID string, limit, offset int) ([]*LogMsgs, error) {
+	prefix := AppendInstanceID(callpath, instanceID)
+	root, err := getRootinstanceID(prefix)
+	if err != nil {
+		return nil, err
+	}
+	callerIsRoot, err := IsCallerRoot(callpath, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	ql := QueryLogs()
+
+	ql.whereRootInstanceIdEQ(root)
+	if !callerIsRoot {
+		ql.whereInstanceCallPathHasPrefix(prefix)
+	}
+
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	l, err := ql.getAll(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	return l, err
+}
+
+func GetInstanceLogsNoInheritance(ctx context.Context, db *gorm.DB, instanceID uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
+	ql := QueryLogs()
+
+	ql.whereInstance(instanceID)
+
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	l, err := ql.getAll(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	return l, err
+}
+
+func GetServerLogs(ctx context.Context, db *gorm.DB, limit, offset int) ([]*LogMsgs, error) {
+	ql := QueryLogs()
+	ql.whereWorkflowIsNil()
+	ql.whereNamespaceIsNIl()
+	ql.whereInstanceIsNIl()
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	logs, err := ql.getAll(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+func GetNamespaceLogs(ctx context.Context, db *gorm.DB, namespaceID uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
+	ql := QueryLogs()
+	id := namespaceID
+	ql.whereNamespace(id)
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	logs, err := ql.getAll(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+func GetWorkflowLogs(ctx context.Context, db *gorm.DB, workflowID uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
+	ql := QueryLogs()
+	id := workflowID
+	ql.whereWorkflow(id)
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	logs, err := ql.getAll(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+func GetMirrorActivityLogs(ctx context.Context, db *gorm.DB, mirror uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
+	ql := QueryLogs()
+	id := mirror
+	ql.whereMirrorActivityID(id)
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	logs, err := ql.getAll(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+func buildPageInfo(lq LogMsgQuery) grpc.PageInfo {
+	return grpc.PageInfo{
+		Limit:  int32(lq.getLimit()),
+		Offset: int32(lq.getOffset()),
+	}
 }
 
 // func (b *LogMsgQueryBuilder) GetFirst() (*LogMsgs, error) {

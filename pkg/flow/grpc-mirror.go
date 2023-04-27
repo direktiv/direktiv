@@ -305,11 +305,13 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 		return nil, err
 	}
 
-	ql := internallogger.QueryLogs()
-
-	ql.WhereMirrorActivityID(mirProcess.ID)
-	pi := BuildPageInfo(ql)
-	res, err := ql.GetAll(ctx, flow.gormDB)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
+	res, err := internallogger.GetMirrorActivityLogs(ctx,
+		flow.gormDB,
+		mirProcess.ID,
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -358,13 +360,13 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	defer flow.cleanup(sub.Close)
 
 resend:
-	ql := internallogger.QueryLogs()
-
-	ql.WhereMirrorActivityID(mirProcess.ID)
-	ql.WithLimit(int(req.Pagination.Limit))
-	ql.WithOffset(int(req.Pagination.Offset))
-	pi := BuildPageInfo(ql)
-	res, err := ql.GetAll(ctx, flow.gormDB)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
+	res, err := internallogger.GetMirrorActivityLogs(ctx,
+		flow.gormDB,
+		mirProcess.ID,
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return err
 	}

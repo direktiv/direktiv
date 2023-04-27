@@ -24,15 +24,11 @@ func (f fileAttributes) GetAttributes() map[string]string {
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ql := internallogger.QueryLogs()
-	ql.WhereWorkflowIsNil()
-	ql.WhereNamespaceIsNIl()
-	ql.WhereInstanceIsNIl()
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+	logs, err := internallogger.GetServerLogs(ctx, flow.gormDB, 0, 0)
 	if err != nil {
 		return nil, err
 	}
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = &pi
@@ -56,17 +52,16 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 	defer flow.cleanup(sub.Close)
 
 resend:
-	ql := internallogger.QueryLogs()
-	ql.WhereWorkflowIsNil()
-	ql.WhereNamespaceIsNIl()
-	ql.WhereInstanceIsNIl()
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+
+	logs, err := internallogger.GetServerLogs(ctx,
+		flow.gormDB,
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return err
 	}
-	ql.WithLimit(int(req.Pagination.Limit))
-	ql.WithOffset(int(req.Pagination.Limit))
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	resp := new(grpc.ServerLogsResponse)
 	resp.Results, err = bytedata.ConvertLogMsgToGrpcLog(logs)
@@ -100,14 +95,11 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	if err != nil {
 		return nil, err
 	}
-	ql := internallogger.QueryLogs()
-	id := cached.Namespace.ID
-	ql.WhereNamespace(id)
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+	logs, err := internallogger.GetNamespaceLogs(ctx, flow.gormDB, cached.Namespace.ID, 0, 0)
 	if err != nil {
 		return nil, err
 	}
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.Namespace = req.Namespace
@@ -139,16 +131,16 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	defer flow.cleanup(sub.Close)
 
 resend:
-	ql := internallogger.QueryLogs()
-
-	ql.WhereNamespace(id)
-	ql.WithLimit(int(req.Pagination.Limit))
-	ql.WithOffset(int(req.Pagination.Limit))
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+	logs, err := internallogger.GetNamespaceLogs(ctx,
+		flow.gormDB,
+		cached.Namespace.ID,
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return err
 	}
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.Namespace = req.Namespace
@@ -184,11 +176,8 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	if err != nil {
 		return nil, err
 	}
-
-	ql := internallogger.QueryLogs()
 	id := f.ID
-	ql.WhereWorkflow(id)
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+	logs, err := internallogger.GetWorkflowLogs(ctx, flow.gormDB, id, 0, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -224,16 +213,16 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 resend:
 
-	ql := internallogger.QueryLogs()
-	id := f.ID
-	ql.WhereWorkflow(id)
-	ql.WithLimit(int(req.Pagination.Limit))
-	ql.WithOffset(int(req.Pagination.Offset))
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+	logs, err := internallogger.GetWorkflowLogs(ctx,
+		flow.gormDB,
+		f.ID,
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return err
 	}
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = ns.Name
@@ -271,26 +260,17 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 
-	// its important to append the instanceID to the callpath since we don't do it when creating the database entry
-	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-	root, err := internallogger.GetRootinstanceID(prefix)
+	logs, err := internallogger.GetInstanceLogs(ctx,
+		flow.gormDB,
+		cached.Instance.CallPath,
+		cached.Instance.ID.String(),
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return nil, err
 	}
-
-	ql := internallogger.QueryLogs()
-	callerIsRoot := root == cached.Instance.Invoker
-
-	ql.WhereRootInstanceIdEQ(root)
-	if !callerIsRoot {
-		ql.WhereInstanceCallPathHasPrefix(prefix)
-	}
-
-	logs, err := ql.GetAll(ctx, flow.gormDB)
-	if err != nil {
-		return nil, err
-	}
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	results, err := buildInstanceLogResp(ctx, logs, &pi, req.Pagination, req.Namespace, req.Instance)
 	if err != nil {
@@ -316,30 +296,20 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
-	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
-	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-	root, err := internallogger.GetRootinstanceID(prefix)
-	callerIsRoot := root == cached.Instance.ID.String()
-	if err != nil {
-		return err
-	}
 
 resend:
 
-	ql := internallogger.QueryLogs()
-
-	ql.WhereRootInstanceIdEQ(root)
-	if !callerIsRoot {
-		ql.WhereInstanceCallPathHasPrefix(prefix)
-	}
-
-	ql.WithLimit(int(req.Pagination.Limit))
-	ql.WithOffset(int(req.Pagination.Offset))
-	logs, err := ql.GetAll(ctx, flow.gormDB)
+	logs, err := internallogger.GetInstanceLogs(ctx,
+		flow.gormDB,
+		cached.Instance.CallPath,
+		cached.Instance.ID.String(),
+		int(req.Pagination.Limit),
+		int(req.Pagination.Offset),
+	)
 	if err != nil {
 		return err
 	}
-	pi := BuildPageInfo(ql)
+	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
 
 	results, err := buildInstanceLogResp(ctx, logs, &pi, req.Pagination, req.Namespace, req.Instance)
 	if err != nil {
@@ -393,9 +363,9 @@ func buildInstanceLogResp(ctx context.Context,
 	return resp, nil
 }
 
-func BuildPageInfo(lq internallogger.LogMsgQuery) grpc.PageInfo {
+func BuildPageInfo(limit, offset int) grpc.PageInfo {
 	return grpc.PageInfo{
-		Limit:  int32(lq.GetLimit()),
-		Offset: int32(lq.GetOffset()),
+		Limit:  int32(limit),
+		Offset: int32(offset),
 	}
 }
