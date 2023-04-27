@@ -57,8 +57,8 @@ const Button = React.forwardRef<
         ],
         variant === "ghost" && [
           "bg-transparent hover:bg-gray-3 data-[state=open]:bg-transparent",
-          "text-gray-12 hover:bg-gray-3",
-          "dark:text-gray-dark-12 dark:hover:bg-gray-dark-3",
+          "hover:bg-gray-3",
+          "dark:hover:bg-gray-dark-3",
         ],
         variant === "link" && [
           "bg-transparent text-gray-12 underline-offset-4 hover:bg-transparent hover:underline",
