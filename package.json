@@ -99,7 +99,7 @@
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -s public",
     "storybook:build": "storybook build",
     "check": "run-s check:*",
-    "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "check:lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings 0",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss,css}'",
     "check:test": "vitest run",
