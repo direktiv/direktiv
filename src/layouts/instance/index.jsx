@@ -643,6 +643,7 @@ function InstanceLogs(props) {
               }}
               filter={showFilterBar}
               setWordWrap={setWordWrap}
+              wordWrap={wordWrap}
               data={data}
             />
           </FlexBox>

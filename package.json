@@ -85,6 +85,7 @@
     "tailwindcss-animate": "^1.0.5",
     "typescript": "^4.9.0",
     "use-react-router-breadcrumbs": "^3.0.1",
+    "vite-plugin-rewrite-all": "^1.0.1",
     "web-vitals": "^1.0.1",
     "webpack-bundle-analyzer": "^4.5.0",
     "zod": "^3.21.2",

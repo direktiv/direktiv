@@ -285,8 +285,13 @@ const ListRow = ({
         top: `${parseFloat(style.top as string)}px`,
       }}
     >
-      <div className={`log-row ${isError && "log-row--error"}`} ref={rowRoot}>
-        <span className={wordWrap ? "word-wrap" : "whole-word"}>
+      <div
+        className={`log-row ${isError && "log-row--error"} ${
+          wordWrap ? "word-wrap" : "whole-word"
+        }`}
+        ref={rowRoot}
+      >
+        <span>
           <span className="timestamp">
             [{dayjs.utc(data[index].t).local().format("HH:mm:ss")}
             {`] `}
@@ -321,14 +326,14 @@ const ListRow = ({
               </span>
             </Tippy>
           ) : null}
-
-          {data[index].msg.match(/.{1,50}/g)?.map((mtkMsg, mtkIdx) => {
-            return (
-              <span key={`log-msg-${mtkIdx}`} className="msg">
-                {mtkMsg}
-              </span>
-            );
-          })}
+        </span>
+        <span>
+          {data[index].msg.match(/.{1,999999999}/g)?.map((mtkMsg, mtkIdx) => (
+            <span key={`log-msg-${mtkIdx}`} className="msg">
+              {mtkMsg}
+              <br />
+            </span>
+          ))}
         </span>
       </div>
     </div>
