@@ -126,14 +126,14 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 			Name: filestore.Latest,
 		},
 	}
-	for idx, rev := range revs {
+	for _, rev := range revs {
 		revTags := rev.Tags.List()
 		for _, revTag := range revTags {
 			refs = append(refs, &grpc.Ref{
 				Name: revTag,
 			})
 		}
-		if idx > 0 {
+		if !rev.IsCurrent {
 			refs = append(refs, &grpc.Ref{
 				Name: rev.ID.String(),
 			})

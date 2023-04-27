@@ -107,7 +107,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, err
 	}
 
-	err = fStore.ForRevision(rev).Delete(ctx, true)
+	err = fStore.ForRevision(rev).Delete(ctx)
 	if err != nil {
 		return nil, err
 	}

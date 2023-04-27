@@ -3,7 +3,6 @@ package psql
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -213,23 +212,8 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 	}
 	newChecksum := string(q.checksumFunc(data))
 
-	// if newChecksum didn't change, then return the latest revision without creating a new one.
-	latestRev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
-		Where("file_id", q.file.ID).
-		Where("is_current", true).
-		Where("checksum", newChecksum).
-		First(latestRev)
-	if res.Error != nil && !errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, res.Error
-	}
-	if res.Error == nil {
-		return latestRev, nil
-	}
-
 	// set current revisions 'is_current' flag to false.
-	res = q.db.WithContext(ctx).
+	res := q.db.WithContext(ctx).
 		Table("filesystem_revisions").
 		Where("file_id", q.file.ID).
 		Where("is_current", true).

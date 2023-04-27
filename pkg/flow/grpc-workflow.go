@@ -193,11 +193,20 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if file.Typ != filestore.FileTypeWorkflow {
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
 	}
-
+	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+	if err != nil {
+		return nil, err
+	}
 	newRevision, err := fStore.ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
+	// delete the previous revision.
+	err = fStore.ForRevision(revision).Delete(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	dataReader, err := fStore.ForRevision(newRevision).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -262,7 +271,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	_, err = fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
+	revision, err = fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
 	if err != nil {
 		return nil, err
 	}

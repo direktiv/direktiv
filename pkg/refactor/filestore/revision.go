@@ -93,5 +93,5 @@ type RevisionQuery interface {
 	SetTags(ctx context.Context, tags RevisionTags) (*Revision, error)
 
 	// Delete deletes file revision.
-	Delete(ctx context.Context, force bool) error
+	Delete(ctx context.Context) error
 }
