@@ -20,7 +20,7 @@ export const Default: Story = {
     size: {
       description: "select size",
       control: "select",
-      options: ["xs", "sm", "md", "lg"],
+      options: [undefined, "sm", "lg"],
       type: { name: "string", required: false },
     },
     disabled: {
@@ -31,7 +31,7 @@ export const Default: Story = {
 };
 export function CheckboxWithText() {
   return (
-    <div className="items-top flex space-x-2 bg-white p-2 dark:bg-black">
+    <div className="items-top flex space-x-2 p-2 ">
       <Checkbox id="terms2" />
       <div className="grid gap-1.5 leading-none">
         <label
@@ -50,7 +50,7 @@ export function CheckboxWithText() {
 
 export function DisabledCheckbox() {
   return (
-    <div className="items-top flex space-x-2 bg-white p-2 dark:bg-black">
+    <div className="items-top flex space-x-2 p-2 ">
       <Checkbox id="terms-disabled-1" disabled />
     </div>
   );
@@ -58,11 +58,10 @@ export function DisabledCheckbox() {
 
 export function CheckboxSizes() {
   return (
-    <div className="items-top flex space-x-2 bg-white p-2 dark:bg-black">
+    <div className="items-top flex space-x-2 p-2 ">
       <Checkbox size="lg" />
       <Checkbox />
       <Checkbox size="sm" />
-      <Checkbox size="xs" />
     </div>
   );
 }
