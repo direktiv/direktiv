@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore"
+	logquerybuilder "github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore/log-querybuilder"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -16,15 +18,15 @@ import (
 )
 
 type Logger struct {
-	logQueue     chan *logMsg
+	logQueue     chan *queuedLogMsg
 	logWorkersWG sync.WaitGroup
 	sugar        *zap.SugaredLogger
 	pubsub       LogNotify
 	db           *gorm.DB
 }
 
-type logMsg struct {
-	*LogMsgs
+type queuedLogMsg struct {
+	logstore.LogMsg
 	recipientID   uuid.UUID
 	recipientType recipient.RecipientType
 }
@@ -34,7 +36,7 @@ type LogNotify interface {
 }
 
 func InitLogger() *Logger {
-	logQueue := make(chan *logMsg, 1000)
+	logQueue := make(chan *queuedLogMsg, 1000)
 	return &Logger{
 		logQueue: logQueue,
 	}
@@ -156,38 +158,18 @@ func (logger *Logger) sendToWorker(recipientID uuid.UUID, tags map[string]string
 	for k, v := range tags {
 		lTags[k] = v
 	}
-	l := &LogMsgs{
-		T:     time.Now(),
-		Msg:   msg,
-		Tags:  lTags,
-		Level: string(level),
-		Oid:   uuid.New(),
-	}
-	switch recipientType {
-	case recipient.Server:
-	case recipient.Instance:
-		callpath := AppendInstanceID(tags["callpath"], recipientID.String())
-		rootInstance, err := getRootinstanceID(callpath)
-		if err != nil {
-			panic(err)
-		}
-		l.InstanceLogs = recipientID
-		l.RootInstanceId = rootInstance
-		l.LogInstanceCallPath = callpath
-	case recipient.Namespace:
-		l.NamespaceLogs = recipientID
-	case recipient.Workflow:
-		l.WorkflowId = recipientID
-	case recipient.Mirror:
-		l.MirrorActivityId = recipientID
-	default:
-		logger.sugar.Panicf("recipientType was not set: %s %v", msg, tags)
-	}
-	logger.logQueue <- &logMsg{
-		recipientID:   recipientID,
+	l := &queuedLogMsg{
+		LogMsg: logstore.LogMsg{
+			T:     time.Now(),
+			Msg:   msg,
+			Tags:  lTags,
+			Level: string(level),
+		},
 		recipientType: recipientType,
-		LogMsgs:       l,
+		recipientID:   recipientID,
 	}
+
+	logger.logQueue <- l
 }
 
 func (logger *Logger) telemetry(ctx context.Context, level Level, tags map[string]string, msg string) {
@@ -219,135 +201,15 @@ func (logger *Logger) telemetry(ctx context.Context, level Level, tags map[strin
 	}
 }
 
-func (logger *Logger) create(l *logMsg) error {
-	t := logger.db.Table("log_msgs").Create(&l.LogMsgs)
-	if t.Error != nil {
-		return t.Error
-	}
+func (logger *Logger) create(l *queuedLogMsg) error {
+	// TODO: create
 	logger.pubsub.NotifyLogs(l.recipientID, l.recipientType)
-	return nil
+	return logstore.NewLogStore(logger.db).Create(l.recipientID, l.recipientType, l.LogMsg)
 }
 
-func GetInstanceLogsNoInheritance(instanceID uuid.UUID, limit, offset int) LogMsgQuery {
-	ql := QueryLogs()
-
-	ql.whereInstance(instanceID)
-
-	if limit > 0 {
-		ql.withLimit(limit)
+func (logger *Logger) Store() (func(ctx context.Context, ql logquerybuilder.LogMsgQuery) ([]*logstore.LogMsg, error), error) {
+	if logger.db == nil {
+		return nil, fmt.Errorf("Logger was not properly initialized")
 	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	// l, err := ql.getAll(ctx, ls.db)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return ql
-}
-
-func GetServerLogs(limit, offset int) LogMsgQuery {
-	ql := QueryLogs()
-	ql.whereWorkflowIsNil()
-	ql.whereNamespaceIsNIl()
-	ql.whereInstanceIsNIl()
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	// logs, err := ql.getAll(ctx, ls.db)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return ql
-}
-
-func GetNamespaceLogs(namespaceID uuid.UUID, limit, offset int) LogMsgQuery {
-	ql := QueryLogs()
-	id := namespaceID
-	ql.whereNamespace(id)
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	// logs, err := ql.getAll(ctx, ls.db)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return ql
-}
-
-func GetWorkflowLogs(workflowID uuid.UUID, limit, offset int) LogMsgQuery {
-	ql := QueryLogs()
-	id := workflowID
-	ql.whereWorkflow(id)
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	// logs, err := ql.getAll(ctx, ls.db)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return ql
-}
-
-func GetMirrorActivityLogs(mirror uuid.UUID, limit, offset int) LogMsgQuery {
-	ql := QueryLogs()
-	id := mirror
-	ql.whereMirrorActivityID(id)
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	// logs, err := ql.getAll(ctx, ls.db)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return ql
-}
-
-func (ls *Logger) QueryLogs(ctx context.Context, ql LogMsgQuery) ([]*LogMsgs, error) {
-	logs, err := ql.getAll(ctx, ls.db)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
-
-func GetInstanceLogs(ctx context.Context, callpath, instanceID string, limit, offset int) (LogMsgQuery, error) {
-	prefix := AppendInstanceID(callpath, instanceID)
-	root, err := getRootinstanceID(prefix)
-	if err != nil {
-		return nil, err
-	}
-	callerIsRoot, err := IsCallerRoot(callpath, instanceID)
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	ql := QueryLogs()
-
-	ql.whereRootInstanceIdEQ(root)
-	if !callerIsRoot {
-		ql.whereInstanceCallPathHasPrefix(prefix)
-	}
-
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	return ql, err
+	return logstore.NewLogStore(logger.db).QueryLogs, nil
 }

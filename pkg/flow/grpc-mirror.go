@@ -8,9 +8,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	logquerybuilder "github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore/log-querybuilder"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -306,8 +306,11 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	}
 
 	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
-
-	res, err := flow.logger.QueryLogs(ctx, internallogger.GetMirrorActivityLogs(
+	query, err := flow.logger.Store()
+	if err != nil {
+		return nil, err
+	}
+	res, err := query(ctx, logquerybuilder.GetMirrorActivityLogs(
 		mirProcess.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
@@ -358,10 +361,15 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcess.ID)
 	defer flow.cleanup(sub.Close)
+	query, err := flow.logger.Store()
+	if err != nil {
+		return err
+	}
 
 resend:
 	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
-	res, err := flow.logger.QueryLogs(ctx, internallogger.GetMirrorActivityLogs(
+
+	res, err := query(ctx, logquerybuilder.GetMirrorActivityLogs(
 		mirProcess.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	log "github.com/direktiv/direktiv/pkg/refactor/internallogger"
 	"github.com/senseyeio/duration"
 )
 

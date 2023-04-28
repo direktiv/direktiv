@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -193,7 +193,7 @@ func ConvertDataForOutput(a, b interface{}) error {
 	return nil
 }
 
-func ConvertLogMsgToGrpcLog(a []*internallogger.LogMsgs) ([]*grpc.Log, error) {
+func ConvertLogMsgToGrpcLog(a []*logstore.LogMsg) ([]*grpc.Log, error) {
 	results := make([]*grpc.Log, 0, len(a))
 	for _, v := range a {
 		t := timestamppb.New(v.T)

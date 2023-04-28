@@ -6,8 +6,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore"
+	logquerybuilder "github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore/log-querybuilder"
 )
 
 type fileAttributes filestore.File
@@ -23,8 +25,11 @@ func (f fileAttributes) GetAttributes() map[string]string {
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetServerLogs(0, 0))
+	query, err := flow.logger.Store()
+	if err != nil {
+		return nil, err
+	}
+	logs, err := query(ctx, logquerybuilder.GetServerLogs(0, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +55,14 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 
 	sub := flow.pubsub.SubscribeServerLogs()
 	defer flow.cleanup(sub.Close)
+	query, err := flow.logger.Store()
+	if err != nil {
+		return err
+	}
 
 resend:
 
-	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetServerLogs(
+	logs, err := query(ctx, logquerybuilder.GetServerLogs(
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
 	))
@@ -94,7 +103,11 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	if err != nil {
 		return nil, err
 	}
-	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetNamespaceLogs(cached.Namespace.ID, 0, 0))
+	query, err := flow.logger.Store()
+	if err != nil {
+		return nil, err
+	}
+	logs, err := query(ctx, logquerybuilder.GetNamespaceLogs(cached.Namespace.ID, 0, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -128,9 +141,13 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 	sub := flow.pubsub.SubscribeNamespaceLogs(&id)
 	defer flow.cleanup(sub.Close)
+	query, err := flow.logger.Store()
+	if err != nil {
+		return err
+	}
 
 resend:
-	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetNamespaceLogs(
+	logs, err := query(ctx, logquerybuilder.GetNamespaceLogs(
 		cached.Namespace.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
@@ -175,7 +192,11 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 		return nil, err
 	}
 	id := f.ID
-	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetWorkflowLogs(id, 0, 0))
+	query, err := flow.logger.Store()
+	if err != nil {
+		return nil, err
+	}
+	logs, err := query(ctx, logquerybuilder.GetWorkflowLogs(id, 0, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -209,9 +230,14 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 	sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
 	defer flow.cleanup(sub.Close)
 
+	query, err := flow.logger.Store()
+	if err != nil {
+		return err
+	}
+
 resend:
 
-	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetWorkflowLogs(
+	logs, err := query(ctx, logquerybuilder.GetWorkflowLogs(
 		f.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
@@ -256,7 +282,11 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
-	ql, err := internallogger.GetInstanceLogs(ctx,
+	query, err := flow.logger.Store()
+	if err != nil {
+		return nil, err
+	}
+	ql, err := logquerybuilder.GetInstanceLogs(
 		cached.Instance.CallPath,
 		cached.Instance.ID.String(),
 		int(req.Pagination.Limit),
@@ -265,7 +295,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
-	logs, err := flow.logger.QueryLogs(ctx, ql)
+	logs, err := query(ctx, ql)
 	if err != nil {
 		return nil, err
 	}
@@ -296,9 +326,14 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
 
+	query, err := flow.logger.Store()
+	if err != nil {
+		return err
+	}
+
 resend:
 
-	ql, err := internallogger.GetInstanceLogs(ctx,
+	ql, err := logquerybuilder.GetInstanceLogs(
 		cached.Instance.CallPath,
 		cached.Instance.ID.String(),
 		int(req.Pagination.Limit),
@@ -307,7 +342,7 @@ resend:
 	if err != nil {
 		return err
 	}
-	logs, err := flow.logger.QueryLogs(ctx, ql)
+	logs, err := query(ctx, ql)
 	if err != nil {
 		return err
 	}
@@ -340,7 +375,7 @@ resend:
 }
 
 func buildInstanceLogResp(ctx context.Context,
-	in []*internallogger.LogMsgs,
+	in []*logstore.LogMsg,
 	pi *grpc.PageInfo,
 	page *grpc.Pagination,
 	namespace string,

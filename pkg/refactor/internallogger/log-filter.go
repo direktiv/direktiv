@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore"
 )
 
-// filters the passed *LogMsgs if the given filter is supported if
+// filters the passed *lsql.LogMsgs if the given filter is supported if
 // the given filter is not supported returns the input unfiltered.
-func FilterLogmsg(filter *grpc.PageFilter, input []*LogMsgs) []*LogMsgs {
+func FilterLogmsg(filter *grpc.PageFilter, input []*logstore.LogMsg) []*logstore.LogMsg {
 	res := input
 	if filter.Field == "QUERY" && filter.Type == "MATCH" {
 		res = filterMatchByWfStateIterator(filter.Val, input)
@@ -32,8 +33,8 @@ func FilterLogmsg(filter *grpc.PageFilter, input []*LogMsgs) []*LogMsgs {
 // 2: When the loop-index is provided:
 // the result will contain all logmsg marked with the given
 // loop-index starting the first match of the provided workflow and state-id
-// additionally, all logmsgs from nested loops and childs will be added to the results.
-func filterMatchByWfStateIterator(queryValue string, input []*LogMsgs) []*LogMsgs {
+// additionally, all lsql.LogMsgs from nested loops and childs will be added to the results.
+func filterMatchByWfStateIterator(queryValue string, input []*logstore.LogMsg) []*logstore.LogMsg {
 	values := strings.Split(queryValue, "::")
 	state := ""
 	workflow := ""
@@ -47,9 +48,9 @@ func filterMatchByWfStateIterator(queryValue string, input []*LogMsgs) []*LogMsg
 	if len(values) > 2 {
 		iterator = values[2]
 	}
-	matchWf := make([]*LogMsgs, 0)
-	matchState := make([]*LogMsgs, 0)
-	matchIterator := make([]*LogMsgs, 0)
+	matchWf := make([]*logstore.LogMsg, 0)
+	matchState := make([]*logstore.LogMsg, 0)
+	matchIterator := make([]*logstore.LogMsg, 0)
 	for _, v := range input {
 		if v.Tags["workflow"] == nil {
 			v.Tags["workflow"] = ""
@@ -92,7 +93,7 @@ func filterMatchByWfStateIterator(queryValue string, input []*LogMsgs) []*LogMsg
 	}
 	if iterator != "" {
 		if len(matchIterator) == 0 {
-			return make([]*LogMsgs, 0)
+			return make([]*logstore.LogMsg, 0)
 		}
 		if matchIterator[0].Tags["callpath"] == nil {
 			matchIterator[0].Tags["callpath"] = ""
@@ -132,8 +133,8 @@ func filterMatchByWfStateIterator(queryValue string, input []*LogMsgs) []*LogMsg
 	return matchState
 }
 
-func filterByIterrator(iterator string, in []*LogMsgs) []*LogMsgs {
-	res := make([]*LogMsgs, 0)
+func filterByIterrator(iterator string, in []*logstore.LogMsg) []*logstore.LogMsg {
+	res := make([]*logstore.LogMsg, 0)
 	if iterator == "" {
 		return res
 	}
@@ -145,7 +146,7 @@ func filterByIterrator(iterator string, in []*LogMsgs) []*LogMsgs {
 	return res
 }
 
-func getNestedLoopHead(in []*LogMsgs) string {
+func getNestedLoopHead(in []*logstore.LogMsg) string {
 	for _, v := range in {
 		if v.Tags["state-type"] == "foreach" {
 			return fmt.Sprintf("%v", v.Tags["instance-id"])
@@ -154,8 +155,8 @@ func getNestedLoopHead(in []*LogMsgs) string {
 	return ""
 }
 
-func getAllChilds(callpath string, in []*LogMsgs) []*LogMsgs {
-	res := make([]*LogMsgs, 0)
+func getAllChilds(callpath string, in []*logstore.LogMsg) []*logstore.LogMsg {
+	res := make([]*logstore.LogMsg, 0)
 	for _, v := range in {
 		if strings.HasPrefix(fmt.Sprintf("%v", v.Tags["callpath"]), callpath) {
 			res = append(res, v)
@@ -164,8 +165,8 @@ func getAllChilds(callpath string, in []*LogMsgs) []*LogMsgs {
 	return res
 }
 
-func filterByInstanceId(instanceId string, in []*LogMsgs) []*LogMsgs {
-	res := make([]*LogMsgs, 0)
+func filterByInstanceId(instanceId string, in []*logstore.LogMsg) []*logstore.LogMsg {
+	res := make([]*logstore.LogMsg, 0)
 	for _, v := range in {
 		if v.Tags["instance-id"] == instanceId {
 			res = append(res, v)
@@ -175,9 +176,9 @@ func filterByInstanceId(instanceId string, in []*LogMsgs) []*LogMsgs {
 }
 
 // https://stackoverflow.com/questions/66643946/how-to-remove-duplicates-strings-or-int-from-slice-in-go
-func removeDuplicate(in []*LogMsgs) []*LogMsgs {
-	allKeys := make(map[*LogMsgs]bool)
-	list := []*LogMsgs{}
+func removeDuplicate(in []*logstore.LogMsg) []*logstore.LogMsg {
+	allKeys := make(map[*logstore.LogMsg]bool)
+	list := []*logstore.LogMsg{}
 	for _, item := range in {
 		if _, value := allKeys[item]; !value {
 			allKeys[item] = true

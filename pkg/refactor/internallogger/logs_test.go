@@ -11,7 +11,9 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internal/testutils"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore"
+	logquerybuilder "github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore/log-querybuilder"
+	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
 
@@ -43,9 +45,9 @@ var expectedLoopnestedjsonWFLooperlooperSTATESolveIt2 = []string{
 }
 
 func TestStoringLogMsg(t *testing.T) {
-	sugar, telemetrylogs := testutils.ObservedLogger()
+	sugar, telemetrylogs := utils.ObservedLogger()
 	logger := InitLogger()
-	gorm, cleanup, err := testutils.DatabaseGorm()
+	gorm, cleanup, err := utils.DatabaseGorm()
 	if err != nil {
 		t.Error(err)
 	}
@@ -57,16 +59,18 @@ func TestStoringLogMsg(t *testing.T) {
 	}()
 	logger.StartLogWorkers(1, gorm, &LogNotifyMock{}, sugar)
 	tags := make(map[string]string)
-	tags["recipientType"] = recipient.Instance.String()
+	tags["recipientType"] = recipient.Server.String()
 	tags["testTag"] = recipient.Server.String()
 	recipent := uuid.New()
 	msg := "test2"
 	ctx := context.TODO()
 	logger.Infof(ctx, recipent, tags, msg)
 	logger.CloseLogWorkers()
-	lq := QueryLogs()
-	lq.whereInstance(recipent)
-	logs, err := lq.getAll(context.Background(), gorm)
+	store, err := logger.Store()
+	if err != nil {
+		t.Error(err)
+	}
+	logs, err := store(ctx, logquerybuilder.GetServerLogs(0, 0))
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,7 +101,7 @@ func TestStoringLogMsg(t *testing.T) {
 }
 
 func TestTelemetry(t *testing.T) {
-	sugar, telemetrylogs := testutils.ObservedLogger()
+	sugar, telemetrylogs := utils.ObservedLogger()
 	logger := InitLogger()
 	logger.sugar = sugar
 
@@ -115,7 +119,7 @@ func TestTelemetry(t *testing.T) {
 }
 
 func TestTelemetryWithTags(t *testing.T) {
-	sugar, telemetrylogs := testutils.ObservedLogger()
+	sugar, telemetrylogs := utils.ObservedLogger()
 	logger := InitLogger()
 	logger.sugar = sugar
 
@@ -133,9 +137,9 @@ func TestTelemetryWithTags(t *testing.T) {
 }
 
 func TestSendLogMsgToDB(t *testing.T) {
-	sugar, telemetrylogs := testutils.ObservedLogger()
+	sugar, telemetrylogs := utils.ObservedLogger()
 	logger := InitLogger()
-	gorm, cleanup, err := testutils.DatabaseGorm()
+	gorm, cleanup, err := utils.DatabaseGorm()
 	if err != nil {
 		t.Error(err)
 	}
@@ -151,23 +155,25 @@ func TestSendLogMsgToDB(t *testing.T) {
 	tags["recipientType"] = recipient.Server.String()
 	recipent := uuid.New()
 	msg := "test1"
-	err = logger.create(&logMsg{
+	err = logger.create(&queuedLogMsg{
 		recipientID:   recipent,
 		recipientType: recipient.Instance,
-		LogMsgs: &LogMsgs{
-			T:            time.Now(),
-			Msg:          msg,
-			Level:        "info",
-			Tags:         tags,
-			InstanceLogs: recipent,
+		LogMsg: logstore.LogMsg{
+			T:     time.Now(),
+			Msg:   msg,
+			Level: "info",
+			Tags:  tags,
 		},
 	})
 	if err != nil {
 		t.Errorf("database transaction failed %v", err)
 	}
-	lq := QueryLogs()
-	lq.whereInstance(recipent)
-	logs, err := lq.getAll(context.TODO(), gorm)
+	store, err := logger.Store()
+	if err != nil {
+		t.Error(err)
+	}
+
+	logs, err := store(context.Background(), logquerybuilder.GetInstanceLogsNoInheritance(recipent, 0, 0))
 	if err != nil {
 		t.Error(err)
 	}
@@ -234,7 +240,7 @@ func TestQueryMatchState(t *testing.T) {
 	assertsortedByTime(t, res)
 }
 
-func assertLogmsgsPresent(t *testing.T, msgs []*LogMsgs, expectedMsg []string) {
+func assertLogmsgsPresent(t *testing.T, msgs []*logstore.LogMsg, expectedMsg []string) {
 	t.Helper()
 
 	for _, e := range expectedMsg {
@@ -248,7 +254,7 @@ func assertLogmsgsPresent(t *testing.T, msgs []*LogMsgs, expectedMsg []string) {
 	}
 }
 
-func assertLogmsgsContain(t *testing.T, msgs []*LogMsgs, expectedMsg []string) {
+func assertLogmsgsContain(t *testing.T, msgs []*logstore.LogMsg, expectedMsg []string) {
 	t.Helper()
 	for _, v := range msgs {
 		ok := false
@@ -261,7 +267,7 @@ func assertLogmsgsContain(t *testing.T, msgs []*LogMsgs, expectedMsg []string) {
 	}
 }
 
-func assertsortedByTime(t *testing.T, in []*LogMsgs) bool {
+func assertsortedByTime(t *testing.T, in []*logstore.LogMsg) bool {
 	t.Helper()
 	if len(in) < 2 {
 		return true
@@ -281,9 +287,9 @@ func assertsortedByTime(t *testing.T, in []*LogMsgs) bool {
 	return true
 }
 
-func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, resLen int) []*LogMsgs {
+func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, resLen int) []*logstore.LogMsg {
 	t.Helper()
-	logmsgs := make([]*LogMsgs, 0)
+	logmsgs := make([]*logstore.LogMsg, 0)
 	err := json.Unmarshal([]byte(jsondump), &logmsgs)
 	if err != nil {
 		t.Error(err)
@@ -312,7 +318,7 @@ func assertQueryMatchState(t *testing.T, jsondump, wf, state, iterator string, r
 	return res
 }
 
-func checkNestedLoop(in []*LogMsgs) bool {
+func checkNestedLoop(in []*logstore.LogMsg) bool {
 	for _, v := range in {
 		if v.Tags["state-type"] == "foreach" {
 			return true
@@ -329,7 +335,7 @@ func assertTagsFiltered(t *testing.T, tags map[string]interface{}, tag, value st
 }
 
 func TestFilterByIterrator(t *testing.T) {
-	logmsgs := make([]*LogMsgs, 0)
+	logmsgs := make([]*logstore.LogMsg, 0)
 	err := json.Unmarshal([]byte(loopnestedjson), &logmsgs)
 	if err != nil {
 		t.Error(err)
@@ -346,7 +352,7 @@ func TestFilterByIterrator(t *testing.T) {
 }
 
 func TestFilterLogmsg(t *testing.T) {
-	logmsgs := make([]*LogMsgs, 0)
+	logmsgs := make([]*logstore.LogMsg, 0)
 	err := json.Unmarshal([]byte(loopnestedjson), &logmsgs)
 	if err != nil {
 		t.Error(err)
@@ -371,7 +377,7 @@ func TestFilterLogmsg(t *testing.T) {
 	}
 }
 
-func assertEquals(t *testing.T, a []*LogMsgs, b []*LogMsgs) bool {
+func assertEquals(t *testing.T, a []*logstore.LogMsg, b []*logstore.LogMsg) bool {
 	t.Helper()
 	if len(a) != len(b) {
 		return false

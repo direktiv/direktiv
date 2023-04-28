@@ -9,8 +9,10 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internal/testutils"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore"
+	logquerybuilder "github.com/direktiv/direktiv/pkg/refactor/internallogger/logstore/log-querybuilder"
+	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -52,7 +54,7 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	jsondump := loopjson
 	ctx := context.Background()
 
-	gdb, cleanup, err := testutils.DatabaseGorm()
+	gdb, cleanup, err := utils.DatabaseGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -62,20 +64,20 @@ func TestBuildInstanceLogResp(t *testing.T) {
 			fmt.Println(err)
 		}
 	}()
-	logmsgs := make([]*internallogger.LogMsgs, 0)
+	logmsgs := make([]*logstore.LogMsg, 0)
 	err = json.Unmarshal([]byte(jsondump), &logmsgs)
 	if err != nil {
 		t.Error(err)
 	}
-	in := make(map[string]*internallogger.LogMsgs)
+	in := make(map[string]*logstore.LogMsg)
 	inLen := 0
 	id, e := uuid.Parse("1a0d5909-223f-4f44-86d7-1833ab4d21c8")
 	if e != nil {
 		t.Error(e)
 	}
 	for _, v := range logmsgs {
-		v.InstanceLogs = id
-		e, err := storeLogmsg(ctx, gdb, v)
+
+		e, err := storeLogmsg(ctx, gdb, id, recipient.Instance, *v)
 		if err != nil {
 			t.Error(err)
 		}
@@ -86,7 +88,7 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	if len(logmsgs) != inLen {
 		t.Errorf("Missing Results len was %d should %d", len(logmsgs), inLen)
 	}
-	resultList := make([]*internallogger.LogMsgs, 0)
+	resultList := make([]*logstore.LogMsg, 0)
 	gdb.Raw("SELECT * FROM log_msgs").Scan(&resultList)
 	if len(resultList) == 0 {
 		t.Error("insert failed")
@@ -97,10 +99,14 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	page := grpc.Pagination{}
 	pi := grpc.PageInfo{}
 	ctx = context.Background()
-	logger, _ := testutils.ObservedLogger()
+	logger, _ := utils.ObservedLogger()
 	ilogger := internallogger.InitLogger()
 	ilogger.StartLogWorkers(1, gdb, &LogNotifyMock{}, logger)
-	logs, err := ilogger.QueryLogs(ctx, internallogger.GetInstanceLogsNoInheritance(id, 0, 0))
+	store, err := ilogger.Store()
+	if err != nil {
+		t.Error()
+	}
+	logs, err := store(ctx, logquerybuilder.GetInstanceLogsNoInheritance(id, 0, 0))
 	if err != nil {
 		t.Errorf("got an err: %v", err)
 	}
@@ -160,7 +166,7 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	}
 }
 
-func assertNoMissingLogs(t *testing.T, res *grpc.InstanceLogsResponse, in map[string]*internallogger.LogMsgs) {
+func assertNoMissingLogs(t *testing.T, res *grpc.InstanceLogsResponse, in map[string]*logstore.LogMsg) {
 	t.Helper()
 	if len(res.Results) == 0 {
 		t.Errorf("missing results")
@@ -173,15 +179,13 @@ func assertNoMissingLogs(t *testing.T, res *grpc.InstanceLogsResponse, in map[st
 	}
 }
 
-func storeLogmsg(ctx context.Context, db *gorm.DB, l *internallogger.LogMsgs) (*internallogger.LogMsgs, error) {
-	l.Oid = uuid.New()
-	db = db.Debug()
-	t := db.Table("log_msgs").Create(l)
-	if t.Error != nil {
-		panic(t.Error)
+func storeLogmsg(ctx context.Context, db *gorm.DB, recipientID uuid.UUID, recipientType recipient.RecipientType, log logstore.LogMsg) (*logstore.LogMsg, error) {
+	err := logstore.NewLogStore(db).Create(recipientID, recipientType, log)
+	if err != nil {
+		panic(err)
 		// fmt.Println(t.Error)
 	}
-	return l, nil
+	return &log, nil
 }
 
 type LogNotifyMock struct{}
@@ -203,8 +207,8 @@ type notifyLogsTriggeredWith struct {
 // 	flowSrv := flow{}
 
 // 	flowSrv.server = &srv
-// 	logs, logobserver := testutils.ObservedLogger()
-// 	gdb, cleanup, err := testutils.DatabaseGorm()
+// 	logs, logobserver := utils.ObservedLogger()
+// 	gdb, cleanup, err := utils.DatabaseGorm()
 // 	if err != nil {
 // 		t.Error(err)
 // 	}
