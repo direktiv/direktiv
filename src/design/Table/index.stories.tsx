@@ -198,14 +198,16 @@ export const TableAndCard = () => (
       <TableBody>
         {files.map((file) => (
           <TableRow key={file.name}>
-            <TableCell className="flex space-x-3">
-              <File className="h-5" />
-              <a href="#" className="flex-1 hover:underline">
-                {file.name}
-              </a>
-              <span className="text-gray-8 dark:text-gray-dark-8">
-                {moment(file.date).fromNow()}
-              </span>
+            <TableCell>
+              <div className="flex space-x-3">
+                <File className="h-5" />
+                <a href="#" className="flex-1 hover:underline">
+                  {file.name}
+                </a>
+                <span className="text-gray-8 dark:text-gray-dark-8">
+                  {moment(file.date).fromNow()}
+                </span>
+              </div>
             </TableCell>
             <TableCell className="w-0">
               <Button
