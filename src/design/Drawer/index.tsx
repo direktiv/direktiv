@@ -1,7 +1,6 @@
 import * as DrawerPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
-import { X } from "lucide-react";
 import clsx from "clsx";
 
 const Drawer = DrawerPrimitive.Root;
@@ -49,101 +48,31 @@ const DrawerOverlay = React.forwardRef<
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
-const getSizeClass = (position: string, size: string): string => {
-  let sizeClass = "";
-  if (["top", "bottom"].indexOf(position) > -1) {
-    switch (size) {
-      case "content":
-        sizeClass = "max-h-screen";
-        break;
-      case "default":
-        sizeClass = "h-1/3";
-        break;
-      case "sm":
-        sizeClass = "h-1/4";
-        break;
-      case "lg":
-        sizeClass = "h-1/2";
-        break;
-      case "xl":
-        sizeClass = "h-5/6";
-        break;
-      case "full":
-        sizeClass = "h-screen";
-        break;
-    }
-  } else if (["left", "right"].indexOf(position) > -1) {
-    switch (size) {
-      case "content":
-        sizeClass = "max-w-screen";
-        break;
-      case "default":
-        sizeClass = "w-1/3";
-        break;
-      case "sm":
-        sizeClass = "w-1/4";
-        break;
-      case "lg":
-        sizeClass = "w-1/2";
-        break;
-      case "xl":
-        sizeClass = "w-5/6";
-        break;
-      case "full":
-        sizeClass = "w-screen";
-        break;
-    }
-  }
-  return sizeClass;
-};
-export interface DialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> {
-  position?: "top" | "bottom" | "left" | "right";
-  size?: "default" | "content" | "sm" | "lg" | "xl" | "full";
-  noClose?: boolean;
-}
-
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  DialogContentProps
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
 >(
   (
     {
-      position = "left",
-      size = "sm",
       className,
       children,
-      noClose = true,
       ...props
     },
     ref
   ) => (
-    <DrawerPortal position={position}>
+    <DrawerPortal position={"left"}>
       <DrawerOverlay />
       <DrawerPrimitive.Content
         ref={ref}
         className={clsx(
           "fixed inset-0 z-50 scale-100 gap-4 bg-white p-4 opacity-100 shadow-lg dark:bg-black ",
-          position === "top" &&
-            "w-full animate-in slide-in-from-top duration-300",
-          position === "bottom" &&
-            "w-full animate-in slide-in-from-bottom duration-300",
-          position === "left" &&
-            "h-full animate-in slide-in-from-left duration-300",
-          position === "right" &&
-            "h-full animate-in slide-in-from-right duration-300",
-          getSizeClass(position, size),
+          "h-full animate-in slide-in-from-left duration-300",
+          "w-64",
           className
         )}
         {...props}
       >
         {children}
-        {!noClose && (
-          <DrawerPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DrawerPrimitive.Close>
-        )}
       </DrawerPrimitive.Content>
     </DrawerPortal>
   )

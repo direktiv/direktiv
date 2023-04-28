@@ -26,7 +26,7 @@ const StoryCompontnt = () => (
         </div>
       </div>
     </DrawerMain>
-    <DrawerContent className="w-64">
+    <DrawerContent>
       <div className="drawer-side">
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
         <nav className="menu bg-gray-1 p-4 text-gray-11 dark:bg-gray-dark-1 ">

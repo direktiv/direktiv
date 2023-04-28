@@ -156,7 +156,7 @@ const Layout = () => {
             </MainContent>
           </Main>
         </DrawerMain>
-        <DrawerContent size="sm" position="left" noClose>
+        <DrawerContent>
           <div className="px-2">
             <Logo className="mb-5 mt-1 h-8 w-auto" />
           </div>

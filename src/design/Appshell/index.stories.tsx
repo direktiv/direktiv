@@ -191,7 +191,7 @@ export const MoreDetailedShell = () => {
   return (
     <Root>
       <Drawer>
-        <DrawerContent position="left" size="sm" noClose id="my-drawer">
+        <DrawerContent id="my-drawer">
           <div className="drawer-side">
             <label htmlFor="my-drawer" className="drawer-overlay"></label>
             <nav className="menu bg-gray-1 p-4 text-gray-11 dark:bg-gray-dark-1 ">
