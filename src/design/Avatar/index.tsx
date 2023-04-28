@@ -18,15 +18,12 @@ const Avatar: FC<AvatarProps> = ({
   <div
     {...props}
     className={clsx(
-      "flex items-center justify-center rounded-full bg-gray-8",
-      size === "xlg" && "h-32 w-32 text-2xl",
-      size === "lg" && "h-24 w-24 text-xl",
-      size === "sm" && "h-16 w-16 text-base",
-      size === "xs" && "h-8 w-8 text-xs",
+      "flex items-center justify-center rounded-full h-8 w-8 text-xs",
+      "bg-primary-500 text-white",
       className
     )}
   >
-    {children}
+    {children ? children : '??'}
   </div>
 );
 
@@ -34,6 +31,6 @@ const AvatarWithForwaredRef = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ ...props }, ref) => <Avatar forwaredRef={ref} {...props} />
 );
 
-AvatarWithForwaredRef.displayName = "Button";
+AvatarWithForwaredRef.displayName = "Avatar";
 
 export default AvatarWithForwaredRef;

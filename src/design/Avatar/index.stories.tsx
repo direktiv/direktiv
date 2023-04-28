@@ -12,20 +12,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: ({ ...args }) => <Avatar {...args} />,
   argTypes: {
-    size: {
-      description: "Avatar Size",
-      control: "select",
-      options: ["xs", "sm", "lg", "xlg"],
-      type: { name: "string", required: false },
-    },
   },
 };
 
-export const AvatarSizes = () => (
+export const AvatarChild = () => (
   <div>
-    <Avatar size="xs">AB</Avatar>
-    <Avatar size="sm">CD</Avatar>
-    <Avatar size="lg">EF</Avatar>
-    <Avatar size="xlg">GH</Avatar>
+    <Avatar>Ad</Avatar>
   </div>
 );

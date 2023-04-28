@@ -150,7 +150,7 @@ const TopRightComponent: FC<{
           role="button"
           icon
         >
-          <Avatar size="xs" className="bg-primary-500">
+          <Avatar>
             AD
           </Avatar>
           <RxChevronDown />
