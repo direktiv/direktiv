@@ -17,17 +17,15 @@ export const Default = () => (
 );
 
 export const DefaultWithIcons = () => (
-  <div className="bg-white dark:bg-black">
-    <BreadcrumbRoot>
-      <Breadcrumb>
-        <Home /> My-namespace
-      </Breadcrumb>
-      <Breadcrumb>
-        <Home /> My-namespace
-      </Breadcrumb>
-      <Breadcrumb>
-        <Home /> My-namespace
-      </Breadcrumb>
-    </BreadcrumbRoot>
-  </div>
+  <BreadcrumbRoot>
+    <Breadcrumb>
+      <Home /> My-namespace
+    </Breadcrumb>
+    <Breadcrumb>
+      <Home /> My-namespace
+    </Breadcrumb>
+    <Breadcrumb>
+      <Home /> My-namespace
+    </Breadcrumb>
+  </BreadcrumbRoot>
 );
