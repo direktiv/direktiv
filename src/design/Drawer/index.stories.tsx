@@ -1,29 +1,45 @@
-import { DrawerContent, DrawerMenu, DrawerRoot } from "./index";
+import { Drawer, DrawerContent, DrawerMain, DrawerTrigger } from "./index";
+import type { Meta, StoryObj } from "@storybook/react";
+import Button from "../Button";
+import Logo from "../Logo";
 
-export default {
+const meta = {
   title: "Components/Drawer",
-  parameters: { layout: "fullscreen" },
-};
+  component: Drawer,
+} satisfies Meta<typeof Drawer>;
 
-export const Default = () => (
-  <DrawerRoot>
-    <DrawerContent>
-      {({ drawerLabelProps }) => (
-        <div className="flex flex-col space-y-5 p-10">
-          <label {...drawerLabelProps} className="btn w-40" role="button">
-            Open Drawer
-          </label>
-          <div>
-            This is the <code>DrawerContent</code> component. Make sure to place
-            it as a direct child of the <code>DrawerRoot</code> component and
-            place the <code>DrawerMenu</code> directly after the{" "}
-            <code>DrawerContent</code>.
-          </div>
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const StoryCompontnt = () => (
+  <Drawer>
+    <DrawerMain>
+      <div className="flex flex-col items-start space-y-5 p-10">
+        <DrawerTrigger>
+          <Button> Open Drawer</Button>
+        </DrawerTrigger>
+        <div>
+          This is the <code>DrawerContent</code> component. Make sure to place
+          it as a direct child of the <code>DrawerRoot</code> component and
+          place the <code>DrawerMenu</code> directly after the{" "}
+          <code>DrawerContent</code>.
         </div>
-      )}
-    </DrawerContent>
-    <DrawerMenu>
+      </div>
+    </DrawerMain>
+    <DrawerContent className="w-64">
+      <div className="drawer-side">
+        <label htmlFor="my-drawer" className="drawer-overlay"></label>
+        <nav className="menu bg-gray-1 p-4 text-gray-11 dark:bg-gray-dark-1 ">
+          <div className="px-2">
+            <Logo className="mb-5 mt-1 h-8 w-auto" />
+          </div>
+        </nav>
+      </div>
       This is the <code>DrawerMenu</code> component. Menu content goes here.
-    </DrawerMenu>
-  </DrawerRoot>
+    </DrawerContent>
+  </Drawer>
 );
+
+export const Default: Story = {
+  render: () => <StoryCompontnt />,
+};

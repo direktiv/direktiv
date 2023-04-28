@@ -8,6 +8,7 @@ import {
   Sun,
   Terminal,
 } from "lucide-react";
+import { Drawer, DrawerContent, DrawerTrigger } from "../../design/Drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +28,10 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../design/Appshell";
-import { Sheet, SheetContent, SheetTrigger } from "../../design/Sheet";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Breadcrumb from "../../componentsNext/Breadcrumb";
 import Button from "../../design/Button";
-import { DrawerContent } from "../../design/Drawer";
 import { FC } from "react";
 import Logo from "../../design/Logo";
 import Navigation from "../../componentsNext/Navigation";
@@ -118,7 +117,7 @@ const Layout = () => {
 
   return (
     <Root>
-      <Sheet>
+      <Drawer>
         <DrawerContent>
           {({ drawerLabelProps }) => (
             <>
@@ -129,11 +128,11 @@ const Layout = () => {
                     className="justify-self-start px-1 lg:hidden"
                     role="button"
                   >
-                    <SheetTrigger>
+                    <DrawerTrigger>
                       <div className="text-gray-10 dark:text-gray-dark-10">
                         <Menu />
                       </div>
-                    </SheetTrigger>
+                    </DrawerTrigger>
                   </label>
                   <Logo
                     iconOnly
@@ -162,13 +161,13 @@ const Layout = () => {
             </>
           )}
         </DrawerContent>
-        <SheetContent size="sm" position="left" noClose>
+        <DrawerContent size="sm" position="left" noClose>
           <div className="px-2">
             <Logo className="mb-5 mt-1 h-8 w-auto" />
           </div>
           <Navigation />
-        </SheetContent>
-      </Sheet>
+        </DrawerContent>
+      </Drawer>
     </Root>
   );
 };

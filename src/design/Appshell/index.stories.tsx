@@ -26,6 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import { Breadcrumb, BreadcrumbRoot } from "../Breadcrumbs";
+import { Drawer, DrawerContent, DrawerMain, DrawerTrigger } from "../Drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -47,7 +48,6 @@ import {
   SidebarMain,
   SidebarTop,
 } from "./index";
-import { Sheet, SheetContent, SheetMain, SheetTrigger } from "../Sheet";
 
 import Avatar from "../Avatar";
 import Button from "../Button";
@@ -190,8 +190,8 @@ export const MoreDetailedShell = () => {
   }, [theme]);
   return (
     <Root>
-      <Sheet>
-        <SheetContent position="left" size="sm" noClose id="my-drawer">
+      <Drawer>
+        <DrawerContent position="left" size="sm" noClose id="my-drawer">
           <div className="drawer-side">
             <label htmlFor="my-drawer" className="drawer-overlay"></label>
             <nav className="menu bg-gray-1 p-4 text-gray-11 dark:bg-gray-dark-1 ">
@@ -210,19 +210,19 @@ export const MoreDetailedShell = () => {
               ))}
             </nav>
           </div>
-        </SheetContent>
-        <SheetMain>
+        </DrawerContent>
+        <DrawerMain>
           <Sidebar version="Version: 78c688e">
             <SidebarTop>
               <label
                 className="justify-self-start px-1 lg:hidden"
                 role="button"
               >
-                <SheetTrigger>
+                <DrawerTrigger>
                   <div className="text-gray-10 dark:text-gray-dark-10">
                     <Menu />
                   </div>
-                </SheetTrigger>
+                </DrawerTrigger>
               </label>
               <Logo
                 iconOnly
@@ -349,8 +349,8 @@ export const MoreDetailedShell = () => {
               </div>
             </MainContent>
           </Main>
-        </SheetMain>
-      </Sheet>
+        </DrawerMain>
+      </Drawer>
     </Root>
   );
 };
