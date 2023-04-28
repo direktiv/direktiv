@@ -17,13 +17,22 @@ const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> &
-  Pick<ButtonProps, "variant" | "size" | "block" | "loading">
+    Pick<ButtonProps, "variant" | "size" | "block" | "loading">
 >(
   (
     { className, variant, size, children, disabled, block, loading, ...props },
     ref
   ) => (
-    <SelectPrimitive.Trigger ref={ref} className={clsx(block && "w-full", "p-1", className)} {...props}>
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={clsx(
+        block && "w-full",
+        "focus:outline-none focus:ring-2 focus:ring-gray-4 focus:ring-offset-2 focus:ring-offset-gray-1",
+        "dark:focus:ring-gray-dark-4 dark:focus:ring-offset-gray-dark-1",
+        className
+      )}
+      {...props}
+    >
       <Button
         variant={variant}
         size={size}
@@ -92,6 +101,8 @@ const SelectItem = React.forwardRef<
       "outline-nonedata-[disabled]:pointer-events-none relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium data-[disabled]:opacity-50",
       " focus:bg-gray-3 ",
       " dark:focus:bg-gray-dark-3 ",
+      "hover:outline-none",
+      "focus:outline-none",
       className
     )}
     {...props}

@@ -147,7 +147,7 @@ export const LoadingState = () => (
 );
 
 export const TriggerVariants = () => (
-  <div className="flex space-x-3 flex-wrap">
+  <div className="flex flex-wrap space-x-3">
     <Select>
       <SelectTrigger>
         <SelectValue placeholder="default select" />
@@ -212,7 +212,6 @@ export const TriggerVariants = () => (
 );
 
 export const Block = () => (
-
   <Select>
     <SelectTrigger className="w-full" block>
       <SelectValue placeholder="block element" />
@@ -223,7 +222,6 @@ export const Block = () => (
       <SelectItem value="3">Item 3</SelectItem>
     </SelectContent>
   </Select>
-
 );
 
 export const SelectWithinADialog = () => (

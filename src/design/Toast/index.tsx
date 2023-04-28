@@ -34,13 +34,13 @@ const Toast = React.forwardRef<
     "border-gray-3 dark:border-gray-dark-3",
     !variant && "bg-gray-4 dark:bg-gray-dark-4",
     variant === "error" &&
-    "bg-danger-4 text-danger-9 dark:bg-danger-dark-4 dark:text-danger-dark-9",
+      "bg-danger-4 text-danger-9 dark:bg-danger-dark-4 dark:text-danger-dark-9",
     variant === "success" &&
-    "bg-success-4 text-success-9 dark:bg-success-dark-4 dark:text-success-dark-9",
+      "bg-success-4 text-success-9 dark:bg-success-dark-4 dark:text-success-dark-9",
     variant === "info" &&
-    "bg-info-4 text-info-9 dark:bg-info-dark-4 dark:text-info-dark-9",
+      "bg-info-4 text-info-9 dark:bg-info-dark-4 dark:text-info-dark-9",
     variant === "warning" &&
-    "bg-warning-4 text-warning-9 dark:bg-warning-dark-4 dark:text-warning-dark-9"
+      "bg-warning-4 text-warning-9 dark:bg-warning-dark-4 dark:text-warning-dark-9"
   );
   return (
     <ToastPrimitives.Root
@@ -147,21 +147,21 @@ type ActionType = typeof actionTypes;
 
 type Action =
   | {
-    type: ActionType["ADD_TOAST"];
-    toast: ToasterToast;
-  }
+      type: ActionType["ADD_TOAST"];
+      toast: ToasterToast;
+    }
   | {
-    type: ActionType["UPDATE_TOAST"];
-    toast: Partial<ToasterToast>;
-  }
+      type: ActionType["UPDATE_TOAST"];
+      toast: Partial<ToasterToast>;
+    }
   | {
-    type: ActionType["DISMISS_TOAST"];
-    toastId?: ToasterToast["id"];
-  }
+      type: ActionType["DISMISS_TOAST"];
+      toastId?: ToasterToast["id"];
+    }
   | {
-    type: ActionType["REMOVE_TOAST"];
-    toastId?: ToasterToast["id"];
-  };
+      type: ActionType["REMOVE_TOAST"];
+      toastId?: ToasterToast["id"];
+    };
 
 interface State {
   toasts: ToasterToast[];
@@ -219,9 +219,9 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-              ...t,
-              open: false,
-            }
+                ...t,
+                open: false,
+              }
             : t
         ),
       };
