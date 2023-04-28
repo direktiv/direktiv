@@ -29,6 +29,11 @@ type LogMsgQuery interface {
 	getAll(ctx context.Context, db *gorm.DB) ([]*LogMsgs, error)
 }
 
+type LogMsgRepo interface {
+	QueryLogs(ctx context.Context, ql LogMsgQuery) ([]*LogMsgs, error)
+	create(l *logMsg) error
+}
+
 // type LogMsgStorer interface {
 // 	// QueryLogs(ctx context.Context, db *gorm.DB) LogMsgQuery
 // 	create(ctx context.Context, l logMessage)
@@ -186,125 +191,6 @@ func (b *LogMsgQueryBuilder) getOffset() int {
 	return b.offset
 }
 
-func GetInstanceLogs(ctx context.Context, db *gorm.DB, callpath, instanceID string, limit, offset int) ([]*LogMsgs, error) {
-	prefix := AppendInstanceID(callpath, instanceID)
-	root, err := getRootinstanceID(prefix)
-	if err != nil {
-		return nil, err
-	}
-	callerIsRoot, err := IsCallerRoot(callpath, instanceID)
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	ql := QueryLogs()
-
-	ql.whereRootInstanceIdEQ(root)
-	if !callerIsRoot {
-		ql.whereInstanceCallPathHasPrefix(prefix)
-	}
-
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	l, err := ql.getAll(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-	return l, err
-}
-
-func GetInstanceLogsNoInheritance(ctx context.Context, db *gorm.DB, instanceID uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
-	ql := QueryLogs()
-
-	ql.whereInstance(instanceID)
-
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	l, err := ql.getAll(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-	return l, err
-}
-
-func GetServerLogs(ctx context.Context, db *gorm.DB, limit, offset int) ([]*LogMsgs, error) {
-	ql := QueryLogs()
-	ql.whereWorkflowIsNil()
-	ql.whereNamespaceIsNIl()
-	ql.whereInstanceIsNIl()
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	logs, err := ql.getAll(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
-
-func GetNamespaceLogs(ctx context.Context, db *gorm.DB, namespaceID uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
-	ql := QueryLogs()
-	id := namespaceID
-	ql.whereNamespace(id)
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	logs, err := ql.getAll(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
-
-func GetWorkflowLogs(ctx context.Context, db *gorm.DB, workflowID uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
-	ql := QueryLogs()
-	id := workflowID
-	ql.whereWorkflow(id)
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	logs, err := ql.getAll(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
-
-func GetMirrorActivityLogs(ctx context.Context, db *gorm.DB, mirror uuid.UUID, limit, offset int) ([]*LogMsgs, error) {
-	ql := QueryLogs()
-	id := mirror
-	ql.whereMirrorActivityID(id)
-	if limit > 0 {
-		ql.withLimit(limit)
-	}
-	if offset > 0 {
-		ql.withOffset(offset)
-	}
-	logs, err := ql.getAll(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
 
 func buildPageInfo(lq LogMsgQuery) grpc.PageInfo {
 	return grpc.PageInfo{

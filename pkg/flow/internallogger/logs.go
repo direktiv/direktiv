@@ -58,7 +58,7 @@ func (logger *Logger) logWorker() {
 		if !more {
 			return
 		}
-		_ = logger.sendLogMsgToDB(l)
+		_ = logger.create(l)
 	}
 }
 
@@ -219,11 +219,135 @@ func (logger *Logger) telemetry(ctx context.Context, level Level, tags map[strin
 	}
 }
 
-func (logger *Logger) sendLogMsgToDB(l *logMsg) error {
+func (logger *Logger) create(l *logMsg) error {
 	t := logger.db.Table("log_msgs").Create(&l.LogMsgs)
 	if t.Error != nil {
 		return t.Error
 	}
 	logger.pubsub.NotifyLogs(l.recipientID, l.recipientType)
 	return nil
+}
+
+func GetInstanceLogsNoInheritance(instanceID uuid.UUID, limit, offset int) LogMsgQuery {
+	ql := QueryLogs()
+
+	ql.whereInstance(instanceID)
+
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	// l, err := ql.getAll(ctx, ls.db)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return ql
+}
+
+func GetServerLogs(limit, offset int) LogMsgQuery {
+	ql := QueryLogs()
+	ql.whereWorkflowIsNil()
+	ql.whereNamespaceIsNIl()
+	ql.whereInstanceIsNIl()
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	// logs, err := ql.getAll(ctx, ls.db)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return ql
+}
+
+func GetNamespaceLogs(namespaceID uuid.UUID, limit, offset int) LogMsgQuery {
+	ql := QueryLogs()
+	id := namespaceID
+	ql.whereNamespace(id)
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	// logs, err := ql.getAll(ctx, ls.db)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return ql
+}
+
+func GetWorkflowLogs(workflowID uuid.UUID, limit, offset int) LogMsgQuery {
+	ql := QueryLogs()
+	id := workflowID
+	ql.whereWorkflow(id)
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	// logs, err := ql.getAll(ctx, ls.db)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return ql
+}
+
+func GetMirrorActivityLogs(mirror uuid.UUID, limit, offset int) LogMsgQuery {
+	ql := QueryLogs()
+	id := mirror
+	ql.whereMirrorActivityID(id)
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	// logs, err := ql.getAll(ctx, ls.db)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return ql
+}
+
+func (ls *Logger) QueryLogs(ctx context.Context, ql LogMsgQuery) ([]*LogMsgs, error) {
+	logs, err := ql.getAll(ctx, ls.db)
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+func GetInstanceLogs(ctx context.Context, callpath, instanceID string, limit, offset int) (LogMsgQuery, error) {
+	prefix := AppendInstanceID(callpath, instanceID)
+	root, err := getRootinstanceID(prefix)
+	if err != nil {
+		return nil, err
+	}
+	callerIsRoot, err := IsCallerRoot(callpath, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	ql := QueryLogs()
+
+	ql.whereRootInstanceIdEQ(root)
+	if !callerIsRoot {
+		ql.whereInstanceCallPathHasPrefix(prefix)
+	}
+
+	if limit > 0 {
+		ql.withLimit(limit)
+	}
+	if offset > 0 {
+		ql.withOffset(offset)
+	}
+	return ql, err
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
@@ -16,6 +17,8 @@ import (
 
 //go:embed mockdata/entlog_loop.json
 var loopjson string
+
+var _notifyLogsTriggeredWith notifyLogsTriggeredWith
 
 const loopJsonValidInstanceID = "1a0d5909-223f-4f44-86d7-1833ab4d21c8"
 
@@ -94,7 +97,10 @@ func TestBuildInstanceLogResp(t *testing.T) {
 	page := grpc.Pagination{}
 	pi := grpc.PageInfo{}
 	ctx = context.Background()
-	logs, err := internallogger.GetInstanceLogsNoInheritance(ctx, gdb, id, 0, 0)
+	logger, _ := testutils.ObservedLogger()
+	ilogger := internallogger.InitLogger()
+	ilogger.StartLogWorkers(1, gdb, &LogNotifyMock{}, logger)
+	logs, err := ilogger.QueryLogs(ctx, internallogger.GetInstanceLogsNoInheritance(id, 0, 0))
 	if err != nil {
 		t.Errorf("got an err: %v", err)
 	}
@@ -176,6 +182,20 @@ func storeLogmsg(ctx context.Context, db *gorm.DB, l *internallogger.LogMsgs) (*
 		// fmt.Println(t.Error)
 	}
 	return l, nil
+}
+
+type LogNotifyMock struct{}
+
+func (ln *LogNotifyMock) NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType) {
+	_notifyLogsTriggeredWith = notifyLogsTriggeredWith{
+		recipientID,
+		recipientType,
+	}
+}
+
+type notifyLogsTriggeredWith struct {
+	Id            uuid.UUID
+	RecipientType recipient.RecipientType
 }
 
 // func TestWhiteboxTestServerLogs(t *testing.T) {

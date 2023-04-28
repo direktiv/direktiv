@@ -151,7 +151,7 @@ func TestSendLogMsgToDB(t *testing.T) {
 	tags["recipientType"] = recipient.Server.String()
 	recipent := uuid.New()
 	msg := "test1"
-	err = logger.sendLogMsgToDB(&logMsg{
+	err = logger.create(&logMsg{
 		recipientID:   recipent,
 		recipientType: recipient.Instance,
 		LogMsgs: &LogMsgs{

@@ -306,12 +306,12 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	}
 
 	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
-	res, err := internallogger.GetMirrorActivityLogs(ctx,
-		flow.gormDB,
+
+	res, err := flow.logger.QueryLogs(ctx, internallogger.GetMirrorActivityLogs(
 		mirProcess.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
-	)
+	))
 	if err != nil {
 		return nil, err
 	}
@@ -361,12 +361,11 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 
 resend:
 	pi := BuildPageInfo(int(req.Pagination.Limit), int(req.Pagination.Offset))
-	res, err := internallogger.GetMirrorActivityLogs(ctx,
-		flow.gormDB,
+	res, err := flow.logger.QueryLogs(ctx, internallogger.GetMirrorActivityLogs(
 		mirProcess.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
-	)
+	))
 	if err != nil {
 		return err
 	}

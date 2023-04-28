@@ -24,7 +24,7 @@ func (f fileAttributes) GetAttributes() map[string]string {
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	logs, err := internallogger.GetServerLogs(ctx, flow.gormDB, 0, 0)
+	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetServerLogs(0, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +53,10 @@ func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_S
 
 resend:
 
-	logs, err := internallogger.GetServerLogs(ctx,
-		flow.gormDB,
+	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetServerLogs(
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
-	)
+	))
 	if err != nil {
 		return err
 	}
@@ -95,7 +94,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	if err != nil {
 		return nil, err
 	}
-	logs, err := internallogger.GetNamespaceLogs(ctx, flow.gormDB, cached.Namespace.ID, 0, 0)
+	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetNamespaceLogs(cached.Namespace.ID, 0, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -131,12 +130,11 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	defer flow.cleanup(sub.Close)
 
 resend:
-	logs, err := internallogger.GetNamespaceLogs(ctx,
-		flow.gormDB,
+	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetNamespaceLogs(
 		cached.Namespace.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
-	)
+	))
 	if err != nil {
 		return err
 	}
@@ -177,7 +175,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 		return nil, err
 	}
 	id := f.ID
-	logs, err := internallogger.GetWorkflowLogs(ctx, flow.gormDB, id, 0, 0)
+	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetWorkflowLogs(id, 0, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +211,11 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 resend:
 
-	logs, err := internallogger.GetWorkflowLogs(ctx,
-		flow.gormDB,
+	logs, err := flow.logger.QueryLogs(ctx, internallogger.GetWorkflowLogs(
 		f.ID,
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
-	)
+	))
 	if err != nil {
 		return err
 	}
@@ -259,14 +256,16 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
-
-	logs, err := internallogger.GetInstanceLogs(ctx,
-		flow.gormDB,
+	ql, err := internallogger.GetInstanceLogs(ctx,
 		cached.Instance.CallPath,
 		cached.Instance.ID.String(),
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
 	)
+	if err != nil {
+		return nil, err
+	}
+	logs, err := flow.logger.QueryLogs(ctx, ql)
 	if err != nil {
 		return nil, err
 	}
@@ -299,13 +298,16 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 resend:
 
-	logs, err := internallogger.GetInstanceLogs(ctx,
-		flow.gormDB,
+	ql, err := internallogger.GetInstanceLogs(ctx,
 		cached.Instance.CallPath,
 		cached.Instance.ID.String(),
 		int(req.Pagination.Limit),
 		int(req.Pagination.Offset),
 	)
+	if err != nil {
+		return err
+	}
+	logs, err := flow.logger.QueryLogs(ctx, ql)
 	if err != nil {
 		return err
 	}
