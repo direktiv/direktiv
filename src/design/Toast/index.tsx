@@ -32,15 +32,15 @@ const Toast = React.forwardRef<
   const toastVariants = clsx(
     "data-[swipe=move]:transition-none grow-1 group relative pointer-events-auto flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-sm transition-all data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full mt-4 data-[state=closed]:slide-out-to-right-full last:mt-0 sm:last:mt-4",
     "border-gray-3 dark:border-gray-dark-3",
-    !variant && "bg-gray-1 dark:bg-gray-dark-1",
+    !variant && "bg-gray-4 dark:bg-gray-dark-4",
     variant === "error" &&
-      "bg-danger-5 text-danger-11 dark:bg-danger-dark-5 dark:text-danger-dark-11",
+    "bg-danger-4 text-danger-9 dark:bg-danger-dark-4 dark:text-danger-dark-9",
     variant === "success" &&
-      "bg-success-5 text-success-11 dark:bg-success-dark-5 dark:text-success-dark-11",
+    "bg-success-4 text-success-9 dark:bg-success-dark-4 dark:text-success-dark-9",
     variant === "info" &&
-      "bg-info-5 text-info-11 dark:bg-info-dark-5 dark:text-info-dark-11",
+    "bg-info-4 text-info-9 dark:bg-info-dark-4 dark:text-info-dark-9",
     variant === "warning" &&
-      "bg-warning-5 text-warning-11 dark:bg-warning-dark-5 dark:text-warning-dark-11"
+    "bg-warning-4 text-warning-9 dark:bg-warning-dark-4 dark:text-warning-dark-9"
   );
   return (
     <ToastPrimitives.Root
@@ -147,21 +147,21 @@ type ActionType = typeof actionTypes;
 
 type Action =
   | {
-      type: ActionType["ADD_TOAST"];
-      toast: ToasterToast;
-    }
+    type: ActionType["ADD_TOAST"];
+    toast: ToasterToast;
+  }
   | {
-      type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast>;
-    }
+    type: ActionType["UPDATE_TOAST"];
+    toast: Partial<ToasterToast>;
+  }
   | {
-      type: ActionType["DISMISS_TOAST"];
-      toastId?: ToasterToast["id"];
-    }
+    type: ActionType["DISMISS_TOAST"];
+    toastId?: ToasterToast["id"];
+  }
   | {
-      type: ActionType["REMOVE_TOAST"];
-      toastId?: ToasterToast["id"];
-    };
+    type: ActionType["REMOVE_TOAST"];
+    toastId?: ToasterToast["id"];
+  };
 
 interface State {
   toasts: ToasterToast[];
@@ -219,9 +219,9 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-                ...t,
-                open: false,
-              }
+              ...t,
+              open: false,
+            }
             : t
         ),
       };
