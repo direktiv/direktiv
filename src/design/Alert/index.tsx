@@ -1,4 +1,4 @@
-import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Info, XCircle } from "lucide-react";
 import React, { FC, HTMLAttributes } from "react";
 
 import clsx from "clsx";
@@ -27,11 +27,11 @@ const Alert: FC<AlertProps> = ({ variant, className, children }) => (
     )}
   >
     <div className="flex items-center [&>svg]:inline">
-      {variant === "success" && <CheckCircle></CheckCircle>}
-      {variant === "warning" && <AlertTriangle></AlertTriangle>}
-      {variant === "info" && <AlertCircle></AlertCircle>}
-      {variant === "error" && <XCircle></XCircle>}
-      {variant === undefined && <AlertCircle></AlertCircle>}
+      {variant === "success" && <CheckCircle />}
+      {variant === "warning" && <AlertTriangle />}
+      {variant === "info" && <Info />}
+      {variant === "error" && <XCircle />}
+      {variant === undefined && <Info />}
       <span className="px-2">{children}</span>
     </div>
   </div>
