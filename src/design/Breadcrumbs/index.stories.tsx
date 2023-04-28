@@ -16,9 +16,9 @@ export const Default = () => (
   </div>
 );
 
-export const DefaultWithIcons = () => (
+export const WithIcons = () => (
   <BreadcrumbRoot>
-    <Breadcrumb>
+    <Breadcrumb noArrow>
       <Home /> My-namespace
     </Breadcrumb>
     <Breadcrumb>
@@ -26,6 +26,25 @@ export const DefaultWithIcons = () => (
     </Breadcrumb>
     <Breadcrumb>
       <Home /> My-namespace
+    </Breadcrumb>
+  </BreadcrumbRoot>
+);
+export const WithIconsAndLinks = () => (
+  <BreadcrumbRoot>
+    <Breadcrumb noArrow>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
     </Breadcrumb>
   </BreadcrumbRoot>
 );

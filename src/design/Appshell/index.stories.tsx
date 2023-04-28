@@ -254,9 +254,9 @@ export const MoreDetailedShell = () => {
             <MainTop>
               <MainTopLeft>
                 <BreadcrumbRoot>
-                  <Breadcrumb>
-                    <a className="gap-2">
-                      <Home className="h-4 w-auto" />
+                  <Breadcrumb noArrow>
+                    <a>
+                      <Home />
                       My-namespace
                     </a>
                     <DropdownMenu>
@@ -286,20 +286,20 @@ export const MoreDetailedShell = () => {
                     </DropdownMenu>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <Github className="h-4 w-auto" />
+                    <a>
+                      <Github />
                       Example Mirror
                     </a>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <FolderOpen className="h-4 w-auto" />
+                    <a>
+                      <FolderOpen />
                       Folder
                     </a>
                   </Breadcrumb>
                   <Breadcrumb>
-                    <a className="gap-2">
-                      <Play className="h-4 w-auto" />
+                    <a>
+                      <Play />
                       workflow.yml
                     </a>
                   </Breadcrumb>
