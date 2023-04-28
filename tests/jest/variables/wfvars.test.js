@@ -5,7 +5,7 @@ import common from "../common"
 
 const namespaceName = "vars"
 
-const workflowName = "wf"
+const workflowName = "wf.yaml"
 
 const simpleWorkflow = `
 states:
