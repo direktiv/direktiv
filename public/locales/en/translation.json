@@ -18,6 +18,17 @@
           "description": "Check out our Github repository"
         }
       }
+    },
+    "explorer": {
+      "workflow": {
+        "menu": {
+          "activeRevision": "Active Revision",
+          "revisions": "Revisions",
+          "overview": "Overview",
+          "settings": "Settings"
+        },
+        "actionsBtn": "Actions"
+      }
     }
   }
 }
