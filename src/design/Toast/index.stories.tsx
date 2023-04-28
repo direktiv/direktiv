@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Toast, ToastAction, ToastVariantsType, Toaster, useToast } from "./index";
+import {
+  Toast,
+  ToastAction,
+  ToastVariantsType,
+  Toaster,
+  useToast,
+} from "./index";
 import Button from "../Button";
 import { FC } from "react";
 

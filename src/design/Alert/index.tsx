@@ -1,3 +1,4 @@
+import { AlertCircle, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import React, { FC, HTMLAttributes } from "react";
 
 import clsx from "clsx";
@@ -12,28 +13,26 @@ const Alert: FC<AlertProps> = ({ variant, className, children }) => (
   <div
     className={clsx(
       className,
-      "alert shadow-sm",
-      variant === "info" && "alert-info",
-      variant === "error" && "alert-error",
-      variant === "success" && "alert-success",
-      variant === "warning" && "alert-warning"
+      "ring-md rounded-md p-2 shadow-sm",
+      variant === "info" &&
+        "bg-info-4 text-info-9 dark:bg-info-dark-4 dark:text-info-dark-9",
+      variant === "error" &&
+        "bg-danger-4 text-danger-9 dark:bg-danger-dark-4 dark:text-danger-dark-9",
+      variant === "success" &&
+        "bg-success-4 text-success-9 dark:bg-success-dark-4 dark:text-success-dark-9",
+      variant === "warning" &&
+        "bg-warning-4 text-warning-9 dark:bg-warning-dark-4 dark:text-warning-dark-9",
+      variant === undefined &&
+        "bg-gray-4 text-gray-9 dark:bg-gray-dark-4 dark:text-gray-dark-9"
     )}
   >
-    <div>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        className="h-6 w-6 shrink-0 stroke-current"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        ></path>
-      </svg>
-      <span>{children}</span>
+    <div className="flex items-center [&>svg]:inline">
+      {variant === "success" && <CheckCircle></CheckCircle>}
+      {variant === "warning" && <AlertTriangle></AlertTriangle>}
+      {variant === "info" && <AlertCircle></AlertCircle>}
+      {variant === "error" && <XCircle></XCircle>}
+      {variant === undefined && <AlertCircle></AlertCircle>}
+      <span className="px-2">{children}</span>
     </div>
   </div>
 );

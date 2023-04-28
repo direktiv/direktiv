@@ -34,13 +34,13 @@ const Toast = React.forwardRef<
     "border-gray-3 dark:border-gray-dark-3",
     !variant && "bg-gray-1 dark:bg-gray-dark-1",
     variant === "error" &&
-    "bg-danger-5 text-danger-11 dark:bg-danger-dark-5 dark:text-danger-dark-11",
+      "bg-danger-5 text-danger-11 dark:bg-danger-dark-5 dark:text-danger-dark-11",
     variant === "success" &&
-    "bg-success-5 text-success-11 dark:bg-success-dark-5 dark:text-success-dark-11",
+      "bg-success-5 text-success-11 dark:bg-success-dark-5 dark:text-success-dark-11",
     variant === "info" &&
-    "bg-info-5 text-info-11 dark:bg-info-dark-5 dark:text-info-dark-11",
+      "bg-info-5 text-info-11 dark:bg-info-dark-5 dark:text-info-dark-11",
     variant === "warning" &&
-    "bg-warning-5 text-warning-11 dark:bg-warning-dark-5 dark:text-warning-dark-11"
+      "bg-warning-5 text-warning-11 dark:bg-warning-dark-5 dark:text-warning-dark-11"
   );
   return (
     <ToastPrimitives.Root
@@ -147,21 +147,21 @@ type ActionType = typeof actionTypes;
 
 type Action =
   | {
-    type: ActionType["ADD_TOAST"];
-    toast: ToasterToast;
-  }
+      type: ActionType["ADD_TOAST"];
+      toast: ToasterToast;
+    }
   | {
-    type: ActionType["UPDATE_TOAST"];
-    toast: Partial<ToasterToast>;
-  }
+      type: ActionType["UPDATE_TOAST"];
+      toast: Partial<ToasterToast>;
+    }
   | {
-    type: ActionType["DISMISS_TOAST"];
-    toastId?: ToasterToast["id"];
-  }
+      type: ActionType["DISMISS_TOAST"];
+      toastId?: ToasterToast["id"];
+    }
   | {
-    type: ActionType["REMOVE_TOAST"];
-    toastId?: ToasterToast["id"];
-  };
+      type: ActionType["REMOVE_TOAST"];
+      toastId?: ToasterToast["id"];
+    };
 
 interface State {
   toasts: ToasterToast[];
@@ -219,9 +219,9 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-              ...t,
-              open: false,
-            }
+                ...t,
+                open: false,
+              }
             : t
         ),
       };

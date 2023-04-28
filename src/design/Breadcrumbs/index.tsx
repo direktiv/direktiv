@@ -26,7 +26,7 @@ export const Breadcrumb: FC<HTMLAttributes<HTMLLIElement>> = ({
 }) => (
   <li
     className={clsx(
-      "inline [&>*>svg]:h-4 [&>*>svg]:w-auto [&>*>a>svg]:h-4 [&>*>a>svg]:w-auto",
+      "inline [&>*>a>svg]:h-4 [&>*>a>svg]:w-auto [&>*>svg]:h-4 [&>*>svg]:w-auto",
       "[&>*>a]:flex [&>*>a]:items-center",
       "[&>*]:before:h-2 [&>*]:before:w-2 [&>*]:before:rotate-45",
       "[&>*]:before:border-t [&>*]:before:border-r",
