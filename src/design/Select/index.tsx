@@ -25,13 +25,9 @@ const SelectTrigger = React.forwardRef<
   ) => (
     <SelectPrimitive.Trigger
       ref={ref}
-      className={clsx(
-        block && "w-full",
-        "focus:outline-none focus:ring-2 focus:ring-gray-4 focus:ring-offset-2 focus:ring-offset-gray-1",
-        "dark:focus:ring-gray-dark-4 dark:focus:ring-offset-gray-dark-1",
-        className
-      )}
+      className={clsx(block && "w-full", className)}
       {...props}
+      asChild
     >
       <Button
         variant={variant}
