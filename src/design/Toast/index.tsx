@@ -32,15 +32,26 @@ const Toast = React.forwardRef<
   const toastVariants = clsx(
     "data-[swipe=move]:transition-none grow-1 group relative pointer-events-auto flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-sm transition-all data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full mt-4 data-[state=closed]:slide-out-to-right-full last:mt-0 sm:last:mt-4",
     "border-gray-3 dark:border-gray-dark-3",
-    !variant && "bg-gray-4 dark:bg-gray-dark-4",
+    !variant &&
+      "bg-gray-4 text-gray-11 [&>button]:border-gray-11 focus:[&>button]:ring-gray-7 focus:[&>button]:ring-offset-gray-4",
+    !variant &&
+      "dark:bg-gray-dark-4 dark:text-gray-dark-11 dark:[&>button]:border-gray-dark-11 dark:focus:[&>button]:ring-gray-dark-7 dark:focus:[&>button]:ring-offset-gray-dark-4",
     variant === "error" &&
-      "bg-danger-4 text-danger-11 dark:bg-danger-dark-4 dark:text-danger-dark-11",
+      "bg-danger-4 text-danger-11 [&>button]:border-danger-11 focus:[&>button]:ring-danger-7 focus:[&>button]:ring-offset-danger-4",
+    variant === "error" &&
+      "dark:bg-danger-dark-4 dark:text-danger-dark-11 dark:[&>button]:border-danger-dark-11 dark:focus:[&>button]:ring-danger-dark-7 dark:focus:[&>button]:ring-offset-danger-dark-4",
     variant === "success" &&
-      "bg-success-4 text-success-11 dark:bg-success-dark-4 dark:text-success-dark-11",
+      "bg-success-4 text-success-11 [&>button]:border-success-11 focus:[&>button]:ring-success-7 focus:[&>button]:ring-offset-success-4",
+    variant === "success" &&
+      "dark:bg-success-dark-4 dark:text-success-dark-11 dark:[&>button]:border-success-dark-11 dark:focus:[&>button]:ring-success-dark-7 dark:focus:[&>button]:ring-offset-success-dark-4",
     variant === "info" &&
-      "bg-info-4 text-info-11 dark:bg-info-dark-4 dark:text-info-dark-11",
+      "bg-info-4 text-info-11 [&>button]:border-info-11 focus:[&>button]:ring-info-7 focus:[&>button]:ring-offset-info-4",
+    variant === "info" &&
+      "dark:bg-info-dark-4 dark:text-info-dark-11 dark:[&>button]:border-info-dark-11 dark:focus:[&>button]:ring-info-dark-7 dark:focus:[&>button]:ring-offset-info-dark-4",
     variant === "warning" &&
-      "bg-warning-4 text-warning-11 dark:bg-warning-dark-4 dark:text-warning-dark-11"
+      "bg-warning-4 text-warning-11 [&>button]:border-warning-11 focus:[&>button]:ring-warning-7 focus:[&>button]:ring-offset-warning-4",
+    variant === "warning" &&
+      "dark:bg-warning-dark-4 dark:text-warning-dark-11 dark:[&>button]:border-warning-dark-11 dark:focus:[&>button]:ring-warning-dark-7 dark:focus:[&>button]:ring-offset-warning-dark-4"
   );
   return (
     <ToastPrimitives.Root
@@ -59,9 +70,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={clsx(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors  focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-      "border-gray-3 hover:bg-gray-2/30 focus:ring-gray-7",
-      "dark:border-gray-dark-3 dark:hover:bg-gray-dark-2/30 dark:focus:ring-gray-dark-7",
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}
@@ -76,9 +85,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={clsx(
-      "absolute top-2 right-2 rounded-md p-1 opacity-0 transition-opacity  focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 ",
-      "text-gray-8 hover:text-gray-12",
-      "dark:text-gray-dark-8 dark:hover:text-gray-dark-12",
+      "absolute top-2 right-2 rounded-md p-1 opacity-0 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 group-hover:opacity-100",
       className
     )}
     toast-close=""
