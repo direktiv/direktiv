@@ -34,13 +34,13 @@ const Toast = React.forwardRef<
     "border-gray-3 dark:border-gray-dark-3",
     !variant && "bg-gray-4 dark:bg-gray-dark-4",
     variant === "error" &&
-      "bg-danger-4 text-danger-9 dark:bg-danger-dark-4 dark:text-danger-dark-9",
+      "bg-danger-4 text-danger-11 dark:bg-danger-dark-4 dark:text-danger-dark-11",
     variant === "success" &&
-      "bg-success-4 text-success-9 dark:bg-success-dark-4 dark:text-success-dark-9",
+      "bg-success-4 text-success-11 dark:bg-success-dark-4 dark:text-success-dark-11",
     variant === "info" &&
-      "bg-info-4 text-info-9 dark:bg-info-dark-4 dark:text-info-dark-9",
+      "bg-info-4 text-info-11 dark:bg-info-dark-4 dark:text-info-dark-11",
     variant === "warning" &&
-      "bg-warning-4 text-warning-9 dark:bg-warning-dark-4 dark:text-warning-dark-9"
+      "bg-warning-4 text-warning-11 dark:bg-warning-dark-4 dark:text-warning-dark-11"
   );
   return (
     <ToastPrimitives.Root
