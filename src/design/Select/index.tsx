@@ -54,7 +54,7 @@ const SelectContent = React.forwardRef<
         "z-50 shadow-md",
         "rounded-md ring-1",
         "ring-gray-3",
-        "dark:gray-dark-3",
+        "dark:ring-gray-dark-3",
         "bg-gray-1",
         "dark:bg-gray-dark-1",
         className
