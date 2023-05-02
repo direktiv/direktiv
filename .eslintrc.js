@@ -85,7 +85,13 @@ module.exports = {
 
     // allow non tailwind classes (old codebase still needs it, and
     // our custom  tailwind classes are somehow not taken into account)
-    "tailwindcss/no-custom-classname": "off",
+    "tailwindcss/no-custom-classname": [
+      "error",
+      {
+        config: "tailwind.config.cjs",
+      },
+    ],
+
     // there seems to be a missmatch between the order
     // of the classes from the linting rule vs the prettier plugin
     // since prettier is part of the dev environment, we can disable
