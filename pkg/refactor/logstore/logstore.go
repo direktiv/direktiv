@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -13,6 +12,9 @@ type LogStore interface {
 	// appends a log-entry to the logs of the corresponding RecipientID, RecipientType pair.
 	Append(recipientID uuid.UUID, recipientType RecipientType, l LogEntry) error
 	// returns a list of log-entries using the provided LogQuery.
+	// Example usage:
+	// ql := GetLogsQuery(recipienttId, recipientType, loglevel)
+	// logs, err := logstore.Get(ctx, ql)
 	Get(ctx context.Context, ql LogQuery) ([]*LogEntry, error)
 }
 
@@ -23,7 +25,7 @@ type LogEntry struct {
 	Msg   string
 	Level Level
 	// Tags contains metadata of the log-entry.
-	Tags util.JSONB
+	Tags map[string]string
 }
 
 // LogQuery generates a query statement to receive Log-Entries.
@@ -41,16 +43,6 @@ const (
 	Instance  RecipientType = "instance"
 	Mirror    RecipientType = "mirror"
 )
-
-func Convert(recipientType string) (RecipientType, bool) {
-	ok := false
-	switch recipientType {
-	case "server", "namespace", "workflow", "instance", "mirror":
-		ok = true
-	}
-
-	return RecipientType(recipientType), ok
-}
 
 func (rt RecipientType) String() string {
 	return string(rt)
