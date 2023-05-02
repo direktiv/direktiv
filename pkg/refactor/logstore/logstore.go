@@ -30,6 +30,8 @@ type LogEntry struct {
 
 // LogQuery generates a query statement to receive Log-Entries.
 type LogQuery interface {
+	// BuildStatement() is intended to be called inside the get method of the logstorer.
+	// the resulting string of BuildStatement() has to be interpreted by logstorer and used to return the right logentries from the log-storage.
 	BuildStatement() (string, error)
 }
 
