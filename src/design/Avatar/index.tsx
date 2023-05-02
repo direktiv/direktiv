@@ -12,7 +12,7 @@ const Avatar: FC<AvatarProps> = ({ className, children, ...props }) => (
   <div
     {...props}
     className={clsx(
-      "flex h-8 w-8 items-center justify-center rounded-full text-xs",
+      "flex h-7 w-7 items-center justify-center rounded-full text-xs",
       "bg-primary-500 text-white",
       className
     )}
