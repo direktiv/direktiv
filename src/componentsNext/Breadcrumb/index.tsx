@@ -51,7 +51,6 @@ const Breadcrumb = () => {
           <Home />
           {namespace}
         </Link>
-        &nbsp;
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
