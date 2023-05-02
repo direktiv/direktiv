@@ -144,12 +144,7 @@ const TopRightComponent: FC<{
     </DropdownMenu>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="placeholder avatar"
-          role="button"
-          icon
-        >
+        <Button variant="ghost" role="button" icon>
           <Avatar>Ad</Avatar>
           <RxChevronDown />
         </Button>
