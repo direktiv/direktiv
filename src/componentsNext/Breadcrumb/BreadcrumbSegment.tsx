@@ -25,7 +25,7 @@ const BreadcrumbSegment: FC<{
 
   return (
     <BreadcrumbLink>
-      <Link to={link} className="gap-2">
+      <Link to={link}>
         <Icon aria-hidden="true" />
         {relative}
       </Link>
