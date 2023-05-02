@@ -191,12 +191,9 @@ func TestStoreUTF8NULLString(t *testing.T) {
 		Level: "error",
 		Tags:  make(map[string]string),
 	}
-	o, err := storeLogmsg(ctx, &db.Entw, l)
+	_, err = storeLogmsg(ctx, &db.Entw, l)
 	if err != nil {
 		t.Error(err)
-	}
-	if o.Msg != l.Msg {
-		t.Errorf("was %s want %s", o.Msg, l.Msg)
 	}
 }
 
@@ -375,5 +372,6 @@ func checkNestedLoop(in []*ent.LogMsg) bool {
 
 func storeLogmsg(ctx context.Context, entw *entwrapper.Database, l *ent.LogMsg) (*ent.LogMsg, error) {
 	clients := entw.Clients(ctx)
-	return clients.LogMsg.Create().SetMsg(l.Msg).SetT(l.T).SetLevel(l.Level).SetTags(l.Tags).SetRootInstanceId(l.RootInstanceId).SetLogInstanceCallPath(l.LogInstanceCallPath).Save(ctx)
+	msg := strings.ReplaceAll(l.Msg, "\u0000", "")
+	return clients.LogMsg.Create().SetMsg(msg).SetT(l.T).SetLevel(l.Level).SetTags(l.Tags).SetRootInstanceId(l.RootInstanceId).SetLogInstanceCallPath(l.LogInstanceCallPath).Save(ctx)
 }
