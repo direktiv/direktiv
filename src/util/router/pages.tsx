@@ -14,6 +14,10 @@ import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
 import TreePage from "../../pages/namespace/Explorer/Tree";
 import WorkflowPage from "../../pages/namespace/Explorer/Workflow";
+import WorkflowPageActive from "../../pages/namespace/Explorer/Workflow/Active";
+import WorkflowPageOverview from "../../pages/namespace/Explorer/Workflow/Overview";
+import WorkflowPageRevisions from "../../pages/namespace/Explorer/Workflow/Revisions";
+import WorkflowPageSettings from "../../pages/namespace/Explorer/Workflow/Settings";
 import { z } from "zod";
 
 interface PageBase {
@@ -65,7 +69,8 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
 
-      const subpage = params.subpage === "workflow" ? "workflow" : "tree";
+      const subpage =
+        params.subpage === "workflow" ? "workflow/active" : "tree";
 
       return `/${params.namespace}/explorer/${subpage}${path}`;
     },
@@ -112,9 +117,15 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
           handle: { isTreePage: true },
         },
         {
-          path: "workflow/*",
+          path: "workflow/",
           element: <WorkflowPage />,
           handle: { isWorkflowPage: true },
+          children: [
+            { path: "active/*", element: <WorkflowPageActive /> },
+            { path: "revisions/*", element: <WorkflowPageRevisions /> },
+            { path: "overview/*", element: <WorkflowPageOverview /> },
+            { path: "settings/*", element: <WorkflowPageSettings /> },
+          ],
         },
       ],
     },
