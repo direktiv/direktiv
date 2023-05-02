@@ -1,7 +1,7 @@
 import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
-} from "../../design/Breadcump";
+} from "../../design/Breadcrumbs";
 import { ChevronsUpDown, Home, Loader2, PlusCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import {

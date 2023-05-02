@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Meta, StoryObj } from "@storybook/react";
 
+import { Card } from "../Card";
 import { NavigationLink } from "./index";
 
 const meta = {
@@ -62,12 +63,12 @@ const navigation = [
 ];
 
 export const Navigation = () => (
-  <div className="card-bordered card m-5 w-44 bg-base-100 p-3 shadow-md">
+  <Card className="m-5 w-44 p-3">
     {navigation.map((item) => (
       <NavigationLink key={item.name} href={item.href} active={item.current}>
         <item.icon aria-hidden="true" />
         {item.name}
       </NavigationLink>
     ))}
-  </div>
+  </Card>
 );
