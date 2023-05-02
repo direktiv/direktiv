@@ -150,7 +150,7 @@ const TopRightComponent: FC<{
           role="button"
           icon
         >
-          <Avatar>AD</Avatar>
+          <Avatar>Ad</Avatar>
           <RxChevronDown />
         </Button>
       </DropdownMenuTrigger>
