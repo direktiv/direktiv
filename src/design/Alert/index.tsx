@@ -13,7 +13,7 @@ const Alert: FC<AlertProps> = ({ variant, className, children }) => (
   <div
     className={clsx(
       className,
-      "ring-md rounded-md p-2 shadow-sm",
+      "rounded-md p-2 shadow-sm",
       variant === "info" &&
         "bg-info-4 text-info-11 dark:bg-info-dark-4 dark:text-info-dark-11",
       variant === "error" &&
