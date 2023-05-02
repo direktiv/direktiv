@@ -20,7 +20,7 @@ export const Breadcrumb: FC<
     className={clsx(
       "flex flex-row items-center gap-2",
       "focus:outline-none focus-visible:outline-offset-2",
-      "hover:underline",
+      "[&_a]:hover:underline",
       className
     )}
     {...props}
