@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -171,6 +172,31 @@ func TestWhiteboxTestServerLogs(t *testing.T) {
 	}
 	if int(resSrvLogs.PageInfo.Limit) > len(resSrvLogs.Results) {
 		t.Errorf("got more results then specified in pageinfo")
+	}
+}
+
+func TestStoreUTF8NULLString(t *testing.T) {
+	ctx := context.Background()
+
+	db, err := testutils.DatabaseWrapper()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer db.StopDB()
+
+	l := &ent.LogMsg{
+		T:     time.Now(),
+		Msg:   "go-ocr/sdk/go1.17/test imports\n\t: malformed import path \"\": empty string\ngo-ocr/sdk/go1.17/test imports\n\t\u0000: malformed import path \"\\x00\": invalid char '\\x00'\ngo-ocr/sdk/go1.17/test imports\n\t\"`a`\": malformed import path \"\\\"`a`\\\"\": invalid char '\"'\ngo-ocr/sdk/go1.17/test imports\n\t/foo: \"/foo\" is not a package path; see 'go help packages'\n",
+		Level: "error",
+		Tags:  make(map[string]string),
+	}
+	o, err := storeLogmsg(ctx, &db.Entw, l)
+	if err != nil {
+		t.Error(err)
+	}
+	if o.Msg != l.Msg {
+		t.Errorf("was %s want %s", o.Msg, l.Msg)
 	}
 }
 
