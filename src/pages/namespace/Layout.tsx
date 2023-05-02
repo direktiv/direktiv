@@ -90,7 +90,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="placeholder avatar items-center px-1"
+            className="items-center px-1"
             role="button"
             icon
           >
