@@ -120,10 +120,8 @@ const Layout = () => {
         <Sidebar version={version?.api ?? ""}>
           <SidebarTop>
             <label className="justify-self-start px-1 lg:hidden" role="button">
-              <DrawerTrigger>
-                <div className="text-gray-10 dark:text-gray-dark-10">
-                  <Menu />
-                </div>
+              <DrawerTrigger asChild>
+                <Menu />
               </DrawerTrigger>
             </label>
             <Logo
