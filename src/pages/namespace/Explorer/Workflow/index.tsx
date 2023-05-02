@@ -1,40 +1,64 @@
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
+import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "../../../../design/Tabs";
 
 import Button from "../../../../design/Button";
 import { FC } from "react";
-import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "../../../../util/router/utils";
 import { pages } from "../../../../util/router/pages";
+import { useNamespace } from "../../../../util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {
   const { t } = useTranslation();
   const { path } = pages.explorer.useParams();
+  const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
+
+  if (!namespace) return null;
 
   const tabs = [
     {
       value: "activeRevision",
       icon: <GitCommit aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.activeRevision"),
+      link: pages.explorer.createHref({
+        namespace,
+        path,
+        subpage: "workflow",
+      }),
     },
     {
       value: "revisions",
       icon: <GitMerge aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.revisions"),
+      link: pages.explorer.createHref({
+        namespace,
+        path,
+        subpage: "workflow-revisions",
+      }),
     },
     {
       value: "overview",
       icon: <PieChart aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.overview"),
+      link: pages.explorer.createHref({
+        namespace,
+        path,
+        subpage: "workflow-overview",
+      }),
     },
     {
       value: "settings",
       icon: <Settings aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.settings"),
+      link: pages.explorer.createHref({
+        namespace,
+        path,
+        subpage: "workflow-settings",
+      }),
     },
   ] as const;
 
@@ -56,10 +80,10 @@ const Header: FC = () => {
               <TabsList>
                 {tabs.map((tab) => (
                   <TabsTrigger asChild value={tab.value} key={tab.value}>
-                    <a>
+                    <Link to={tab.link}>
                       {tab.icon}
                       {tab.title}
-                    </a>
+                    </Link>
                   </TabsTrigger>
                 ))}
               </TabsList>
