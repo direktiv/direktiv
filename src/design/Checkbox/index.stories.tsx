@@ -12,7 +12,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: ({ ...args }) => (
-    <div className="items-top flex space-x-2">
+    <div className="flex space-x-2">
       <Checkbox id="terms1" {...args} />
     </div>
   ),
@@ -31,7 +31,7 @@ export const Default: Story = {
 };
 export function CheckboxWithText() {
   return (
-    <div className="items-top flex space-x-2 p-2 ">
+    <div className="flex space-x-2 p-2 ">
       <Checkbox id="terms2" />
       <div className="grid gap-1.5 leading-none">
         <label
@@ -50,7 +50,7 @@ export function CheckboxWithText() {
 
 export function DisabledCheckbox() {
   return (
-    <div className="items-top flex space-x-2 p-2 ">
+    <div className="flex space-x-2 p-2 ">
       <Checkbox id="terms-disabled-1" disabled />
     </div>
   );
@@ -58,7 +58,7 @@ export function DisabledCheckbox() {
 
 export function CheckboxSizes() {
   return (
-    <div className="items-top flex space-x-2 p-2 ">
+    <div className="flex space-x-2 p-2 ">
       <Checkbox size="lg" />
       <Checkbox />
       <Checkbox size="sm" />
