@@ -1,4 +1,8 @@
-import { Dialog, DialogContent, DialogTrigger } from "../../../design/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "../../../../design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,19 +10,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../design/Dropdown";
+} from "../../../../design/Dropdown";
 import { FC, Fragment, useEffect, useState } from "react";
 import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
 
-import Button from "../../../design/Button";
+import Button from "../../../../design/Button";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
 import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
-import { analyzePath } from "../../../util/router/utils";
-import { pages } from "../../../util/router/pages";
-import { useListDirectory } from "../../../api/tree/query/get";
-import { useNamespace } from "../../../util/store/namespace";
+import { analyzePath } from "../../../../util/router/utils";
+import { pages } from "../../../../util/router/pages";
+import { useListDirectory } from "../../../../api/tree/query/get";
+import { useNamespace } from "../../../../util/store/namespace";
 
 const BreadcrumbSegment: FC<{
   absolute: string;

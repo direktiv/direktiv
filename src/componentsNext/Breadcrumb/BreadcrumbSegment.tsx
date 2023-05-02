@@ -14,20 +14,22 @@ const BreadcrumbSegment: FC<{
   const namespace = useNamespace();
   if (!namespace) return null;
 
-  const { path: pathParamsWorkflow } = pages.workflow.useParams();
-  const isWorkflow = !!pathParamsWorkflow && isLast;
+  const isWorkflow =
+    isLast && (relative.endsWith(".yml") || relative.endsWith(".yaml"));
 
   const Icon = isWorkflow ? Play : FolderOpen;
 
-  const link = isWorkflow
-    ? pages.workflow.createHref({ namespace, path: absolute })
-    : pages.explorer.createHref({ namespace, path: absolute });
+  const link = pages.explorer.createHref({
+    namespace,
+    path: absolute,
+    subpage: isWorkflow ? "workflow" : undefined,
+  });
 
   return (
     <BreadcrumbLink>
       <Link to={link}>
         <Icon aria-hidden="true" />
-        {relative}
+        {relative} {isWorkflow ? "Workflow" : "no workflow"}
       </Link>
     </BreadcrumbLink>
   );

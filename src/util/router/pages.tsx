@@ -10,10 +10,10 @@ import {
 } from "lucide-react";
 import { useMatches, useParams } from "react-router-dom";
 
-import ExplorerPage from "../../pages/namespace/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
-import WorkflowPage from "../../pages/namespace/Workflow";
+import TreePage from "../../pages/namespace/Explorer/Tree";
+import WorkflowPage from "../../pages/namespace/Explorer/Workflow";
 import { z } from "zod";
 
 interface PageBase {
@@ -39,18 +39,11 @@ type DefaultPageSetup = Record<
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
-    createHref: (params: { namespace: string; path?: string }) => string;
-    useParams: () => {
-      namespace: string | undefined;
-      path: string | undefined;
-    };
-  }
->;
-
-type WorkflowPageSetup = Record<
-  "workflow",
-  PageBase & {
-    createHref: (params: { namespace: string; path?: string }) => string;
+    createHref: (params: {
+      namespace: string;
+      subpage?: "workflow"; // default is the tree view
+      path?: string;
+    }) => string;
     useParams: () => {
       namespace: string | undefined;
       path: string | undefined;
@@ -62,7 +55,7 @@ type WorkflowPageSetup = Record<
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
-export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
+export const pages: DefaultPageSetup & ExplorerPageSetup = {
   explorer: {
     name: "Explorer",
     icon: FolderTree,
@@ -71,61 +64,59 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
       if (params.path) {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
-      return `/${params.namespace}/explorer${path}`;
+
+      const subpage = params.subpage === "workflow" ? "workflow" : "tree";
+
+      return `/${params.namespace}/explorer/${subpage}${path}`;
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      // explorer.useParams() can also be called on pages
-      // that are not the explorer page and some params
-      // might accidentally match as well. To prevent that
-      // we use the custom handle we injected in the route
-      const isExplorer = z
+      const [, , thirdLevel] = useMatches(); // first level is namespace level
+
+      // explorer.useParams() can also be called on pages that are not
+      // the explorer page and some params might accidentally match as
+      // well (like wildcards). To prevent that we use custom handles that
+      // we injected in the route objects
+      const isTreePage = z
         .object({
           handle: z.object({
-            isExplorerPage: z.literal(true),
+            isTreePage: z.literal(true),
           }),
         })
-        .safeParse(secondLevel).success;
-      return {
-        path: isExplorer ? path : undefined,
-        namespace: isExplorer ? namespace : undefined,
-      };
-    },
-    route: {
-      path: "explorer/*",
-      element: <ExplorerPage />,
-      handle: { isExplorerPage: true },
-    },
-  },
-  workflow: {
-    createHref: (params) => {
-      let path = "";
-      if (params.path) {
-        path = params.path.startsWith("/") ? params.path : `/${params.path}`;
-      }
-      return `/${params.namespace}/workflow${path}`;
-    },
-    useParams: () => {
-      const { "*": path, namespace } = useParams();
-      const [, secondLevel] = useMatches();
+        .safeParse(thirdLevel).success;
+
       const isWorkflowPage = z
         .object({
           handle: z.object({
             isWorkflowPage: z.literal(true),
           }),
         })
-        .safeParse(secondLevel).success;
+        .safeParse(thirdLevel).success;
+
+      const isExplorerPage = isTreePage || isWorkflowPage;
 
       return {
-        path: isWorkflowPage ? path : undefined,
-        namespace: isWorkflowPage ? namespace : undefined,
+        path: isExplorerPage ? path : undefined,
+        namespace: isExplorerPage ? namespace : undefined,
+        isExplorerPage: isTreePage || isWorkflowPage,
+        isTreePage,
+        isWorkflowPage,
       };
     },
     route: {
-      path: "workflow/*",
-      element: <WorkflowPage />,
-      handle: { isWorkflowPage: true },
+      path: "explorer/",
+      children: [
+        {
+          path: "tree/*",
+          element: <TreePage />,
+          handle: { isTreePage: true },
+        },
+        {
+          path: "workflow/*",
+          element: <WorkflowPage />,
+          handle: { isWorkflowPage: true },
+        },
+      ],
     },
   },
   monitoring: {
@@ -191,4 +182,4 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
       element: <SettiongsPage />,
     },
   },
-} as const;
+};

@@ -50,7 +50,11 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
       setNamespace(data.namespace.name);
-      navigate(pages.explorer.createHref({ namespace: data.namespace.name }));
+      navigate(
+        pages.explorer.createHref({
+          namespace: data.namespace.name,
+        })
+      );
       close();
     },
   });

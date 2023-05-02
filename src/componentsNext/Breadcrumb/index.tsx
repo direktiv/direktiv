@@ -30,15 +30,14 @@ const Breadcrumb = () => {
   const { data: availableNamespaces, isLoading } = useListNamespaces();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { path: pathParamsExplorer } = pages.explorer.useParams();
-  const { path: pathParamsWorkflow } = pages.workflow.useParams();
+  const { path: pathParams } = pages.explorer.useParams();
 
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
 
   if (!namespace) return null;
 
-  const path = analyzePath(pathParamsExplorer || pathParamsWorkflow);
+  const path = analyzePath(pathParams);
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);

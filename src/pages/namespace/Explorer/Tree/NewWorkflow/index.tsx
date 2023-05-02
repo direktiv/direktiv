@@ -3,7 +3,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../design/Dialog";
+} from "../../../../../design/Dialog";
 import { Play, PlusCircle } from "lucide-react";
 import {
   Select,
@@ -11,17 +11,17 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../design/Select";
+} from "../../../../../design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "../../../../design/Alert";
-import Button from "../../../../design/Button";
-import Input from "../../../../design/Input";
-import { Textarea } from "../../../../design/TextArea";
-import { fileNameSchema } from "../../../../api/tree/schema";
-import { pages } from "../../../../util/router/pages";
-import { useCreateWorkflow } from "../../../../api/tree/mutate/createWorkflow";
-import { useNamespace } from "../../../../util/store/namespace";
+import Alert from "../../../../../design/Alert";
+import Button from "../../../../../design/Button";
+import Input from "../../../../../design/Input";
+import { Textarea } from "../../../../../design/TextArea";
+import { fileNameSchema } from "../../../../../api/tree/schema";
+import { pages } from "../../../../../util/router/pages";
+import { useCreateWorkflow } from "../../../../../api/tree/mutate/createWorkflow";
+import { useNamespace } from "../../../../../util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import workflowTemplates from "./templates";
 import { z } from "zod";
@@ -70,7 +70,11 @@ const NewWorkflow = ({
     onSuccess: (data) => {
       namespace &&
         navigate(
-          pages.workflow.createHref({ namespace, path: data.node.path })
+          pages.explorer.createHref({
+            namespace,
+            path: data.node.path,
+            subpage: "workflow",
+          })
         );
       close();
     },

@@ -1,16 +1,16 @@
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "../../../design/Tabs";
+import { Tabs, TabsList, TabsTrigger } from "../../../../design/Tabs";
 
-import Button from "../../../design/Button";
+import Button from "../../../../design/Button";
 import { FC } from "react";
 import { RxChevronDown } from "react-icons/rx";
-import { analyzePath } from "../../../util/router/utils";
-import { pages } from "../../../util/router/pages";
+import { analyzePath } from "../../../../util/router/utils";
+import { pages } from "../../../../util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {
   const { t } = useTranslation();
-  const { path } = pages.workflow.useParams();
+  const { path } = pages.explorer.useParams();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
 
@@ -38,7 +38,7 @@ const Header: FC = () => {
   ] as const;
 
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 pb-0 dark:border-gray-dark-5">
+    <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-2">
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Play className="h-5" />
