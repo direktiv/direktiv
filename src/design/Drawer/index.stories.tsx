@@ -21,9 +21,7 @@ export const Default = () => (
       </div>
     </div>
     <DrawerContent>
-      <div className="drawer-side flex w-full items-center justify-center">
-        <Logo className="mb-5 mt-1 h-8 w-auto" />
-      </div>
+      <Logo className="mx-2 mb-5 mt-1 h-8 w-auto" />
       This is the <code>DrawerMenu</code> component. Menu content goes here.
     </DrawerContent>
   </Drawer>

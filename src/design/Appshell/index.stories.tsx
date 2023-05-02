@@ -189,27 +189,19 @@ export const MoreDetailedShell = () => {
   return (
     <Root>
       <Drawer>
-        <DrawerContent id="my-drawer">
-          <div className="drawer-side">
-            <label htmlFor="my-drawer" className="drawer-overlay"></label>
-            <nav className="menu bg-gray-1 p-4 text-gray-11 dark:bg-gray-dark-1 ">
-              <div className="px-2">
-                <Logo className="mb-5 mt-1 h-8 w-auto" />
-              </div>
-              {navigation.map((item) => (
-                <NavigationLink
-                  key={item.name}
-                  href={item.href}
-                  active={item.current}
-                >
-                  <item.icon aria-hidden="true" />
-                  {item.name}
-                </NavigationLink>
-              ))}
-            </nav>
-          </div>
+        <DrawerContent>
+          <Logo className="mx-2 mb-5 mt-1 h-8 w-auto" />
+          {navigation.map((item) => (
+            <NavigationLink
+              key={item.name}
+              href={item.href}
+              active={item.current}
+            >
+              <item.icon aria-hidden="true" />
+              {item.name}
+            </NavigationLink>
+          ))}
         </DrawerContent>
-
         <Sidebar version="Version: 78c688e">
           <SidebarTop>
             <label className="justify-self-start px-1 lg:hidden" role="button">
