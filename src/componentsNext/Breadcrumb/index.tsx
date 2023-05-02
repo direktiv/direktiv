@@ -46,8 +46,8 @@ const Breadcrumb = () => {
   };
   return (
     <BreadcrumbRoot>
-      <BreadcrumbLink>
-        <Link to={pages.explorer.createHref({ namespace })} className="gap-2">
+      <BreadcrumbLink noArrow>
+        <Link to={pages.explorer.createHref({ namespace })}>
           <Home />
           {namespace}
         </Link>
