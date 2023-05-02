@@ -1,4 +1,4 @@
-import { Drawer, DrawerContent, DrawerMain, DrawerTrigger } from "./index";
+import { Drawer, DrawerContent, DrawerTrigger } from "./index";
 import Button from "../Button";
 import Logo from "../Logo";
 import type { Meta } from "@storybook/react";
@@ -10,19 +10,16 @@ export default {
 
 export const Default = () => (
   <Drawer>
-    <DrawerMain>
-      <div className="flex flex-col items-start space-y-5 p-10">
-        <DrawerTrigger>
-          <Button> Open Drawer</Button>
-        </DrawerTrigger>
-        <div>
-          This is the <code>DrawerContent</code> component. Make sure to place
-          it as a direct child of the <code>DrawerRoot</code> component and
-          place the <code>DrawerMenu</code> directly after the{" "}
-          <code>DrawerContent</code>.
-        </div>
+    <div className="flex flex-col items-start space-y-5 p-10">
+      <DrawerTrigger>
+        <Button> Open Drawer</Button>
+      </DrawerTrigger>
+      <div>
+        This is the <code>DrawerContent</code> component. Make sure to place it
+        as a direct child of the <code>DrawerRoot</code> component and place the{" "}
+        <code>DrawerMenu</code> directly after the <code>DrawerContent</code>.
       </div>
-    </DrawerMain>
+    </div>
     <DrawerContent>
       <div className="drawer-side flex w-full items-center justify-center">
         <Logo className="mb-5 mt-1 h-8 w-auto" />

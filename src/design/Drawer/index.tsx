@@ -125,21 +125,8 @@ const DrawerDescription = React.forwardRef<
 ));
 DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
 
-const DrawerMain = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={clsx("h-full bg-white dark:bg-black", className)}
-    {...props}
-  />
-));
-DrawerMain.displayName = "DrawerMain";
-
 export {
   Drawer,
-  DrawerMain,
   DrawerTrigger,
   DrawerContent,
   DrawerHeader,

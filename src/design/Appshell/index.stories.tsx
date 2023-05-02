@@ -26,7 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import { Breadcrumb, BreadcrumbRoot } from "../Breadcrumbs";
-import { Drawer, DrawerContent, DrawerMain, DrawerTrigger } from "../Drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "../Drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -209,145 +209,141 @@ export const MoreDetailedShell = () => {
             </nav>
           </div>
         </DrawerContent>
-        <DrawerMain>
-          <Sidebar version="Version: 78c688e">
-            <SidebarTop>
-              <label
-                className="justify-self-start px-1 lg:hidden"
-                role="button"
+
+        <Sidebar version="Version: 78c688e">
+          <SidebarTop>
+            <label className="justify-self-start px-1 lg:hidden" role="button">
+              <DrawerTrigger>
+                <div className="text-gray-10 dark:text-gray-dark-10">
+                  <Menu />
+                </div>
+              </DrawerTrigger>
+            </label>
+            <Logo
+              iconOnly
+              className="h-8 w-auto justify-self-center sm:hidden"
+            />
+            <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
+            <TopRightComponent
+              className="justify-self-end lg:hidden"
+              theme={theme}
+              onThemeChange={() => {
+                setTheme((theme) => (theme === "dark" ? "light" : "dark"));
+              }}
+            />
+          </SidebarTop>
+          <SidebarMain>
+            {navigation.map((item) => (
+              <NavigationLink
+                key={item.name}
+                href={item.href}
+                active={item.current}
               >
-                <DrawerTrigger>
-                  <div className="text-gray-10 dark:text-gray-dark-10">
-                    <Menu />
-                  </div>
-                </DrawerTrigger>
-              </label>
-              <Logo
-                iconOnly
-                className="h-8 w-auto justify-self-center sm:hidden"
-              />
-              <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
+                <item.icon aria-hidden="true" />
+                {item.name}
+              </NavigationLink>
+            ))}
+          </SidebarMain>
+        </Sidebar>
+        <Main>
+          <MainTop>
+            <MainTopLeft>
+              <BreadcrumbRoot>
+                <Breadcrumb noArrow>
+                  <a>
+                    <Home />
+                    My-namespace
+                  </a>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost" circle icon>
+                        <ChevronsUpDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem checked>
+                        My-namespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem>
+                        second-namespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem>
+                        another-namespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <span>Create new namespace</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </Breadcrumb>
+                <Breadcrumb>
+                  <a>
+                    <Github />
+                    Example Mirror
+                  </a>
+                </Breadcrumb>
+                <Breadcrumb>
+                  <a>
+                    <FolderOpen />
+                    Folder
+                  </a>
+                </Breadcrumb>
+                <Breadcrumb>
+                  <a>
+                    <Play />
+                    workflow.yml
+                  </a>
+                </Breadcrumb>
+              </BreadcrumbRoot>
+            </MainTopLeft>
+            <MainTopRight>
               <TopRightComponent
-                className="justify-self-end lg:hidden"
+                className="max-lg:hidden"
                 theme={theme}
                 onThemeChange={() => {
                   setTheme((theme) => (theme === "dark" ? "light" : "dark"));
                 }}
               />
-            </SidebarTop>
-            <SidebarMain>
-              {navigation.map((item) => (
-                <NavigationLink
-                  key={item.name}
-                  href={item.href}
-                  active={item.current}
-                >
-                  <item.icon aria-hidden="true" />
-                  {item.name}
-                </NavigationLink>
-              ))}
-            </SidebarMain>
-          </Sidebar>
-          <Main>
-            <MainTop>
-              <MainTopLeft>
-                <BreadcrumbRoot>
-                  <Breadcrumb noArrow>
-                    <a>
-                      <Home />
-                      My-namespace
-                    </a>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="ghost" circle icon>
-                          <ChevronsUpDown />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuCheckboxItem checked>
-                          My-namespace
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem>
-                          second-namespace
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem>
-                          another-namespace
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <PlusCircle className="mr-2 h-4 w-4" />
-                          <span>Create new namespace</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </Breadcrumb>
-                  <Breadcrumb>
-                    <a>
-                      <Github />
-                      Example Mirror
-                    </a>
-                  </Breadcrumb>
-                  <Breadcrumb>
-                    <a>
-                      <FolderOpen />
-                      Folder
-                    </a>
-                  </Breadcrumb>
-                  <Breadcrumb>
-                    <a>
-                      <Play />
-                      workflow.yml
-                    </a>
-                  </Breadcrumb>
-                </BreadcrumbRoot>
-              </MainTopLeft>
-              <MainTopRight>
-                <TopRightComponent
-                  className="max-lg:hidden"
-                  theme={theme}
-                  onThemeChange={() => {
-                    setTheme((theme) => (theme === "dark" ? "light" : "dark"));
-                  }}
-                />
-              </MainTopRight>
-            </MainTop>
-            <MainContent>
-              <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-2">
-                <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
-                  <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-                    <Play className="h-5" />
-                    workflow.yml
-                  </h3>
-                  <Button variant="primary">
-                    Actions <RxChevronDown />
-                  </Button>
-                </div>
-                <div>
-                  <nav className="-mb-px flex space-x-8">
-                    {tabs.map((tab) => (
-                      <a
-                        key={tab.name}
-                        href={tab.href}
-                        className={clsx(
-                          tab.current
-                            ? "border-primary-500 text-primary-500"
-                            : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
-                          "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
-                        )}
-                        aria-current={tab.current ? "page" : undefined}
-                      >
-                        <tab.icon aria-hidden="true" className="h-4 w-auto" />{" "}
-                        {tab.name}
-                      </a>
-                    ))}
-                  </nav>
-                </div>
+            </MainTopRight>
+          </MainTop>
+          <MainContent>
+            <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-2">
+              <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
+                <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
+                  <Play className="h-5" />
+                  workflow.yml
+                </h3>
+                <Button variant="primary">
+                  Actions <RxChevronDown />
+                </Button>
               </div>
-            </MainContent>
-          </Main>
-        </DrawerMain>
+              <div>
+                <nav className="-mb-px flex space-x-8">
+                  {tabs.map((tab) => (
+                    <a
+                      key={tab.name}
+                      href={tab.href}
+                      className={clsx(
+                        tab.current
+                          ? "border-primary-500 text-primary-500"
+                          : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
+                        "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
+                      )}
+                      aria-current={tab.current ? "page" : undefined}
+                    >
+                      <tab.icon aria-hidden="true" className="h-4 w-auto" />{" "}
+                      {tab.name}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            </div>
+          </MainContent>
+        </Main>
       </Drawer>
     </Root>
   );

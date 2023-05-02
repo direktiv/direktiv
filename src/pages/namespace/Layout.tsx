@@ -8,12 +8,7 @@ import {
   Sun,
   Terminal,
 } from "lucide-react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerMain,
-  DrawerTrigger,
-} from "../../design/Drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "../../design/Drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,44 +117,39 @@ const Layout = () => {
   return (
     <Root>
       <Drawer>
-        <DrawerMain>
-          <Sidebar version={version?.api ?? ""}>
-            <SidebarTop>
-              <label
-                className="justify-self-start px-1 lg:hidden"
-                role="button"
-              >
-                <DrawerTrigger>
-                  <div className="text-gray-10 dark:text-gray-dark-10">
-                    <Menu />
-                  </div>
-                </DrawerTrigger>
-              </label>
-              <Logo
-                iconOnly
-                className="h-8 w-auto justify-self-center sm:hidden"
-              />
-              <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
-              <TopRightComponent className="justify-self-end lg:hidden" />
-            </SidebarTop>
-            <SidebarMain>
-              <Navigation />
-            </SidebarMain>
-          </Sidebar>
-          <Main>
-            <MainTop>
-              <MainTopLeft>
-                <Breadcrumb />
-              </MainTopLeft>
-              <MainTopRight>
-                <TopRightComponent className="max-lg:hidden" />
-              </MainTopRight>
-            </MainTop>
-            <MainContent>
-              <Outlet />
-            </MainContent>
-          </Main>
-        </DrawerMain>
+        <Sidebar version={version?.api ?? ""}>
+          <SidebarTop>
+            <label className="justify-self-start px-1 lg:hidden" role="button">
+              <DrawerTrigger>
+                <div className="text-gray-10 dark:text-gray-dark-10">
+                  <Menu />
+                </div>
+              </DrawerTrigger>
+            </label>
+            <Logo
+              iconOnly
+              className="h-8 w-auto justify-self-center sm:hidden"
+            />
+            <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
+            <TopRightComponent className="justify-self-end lg:hidden" />
+          </SidebarTop>
+          <SidebarMain>
+            <Navigation />
+          </SidebarMain>
+        </Sidebar>
+        <Main>
+          <MainTop>
+            <MainTopLeft>
+              <Breadcrumb />
+            </MainTopLeft>
+            <MainTopRight>
+              <TopRightComponent className="max-lg:hidden" />
+            </MainTopRight>
+          </MainTop>
+          <MainContent>
+            <Outlet />
+          </MainContent>
+        </Main>
         <DrawerContent>
           <div className="px-2">
             <Logo className="mb-5 mt-1 h-8 w-auto" />
