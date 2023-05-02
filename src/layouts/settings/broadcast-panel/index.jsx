@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import "./style.css";
 
 import { Config, GenerateRandomKey } from "../../../util";
