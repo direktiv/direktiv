@@ -15,7 +15,7 @@ export const Default: Story = {
     variant: {
       description: "Badge Variant",
       control: "select",
-      options: ["default", "secondary", "outline", "destructive"],
+      options: [undefined, "secondary", "outline", "destructive"],
       type: { name: "string", required: false },
     },
   },
