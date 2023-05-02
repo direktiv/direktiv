@@ -22,7 +22,7 @@ export const Default: Story = {
 };
 
 export const BadgeVariants = () => (
-  <div>
+  <div className="flex space-x-2">
     <Badge>default</Badge>
     <Badge variant="secondary">secondary</Badge>
     <Badge variant="outline">outline</Badge>
