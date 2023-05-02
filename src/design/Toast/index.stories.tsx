@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Toast, ToastVariantsType, Toaster, useToast } from "./index";
+import {
+  Toast,
+  ToastAction,
+  ToastVariantsType,
+  Toaster,
+  useToast,
+} from "./index";
 import Button from "../Button";
 import { FC } from "react";
 
@@ -22,6 +28,7 @@ const StoryComponent: FC<Toast> = ({ ...args }) => {
             title: "Scheduled: Catch up",
             description: "Friday, February 10, 2023 at 5:57 PM",
             variant: args.variant,
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
           });
         }}
       >
@@ -61,6 +68,7 @@ export const ToastVariants = () => {
     toast({
       ...defContent,
       variant,
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
     });
   };
 
@@ -72,14 +80,14 @@ export const ToastVariants = () => {
             customToast("error");
           }}
         >
-          Show Error Toast 1
+          Show Error Toast
         </Button>
         <Button
           onClick={() => {
             customToast("success");
           }}
         >
-          Show Info Toast
+          Show Success Toast
         </Button>
 
         <Button

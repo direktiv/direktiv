@@ -11,7 +11,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ ...args }) => <Card {...args} className="w-100 h-64"></Card>,
+  render: ({ ...args }) => <Card {...args} className="h-64"></Card>,
   argTypes: {
     withBackground: {
       description: "Card has default gray background",

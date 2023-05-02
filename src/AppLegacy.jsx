@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import "./AppLegacy.css";
 import "./util/responsive.css";
 

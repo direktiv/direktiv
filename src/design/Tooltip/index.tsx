@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
@@ -20,7 +18,9 @@ const TooltipContent = React.forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={clsx(
-      "z-50 overflow-hidden rounded-md border border-gray-2 bg-base-100 px-3 py-1.5 text-sm text-gray-10 shadow-md animate-in fade-in-50 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 dark:border-gray-11 dark:bg-gray-11 dark:text-gray-7",
+      "z-50 overflow-hidden rounded-md border px-3 py-1.5 text-sm  shadow-md animate-in fade-in-50 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 ",
+      "border-gray-2 bg-gray-1 text-gray-10",
+      "dark:border-gray-dark-2 dark:bg-gray-dark-1 dark:text-gray-10",
       className
     )}
     {...props}
