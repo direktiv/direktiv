@@ -38,7 +38,7 @@ const Header: FC = () => {
   ] as const;
 
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-base-200 p-5 pb-0 dark:border-gray-dark-5">
+    <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 pb-0 dark:border-gray-dark-5">
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Play className="h-5" />
