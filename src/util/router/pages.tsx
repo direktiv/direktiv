@@ -57,6 +57,13 @@ type ExplorerPageSetup = Record<
     useParams: () => {
       namespace: string | undefined;
       path: string | undefined;
+      isExplorerPage: boolean;
+      isTreePage: boolean;
+      isWorkflowPage: boolean;
+      isWorkflowActivePage: boolean;
+      isWorkflowRevisionsPage: boolean;
+      isWorkflowOverviewPage: boolean;
+      isWorkflowSettingsPage: boolean;
     };
   }
 >;
@@ -88,7 +95,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
-      const [, , thirdLevel] = useMatches(); // first level is namespace level
+      const [, , thirdLevel, fourthLevel] = useMatches(); // first level is namespace level
 
       // explorer.useParams() can also be called on pages that are not
       // the explorer page and some params might accidentally match as
@@ -112,12 +119,48 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
 
       const isExplorerPage = isTreePage || isWorkflowPage;
 
+      const isWorkflowActivePage = z
+        .object({
+          handle: z.object({
+            isActivePage: z.literal(true),
+          }),
+        })
+        .safeParse(fourthLevel).success;
+
+      const isWorkflowRevisionsPage = z
+        .object({
+          handle: z.object({
+            isRevisionsPage: z.literal(true),
+          }),
+        })
+        .safeParse(fourthLevel).success;
+
+      const isWorkflowOverviewPage = z
+        .object({
+          handle: z.object({
+            isOverviewPage: z.literal(true),
+          }),
+        })
+        .safeParse(fourthLevel).success;
+
+      const isWorkflowSettingsPage = z
+        .object({
+          handle: z.object({
+            isSettingsPage: z.literal(true),
+          }),
+        })
+        .safeParse(fourthLevel).success;
+
       return {
         path: isExplorerPage ? path : undefined,
         namespace: isExplorerPage ? namespace : undefined,
         isExplorerPage: isTreePage || isWorkflowPage,
         isTreePage,
         isWorkflowPage,
+        isWorkflowActivePage,
+        isWorkflowRevisionsPage,
+        isWorkflowOverviewPage,
+        isWorkflowSettingsPage,
       };
     },
     route: {
@@ -133,10 +176,26 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
           element: <WorkflowPage />,
           handle: { isWorkflowPage: true },
           children: [
-            { path: "active/*", element: <WorkflowPageActive /> },
-            { path: "revisions/*", element: <WorkflowPageRevisions /> },
-            { path: "overview/*", element: <WorkflowPageOverview /> },
-            { path: "settings/*", element: <WorkflowPageSettings /> },
+            {
+              path: "active/*",
+              element: <WorkflowPageActive />,
+              handle: { isActivePage: true },
+            },
+            {
+              path: "revisions/*",
+              element: <WorkflowPageRevisions />,
+              handle: { isRevisionsPage: true },
+            },
+            {
+              path: "overview/*",
+              element: <WorkflowPageOverview />,
+              handle: { isOverviewPage: true },
+            },
+            {
+              path: "settings/*",
+              element: <WorkflowPageSettings />,
+              handle: { isSettingsPage: true },
+            },
           ],
         },
       ],

@@ -12,7 +12,13 @@ import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {
   const { t } = useTranslation();
-  const { path } = pages.explorer.useParams();
+  const {
+    path,
+    isWorkflowActivePage,
+    isWorkflowRevisionsPage,
+    isWorkflowOverviewPage,
+    isWorkflowSettingsPage,
+  } = pages.explorer.useParams();
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
@@ -22,6 +28,7 @@ const Header: FC = () => {
   const tabs = [
     {
       value: "activeRevision",
+      active: isWorkflowActivePage,
       icon: <GitCommit aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.activeRevision"),
       link: pages.explorer.createHref({
@@ -32,6 +39,7 @@ const Header: FC = () => {
     },
     {
       value: "revisions",
+      active: isWorkflowRevisionsPage,
       icon: <GitMerge aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.revisions"),
       link: pages.explorer.createHref({
@@ -42,6 +50,7 @@ const Header: FC = () => {
     },
     {
       value: "overview",
+      active: isWorkflowOverviewPage,
       icon: <PieChart aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.overview"),
       link: pages.explorer.createHref({
@@ -52,6 +61,7 @@ const Header: FC = () => {
     },
     {
       value: "settings",
+      active: isWorkflowSettingsPage,
       icon: <Settings aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.settings"),
       link: pages.explorer.createHref({
@@ -76,7 +86,7 @@ const Header: FC = () => {
         </div>
         <div>
           <nav className="-mb-px flex space-x-8">
-            <Tabs>
+            <Tabs defaultValue={tabs.find((x) => x.active)?.value}>
               <TabsList>
                 {tabs.map((tab) => (
                   <TabsTrigger asChild value={tab.value} key={tab.value}>
