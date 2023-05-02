@@ -39,7 +39,7 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     className={clsx(
-      "fixed inset-0 z-50 bg-black/30 backdrop-grayscale-0 transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
+      "fixed inset-0 z-50 bg-black/30 backdrop-grayscale-0 transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in dark:bg-black/70",
       className
     )}
     {...props}
@@ -51,32 +51,23 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(
-  (
-    {
-      className,
-      children,
-      ...props
-    },
-    ref
-  ) => (
-    <DrawerPortal position={"left"}>
-      <DrawerOverlay />
-      <DrawerPrimitive.Content
-        ref={ref}
-        className={clsx(
-          "fixed inset-0 z-50 scale-100 gap-4 bg-white p-4 opacity-100 shadow-lg dark:bg-black ",
-          "h-full animate-in slide-in-from-left duration-300",
-          "w-64",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </DrawerPrimitive.Content>
-    </DrawerPortal>
-  )
-);
+>(({ className, children, ...props }, ref) => (
+  <DrawerPortal position="left">
+    <DrawerOverlay />
+    <DrawerPrimitive.Content
+      ref={ref}
+      className={clsx(
+        "fixed inset-0 z-50 scale-100 gap-4 bg-white p-4 opacity-100 shadow-lg dark:bg-black ",
+        "h-full animate-in slide-in-from-left duration-300",
+        "w-64",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </DrawerPrimitive.Content>
+  </DrawerPortal>
+));
 DrawerContent.displayName = DrawerPrimitive.Content.displayName;
 
 const DrawerHeader = ({

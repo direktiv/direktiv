@@ -27,13 +27,8 @@ const StoryCompontnt = () => (
       </div>
     </DrawerMain>
     <DrawerContent>
-      <div className="drawer-side">
-        <label htmlFor="my-drawer" className="drawer-overlay"></label>
-        <nav className="menu bg-gray-1 p-4 text-gray-11 dark:bg-gray-dark-1 ">
-          <div className="px-2">
-            <Logo className="mb-5 mt-1 h-8 w-auto" />
-          </div>
-        </nav>
+      <div className="drawer-side flex w-full items-center justify-center">
+        <Logo className="mb-5 mt-1 h-8 w-auto" />
       </div>
       This is the <code>DrawerMenu</code> component. Menu content goes here.
     </DrawerContent>

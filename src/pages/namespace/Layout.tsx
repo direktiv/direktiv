@@ -8,7 +8,12 @@ import {
   Sun,
   Terminal,
 } from "lucide-react";
-import { Drawer, DrawerContent, DrawerMain, DrawerTrigger } from "../../design/Drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerMain,
+  DrawerTrigger,
+} from "../../design/Drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -118,7 +123,6 @@ const Layout = () => {
     <Root>
       <Drawer>
         <DrawerMain>
-
           <Sidebar version={version?.api ?? ""}>
             <SidebarTop>
               <label
