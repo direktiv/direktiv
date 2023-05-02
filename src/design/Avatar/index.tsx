@@ -17,7 +17,7 @@ const Avatar: FC<AvatarProps> = ({ className, children, ...props }) => (
       className
     )}
   >
-    {children ? children : "??"}
+    {children ? children : ""}
   </div>
 );
 
