@@ -40,12 +40,18 @@ type DefaultPageSetup = Record<
   PageBase & { createHref: (params: { namespace: string }) => string }
 >;
 
+type ExplorerSubpages =
+  | "workflow"
+  | "workflow-revisions"
+  | "workflow-overview"
+  | "workflow-settings";
+
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
     createHref: (params: {
       namespace: string;
-      subpage?: "workflow"; // default is the tree view
+      subpage?: ExplorerSubpages; // default is the tree view
       path?: string;
     }) => string;
     useParams: () => {
@@ -69,8 +75,14 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
 
-      const subpage =
-        params.subpage === "workflow" ? "workflow/active" : "tree";
+      const subfolder: Record<ExplorerSubpages, string> = {
+        workflow: "workflow/active",
+        "workflow-revisions": "workflow/revisions",
+        "workflow-overview": "workflow/overview",
+        "workflow-settings": "workflow/settings",
+      };
+
+      const subpage = params.subpage ? subfolder[params.subpage] : "tree";
 
       return `/${params.namespace}/explorer/${subpage}${path}`;
     },
