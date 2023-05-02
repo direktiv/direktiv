@@ -1,17 +1,14 @@
 import { Drawer, DrawerContent, DrawerMain, DrawerTrigger } from "./index";
-import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
 import Logo from "../Logo";
+import type { Meta } from "@storybook/react";
 
-const meta = {
+export default {
   title: "Components/Drawer",
-  component: Drawer,
+  parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof Drawer>;
 
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-const StoryComponent = () => (
+export const Default = () => (
   <Drawer>
     <DrawerMain>
       <div className="flex flex-col items-start space-y-5 p-10">
@@ -34,7 +31,3 @@ const StoryComponent = () => (
     </DrawerContent>
   </Drawer>
 );
-
-export const Default: Story = {
-  render: () => <StoryComponent />,
-};
