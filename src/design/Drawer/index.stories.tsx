@@ -11,7 +11,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const StoryCompontnt = () => (
+const StoryComponent = () => (
   <Drawer>
     <DrawerMain>
       <div className="flex flex-col items-start space-y-5 p-10">
@@ -36,5 +36,5 @@ const StoryCompontnt = () => (
 );
 
 export const Default: Story = {
-  render: () => <StoryCompontnt />,
+  render: () => <StoryComponent />,
 };
