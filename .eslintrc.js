@@ -83,8 +83,7 @@ module.exports = {
     // It's save to import React when using vite
     "react/react-in-jsx-scope": "off",
 
-    // allow non tailwind classes (old codebase still needs it, and
-    // our custom  tailwind classes are somehow not taken into account)
+    // overwriting the default to use tailwind.config.cjs instead of tailwind.config.js
     "tailwindcss/no-custom-classname": [
       "error",
       {
