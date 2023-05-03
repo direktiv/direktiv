@@ -19,7 +19,7 @@ const getTree = apiFactory({
     revision?: string;
   }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}${
-      revision && `?ref=${revision}`
+      revision ? `?ref=${revision}` : ""
     }`,
   method: "GET",
   schema: TreeListSchema,
