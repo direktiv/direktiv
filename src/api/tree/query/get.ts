@@ -7,7 +7,6 @@ import { treeKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "../../../design/Toast";
 
 const getTree = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
@@ -35,7 +34,6 @@ export const useNodeContent = ({
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
-  const { toast } = useToast();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -61,12 +59,5 @@ export const useNodeContent = ({
       return data;
     },
     enabled: !!namespace,
-    onError: () => {
-      toast({
-        title: "An error occurred",
-        description: "could not fetch directory content 😢",
-        variant: "error",
-      });
-    },
   });
 };
