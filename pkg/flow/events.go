@@ -381,7 +381,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	rows, err := db.Query(`select
 	we.oid, signature, count, we.events, workflow_id, v
 	from events we
-	inner join files w
+	inner join filesystem_files w
 		on w.id = workflow_id
 	inner join namespaces n
 		on n.oid = w.root_id,
