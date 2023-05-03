@@ -18,7 +18,7 @@ import WorkflowPageActive from "../../pages/namespace/Explorer/Workflow/Active";
 import WorkflowPageOverview from "../../pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageRevisions from "../../pages/namespace/Explorer/Workflow/Revisions";
 import WorkflowPageSettings from "../../pages/namespace/Explorer/Workflow/Settings";
-import { z } from "zod";
+import { checkHandlerInMatcher } from "./utils";
 
 interface PageBase {
   name?: string;
@@ -101,55 +101,32 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
       // the explorer page and some params might accidentally match as
       // well (like wildcards). To prevent that we use custom handles that
       // we injected in the route objects
-      const isTreePage = z
-        .object({
-          handle: z.object({
-            isTreePage: z.literal(true),
-          }),
-        })
-        .safeParse(thirdLevel).success;
 
-      const isWorkflowPage = z
-        .object({
-          handle: z.object({
-            isWorkflowPage: z.literal(true),
-          }),
-        })
-        .safeParse(thirdLevel).success;
-
+      // make this less code?
+      const isTreePage = checkHandlerInMatcher(thirdLevel, "isTreePage");
+      const isWorkflowPage = checkHandlerInMatcher(
+        thirdLevel,
+        "isWorkflowPage"
+      );
       const isExplorerPage = isTreePage || isWorkflowPage;
 
-      const isWorkflowActivePage = z
-        .object({
-          handle: z.object({
-            isActivePage: z.literal(true),
-          }),
-        })
-        .safeParse(fourthLevel).success;
+      const isWorkflowActivePage = checkHandlerInMatcher(
+        fourthLevel,
+        "isActivePage"
+      );
+      const isWorkflowRevisionsPage = checkHandlerInMatcher(
+        fourthLevel,
+        "isRevisionsPage"
+      );
+      const isWorkflowOverviewPage = checkHandlerInMatcher(
+        fourthLevel,
+        "isOverviewPage"
+      );
 
-      const isWorkflowRevisionsPage = z
-        .object({
-          handle: z.object({
-            isRevisionsPage: z.literal(true),
-          }),
-        })
-        .safeParse(fourthLevel).success;
-
-      const isWorkflowOverviewPage = z
-        .object({
-          handle: z.object({
-            isOverviewPage: z.literal(true),
-          }),
-        })
-        .safeParse(fourthLevel).success;
-
-      const isWorkflowSettingsPage = z
-        .object({
-          handle: z.object({
-            isSettingsPage: z.literal(true),
-          }),
-        })
-        .safeParse(fourthLevel).success;
+      const isWorkflowSettingsPage = checkHandlerInMatcher(
+        fourthLevel,
+        "isSettingsPage"
+      );
 
       return {
         path: isExplorerPage ? path : undefined,
