@@ -1,7 +1,6 @@
-import { apiFactory, defaultKeys } from "../../utils";
-
 import { NamespaceListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
+import { apiFactory } from "../../utils";
 import { namespaceKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +23,7 @@ const fetchNamespaces = async ({
 export const useListNamespaces = () => {
   const apiKey = useApiKey();
   return useQuery({
-    queryKey: namespaceKeys.all(apiKey ?? defaultKeys.apiKey),
+    queryKey: namespaceKeys.all(apiKey ?? undefined),
     queryFn: fetchNamespaces,
   });
 };

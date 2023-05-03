@@ -3,9 +3,9 @@ import {
   TreeListSchemaType,
   TreeNodeDeletedSchema,
 } from "../schema";
-import { apiFactory, defaultKeys } from "../../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
@@ -45,11 +45,10 @@ export const useDeleteNode = ({
       }),
     onSuccess(_, variables) {
       queryClient.setQueryData<TreeListSchemaType>(
-        treeKeys.nodeContent(
-          apiKey ?? defaultKeys.apiKey,
-          namespace,
-          variables.node.parent ?? ""
-        ),
+        treeKeys.nodeContent(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.node.parent,
+        }),
         (oldData) => {
           if (!oldData) return undefined;
           const oldChildren = oldData?.children;

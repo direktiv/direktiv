@@ -1,8 +1,8 @@
-import { apiFactory, defaultKeys } from "../../utils";
 import { forceLeadingSlash, sortFoldersFirst } from "../utils";
 
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { TreeListSchema } from "../schema";
+import { apiFactory } from "../../utils";
 import { treeKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -53,12 +53,11 @@ export const useNodeContent = ({
   }
 
   return useQuery({
-    queryKey: treeKeys.nodeContent(
-      apiKey ?? defaultKeys.apiKey,
-      namespace,
-      path ?? "",
-      revision ?? ""
-    ),
+    queryKey: treeKeys.nodeContent(namespace, {
+      apiKey: apiKey ?? undefined,
+      path,
+      revision,
+    }),
     queryFn: fetchTree,
     select(data) {
       if (data?.children?.results) {

@@ -1,7 +1,6 @@
-import { apiFactory, defaultKeys } from "../../utils";
-
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { RevisionsListSchema } from "../schema";
+import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
@@ -40,11 +39,10 @@ export const useNodeRevisions = ({
   }
 
   return useQuery({
-    queryKey: treeKeys.revisionsList(
-      apiKey ?? defaultKeys.apiKey,
-      namespace,
-      path ?? ""
-    ),
+    queryKey: treeKeys.revisionsList(namespace, {
+      apiKey: apiKey ?? undefined,
+      path,
+    }),
     queryFn: fetchRevisions,
     enabled: !!namespace,
   });
