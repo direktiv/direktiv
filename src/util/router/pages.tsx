@@ -53,7 +53,7 @@ type ExplorerSubpagesParams =
   // only workflow-revisions has a optional revision param
   | {
       subpage: "workflow-revisions";
-      revision: string;
+      revision?: string;
     };
 
 type ExplorerPageSetup = Record<
