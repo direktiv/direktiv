@@ -3,6 +3,7 @@ import { Card } from "../../../../../design/Card";
 import { FC } from "react";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 
 const WorkflowRevisionsPage: FC = () => {
   const { path } = pages.explorer.useParams();
@@ -10,7 +11,7 @@ const WorkflowRevisionsPage: FC = () => {
     path,
   });
 
-  const test = ["test", "test2", "test3"];
+  const { data: revisions } = useNodeRevisions({ path });
 
   return (
     <div className="flex flex-col space-y-4 p-4">
@@ -20,9 +21,9 @@ const WorkflowRevisionsPage: FC = () => {
       </Card>
 
       <Card className="space-x-2 p-4">
-        {test.map((rev) => (
-          <Badge variant="outline" key={rev}>
-            {rev}
+        {revisions?.results?.map((rev) => (
+          <Badge variant="outline" key={rev.name}>
+            {rev.name}
           </Badge>
         ))}
       </Card>
