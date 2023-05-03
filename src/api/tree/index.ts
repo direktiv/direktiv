@@ -10,4 +10,13 @@ export const treeKeys = {
         path: path ? forceLeadingSlash(path) : "/",
       },
     ] as const,
+  revisionsList: (apiKey: string, namespace: string, path: string) =>
+    [
+      {
+        scope: "tree-revisions-list",
+        apiKey,
+        namespace,
+        path: path ? forceLeadingSlash(path) : "/",
+      },
+    ] as const,
 };
