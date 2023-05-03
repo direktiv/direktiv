@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -171,6 +172,28 @@ func TestWhiteboxTestServerLogs(t *testing.T) {
 	}
 	if int(resSrvLogs.PageInfo.Limit) > len(resSrvLogs.Results) {
 		t.Errorf("got more results then specified in pageinfo")
+	}
+}
+
+func TestStoreUTF8NULLString(t *testing.T) {
+	ctx := context.Background()
+
+	db, err := testutils.DatabaseWrapper()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer db.StopDB()
+
+	l := &ent.LogMsg{
+		T:     time.Now(),
+		Msg:   "go-ocr/sdk/go1.17/test imports\n\t: malformed import path \"\": empty string\ngo-ocr/sdk/go1.17/test imports\n\t\u0000: malformed import path \"\\x00\": invalid char '\\x00'\ngo-ocr/sdk/go1.17/test imports\n\t\"`a`\": malformed import path \"\\\"`a`\\\"\": invalid char '\"'\ngo-ocr/sdk/go1.17/test imports\n\t/foo: \"/foo\" is not a package path; see 'go help packages'\n",
+		Level: "error",
+		Tags:  make(map[string]string),
+	}
+	_, err = storeLogmsg(ctx, &db.Entw, l)
+	if err != nil {
+		t.Error(err)
 	}
 }
 
@@ -349,5 +372,6 @@ func checkNestedLoop(in []*ent.LogMsg) bool {
 
 func storeLogmsg(ctx context.Context, entw *entwrapper.Database, l *ent.LogMsg) (*ent.LogMsg, error) {
 	clients := entw.Clients(ctx)
-	return clients.LogMsg.Create().SetMsg(l.Msg).SetT(l.T).SetLevel(l.Level).SetTags(l.Tags).SetRootInstanceId(l.RootInstanceId).SetLogInstanceCallPath(l.LogInstanceCallPath).Save(ctx)
+	msg := strings.ReplaceAll(l.Msg, "\u0000", "")
+	return clients.LogMsg.Create().SetMsg(msg).SetT(l.T).SetLevel(l.Level).SetTags(l.Tags).SetRootInstanceId(l.RootInstanceId).SetLogInstanceCallPath(l.LogInstanceCallPath).Save(ctx)
 }

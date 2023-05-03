@@ -183,7 +183,8 @@ func (logger *Logger) Telemetry(ctx context.Context, level Level, tags map[strin
 func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
 	clients := logger.edb.Clients(ctx)
-	lc := clients.LogMsg.Create().SetMsg(l.msg).SetT(l.t).SetLevel(string(l.level)).SetTags(l.tags)
+	msg := strings.ReplaceAll(l.msg, "\u0000", "")
+	lc := clients.LogMsg.Create().SetMsg(msg).SetT(l.t).SetLevel(string(l.level)).SetTags(l.tags)
 
 	recipientType, ok := recipient.Convert(l.tags["recipientType"])
 	if !ok {
