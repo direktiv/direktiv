@@ -29,7 +29,8 @@ export const TreeListSchema = z.object({
       pageInfo: PageinfoSchema,
       results: z.array(NodeSchema),
     })
-    .optional(),
+    .optional(), // not for workflows
+  revision: RevisionSchema.optional(), // only for workflows
 });
 
 export const TreeFolderCreatedSchema = z.object({
