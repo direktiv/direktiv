@@ -1,10 +1,10 @@
 import { forceLeadingSlash } from "./utils";
 
 export const treeKeys = {
-  all: (apiKey: string, namespace: string, path: string) =>
+  nodeContent: (apiKey: string, namespace: string, path: string) =>
     [
       {
-        scope: "tree",
+        scope: "tree-node-content",
         apiKey,
         namespace,
         path: path ? forceLeadingSlash(path) : "/",

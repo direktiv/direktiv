@@ -45,7 +45,7 @@ export const useDeleteNode = ({
       }),
     onSuccess(_, variables) {
       queryClient.setQueryData<TreeListSchemaType>(
-        treeKeys.all(
+        treeKeys.nodeContent(
           apiKey ?? defaultKeys.apiKey,
           namespace,
           variables.node.parent ?? ""

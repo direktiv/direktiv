@@ -18,7 +18,7 @@ const getTree = apiFactory({
 
 const fetchTree = async ({
   queryKey: [{ apiKey, namespace, path }],
-}: QueryFunctionContext<ReturnType<(typeof treeKeys)["all"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof treeKeys)["nodeContent"]>>) =>
   getTree({
     apiKey: apiKey,
     params: undefined,
@@ -42,7 +42,11 @@ export const useNodeContent = ({
   }
 
   return useQuery({
-    queryKey: treeKeys.all(apiKey ?? defaultKeys.apiKey, namespace, path ?? ""),
+    queryKey: treeKeys.nodeContent(
+      apiKey ?? defaultKeys.apiKey,
+      namespace,
+      path ?? ""
+    ),
     queryFn: fetchTree,
     select(data) {
       if (data?.children?.results) {
