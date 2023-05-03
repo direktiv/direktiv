@@ -29,7 +29,7 @@ const BreadcrumbSegment: FC<{
     <BreadcrumbLink>
       <Link to={link}>
         <Icon aria-hidden="true" />
-        {relative} {isWorkflow ? "Workflow" : "no workflow"}
+        {relative}
       </Link>
     </BreadcrumbLink>
   );
