@@ -37,13 +37,13 @@ import Rename from "./Rename";
 import { analyzePath } from "../../../../util/router/utils";
 import moment from "moment";
 import { pages } from "../../../../util/router/pages";
-import { useListDirectory } from "../../../../api/tree/query/get";
 import { useNamespace } from "../../../../util/store/namespace";
+import { useNodeContent } from "../../../../api/tree/query/get";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const { data } = useListDirectory({ path });
+  const { data } = useNodeContent({ path });
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 

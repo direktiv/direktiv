@@ -2,11 +2,11 @@ import Badge from "../../../../../design/Badge";
 import { Card } from "../../../../../design/Card";
 import { FC } from "react";
 import { pages } from "../../../../../util/router/pages";
-import { useListDirectory } from "../../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../../api/tree/query/get";
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
-  const { data } = useListDirectory({
+  const { data } = useNodeContent({
     path,
   });
 

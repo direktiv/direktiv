@@ -21,8 +21,8 @@ import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "../../../../util/router/utils";
 import { pages } from "../../../../util/router/pages";
-import { useListDirectory } from "../../../../api/tree/query/get";
 import { useNamespace } from "../../../../util/store/namespace";
+import { useNodeContent } from "../../../../api/tree/query/get";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -41,7 +41,7 @@ const ExplorerHeader: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
-  const { data } = useListDirectory({ path });
+  const { data } = useNodeContent({ path });
   const { segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<

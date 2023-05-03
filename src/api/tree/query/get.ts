@@ -28,7 +28,7 @@ const fetchTree = async ({
     },
   });
 
-export const useListDirectory = ({
+export const useNodeContent = ({
   path,
 }: {
   path?: string;
