@@ -8,7 +8,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { useMatches, useParams } from "react-router-dom";
+import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
@@ -46,17 +46,30 @@ type ExplorerSubpages =
   | "workflow-overview"
   | "workflow-settings";
 
+type ExplorerSubpagesParams =
+  | {
+      subpage?: Exclude<ExplorerSubpages, "workflow-revisions">;
+    }
+  // only workflow-revisions has a optional revision param
+  | {
+      subpage: "workflow-revisions";
+      revision: string;
+    };
+
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
-    createHref: (params: {
-      namespace: string;
-      subpage?: ExplorerSubpages; // default is the tree view
-      path?: string;
-    }) => string;
+    createHref: (
+      params: {
+        namespace: string;
+        path?: string;
+        // if no subpage is provided, it opens the tree view
+      } & ExplorerSubpagesParams
+    ) => string;
     useParams: () => {
       namespace: string | undefined;
       path: string | undefined;
+      revision: string | undefined;
       isExplorerPage: boolean;
       isTreePage: boolean;
       isWorkflowPage: boolean;
@@ -89,13 +102,20 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
         "workflow-settings": "workflow/settings",
       };
 
+      const searchParams = new URLSearchParams({
+        ...(params.subpage === "workflow-revisions" && params.revision
+          ? { revision: params.revision }
+          : {}),
+      });
       const subpage = params.subpage ? subfolder[params.subpage] : "tree";
-
-      return `/${params.namespace}/explorer/${subpage}${path}`;
+      return `/${
+        params.namespace
+      }/explorer/${subpage}${path}?${searchParams.toString()}`;
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
       const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+      const [searchParams] = useSearchParams();
 
       // explorer.useParams() can also be called on pages that are not
       // the explorer page and some params might accidentally match as
@@ -113,6 +133,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
         path: isExplorerPage ? path : undefined,
         namespace: isExplorerPage ? namespace : undefined,
         isExplorerPage: isTreePage || isWorkflowPage,
+        revision: searchParams.get("revision") ?? undefined,
         isTreePage,
         isWorkflowPage,
         isWorkflowActivePage,
