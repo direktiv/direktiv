@@ -19,13 +19,15 @@ const WorkflowRevisionsPage: FC = () => {
       <Card className="p-4">
         <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
       </Card>
-
-      <Card className="space-x-2 p-4">
+      <Card className="space-x-2 space-y-2 p-4">
         {revisions?.results?.map((rev) => (
           <Badge variant="outline" key={rev.name}>
             {rev.name}
           </Badge>
         ))}
+      </Card>
+      <Card className="p-4">
+        {data?.revision?.source && atob(data?.revision?.source)}
       </Card>
     </div>
   );
