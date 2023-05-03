@@ -9,14 +9,24 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
 const getTree = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}`,
+  pathFn: ({
+    namespace,
+    path,
+    revision,
+  }: {
+    namespace: string;
+    path?: string;
+    revision?: string;
+  }) =>
+    `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}${
+      revision && `?ref=${revision}`
+    }`,
   method: "GET",
   schema: TreeListSchema,
 });
 
 const fetchTree = async ({
-  queryKey: [{ apiKey, namespace, path }],
+  queryKey: [{ apiKey, namespace, path, revision }],
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["nodeContent"]>>) =>
   getTree({
     apiKey: apiKey,
@@ -24,13 +34,16 @@ const fetchTree = async ({
     pathParams: {
       namespace,
       path,
+      revision,
     },
   });
 
 export const useNodeContent = ({
   path,
+  revision,
 }: {
   path?: string;
+  revision?: string;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -43,7 +56,8 @@ export const useNodeContent = ({
     queryKey: treeKeys.nodeContent(
       apiKey ?? defaultKeys.apiKey,
       namespace,
-      path ?? ""
+      path ?? "",
+      revision ?? ""
     ),
     queryFn: fetchTree,
     select(data) {
