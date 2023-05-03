@@ -13,8 +13,13 @@ const WorkflowOverviewPage: FC = () => {
   return (
     <div className="flex flex-col space-y-4 p-4">
       <h1>WorkflowOverviewPage</h1>
-      <Card className="p-4">
-        <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
+      <Card className="flex flex-col space-y-4 p-4">
+        <div>
+          <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
+        </div>
+        <Card className="p-4">
+          {data?.revision?.source && atob(data?.revision?.source)}
+        </Card>
       </Card>
     </div>
   );
