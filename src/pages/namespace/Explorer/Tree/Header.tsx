@@ -54,7 +54,7 @@ const ExplorerHeader: FC = () => {
 
   if (!namespace) return null;
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-gray-2 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-2">
+    <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Link
