@@ -5,27 +5,30 @@ import common from "../common"
 
 import events from "./send_helper.js"
 
-const namespaceName = "sendeventsand"
+const namespaceName = "sendeventsor"
 
-const waitWorkflowName = "waitand.yaml"
+const waitWorkflowName = "waitor.yaml"
 const waitEventWorkflow = `
 states:
 - id: event-and
-  type: eventsAnd
+  type: eventsXor
   timeout: PT1H
   events:
-  - type: eventtype1
-  - type: eventtype2
-  transition: greet
+  - event:
+      type: eventtype1
+    transition: greet
+  - event:
+      type: eventtype2
+    transition: greet
 - id: greet
   type: noop
   log: jq(.)
 `
 
-const startWorkflowName = "startand.yaml"
+const startWorkflowName = "startor.yaml"
 const startEventWorkflow = `
 start:
-  type: eventsAnd
+  type: eventsXor
   state: greet
   events:
     - type: eventtype3
@@ -36,42 +39,23 @@ states:
   log: jq(.)
 `
 
-const startWorkflowContextName = "startandcontext.yaml"
-const startEventContextWorkflow = `
-start:
-  type: eventsAnd
-  state: greet
-  events:
-    - type: eventtype9
-      context:
-        hello: world1
-    - type: eventtype10
-      context: 
-        hello: world2
-states:
-- id: greet
-  type: noop
-  log: jq(.)
-`
-
-const waitWorkflowContextName = "waitandcontext.yaml"
-const waitEventContextimeout = `
+const waitWorkflowTimeoutName = "waitandtimeout.yaml"
+const waitEventWorkflowTimeout = `
 states:
 - id: event-and
-  type: eventsAnd
+  type: eventsXor
+  timeout: PT1S
   events:
-  - type: eventtype11
-    context:
-      hello: world1
-  - type: eventtype12
-    context:
-      hello: world1
-  transition: greet
+  - event:
+      type: eventtype5
+    transition: greet
+  - event:
+      type: eventtype6
+    transition: greet
 - id: greet
   type: noop
   log: jq(.)
 `
-
 
 const basevent = (type, id, value) => `{
   "specversion" : "1.0",
@@ -106,8 +90,8 @@ describe('Test workflow events and', () => {
         .send()
      
         expect(getEventListenerResponse.body.results[0]).toMatchObject({
-            workflow: "/startand.yaml", 
-            "mode": "and", 
+            workflow: "/startor.yaml", 
+            "mode": "or", 
             "instance": "",
             "createdAt": expect.stringMatching(common.regex.timestampRegex),
             "updatedAt": expect.stringMatching(common.regex.timestampRegex),
@@ -123,6 +107,7 @@ describe('Test workflow events and', () => {
         // workflow with start
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${waitWorkflowName}?op=create-workflow`)
         .send(waitEventWorkflow)
+
         expect(createWorkflowResponse.statusCode).toEqual(200)
 
         // start workflow
@@ -141,7 +126,7 @@ describe('Test workflow events and', () => {
 
         expect(result).toMatchObject({
             workflow: "", 
-            "mode": "and", 
+            "mode": "or", 
             "instance": expect.stringMatching(common.regex.uuidRegex),
             "createdAt": expect.stringMatching(common.regex.timestampRegex),
             "updatedAt": expect.stringMatching(common.regex.timestampRegex),
@@ -153,47 +138,46 @@ describe('Test workflow events and', () => {
 
     it(`should kick off in flow workflow`, async () => {
         
-       // should not continue workflow
+       // should fire workflow
        await events.sendEventAndList(namespaceName, basevent("eventtype1", "eventtype1", "world1"))
 
-       // the waiting workflow is running but nothing triggered by event, state pending
-       var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, "pending")
+       var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, "complete")
        expect(instancesResponse).not.toBeFalsy();
 
-      //  await events.sendEventAndList(namespaceName, basevent("eventtype1", "eventtype1", "world"))
-      await events.sendEventAndList(namespaceName, basevent("eventtype2", "eventtype2", "world2"))
+       var instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${instancesResponse.id}/output`)
+       .send()
 
-      var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, "complete")
-      expect(instancesResponse).not.toBeFalsy();
-
-      var instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${instancesResponse.id}/output`)
-      .send()
-
-      var output = Buffer.from(instanceOutput.body.data, 'base64');
-      var outputJSON = JSON.parse(output.toString())
+       var output = Buffer.from(instanceOutput.body.data, 'base64');
+       var outputJSON = JSON.parse(output.toString())
 
       //  custom value set
       expect(outputJSON["eventtype1"].hello).toEqual("world1")
-      expect(outputJSON["eventtype2"].hello).toEqual("world2")
+
+      // restart workflow 
+      var runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${waitWorkflowName}?op=execute`)
+      .send()
+      expect(runWorkflowResponse.statusCode).toEqual(200)
+      await new Promise((r) => setTimeout(r, 250));
+
+
+      await events.sendEventAndList(namespaceName, basevent("eventtype2", "eventtype2a", "world2"))
+
+      // there are two workflows now
+      var instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
+      .send()
+      expect(instancesResponse.body.instances.pageInfo.total).toEqual(2)
 
     })
 
 
     it(`should kick off start event workflow`, async () => {
         
-      
       await events.sendEventAndList(namespaceName, basevent("eventtype3", "eventtype3", "world1"))
-      var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
-
-      expect(instance).toBeFalsy();
-
-      await events.sendEventAndList(namespaceName, basevent("eventtype4", "eventtype4", "world2"))
       var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
 
       expect(instance).not.toBeFalsy();
 
-
-      var instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${instance.id}/output`)
+       var instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${instance.id}/output`)
       .send()
 
       var output = Buffer.from(instanceOutput.body.data, 'base64');
@@ -201,54 +185,30 @@ describe('Test workflow events and', () => {
 
       // custom data set
       expect(outputJSON["eventtype3"].data.hello).toEqual("world")
-      expect(outputJSON["eventtype4"].data.hello).toEqual("world")
+
+      await events.sendEventAndList(namespaceName, basevent("eventtype4", "eventtype4", "world2"))
+
+      var instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + startWorkflowName)
+      .send()
+      expect(instancesResponse.body.instances.pageInfo.total).toEqual(2)
 
     })
 
-   it(`start context`, async () => {
+    it(`should timeout flow`, async () => {
         
       // timeout workflow
-      var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${startWorkflowContextName}?op=create-workflow`)
-        .send(startEventContextWorkflow)
+      var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${waitWorkflowTimeoutName}?op=create-workflow`)
+        .send(waitEventWorkflowTimeout)
         expect(createWorkflowResponse.statusCode).toEqual(200)
-
-      await events.sendEventAndList(namespaceName, basevent("eventtype9", "eventtype9", "world1"))
-      await events.sendEventAndList(namespaceName, basevent("eventtype10", "eventtype10", "world3"))
-
-      var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)  
-      expect(instance).toBeFalsy();
-
-      await events.sendEventAndList(namespaceName, basevent("eventtype10", "eventtype10a", "world2"))
-
-      var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)  
-      expect(instance).not.toBeFalsy();
-    
-    })
-
-
-    it(`flow context`, async () => {
-        
-      // timeout workflow
-      var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${waitWorkflowContextName}?op=create-workflow`)
-        .send(waitEventContextimeout)
-        expect(createWorkflowResponse.statusCode).toEqual(200)
-
 
       // start workflow
-      var runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${waitWorkflowContextName}?op=execute`)
+      var runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${waitWorkflowTimeoutName}?op=execute`)
       .send()
       expect(runWorkflowResponse.statusCode).toEqual(200)
+      await new Promise((r) => setTimeout(r, 7000));
 
-      await events.sendEventAndList(namespaceName, basevent("eventtype11", "eventtype11", "world1"))
-      await events.sendEventAndList(namespaceName, basevent("eventtype12", "eventtype12", "world3"))
-
-      var instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, "pending")  
-      expect(instance).not.toBeFalsy();
-
-      await events.sendEventAndList(namespaceName, basevent("eventtype12", "eventtype12a", "world2"))
-
-      var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, "complete")  
-      expect(instance).not.toBeFalsy();
+      var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowTimeoutName, "failed")
+      expect(instancesResponse).not.toBeFalsy();
     
     })
 

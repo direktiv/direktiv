@@ -19,11 +19,10 @@ async function listInstancesAndFilter(ns, wf, status) {
     
     // if filter, then try to wait
     if (wf || status) {
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 2000; i++) {
             instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ns}/instances?limit=10&offset=0` + append)
             if (status) {
                 var idFind = instancesResponse.body.instances.results.find(item => item.status === status);    
-                // console.log(idFind)
                 if (idFind) {
                     return idFind
                 }
@@ -72,4 +71,5 @@ async function sendEventAndList(ns, event) {
 export default {
     sendEventAndList,
     listInstancesAndFilter,
+    sleep,
 }

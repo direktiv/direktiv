@@ -45,7 +45,6 @@ describe('Test send events', () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
         .set('Content-Type', 'application/json')
         .send(eventDuplicate)
-        console.log(workflowEventResponse.body)
         expect(workflowEventResponse.statusCode).toEqual(200)
     })
 
@@ -53,9 +52,6 @@ describe('Test send events', () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
         .set('Content-Type', 'application/json')
         .send(eventDuplicate)
-
-        console.log(workflowEventResponse.body)
-
         expect(workflowEventResponse.statusCode).toEqual(409)
     })
 
@@ -63,7 +59,6 @@ describe('Test send events', () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
         .set('Content-Type', 'application/json')
         .send(eventWithJSON)
-        console.log(workflowEventResponse.body)
         expect(workflowEventResponse.statusCode).toEqual(200)
     })
 
@@ -127,10 +122,4 @@ describe('Test send events', () => {
 
     })
 
-})// list event listeners
-// single (start / middle)
-// and (start / middle), xor (start / middle)
-// attachments & test content of events
-// extensions & time
-
-// single, and xor: start with context, middle with context
+})
