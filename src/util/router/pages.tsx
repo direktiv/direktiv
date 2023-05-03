@@ -18,7 +18,7 @@ import WorkflowPageActive from "../../pages/namespace/Explorer/Workflow/Active";
 import WorkflowPageOverview from "../../pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageRevisions from "../../pages/namespace/Explorer/Workflow/Revisions";
 import WorkflowPageSettings from "../../pages/namespace/Explorer/Workflow/Settings";
-import { checkHandlerInMatcher } from "./utils";
+import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
   name?: string;
@@ -61,7 +61,7 @@ type ExplorerPageSetup = Record<
       isTreePage: boolean;
       isWorkflowPage: boolean;
       isWorkflowActivePage: boolean;
-      isWorkflowRevisionsPage: boolean;
+      isWorkflowRevPage: boolean;
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
     };
@@ -95,38 +95,19 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
-      const [, , thirdLevel, fourthLevel] = useMatches(); // first level is namespace level
+      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
 
       // explorer.useParams() can also be called on pages that are not
       // the explorer page and some params might accidentally match as
       // well (like wildcards). To prevent that we use custom handles that
       // we injected in the route objects
-
-      // make this less code?
-      const isTreePage = checkHandlerInMatcher(thirdLevel, "isTreePage");
-      const isWorkflowPage = checkHandlerInMatcher(
-        thirdLevel,
-        "isWorkflowPage"
-      );
+      const isTreePage = checkHandler(thirdLvl, "isTreePage");
+      const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
       const isExplorerPage = isTreePage || isWorkflowPage;
-
-      const isWorkflowActivePage = checkHandlerInMatcher(
-        fourthLevel,
-        "isActivePage"
-      );
-      const isWorkflowRevisionsPage = checkHandlerInMatcher(
-        fourthLevel,
-        "isRevisionsPage"
-      );
-      const isWorkflowOverviewPage = checkHandlerInMatcher(
-        fourthLevel,
-        "isOverviewPage"
-      );
-
-      const isWorkflowSettingsPage = checkHandlerInMatcher(
-        fourthLevel,
-        "isSettingsPage"
-      );
+      const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
+      const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
+      const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
+      const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
 
       return {
         path: isExplorerPage ? path : undefined,
@@ -135,7 +116,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
         isTreePage,
         isWorkflowPage,
         isWorkflowActivePage,
-        isWorkflowRevisionsPage,
+        isWorkflowRevPage,
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
       };

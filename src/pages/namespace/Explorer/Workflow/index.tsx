@@ -15,7 +15,7 @@ const Header: FC = () => {
   const {
     path,
     isWorkflowActivePage,
-    isWorkflowRevisionsPage,
+    isWorkflowRevPage,
     isWorkflowOverviewPage,
     isWorkflowSettingsPage,
   } = pages.explorer.useParams();
@@ -39,7 +39,7 @@ const Header: FC = () => {
     },
     {
       value: "revisions",
-      active: isWorkflowRevisionsPage,
+      active: isWorkflowRevPage,
       icon: <GitMerge aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.revisions"),
       link: pages.explorer.createHref({
