@@ -10,10 +10,10 @@ import {
 import { addDays, format } from "date-fns";
 import Button from "../Button";
 import { Calendar as CalendarIcon } from "lucide-react";
-import clsx from "clsx";
 import type { DateRange } from "react-day-picker";
 import { Datepicker } from "./index";
 import React from "react";
+import clsx from "clsx";
 
 const meta = {
   title: "Components/Datepicker",
