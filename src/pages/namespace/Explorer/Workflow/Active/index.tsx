@@ -18,16 +18,15 @@ import {
 
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
-import Editor from "@monaco-editor/react";
+import Editor from "./Editor";
 import { RxChevronDown } from "react-icons/rx";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeContent } from "../../../../../api/tree/query/get";
-import { useTheme } from "../../../../../util/store/theme";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
-  const theme = useTheme();
+
   const { data } = useNodeContent({
     path,
   });
@@ -44,21 +43,7 @@ const WorkflowOverviewPage: FC = () => {
   return (
     <div className="flex grow flex-col space-y-4 p-4">
       <Card className="grow p-4">
-        <Editor
-          options={{
-            scrollBeyondLastLine: false,
-            cursorBlinking: "smooth",
-            wordWrap: true,
-            minimap: {
-              enabled: false,
-            },
-          }}
-          loading=""
-          language="yaml"
-          theme={theme === "dark" ? "vs-dark" : "vs-light"}
-          value={workflowData}
-          onChange={handleEditorChange}
-        />
+        <Editor value={workflowData} onChange={handleEditorChange} />
       </Card>
       <div className="flex justify-end gap-4">
         <DropdownMenu>
