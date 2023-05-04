@@ -46,7 +46,6 @@ const WorkflowOverviewPage: FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>Choose Feature</DropdownMenuLabel>
             <DropdownMenuItem>
               <GitBranchPlus className="mr-2 h-4 w-4" /> Make Revision
             </DropdownMenuItem>
