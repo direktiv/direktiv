@@ -53,7 +53,7 @@ function Datepicker({
         day_outside: "text-gray-11 dark:text-gray-dark-11 opacity-50",
         day_disabled: "text-gray-11 dark:text-gray-dark-11 opacity-50",
         day_range_middle:
-          "aria-selected:bg-gray-4 dark:aria-selected:bg-gray-dark-4 aria-selected:text-gray-11 dark:text-gray-dark-11 rounded-none",
+          "aria-selected:bg-gray-3 dark:aria-selected:bg-gray-dark-3 aria-selected:text-gray-11 dark:text-gray-dark-11 rounded-none",
         day_hidden: "invisible",
         ...classNames,
       }}
