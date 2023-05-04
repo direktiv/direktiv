@@ -5,7 +5,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../../../../../design/Dropdown";
-import { GitBranchPlus, GitMerge, Play, Save, Undo } from "lucide-react";
+import {
+  GitBranchPlus,
+  GitMerge,
+  Play,
+  Save,
+  Settings,
+  Undo,
+  WrapText,
+} from "lucide-react";
 
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
@@ -30,6 +38,10 @@ const WorkflowOverviewPage: FC = () => {
           options={{
             scrollBeyondLastLine: false,
             cursorBlinking: "smooth",
+            wordWrap: true,
+            minimap: {
+              enabled: false,
+            },
           }}
           loading=""
           language="yaml"
@@ -38,6 +50,22 @@ const WorkflowOverviewPage: FC = () => {
         />
       </Card>
       <div className="flex justify-end gap-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Settings />
+              Settings <RxChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>
+              <WrapText className="mr-2 h-4 w-4" /> Word Wrap
+            </DropdownMenuLabel>
+            <DropdownMenuItem>
+              <WrapText className="mr-2 h-4 w-4" /> wordWrap
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
