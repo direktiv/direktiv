@@ -5,6 +5,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../../../../../design/Dropdown";
+import { FC, useState } from "react";
 import {
   GitBranchPlus,
   GitMerge,
@@ -18,11 +19,11 @@ import {
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import Editor from "@monaco-editor/react";
-import { FC } from "react";
 import { RxChevronDown } from "react-icons/rx";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useTheme } from "../../../../../util/store/theme";
+import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
@@ -30,6 +31,15 @@ const WorkflowOverviewPage: FC = () => {
   const { data } = useNodeContent({
     path,
   });
+
+  const { mutate: updateWorkflow } = useUpdateWorkflow();
+
+  const workflowData = data?.revision?.source && atob(data?.revision?.source);
+  const [value, setValue] = useState<string | undefined>(workflowData);
+
+  const handleEditorChange = (value: string | undefined) => {
+    setValue(value);
+  };
 
   return (
     <div className="flex grow flex-col space-y-4 p-4">
@@ -46,7 +56,8 @@ const WorkflowOverviewPage: FC = () => {
           loading=""
           language="yaml"
           theme={theme === "dark" ? "vs-dark" : "vs-light"}
-          value={data?.revision?.source && atob(data?.revision?.source)}
+          value={workflowData}
+          onChange={handleEditorChange}
         />
       </Card>
       <div className="flex justify-end gap-4">
@@ -86,7 +97,17 @@ const WorkflowOverviewPage: FC = () => {
           <Play />
           Run
         </Button>
-        <Button variant="outline">
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (value && path) {
+              updateWorkflow({
+                path,
+                fileContent: value,
+              });
+            }
+          }}
+        >
           <Save />
           Save
         </Button>
