@@ -48,8 +48,7 @@ function Datepicker({
           "bg-gray-8 hover:bg-gray-12 focus:bg-gray-12 text-gray-1 hover:text-gray-1 focus:text-gray-1",
           "dark:bg-gray-dark-8 dark:hover:bg-gray-dark-12 dark:focus:bg-gray-dark-12 dark:text-gray-dark-1 dark:hover:text-gray-dark-1 dark:focus:text-gray-dark-1"
         ),
-        day_today:
-          "bg-gray-9 dark:bg-gray-dark-9 text-gray-11 dark:text-gray-dark-11",
+        day_today: "",
         day_outside: "text-gray-11 dark:text-gray-dark-11 opacity-50",
         day_disabled: "text-gray-11 dark:text-gray-dark-11 opacity-50",
         day_range_middle:

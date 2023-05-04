@@ -24,7 +24,7 @@ const meta = {
 export default meta;
 
 export const Default = () => {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [date, setDate] = React.useState<Date | undefined>();
   return (
     <Card className="flex w-72 justify-center">
       <Datepicker mode="single" selected={date} onSelect={setDate} />
