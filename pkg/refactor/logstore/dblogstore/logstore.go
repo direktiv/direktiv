@@ -58,7 +58,7 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		if err != nil {
 			return err
 		}
-		l.InstanceLogs = id
+		l.InstanceLogs = id.String()
 		logInstanceCallPath, ok := fields["callpath"]
 		if !ok {
 			return fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
@@ -74,19 +74,19 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		if err != nil {
 			return err
 		}
-		l.WorkflowID = id
+		l.WorkflowID = id.String()
 	case ns:
 		id, err := getRecipientID("namespace-id", fields)
 		if err != nil {
 			return err
 		}
-		l.NamespaceLogs = id
+		l.NamespaceLogs = id.String()
 	case mir:
 		id, err := getRecipientID("mirror-id", fields)
 		if err != nil {
 			return err
 		}
-		l.MirrorActivityID = id
+		l.MirrorActivityID = id.String()
 	case srv:
 		// do nothing
 	}
@@ -300,16 +300,16 @@ func mapKeysAndValues(keysAndValues ...interface{}) (map[string]interface{}, err
 }
 
 type gormLogMsg struct {
-	Oid                 uuid.UUID `gorm:"primaryKey"`
+	Oid                 uuid.UUID
 	T                   time.Time
 	Msg                 string
 	Level               string
-	Tags                jsonb     `sql:"type:jsonb"`
-	WorkflowID          uuid.UUID `gorm:"default:null"`
-	MirrorActivityID    uuid.UUID `gorm:"default:null"`
-	InstanceLogs        uuid.UUID `gorm:"default:null"`
-	NamespaceLogs       uuid.UUID `gorm:"default:null"`
-	RootInstanceID      string    `gorm:"default:null"`
+	Tags                jsonb `sql:"type:jsonb"`
+	WorkflowID          string
+	MirrorActivityID    string
+	InstanceLogs        string
+	NamespaceLogs       string
+	RootInstanceID      string
 	LogInstanceCallPath string
 }
 
