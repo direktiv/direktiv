@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from "@storybook/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
 import {
   Select,
@@ -12,6 +11,7 @@ import Button from "../Button";
 import { Calendar as CalendarIcon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { Datepicker } from "./index";
+import type { Meta } from "@storybook/react";
 import React from "react";
 import clsx from "clsx";
 
@@ -21,8 +21,8 @@ const meta = {
 } satisfies Meta<typeof Datepicker>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
-const StoryComponent = () => {
+
+export const Default = () => {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   return (
     <Datepicker
@@ -32,9 +32,6 @@ const StoryComponent = () => {
       className="rounded-md border"
     />
   );
-};
-export const Default: Story = {
-  render: () => <StoryComponent />,
 };
 
 export const DatePicker = () => {
