@@ -9,12 +9,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/logstore"
 	"github.com/direktiv/direktiv/pkg/refactor/logstore/dblogstore"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 )
 
 //go:embed mockdata/entlog_loop.json
 var loopjson string
+
+//go:embed mockdata/entlog_nestedLoop.json
+var loopjsonnested string
 
 type rawlogmsgs struct {
 	T     time.Time
@@ -38,7 +42,95 @@ func Test_Add(t *testing.T) {
 		t.Fatal(err)
 	}
 	logstore := dblogstore.NewSQLLogStore(db)
-	in := loadJSON(t, loopjson)
+	loadJSONToDB(t, logstore, loopjson)
+}
+
+func Test_Get(t *testing.T) {
+	db, err := utils.NewMockGorm()
+	if err != nil {
+		t.Fatal(err)
+	}
+	logstore := dblogstore.NewSQLLogStore(db)
+	o := loadJSONToDB(t, logstore, loopjson)
+	logs, err := logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "1a0d5909-223f-4f44-86d7-1833ab4d21c8", "isCallerRoot", true)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) < 1 {
+		t.Error("got no results")
+	}
+	if len(logs) != len(o) {
+		t.Error("some result are missing")
+	}
+}
+
+func Test_GetNestedLogs(t *testing.T) {
+	db, err := utils.NewMockGorm()
+	if err != nil {
+		t.Fatal(err)
+	}
+	logstore := dblogstore.NewSQLLogStore(db)
+	o := loadJSONToDB(t, logstore, loopjsonnested)
+	logs, err := logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "isCallerRoot", true)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) < 1 {
+		t.Error("got no results")
+	}
+	if len(logs) != len(o) {
+		t.Error("some result are missing")
+	}
+	logs, err = logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/c8a13535-b5ae-469b-98f2-e64a831067f9", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "isCallerRoot", false)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) < 1 {
+		t.Error("got no results")
+	}
+	if len(logs) == len(o) {
+		t.Error("no filtering happened")
+	}
+	want := make([]*rawlogmsgs, 0)
+	for _, e := range o {
+		if e.Tags["callpath"] == "/c8a13535-b5ae-469b-98f2-e64a831067f9" {
+			want = append(want, e)
+		}
+	}
+	if len(logs) < len(want) {
+		t.Error("some result are missing")
+	}
+	logs, err = logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "level", "debug", "isCallerRoot", true)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) < 1 {
+		t.Error("got no results")
+	}
+	if len(logs) != len(o) {
+		t.Error("debug level should filter out any log-entry")
+	}
+	logs, err = logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "level", "info", "isCallerRoot", true)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) < 1 {
+		t.Error("got no results")
+	}
+	want = make([]*rawlogmsgs, 0)
+	for _, e := range o {
+		if e.Level != "debug" {
+			want = append(want, e)
+		}
+	}
+	if len(logs) != len(want) {
+		t.Error("some result are missing")
+	}
+}
+
+func loadJSONToDB(t *testing.T, logstore logstore.LogStore, jsondump string) []*rawlogmsgs {
+	t.Helper()
+	in := loadJSON(t, jsondump)
 	for _, e := range in {
 		keyValue := make([]interface{}, 0)
 		val, ok := e.Tags["recipientType"]
@@ -61,6 +153,8 @@ func Test_Add(t *testing.T) {
 			t.Errorf("Error occurred on append log entry %v : %v", e, err)
 		}
 	}
+
+	return in
 }
 
 func loadJSON(t *testing.T, jsondump string) []*rawlogmsgs {

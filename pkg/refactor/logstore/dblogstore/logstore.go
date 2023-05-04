@@ -156,17 +156,7 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 		ql.setInstanceIsNIl()
 	}
 	var id uuid.UUID
-	if recipientType != srv {
-		recipientID, ok := fields["recipientID"]
-		if !ok {
-			return "", fmt.Errorf("recipientID was missing as argument in the keysAndValues pair")
-		}
-		var err error
-		id, err = uuid.Parse(fmt.Sprintf("%s", recipientID))
-		if err != nil {
-			return "", fmt.Errorf("recipientID was invalid %w", err)
-		}
-	}
+
 	if recipientType == wf {
 		ql.setWorkflow(id)
 	}
@@ -193,7 +183,7 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 	}
 	offset, ok := fields["offset"]
 	var offsetValue int
-	if !ok {
+	if ok {
 		offsetValue, ok = offset.(int)
 		if !ok {
 			return "", fmt.Errorf("offset should be an int")
@@ -269,7 +259,7 @@ func getRecipientType(fields map[string]interface{}) (string, error) {
 }
 
 func addInstanceValuesToQuery(ql *logMsgQueryBuilder, fields map[string]interface{}) (*logMsgQueryBuilder, error) {
-	logInstanceCallPath, ok := fields["callpath"]
+	prefix, ok := fields["callpath"]
 	if !ok {
 		return nil, fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
 	}
@@ -283,11 +273,11 @@ func addInstanceValuesToQuery(ql *logMsgQueryBuilder, fields map[string]interfac
 	}
 	callerIsRootValue, ok := callerIsRoot.(bool)
 	if !ok {
-		return nil, fmt.Errorf("limit should be an int")
+		return nil, fmt.Errorf("callerIsRoot should be an bool")
 	}
 	ql.setRootInstanceIDEQ(fmt.Sprintf("%s", rootInstanceID))
 	if !callerIsRootValue {
-		ql.setInstanceCallPathHasPrefix(fmt.Sprintf("%s", logInstanceCallPath))
+		ql.setInstanceCallPathHasPrefix(fmt.Sprintf("%s", prefix))
 	}
 
 	return ql, nil
@@ -436,12 +426,12 @@ func (b *logMsgQueryBuilder) setMinumLogLevel(loglevel string) {
 	}
 	q := "( "
 	for i, e := range levels {
-		q += fmt.Sprintf("level = %s", e)
-		if i < len(levels) {
+		q += fmt.Sprintf("level = '%s' ", e)
+		if i < len(levels)-1 {
 			q += " OR "
 		}
 	}
-	q += ")"
+	q += " )"
 	wEq = append(wEq, q)
 	b.whereEQStatements = wEq
 }
