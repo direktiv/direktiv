@@ -11,6 +11,14 @@ html,
   @apply text-gray-11 dark:text-gray-dark-11;
 }
 
+/**
+ * applying dark:bg-black on html tag (see above) doesn't work, because dark: prefix
+ * is not applied to html tag but to its children. So we need to apply it manually
+ */
+html[data-theme="dark"] {
+  @apply bg-black;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
