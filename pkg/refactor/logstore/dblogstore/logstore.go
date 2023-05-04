@@ -2,7 +2,6 @@ package dblogstore
 
 import (
 	"context"
-	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -35,6 +34,8 @@ type SQLLogStore struct {
 // Append implements logstore.LogStore.
 func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues ...interface{}) error {
 	fields, err := mapKeysAndValues(keysAndValues...)
+	cols := make([]string, 0, len(keysAndValues))
+	vals := make([]interface{}, 0, len(keysAndValues))
 	if err != nil {
 		return err
 	}
@@ -42,12 +43,8 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	if err != nil {
 		return fmt.Errorf("level was missing as argument in the keysAndValues pair")
 	}
-	l := gormLogMsg{
-		Oid:   uuid.New(),
-		T:     timestamp,
-		Msg:   msg,
-		Level: lvl,
-	}
+	cols = append(cols, "t", "msg", "level")
+	vals = append(vals, timestamp, msg, lvl)
 	recipientType, err := getRecipientType(fields)
 	if err != nil {
 		return err
@@ -58,7 +55,6 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		if err != nil {
 			return err
 		}
-		l.InstanceLogs = id.String()
 		logInstanceCallPath, ok := fields["callpath"]
 		if !ok {
 			return fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
@@ -67,26 +63,29 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		if !ok {
 			return fmt.Errorf("rootInstanceID was missing as argument in the keysAndValues pair")
 		}
-		l.LogInstanceCallPath = fmt.Sprintf("%s", logInstanceCallPath)
-		l.RootInstanceID = fmt.Sprintf("%s", rootInstanceID)
+		cols = append(cols, "instance_logs", "log_instance_call_path", "root_instance_id")
+		vals = append(vals, id, logInstanceCallPath, rootInstanceID)
 	case wf:
 		id, err := getRecipientID("workflow-id", fields)
 		if err != nil {
 			return err
 		}
-		l.WorkflowID = id.String()
+		cols = append(cols, "workflow_id")
+		vals = append(vals, id)
 	case ns:
 		id, err := getRecipientID("namespace-id", fields)
 		if err != nil {
 			return err
 		}
-		l.NamespaceLogs = id.String()
+		cols = append(cols, "namespace_logs")
+		vals = append(vals, id)
 	case mir:
 		id, err := getRecipientID("mirror-id", fields)
 		if err != nil {
 			return err
 		}
-		l.MirrorActivityID = id.String()
+		cols = append(cols, "mirror_activity_id")
+		vals = append(vals, id)
 	case srv:
 		// do nothing
 	}
@@ -94,10 +93,29 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	delete(fields, "rootInstanceID")
 	delete(fields, "callpath")
 	delete(fields, "recipientType")
-	l.Tags = fields
-	tx := sl.db.Table("log_msgs").WithContext(ctx).Create(&l)
+	b, err := json.Marshal(fields)
+	if err != nil {
+		return err
+	}
+	cols = append(cols, "tags")
+	vals = append(vals, b)
+	q := "INSERT INTO log_msgs ("
+	qTail := "VALUES ("
+	for i := range vals {
+		q += fmt.Sprintf("'%s'", cols[i])
+		qTail += fmt.Sprintf("$%d", i+1)
+		if i != len(vals)-1 {
+			q += ", "
+			qTail += ", "
+		}
+	}
+	q = q + ") " + qTail + ");"
+	tx := sl.db.WithContext(ctx).Exec(q, vals...)
 	if tx.Error != nil {
 		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
 	}
 
 	return nil
@@ -315,40 +333,13 @@ type gormLogMsg struct {
 	T                   time.Time
 	Msg                 string
 	Level               string
-	Tags                jsonb `sql:"type:jsonb"`
+	Tags                map[string]interface{}
 	WorkflowID          string
 	MirrorActivityID    string
 	InstanceLogs        string
 	NamespaceLogs       string
 	RootInstanceID      string
 	LogInstanceCallPath string
-}
-
-type jsonb map[string]interface{}
-
-func (j jsonb) Value() (driver.Value, error) {
-	valueString, err := json.Marshal(j)
-
-	return string(valueString), err
-}
-
-func (j *jsonb) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case string:
-		if err := json.Unmarshal([]byte(fmt.Sprint(v)), &j); err != nil {
-			return err
-		}
-	default:
-		b, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("type assertion failed")
-		}
-		if err := json.Unmarshal(b, &j); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func setMinumLogLevel(loglevel string, wEq []string) []string {

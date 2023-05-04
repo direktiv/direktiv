@@ -97,6 +97,11 @@ func Test_GetNestedLogs(t *testing.T) {
 			want = append(want, e)
 		}
 	}
+	for _, le := range logs {
+		if le.Fields["callpath"] == "" {
+			t.Error("Field was missing")
+		}
+	}
 	if len(logs) < len(want) {
 		t.Error("some result are missing")
 	}
