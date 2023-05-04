@@ -29,8 +29,7 @@ export const useUpdateWorkflow = () => {
       path,
       fileContent,
     }: {
-      path?: string;
-      name: string;
+      path: string;
       fileContent: string;
     }) =>
       updateWorkflow({
