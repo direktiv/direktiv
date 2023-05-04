@@ -101,8 +101,7 @@ const ExplorerHeader: FC = () => {
                 }}
               >
                 <DropdownMenuItem>
-                  <Folder className="mr-2 h-4 w-4" />
-                  <span>New Directory</span>
+                  <Folder className="mr-2 h-4 w-4" /> New Directory
                 </DropdownMenuItem>
               </DialogTrigger>
               <DialogTrigger
@@ -111,8 +110,7 @@ const ExplorerHeader: FC = () => {
                 }}
               >
                 <DropdownMenuItem>
-                  <Play className="mr-2 h-4 w-4" />
-                  <span>New Workflow</span>
+                  <Play className="mr-2 h-4 w-4" /> New Workflow
                 </DropdownMenuItem>
               </DialogTrigger>
             </DropdownMenuContent>
