@@ -41,7 +41,7 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	}
 	lvl, err := getLevel(fields)
 	if err != nil {
-		return fmt.Errorf("level was missing as argument in the keysAndValues pair")
+		return err
 	}
 	cols = append(cols, "t", "msg", "level")
 	vals = append(vals, timestamp, msg, lvl)
@@ -51,41 +51,33 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	}
 	switch recipientType {
 	case ins:
-		id, err := getRecipientID("instance-id", fields)
+		fieldValues, err := getFields(fields, "instance-id", "callpath", "rootInstanceID")
 		if err != nil {
 			return err
 		}
-		logInstanceCallPath, ok := fields["callpath"]
-		if !ok {
-			return fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
-		}
-		rootInstanceID, ok := fields["rootInstanceID"]
-		if !ok {
-			return fmt.Errorf("rootInstanceID was missing as argument in the keysAndValues pair")
-		}
 		cols = append(cols, "instance_logs", "log_instance_call_path", "root_instance_id")
-		vals = append(vals, id, logInstanceCallPath, rootInstanceID)
+		vals = append(vals, fieldValues...)
 	case wf:
-		id, err := getRecipientID("workflow-id", fields)
+		fieldValues, err := getFields(fields, "workflow-id")
 		if err != nil {
 			return err
 		}
 		cols = append(cols, "workflow_id")
-		vals = append(vals, id)
+		vals = append(vals, fieldValues...)
 	case ns:
-		id, err := getRecipientID("namespace-id", fields)
+		fieldValues, err := getFields(fields, "namespace-id")
 		if err != nil {
 			return err
 		}
 		cols = append(cols, "namespace_logs")
-		vals = append(vals, id)
+		vals = append(vals, fieldValues...)
 	case mir:
-		id, err := getRecipientID("mirror-id", fields)
+		fieldValues, err := getFields(fields, "mirror-id")
 		if err != nil {
 			return err
 		}
 		cols = append(cols, "mirror_activity_id")
-		vals = append(vals, id)
+		vals = append(vals, fieldValues...)
 	case srv:
 		// do nothing
 	}
@@ -119,6 +111,19 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	}
 
 	return nil
+}
+
+func getFields(fields map[string]interface{}, fieldNames ...string) ([]interface{}, error) {
+	res := []interface{}{}
+	for _, v := range fieldNames {
+		field, ok := fields[v]
+		if !ok {
+			return nil, fmt.Errorf("%s was missing as argument in the keysAndValues pair", v)
+		}
+		res = append(res, field)
+	}
+
+	return res, nil
 }
 
 // Get implements logstore.LogStore.
@@ -173,13 +178,19 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 		wEq = append(wEq, "namespace_logs IS NULL")
 		wEq = append(wEq, "instance_logs IS NULL")
 	}
-	var id uuid.UUID
-
 	if recipientType == wf {
-		wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", id.String()))
+		id, ok := fields["workflow-id"]
+		if !ok {
+			return "", fmt.Errorf("workflow-id is missing")
+		}
+		wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", id))
 	}
 	if recipientType == ns {
-		wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", id.String()))
+		id, ok := fields["namespace-id"]
+		if !ok {
+			return "", fmt.Errorf("namespace-id is missing")
+		}
+		wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", id))
 	}
 	if recipientType == ins {
 		var err error
@@ -189,7 +200,11 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 		}
 	}
 	if recipientType == mir {
-		wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id.String()))
+		id, ok := fields["mirror-activity-id"]
+		if !ok {
+			return "", fmt.Errorf("mirror-activity-id is missing")
+		}
+		wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id))
 	}
 	limit, ok := fields["limit"]
 	var limitValue int
@@ -239,32 +254,11 @@ func getLevel(fields map[string]interface{}) (string, error) {
 		return "", fmt.Errorf("level was missing as argument in the keysAndValues pair")
 	}
 	switch lvl {
-	case "debug":
-	case "info":
-	case "error":
-	case "panic":
-	default:
-		return "", fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
-	}
-	value, ok := lvl.(string)
-	if !ok {
-		return "", fmt.Errorf("level should be a string")
+	case "debug", "info", "error", "panic":
+		return fmt.Sprintf("%s", lvl), nil
 	}
 
-	return value, nil
-}
-
-func getRecipientID(fieldName string, fields map[string]interface{}) (uuid.UUID, error) {
-	recipientID, ok := fields[fieldName]
-	if !ok {
-		return uuid.UUID{}, fmt.Errorf("%s was missing as argument in the keysAndValues pair", fieldName)
-	}
-	id, err := uuid.Parse(fmt.Sprintf("%s", recipientID))
-	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("recipientID was invalid %w", err)
-	}
-
-	return id, nil
+	return "", fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
 }
 
 func getRecipientType(fields map[string]interface{}) (string, error) {
@@ -272,35 +266,22 @@ func getRecipientType(fields map[string]interface{}) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("recipientType was missing as argument in the keysAndValues pair")
 	}
-	if recipientType != srv &&
-		recipientType != ins &&
-		recipientType != mir &&
-		recipientType != ns &&
-		recipientType != wf {
-		return "", fmt.Errorf("invalid recipientType %s", recipientType)
-	}
-	value, ok := recipientType.(string)
-	if !ok {
-		return "", fmt.Errorf("recipientType should be a string")
+	switch recipientType {
+	case srv, ins, mir, ns, wf:
+		return fmt.Sprintf("%s", recipientType), nil
 	}
 
-	return value, nil
+	return "", fmt.Errorf("invalid recipientType %s", recipientType)
 }
 
 func addInstanceValuesToQuery(wEq []string, fields map[string]interface{}) ([]string, error) {
-	prefix, ok := fields["callpath"]
-	if !ok {
-		return nil, fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
+	values, err := getFields(fields, "callpath", "rootInstanceID", "isCallerRoot")
+	if err != nil {
+		return nil, err
 	}
-	rootInstanceID, ok := fields["rootInstanceID"]
-	if !ok {
-		return nil, fmt.Errorf("rootInstanceID was missing as argument in the keysAndValues pair")
-	}
-	callerIsRoot, ok := fields["isCallerRoot"]
-	if !ok {
-		return nil, fmt.Errorf("isCallerRoot was missing as argument in the keysAndValues pair")
-	}
-	callerIsRootValue, ok := callerIsRoot.(bool)
+	prefix := values[0]
+	rootInstanceID := values[1]
+	callerIsRootValue, ok := values[2].(bool)
 	if !ok {
 		return nil, fmt.Errorf("callerIsRoot should be an bool")
 	}
@@ -314,10 +295,7 @@ func addInstanceValuesToQuery(wEq []string, fields map[string]interface{}) ([]st
 
 func mapKeysAndValues(keysAndValues ...interface{}) (map[string]interface{}, error) {
 	fields := make(map[string]interface{})
-	if len(keysAndValues) == 0 {
-		return nil, fmt.Errorf("keysAndValues where not provided")
-	}
-	if len(keysAndValues)%2 != 0 {
+	if len(keysAndValues) == 0 || len(keysAndValues)%2 != 0 {
 		return nil, fmt.Errorf("keysAndValues was not a list of key value pairs")
 	}
 	for i := 0; i < len(keysAndValues); i += 2 {
@@ -346,6 +324,7 @@ func setMinumLogLevel(loglevel string, wEq []string) []string {
 	levels := []string{"debug", "info", "error", "panic"}
 	switch loglevel {
 	case "debug":
+		return wEq
 	case "info":
 		levels = levels[1:]
 	case "error":
