@@ -136,7 +136,7 @@ func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([
 }
 
 func buildQuery(fields map[string]interface{}) (string, error) {
-	ql := newQueryBuilder()
+	wEq := []string{}
 	recipientType, err := getRecipientType(fields)
 	if err != nil {
 		return "", err
@@ -147,31 +147,31 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 		if !ok {
 			return "", fmt.Errorf("level should be a string")
 		}
-		ql.setMinumLogLevel(levelValue)
+		wEq = setMinumLogLevel(levelValue, wEq)
 	}
 
 	if recipientType == srv {
-		ql.setWorkflowIsNil()
-		ql.setNamespaceIsNIl()
-		ql.setInstanceIsNIl()
+		wEq = append(wEq, "workflow_id IS NULL")
+		wEq = append(wEq, "namespace_logs IS NULL")
+		wEq = append(wEq, "instance_logs IS NULL")
 	}
 	var id uuid.UUID
 
 	if recipientType == wf {
-		ql.setWorkflow(id)
+		wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", id.String()))
 	}
 	if recipientType == ns {
-		ql.setNamespace(id)
+		wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", id.String()))
 	}
 	if recipientType == ins {
 		var err error
-		ql, err = addInstanceValuesToQuery(ql, fields)
+		wEq, err = addInstanceValuesToQuery(wEq, fields)
 		if err != nil {
 			return "", err
 		}
 	}
 	if recipientType == mir {
-		ql.whereMirrorActivityID(id)
+		wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id.String()))
 	}
 	limit, ok := fields["limit"]
 	var limitValue int
@@ -189,19 +189,30 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 			return "", fmt.Errorf("offset should be an int")
 		}
 	}
+	q := composeQuery(limitValue, offsetValue, wEq)
 
-	if limitValue > 0 {
-		ql.setLimit(limitValue)
+	return q, nil
+}
+
+func composeQuery(limit, offset int, wEq []string) string {
+	q := `SELECT oid, t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
+	FROM log_msgs `
+	q += "WHERE "
+	for i, e := range wEq {
+		q += e
+		if i+1 < len(wEq) {
+			q += " AND "
+		}
 	}
-	if offsetValue > 0 {
-		ql.setOffset(offsetValue)
+	q += " ORDER BY t ASC"
+	if limit > 0 {
+		q += fmt.Sprintf(" LIMIT %d", limit)
 	}
-	query, err := ql.build()
-	if err != nil {
-		return "", err
+	if offset > 0 {
+		q += fmt.Sprintf(" OFFSET %d", offset)
 	}
 
-	return query, nil
+	return q
 }
 
 func getLevel(fields map[string]interface{}) (string, error) {
@@ -258,7 +269,7 @@ func getRecipientType(fields map[string]interface{}) (string, error) {
 	return value, nil
 }
 
-func addInstanceValuesToQuery(ql *logMsgQueryBuilder, fields map[string]interface{}) (*logMsgQueryBuilder, error) {
+func addInstanceValuesToQuery(wEq []string, fields map[string]interface{}) ([]string, error) {
 	prefix, ok := fields["callpath"]
 	if !ok {
 		return nil, fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
@@ -275,12 +286,12 @@ func addInstanceValuesToQuery(ql *logMsgQueryBuilder, fields map[string]interfac
 	if !ok {
 		return nil, fmt.Errorf("callerIsRoot should be an bool")
 	}
-	ql.setRootInstanceIDEQ(fmt.Sprintf("%s", rootInstanceID))
+	wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", rootInstanceID))
 	if !callerIsRootValue {
-		ql.setInstanceCallPathHasPrefix(fmt.Sprintf("%s", prefix))
+		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	}
 
-	return ql, nil
+	return wEq, nil
 }
 
 func mapKeysAndValues(keysAndValues ...interface{}) (map[string]interface{}, error) {
@@ -340,80 +351,7 @@ func (j *jsonb) Scan(value interface{}) error {
 	return nil
 }
 
-type logMsgQueryBuilder struct {
-	whereEQStatements []string
-	limit             int
-	offset            int
-}
-
-func newQueryBuilder() *logMsgQueryBuilder {
-	return &logMsgQueryBuilder{
-		whereEQStatements: []string{},
-	}
-}
-
-func (b *logMsgQueryBuilder) setWorkflow(workflowID uuid.UUID) {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", workflowID.String()))
-	b.whereEQStatements = wEq
-}
-
-func (b *logMsgQueryBuilder) setWorkflowIsNil() {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, "workflow_id IS NULL")
-	b.whereEQStatements = wEq
-}
-
-func (b *logMsgQueryBuilder) setNamespaceIsNIl() {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, "namespace_logs IS NULL")
-	b.whereEQStatements = wEq
-}
-
-func (b *logMsgQueryBuilder) setInstanceIsNIl() {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, "instance_logs IS NULL")
-	b.whereEQStatements = wEq
-}
-
-func (b *logMsgQueryBuilder) setNamespace(namespaceID uuid.UUID) {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", namespaceID.String()))
-	b.whereEQStatements = wEq
-}
-
-// func (b *logMsgQueryBuilder) whereInstance(instanceID uuid.UUID) {
-// 	wEq := b.whereEQStatements
-// 	wEq = append(wEq, fmt.Sprintf("instance_logs = '%s'", instanceID.String()))
-// 	b.whereEQStatements = wEq
-// }
-
-func (b *logMsgQueryBuilder) setRootInstanceIDEQ(rootID string) {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", rootID))
-	b.whereEQStatements = wEq
-}
-
-func (b *logMsgQueryBuilder) setInstanceCallPathHasPrefix(prefix string) {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
-	b.whereEQStatements = wEq
-}
-
-// func (b *logMsgQueryBuilder) whereLogLevel(loglevel string) {
-// 	wEq := b.whereEQStatements
-// 	wEq = append(wEq, fmt.Sprintf("level = '%s'", loglevel))
-// 	b.whereEQStatements = wEq
-// }
-
-func (b *logMsgQueryBuilder) whereMirrorActivityID(id uuid.UUID) {
-	wEq := b.whereEQStatements
-	wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id.String()))
-	b.whereEQStatements = wEq
-}
-
-func (b *logMsgQueryBuilder) setMinumLogLevel(loglevel string) {
-	wEq := b.whereEQStatements
+func setMinumLogLevel(loglevel string, wEq []string) []string {
 	levels := []string{"debug", "info", "error", "panic"}
 	switch loglevel {
 	case "debug":
@@ -432,38 +370,6 @@ func (b *logMsgQueryBuilder) setMinumLogLevel(loglevel string) {
 		}
 	}
 	q += " )"
-	wEq = append(wEq, q)
-	b.whereEQStatements = wEq
-}
 
-func (b *logMsgQueryBuilder) setLimit(limit int) {
-	b.limit = limit
-}
-
-func (b *logMsgQueryBuilder) setOffset(offset int) {
-	b.offset = offset
-}
-
-func (b *logMsgQueryBuilder) build() (string, error) {
-	if len(b.whereEQStatements) < 1 {
-		return "", fmt.Errorf("no Where statements where provided")
-	}
-	q := `SELECT oid, t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
-	FROM log_msgs `
-	q += "WHERE "
-	for i, e := range b.whereEQStatements {
-		q += e
-		if i+1 < len(b.whereEQStatements) {
-			q += " AND "
-		}
-	}
-	q += " ORDER BY t ASC"
-	if b.limit > 0 {
-		q += fmt.Sprintf(" LIMIT %d", b.limit)
-	}
-	if b.offset > 0 {
-		q += fmt.Sprintf(" OFFSET %d", b.offset)
-	}
-
-	return q + ";", nil
+	return append(wEq, q)
 }
