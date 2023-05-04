@@ -12,6 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	ns  = "namespace"
+	wf  = "workflow"
+	srv = "server"
+	ins = "instance"
+	mir = "mirror"
+)
+
 var _ logstore.LogStore = &SQLLogStore{} // Ensures SQLLogStore struct conforms to logstore.LogStore interface.
 
 func NewSQLLogStore(db *gorm.DB) logstore.LogStore {
@@ -43,13 +51,13 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		Msg:   msg,
 		Level: fmt.Sprintf("%s", lvl),
 	}
-	recipientType, ok := fields["recipientType"]
-	if !ok {
-		return fmt.Errorf("recipientType was missing as argument in the keysAndValues pair")
+	recipientType, err := getRecipientType(fields)
+	if err != nil {
+		return err
 	}
 	var recipientID interface{}
 	var id uuid.UUID
-	if recipientType != "server" {
+	if recipientType != srv {
 		recipientID, ok = fields["recipientID"]
 		if !ok {
 			return fmt.Errorf("recipientID was missing as argument in the keysAndValues pair")
@@ -60,7 +68,7 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		}
 	}
 	switch recipientType {
-	case "instance":
+	case ins:
 		l.InstanceLogs = id
 		logInstanceCallPath, ok := fields["logInstanceCallPath"]
 		if !ok {
@@ -72,13 +80,13 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		}
 		l.LogInstanceCallPath = fmt.Sprintf("%s", logInstanceCallPath)
 		l.RootInstanceID = fmt.Sprintf("%s", rootInstanceID)
-	case "workflow":
+	case wf:
 		l.WorkflowID = id
-	case "namespace":
+	case ns:
 		l.NamespaceLogs = id
-	case "mirror":
+	case mir:
 		l.MirrorActivityID = id
-	case "server":
+	case srv:
 		// do nothing
 	}
 	delete(fields, "level")
@@ -96,9 +104,158 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 
 // Get implements logstore.LogStore.
 func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([]*logstore.LogEntry, error) {
-	_ = ctx.Err()                           // linter
-	_ = keysAndValues[len(keysAndValues)-1] // linter
-	panic("unimplemented")
+	fields, err := mapKeysAndValues(keysAndValues...)
+	if err != nil {
+		return nil, err
+	}
+	query, err := buildQuery(fields)
+	if err != nil {
+		return nil, err
+	}
+	resultList := make([]*gormLogMsg, 0)
+	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	convertedList := make([]*logstore.LogEntry, 0, len(resultList))
+	for _, e := range resultList {
+		m := make(map[string]interface{})
+		for k, e := range e.Tags {
+			m[k] = e
+		}
+		m["level"] = e.Level
+		convertedList = append(convertedList, &logstore.LogEntry{
+			T:      e.T,
+			Msg:    e.Msg,
+			Fields: m,
+		})
+	}
+
+	return convertedList, nil
+}
+
+func buildQuery(fields map[string]interface{}) (string, error) {
+	ql := newQueryBuilder()
+	recipientType, err := getRecipientType(fields)
+	if err != nil {
+		return "", err
+	}
+	level, ok := fields["level"]
+	if ok {
+		levelValue, ok := level.(string)
+		if !ok {
+			return "", fmt.Errorf("level should be a string")
+		}
+		ql.setMinumLogLevel(levelValue)
+	}
+
+	if recipientType == srv {
+		ql.setWorkflowIsNil()
+		ql.setNamespaceIsNIl()
+		ql.setInstanceIsNIl()
+	}
+	var id uuid.UUID
+	if recipientType != srv {
+		recipientID, ok := fields["recipientID"]
+		if !ok {
+			return "", fmt.Errorf("recipientID was missing as argument in the keysAndValues pair")
+		}
+		var err error
+		id, err = uuid.Parse(fmt.Sprintf("%s", recipientID))
+		if err != nil {
+			return "", fmt.Errorf("recipientID was invalid %w", err)
+		}
+	}
+	if recipientType == wf {
+		ql.setWorkflow(id)
+	}
+	if recipientType == ns {
+		ql.setNamespace(id)
+	}
+	if recipientType == ins {
+		var err error
+		ql, err = addInstanceValuesToQuery(ql, fields)
+		if err != nil {
+			return "", err
+		}
+	}
+	if recipientType == mir {
+		ql.whereMirrorActivityID(id)
+	}
+	limit, ok := fields["limit"]
+	var limitValue int
+	if ok {
+		limitValue, ok = limit.(int)
+		if !ok {
+			return "", fmt.Errorf("limit should be an int")
+		}
+	}
+	offset, ok := fields["offset"]
+	var offsetValue int
+	if !ok {
+		offsetValue, ok = offset.(int)
+		if !ok {
+			return "", fmt.Errorf("offset should be an int")
+		}
+	}
+
+	if limitValue > 0 {
+		ql.setLimit(limitValue)
+	}
+	if offsetValue > 0 {
+		ql.setOffset(offsetValue)
+	}
+	query, err := ql.build()
+	if err != nil {
+		return "", err
+	}
+
+	return query, nil
+}
+
+func getRecipientType(fields map[string]interface{}) (string, error) {
+	recipientType, ok := fields["recipientType"]
+	if !ok {
+		return "", fmt.Errorf("recipientType was missing as argument in the keysAndValues pair")
+	}
+	if recipientType != srv &&
+		recipientType != ins &&
+		recipientType != mir &&
+		recipientType != ns &&
+		recipientType != wf {
+		return "", fmt.Errorf("invalid recipientType %s", recipientType)
+	}
+	value, ok := recipientType.(string)
+	if !ok {
+		return "", fmt.Errorf("recipientType should be a string")
+	}
+
+	return value, nil
+}
+
+func addInstanceValuesToQuery(ql *logMsgQueryBuilder, fields map[string]interface{}) (*logMsgQueryBuilder, error) {
+	logInstanceCallPath, ok := fields["logInstanceCallPath"]
+	if !ok {
+		return nil, fmt.Errorf("logInstanceCallPath was missing as argument in the keysAndValues pair")
+	}
+	rootInstanceID, ok := fields["rootInstanceID"]
+	if !ok {
+		return nil, fmt.Errorf("logInstanceCallPath was missing as argument in the keysAndValues pair")
+	}
+	callerIsRoot, ok := fields["isCallerRoot"]
+	if !ok {
+		return nil, fmt.Errorf("isCallerRoot was missing as argument in the keysAndValues pair")
+	}
+	callerIsRootValue, ok := callerIsRoot.(bool)
+	if !ok {
+		return nil, fmt.Errorf("limit should be an int")
+	}
+	ql.setRootInstanceIDEQ(fmt.Sprintf("%s", rootInstanceID))
+	if !callerIsRootValue {
+		ql.setInstanceCallPathHasPrefix(fmt.Sprintf("%s", logInstanceCallPath))
+	}
+
+	return ql, nil
 }
 
 func mapKeysAndValues(keysAndValues ...interface{}) (map[string]interface{}, error) {
@@ -156,4 +313,132 @@ func (j *jsonb) Scan(value interface{}) error {
 	}
 
 	return nil
+}
+
+type logMsgQueryBuilder struct {
+	whereEQStatements []string
+	limit             int
+	offset            int
+}
+
+func newQueryBuilder() *logMsgQueryBuilder {
+	return &logMsgQueryBuilder{
+		whereEQStatements: []string{},
+	}
+}
+
+func (b *logMsgQueryBuilder) setWorkflow(workflowID uuid.UUID) {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", workflowID.String()))
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setWorkflowIsNil() {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, "workflow_id IS NULL")
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setNamespaceIsNIl() {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, "namespace_logs IS NULL")
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setInstanceIsNIl() {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, "instance_logs IS NULL")
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setNamespace(namespaceID uuid.UUID) {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", namespaceID.String()))
+	b.whereEQStatements = wEq
+}
+
+// func (b *logMsgQueryBuilder) whereInstance(instanceID uuid.UUID) {
+// 	wEq := b.whereEQStatements
+// 	wEq = append(wEq, fmt.Sprintf("instance_logs = '%s'", instanceID.String()))
+// 	b.whereEQStatements = wEq
+// }
+
+func (b *logMsgQueryBuilder) setRootInstanceIDEQ(rootID string) {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", rootID))
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setInstanceCallPathHasPrefix(prefix string) {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
+	b.whereEQStatements = wEq
+}
+
+// func (b *logMsgQueryBuilder) whereLogLevel(loglevel string) {
+// 	wEq := b.whereEQStatements
+// 	wEq = append(wEq, fmt.Sprintf("level = '%s'", loglevel))
+// 	b.whereEQStatements = wEq
+// }
+
+func (b *logMsgQueryBuilder) whereMirrorActivityID(id uuid.UUID) {
+	wEq := b.whereEQStatements
+	wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id.String()))
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setMinumLogLevel(loglevel string) {
+	wEq := b.whereEQStatements
+	levels := []string{"debug", "info", "error", "panic"}
+	switch loglevel {
+	case "debug":
+	case "info":
+		levels = levels[1:]
+	case "error":
+		levels = levels[2:]
+	case "panic":
+		levels = levels[3:]
+	}
+	q := "( "
+	for i, e := range levels {
+		q += fmt.Sprintf("level = %s", e)
+		if i < len(levels) {
+			q += " OR "
+		}
+	}
+	q += ")"
+	wEq = append(wEq, q)
+	b.whereEQStatements = wEq
+}
+
+func (b *logMsgQueryBuilder) setLimit(limit int) {
+	b.limit = limit
+}
+
+func (b *logMsgQueryBuilder) setOffset(offset int) {
+	b.offset = offset
+}
+
+func (b *logMsgQueryBuilder) build() (string, error) {
+	if len(b.whereEQStatements) < 1 {
+		return "", fmt.Errorf("no Where statements where provided")
+	}
+	q := `SELECT oid, t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
+	FROM log_msgs `
+	q += "WHERE "
+	for i, e := range b.whereEQStatements {
+		q += e
+		if i+1 < len(b.whereEQStatements) {
+			q += " AND "
+		}
+	}
+	q += " ORDER BY t ASC"
+	if b.limit > 0 {
+		q += fmt.Sprintf(" LIMIT %d", b.limit)
+	}
+	if b.offset > 0 {
+		q += fmt.Sprintf(" OFFSET %d", b.offset)
+	}
+
+	return q + ";", nil
 }
