@@ -32,7 +32,7 @@ const WorkflowOverviewPage: FC = () => {
     path,
   });
 
-  const { mutate: updateWorkflow } = useUpdateWorkflow();
+  const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow();
 
   const workflowData = data?.revision?.source && atob(data?.revision?.source);
   const [value, setValue] = useState<string | undefined>(workflowData);
@@ -99,6 +99,7 @@ const WorkflowOverviewPage: FC = () => {
         </Button>
         <Button
           variant="outline"
+          disabled={isLoading}
           onClick={() => {
             if (value && path) {
               updateWorkflow({
