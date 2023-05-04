@@ -1,4 +1,4 @@
-package db
+package dblogstore
 
 import (
 	"context"
@@ -38,60 +38,61 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	if err != nil {
 		return err
 	}
-	lvl, ok := fields["level"]
-	if !ok {
+	lvl, err := getLevel(fields)
+	if err != nil {
 		return fmt.Errorf("level was missing as argument in the keysAndValues pair")
-	}
-	if lvl != "debug" && lvl != "info" && lvl != "error" && lvl != "panic" {
-		return fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
 	}
 	l := gormLogMsg{
 		Oid:   uuid.New(),
 		T:     timestamp,
 		Msg:   msg,
-		Level: fmt.Sprintf("%s", lvl),
+		Level: lvl,
 	}
 	recipientType, err := getRecipientType(fields)
 	if err != nil {
 		return err
 	}
-	var recipientID interface{}
-	var id uuid.UUID
-	if recipientType != srv {
-		recipientID, ok = fields["recipientID"]
-		if !ok {
-			return fmt.Errorf("recipientID was missing as argument in the keysAndValues pair")
-		}
-		id, err = uuid.Parse(fmt.Sprintf("%s", recipientID))
-		if err != nil {
-			return fmt.Errorf("recipientID was invalid %w", err)
-		}
-	}
 	switch recipientType {
 	case ins:
+		id, err := getRecipientID("instance-id", fields)
+		if err != nil {
+			return err
+		}
 		l.InstanceLogs = id
-		logInstanceCallPath, ok := fields["logInstanceCallPath"]
+		logInstanceCallPath, ok := fields["callpath"]
 		if !ok {
-			return fmt.Errorf("logInstanceCallPath was missing as argument in the keysAndValues pair")
+			return fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
 		}
 		rootInstanceID, ok := fields["rootInstanceID"]
 		if !ok {
-			return fmt.Errorf("logInstanceCallPath was missing as argument in the keysAndValues pair")
+			return fmt.Errorf("rootInstanceID was missing as argument in the keysAndValues pair")
 		}
 		l.LogInstanceCallPath = fmt.Sprintf("%s", logInstanceCallPath)
 		l.RootInstanceID = fmt.Sprintf("%s", rootInstanceID)
 	case wf:
+		id, err := getRecipientID("workflow-id", fields)
+		if err != nil {
+			return err
+		}
 		l.WorkflowID = id
 	case ns:
+		id, err := getRecipientID("namespace-id", fields)
+		if err != nil {
+			return err
+		}
 		l.NamespaceLogs = id
 	case mir:
+		id, err := getRecipientID("mirror-id", fields)
+		if err != nil {
+			return err
+		}
 		l.MirrorActivityID = id
 	case srv:
 		// do nothing
 	}
 	delete(fields, "level")
 	delete(fields, "rootInstanceID")
-	delete(fields, "logInstanceCallPath")
+	delete(fields, "callpath")
 	delete(fields, "recipientType")
 	l.Tags = fields
 	tx := sl.db.Table("log_msgs").WithContext(ctx).Create(&l)
@@ -213,6 +214,40 @@ func buildQuery(fields map[string]interface{}) (string, error) {
 	return query, nil
 }
 
+func getLevel(fields map[string]interface{}) (string, error) {
+	lvl, ok := fields["level"]
+	if !ok {
+		return "", fmt.Errorf("level was missing as argument in the keysAndValues pair")
+	}
+	switch lvl {
+	case "debug":
+	case "info":
+	case "error":
+	case "panic":
+	default:
+		return "", fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
+	}
+	value, ok := lvl.(string)
+	if !ok {
+		return "", fmt.Errorf("level should be a string")
+	}
+
+	return value, nil
+}
+
+func getRecipientID(fieldName string, fields map[string]interface{}) (uuid.UUID, error) {
+	recipientID, ok := fields[fieldName]
+	if !ok {
+		return uuid.UUID{}, fmt.Errorf("%s was missing as argument in the keysAndValues pair", fieldName)
+	}
+	id, err := uuid.Parse(fmt.Sprintf("%s", recipientID))
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("recipientID was invalid %w", err)
+	}
+
+	return id, nil
+}
+
 func getRecipientType(fields map[string]interface{}) (string, error) {
 	recipientType, ok := fields["recipientType"]
 	if !ok {
@@ -234,13 +269,13 @@ func getRecipientType(fields map[string]interface{}) (string, error) {
 }
 
 func addInstanceValuesToQuery(ql *logMsgQueryBuilder, fields map[string]interface{}) (*logMsgQueryBuilder, error) {
-	logInstanceCallPath, ok := fields["logInstanceCallPath"]
+	logInstanceCallPath, ok := fields["callpath"]
 	if !ok {
-		return nil, fmt.Errorf("logInstanceCallPath was missing as argument in the keysAndValues pair")
+		return nil, fmt.Errorf("callpath was missing as argument in the keysAndValues pair")
 	}
 	rootInstanceID, ok := fields["rootInstanceID"]
 	if !ok {
-		return nil, fmt.Errorf("logInstanceCallPath was missing as argument in the keysAndValues pair")
+		return nil, fmt.Errorf("rootInstanceID was missing as argument in the keysAndValues pair")
 	}
 	callerIsRoot, ok := fields["isCallerRoot"]
 	if !ok {
