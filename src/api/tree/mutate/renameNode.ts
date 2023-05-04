@@ -3,7 +3,6 @@ import {
   TreeListSchemaType,
   TreeNodeRenameSchema,
 } from "../schema";
-import { apiFactory, defaultKeys } from "../../utils";
 import {
   forceLeadingSlash,
   removeLeadingSlash,
@@ -11,6 +10,7 @@ import {
 } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { apiFactory } from "../../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -57,11 +57,10 @@ export const useRenameNode = ({
       }),
     onSuccess(data, variables) {
       queryClient.setQueryData<TreeListSchemaType>(
-        treeKeys.all(
-          apiKey ?? defaultKeys.apiKey,
-          namespace,
-          variables.node.parent ?? ""
-        ),
+        treeKeys.nodeContent(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.node.parent,
+        }),
         (oldData) => {
           if (!oldData) return undefined;
           const oldChildren = oldData?.children;

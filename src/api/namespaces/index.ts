@@ -1,3 +1,4 @@
 export const namespaceKeys = {
-  all: (apiKey: string) => [{ scope: "namespaces", apiKey }] as const,
+  all: (apiKey: string | undefined) =>
+    [{ scope: "namespaces", apiKey }] as const,
 };

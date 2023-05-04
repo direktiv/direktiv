@@ -12,7 +12,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: ({ ...args }) => (
-    <div className="items-top flex space-x-2">
+    <div className="flex space-x-2">
       <Checkbox id="terms1" {...args} />
     </div>
   ),
@@ -20,7 +20,7 @@ export const Default: Story = {
     size: {
       description: "select size",
       control: "select",
-      options: ["xs", "sm", "md", "lg"],
+      options: [undefined, "sm", "lg"],
       type: { name: "string", required: false },
     },
     disabled: {
@@ -31,16 +31,16 @@ export const Default: Story = {
 };
 export function CheckboxWithText() {
   return (
-    <div className="items-top flex space-x-2">
+    <div className="flex space-x-2 p-2 ">
       <Checkbox id="terms2" />
       <div className="grid gap-1.5 leading-none">
         <label
           htmlFor="terms2"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          className="text-sm font-medium leading-none text-gray-10 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-dark-10"
         >
           Accept terms and conditions
         </label>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-gray-10 dark:text-gray-dark-10">
           You agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
@@ -50,7 +50,7 @@ export function CheckboxWithText() {
 
 export function DisabledCheckbox() {
   return (
-    <div className="items-top flex space-x-2">
+    <div className="flex space-x-2 p-2 ">
       <Checkbox id="terms-disabled-1" disabled />
     </div>
   );
@@ -58,11 +58,10 @@ export function DisabledCheckbox() {
 
 export function CheckboxSizes() {
   return (
-    <div className="items-top flex space-x-2">
+    <div className="flex space-x-2 p-2 ">
       <Checkbox size="lg" />
       <Checkbox />
       <Checkbox size="sm" />
-      <Checkbox size="xs" />
     </div>
   );
 }

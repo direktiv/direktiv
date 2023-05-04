@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 
+import Button, { ButtonProps } from "../Button";
 import { RxCheck, RxChevronDown } from "react-icons/rx";
 
 import clsx from "clsx";
@@ -15,33 +16,31 @@ const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
-    size?: "xs" | "sm" | "lg";
-    loading?: boolean;
-    block?: boolean;
-    ghost?: boolean;
-  }
->(({ className, size, loading, block, ghost, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    // border-opacity-20 will be deprecated in tailwind 3 but daisyui is still on tailwind 2
-    // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
-    className={clsx(
-      "btn-ghost btn justify-between gap-2",
-      !ghost && "border-base-content border-opacity-20 bg-base-100",
-      size === "lg" && "btn-lg",
-      size === "sm" && "btn-sm",
-      size === "xs" && "btn-xs",
-      loading && "loading",
-      block && "btn-block",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <RxChevronDown />
-  </SelectPrimitive.Trigger>
-));
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> &
+    Pick<ButtonProps, "variant" | "size" | "block" | "loading">
+>(
+  (
+    { className, variant, size, children, disabled, block, loading, ...props },
+    ref
+  ) => (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={clsx(block && "w-full", className)}
+      {...props}
+      asChild
+    >
+      <Button
+        variant={variant}
+        size={size}
+        disabled={disabled}
+        block={block}
+        loading={loading}
+      >
+        {children} <RxChevronDown />
+      </Button>
+    </SelectPrimitive.Trigger>
+  )
+);
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectContent = React.forwardRef<
@@ -52,7 +51,12 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={clsx(
-        "card-bordered card z-50 border-base-300 bg-base-100 shadow-md",
+        "z-50 shadow-md",
+        "rounded-md ring-1",
+        "ring-gray-3",
+        "dark:ring-gray-dark-3",
+        "bg-gray-1",
+        "dark:bg-gray-dark-1",
         className
       )}
       {...props}
@@ -73,7 +77,9 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={clsx(
-      "py-1.5 pr-2 pl-8 text-sm font-medium text-gray-8 dark:text-gray-dark-8",
+      "py-1.5 pr-2 pl-8 text-sm font-medium",
+      "text-gray-8 ",
+      "dark:text-gray-dark-8",
       className
     )}
     {...props}
@@ -88,7 +94,11 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none focus:bg-base-300 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "outline-nonedata-[disabled]:pointer-events-none relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium data-[disabled]:opacity-50",
+      " focus:bg-gray-3 ",
+      " dark:focus:bg-gray-dark-3 ",
+      "hover:outline-none",
+      "focus:outline-none",
       className
     )}
     {...props}
@@ -110,7 +120,12 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={clsx("-mx-1 my-1 h-px bg-base-300", className)}
+    className={clsx(
+      "-mx-1 my-1 h-px",
+      " bg-gray-3",
+      " dark:bg-gray-dark-3",
+      className
+    )}
     {...props}
   />
 ));

@@ -25,11 +25,15 @@
   outline: 1px solid slategrey;
 }
 
-.log-window .word-wrap {
-  word-break: break-word;
+.log-window .log-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+}
+
+.log-window .log-row.whole-word .msg {
+  white-space: nowrap;
   overflow-x: hidden;
-  max-width: 99%;
-  overflow-wrap: break-word;
 }
 
 .log-window .timestamp {

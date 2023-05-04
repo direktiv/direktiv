@@ -1,7 +1,7 @@
 import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
-} from "../../design/Breadcump";
+} from "../../design/Breadcrumbs";
 import { ChevronsUpDown, Home, Loader2, PlusCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import {
@@ -30,15 +30,14 @@ const Breadcrumb = () => {
   const { data: availableNamespaces, isLoading } = useListNamespaces();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { path: pathParamsExplorer } = pages.explorer.useParams();
-  const { path: pathParamsWorkflow } = pages.workflow.useParams();
+  const { path: pathParams } = pages.explorer.useParams();
 
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
 
   if (!namespace) return null;
 
-  const path = analyzePath(pathParamsExplorer || pathParamsWorkflow);
+  const path = analyzePath(pathParams);
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);
@@ -46,12 +45,11 @@ const Breadcrumb = () => {
   };
   return (
     <BreadcrumbRoot>
-      <BreadcrumbLink>
-        <Link to={pages.explorer.createHref({ namespace })} className="gap-2">
+      <BreadcrumbLink noArrow>
+        <Link to={pages.explorer.createHref({ namespace })}>
           <Home />
           {namespace}
         </Link>
-        &nbsp;
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

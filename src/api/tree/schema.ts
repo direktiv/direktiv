@@ -29,7 +29,19 @@ export const TreeListSchema = z.object({
       pageInfo: PageinfoSchema,
       results: z.array(NodeSchema),
     })
-    .optional(),
+    .optional(), // not for workflows
+  revision: RevisionSchema.optional(), // only for workflows
+});
+
+export const RevisionsListSchema = z.object({
+  namespace: z.string(),
+  node: NodeSchema,
+  pageInfo: PageinfoSchema,
+  results: z.array(
+    z.object({
+      name: z.string(),
+    })
+  ),
 });
 
 export const TreeFolderCreatedSchema = z.object({

@@ -1,8 +1,8 @@
-import { apiFactory, defaultKeys } from "../../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
+import { apiFactory } from "../../utils";
 import { namespaceKeys } from "..";
 import { sortByName } from "../../tree/utils";
 import { useApiKey } from "../../../util/store/apiKey";
@@ -34,7 +34,7 @@ export const useCreateNamespace = ({
       }),
     onSuccess(data, variables) {
       queryClient.setQueryData<NamespaceListSchemaType>(
-        namespaceKeys.all(apiKey ?? defaultKeys.apiKey),
+        namespaceKeys.all(apiKey ?? undefined),
         (oldData) => {
           if (!oldData) return undefined;
           const oldResults = oldData?.results;

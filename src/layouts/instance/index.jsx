@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import "./style.css";
 
 import {
@@ -643,6 +644,7 @@ function InstanceLogs(props) {
               }}
               filter={showFilterBar}
               setWordWrap={setWordWrap}
+              wordWrap={wordWrap}
               data={data}
             />
           </FlexBox>

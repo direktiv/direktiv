@@ -231,21 +231,29 @@ function ModalOverlay({
 
     for (let i = 0; i < reqFields.length; i++) {
       const rField = reqFields[i];
+      // @ts-expect-error
       if (rField.condition !== undefined) {
+        // @ts-expect-error
         if (!rField.condition) {
+          // @ts-expect-error
           tipMessages.push(rField.tip);
         }
         continue;
       }
 
       // Check if value is set
+      // @ts-expect-error
       if (!rField.value === null || rField.value === undefined) {
+        // @ts-expect-error
         tipMessages.push(rField.tip);
         continue;
       }
 
+      // @ts-expect-error
       const rFieldType = typeof rField.value;
+      // @ts-expect-error
       if (rFieldType === "string" && rField.value === "") {
+        // @ts-expect-error
         tipMessages.push(rField.tip);
       }
     }
@@ -280,13 +288,17 @@ function ModalOverlay({
           const eventTarget: any = e.target;
 
           // Check if event target matches keyboard action id
+          // @ts-expect-error
           if (action.id !== undefined && action.id !== eventTarget.id) {
             return;
           }
 
+          // @ts-expect-error
           if (e.code === action.code) {
             try {
+              // @ts-expect-error
               const result = await action.fn();
+              // @ts-expect-error
               if (!result?.error && action.closeModal) {
                 onClose(false);
               }
@@ -313,7 +325,9 @@ function ModalOverlay({
     return () => {
       for (let i = 0; i < removeListeners.length; i++) {
         window.removeEventListener(
+          // @ts-expect-error
           removeListeners[i].label,
+          // @ts-expect-error
           removeListeners[i].fn
         );
       }
@@ -535,10 +549,13 @@ function generateButtons(
 
     const onClick = async () => {
       try {
+        // @ts-expect-error
         if (btn.onClick) {
+          // @ts-expect-error
           await btn.onClick();
         }
 
+        // @ts-expect-error
         if (btn.closesModal) {
           onClose();
         } else {
@@ -546,7 +563,9 @@ function generateButtons(
           setDisplayAlert(false);
         }
       } catch (e) {
+        // @ts-expect-error
         if (btn.errFunc) {
+          // @ts-expect-error
           await btn.errFunc();
         }
 
@@ -572,10 +591,13 @@ function generateButtons(
           )
           .join("")}
         disabledTooltip={`${validateResults.tips.join(", ")}`}
+        // @ts-expect-error
         disabled={!validateResults.valid && btn.validate}
         onClick={onClick}
+        // @ts-expect-error
         {...btn.buttonProps}
       >
+        {/* @ts-expect-error  */}
         <div>{btn.label}</div>
       </Button>
     );

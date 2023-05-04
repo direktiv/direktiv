@@ -1,4 +1,8 @@
-import { Dialog, DialogContent, DialogTrigger } from "../../../design/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "../../../../design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,19 +10,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../design/Dropdown";
+} from "../../../../design/Dropdown";
 import { FC, Fragment, useEffect, useState } from "react";
 import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
 
-import Button from "../../../design/Button";
+import Button from "../../../../design/Button";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
 import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
-import { analyzePath } from "../../../util/router/utils";
-import { pages } from "../../../util/router/pages";
-import { useListDirectory } from "../../../api/tree/query/get";
-import { useNamespace } from "../../../util/store/namespace";
+import { analyzePath } from "../../../../util/router/utils";
+import { pages } from "../../../../util/router/pages";
+import { useNamespace } from "../../../../util/store/namespace";
+import { useNodeContent } from "../../../../api/tree/query/get";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -37,7 +41,7 @@ const ExplorerHeader: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
-  const { data } = useListDirectory({ path });
+  const { data } = useNodeContent({ path });
   const { segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<
@@ -50,7 +54,7 @@ const ExplorerHeader: FC = () => {
 
   if (!namespace) return null;
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-base-200 p-5 dark:border-gray-dark-5">
+    <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Link

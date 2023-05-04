@@ -8,13 +8,17 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { useMatches, useParams } from "react-router-dom";
+import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
-import ExplorerPage from "../../pages/namespace/Explorer";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "../../pages/namespace/Settings";
-import WorkflowPage from "../../pages/namespace/Workflow";
-import { z } from "zod";
+import TreePage from "../../pages/namespace/Explorer/Tree";
+import WorkflowPage from "../../pages/namespace/Explorer/Workflow";
+import WorkflowPageActive from "../../pages/namespace/Explorer/Workflow/Active";
+import WorkflowPageOverview from "../../pages/namespace/Explorer/Workflow/Overview";
+import WorkflowPageRevisions from "../../pages/namespace/Explorer/Workflow/Revisions";
+import WorkflowPageSettings from "../../pages/namespace/Explorer/Workflow/Settings";
+import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
   name?: string;
@@ -36,24 +40,43 @@ type DefaultPageSetup = Record<
   PageBase & { createHref: (params: { namespace: string }) => string }
 >;
 
+type ExplorerSubpages =
+  | "workflow"
+  | "workflow-revisions"
+  | "workflow-overview"
+  | "workflow-settings";
+
+type ExplorerSubpagesParams =
+  | {
+      subpage?: Exclude<ExplorerSubpages, "workflow-revisions">;
+    }
+  // only workflow-revisions has a optional revision param
+  | {
+      subpage: "workflow-revisions";
+      revision?: string;
+    };
+
 type ExplorerPageSetup = Record<
   "explorer",
   PageBase & {
-    createHref: (params: { namespace: string; path?: string }) => string;
+    createHref: (
+      params: {
+        namespace: string;
+        path?: string;
+        // if no subpage is provided, it opens the tree view
+      } & ExplorerSubpagesParams
+    ) => string;
     useParams: () => {
       namespace: string | undefined;
       path: string | undefined;
-    };
-  }
->;
-
-type WorkflowPageSetup = Record<
-  "workflow",
-  PageBase & {
-    createHref: (params: { namespace: string; path?: string }) => string;
-    useParams: () => {
-      namespace: string | undefined;
-      path: string | undefined;
+      revision: string | undefined;
+      isExplorerPage: boolean;
+      isTreePage: boolean;
+      isWorkflowPage: boolean;
+      isWorkflowActivePage: boolean;
+      isWorkflowRevPage: boolean;
+      isWorkflowOverviewPage: boolean;
+      isWorkflowSettingsPage: boolean;
     };
   }
 >;
@@ -62,7 +85,7 @@ type WorkflowPageSetup = Record<
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
-export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
+export const pages: DefaultPageSetup & ExplorerPageSetup = {
   explorer: {
     name: "Explorer",
     icon: FolderTree,
@@ -71,61 +94,90 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
       if (params.path) {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
-      return `/${params.namespace}/explorer${path}`;
-    },
-    useParams: () => {
-      const { "*": path, namespace } = useParams();
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      // explorer.useParams() can also be called on pages
-      // that are not the explorer page and some params
-      // might accidentally match as well. To prevent that
-      // we use the custom handle we injected in the route
-      const isExplorer = z
-        .object({
-          handle: z.object({
-            isExplorerPage: z.literal(true),
-          }),
-        })
-        .safeParse(secondLevel).success;
-      return {
-        path: isExplorer ? path : undefined,
-        namespace: isExplorer ? namespace : undefined,
+
+      const subfolder: Record<ExplorerSubpages, string> = {
+        workflow: "workflow/active",
+        "workflow-revisions": "workflow/revisions",
+        "workflow-overview": "workflow/overview",
+        "workflow-settings": "workflow/settings",
       };
-    },
-    route: {
-      path: "explorer/*",
-      element: <ExplorerPage />,
-      handle: { isExplorerPage: true },
-    },
-  },
-  workflow: {
-    createHref: (params) => {
-      let path = "";
-      if (params.path) {
-        path = params.path.startsWith("/") ? params.path : `/${params.path}`;
-      }
-      return `/${params.namespace}/workflow${path}`;
+
+      const searchParams = new URLSearchParams({
+        ...(params.subpage === "workflow-revisions" && params.revision
+          ? { revision: params.revision }
+          : {}),
+      });
+      const subpage = params.subpage ? subfolder[params.subpage] : "tree";
+      return `/${
+        params.namespace
+      }/explorer/${subpage}${path}?${searchParams.toString()}`;
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
-      const [, secondLevel] = useMatches();
-      const isWorkflowPage = z
-        .object({
-          handle: z.object({
-            isWorkflowPage: z.literal(true),
-          }),
-        })
-        .safeParse(secondLevel).success;
+      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+      const [searchParams] = useSearchParams();
+
+      // explorer.useParams() can also be called on pages that are not
+      // the explorer page and some params might accidentally match as
+      // well (like wildcards). To prevent that we use custom handles that
+      // we injected in the route objects
+      const isTreePage = checkHandler(thirdLvl, "isTreePage");
+      const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
+      const isExplorerPage = isTreePage || isWorkflowPage;
+      const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
+      const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
+      const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
+      const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
 
       return {
-        path: isWorkflowPage ? path : undefined,
-        namespace: isWorkflowPage ? namespace : undefined,
+        path: isExplorerPage ? path : undefined,
+        namespace: isExplorerPage ? namespace : undefined,
+        isExplorerPage: isTreePage || isWorkflowPage,
+        revision: searchParams.get("revision") ?? undefined,
+        isTreePage,
+        isWorkflowPage,
+        isWorkflowActivePage,
+        isWorkflowRevPage,
+        isWorkflowOverviewPage,
+        isWorkflowSettingsPage,
       };
     },
     route: {
-      path: "workflow/*",
-      element: <WorkflowPage />,
-      handle: { isWorkflowPage: true },
+      path: "explorer/",
+      children: [
+        {
+          path: "tree/*",
+          element: <TreePage />,
+          handle: { isTreePage: true },
+        },
+        {
+          path: "workflow/",
+          element: <WorkflowPage />,
+          handle: { isWorkflowPage: true },
+          children: [
+            {
+              path: "active/*",
+              element: <WorkflowPageActive />,
+              handle: { isActivePage: true },
+            },
+            {
+              path: "revisions/*",
+              element: <WorkflowPageRevisions />,
+              handle: { isRevisionsPage: true },
+            },
+            {
+              path: "overview/*",
+              element: <WorkflowPageOverview />,
+              handle: { isOverviewPage: true },
+            },
+            {
+              path: "settings/*",
+              element: <WorkflowPageSettings />,
+              handle: { isSettingsPage: true },
+            },
+          ],
+        },
+      ],
     },
   },
   monitoring: {
@@ -191,4 +243,4 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & WorkflowPageSetup = {
       element: <SettiongsPage />,
     },
   },
-} as const;
+};

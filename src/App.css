@@ -3,65 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* START overwrite daisyui */
-
-/* no uppercase buttons */
-.btn {
-  @apply normal-case;
-}
-
-/* fix daisyui outline buttons with state colors */
-.btn-outline.btn-info {
-  @apply border-info-content text-info-content;
-}
-
-.btn-outline.btn-success {
-  @apply border-success-content text-success-content;
-}
-
-.btn-outline.btn-warning {
-  @apply border-warning-content text-warning-content;
-}
-
-.btn-outline.btn-error {
-  @apply border-error-content text-error-content;
-}
-
-/* make normal and large variants a bit smaller */
-.btn,
-.input,
-.btn-md,
-.input-md {
-  @apply min-h-8 h-9; /* default is h-12 min-h-12 */
-}
-
-.btn-xs,
-.input-xs {
-  @apply min-h-6 h-6; /* keeps the original */
-}
-
-.btn-sm,
-.input-sm {
-  @apply min-h-8 h-8; /* keeps the original */
-}
-
-.btn-lg,
-.input-lg {
-  @apply min-h-8 h-11; /* default is h-16 min-h-16 */
-}
-
-/* make divider 1px height */
-.divider:after,
-.divider:before {
-  @apply h-px;
-}
-
-/* END START overwrite daisyui */
-
 body,
-html {
+html,
+.docs-story {
   @apply h-full;
   @apply bg-white dark:bg-black;
+  @apply text-gray-11 dark:text-gray-dark-11;
 }
 
 @font-face {

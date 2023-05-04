@@ -1,4 +1,8 @@
-import { Dialog, DialogContent, DialogTrigger } from "../../../design/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "../../../../design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../design/Dropdown";
+} from "../../../../design/Dropdown";
 import { FC, useEffect, useState } from "react";
 import {
   Folder,
@@ -16,25 +20,30 @@ import {
   TextCursorInput,
   Trash,
 } from "lucide-react";
-import { Table, TableBody, TableCell, TableRow } from "../../../design/Table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "../../../../design/Table";
 
-import Button from "../../../design/Button";
-import { Card } from "../../../design/Card";
+import Button from "../../../../design/Button";
+import { Card } from "../../../../design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
-import { NodeSchemaType } from "../../../api/tree/schema";
+import { NodeSchemaType } from "../../../../api/tree/schema";
 import Rename from "./Rename";
-import { analyzePath } from "../../../util/router/utils";
+import { analyzePath } from "../../../../util/router/utils";
 import moment from "moment";
-import { pages } from "../../../util/router/pages";
-import { useListDirectory } from "../../../api/tree/query/get";
-import { useNamespace } from "../../../util/store/namespace";
+import { pages } from "../../../../util/router/pages";
+import { useNamespace } from "../../../../util/store/namespace";
+import { useNodeContent } from "../../../../api/tree/query/get";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const { data } = useListDirectory({ path });
+  const { data } = useNodeContent({ path });
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -84,29 +93,30 @@ const ExplorerPage: FC = () => {
                   {results.map((file) => {
                     const Icon =
                       file.expandedType === "workflow" ? Play : Folder;
-                    const linkTarget =
-                      file.expandedType === "workflow"
-                        ? pages.workflow.createHref({
-                            namespace,
-                            path: file.path,
-                          })
-                        : pages.explorer.createHref({
-                            namespace,
-                            path: file.path,
-                          });
+                    const linkTarget = pages.explorer.createHref({
+                      namespace,
+                      path: file.path,
+                      subpage:
+                        file.expandedType === "workflow"
+                          ? "workflow"
+                          : undefined,
+                    });
+
                     return (
                       <TableRow key={file.name}>
-                        <TableCell className="flex space-x-3">
-                          <Icon className="h-5" />
-                          <Link
-                            to={linkTarget}
-                            className="flex-1 hover:underline"
-                          >
-                            {file.name}
-                          </Link>
-                          <span className="text-gray-8 dark:text-gray-dark-8">
-                            {moment(file.updatedAt).fromNow()}
-                          </span>
+                        <TableCell>
+                          <div className="flex space-x-3">
+                            <Icon className="h-5" />
+                            <Link
+                              to={linkTarget}
+                              className="flex-1 hover:underline"
+                            >
+                              {file.name}
+                            </Link>
+                            <span className="text-gray-8 dark:text-gray-dark-8">
+                              {moment(file.updatedAt).fromNow()}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell className="w-0">
                           <DropdownMenu>

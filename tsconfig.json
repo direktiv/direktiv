@@ -14,8 +14,10 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // if noUncheckedIndexedAccess is false, someArrayOfObj[0].someKey will not raise a TS error if the array is empty
+    "noUncheckedIndexedAccess": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
   },
   "include": ["src"]
 }

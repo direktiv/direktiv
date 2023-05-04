@@ -25,8 +25,8 @@ import {
   Terminal,
   Users,
 } from "lucide-react";
-import { Breadcrumb, BreadcrumbRoot } from "../Breadcump";
-import { DrawerContent, DrawerMenu, DrawerRoot } from "../Drawer";
+import { Breadcrumb, BreadcrumbRoot } from "../Breadcrumbs";
+import { Drawer, DrawerContent, DrawerTrigger } from "../Drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -48,8 +48,8 @@ import {
   SidebarMain,
   SidebarTop,
 } from "./index";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../Tabs";
 
+import Avatar from "../Avatar";
 import Button from "../Button";
 import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
@@ -69,6 +69,13 @@ const navigation = [
   { name: "Gateway", href: "#", icon: Network, current: false },
   { name: "Permissions", href: "#", icon: Users, current: false },
   { name: "Services", href: "#", icon: Layers, current: false },
+  { name: "Settings", href: "#", icon: Settings, current: false },
+];
+
+const tabs = [
+  { name: "Overview", href: "#", icon: PieChart, current: true },
+  { name: "Active Revisions", href: "#", icon: GitCommit, current: false },
+  { name: "Revisions", href: "#", icon: GitMerge, current: false },
   { name: "Settings", href: "#", icon: Settings, current: false },
 ];
 
@@ -137,15 +144,8 @@ const TopRightComponent: FC<{
     </DropdownMenu>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="placeholder avatar"
-          role="button"
-          icon
-        >
-          <div className="h-7 w-7 rounded-full bg-primary-500 text-neutral-content">
-            <span className="text-xs">Ad</span>
-          </div>
+        <Button variant="ghost" role="button" icon>
+          <Avatar>Ad</Avatar>
           <RxChevronDown />
         </Button>
       </DropdownMenuTrigger>
@@ -183,189 +183,9 @@ export const MoreDetailedShell = () => {
   }, [theme]);
   return (
     <Root>
-      <DrawerRoot>
+      <Drawer>
         <DrawerContent>
-          {({ drawerLabelProps }) => (
-            <>
-              <Sidebar version="Version: 78c688e">
-                <SidebarTop>
-                  <label
-                    {...drawerLabelProps}
-                    className="justify-self-start px-1 lg:hidden"
-                    role="button"
-                  >
-                    <Menu />
-                  </label>
-                  <Logo
-                    iconOnly
-                    className="h-8 w-auto justify-self-center sm:hidden"
-                  />
-                  <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
-                  <TopRightComponent
-                    className="justify-self-end lg:hidden"
-                    theme={theme}
-                    onThemeChange={() => {
-                      setTheme((theme) =>
-                        theme === "dark" ? "light" : "dark"
-                      );
-                    }}
-                  />
-                </SidebarTop>
-                <SidebarMain>
-                  {navigation.map((item) => (
-                    <NavigationLink
-                      key={item.name}
-                      href={item.href}
-                      active={item.current}
-                    >
-                      <item.icon aria-hidden="true" />
-                      {item.name}
-                    </NavigationLink>
-                  ))}
-                </SidebarMain>
-              </Sidebar>
-              <Main>
-                <MainTop>
-                  <MainTopLeft>
-                    <BreadcrumbRoot>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <Home className="h-4 w-auto" />
-                          My-namespace
-                        </a>
-                        &nbsp;
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="ghost" circle icon>
-                              <ChevronsUpDown />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem checked>
-                              My-namespace
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem>
-                              second-namespace
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem>
-                              another-namespace
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <PlusCircle className="mr-2 h-4 w-4" />
-                              <span>Create new namespace</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </Breadcrumb>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <Github className="h-4 w-auto" />
-                          Example Mirror
-                        </a>
-                      </Breadcrumb>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <FolderOpen className="h-4 w-auto" />
-                          Folder
-                        </a>
-                      </Breadcrumb>
-                      <Breadcrumb>
-                        <a className="gap-2">
-                          <Play className="h-4 w-auto" />
-                          workflow.yml
-                        </a>
-                      </Breadcrumb>
-                    </BreadcrumbRoot>
-                  </MainTopLeft>
-                  <MainTopRight>
-                    <TopRightComponent
-                      className="max-lg:hidden"
-                      theme={theme}
-                      onThemeChange={() => {
-                        setTheme((theme) =>
-                          theme === "dark" ? "light" : "dark"
-                        );
-                      }}
-                    />
-                  </MainTopRight>
-                </MainTop>
-                <MainContent>
-                  <div className="space-y-5 border-b border-gray-5 bg-base-200 p-5 pb-0 dark:border-gray-dark-5">
-                    <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
-                      <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-                        <Play className="h-5" />
-                        workflow.yml
-                      </h3>
-                      <Button variant="primary">
-                        Actions <RxChevronDown />
-                      </Button>
-                    </div>
-                    <div>
-                      <Tabs defaultValue="overview">
-                        <TabsList>
-                          <TabsTrigger value="overview">
-                            <PieChart
-                              aria-hidden="true"
-                              className="h-4 w-auto"
-                            />
-                            Overview
-                          </TabsTrigger>
-                          <TabsTrigger value="active-rev">
-                            <GitCommit
-                              aria-hidden="true"
-                              className="h-4 w-auto"
-                            />
-                            Active Revisions
-                          </TabsTrigger>
-                          <TabsTrigger value="revisions">
-                            <GitMerge
-                              aria-hidden="true"
-                              className="h-4 w-auto"
-                            />
-                            Revisions
-                          </TabsTrigger>
-                          <TabsTrigger value="settings">
-                            <Settings
-                              aria-hidden="true"
-                              className="h-4 w-auto"
-                            />
-                            Settings
-                          </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="account">
-                          <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-                            Make changes to your account here. Click save when
-                            you&apos;re done.
-                          </p>
-                        </TabsContent>
-                        <TabsContent value="password">
-                          <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-                            Change your password here. After saving, you&apos;ll
-                            be logged out.
-                          </p>
-                        </TabsContent>
-                        <TabsContent value="third">
-                          <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-                            Your third content here
-                          </p>
-                        </TabsContent>
-                        <TabsContent value="fourth">
-                          <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-                            The fourth content comes here
-                          </p>
-                        </TabsContent>
-                      </Tabs>
-                    </div>
-                  </div>
-                </MainContent>
-              </Main>
-            </>
-          )}
-        </DrawerContent>
-        <DrawerMenu>
+          <Logo className="mx-2 mb-5 mt-1 h-8 w-auto" />
           {navigation.map((item) => (
             <NavigationLink
               key={item.name}
@@ -376,8 +196,140 @@ export const MoreDetailedShell = () => {
               {item.name}
             </NavigationLink>
           ))}
-        </DrawerMenu>
-      </DrawerRoot>
+        </DrawerContent>
+        <Sidebar version="Version: 78c688e">
+          <SidebarTop>
+            <label className="justify-self-start px-1 lg:hidden" role="button">
+              <DrawerTrigger asChild>
+                <Menu />
+              </DrawerTrigger>
+            </label>
+            <Logo
+              iconOnly
+              className="h-8 w-auto justify-self-center sm:hidden"
+            />
+            <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
+            <TopRightComponent
+              className="justify-self-end lg:hidden"
+              theme={theme}
+              onThemeChange={() => {
+                setTheme((theme) => (theme === "dark" ? "light" : "dark"));
+              }}
+            />
+          </SidebarTop>
+          <SidebarMain>
+            {navigation.map((item) => (
+              <NavigationLink
+                key={item.name}
+                href={item.href}
+                active={item.current}
+              >
+                <item.icon aria-hidden="true" />
+                {item.name}
+              </NavigationLink>
+            ))}
+          </SidebarMain>
+        </Sidebar>
+        <Main>
+          <MainTop>
+            <MainTopLeft>
+              <BreadcrumbRoot>
+                <Breadcrumb noArrow>
+                  <a>
+                    <Home />
+                    My-namespace
+                  </a>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost" circle icon>
+                        <ChevronsUpDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem checked>
+                        My-namespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem>
+                        second-namespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem>
+                        another-namespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <span>Create new namespace</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </Breadcrumb>
+                <Breadcrumb>
+                  <a>
+                    <Github />
+                    Example Mirror
+                  </a>
+                </Breadcrumb>
+                <Breadcrumb>
+                  <a>
+                    <FolderOpen />
+                    Folder
+                  </a>
+                </Breadcrumb>
+                <Breadcrumb>
+                  <a>
+                    <Play />
+                    workflow.yml
+                  </a>
+                </Breadcrumb>
+              </BreadcrumbRoot>
+            </MainTopLeft>
+            <MainTopRight>
+              <TopRightComponent
+                className="max-lg:hidden"
+                theme={theme}
+                onThemeChange={() => {
+                  setTheme((theme) => (theme === "dark" ? "light" : "dark"));
+                }}
+              />
+            </MainTopRight>
+          </MainTop>
+          <MainContent>
+            <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+              <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between ">
+                <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
+                  <Play className="h-5" />
+                  workflow.yml
+                </h3>
+                <Button variant="primary">
+                  Actions <RxChevronDown />
+                </Button>
+              </div>
+              <div>
+                <nav className="-mb-px flex space-x-8">
+                  {tabs.map((tab) => (
+                    <a
+                      key={tab.name}
+                      href={tab.href}
+                      className={clsx(
+                        tab.current
+                          ? "border-primary-500 text-primary-500"
+                          : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
+                        "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
+                      )}
+                      aria-current={tab.current ? "page" : undefined}
+                    >
+                      <tab.icon aria-hidden="true" className="h-4 w-auto" />{" "}
+                      {tab.name}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            </div>
+          </MainContent>
+        </Main>
+      </Drawer>
     </Root>
   );
 };

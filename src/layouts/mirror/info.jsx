@@ -69,14 +69,14 @@ export default function MirrorInfoPanel(props) {
   // Mirror Info States
   const [infoURL, setInfoURL] = useState("");
   const [infoRef, setInfoRef] = useState("");
-  const [infoCron, setInfoCron] = useState("");
+  const [, setInfoCron] = useState("");
   const [infoPublicKey, setInfoPublicKey] = useState("");
   const [infoPrivateKey, setInfoPrivateKey] = useState("");
   const [infoPassphrase, setInfoPassphrase] = useState("");
 
   const [infoURLOld, setInfoURLOld] = useState("");
   const [infoRefOld, setInfoRefOld] = useState("");
-  const [infoCronOld, setInfoCronOld] = useState("");
+  const [, setInfoCronOld] = useState("");
   const [infoPublicKeyOld] = useState("");
   const [infoPrivateKeyOld] = useState("");
   const [infoPassphraseOld] = useState("");

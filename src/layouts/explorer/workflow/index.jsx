@@ -110,6 +110,10 @@ function InitialWorkflowHook(props) {
     );
   }, [searchParams]);
   // todo handle err from hook below
+
+  const [ts, setTs] = useState(Date.now());
+  const refetch = () => setTs(Date.now());
+
   const {
     data,
     getSuccessFailedMetrics,
@@ -132,9 +136,16 @@ function InitialWorkflowHook(props) {
     discardWorkflow,
     removeTag,
     executeWorkflowRouter,
-  } = useWorkflow(Config.url, true, namespace, filepath.substring(1), apiKey);
-  const [router, setRouter] = useState(null);
+  } = useWorkflow(
+    Config.url,
+    true,
+    namespace,
+    filepath.substring(1),
+    apiKey,
+    `timestamp=${ts}`
+  );
 
+  const [router, setRouter] = useState(null);
   const [revisions, setRevisions] = useState(null);
   // todo handle revsErr
   const [revsErr, setRevsErr] = useState(null);
@@ -263,6 +274,7 @@ function InitialWorkflowHook(props) {
               updateRevisions={() => {
                 setRevisions(null);
               }}
+              refetch={refetch}
               wf={atob(data.revision.source)}
               tabBlocker={tabBlocker}
               setTabBlocker={setTabBlocker}
@@ -370,6 +382,7 @@ function WorkingRevision(props) {
     namespace,
     tabBlocker,
     setTabBlocker,
+    refetch,
   } = props;
 
   const navigate = useNavigate();
@@ -465,6 +478,7 @@ function WorkingRevision(props) {
     updateWorkflow(workflow)
       .then(() => {
         setCanSave(false);
+        refetch();
         setShowErrors(false);
         setTabBlocker(false);
       })
@@ -474,7 +488,14 @@ function WorkingRevision(props) {
         setShowErrors(true);
         pushOpLoadingState("Save", false);
       });
-  }, [workflow, pushOpLoadingState, updateWorkflow, canSave, setTabBlocker]);
+  }, [
+    canSave,
+    pushOpLoadingState,
+    updateWorkflow,
+    workflow,
+    refetch,
+    setTabBlocker,
+  ]);
 
   return (
     <FlexBox style={{ width: "100%" }}>
@@ -702,6 +723,7 @@ function WorkingRevision(props) {
                       updateWorkflow(workflow)
                         .then(() => {
                           setCanSave(false);
+                          refetch();
                           setShowErrors(false);
                           setTabBlocker(false);
                         })
