@@ -9,6 +9,7 @@ import {
 import { addDays, format } from "date-fns";
 import Button from "../Button";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { Card } from "../Card";
 import type { DateRange } from "react-day-picker";
 import { Datepicker } from "./index";
 import type { Meta } from "@storybook/react";
@@ -25,12 +26,9 @@ export default meta;
 export const Default = () => {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   return (
-    <Datepicker
-      mode="single"
-      selected={date}
-      onSelect={setDate}
-      className="rounded-md border"
-    />
+    <Card className="flex w-72 justify-center">
+      <Datepicker mode="single" selected={date} onSelect={setDate} />
+    </Card>
   );
 };
 
@@ -39,18 +37,12 @@ export const DatePicker = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={clsx(
-            "flex w-[280px] justify-start text-left font-normal",
-            !date && "text-gray-10"
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+        <Button variant="outline" className="w-[300px]">
+          <CalendarIcon />
           {date ? format(date, "PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent className="w-auto">
         <Datepicker
           mode="single"
           selected={date}
@@ -74,15 +66,8 @@ export function DateRangePicker({
     <div className={clsx("grid gap-2", className)}>
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            id="date"
-            variant="outline"
-            className={clsx(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-gray-11 dark:text-gray-dark-11"
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+          <Button id="date" variant="outline" className="w-[300px]">
+            <CalendarIcon />
             {date?.from &&
               (date.to ? (
                 <>
@@ -91,8 +76,7 @@ export function DateRangePicker({
                 </>
               ) : (
                 format(date.from, "LLL dd, y")
-              ))}{" "}
-            {!date?.from && <span>Pick a date</span>}
+              ))}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -111,22 +95,15 @@ export function DateRangePicker({
 }
 export function DatepickerWithPresets() {
   const [date, setDate] = React.useState<Date>();
-
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={clsx(
-            "w-[280px] justify-start text-left font-normal",
-            !date && "text-gray-11 dark:text-gray-dark-11"
-          )}
-        >
+        <Button variant="outline" className="w-[300px]">
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? format(date, "PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full flex-col space-y-2 p-2">
+      <PopoverContent className="w-full flex-col space-y-4 p-2">
         <Select
           onValueChange={(value) =>
             setDate(addDays(new Date(), parseInt(value)))
@@ -142,9 +119,7 @@ export function DatepickerWithPresets() {
             <SelectItem value="7">In a week</SelectItem>
           </SelectContent>
         </Select>
-        <div className="rounded-md border">
-          <Datepicker mode="single" selected={date} onSelect={setDate} />
-        </div>
+        <Datepicker mode="single" selected={date} onSelect={setDate} />
       </PopoverContent>
     </Popover>
   );
