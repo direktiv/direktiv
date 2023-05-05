@@ -28,15 +28,15 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../design/Appshell";
+import { Outlet, useLocation } from "react-router-dom";
+import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Avatar from "../../design/Avatar";
 import Breadcrumb from "../../componentsNext/Breadcrumb";
 import Button from "../../design/Button";
-import { FC } from "react";
 import Logo from "../../design/Logo";
 import Navigation from "../../componentsNext/Navigation";
-import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 import { useVersion } from "../../api/version";
@@ -113,6 +113,22 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
 
 const Layout = () => {
   const { data: version } = useVersion();
+  const namespace = useNamespace();
+  const { setNamespace } = useNamespaceActions();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // when url with namespace is called directly, this updates ns in local store
+    const urlNamespace = pathname.split("/")[1];
+
+    if (namespace === urlNamespace) {
+      return;
+    }
+
+    if (urlNamespace) {
+      setNamespace(urlNamespace);
+    }
+  }, [namespace, pathname, setNamespace]);
 
   return (
     <Root>
@@ -145,7 +161,8 @@ const Layout = () => {
             </MainTopRight>
           </MainTop>
           <MainContent>
-            <Outlet />
+            {/* error would be thrown if namespace is not yet defined */}
+            {!!namespace && <Outlet />}
           </MainContent>
         </Main>
         <DrawerContent>
