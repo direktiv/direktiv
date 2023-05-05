@@ -10,6 +10,7 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
     rules: [],
     colors: {
       "editor.background": "#000000",
+      "editor.selectionBackground": "#ffffff2e", // whiteA.whiteA7
     },
   });
 };
