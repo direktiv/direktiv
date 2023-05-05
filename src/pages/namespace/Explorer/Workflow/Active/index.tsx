@@ -11,6 +11,7 @@ import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import Editor from "./Editor";
 import { RxChevronDown } from "react-icons/rx";
+import moment from "moment";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
@@ -36,7 +37,12 @@ const WorkflowOverviewPage: FC = () => {
       <Card className="grow p-4">
         <Editor value={workflowData} onChange={handleEditorChange} />
       </Card>
-      <div className="flex justify-end gap-4">
+      <div className="flex flex-col items-center justify-end gap-4 sm:flex-row">
+        <div className="grow text-sm text-gray-8 dark:text-gray-dark-8">
+          {data?.revision?.createdAt && (
+            <>Updated {moment(data?.revision?.createdAt).fromNow()}</>
+          )}
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
