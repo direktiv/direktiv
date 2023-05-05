@@ -1,3 +1,4 @@
+import { Bug, GitBranchPlus, GitMerge, Play, Save, Undo } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,7 +6,11 @@ import {
   DropdownMenuTrigger,
 } from "../../../../../design/Dropdown";
 import { FC, useState } from "react";
-import { GitBranchPlus, GitMerge, Play, Save, Undo } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../../../../../design/Popover";
 
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
@@ -19,8 +24,15 @@ import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path });
+  const [error, setError] = useState<string | undefined>();
 
-  const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow();
+  const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
+    onError: (error) => {
+      if (typeof error === "object") {
+        setError(`${error?.message}`);
+      }
+    },
+  });
 
   const workflowData = data?.revision?.source && atob(data?.revision?.source);
   const [value, setValue] = useState<string | undefined>(workflowData);
@@ -30,7 +42,7 @@ const WorkflowOverviewPage: FC = () => {
   };
 
   return (
-    <div className="flex grow flex-col space-y-4 p-4">
+    <div className="relative flex grow flex-col space-y-4 p-4">
       <Card className="grow p-4">
         <Editor value={workflowData} onChange={handleEditorChange} />
       </Card>
@@ -40,6 +52,21 @@ const WorkflowOverviewPage: FC = () => {
             <>Updated {moment(data?.revision?.createdAt).fromNow()}</>
           )}
         </div>
+        {error && (
+          <Popover defaultOpen>
+            <PopoverTrigger asChild>
+              <Button variant="destructive">
+                <Bug />
+                There is one issue
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent asChild>
+              <div className="flex">
+                <div className="grow">{error}</div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
@@ -65,6 +92,7 @@ const WorkflowOverviewPage: FC = () => {
           disabled={isLoading}
           onClick={() => {
             if (value && path) {
+              setError(undefined);
               updateWorkflow({
                 path,
                 fileContent: value,

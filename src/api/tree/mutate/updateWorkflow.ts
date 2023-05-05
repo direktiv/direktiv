@@ -6,7 +6,6 @@ import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
-import { useToast } from "../../../design/Toast";
 
 const updateWorkflow = apiFactory({
   pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
@@ -17,10 +16,11 @@ const updateWorkflow = apiFactory({
   schema: WorkflowCreatedSchema,
 });
 
-export const useUpdateWorkflow = () => {
+export const useUpdateWorkflow = ({
+  onError,
+}: { onError?: (e: unknown) => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   if (!namespace) {
@@ -52,12 +52,8 @@ export const useUpdateWorkflow = () => {
         () => data
       );
     },
-    onError: () => {
-      toast({
-        title: "An error occurred",
-        description: "could not update workflow 😢",
-        variant: "error",
-      });
+    onError: (e) => {
+      onError?.(e);
     },
   });
 };
