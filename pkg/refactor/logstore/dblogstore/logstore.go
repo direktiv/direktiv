@@ -44,13 +44,19 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	if err != nil {
 		return err
 	}
-	lvl, err := getLevel(fields)
-	if err != nil {
-		return err
+	cols = append(cols, "t", "msg")
+	vals = append(vals, timestamp, msg)
+	lvl, ok := fields["level"]
+	if ok {
+		switch lvl {
+		case "debug", "info", "error", "panic":
+		default:
+			return fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
+		}
+		cols = append(cols, "level")
+		vals = append(vals, lvl)
+		delete(fields, "level")
 	}
-	delete(fields, "level")
-	cols = append(cols, "t", "msg", "level")
-	vals = append(vals, timestamp, msg, lvl)
 	value, ok := fields["instance-id"]
 	if ok {
 		cols = append(cols, "instance_logs")
@@ -114,7 +120,7 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 // Get implements logstore.LogStore.
 // - To query server-logs pass: "recipientType", "server" via keysAndValues
 // - This method will search for any of followings keys and query all matching logs:
-// level, workflow-id, namespace-id, callpath, root-instance-id, mirror-activity-id, limit, offset
+// level, workflow-id, namespace-id, callpath, root-instance-id, mirror-id, limit, offset
 // Any other passed key value pair will be ignored.
 // limit, offset MUST be passed as integer and are useful for pagination.
 // - level MUST be passed as a string. Valid values are "debug", "info", "error", "panic".
@@ -156,12 +162,12 @@ func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", id))
 	}
-	id, ok = fields["mirror-activity-id"]
+	id, ok = fields["mirror-id"]
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id))
 	}
 	limit, ok := fields["limit"]
-	var limitValue int
+	limitValue := -1
 	if ok {
 		limitValue, ok = limit.(int)
 		if !ok {
@@ -169,7 +175,7 @@ func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([
 		}
 	}
 	offset, ok := fields["offset"]
-	var offsetValue int
+	offsetValue := -1
 	if ok {
 		offsetValue, ok = offset.(int)
 		if !ok {
@@ -211,27 +217,14 @@ func composeQuery(limit, offset int, wEq []string) string {
 		}
 	}
 	q += " ORDER BY t ASC"
-	if limit > 0 {
-		q += fmt.Sprintf(" LIMIT %d", limit)
+	if limit >= 0 {
+		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-	if offset > 0 {
-		q += fmt.Sprintf(" OFFSET %d", offset)
-	}
-
-	return q
-}
-
-func getLevel(fields map[string]interface{}) (string, error) {
-	lvl, ok := fields["level"]
-	if !ok {
-		return "", fmt.Errorf("level was missing as argument in the keysAndValues pair")
-	}
-	switch lvl {
-	case "debug", "info", "error", "panic":
-		return fmt.Sprintf("%s", lvl), nil
+	if offset >= 0 {
+		q += fmt.Sprintf(" OFFSET %d ", offset)
 	}
 
-	return "", fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
+	return q + ";"
 }
 
 func mapKeysAndValues(keysAndValues ...interface{}) (map[string]interface{}, error) {

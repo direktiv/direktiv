@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/logstore"
 	"github.com/direktiv/direktiv/pkg/refactor/logstore/dblogstore"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
+	"github.com/google/uuid"
 )
 
 //go:embed mockdata/entlog_loop.json
@@ -36,13 +38,73 @@ func (r rawlogmsgs) String() string {
 	return fmt.Sprintf("time: %s level: %s msg: %s %s", r.T, r.Level, r.Msg, s)
 }
 
-func Test_Add(t *testing.T) {
+func Test_Add_Get(t *testing.T) {
 	db, err := utils.NewMockGorm()
 	if err != nil {
 		t.Fatal(err)
 	}
 	logstore := dblogstore.NewSQLLogStore(db)
-	loadJSONToDB(t, logstore, loopjson)
+	col := "namespace-id"
+	id := uuid.New()
+	wantMsg := fmt.Sprintf("test msg %d", rand.Intn(100)) //nolint:gosec
+	add(t, logstore, wantMsg, col, id)
+	got, err := logstore.Get(context.Background(), col, id)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(got) != 1 {
+		t.Error("got wrong number of results")
+	}
+	if wantMsg != got[0].Msg {
+		t.Errorf("error: got %s want %s", got[0], wantMsg)
+	}
+	col = "namespace-id"
+	id = uuid.New()
+	addRandomMsgs(t, logstore, col, id)
+	col = "workflow-id"
+	id = uuid.New()
+	addRandomMsgs(t, logstore, col, id)
+	col = "root-instance-id"
+	id = uuid.New()
+	addRandomMsgs(t, logstore, col, id)
+	col = "mirror-id"
+	id = uuid.New()
+	addRandomMsgs(t, logstore, col, id)
+}
+
+func addRandomMsgs(t *testing.T, logstore logstore.LogStore, col string, id uuid.UUID) {
+	t.Helper()
+	want := []string{}
+	for i := 0; i < rand.Intn(20); i++ { //nolint:gosec
+		want = append(want, fmt.Sprintf("test msg %d", rand.Intn(100))) //nolint:gosec
+	}
+	for _, v := range want {
+		add(t, logstore, v, col, id)
+	}
+	got, err := logstore.Get(context.Background(), col, id)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(got) != len(want) {
+		t.Error("got wrong number of results")
+	}
+	for _, le := range got {
+		ok := false
+		for _, v := range want {
+			ok = ok || v == le.Msg
+		}
+		if !ok {
+			t.Errorf("log entry is not found %s", le.Msg)
+		}
+	}
+}
+
+func add(t *testing.T, logstore logstore.LogStore, wantMsg string, nsName string, nsID uuid.UUID) {
+	t.Helper()
+	err := logstore.Append(context.Background(), time.Now(), wantMsg, nsName, nsID)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func Test_Get(t *testing.T) {
@@ -52,7 +114,7 @@ func Test_Get(t *testing.T) {
 	}
 	logstore := dblogstore.NewSQLLogStore(db)
 	o := loadJSONToDB(t, logstore, loopjson)
-	logs, err := logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "1a0d5909-223f-4f44-86d7-1833ab4d21c8", "isCallerRoot", true)
+	logs, err := logstore.Get(context.Background(), "callpath", "/", "rootInstanceID", "1a0d5909-223f-4f44-86d7-1833ab4d21c8")
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +133,7 @@ func Test_GetNestedLogs(t *testing.T) {
 	}
 	logstore := dblogstore.NewSQLLogStore(db)
 	o := loadJSONToDB(t, logstore, loopjsonnested)
-	logs, err := logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "isCallerRoot", true)
+	logs, err := logstore.Get(context.Background(), "callpath", "/", "root-instance-id", "c8a13535-b5ae-469b-98f2-e64a831067f9")
 	if err != nil {
 		t.Error(err)
 	}
@@ -81,7 +143,7 @@ func Test_GetNestedLogs(t *testing.T) {
 	if len(logs) != len(o) {
 		t.Error("some result are missing")
 	}
-	logs, err = logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/c8a13535-b5ae-469b-98f2-e64a831067f9", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "isCallerRoot", false)
+	logs, err = logstore.Get(context.Background(), "callpath", "/c8a13535-b5ae-469b-98f2-e64a831067f9", "root-instance-id", "c8a13535-b5ae-469b-98f2-e64a831067f9")
 	if err != nil {
 		t.Error(err)
 	}
@@ -105,7 +167,7 @@ func Test_GetNestedLogs(t *testing.T) {
 	if len(logs) < len(want) {
 		t.Error("some result are missing")
 	}
-	logs, err = logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "level", "debug", "isCallerRoot", true)
+	logs, err = logstore.Get(context.Background(), "callpath", "/", "root-instance-id", "c8a13535-b5ae-469b-98f2-e64a831067f9", "level", "debug")
 	if err != nil {
 		t.Error(err)
 	}
@@ -115,7 +177,24 @@ func Test_GetNestedLogs(t *testing.T) {
 	if len(logs) != len(o) {
 		t.Error("debug level should filter out any log-entry")
 	}
-	logs, err = logstore.Get(context.Background(), "recipientType", "instance", "callpath", "/", "rootInstanceID", "c8a13535-b5ae-469b-98f2-e64a831067f9", "level", "info", "isCallerRoot", true)
+	logs, err = logstore.Get(context.Background(), "root-instance-id", "c8a13535-b5ae-469b-98f2-e64a831067f9", "offset", 10, "limit", 1000)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) < 1 {
+		t.Error("got no results")
+	}
+	if len(logs) != len(o)-10 {
+		t.Error("offset was not applied")
+	}
+	logs, err = logstore.Get(context.Background(), "callpath", "/", "root-instance-id", "c8a13535-b5ae-469b-98f2-e64a831067f9", "limit", 5)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(logs) != 5 {
+		t.Error("results should be limited to 5")
+	}
+	logs, err = logstore.Get(context.Background(), "callpath", "/", "root-instance-id", "c8a13535-b5ae-469b-98f2-e64a831067f9", "level", "info")
 	if err != nil {
 		t.Error(err)
 	}
@@ -144,7 +223,7 @@ func loadJSONToDB(t *testing.T, logstore logstore.LogStore, jsondump string) []*
 		}
 		if val == "instance" {
 			root := getRoot(e.Tags["callpath"], e.Tags["instance-id"])
-			keyValue = append(keyValue, "rootInstanceID")
+			keyValue = append(keyValue, "root-instance-id")
 			keyValue = append(keyValue, root)
 		}
 		keyValue = append(keyValue, "level")
