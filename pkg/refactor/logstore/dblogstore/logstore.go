@@ -119,11 +119,11 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 
 // Get implements logstore.LogStore.
 // - To query server-logs pass: "recipientType", "server" via keysAndValues
-// - This method will search for any of followings keys and query all matching logs:
-// level, workflow-id, namespace-id, callpath, root-instance-id, mirror-id, limit, offset
-// Any other passed key value pair will be ignored.
-// limit, offset MUST be passed as integer and are useful for pagination.
+// - For pagination pass limit and | or offset. They MUST be passed as integer.
 // - level MUST be passed as a string. Valid values are "debug", "info", "error", "panic".
+// - This method will search for any of followings keys and query all matching logs:
+// level, workflow-id, namespace-id, callpath, root-instance-id, mirror-id
+// Any other not mentioned passed key value pair will be ignored.
 // Returned log-entries will have same or higher level as the passed one.
 // - Passing a callpath will return all logs which have a callpath with the prefix as the passed callpath value.
 // when passing callpath the root-instance-id SHOULD be passed to optimize the performance of the query.
