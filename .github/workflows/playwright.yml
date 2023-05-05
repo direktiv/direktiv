@@ -21,7 +21,7 @@ jobs:
       - name: Run Playwright tests
         run: yarn playwright test
         env:
-          VITE_DEV_API_DOMAIN: http://167.235.196.209/
+          VITE_DEV_API_DOMAIN: ${{ vars.VITE_DEV_API_DOMAIN }}
       - uses: actions/upload-artifact@v3
         if: always()
         with:
