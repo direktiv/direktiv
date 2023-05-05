@@ -195,7 +195,7 @@ const ExplorerPage: FC = () => {
               )}
             >
               <FolderOpen />
-              <div>this directoy is empty</div>
+              <div>this directory is empty</div>
             </div>
           )}
         </Card>
