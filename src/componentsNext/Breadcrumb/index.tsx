@@ -27,7 +27,11 @@ import { useState } from "react";
 
 const Breadcrumb = () => {
   const namespace = useNamespace();
-  const { data: availableNamespaces, isLoading } = useListNamespaces();
+  const {
+    data: availableNamespaces,
+    isLoading,
+    isSuccess,
+  } = useListNamespaces();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { path: pathParams } = pages.explorer.useParams();
@@ -74,6 +78,9 @@ const Breadcrumb = () => {
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
+              {isSuccess && availableNamespaces?.results.length === 0 && (
+                <DropdownMenuItem disabled>no Namespaces</DropdownMenuItem>
+              )}
               {isLoading && (
                 <DropdownMenuItem disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
