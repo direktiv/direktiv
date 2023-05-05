@@ -2,19 +2,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../../../../../design/Dropdown";
 import { FC, useState } from "react";
-import {
-  GitBranchPlus,
-  GitMerge,
-  Play,
-  Save,
-  Settings,
-  Undo,
-  WrapText,
-} from "lucide-react";
+import { GitBranchPlus, GitMerge, Play, Save, Undo } from "lucide-react";
 
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
@@ -46,22 +37,6 @@ const WorkflowOverviewPage: FC = () => {
         <Editor value={workflowData} onChange={handleEditorChange} />
       </Card>
       <div className="flex justify-end gap-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <Settings />
-              Settings <RxChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>
-              <WrapText className="mr-2 h-4 w-4" /> Word Wrap
-            </DropdownMenuLabel>
-            <DropdownMenuItem>
-              <WrapText className="mr-2 h-4 w-4" /> wordWrap
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
