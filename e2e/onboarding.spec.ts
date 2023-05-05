@@ -1,10 +1,10 @@
-import { deleteNamespace, mockNamespace } from "./utils/namespace";
+import { deleteNamespace, getNamespaceName } from "./utils/namespace";
 import { expect, test } from "@playwright/test";
 
 test("if no namespaces exist, it renders the onboarding page", async ({
   page,
 }) => {
-  const namespace = mockNamespace();
+  const namespace = getNamespaceName();
   // mock namespaces endpoint with empty results
   await page.route("http://localhost:3000/api/namespaces", async (route) => {
     if (route.request().method() === "GET") {

@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../design/Dropdown";
+import { FC, useEffect } from "react";
 import {
   Main,
   MainContent,
@@ -49,7 +50,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
     <div className={clsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" icon>
+          <Button variant="ghost" icon data-testid="dropdown-trg-appearance">
             <Settings2 />
             <RxChevronDown />
           </Button>
@@ -93,6 +94,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
             className="items-center px-1"
             role="button"
             icon
+            data-testid="dropdown-trg-user"
           >
             <Avatar>Ad</Avatar>
             <RxChevronDown />
