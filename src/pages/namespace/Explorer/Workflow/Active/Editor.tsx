@@ -3,7 +3,7 @@ import { FC } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { useTheme } from "../../../../../util/store/theme";
 
-function setEditorTheme(monaco: any) {
+const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   monaco.editor.defineTheme("direktiv-dark", {
     base: "vs-dark",
     inherit: true,
@@ -12,13 +12,23 @@ function setEditorTheme(monaco: any) {
       "editor.background": "#000000",
     },
   });
-}
+};
 
-const Editor: FC<EditorProps> = ({ ...props }) => {
+const onMount: EditorProps["onMount"] = (editor, monaco) => {
+  editor.addCommand(monaco.KeyCode.KEY_S, () => {
+    alert("you've the s key");
+  });
+};
+
+const Editor: FC<Omit<EditorProps, "beforeMount" | "onMount">> = ({
+  options,
+  ...props
+}) => {
   const theme = useTheme();
   return (
     <MonacoEditor
-      beforeMount={setEditorTheme}
+      beforeMount={beforeMount}
+      onMount={onMount}
       options={{
         scrollBeyondLastLine: false,
         cursorBlinking: "smooth",
@@ -27,6 +37,7 @@ const Editor: FC<EditorProps> = ({ ...props }) => {
         minimap: {
           enabled: false,
         },
+        ...options,
       }}
       loading=""
       language="yaml"
