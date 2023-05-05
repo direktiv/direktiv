@@ -20,6 +20,8 @@ jobs:
         run: yarn playwright install --with-deps
       - name: Run Playwright tests
         run: yarn playwright test
+        env:
+          VITE_DEV_API_DOMAIN: http://167.235.196.209/
       - uses: actions/upload-artifact@v3
         if: always()
         with:
