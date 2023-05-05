@@ -18,10 +18,7 @@ import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
-
-  const { data } = useNodeContent({
-    path,
-  });
+  const { data } = useNodeContent({ path });
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow();
 
