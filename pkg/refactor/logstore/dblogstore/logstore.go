@@ -32,11 +32,11 @@ type SQLLogStore struct {
 }
 
 // Append implements logstore.LogStore.
-// For instance-logs following Key Value pairs SHOULD be present: instance-id, callpath, roottinsanceid
-// For namespace-logs following Key Value pairs SHOULD be present: namespace-id
-// For mirror-logs following Key Value pairs SHOULD be present: mirror-id
-// For workflow-logs following Key Value pairs SHOULD be present: workflow_id
-// Any other keysAndValues pair will be stored as tags attached to the log-entry.
+// - For instance-logs following Key Value pairs SHOULD be present: instance-id, callpath, root-instance-id
+// - For namespace-logs following Key Value pairs SHOULD be present: namespace-id
+// - For mirror-logs following Key Value pairs SHOULD be present: mirror-id
+// - For workflow-logs following Key Value pairs SHOULD be present: workflow-id
+// - All passed keysAndValues pair will be stored attached to the log-entry.
 func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues ...interface{}) error {
 	fields, err := mapKeysAndValues(keysAndValues...)
 	cols := make([]string, 0, len(keysAndValues))
@@ -62,11 +62,11 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		vals = append(vals, value)
 		delete(fields, "callpath")
 	}
-	value, ok = fields["rootInstanceID"]
+	value, ok = fields["root-instance-id"]
 	if ok {
 		cols = append(cols, "root_instance_id")
 		vals = append(vals, value)
-		delete(fields, "rootInstanceID")
+		delete(fields, "root-instance-id")
 	}
 	value, ok = fields["workflow-id"]
 	if ok {
@@ -112,13 +112,15 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 }
 
 // Get implements logstore.LogStore.
-// To query server-logs pass: "recipientType", "server" via keysAndValues
-// This method will search for any of those keys and query all logs:
-// level, workflow-id, namespace-id, callpath, rootInstanceID-id, mirror-activity-id, limit, offset
+// - To query server-logs pass: "recipientType", "server" via keysAndValues
+// - This method will search for any of followings keys and query all matching logs:
+// level, workflow-id, namespace-id, callpath, root-instance-id, mirror-activity-id, limit, offset
+// Any other passed key value pair will be ignored.
 // limit, offset MUST be passed as integer and are useful for pagination.
-// level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic". Returned log-entries will have same or higher level as the passed one.
-// passing a callpath will return all logs which have a callpath with the prefix as the passed callpath value.
-// when passing callpath the rootInstanceID-id SHOULD be passed to optimize the performance of the query.
+// - level MUST be passed as a string. Valid values are "debug", "info", "error", "panic".
+// Returned log-entries will have same or higher level as the passed one.
+// - Passing a callpath will return all logs which have a callpath with the prefix as the passed callpath value.
+// when passing callpath the root-instance-id SHOULD be passed to optimize the performance of the query.
 func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([]*logstore.LogEntry, error) {
 	fields, err := mapKeysAndValues(keysAndValues...)
 	if err != nil {
@@ -150,7 +152,7 @@ func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	}
-	id, ok = fields["rootInstanceID-id"]
+	id, ok = fields["root-instance-id"]
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", id))
 	}
