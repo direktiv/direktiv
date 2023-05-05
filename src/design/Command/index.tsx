@@ -27,7 +27,7 @@ Command.displayName = CommandPrimitive.displayName;
 const CommandDialog = ({ children, ...props }: DialogPrimitive.DialogProps) => (
   <Dialog {...props}>
     <DialogContent className="overflow-hidden p-0 shadow-2xl">
-      <Command className="[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+      <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-11 dark:[&_[cmdk-group-heading]]:text-gray-dark-11 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
         {children}
       </Command>
     </DialogContent>
@@ -108,7 +108,7 @@ const CommandSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Separator
     ref={ref}
-    className={clsx("bg-border -mx-1 h-px", className)}
+    className={clsx("-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
     {...props}
   />
 ));
@@ -121,9 +121,9 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "aria-selected:bg-gray-8 aria-selected:text-gray-12",
-      "dark:aria-selected:bg-gray-dark-8 dark:aria-selected:text-gray-dark-12",
+      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium  outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "aria-selected:bg-gray-3",
+      "dark:aria-selected:bg-gray-dark-3 ",
       className
     )}
     {...props}
@@ -139,8 +139,8 @@ const CommandShortcut = ({
   <span
     className={clsx(
       "ml-auto text-xs tracking-widest",
-      " text-gray-10",
-      "dark:text-gray-10",
+      "text-gray-8",
+      "dark:text-gray-8",
       className
     )}
     {...props}

@@ -59,7 +59,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <div className="items-top flex space-x-2">
+    <div className="flex items-center space-x-2">
       <Command>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
@@ -179,48 +179,6 @@ export function CommandDialogDemo() {
               <span>Settings</span>
               <CommandShortcut>⌘S</CommandShortcut>
             </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
-  );
-}
-
-export function CommandMenu() {
-  const [open, setOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && e.metaKey) {
-        setOpen((open) => !open);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
-
-  return (
-    <>
-      <p className="text-sm text-gray-11 dark:text-gray-dark-11">
-        Press{" "}
-        <kbd
-          className={clsx(
-            "pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100",
-            "bg-gray-1text-gray-11 ",
-            "dark:bg-gray-dark-1 dark:text-gray-dark-11"
-          )}
-        >
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </p>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
-            <CommandItem>Calendar</CommandItem>
-            <CommandItem>Search Emoji</CommandItem>
-            <CommandItem>Calculator</CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
@@ -359,7 +317,7 @@ export function CommandPopover() {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="p-0" side="right" align="start">
+        <PopoverContent className="p-0" side="bottom" align="start">
           <Command>
             <CommandInput placeholder="Change status..." />
             <CommandList>
@@ -416,7 +374,7 @@ export function CommandDropdownMenu() {
         <span className="mr-2 rounded-lg bg-gray-11 px-2 py-1 text-xs text-gray-1 dark:bg-gray-dark-11 dark:text-gray-dark-1">
           {label}
         </span>
-        <span className="text-muted-foreground">Create a new project</span>
+        <span className="text-gray-11">Create a new project</span>
       </p>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
