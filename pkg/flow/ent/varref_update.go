@@ -166,40 +166,7 @@ func (vru *VarRefUpdate) ClearInstance() *VarRefUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (vru *VarRefUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(vru.hooks) == 0 {
-		if err = vru.check(); err != nil {
-			return 0, err
-		}
-		affected, err = vru.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*VarRefMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = vru.check(); err != nil {
-				return 0, err
-			}
-			vru.mutation = mutation
-			affected, err = vru.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(vru.hooks) - 1; i >= 0; i-- {
-			if vru.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = vru.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, vru.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, VarRefMutation](ctx, vru.sqlSave, vru.mutation, vru.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -244,16 +211,10 @@ func (vru *VarRefUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VarRef
 }
 
 func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   varref.Table,
-			Columns: varref.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: varref.FieldID,
-			},
-		},
+	if err := vru.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(varref.Table, varref.Columns, sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID))
 	if ps := vru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -287,10 +248,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{varref.VardataColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: vardata.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -303,10 +261,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{varref.VardataColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: vardata.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -322,10 +277,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{varref.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -338,10 +290,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{varref.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -357,10 +306,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{varref.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -373,10 +319,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{varref.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -393,6 +336,7 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	vru.mutation.done = true
 	return n, nil
 }
 
@@ -537,6 +481,12 @@ func (vruo *VarRefUpdateOne) ClearInstance() *VarRefUpdateOne {
 	return vruo
 }
 
+// Where appends a list predicates to the VarRefUpdate builder.
+func (vruo *VarRefUpdateOne) Where(ps ...predicate.VarRef) *VarRefUpdateOne {
+	vruo.mutation.Where(ps...)
+	return vruo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (vruo *VarRefUpdateOne) Select(field string, fields ...string) *VarRefUpdateOne {
@@ -546,46 +496,7 @@ func (vruo *VarRefUpdateOne) Select(field string, fields ...string) *VarRefUpdat
 
 // Save executes the query and returns the updated VarRef entity.
 func (vruo *VarRefUpdateOne) Save(ctx context.Context) (*VarRef, error) {
-	var (
-		err  error
-		node *VarRef
-	)
-	if len(vruo.hooks) == 0 {
-		if err = vruo.check(); err != nil {
-			return nil, err
-		}
-		node, err = vruo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*VarRefMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = vruo.check(); err != nil {
-				return nil, err
-			}
-			vruo.mutation = mutation
-			node, err = vruo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(vruo.hooks) - 1; i >= 0; i-- {
-			if vruo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = vruo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, vruo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*VarRef)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from VarRefMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*VarRef, VarRefMutation](ctx, vruo.sqlSave, vruo.mutation, vruo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -630,16 +541,10 @@ func (vruo *VarRefUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Va
 }
 
 func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   varref.Table,
-			Columns: varref.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: varref.FieldID,
-			},
-		},
+	if err := vruo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(varref.Table, varref.Columns, sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID))
 	id, ok := vruo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "VarRef.id" for update`)}
@@ -690,10 +595,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Columns: []string{varref.VardataColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: vardata.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -706,10 +608,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Columns: []string{varref.VardataColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: vardata.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -725,10 +624,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Columns: []string{varref.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -741,10 +637,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Columns: []string{varref.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -760,10 +653,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Columns: []string{varref.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -776,10 +666,7 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Columns: []string{varref.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -799,5 +686,6 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 		}
 		return nil, err
 	}
+	vruo.mutation.done = true
 	return _node, nil
 }

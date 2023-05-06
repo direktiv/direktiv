@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (vrd *VarRefDelete) Where(ps ...predicate.VarRef) *VarRefDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (vrd *VarRefDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(vrd.hooks) == 0 {
-		affected, err = vrd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*VarRefMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			vrd.mutation = mutation
-			affected, err = vrd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(vrd.hooks) - 1; i >= 0; i-- {
-			if vrd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = vrd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, vrd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, VarRefMutation](ctx, vrd.sqlExec, vrd.mutation, vrd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (vrd *VarRefDelete) ExecX(ctx context.Context) int {
 }
 
 func (vrd *VarRefDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: varref.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: varref.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(varref.Table, sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID))
 	if ps := vrd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (vrd *VarRefDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	vrd.mutation.done = true
 	return affected, err
 }
 
 // VarRefDeleteOne is the builder for deleting a single VarRef entity.
 type VarRefDeleteOne struct {
 	vrd *VarRefDelete
+}
+
+// Where appends a list predicates to the VarRefDelete builder.
+func (vrdo *VarRefDeleteOne) Where(ps ...predicate.VarRef) *VarRefDeleteOne {
+	vrdo.vrd.mutation.Where(ps...)
+	return vrdo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (vrdo *VarRefDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (vrdo *VarRefDeleteOne) ExecX(ctx context.Context) {
-	vrdo.vrd.ExecX(ctx)
+	if err := vrdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -66,40 +66,7 @@ func (cefu *CloudEventFiltersUpdate) ClearNamespace() *CloudEventFiltersUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (cefu *CloudEventFiltersUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(cefu.hooks) == 0 {
-		if err = cefu.check(); err != nil {
-			return 0, err
-		}
-		affected, err = cefu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*CloudEventFiltersMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = cefu.check(); err != nil {
-				return 0, err
-			}
-			cefu.mutation = mutation
-			affected, err = cefu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(cefu.hooks) - 1; i >= 0; i-- {
-			if cefu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = cefu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, cefu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, CloudEventFiltersMutation](ctx, cefu.sqlSave, cefu.mutation, cefu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -149,16 +116,10 @@ func (cefu *CloudEventFiltersUpdate) Modify(modifiers ...func(u *sql.UpdateBuild
 }
 
 func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   cloudeventfilters.Table,
-			Columns: cloudeventfilters.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: cloudeventfilters.FieldID,
-			},
-		},
+	if err := cefu.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(cloudeventfilters.Table, cloudeventfilters.Columns, sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt))
 	if ps := cefu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -180,10 +141,7 @@ func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err er
 			Columns: []string{cloudeventfilters.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -196,10 +154,7 @@ func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err er
 			Columns: []string{cloudeventfilters.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -216,6 +171,7 @@ func (cefu *CloudEventFiltersUpdate) sqlSave(ctx context.Context) (n int, err er
 		}
 		return 0, err
 	}
+	cefu.mutation.done = true
 	return n, nil
 }
 
@@ -262,6 +218,12 @@ func (cefuo *CloudEventFiltersUpdateOne) ClearNamespace() *CloudEventFiltersUpda
 	return cefuo
 }
 
+// Where appends a list predicates to the CloudEventFiltersUpdate builder.
+func (cefuo *CloudEventFiltersUpdateOne) Where(ps ...predicate.CloudEventFilters) *CloudEventFiltersUpdateOne {
+	cefuo.mutation.Where(ps...)
+	return cefuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (cefuo *CloudEventFiltersUpdateOne) Select(field string, fields ...string) *CloudEventFiltersUpdateOne {
@@ -271,46 +233,7 @@ func (cefuo *CloudEventFiltersUpdateOne) Select(field string, fields ...string) 
 
 // Save executes the query and returns the updated CloudEventFilters entity.
 func (cefuo *CloudEventFiltersUpdateOne) Save(ctx context.Context) (*CloudEventFilters, error) {
-	var (
-		err  error
-		node *CloudEventFilters
-	)
-	if len(cefuo.hooks) == 0 {
-		if err = cefuo.check(); err != nil {
-			return nil, err
-		}
-		node, err = cefuo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*CloudEventFiltersMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = cefuo.check(); err != nil {
-				return nil, err
-			}
-			cefuo.mutation = mutation
-			node, err = cefuo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(cefuo.hooks) - 1; i >= 0; i-- {
-			if cefuo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = cefuo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, cefuo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*CloudEventFilters)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from CloudEventFiltersMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*CloudEventFilters, CloudEventFiltersMutation](ctx, cefuo.sqlSave, cefuo.mutation, cefuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -360,16 +283,10 @@ func (cefuo *CloudEventFiltersUpdateOne) Modify(modifiers ...func(u *sql.UpdateB
 }
 
 func (cefuo *CloudEventFiltersUpdateOne) sqlSave(ctx context.Context) (_node *CloudEventFilters, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   cloudeventfilters.Table,
-			Columns: cloudeventfilters.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: cloudeventfilters.FieldID,
-			},
-		},
+	if err := cefuo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(cloudeventfilters.Table, cloudeventfilters.Columns, sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt))
 	id, ok := cefuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "CloudEventFilters.id" for update`)}
@@ -408,10 +325,7 @@ func (cefuo *CloudEventFiltersUpdateOne) sqlSave(ctx context.Context) (_node *Cl
 			Columns: []string{cloudeventfilters.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -424,10 +338,7 @@ func (cefuo *CloudEventFiltersUpdateOne) sqlSave(ctx context.Context) (_node *Cl
 			Columns: []string{cloudeventfilters.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -447,5 +358,6 @@ func (cefuo *CloudEventFiltersUpdateOne) sqlSave(ctx context.Context) (_node *Cl
 		}
 		return nil, err
 	}
+	cefuo.mutation.done = true
 	return _node, nil
 }

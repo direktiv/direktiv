@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (lmd *LogMsgDelete) Where(ps ...predicate.LogMsg) *LogMsgDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (lmd *LogMsgDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(lmd.hooks) == 0 {
-		affected, err = lmd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*LogMsgMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			lmd.mutation = mutation
-			affected, err = lmd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(lmd.hooks) - 1; i >= 0; i-- {
-			if lmd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = lmd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, lmd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, LogMsgMutation](ctx, lmd.sqlExec, lmd.mutation, lmd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (lmd *LogMsgDelete) ExecX(ctx context.Context) int {
 }
 
 func (lmd *LogMsgDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: logmsg.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: logmsg.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(logmsg.Table, sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID))
 	if ps := lmd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (lmd *LogMsgDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	lmd.mutation.done = true
 	return affected, err
 }
 
 // LogMsgDeleteOne is the builder for deleting a single LogMsg entity.
 type LogMsgDeleteOne struct {
 	lmd *LogMsgDelete
+}
+
+// Where appends a list predicates to the LogMsgDelete builder.
+func (lmdo *LogMsgDeleteOne) Where(ps ...predicate.LogMsg) *LogMsgDeleteOne {
+	lmdo.lmd.mutation.Where(ps...)
+	return lmdo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (lmdo *LogMsgDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (lmdo *LogMsgDeleteOne) ExecX(ctx context.Context) {
-	lmdo.lmd.ExecX(ctx)
+	if err := lmdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

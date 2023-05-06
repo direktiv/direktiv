@@ -256,50 +256,8 @@ func (irc *InstanceRuntimeCreate) Mutation() *InstanceRuntimeMutation {
 
 // Save creates the InstanceRuntime in the database.
 func (irc *InstanceRuntimeCreate) Save(ctx context.Context) (*InstanceRuntime, error) {
-	var (
-		err  error
-		node *InstanceRuntime
-	)
 	irc.defaults()
-	if len(irc.hooks) == 0 {
-		if err = irc.check(); err != nil {
-			return nil, err
-		}
-		node, err = irc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*InstanceRuntimeMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = irc.check(); err != nil {
-				return nil, err
-			}
-			irc.mutation = mutation
-			if node, err = irc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(irc.hooks) - 1; i >= 0; i-- {
-			if irc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = irc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, irc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*InstanceRuntime)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from InstanceRuntimeMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*InstanceRuntime, InstanceRuntimeMutation](ctx, irc.sqlSave, irc.mutation, irc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -344,6 +302,9 @@ func (irc *InstanceRuntimeCreate) check() error {
 }
 
 func (irc *InstanceRuntimeCreate) sqlSave(ctx context.Context) (*InstanceRuntime, error) {
+	if err := irc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := irc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, irc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -358,19 +319,15 @@ func (irc *InstanceRuntimeCreate) sqlSave(ctx context.Context) (*InstanceRuntime
 			return nil, err
 		}
 	}
+	irc.mutation.id = &_node.ID
+	irc.mutation.done = true
 	return _node, nil
 }
 
 func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.CreateSpec) {
 	var (
 		_node = &InstanceRuntime{config: irc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: instanceruntime.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: instanceruntime.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(instanceruntime.Table, sqlgraph.NewFieldSpec(instanceruntime.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = irc.conflict
 	if id, ok := irc.mutation.ID(); ok {
@@ -441,10 +398,7 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 			Columns: []string{instanceruntime.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -461,10 +415,7 @@ func (irc *InstanceRuntimeCreate) createSpec() (*InstanceRuntime, *sqlgraph.Crea
 			Columns: []string{instanceruntime.CallerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -102,14 +102,14 @@ func (ew *EventsWait) assignValues(columns []string, values []any) error {
 
 // QueryWorkflowevent queries the "workflowevent" edge of the EventsWait entity.
 func (ew *EventsWait) QueryWorkflowevent() *EventsQuery {
-	return (&EventsWaitClient{config: ew.config}).QueryWorkflowevent(ew)
+	return NewEventsWaitClient(ew.config).QueryWorkflowevent(ew)
 }
 
 // Update returns a builder for updating this EventsWait.
 // Note that you need to call EventsWait.Unwrap() before calling this method if this EventsWait
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (ew *EventsWait) Update() *EventsWaitUpdateOne {
-	return (&EventsWaitClient{config: ew.config}).UpdateOne(ew)
+	return NewEventsWaitClient(ew.config).UpdateOne(ew)
 }
 
 // Unwrap unwraps the EventsWait entity that was returned from a transaction after it was closed,
@@ -136,9 +136,3 @@ func (ew *EventsWait) String() string {
 
 // EventsWaits is a parsable slice of EventsWait.
 type EventsWaits []*EventsWait
-
-func (ew EventsWaits) config(cfg config) {
-	for _i := range ew {
-		ew[_i].config = cfg
-	}
-}

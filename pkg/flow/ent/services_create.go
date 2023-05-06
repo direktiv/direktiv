@@ -103,50 +103,8 @@ func (sc *ServicesCreate) Mutation() *ServicesMutation {
 
 // Save creates the Services in the database.
 func (sc *ServicesCreate) Save(ctx context.Context) (*Services, error) {
-	var (
-		err  error
-		node *Services
-	)
 	sc.defaults()
-	if len(sc.hooks) == 0 {
-		if err = sc.check(); err != nil {
-			return nil, err
-		}
-		node, err = sc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ServicesMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = sc.check(); err != nil {
-				return nil, err
-			}
-			sc.mutation = mutation
-			if node, err = sc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(sc.hooks) - 1; i >= 0; i-- {
-			if sc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = sc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, sc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Services)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from ServicesMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*Services, ServicesMutation](ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -226,6 +184,9 @@ func (sc *ServicesCreate) check() error {
 }
 
 func (sc *ServicesCreate) sqlSave(ctx context.Context) (*Services, error) {
+	if err := sc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := sc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, sc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -240,19 +201,15 @@ func (sc *ServicesCreate) sqlSave(ctx context.Context) (*Services, error) {
 			return nil, err
 		}
 	}
+	sc.mutation.id = &_node.ID
+	sc.mutation.done = true
 	return _node, nil
 }
 
 func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Services{config: sc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: services.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: services.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(services.Table, sqlgraph.NewFieldSpec(services.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = sc.conflict
 	if id, ok := sc.mutation.ID(); ok {
@@ -287,10 +244,7 @@ func (sc *ServicesCreate) createSpec() (*Services, *sqlgraph.CreateSpec) {
 			Columns: []string{services.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

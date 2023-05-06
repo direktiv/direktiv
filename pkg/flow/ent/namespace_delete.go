@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (nd *NamespaceDelete) Where(ps ...predicate.Namespace) *NamespaceDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (nd *NamespaceDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(nd.hooks) == 0 {
-		affected, err = nd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NamespaceMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			nd.mutation = mutation
-			affected, err = nd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(nd.hooks) - 1; i >= 0; i-- {
-			if nd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = nd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, nd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, NamespaceMutation](ctx, nd.sqlExec, nd.mutation, nd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (nd *NamespaceDelete) ExecX(ctx context.Context) int {
 }
 
 func (nd *NamespaceDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: namespace.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: namespace.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(namespace.Table, sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID))
 	if ps := nd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (nd *NamespaceDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	nd.mutation.done = true
 	return affected, err
 }
 
 // NamespaceDeleteOne is the builder for deleting a single Namespace entity.
 type NamespaceDeleteOne struct {
 	nd *NamespaceDelete
+}
+
+// Where appends a list predicates to the NamespaceDelete builder.
+func (ndo *NamespaceDeleteOne) Where(ps ...predicate.Namespace) *NamespaceDeleteOne {
+	ndo.nd.mutation.Where(ps...)
+	return ndo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (ndo *NamespaceDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (ndo *NamespaceDeleteOne) ExecX(ctx context.Context) {
-	ndo.nd.ExecX(ctx)
+	if err := ndo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

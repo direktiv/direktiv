@@ -13,342 +13,222 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.CloudEvents(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.CloudEvents(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id uuid.UUID) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.CloudEvents(sql.FieldLTE(FieldID, id))
 }
 
 // EventId applies equality check predicate on the "eventId" field. It's identical to EventIdEQ.
 func EventId(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldEventId, v))
 }
 
 // Fire applies equality check predicate on the "fire" field. It's identical to FireEQ.
 func Fire(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldFire, v))
 }
 
 // Created applies equality check predicate on the "created" field. It's identical to CreatedEQ.
 func Created(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldCreated, v))
 }
 
 // Processed applies equality check predicate on the "processed" field. It's identical to ProcessedEQ.
 func Processed(v bool) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldProcessed), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldProcessed, v))
 }
 
 // EventIdEQ applies the EQ predicate on the "eventId" field.
 func EventIdEQ(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldEventId, v))
 }
 
 // EventIdNEQ applies the NEQ predicate on the "eventId" field.
 func EventIdNEQ(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldNEQ(FieldEventId, v))
 }
 
 // EventIdIn applies the In predicate on the "eventId" field.
 func EventIdIn(vs ...string) predicate.CloudEvents {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldEventId), v...))
-	})
+	return predicate.CloudEvents(sql.FieldIn(FieldEventId, vs...))
 }
 
 // EventIdNotIn applies the NotIn predicate on the "eventId" field.
 func EventIdNotIn(vs ...string) predicate.CloudEvents {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldEventId), v...))
-	})
+	return predicate.CloudEvents(sql.FieldNotIn(FieldEventId, vs...))
 }
 
 // EventIdGT applies the GT predicate on the "eventId" field.
 func EventIdGT(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldGT(FieldEventId, v))
 }
 
 // EventIdGTE applies the GTE predicate on the "eventId" field.
 func EventIdGTE(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldGTE(FieldEventId, v))
 }
 
 // EventIdLT applies the LT predicate on the "eventId" field.
 func EventIdLT(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldLT(FieldEventId, v))
 }
 
 // EventIdLTE applies the LTE predicate on the "eventId" field.
 func EventIdLTE(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldLTE(FieldEventId, v))
 }
 
 // EventIdContains applies the Contains predicate on the "eventId" field.
 func EventIdContains(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldContains(FieldEventId, v))
 }
 
 // EventIdHasPrefix applies the HasPrefix predicate on the "eventId" field.
 func EventIdHasPrefix(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldHasPrefix(FieldEventId, v))
 }
 
 // EventIdHasSuffix applies the HasSuffix predicate on the "eventId" field.
 func EventIdHasSuffix(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldHasSuffix(FieldEventId, v))
 }
 
 // EventIdEqualFold applies the EqualFold predicate on the "eventId" field.
 func EventIdEqualFold(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldEqualFold(FieldEventId, v))
 }
 
 // EventIdContainsFold applies the ContainsFold predicate on the "eventId" field.
 func EventIdContainsFold(v string) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldEventId), v))
-	})
+	return predicate.CloudEvents(sql.FieldContainsFold(FieldEventId, v))
 }
 
 // FireEQ applies the EQ predicate on the "fire" field.
 func FireEQ(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldFire, v))
 }
 
 // FireNEQ applies the NEQ predicate on the "fire" field.
 func FireNEQ(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldNEQ(FieldFire, v))
 }
 
 // FireIn applies the In predicate on the "fire" field.
 func FireIn(vs ...time.Time) predicate.CloudEvents {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldFire), v...))
-	})
+	return predicate.CloudEvents(sql.FieldIn(FieldFire, vs...))
 }
 
 // FireNotIn applies the NotIn predicate on the "fire" field.
 func FireNotIn(vs ...time.Time) predicate.CloudEvents {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldFire), v...))
-	})
+	return predicate.CloudEvents(sql.FieldNotIn(FieldFire, vs...))
 }
 
 // FireGT applies the GT predicate on the "fire" field.
 func FireGT(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldGT(FieldFire, v))
 }
 
 // FireGTE applies the GTE predicate on the "fire" field.
 func FireGTE(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldGTE(FieldFire, v))
 }
 
 // FireLT applies the LT predicate on the "fire" field.
 func FireLT(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldLT(FieldFire, v))
 }
 
 // FireLTE applies the LTE predicate on the "fire" field.
 func FireLTE(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldFire), v))
-	})
+	return predicate.CloudEvents(sql.FieldLTE(FieldFire, v))
 }
 
 // CreatedEQ applies the EQ predicate on the "created" field.
 func CreatedEQ(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldCreated, v))
 }
 
 // CreatedNEQ applies the NEQ predicate on the "created" field.
 func CreatedNEQ(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldNEQ(FieldCreated, v))
 }
 
 // CreatedIn applies the In predicate on the "created" field.
 func CreatedIn(vs ...time.Time) predicate.CloudEvents {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldCreated), v...))
-	})
+	return predicate.CloudEvents(sql.FieldIn(FieldCreated, vs...))
 }
 
 // CreatedNotIn applies the NotIn predicate on the "created" field.
 func CreatedNotIn(vs ...time.Time) predicate.CloudEvents {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldCreated), v...))
-	})
+	return predicate.CloudEvents(sql.FieldNotIn(FieldCreated, vs...))
 }
 
 // CreatedGT applies the GT predicate on the "created" field.
 func CreatedGT(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldGT(FieldCreated, v))
 }
 
 // CreatedGTE applies the GTE predicate on the "created" field.
 func CreatedGTE(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldGTE(FieldCreated, v))
 }
 
 // CreatedLT applies the LT predicate on the "created" field.
 func CreatedLT(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldLT(FieldCreated, v))
 }
 
 // CreatedLTE applies the LTE predicate on the "created" field.
 func CreatedLTE(v time.Time) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCreated), v))
-	})
+	return predicate.CloudEvents(sql.FieldLTE(FieldCreated, v))
 }
 
 // ProcessedEQ applies the EQ predicate on the "processed" field.
 func ProcessedEQ(v bool) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldProcessed), v))
-	})
+	return predicate.CloudEvents(sql.FieldEQ(FieldProcessed, v))
 }
 
 // ProcessedNEQ applies the NEQ predicate on the "processed" field.
 func ProcessedNEQ(v bool) predicate.CloudEvents {
-	return predicate.CloudEvents(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldProcessed), v))
-	})
+	return predicate.CloudEvents(sql.FieldNEQ(FieldProcessed, v))
 }
 
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
@@ -356,7 +236,6 @@ func HasNamespace() predicate.CloudEvents {
 	return predicate.CloudEvents(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamespaceTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)

@@ -53,49 +53,7 @@ func (cefc *CloudEventFiltersCreate) Mutation() *CloudEventFiltersMutation {
 
 // Save creates the CloudEventFilters in the database.
 func (cefc *CloudEventFiltersCreate) Save(ctx context.Context) (*CloudEventFilters, error) {
-	var (
-		err  error
-		node *CloudEventFilters
-	)
-	if len(cefc.hooks) == 0 {
-		if err = cefc.check(); err != nil {
-			return nil, err
-		}
-		node, err = cefc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*CloudEventFiltersMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = cefc.check(); err != nil {
-				return nil, err
-			}
-			cefc.mutation = mutation
-			if node, err = cefc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(cefc.hooks) - 1; i >= 0; i-- {
-			if cefc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = cefc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, cefc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*CloudEventFilters)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from CloudEventFiltersMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*CloudEventFilters, CloudEventFiltersMutation](ctx, cefc.sqlSave, cefc.mutation, cefc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -145,6 +103,9 @@ func (cefc *CloudEventFiltersCreate) check() error {
 }
 
 func (cefc *CloudEventFiltersCreate) sqlSave(ctx context.Context) (*CloudEventFilters, error) {
+	if err := cefc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := cefc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, cefc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -154,19 +115,15 @@ func (cefc *CloudEventFiltersCreate) sqlSave(ctx context.Context) (*CloudEventFi
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
+	cefc.mutation.id = &_node.ID
+	cefc.mutation.done = true
 	return _node, nil
 }
 
 func (cefc *CloudEventFiltersCreate) createSpec() (*CloudEventFilters, *sqlgraph.CreateSpec) {
 	var (
 		_node = &CloudEventFilters{config: cefc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: cloudeventfilters.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: cloudeventfilters.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(cloudeventfilters.Table, sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = cefc.conflict
 	if value, ok := cefc.mutation.Name(); ok {
@@ -185,10 +142,7 @@ func (cefc *CloudEventFiltersCreate) createSpec() (*CloudEventFilters, *sqlgraph
 			Columns: []string{cloudeventfilters.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

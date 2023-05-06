@@ -194,24 +194,24 @@ func (e *Events) assignValues(columns []string, values []any) error {
 
 // QueryWfeventswait queries the "wfeventswait" edge of the Events entity.
 func (e *Events) QueryWfeventswait() *EventsWaitQuery {
-	return (&EventsClient{config: e.config}).QueryWfeventswait(e)
+	return NewEventsClient(e.config).QueryWfeventswait(e)
 }
 
 // QueryInstance queries the "instance" edge of the Events entity.
 func (e *Events) QueryInstance() *InstanceQuery {
-	return (&EventsClient{config: e.config}).QueryInstance(e)
+	return NewEventsClient(e.config).QueryInstance(e)
 }
 
 // QueryNamespace queries the "namespace" edge of the Events entity.
 func (e *Events) QueryNamespace() *NamespaceQuery {
-	return (&EventsClient{config: e.config}).QueryNamespace(e)
+	return NewEventsClient(e.config).QueryNamespace(e)
 }
 
 // Update returns a builder for updating this Events.
 // Note that you need to call Events.Unwrap() before calling this method if this Events
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (e *Events) Update() *EventsUpdateOne {
-	return (&EventsClient{config: e.config}).UpdateOne(e)
+	return NewEventsClient(e.config).UpdateOne(e)
 }
 
 // Unwrap unwraps the Events entity that was returned from a transaction after it was closed,
@@ -256,9 +256,3 @@ func (e *Events) String() string {
 
 // EventsSlice is a parsable slice of Events.
 type EventsSlice []*Events
-
-func (e EventsSlice) config(cfg config) {
-	for _i := range e {
-		e[_i].config = cfg
-	}
-}
