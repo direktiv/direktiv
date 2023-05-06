@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 func TestExecuteMirroringProcess(t *testing.T) {
@@ -42,7 +41,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		},
 	}
 
-	manager := mirror.NewDefaultManager(zap.NewNop().Sugar(), store, fs, source, nil)
+	manager := mirror.NewDefaultManager(nil, nil, store, fs, source, nil)
 
 	_, err = manager.StartInitialMirroringProcess(context.Background(), config)
 	if err != nil {

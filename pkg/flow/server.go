@@ -282,7 +282,32 @@ func (srv *server) start(ctx context.Context) error {
 		return nil
 	}
 
-	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, store.Mirror(), fStore, &mirror.GitSource{}, cc)
+	srv.mirrorManager = mirror.NewDefaultManager(
+		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
+			srv.sugar.Infow(msg, keysAndValues...)
+
+			tags := map[string]string{
+				"recipientType": "mirror",
+				"mirror-id":     mirrorProcessID.String(),
+			}
+			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
+			srv.logger.Infof(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+		},
+		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
+			srv.sugar.Errorw(msg, keysAndValues...)
+
+			tags := map[string]string{
+				"recipientType": "mirror",
+				"mirror-id":     mirrorProcessID.String(),
+			}
+			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
+			srv.logger.Errorf(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+		},
+		store.Mirror(),
+		fStore,
+		&mirror.GitSource{},
+		cc,
+	)
 
 	srv.sugar.Debug("Initializing actions grpc server.")
 
