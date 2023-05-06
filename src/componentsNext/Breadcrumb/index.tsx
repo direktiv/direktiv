@@ -1,8 +1,29 @@
 import {
+  ArrowUpCircle,
+  Calculator,
+  Calendar,
+  Check,
+  CheckCircle2,
+  ChevronsUpDown,
+  Circle,
+  CreditCard,
+  HelpCircle,
+  Home,
+  Loader2,
+  MoreHorizontal,
+  PlusCircle,
+  Settings,
+  Smile,
+  Tags,
+  Trash,
+  User,
+  XCircle,
+} from "lucide-react";
+import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
 } from "../../design/Breadcrumbs";
-import { ChevronsUpDown, Home, Loader2, PlusCircle } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandSeparator, CommandShortcut } from "../../design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import {
   DropdownMenu,
@@ -15,20 +36,23 @@ import {
   DropdownMenuTrigger,
 } from "../../design/Dropdown";
 import { Link, useNavigate } from "react-router-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "../../design/Popover";
+import React, { useState } from "react";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
 import BreadcrumbSegment from "./BreadcrumbSegment";
 import Button from "../../design/Button";
 import NamespaceCreate from "../NamespaceCreate";
 import { analyzePath } from "../../util/router/utils";
+import clsx from "clsx";
 import { pages } from "../../util/router/pages";
 import { useListNamespaces } from "../../api/namespaces/query/get";
-import { useState } from "react";
 
 const Breadcrumb = () => {
   const namespace = useNamespace();
   const { data: availableNamespaces, isLoading } = useListNamespaces();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const { path: pathParams } = pages.explorer.useParams();
 
@@ -50,49 +74,84 @@ const Breadcrumb = () => {
           <Home />
           {namespace}
         </Link>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost" circle>
-                <ChevronsUpDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={namespace}
-                onValueChange={onNameSpaceChange}
-              >
+        {/* <Dialog open={dialogOpen} onOpenChange={setDialogOpen}> */}
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button size="sm" variant="ghost" circle>
+              <ChevronsUpDown />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0">
+            <Command>
+              <CommandInput placeholder="Search namespace..." />
+              <CommandEmpty>No framework found.</CommandEmpty>
+              <CommandGroup>
                 {availableNamespaces?.results.map((ns) => (
-                  <DropdownMenuRadioItem
+                  <CommandItem
                     key={ns.name}
-                    value={ns.name}
-                    textValue={ns.name}
+                    onSelect={(currentValue: string) => {
+                      onNameSpaceChange(currentValue)
+                      setOpen(false);
+                    }}
                   >
-                    {ns.name}
-                  </DropdownMenuRadioItem>
+                    <Circle className={
+                      clsx("mr-2 h-2 w-2 fill-current", namespace === ns.name ? "opacity-100" : "opacity-0")
+                    } />
+                    <span>{ns.name}</span>
+                  </CommandItem>
                 ))}
-              </DropdownMenuRadioGroup>
+                {/* <CommandItem>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>Calendar</span>
+                </CommandItem>
+                <CommandItem>
+                  <Smile className="mr-2 h-4 w-4" />
+                  <span>Search Emoji</span>
+                </CommandItem>
+                <CommandItem>
+                  <Calculator className="mr-2 h-4 w-4" />
+                  <span>Calculator</span>
+                </CommandItem> */}
+              </CommandGroup>
+              <CommandSeparator />
+              <CommandGroup heading="Settings">
+                <CommandItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                  <CommandShortcut>⌘P</CommandShortcut>
+                </CommandItem>
+                <CommandItem>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
+                  <CommandShortcut>⌘B</CommandShortcut>
+                </CommandItem>
+                <CommandItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                  <CommandShortcut>⌘S</CommandShortcut>
+                </CommandItem>
+              </CommandGroup>
               {isLoading && (
-                <DropdownMenuItem disabled>
+                <CommandItem disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   loading...
-                </DropdownMenuItem>
+                </CommandItem>
               )}
-              <DropdownMenuSeparator />
-              <DialogTrigger>
-                <DropdownMenuItem>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span>Create new namespace</span>
-                </DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DialogContent>
-            <NamespaceCreate close={() => setDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
+              <CommandSeparator />
+              {/* <DialogTrigger> */}
+              <CommandItem>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span>Create new namespace</span>
+              </CommandItem>
+              {/* </DialogTrigger> */}
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        {/* <DialogContent>
+          <NamespaceCreate close={() => setDialogOpen(false)} />
+        </DialogContent> */}
+        {/* </Dialog> */}
       </BreadcrumbLink>
       {path.segments.map((x, i) => (
         <BreadcrumbSegment

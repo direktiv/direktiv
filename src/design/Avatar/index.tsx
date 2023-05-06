@@ -4,11 +4,10 @@ import clsx from "clsx";
 
 export type AvatarProps = HTMLAttributes<HTMLDivElement> & {
   className?: string;
-  forwaredRef?: React.ForwardedRef<HTMLDivElement>;
   children?: React.ReactNode;
 };
 
-const Avatar: FC<AvatarProps> = ({ className, children, ...props }) => (
+export const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ children, className, ...props }, ref) => (
   <div
     {...props}
     className={clsx(
@@ -16,15 +15,11 @@ const Avatar: FC<AvatarProps> = ({ className, children, ...props }) => (
       "bg-primary-500 text-gray-1 dark:text-gray-dark-1",
       className
     )}
+    ref={ref}
   >
     {children ? children : ""}
   </div>
-);
+));
+Avatar.displayName = "Avatar";
 
-const AvatarWithForwaredRef = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ ...props }, ref) => <Avatar forwaredRef={ref} {...props} />
-);
-
-AvatarWithForwaredRef.displayName = "Avatar";
-
-export default AvatarWithForwaredRef;
+export default Avatar;
