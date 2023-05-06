@@ -758,7 +758,6 @@ describe('Test behaviour specific to the root node', () => {
     })
 
     it(`should invoke the '/listener.yml' workflow with an event`, async () => {
-        return
         var req = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`).send({
             "specversion" : "1.0",
             "type" : "greeting",
@@ -805,7 +804,7 @@ describe('Test behaviour specific to the root node', () => {
                 },
                 results: expect.arrayContaining([
                     {
-                        as: "listener",
+                        as: "listener.yml",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                         errorCode: "",
@@ -817,7 +816,6 @@ describe('Test behaviour specific to the root node', () => {
                 ]),
             },
         })
-
     })
 
     it(`should invoke the '/banana/css.yaml' workflow`, async () => {
@@ -837,12 +835,11 @@ describe('Test behaviour specific to the root node', () => {
     })
 
     // TODO: find a way to enable this as an optional test, because it takes too long to run in most cases.
-    // it(`should invoke the '/banana/util/caller' workflow`, async () => {
-    //     const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller?op=wait`)
-    //     console.log(req.body)
-    //     expect(req.statusCode).toEqual(200)
-    //     expect(req.body.return.return.status).toEqual('200 OK')
-    // }, 30000)
+    it(`should invoke the '/banana/util/caller.yaml' workflow`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller.yaml?op=wait`)
+        expect(req.statusCode).toEqual(200)
+        expect(req.body.return.return.status).toEqual('200 OK')
+    }, 30000)
 
     it(`should fail to delete a namespace because of a lack of a recursive param`, async () => {
         const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)
