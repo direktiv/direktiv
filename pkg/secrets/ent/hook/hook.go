@@ -15,11 +15,10 @@ type NamespaceSecretFunc func(context.Context, *ent.NamespaceSecretMutation) (en
 
 // Mutate calls f(ctx, m).
 func (f NamespaceSecretFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.NamespaceSecretMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NamespaceSecretMutation", m)
+	if mv, ok := m.(*ent.NamespaceSecretMutation); ok {
+		return f(ctx, mv)
 	}
-	return f(ctx, mv)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NamespaceSecretMutation", m)
 }
 
 // Condition is a hook condition function.

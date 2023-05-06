@@ -10,10 +10,12 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/secrets/ent/migrate"
 
-	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
-
+	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
+
+	stdsql "database/sql"
 )
 
 // Client is the client that holds all ent builders.
@@ -27,7 +29,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}}
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
 	cfg.options(opts...)
 	client := &Client{config: cfg}
 	client.init()
@@ -37,6 +39,55 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.NamespaceSecret = NewNamespaceSecretClient(c.config)
+}
+
+type (
+	// config is the configuration for the client and its builder.
+	config struct {
+		// driver used for executing database requests.
+		driver dialect.Driver
+		// debug enable a debug logging.
+		debug bool
+		// log used for logging on debug mode.
+		log func(...any)
+		// hooks to execute on mutations.
+		hooks *hooks
+		// interceptors to execute on queries.
+		inters *inters
+	}
+	// Option function to configure the client.
+	Option func(*config)
+)
+
+// options applies the options on the config object.
+func (c *config) options(opts ...Option) {
+	for _, opt := range opts {
+		opt(c)
+	}
+	if c.debug {
+		c.driver = dialect.Debug(c.driver, c.log)
+	}
+}
+
+// Debug enables debug logging on the ent.Driver.
+func Debug() Option {
+	return func(c *config) {
+		c.debug = true
+	}
+}
+
+// Log sets the logging function for debug mode.
+func Log(fn func(...any)) Option {
+	return func(c *config) {
+		c.log = fn
+	}
+}
+
+// Driver configures the client driver.
+func Driver(driver dialect.Driver) Option {
+	return func(c *config) {
+		c.driver = driver
+	}
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -122,6 +173,22 @@ func (c *Client) Use(hooks ...Hook) {
 	c.NamespaceSecret.Use(hooks...)
 }
 
+// Intercept adds the query interceptors to all the entity clients.
+// In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
+func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.NamespaceSecret.Intercept(interceptors...)
+}
+
+// Mutate implements the ent.Mutator interface.
+func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
+	switch m := m.(type) {
+	case *NamespaceSecretMutation:
+		return c.NamespaceSecret.mutate(ctx, m)
+	default:
+		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
 // NamespaceSecretClient is a client for the NamespaceSecret schema.
 type NamespaceSecretClient struct {
 	config
@@ -136,6 +203,12 @@ func NewNamespaceSecretClient(c config) *NamespaceSecretClient {
 // A call to `Use(f, g, h)` equals to `namespacesecret.Hooks(f(g(h())))`.
 func (c *NamespaceSecretClient) Use(hooks ...Hook) {
 	c.hooks.NamespaceSecret = append(c.hooks.NamespaceSecret, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `namespacesecret.Intercept(f(g(h())))`.
+func (c *NamespaceSecretClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NamespaceSecret = append(c.inters.NamespaceSecret, interceptors...)
 }
 
 // Create returns a builder for creating a NamespaceSecret entity.
@@ -190,6 +263,8 @@ func (c *NamespaceSecretClient) DeleteOneID(id int) *NamespaceSecretDeleteOne {
 func (c *NamespaceSecretClient) Query() *NamespaceSecretQuery {
 	return &NamespaceSecretQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeNamespaceSecret},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -210,4 +285,58 @@ func (c *NamespaceSecretClient) GetX(ctx context.Context, id int) *NamespaceSecr
 // Hooks returns the client hooks.
 func (c *NamespaceSecretClient) Hooks() []Hook {
 	return c.hooks.NamespaceSecret
+}
+
+// Interceptors returns the client interceptors.
+func (c *NamespaceSecretClient) Interceptors() []Interceptor {
+	return c.inters.NamespaceSecret
+}
+
+func (c *NamespaceSecretClient) mutate(ctx context.Context, m *NamespaceSecretMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NamespaceSecretCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NamespaceSecretUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NamespaceSecretUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NamespaceSecretDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NamespaceSecret mutation op: %q", m.Op())
+	}
+}
+
+// hooks and interceptors per client, for fast access.
+type (
+	hooks struct {
+		NamespaceSecret []ent.Hook
+	}
+	inters struct {
+		NamespaceSecret []ent.Interceptor
+	}
+)
+
+// ExecContext allows calling the underlying ExecContext method of the driver if it is supported by it.
+// See, database/sql#DB.ExecContext for more information.
+func (c *config) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := c.driver.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the driver if it is supported by it.
+// See, database/sql#DB.QueryContext for more information.
+func (c *config) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := c.driver.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
 }
