@@ -10,11 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type SQLFileStore struct {
+type sqlFileStore struct {
 	db *gorm.DB
 }
 
-func (s *SQLFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
+func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	return &RootQuery{
 		rootID:       rootID,
 		db:           s.db,
@@ -22,7 +22,7 @@ func (s *SQLFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
-func (s *SQLFileStore) ForFile(file *filestore.File) filestore.FileQuery {
+func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	return &FileQuery{
 		file:         file,
 		checksumFunc: filestore.DefaultCalculateChecksum,
@@ -30,22 +30,22 @@ func (s *SQLFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	}
 }
 
-func (s *SQLFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
+func (s *sqlFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
 	return &RevisionQuery{
 		rev: revision,
 		db:  s.db,
 	}
 }
 
-var _ filestore.FileStore = &SQLFileStore{} // Ensures SQLFileStore struct conforms to filestore.FileStore interface.
+var _ filestore.FileStore = &sqlFileStore{} // Ensures sqlFileStore struct conforms to filestore.FileStore interface.
 
 func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
-	return &SQLFileStore{
+	return &sqlFileStore{
 		db: db,
 	}
 }
 
-func (s *SQLFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
+func (s *sqlFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
 	n := &filestore.Root{ID: id}
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
 	if res.Error != nil {
@@ -59,7 +59,7 @@ func (s *SQLFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore
 }
 
 //nolint:ireturn
-func (s *SQLFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
+func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Find(&list)
 	if res.Error != nil {
@@ -75,7 +75,7 @@ func (s *SQLFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 }
 
 //nolint:ireturn
-func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
+func (s *sqlFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Table("filesystem_files").
 		Where("id", id).
@@ -92,7 +92,7 @@ func (s *SQLFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.Fi
 }
 
 //nolint:ireturn
-func (s *SQLFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
+func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
 	rev := &filestore.Revision{}
 	res := s.db.WithContext(ctx).Table("filesystem_revisions").

@@ -8,7 +8,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
@@ -98,14 +97,20 @@ type Manager interface {
 	CancelMirroringProcess(ctx context.Context, id uuid.UUID) error
 }
 
+// ConfigureWorkflowFunc is a hookup function the gets called for every new or updated workflow file.
 type ConfigureWorkflowFunc func(ctx context.Context, file *filestore.File) error
+
+// LogFunc is a hookup function the gets called to perform application logging.
+type LogFunc func(processID uuid.UUID, msg string, keysAndValues ...interface{})
 
 // DefaultManager launches and terminates mirroring processes. When launching a mirroring process, DefaultManager
 // creates stores and update process objects in the mirror.Store.
 type DefaultManager struct {
+	infoLogFunc LogFunc
+	errLogFunc  LogFunc
+
 	// store is needed so that DefaultManager can create and update mirror.Process objects.
 	store Store
-	lg    *zap.SugaredLogger
 
 	// fStore is to create mirrored files in the filestore.
 	fStore filestore.FileStore
@@ -117,8 +122,29 @@ type DefaultManager struct {
 	configWorkflowFunc ConfigureWorkflowFunc
 }
 
-func NewDefaultManager(lg *zap.SugaredLogger, store Store, fStore filestore.FileStore, source Source, configWorkflowFunc ConfigureWorkflowFunc) *DefaultManager {
-	return &DefaultManager{store: store, lg: lg, fStore: fStore, source: source, configWorkflowFunc: configWorkflowFunc}
+func NewDefaultManager(
+	infoLogFunc LogFunc,
+	errLogFunc LogFunc,
+	store Store,
+	fStore filestore.FileStore,
+	source Source,
+	configWorkflowFunc ConfigureWorkflowFunc,
+) *DefaultManager {
+	if infoLogFunc == nil {
+		infoLogFunc = func(processID uuid.UUID, msg string, keysAndValues ...interface{}) {}
+	}
+	if errLogFunc == nil {
+		errLogFunc = func(processID uuid.UUID, msg string, keysAndValues ...interface{}) {}
+	}
+
+	return &DefaultManager{
+		infoLogFunc:        infoLogFunc,
+		errLogFunc:         errLogFunc,
+		store:              store,
+		fStore:             fStore,
+		source:             source,
+		configWorkflowFunc: configWorkflowFunc,
+	}
 }
 
 func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Config, processType string) (*Process, error) {
@@ -132,13 +158,15 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 		return nil, fmt.Errorf("creating a new process, err: %w", err)
 	}
 
-	d.lg.Errorw("starting new mirroring process", "process_id", process.ID, "error", err)
+	d.infoLogFunc(process.ID, "starting mirroring process",
+		"type", processType, "process_id", process.ID)
 
 	go func() {
 		err := (&mirroringJob{
-			ctx: context.TODO(),
-			lg:  d.lg,
+			ctx:         context.TODO(),
+			infoLogFunc: d.infoLogFunc,
 		}).
+			SetProcessID(process.ID).
 			SetProcessStatus(d.store, process, processStatusExecuting).
 			CreateTempDirectory().
 			PullSourceInPath(d.source, config).
@@ -159,12 +187,12 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 			process.Status = processStatusFailed
 			process.EndedAt = time.Now()
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
-			d.lg.Errorw("mirroring process failed", "err", err, "process_id", process.ID)
+			d.errLogFunc(process.ID, "mirroring process failed", "err", err, "process_id", process.ID)
 
 			return
 		}
 
-		d.lg.Infow("mirroring process succeeded", "process_id", process.ID)
+		d.infoLogFunc(process.ID, "mirroring process succeeded", "process_id", process.ID)
 	}()
 
 	return process, err

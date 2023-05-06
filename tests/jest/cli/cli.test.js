@@ -9,7 +9,7 @@ const cliExecutable = "direktivctl"
 
 const { exec } = require('child_process');
 const fs = require('fs');
-const filepath =  "/tests/jest/mockdata/direktiv-project"
+const filepath =  "/tests/jest/cli/mockdata/direktiv-project"
 const prefix = `-a ${common.config.getDirektivHost()} -t password`
 const flagNamespace = `-n ${namespaceName}`
 
