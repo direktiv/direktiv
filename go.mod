@@ -3,7 +3,7 @@ module github.com/direktiv/direktiv
 go 1.20
 
 require (
-	entgo.io/ent v0.12.2
+	entgo.io/ent v0.11.10
 	github.com/Masterminds/semver v1.5.0
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.14.0

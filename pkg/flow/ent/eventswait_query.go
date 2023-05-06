@@ -20,11 +20,9 @@ import (
 // EventsWaitQuery is the builder for querying EventsWait entities.
 type EventsWaitQuery struct {
 	config
-	limit             *int
-	offset            *int
-	unique            *bool
+	ctx               *QueryContext
 	order             []OrderFunc
-	fields            []string
+	inters            []Interceptor
 	predicates        []predicate.EventsWait
 	withWorkflowevent *EventsQuery
 	withFKs           bool
@@ -40,26 +38,26 @@ func (ewq *EventsWaitQuery) Where(ps ...predicate.EventsWait) *EventsWaitQuery {
 	return ewq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (ewq *EventsWaitQuery) Limit(limit int) *EventsWaitQuery {
-	ewq.limit = &limit
+	ewq.ctx.Limit = &limit
 	return ewq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (ewq *EventsWaitQuery) Offset(offset int) *EventsWaitQuery {
-	ewq.offset = &offset
+	ewq.ctx.Offset = &offset
 	return ewq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (ewq *EventsWaitQuery) Unique(unique bool) *EventsWaitQuery {
-	ewq.unique = &unique
+	ewq.ctx.Unique = &unique
 	return ewq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (ewq *EventsWaitQuery) Order(o ...OrderFunc) *EventsWaitQuery {
 	ewq.order = append(ewq.order, o...)
 	return ewq
@@ -67,7 +65,7 @@ func (ewq *EventsWaitQuery) Order(o ...OrderFunc) *EventsWaitQuery {
 
 // QueryWorkflowevent chains the current query on the "workflowevent" edge.
 func (ewq *EventsWaitQuery) QueryWorkflowevent() *EventsQuery {
-	query := &EventsQuery{config: ewq.config}
+	query := (&EventsClient{config: ewq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := ewq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -90,7 +88,7 @@ func (ewq *EventsWaitQuery) QueryWorkflowevent() *EventsQuery {
 // First returns the first EventsWait entity from the query.
 // Returns a *NotFoundError when no EventsWait was found.
 func (ewq *EventsWaitQuery) First(ctx context.Context) (*EventsWait, error) {
-	nodes, err := ewq.Limit(1).All(ctx)
+	nodes, err := ewq.Limit(1).All(setContextOp(ctx, ewq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +111,7 @@ func (ewq *EventsWaitQuery) FirstX(ctx context.Context) *EventsWait {
 // Returns a *NotFoundError when no EventsWait ID was found.
 func (ewq *EventsWaitQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ewq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = ewq.Limit(1).IDs(setContextOp(ctx, ewq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -136,7 +134,7 @@ func (ewq *EventsWaitQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one EventsWait entity is found.
 // Returns a *NotFoundError when no EventsWait entities are found.
 func (ewq *EventsWaitQuery) Only(ctx context.Context) (*EventsWait, error) {
-	nodes, err := ewq.Limit(2).All(ctx)
+	nodes, err := ewq.Limit(2).All(setContextOp(ctx, ewq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +162,7 @@ func (ewq *EventsWaitQuery) OnlyX(ctx context.Context) *EventsWait {
 // Returns a *NotFoundError when no entities are found.
 func (ewq *EventsWaitQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ewq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = ewq.Limit(2).IDs(setContextOp(ctx, ewq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -189,10 +187,12 @@ func (ewq *EventsWaitQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of EventsWaits.
 func (ewq *EventsWaitQuery) All(ctx context.Context) ([]*EventsWait, error) {
+	ctx = setContextOp(ctx, ewq.ctx, "All")
 	if err := ewq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return ewq.sqlAll(ctx)
+	qr := querierAll[[]*EventsWait, *EventsWaitQuery]()
+	return withInterceptors[[]*EventsWait](ctx, ewq, qr, ewq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -205,9 +205,12 @@ func (ewq *EventsWaitQuery) AllX(ctx context.Context) []*EventsWait {
 }
 
 // IDs executes the query and returns a list of EventsWait IDs.
-func (ewq *EventsWaitQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := ewq.Select(eventswait.FieldID).Scan(ctx, &ids); err != nil {
+func (ewq *EventsWaitQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if ewq.ctx.Unique == nil && ewq.path != nil {
+		ewq.Unique(true)
+	}
+	ctx = setContextOp(ctx, ewq.ctx, "IDs")
+	if err = ewq.Select(eventswait.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -224,10 +227,11 @@ func (ewq *EventsWaitQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (ewq *EventsWaitQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, ewq.ctx, "Count")
 	if err := ewq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return ewq.sqlCount(ctx)
+	return withInterceptors[int](ctx, ewq, querierCount[*EventsWaitQuery](), ewq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -241,10 +245,15 @@ func (ewq *EventsWaitQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (ewq *EventsWaitQuery) Exist(ctx context.Context) (bool, error) {
-	if err := ewq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, ewq.ctx, "Exist")
+	switch _, err := ewq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return ewq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -264,22 +273,21 @@ func (ewq *EventsWaitQuery) Clone() *EventsWaitQuery {
 	}
 	return &EventsWaitQuery{
 		config:            ewq.config,
-		limit:             ewq.limit,
-		offset:            ewq.offset,
+		ctx:               ewq.ctx.Clone(),
 		order:             append([]OrderFunc{}, ewq.order...),
+		inters:            append([]Interceptor{}, ewq.inters...),
 		predicates:        append([]predicate.EventsWait{}, ewq.predicates...),
 		withWorkflowevent: ewq.withWorkflowevent.Clone(),
 		// clone intermediate query.
-		sql:    ewq.sql.Clone(),
-		path:   ewq.path,
-		unique: ewq.unique,
+		sql:  ewq.sql.Clone(),
+		path: ewq.path,
 	}
 }
 
 // WithWorkflowevent tells the query-builder to eager-load the nodes that are connected to
 // the "workflowevent" edge. The optional arguments are used to configure the query builder of the edge.
 func (ewq *EventsWaitQuery) WithWorkflowevent(opts ...func(*EventsQuery)) *EventsWaitQuery {
-	query := &EventsQuery{config: ewq.config}
+	query := (&EventsClient{config: ewq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -302,16 +310,11 @@ func (ewq *EventsWaitQuery) WithWorkflowevent(opts ...func(*EventsQuery)) *Event
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ewq *EventsWaitQuery) GroupBy(field string, fields ...string) *EventsWaitGroupBy {
-	grbuild := &EventsWaitGroupBy{config: ewq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := ewq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return ewq.sqlQuery(ctx), nil
-	}
+	ewq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &EventsWaitGroupBy{build: ewq}
+	grbuild.flds = &ewq.ctx.Fields
 	grbuild.label = eventswait.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -328,11 +331,11 @@ func (ewq *EventsWaitQuery) GroupBy(field string, fields ...string) *EventsWaitG
 //		Select(eventswait.FieldEvents).
 //		Scan(ctx, &v)
 func (ewq *EventsWaitQuery) Select(fields ...string) *EventsWaitSelect {
-	ewq.fields = append(ewq.fields, fields...)
-	selbuild := &EventsWaitSelect{EventsWaitQuery: ewq}
-	selbuild.label = eventswait.Label
-	selbuild.flds, selbuild.scan = &ewq.fields, selbuild.Scan
-	return selbuild
+	ewq.ctx.Fields = append(ewq.ctx.Fields, fields...)
+	sbuild := &EventsWaitSelect{EventsWaitQuery: ewq}
+	sbuild.label = eventswait.Label
+	sbuild.flds, sbuild.scan = &ewq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a EventsWaitSelect configured with the given aggregations.
@@ -341,7 +344,17 @@ func (ewq *EventsWaitQuery) Aggregate(fns ...AggregateFunc) *EventsWaitSelect {
 }
 
 func (ewq *EventsWaitQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range ewq.fields {
+	for _, inter := range ewq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, ewq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range ewq.ctx.Fields {
 		if !eventswait.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -414,6 +427,9 @@ func (ewq *EventsWaitQuery) loadWorkflowevent(ctx context.Context, query *Events
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(events.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -436,41 +452,22 @@ func (ewq *EventsWaitQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(ewq.modifiers) > 0 {
 		_spec.Modifiers = ewq.modifiers
 	}
-	_spec.Node.Columns = ewq.fields
-	if len(ewq.fields) > 0 {
-		_spec.Unique = ewq.unique != nil && *ewq.unique
+	_spec.Node.Columns = ewq.ctx.Fields
+	if len(ewq.ctx.Fields) > 0 {
+		_spec.Unique = ewq.ctx.Unique != nil && *ewq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, ewq.driver, _spec)
 }
 
-func (ewq *EventsWaitQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := ewq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (ewq *EventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   eventswait.Table,
-			Columns: eventswait.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: eventswait.FieldID,
-			},
-		},
-		From:   ewq.sql,
-		Unique: true,
-	}
-	if unique := ewq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(eventswait.Table, eventswait.Columns, sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID))
+	_spec.From = ewq.sql
+	if unique := ewq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if ewq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := ewq.fields; len(fields) > 0 {
+	if fields := ewq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, eventswait.FieldID)
 		for i := range fields {
@@ -486,10 +483,10 @@ func (ewq *EventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := ewq.limit; limit != nil {
+	if limit := ewq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := ewq.offset; offset != nil {
+	if offset := ewq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := ewq.order; len(ps) > 0 {
@@ -505,7 +502,7 @@ func (ewq *EventsWaitQuery) querySpec() *sqlgraph.QuerySpec {
 func (ewq *EventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(ewq.driver.Dialect())
 	t1 := builder.Table(eventswait.Table)
-	columns := ewq.fields
+	columns := ewq.ctx.Fields
 	if len(columns) == 0 {
 		columns = eventswait.Columns
 	}
@@ -514,7 +511,7 @@ func (ewq *EventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = ewq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if ewq.unique != nil && *ewq.unique {
+	if ewq.ctx.Unique != nil && *ewq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range ewq.modifiers {
@@ -526,12 +523,12 @@ func (ewq *EventsWaitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range ewq.order {
 		p(selector)
 	}
-	if offset := ewq.offset; offset != nil {
+	if offset := ewq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := ewq.limit; limit != nil {
+	if limit := ewq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -571,13 +568,8 @@ func (ewq *EventsWaitQuery) Modify(modifiers ...func(s *sql.Selector)) *EventsWa
 
 // EventsWaitGroupBy is the group-by builder for EventsWait entities.
 type EventsWaitGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *EventsWaitQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -586,58 +578,46 @@ func (ewgb *EventsWaitGroupBy) Aggregate(fns ...AggregateFunc) *EventsWaitGroupB
 	return ewgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ewgb *EventsWaitGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := ewgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, ewgb.build.ctx, "GroupBy")
+	if err := ewgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ewgb.sql = query
-	return ewgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*EventsWaitQuery, *EventsWaitGroupBy](ctx, ewgb.build, ewgb, ewgb.build.inters, v)
 }
 
-func (ewgb *EventsWaitGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range ewgb.fields {
-		if !eventswait.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (ewgb *EventsWaitGroupBy) sqlScan(ctx context.Context, root *EventsWaitQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(ewgb.fns))
+	for _, fn := range ewgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := ewgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*ewgb.flds)+len(ewgb.fns))
+		for _, f := range *ewgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*ewgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ewgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := ewgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (ewgb *EventsWaitGroupBy) sqlQuery() *sql.Selector {
-	selector := ewgb.sql.Select()
-	aggregation := make([]string, 0, len(ewgb.fns))
-	for _, fn := range ewgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(ewgb.fields)+len(ewgb.fns))
-		for _, f := range ewgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(ewgb.fields...)...)
-}
-
 // EventsWaitSelect is the builder for selecting fields of EventsWait entities.
 type EventsWaitSelect struct {
 	*EventsWaitQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -648,26 +628,27 @@ func (ews *EventsWaitSelect) Aggregate(fns ...AggregateFunc) *EventsWaitSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (ews *EventsWaitSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, ews.ctx, "Select")
 	if err := ews.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ews.sql = ews.EventsWaitQuery.sqlQuery(ctx)
-	return ews.sqlScan(ctx, v)
+	return scanWithInterceptors[*EventsWaitQuery, *EventsWaitSelect](ctx, ews.EventsWaitQuery, ews, ews.inters, v)
 }
 
-func (ews *EventsWaitSelect) sqlScan(ctx context.Context, v any) error {
+func (ews *EventsWaitSelect) sqlScan(ctx context.Context, root *EventsWaitQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(ews.fns))
 	for _, fn := range ews.fns {
-		aggregation = append(aggregation, fn(ews.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*ews.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		ews.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		ews.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := ews.sql.Query()
+	query, args := selector.Query()
 	if err := ews.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (ad *AnnotationDelete) Where(ps ...predicate.Annotation) *AnnotationDelete 
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (ad *AnnotationDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(ad.hooks) == 0 {
-		affected, err = ad.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*AnnotationMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			ad.mutation = mutation
-			affected, err = ad.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(ad.hooks) - 1; i >= 0; i-- {
-			if ad.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ad.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, ad.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, AnnotationMutation](ctx, ad.sqlExec, ad.mutation, ad.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (ad *AnnotationDelete) ExecX(ctx context.Context) int {
 }
 
 func (ad *AnnotationDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: annotation.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: annotation.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(annotation.Table, sqlgraph.NewFieldSpec(annotation.FieldID, field.TypeUUID))
 	if ps := ad.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (ad *AnnotationDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	ad.mutation.done = true
 	return affected, err
 }
 
 // AnnotationDeleteOne is the builder for deleting a single Annotation entity.
 type AnnotationDeleteOne struct {
 	ad *AnnotationDelete
+}
+
+// Where appends a list predicates to the AnnotationDelete builder.
+func (ado *AnnotationDeleteOne) Where(ps ...predicate.Annotation) *AnnotationDeleteOne {
+	ado.ad.mutation.Where(ps...)
+	return ado
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (ado *AnnotationDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (ado *AnnotationDeleteOne) ExecX(ctx context.Context) {
-	ado.ad.ExecX(ctx)
+	if err := ado.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

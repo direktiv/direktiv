@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"sync"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/secrets/ent/namespacesecret"
 	"github.com/direktiv/direktiv/pkg/secrets/ent/predicate"
-
-	"entgo.io/ent"
 )
 
 const (
@@ -252,9 +252,24 @@ func (m *NamespaceSecretMutation) Where(ps ...predicate.NamespaceSecret) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the NamespaceSecretMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NamespaceSecretMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NamespaceSecret, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *NamespaceSecretMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NamespaceSecretMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (NamespaceSecret).

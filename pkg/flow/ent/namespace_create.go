@@ -221,50 +221,8 @@ func (nc *NamespaceCreate) Mutation() *NamespaceMutation {
 
 // Save creates the Namespace in the database.
 func (nc *NamespaceCreate) Save(ctx context.Context) (*Namespace, error) {
-	var (
-		err  error
-		node *Namespace
-	)
 	nc.defaults()
-	if len(nc.hooks) == 0 {
-		if err = nc.check(); err != nil {
-			return nil, err
-		}
-		node, err = nc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NamespaceMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = nc.check(); err != nil {
-				return nil, err
-			}
-			nc.mutation = mutation
-			if node, err = nc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(nc.hooks) - 1; i >= 0; i-- {
-			if nc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = nc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, nc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Namespace)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from NamespaceMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*Namespace, NamespaceMutation](ctx, nc.sqlSave, nc.mutation, nc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -332,6 +290,9 @@ func (nc *NamespaceCreate) check() error {
 }
 
 func (nc *NamespaceCreate) sqlSave(ctx context.Context) (*Namespace, error) {
+	if err := nc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := nc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, nc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -346,19 +307,15 @@ func (nc *NamespaceCreate) sqlSave(ctx context.Context) (*Namespace, error) {
 			return nil, err
 		}
 	}
+	nc.mutation.id = &_node.ID
+	nc.mutation.done = true
 	return _node, nil
 }
 
 func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Namespace{config: nc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: namespace.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: namespace.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(namespace.Table, sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = nc.conflict
 	if id, ok := nc.mutation.ID(); ok {
@@ -389,10 +346,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -408,10 +362,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.LogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: logmsg.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -427,10 +378,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.VarsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: varref.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -446,10 +394,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.CloudeventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: cloudevents.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(cloudevents.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -465,10 +410,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.NamespacelistenersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: events.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(events.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -484,10 +426,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: annotation.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(annotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -503,10 +442,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.CloudeventfiltersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: cloudeventfilters.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -522,10 +458,7 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Columns: []string{namespace.ServicesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: services.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(services.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

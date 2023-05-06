@@ -107,14 +107,14 @@ func (cef *CloudEventFilters) assignValues(columns []string, values []any) error
 
 // QueryNamespace queries the "namespace" edge of the CloudEventFilters entity.
 func (cef *CloudEventFilters) QueryNamespace() *NamespaceQuery {
-	return (&CloudEventFiltersClient{config: cef.config}).QueryNamespace(cef)
+	return NewCloudEventFiltersClient(cef.config).QueryNamespace(cef)
 }
 
 // Update returns a builder for updating this CloudEventFilters.
 // Note that you need to call CloudEventFilters.Unwrap() before calling this method if this CloudEventFilters
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (cef *CloudEventFilters) Update() *CloudEventFiltersUpdateOne {
-	return (&CloudEventFiltersClient{config: cef.config}).UpdateOne(cef)
+	return NewCloudEventFiltersClient(cef.config).UpdateOne(cef)
 }
 
 // Unwrap unwraps the CloudEventFilters entity that was returned from a transaction after it was closed,
@@ -144,9 +144,3 @@ func (cef *CloudEventFilters) String() string {
 
 // CloudEventFiltersSlice is a parsable slice of CloudEventFilters.
 type CloudEventFiltersSlice []*CloudEventFilters
-
-func (cef CloudEventFiltersSlice) config(cfg config) {
-	for _i := range cef {
-		cef[_i].config = cfg
-	}
-}

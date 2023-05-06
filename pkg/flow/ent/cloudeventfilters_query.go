@@ -20,11 +20,9 @@ import (
 // CloudEventFiltersQuery is the builder for querying CloudEventFilters entities.
 type CloudEventFiltersQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
+	ctx           *QueryContext
 	order         []OrderFunc
-	fields        []string
+	inters        []Interceptor
 	predicates    []predicate.CloudEventFilters
 	withNamespace *NamespaceQuery
 	withFKs       bool
@@ -40,26 +38,26 @@ func (cefq *CloudEventFiltersQuery) Where(ps ...predicate.CloudEventFilters) *Cl
 	return cefq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (cefq *CloudEventFiltersQuery) Limit(limit int) *CloudEventFiltersQuery {
-	cefq.limit = &limit
+	cefq.ctx.Limit = &limit
 	return cefq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (cefq *CloudEventFiltersQuery) Offset(offset int) *CloudEventFiltersQuery {
-	cefq.offset = &offset
+	cefq.ctx.Offset = &offset
 	return cefq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (cefq *CloudEventFiltersQuery) Unique(unique bool) *CloudEventFiltersQuery {
-	cefq.unique = &unique
+	cefq.ctx.Unique = &unique
 	return cefq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (cefq *CloudEventFiltersQuery) Order(o ...OrderFunc) *CloudEventFiltersQuery {
 	cefq.order = append(cefq.order, o...)
 	return cefq
@@ -67,7 +65,7 @@ func (cefq *CloudEventFiltersQuery) Order(o ...OrderFunc) *CloudEventFiltersQuer
 
 // QueryNamespace chains the current query on the "namespace" edge.
 func (cefq *CloudEventFiltersQuery) QueryNamespace() *NamespaceQuery {
-	query := &NamespaceQuery{config: cefq.config}
+	query := (&NamespaceClient{config: cefq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cefq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -90,7 +88,7 @@ func (cefq *CloudEventFiltersQuery) QueryNamespace() *NamespaceQuery {
 // First returns the first CloudEventFilters entity from the query.
 // Returns a *NotFoundError when no CloudEventFilters was found.
 func (cefq *CloudEventFiltersQuery) First(ctx context.Context) (*CloudEventFilters, error) {
-	nodes, err := cefq.Limit(1).All(ctx)
+	nodes, err := cefq.Limit(1).All(setContextOp(ctx, cefq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +111,7 @@ func (cefq *CloudEventFiltersQuery) FirstX(ctx context.Context) *CloudEventFilte
 // Returns a *NotFoundError when no CloudEventFilters ID was found.
 func (cefq *CloudEventFiltersQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = cefq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = cefq.Limit(1).IDs(setContextOp(ctx, cefq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -136,7 +134,7 @@ func (cefq *CloudEventFiltersQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one CloudEventFilters entity is found.
 // Returns a *NotFoundError when no CloudEventFilters entities are found.
 func (cefq *CloudEventFiltersQuery) Only(ctx context.Context) (*CloudEventFilters, error) {
-	nodes, err := cefq.Limit(2).All(ctx)
+	nodes, err := cefq.Limit(2).All(setContextOp(ctx, cefq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +162,7 @@ func (cefq *CloudEventFiltersQuery) OnlyX(ctx context.Context) *CloudEventFilter
 // Returns a *NotFoundError when no entities are found.
 func (cefq *CloudEventFiltersQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = cefq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = cefq.Limit(2).IDs(setContextOp(ctx, cefq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -189,10 +187,12 @@ func (cefq *CloudEventFiltersQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of CloudEventFiltersSlice.
 func (cefq *CloudEventFiltersQuery) All(ctx context.Context) ([]*CloudEventFilters, error) {
+	ctx = setContextOp(ctx, cefq.ctx, "All")
 	if err := cefq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return cefq.sqlAll(ctx)
+	qr := querierAll[[]*CloudEventFilters, *CloudEventFiltersQuery]()
+	return withInterceptors[[]*CloudEventFilters](ctx, cefq, qr, cefq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -205,9 +205,12 @@ func (cefq *CloudEventFiltersQuery) AllX(ctx context.Context) []*CloudEventFilte
 }
 
 // IDs executes the query and returns a list of CloudEventFilters IDs.
-func (cefq *CloudEventFiltersQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
-	if err := cefq.Select(cloudeventfilters.FieldID).Scan(ctx, &ids); err != nil {
+func (cefq *CloudEventFiltersQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if cefq.ctx.Unique == nil && cefq.path != nil {
+		cefq.Unique(true)
+	}
+	ctx = setContextOp(ctx, cefq.ctx, "IDs")
+	if err = cefq.Select(cloudeventfilters.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -224,10 +227,11 @@ func (cefq *CloudEventFiltersQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (cefq *CloudEventFiltersQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, cefq.ctx, "Count")
 	if err := cefq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return cefq.sqlCount(ctx)
+	return withInterceptors[int](ctx, cefq, querierCount[*CloudEventFiltersQuery](), cefq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -241,10 +245,15 @@ func (cefq *CloudEventFiltersQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (cefq *CloudEventFiltersQuery) Exist(ctx context.Context) (bool, error) {
-	if err := cefq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, cefq.ctx, "Exist")
+	switch _, err := cefq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return cefq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -264,22 +273,21 @@ func (cefq *CloudEventFiltersQuery) Clone() *CloudEventFiltersQuery {
 	}
 	return &CloudEventFiltersQuery{
 		config:        cefq.config,
-		limit:         cefq.limit,
-		offset:        cefq.offset,
+		ctx:           cefq.ctx.Clone(),
 		order:         append([]OrderFunc{}, cefq.order...),
+		inters:        append([]Interceptor{}, cefq.inters...),
 		predicates:    append([]predicate.CloudEventFilters{}, cefq.predicates...),
 		withNamespace: cefq.withNamespace.Clone(),
 		// clone intermediate query.
-		sql:    cefq.sql.Clone(),
-		path:   cefq.path,
-		unique: cefq.unique,
+		sql:  cefq.sql.Clone(),
+		path: cefq.path,
 	}
 }
 
 // WithNamespace tells the query-builder to eager-load the nodes that are connected to
 // the "namespace" edge. The optional arguments are used to configure the query builder of the edge.
 func (cefq *CloudEventFiltersQuery) WithNamespace(opts ...func(*NamespaceQuery)) *CloudEventFiltersQuery {
-	query := &NamespaceQuery{config: cefq.config}
+	query := (&NamespaceClient{config: cefq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -302,16 +310,11 @@ func (cefq *CloudEventFiltersQuery) WithNamespace(opts ...func(*NamespaceQuery))
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (cefq *CloudEventFiltersQuery) GroupBy(field string, fields ...string) *CloudEventFiltersGroupBy {
-	grbuild := &CloudEventFiltersGroupBy{config: cefq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := cefq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return cefq.sqlQuery(ctx), nil
-	}
+	cefq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &CloudEventFiltersGroupBy{build: cefq}
+	grbuild.flds = &cefq.ctx.Fields
 	grbuild.label = cloudeventfilters.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -328,11 +331,11 @@ func (cefq *CloudEventFiltersQuery) GroupBy(field string, fields ...string) *Clo
 //		Select(cloudeventfilters.FieldName).
 //		Scan(ctx, &v)
 func (cefq *CloudEventFiltersQuery) Select(fields ...string) *CloudEventFiltersSelect {
-	cefq.fields = append(cefq.fields, fields...)
-	selbuild := &CloudEventFiltersSelect{CloudEventFiltersQuery: cefq}
-	selbuild.label = cloudeventfilters.Label
-	selbuild.flds, selbuild.scan = &cefq.fields, selbuild.Scan
-	return selbuild
+	cefq.ctx.Fields = append(cefq.ctx.Fields, fields...)
+	sbuild := &CloudEventFiltersSelect{CloudEventFiltersQuery: cefq}
+	sbuild.label = cloudeventfilters.Label
+	sbuild.flds, sbuild.scan = &cefq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a CloudEventFiltersSelect configured with the given aggregations.
@@ -341,7 +344,17 @@ func (cefq *CloudEventFiltersQuery) Aggregate(fns ...AggregateFunc) *CloudEventF
 }
 
 func (cefq *CloudEventFiltersQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range cefq.fields {
+	for _, inter := range cefq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, cefq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range cefq.ctx.Fields {
 		if !cloudeventfilters.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -414,6 +427,9 @@ func (cefq *CloudEventFiltersQuery) loadNamespace(ctx context.Context, query *Na
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(namespace.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -436,41 +452,22 @@ func (cefq *CloudEventFiltersQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(cefq.modifiers) > 0 {
 		_spec.Modifiers = cefq.modifiers
 	}
-	_spec.Node.Columns = cefq.fields
-	if len(cefq.fields) > 0 {
-		_spec.Unique = cefq.unique != nil && *cefq.unique
+	_spec.Node.Columns = cefq.ctx.Fields
+	if len(cefq.ctx.Fields) > 0 {
+		_spec.Unique = cefq.ctx.Unique != nil && *cefq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, cefq.driver, _spec)
 }
 
-func (cefq *CloudEventFiltersQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := cefq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (cefq *CloudEventFiltersQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   cloudeventfilters.Table,
-			Columns: cloudeventfilters.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: cloudeventfilters.FieldID,
-			},
-		},
-		From:   cefq.sql,
-		Unique: true,
-	}
-	if unique := cefq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(cloudeventfilters.Table, cloudeventfilters.Columns, sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt))
+	_spec.From = cefq.sql
+	if unique := cefq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if cefq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := cefq.fields; len(fields) > 0 {
+	if fields := cefq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, cloudeventfilters.FieldID)
 		for i := range fields {
@@ -486,10 +483,10 @@ func (cefq *CloudEventFiltersQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := cefq.limit; limit != nil {
+	if limit := cefq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := cefq.offset; offset != nil {
+	if offset := cefq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := cefq.order; len(ps) > 0 {
@@ -505,7 +502,7 @@ func (cefq *CloudEventFiltersQuery) querySpec() *sqlgraph.QuerySpec {
 func (cefq *CloudEventFiltersQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(cefq.driver.Dialect())
 	t1 := builder.Table(cloudeventfilters.Table)
-	columns := cefq.fields
+	columns := cefq.ctx.Fields
 	if len(columns) == 0 {
 		columns = cloudeventfilters.Columns
 	}
@@ -514,7 +511,7 @@ func (cefq *CloudEventFiltersQuery) sqlQuery(ctx context.Context) *sql.Selector 
 		selector = cefq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if cefq.unique != nil && *cefq.unique {
+	if cefq.ctx.Unique != nil && *cefq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range cefq.modifiers {
@@ -526,12 +523,12 @@ func (cefq *CloudEventFiltersQuery) sqlQuery(ctx context.Context) *sql.Selector 
 	for _, p := range cefq.order {
 		p(selector)
 	}
-	if offset := cefq.offset; offset != nil {
+	if offset := cefq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := cefq.limit; limit != nil {
+	if limit := cefq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -571,13 +568,8 @@ func (cefq *CloudEventFiltersQuery) Modify(modifiers ...func(s *sql.Selector)) *
 
 // CloudEventFiltersGroupBy is the group-by builder for CloudEventFilters entities.
 type CloudEventFiltersGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *CloudEventFiltersQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -586,58 +578,46 @@ func (cefgb *CloudEventFiltersGroupBy) Aggregate(fns ...AggregateFunc) *CloudEve
 	return cefgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (cefgb *CloudEventFiltersGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := cefgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, cefgb.build.ctx, "GroupBy")
+	if err := cefgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	cefgb.sql = query
-	return cefgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*CloudEventFiltersQuery, *CloudEventFiltersGroupBy](ctx, cefgb.build, cefgb, cefgb.build.inters, v)
 }
 
-func (cefgb *CloudEventFiltersGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range cefgb.fields {
-		if !cloudeventfilters.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (cefgb *CloudEventFiltersGroupBy) sqlScan(ctx context.Context, root *CloudEventFiltersQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(cefgb.fns))
+	for _, fn := range cefgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := cefgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*cefgb.flds)+len(cefgb.fns))
+		for _, f := range *cefgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*cefgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := cefgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := cefgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (cefgb *CloudEventFiltersGroupBy) sqlQuery() *sql.Selector {
-	selector := cefgb.sql.Select()
-	aggregation := make([]string, 0, len(cefgb.fns))
-	for _, fn := range cefgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(cefgb.fields)+len(cefgb.fns))
-		for _, f := range cefgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(cefgb.fields...)...)
-}
-
 // CloudEventFiltersSelect is the builder for selecting fields of CloudEventFilters entities.
 type CloudEventFiltersSelect struct {
 	*CloudEventFiltersQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -648,26 +628,27 @@ func (cefs *CloudEventFiltersSelect) Aggregate(fns ...AggregateFunc) *CloudEvent
 
 // Scan applies the selector query and scans the result into the given value.
 func (cefs *CloudEventFiltersSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, cefs.ctx, "Select")
 	if err := cefs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	cefs.sql = cefs.CloudEventFiltersQuery.sqlQuery(ctx)
-	return cefs.sqlScan(ctx, v)
+	return scanWithInterceptors[*CloudEventFiltersQuery, *CloudEventFiltersSelect](ctx, cefs.CloudEventFiltersQuery, cefs, cefs.inters, v)
 }
 
-func (cefs *CloudEventFiltersSelect) sqlScan(ctx context.Context, v any) error {
+func (cefs *CloudEventFiltersSelect) sqlScan(ctx context.Context, root *CloudEventFiltersQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(cefs.fns))
 	for _, fn := range cefs.fns {
-		aggregation = append(aggregation, fn(cefs.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*cefs.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		cefs.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		cefs.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := cefs.sql.Query()
+	query, args := selector.Query()
 	if err := cefs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

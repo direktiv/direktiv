@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (ewd *EventsWaitDelete) Where(ps ...predicate.EventsWait) *EventsWaitDelete
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (ewd *EventsWaitDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(ewd.hooks) == 0 {
-		affected, err = ewd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*EventsWaitMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			ewd.mutation = mutation
-			affected, err = ewd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(ewd.hooks) - 1; i >= 0; i-- {
-			if ewd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ewd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, ewd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, EventsWaitMutation](ctx, ewd.sqlExec, ewd.mutation, ewd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (ewd *EventsWaitDelete) ExecX(ctx context.Context) int {
 }
 
 func (ewd *EventsWaitDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: eventswait.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: eventswait.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(eventswait.Table, sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID))
 	if ps := ewd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (ewd *EventsWaitDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	ewd.mutation.done = true
 	return affected, err
 }
 
 // EventsWaitDeleteOne is the builder for deleting a single EventsWait entity.
 type EventsWaitDeleteOne struct {
 	ewd *EventsWaitDelete
+}
+
+// Where appends a list predicates to the EventsWaitDelete builder.
+func (ewdo *EventsWaitDeleteOne) Where(ps ...predicate.EventsWait) *EventsWaitDeleteOne {
+	ewdo.ewd.mutation.Where(ps...)
+	return ewdo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (ewdo *EventsWaitDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (ewdo *EventsWaitDeleteOne) ExecX(ctx context.Context) {
-	ewdo.ewd.ExecX(ctx)
+	if err := ewdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

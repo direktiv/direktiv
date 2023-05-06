@@ -53,40 +53,7 @@ func (nsu *NamespaceSecretUpdate) Mutation() *NamespaceSecretMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (nsu *NamespaceSecretUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(nsu.hooks) == 0 {
-		if err = nsu.check(); err != nil {
-			return 0, err
-		}
-		affected, err = nsu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NamespaceSecretMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = nsu.check(); err != nil {
-				return 0, err
-			}
-			nsu.mutation = mutation
-			affected, err = nsu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(nsu.hooks) - 1; i >= 0; i-- {
-			if nsu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = nsu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, nsu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, NamespaceSecretMutation](ctx, nsu.sqlSave, nsu.mutation, nsu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -128,16 +95,10 @@ func (nsu *NamespaceSecretUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)
 }
 
 func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   namespacesecret.Table,
-			Columns: namespacesecret.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: namespacesecret.FieldID,
-			},
-		},
+	if err := nsu.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(namespacesecret.Table, namespacesecret.Columns, sqlgraph.NewFieldSpec(namespacesecret.FieldID, field.TypeInt))
 	if ps := nsu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -163,6 +124,7 @@ func (nsu *NamespaceSecretUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		return 0, err
 	}
+	nsu.mutation.done = true
 	return n, nil
 }
 
@@ -198,6 +160,12 @@ func (nsuo *NamespaceSecretUpdateOne) Mutation() *NamespaceSecretMutation {
 	return nsuo.mutation
 }
 
+// Where appends a list predicates to the NamespaceSecretUpdate builder.
+func (nsuo *NamespaceSecretUpdateOne) Where(ps ...predicate.NamespaceSecret) *NamespaceSecretUpdateOne {
+	nsuo.mutation.Where(ps...)
+	return nsuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (nsuo *NamespaceSecretUpdateOne) Select(field string, fields ...string) *NamespaceSecretUpdateOne {
@@ -207,46 +175,7 @@ func (nsuo *NamespaceSecretUpdateOne) Select(field string, fields ...string) *Na
 
 // Save executes the query and returns the updated NamespaceSecret entity.
 func (nsuo *NamespaceSecretUpdateOne) Save(ctx context.Context) (*NamespaceSecret, error) {
-	var (
-		err  error
-		node *NamespaceSecret
-	)
-	if len(nsuo.hooks) == 0 {
-		if err = nsuo.check(); err != nil {
-			return nil, err
-		}
-		node, err = nsuo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NamespaceSecretMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = nsuo.check(); err != nil {
-				return nil, err
-			}
-			nsuo.mutation = mutation
-			node, err = nsuo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(nsuo.hooks) - 1; i >= 0; i-- {
-			if nsuo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = nsuo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, nsuo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*NamespaceSecret)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from NamespaceSecretMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*NamespaceSecret, NamespaceSecretMutation](ctx, nsuo.sqlSave, nsuo.mutation, nsuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -288,16 +217,10 @@ func (nsuo *NamespaceSecretUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuil
 }
 
 func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *NamespaceSecret, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   namespacesecret.Table,
-			Columns: namespacesecret.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: namespacesecret.FieldID,
-			},
-		},
+	if err := nsuo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(namespacesecret.Table, namespacesecret.Columns, sqlgraph.NewFieldSpec(namespacesecret.FieldID, field.TypeInt))
 	id, ok := nsuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "NamespaceSecret.id" for update`)}
@@ -343,5 +266,6 @@ func (nsuo *NamespaceSecretUpdateOne) sqlSave(ctx context.Context) (_node *Names
 		}
 		return nil, err
 	}
+	nsuo.mutation.done = true
 	return _node, nil
 }

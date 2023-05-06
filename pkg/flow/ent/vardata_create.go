@@ -121,50 +121,8 @@ func (vdc *VarDataCreate) Mutation() *VarDataMutation {
 
 // Save creates the VarData in the database.
 func (vdc *VarDataCreate) Save(ctx context.Context) (*VarData, error) {
-	var (
-		err  error
-		node *VarData
-	)
 	vdc.defaults()
-	if len(vdc.hooks) == 0 {
-		if err = vdc.check(); err != nil {
-			return nil, err
-		}
-		node, err = vdc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*VarDataMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = vdc.check(); err != nil {
-				return nil, err
-			}
-			vdc.mutation = mutation
-			if node, err = vdc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(vdc.hooks) - 1; i >= 0; i-- {
-			if vdc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = vdc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, vdc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*VarData)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from VarDataMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*VarData, VarDataMutation](ctx, vdc.sqlSave, vdc.mutation, vdc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -233,6 +191,9 @@ func (vdc *VarDataCreate) check() error {
 }
 
 func (vdc *VarDataCreate) sqlSave(ctx context.Context) (*VarData, error) {
+	if err := vdc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := vdc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, vdc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -247,19 +208,15 @@ func (vdc *VarDataCreate) sqlSave(ctx context.Context) (*VarData, error) {
 			return nil, err
 		}
 	}
+	vdc.mutation.id = &_node.ID
+	vdc.mutation.done = true
 	return _node, nil
 }
 
 func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 	var (
 		_node = &VarData{config: vdc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: vardata.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: vardata.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(vardata.Table, sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = vdc.conflict
 	if id, ok := vdc.mutation.ID(); ok {
@@ -298,10 +255,7 @@ func (vdc *VarDataCreate) createSpec() (*VarData, *sqlgraph.CreateSpec) {
 			Columns: []string{vardata.VarrefsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: varref.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -180,19 +180,19 @@ func (a *Annotation) assignValues(columns []string, values []any) error {
 
 // QueryNamespace queries the "namespace" edge of the Annotation entity.
 func (a *Annotation) QueryNamespace() *NamespaceQuery {
-	return (&AnnotationClient{config: a.config}).QueryNamespace(a)
+	return NewAnnotationClient(a.config).QueryNamespace(a)
 }
 
 // QueryInstance queries the "instance" edge of the Annotation entity.
 func (a *Annotation) QueryInstance() *InstanceQuery {
-	return (&AnnotationClient{config: a.config}).QueryInstance(a)
+	return NewAnnotationClient(a.config).QueryInstance(a)
 }
 
 // Update returns a builder for updating this Annotation.
 // Note that you need to call Annotation.Unwrap() before calling this method if this Annotation
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (a *Annotation) Update() *AnnotationUpdateOne {
-	return (&AnnotationClient{config: a.config}).UpdateOne(a)
+	return NewAnnotationClient(a.config).UpdateOne(a)
 }
 
 // Unwrap unwraps the Annotation entity that was returned from a transaction after it was closed,
@@ -237,9 +237,3 @@ func (a *Annotation) String() string {
 
 // Annotations is a parsable slice of Annotation.
 type Annotations []*Annotation
-
-func (a Annotations) config(cfg config) {
-	for _i := range a {
-		a[_i].config = cfg
-	}
-}

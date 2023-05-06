@@ -104,50 +104,8 @@ func (cec *CloudEventsCreate) Mutation() *CloudEventsMutation {
 
 // Save creates the CloudEvents in the database.
 func (cec *CloudEventsCreate) Save(ctx context.Context) (*CloudEvents, error) {
-	var (
-		err  error
-		node *CloudEvents
-	)
 	cec.defaults()
-	if len(cec.hooks) == 0 {
-		if err = cec.check(); err != nil {
-			return nil, err
-		}
-		node, err = cec.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*CloudEventsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = cec.check(); err != nil {
-				return nil, err
-			}
-			cec.mutation = mutation
-			if node, err = cec.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(cec.hooks) - 1; i >= 0; i-- {
-			if cec.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = cec.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, cec.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*CloudEvents)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from CloudEventsMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*CloudEvents, CloudEventsMutation](ctx, cec.sqlSave, cec.mutation, cec.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -201,6 +159,11 @@ func (cec *CloudEventsCreate) check() error {
 	if _, ok := cec.mutation.Event(); !ok {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required field "CloudEvents.event"`)}
 	}
+	if v, ok := cec.mutation.Event(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "event", err: fmt.Errorf(`ent: validator failed for field "CloudEvents.event": %w`, err)}
+		}
+	}
 	if _, ok := cec.mutation.Fire(); !ok {
 		return &ValidationError{Name: "fire", err: errors.New(`ent: missing required field "CloudEvents.fire"`)}
 	}
@@ -217,6 +180,9 @@ func (cec *CloudEventsCreate) check() error {
 }
 
 func (cec *CloudEventsCreate) sqlSave(ctx context.Context) (*CloudEvents, error) {
+	if err := cec.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := cec.createSpec()
 	if err := sqlgraph.CreateNode(ctx, cec.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -231,19 +197,15 @@ func (cec *CloudEventsCreate) sqlSave(ctx context.Context) (*CloudEvents, error)
 			return nil, err
 		}
 	}
+	cec.mutation.id = &_node.ID
+	cec.mutation.done = true
 	return _node, nil
 }
 
 func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) {
 	var (
 		_node = &CloudEvents{config: cec.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: cloudevents.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: cloudevents.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(cloudevents.Table, sqlgraph.NewFieldSpec(cloudevents.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = cec.conflict
 	if id, ok := cec.mutation.ID(); ok {
@@ -278,10 +240,7 @@ func (cec *CloudEventsCreate) createSpec() (*CloudEvents, *sqlgraph.CreateSpec) 
 			Columns: []string{cloudevents.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

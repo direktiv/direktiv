@@ -138,50 +138,8 @@ func (vrc *VarRefCreate) Mutation() *VarRefMutation {
 
 // Save creates the VarRef in the database.
 func (vrc *VarRefCreate) Save(ctx context.Context) (*VarRef, error) {
-	var (
-		err  error
-		node *VarRef
-	)
 	vrc.defaults()
-	if len(vrc.hooks) == 0 {
-		if err = vrc.check(); err != nil {
-			return nil, err
-		}
-		node, err = vrc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*VarRefMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = vrc.check(); err != nil {
-				return nil, err
-			}
-			vrc.mutation = mutation
-			if node, err = vrc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(vrc.hooks) - 1; i >= 0; i-- {
-			if vrc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = vrc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, vrc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*VarRef)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from VarRefMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*VarRef, VarRefMutation](ctx, vrc.sqlSave, vrc.mutation, vrc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -228,6 +186,9 @@ func (vrc *VarRefCreate) check() error {
 }
 
 func (vrc *VarRefCreate) sqlSave(ctx context.Context) (*VarRef, error) {
+	if err := vrc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := vrc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, vrc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -242,19 +203,15 @@ func (vrc *VarRefCreate) sqlSave(ctx context.Context) (*VarRef, error) {
 			return nil, err
 		}
 	}
+	vrc.mutation.id = &_node.ID
+	vrc.mutation.done = true
 	return _node, nil
 }
 
 func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 	var (
 		_node = &VarRef{config: vrc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: varref.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: varref.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(varref.Table, sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = vrc.conflict
 	if id, ok := vrc.mutation.ID(); ok {
@@ -281,10 +238,7 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			Columns: []string{varref.VardataColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: vardata.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -301,10 +255,7 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			Columns: []string{varref.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -321,10 +272,7 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			Columns: []string{varref.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

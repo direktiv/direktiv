@@ -11,398 +11,262 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.VarRef(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.VarRef(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.VarRef(sql.FieldLTE(FieldID, id))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldName, v))
 }
 
 // Behaviour applies equality check predicate on the "behaviour" field. It's identical to BehaviourEQ.
 func Behaviour(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldBehaviour, v))
 }
 
 // WorkflowID applies equality check predicate on the "workflow_id" field. It's identical to WorkflowIDEQ.
 func WorkflowID(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldWorkflowID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldName, v))
 }
 
 // NameNEQ applies the NEQ predicate on the "name" field.
 func NameNEQ(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldNEQ(FieldName, v))
 }
 
 // NameIn applies the In predicate on the "name" field.
 func NameIn(vs ...string) predicate.VarRef {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldName), v...))
-	})
+	return predicate.VarRef(sql.FieldIn(FieldName, vs...))
 }
 
 // NameNotIn applies the NotIn predicate on the "name" field.
 func NameNotIn(vs ...string) predicate.VarRef {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldName), v...))
-	})
+	return predicate.VarRef(sql.FieldNotIn(FieldName, vs...))
 }
 
 // NameGT applies the GT predicate on the "name" field.
 func NameGT(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldGT(FieldName, v))
 }
 
 // NameGTE applies the GTE predicate on the "name" field.
 func NameGTE(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldGTE(FieldName, v))
 }
 
 // NameLT applies the LT predicate on the "name" field.
 func NameLT(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldLT(FieldName, v))
 }
 
 // NameLTE applies the LTE predicate on the "name" field.
 func NameLTE(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldLTE(FieldName, v))
 }
 
 // NameContains applies the Contains predicate on the "name" field.
 func NameContains(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldContains(FieldName, v))
 }
 
 // NameHasPrefix applies the HasPrefix predicate on the "name" field.
 func NameHasPrefix(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldHasPrefix(FieldName, v))
 }
 
 // NameHasSuffix applies the HasSuffix predicate on the "name" field.
 func NameHasSuffix(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldHasSuffix(FieldName, v))
 }
 
 // NameIsNil applies the IsNil predicate on the "name" field.
 func NameIsNil() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldName)))
-	})
+	return predicate.VarRef(sql.FieldIsNull(FieldName))
 }
 
 // NameNotNil applies the NotNil predicate on the "name" field.
 func NameNotNil() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldName)))
-	})
+	return predicate.VarRef(sql.FieldNotNull(FieldName))
 }
 
 // NameEqualFold applies the EqualFold predicate on the "name" field.
 func NameEqualFold(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldEqualFold(FieldName, v))
 }
 
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldName), v))
-	})
+	return predicate.VarRef(sql.FieldContainsFold(FieldName, v))
 }
 
 // BehaviourEQ applies the EQ predicate on the "behaviour" field.
 func BehaviourEQ(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldBehaviour, v))
 }
 
 // BehaviourNEQ applies the NEQ predicate on the "behaviour" field.
 func BehaviourNEQ(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldNEQ(FieldBehaviour, v))
 }
 
 // BehaviourIn applies the In predicate on the "behaviour" field.
 func BehaviourIn(vs ...string) predicate.VarRef {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldBehaviour), v...))
-	})
+	return predicate.VarRef(sql.FieldIn(FieldBehaviour, vs...))
 }
 
 // BehaviourNotIn applies the NotIn predicate on the "behaviour" field.
 func BehaviourNotIn(vs ...string) predicate.VarRef {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldBehaviour), v...))
-	})
+	return predicate.VarRef(sql.FieldNotIn(FieldBehaviour, vs...))
 }
 
 // BehaviourGT applies the GT predicate on the "behaviour" field.
 func BehaviourGT(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldGT(FieldBehaviour, v))
 }
 
 // BehaviourGTE applies the GTE predicate on the "behaviour" field.
 func BehaviourGTE(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldGTE(FieldBehaviour, v))
 }
 
 // BehaviourLT applies the LT predicate on the "behaviour" field.
 func BehaviourLT(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldLT(FieldBehaviour, v))
 }
 
 // BehaviourLTE applies the LTE predicate on the "behaviour" field.
 func BehaviourLTE(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldLTE(FieldBehaviour, v))
 }
 
 // BehaviourContains applies the Contains predicate on the "behaviour" field.
 func BehaviourContains(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldContains(FieldBehaviour, v))
 }
 
 // BehaviourHasPrefix applies the HasPrefix predicate on the "behaviour" field.
 func BehaviourHasPrefix(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldHasPrefix(FieldBehaviour, v))
 }
 
 // BehaviourHasSuffix applies the HasSuffix predicate on the "behaviour" field.
 func BehaviourHasSuffix(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldHasSuffix(FieldBehaviour, v))
 }
 
 // BehaviourIsNil applies the IsNil predicate on the "behaviour" field.
 func BehaviourIsNil() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldBehaviour)))
-	})
+	return predicate.VarRef(sql.FieldIsNull(FieldBehaviour))
 }
 
 // BehaviourNotNil applies the NotNil predicate on the "behaviour" field.
 func BehaviourNotNil() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldBehaviour)))
-	})
+	return predicate.VarRef(sql.FieldNotNull(FieldBehaviour))
 }
 
 // BehaviourEqualFold applies the EqualFold predicate on the "behaviour" field.
 func BehaviourEqualFold(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldEqualFold(FieldBehaviour, v))
 }
 
 // BehaviourContainsFold applies the ContainsFold predicate on the "behaviour" field.
 func BehaviourContainsFold(v string) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldBehaviour), v))
-	})
+	return predicate.VarRef(sql.FieldContainsFold(FieldBehaviour, v))
 }
 
 // WorkflowIDEQ applies the EQ predicate on the "workflow_id" field.
 func WorkflowIDEQ(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldEQ(FieldWorkflowID, v))
 }
 
 // WorkflowIDNEQ applies the NEQ predicate on the "workflow_id" field.
 func WorkflowIDNEQ(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldNEQ(FieldWorkflowID, v))
 }
 
 // WorkflowIDIn applies the In predicate on the "workflow_id" field.
 func WorkflowIDIn(vs ...uuid.UUID) predicate.VarRef {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldWorkflowID), v...))
-	})
+	return predicate.VarRef(sql.FieldIn(FieldWorkflowID, vs...))
 }
 
 // WorkflowIDNotIn applies the NotIn predicate on the "workflow_id" field.
 func WorkflowIDNotIn(vs ...uuid.UUID) predicate.VarRef {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldWorkflowID), v...))
-	})
+	return predicate.VarRef(sql.FieldNotIn(FieldWorkflowID, vs...))
 }
 
 // WorkflowIDGT applies the GT predicate on the "workflow_id" field.
 func WorkflowIDGT(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldGT(FieldWorkflowID, v))
 }
 
 // WorkflowIDGTE applies the GTE predicate on the "workflow_id" field.
 func WorkflowIDGTE(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldGTE(FieldWorkflowID, v))
 }
 
 // WorkflowIDLT applies the LT predicate on the "workflow_id" field.
 func WorkflowIDLT(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldLT(FieldWorkflowID, v))
 }
 
 // WorkflowIDLTE applies the LTE predicate on the "workflow_id" field.
 func WorkflowIDLTE(v uuid.UUID) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldWorkflowID), v))
-	})
+	return predicate.VarRef(sql.FieldLTE(FieldWorkflowID, v))
 }
 
 // WorkflowIDIsNil applies the IsNil predicate on the "workflow_id" field.
 func WorkflowIDIsNil() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldWorkflowID)))
-	})
+	return predicate.VarRef(sql.FieldIsNull(FieldWorkflowID))
 }
 
 // WorkflowIDNotNil applies the NotNil predicate on the "workflow_id" field.
 func WorkflowIDNotNil() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldWorkflowID)))
-	})
+	return predicate.VarRef(sql.FieldNotNull(FieldWorkflowID))
 }
 
 // HasVardata applies the HasEdge predicate on the "vardata" edge.
@@ -410,7 +274,6 @@ func HasVardata() predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(VardataTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, VardataTable, VardataColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -438,7 +301,6 @@ func HasNamespace() predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamespaceTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -466,7 +328,6 @@ func HasInstance() predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InstanceTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
