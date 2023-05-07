@@ -46,22 +46,26 @@ states:
 export const Default = () => (
   <div className="flex flex-col gap-y-3 bg-white p-4">
     <div>This Story is not aware of light and dark mode.</div>
-    <Editor className="h-[500px]" value={value} />
+    <div className="h-[500px]">
+      <Editor value={value} />
+    </div>
   </div>
 );
 
 export const Darkmode = () => (
   <div className="flex flex-col gap-y-3 bg-black p-4">
     <div>This Story is not aware of light and dark mode.</div>
-    <Editor className="h-[500px]" value={value} theme="dark" />
+    <div className="h-[500px]">
+      <Editor value={value} theme="dark" />
+    </div>
   </div>
 );
 
-export const WithCard = () => (
-  <div className="flex flex-col gap-y-3 bg-black p-4">
+export const WithCardAnd100Height = () => (
+  <div className="flex h-[97vh] min-h-full flex-col gap-y-3 bg-black">
     <div>This Story is not aware of light and dark mode.</div>
-    <Card className="p-4">
-      <Editor className="h-[500px]" value={value} theme="dark" />
+    <Card className="grow p-4">
+      <Editor value={value} theme="dark" />
     </Card>
   </div>
 );
