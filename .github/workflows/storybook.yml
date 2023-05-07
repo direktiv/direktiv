@@ -1,8 +1,6 @@
 name: 'Publish Storybook to Chromatic'
 on:
-  push:
-    branches-ignore:
-      - 'main'
+  pull_request:  
 jobs:
   build:
     name: Build and test design system
