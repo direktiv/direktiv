@@ -16,11 +16,13 @@ jobs:
     name: licenses-check
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version: 1.20.0
-      - uses: actions/checkout@v3
+
       - name: Install go-licenses
         run: make dependencies
+
       - name: Run check
         run: make license-check
