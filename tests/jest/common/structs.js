@@ -39,4 +39,4 @@ const nodeObject = {
     updatedAt: expect.stringMatching(regex.timestampRegex),
 }
 
-export default { errorResponse, pageInfoObject, namespaceObject, nodeObject, unauthorizedResponse }
+export default {errorResponse, pageInfoObject, namespaceObject, nodeObject, unauthorizedResponse}

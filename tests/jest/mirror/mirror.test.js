@@ -18,14 +18,14 @@ describe('Test behaviour specific to the root node', () => {
 
     it(`should create a namespace`, async () => {
         var req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
-        .send({
-            url: url,
-            ref: branch,
-            cron: "",
-            passphrase: "",
-            publicKey: "",
-            privateKey: ""
-        })
+            .send({
+                url: url,
+                ref: branch,
+                cron: "",
+                passphrase: "",
+                publicKey: "",
+                privateKey: ""
+            })
 
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
@@ -81,7 +81,7 @@ describe('Test behaviour specific to the root node', () => {
             activityId = req.body.activities.results[0].id
             status = req.body.activities.results[0].status
 
-        } while(status == "pending")
+        } while (status == "pending")
 
     })
 
@@ -425,7 +425,6 @@ describe('Test behaviour specific to the root node', () => {
     })
 
 
-
     it(`should read the workflow variables of '/banana/page-1.yaml'`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1.yaml?op=vars`)
         expect(req.statusCode).toEqual(200)
@@ -582,7 +581,7 @@ describe('Test behaviour specific to the root node', () => {
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
                 oid: '',
-                readOnly:false,
+                readOnly: false,
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -594,7 +593,6 @@ describe('Test behaviour specific to the root node', () => {
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
-
 
 
     it(`should read the '/banana/util/curler.yaml' workflow node`, async () => {
@@ -760,15 +758,15 @@ describe('Test behaviour specific to the root node', () => {
 
     it(`should invoke the '/listener.yml' workflow with an event`, async () => {
         var req = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`).send({
-            "specversion" : "1.0",
-            "type" : "greeting",
-            "source" : "https://github.com/cloudevents/spec/pull",
-            "subject" : "123",
-            "time" : "2018-04-05T17:31:00Z",
-            "comexampleextension1" : "value",
-            "comexampleothervalue" : 5,
-            "datacontenttype" : "text/xml",
-            "data" : "<much wow=\"xml\"/>",
+            "specversion": "1.0",
+            "type": "greeting",
+            "source": "https://github.com/cloudevents/spec/pull",
+            "subject": "123",
+            "time": "2018-04-05T17:31:00Z",
+            "comexampleextension1": "value",
+            "comexampleothervalue": 5,
+            "datacontenttype": "text/xml",
+            "data": "<much wow=\"xml\"/>",
         })
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({})
@@ -786,7 +784,7 @@ describe('Test behaviour specific to the root node', () => {
 
             req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
             expect(req.statusCode).toEqual(200)
-            
+
             if (req.body.instances.pageInfo.total > 1) {
                 invoked = true
             }
