@@ -150,13 +150,6 @@ api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to ch
 api-swagger:
 	scripts/api/swagger.sh $(host)
 
-# PROTOC
-
-PROTOBUF_FLOW_SOURCE_FILES := $(shell find ./pkg/flow -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-PROTOBUF_HEALTH_SOURCE_FILES := $(shell find ./pkg/health -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-PROTOBUF_SECRETS_SOURCE_FILES := $(shell find ./pkg/secrets -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-PROTOBUF_FUNCTIONS_SOURCE_FILES := $(shell find ./pkg/functions -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-
 # multi-arch build
 .PHONY: cross-prepare
 cross-prepare:
@@ -173,41 +166,15 @@ cross-build:
 	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
-.PHONY: protoc-flow 
-protoc-flow: ## Manually regenerates flow gRPC API.
-protoc-flow: ${PROTOBUF_FLOW_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_FLOW_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
 
-.PHONY: protoc-health
-protoc-health: ## Manually regenerates health gRPC API.
-protoc-health: ${PROTOBUF_HEALTH_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_HEALTH_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
 
-.PHONY: protoc-secrets
-protoc-secrets: ## Manually regenerates secrets gRPC API.
-protoc-secrets: ${PROTOBUF_SECRETS_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_SECRETS_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
-
-.PHONY: protoc-functions
-protoc-functions: ## Manually regenerates functions gRPC API.
-protoc-functions: ${PROTOBUF_FUNCTIONS_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_FUNCTIONS_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
-
-.PHONY: protoc 
+BUF_VERSION:=1.18.0
+.PHONY: protoc
 protoc: ## Manually regenerates Go packages built from protobuf.
-protoc: protoc-flow protoc-health protoc-secrets protoc-functions 
+protoc:
+	docker run -v $$(pwd):/app -w /app bufbuild/buf:$(BUF_VERSION) generate
+
+
 
 # Patterns
 
