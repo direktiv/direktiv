@@ -14,11 +14,12 @@ import {
 
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
-import Editor from "./Editor";
+import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
 import moment from "moment";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useTheme } from "../../../../../util/store/theme";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
 const WorkflowOverviewPage: FC = () => {
@@ -41,10 +42,16 @@ const WorkflowOverviewPage: FC = () => {
     setValue(value);
   };
 
+  const theme = useTheme();
+
   return (
     <div className="relative flex grow flex-col space-y-4 p-4">
       <Card className="grow p-4">
-        <Editor value={workflowData} onChange={handleEditorChange} />
+        <Editor
+          value={workflowData}
+          onChange={handleEditorChange}
+          theme={theme ?? undefined}
+        />
       </Card>
       <div className="flex flex-col items-center justify-end gap-4 sm:flex-row">
         <div className="grow text-sm text-gray-8 dark:text-gray-dark-8">
