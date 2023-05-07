@@ -53,8 +53,9 @@ const WorkflowOverviewPage: FC = () => {
       </Card>
       <div className="flex flex-col items-center justify-end gap-4 sm:flex-row">
         <div className="grow text-sm text-gray-8 dark:text-gray-dark-8">
+          {/* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */}
           {data?.revision?.createdAt && (
-            <>Updated {moment(data?.revision?.createdAt).fromNow()}</>
+            <>Updated {moment(data?.revision?.createdAt).fromNow(true)} ago</>
           )}
         </div>
         {error && (
