@@ -18,11 +18,9 @@ import (
 // MetricsQuery is the builder for querying Metrics entities.
 type MetricsQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
+	ctx        *QueryContext
 	order      []OrderFunc
-	fields     []string
+	inters     []Interceptor
 	predicates []predicate.Metrics
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -36,26 +34,26 @@ func (mq *MetricsQuery) Where(ps ...predicate.Metrics) *MetricsQuery {
 	return mq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (mq *MetricsQuery) Limit(limit int) *MetricsQuery {
-	mq.limit = &limit
+	mq.ctx.Limit = &limit
 	return mq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (mq *MetricsQuery) Offset(offset int) *MetricsQuery {
-	mq.offset = &offset
+	mq.ctx.Offset = &offset
 	return mq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (mq *MetricsQuery) Unique(unique bool) *MetricsQuery {
-	mq.unique = &unique
+	mq.ctx.Unique = &unique
 	return mq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (mq *MetricsQuery) Order(o ...OrderFunc) *MetricsQuery {
 	mq.order = append(mq.order, o...)
 	return mq
@@ -64,7 +62,7 @@ func (mq *MetricsQuery) Order(o ...OrderFunc) *MetricsQuery {
 // First returns the first Metrics entity from the query.
 // Returns a *NotFoundError when no Metrics was found.
 func (mq *MetricsQuery) First(ctx context.Context) (*Metrics, error) {
-	nodes, err := mq.Limit(1).All(ctx)
+	nodes, err := mq.Limit(1).All(setContextOp(ctx, mq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +85,7 @@ func (mq *MetricsQuery) FirstX(ctx context.Context) *Metrics {
 // Returns a *NotFoundError when no Metrics ID was found.
 func (mq *MetricsQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = mq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = mq.Limit(1).IDs(setContextOp(ctx, mq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -110,7 +108,7 @@ func (mq *MetricsQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one Metrics entity is found.
 // Returns a *NotFoundError when no Metrics entities are found.
 func (mq *MetricsQuery) Only(ctx context.Context) (*Metrics, error) {
-	nodes, err := mq.Limit(2).All(ctx)
+	nodes, err := mq.Limit(2).All(setContextOp(ctx, mq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +136,7 @@ func (mq *MetricsQuery) OnlyX(ctx context.Context) *Metrics {
 // Returns a *NotFoundError when no entities are found.
 func (mq *MetricsQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = mq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = mq.Limit(2).IDs(setContextOp(ctx, mq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -163,10 +161,12 @@ func (mq *MetricsQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of MetricsSlice.
 func (mq *MetricsQuery) All(ctx context.Context) ([]*Metrics, error) {
+	ctx = setContextOp(ctx, mq.ctx, "All")
 	if err := mq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return mq.sqlAll(ctx)
+	qr := querierAll[[]*Metrics, *MetricsQuery]()
+	return withInterceptors[[]*Metrics](ctx, mq, qr, mq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -179,9 +179,12 @@ func (mq *MetricsQuery) AllX(ctx context.Context) []*Metrics {
 }
 
 // IDs executes the query and returns a list of Metrics IDs.
-func (mq *MetricsQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
-	if err := mq.Select(metrics.FieldID).Scan(ctx, &ids); err != nil {
+func (mq *MetricsQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if mq.ctx.Unique == nil && mq.path != nil {
+		mq.Unique(true)
+	}
+	ctx = setContextOp(ctx, mq.ctx, "IDs")
+	if err = mq.Select(metrics.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -198,10 +201,11 @@ func (mq *MetricsQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (mq *MetricsQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, mq.ctx, "Count")
 	if err := mq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return mq.sqlCount(ctx)
+	return withInterceptors[int](ctx, mq, querierCount[*MetricsQuery](), mq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -215,10 +219,15 @@ func (mq *MetricsQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (mq *MetricsQuery) Exist(ctx context.Context) (bool, error) {
-	if err := mq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, mq.ctx, "Exist")
+	switch _, err := mq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return mq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -238,14 +247,13 @@ func (mq *MetricsQuery) Clone() *MetricsQuery {
 	}
 	return &MetricsQuery{
 		config:     mq.config,
-		limit:      mq.limit,
-		offset:     mq.offset,
+		ctx:        mq.ctx.Clone(),
 		order:      append([]OrderFunc{}, mq.order...),
+		inters:     append([]Interceptor{}, mq.inters...),
 		predicates: append([]predicate.Metrics{}, mq.predicates...),
 		// clone intermediate query.
-		sql:    mq.sql.Clone(),
-		path:   mq.path,
-		unique: mq.unique,
+		sql:  mq.sql.Clone(),
+		path: mq.path,
 	}
 }
 
@@ -264,16 +272,11 @@ func (mq *MetricsQuery) Clone() *MetricsQuery {
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (mq *MetricsQuery) GroupBy(field string, fields ...string) *MetricsGroupBy {
-	grbuild := &MetricsGroupBy{config: mq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := mq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return mq.sqlQuery(ctx), nil
-	}
+	mq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &MetricsGroupBy{build: mq}
+	grbuild.flds = &mq.ctx.Fields
 	grbuild.label = metrics.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -290,11 +293,11 @@ func (mq *MetricsQuery) GroupBy(field string, fields ...string) *MetricsGroupBy 
 //		Select(metrics.FieldNamespace).
 //		Scan(ctx, &v)
 func (mq *MetricsQuery) Select(fields ...string) *MetricsSelect {
-	mq.fields = append(mq.fields, fields...)
-	selbuild := &MetricsSelect{MetricsQuery: mq}
-	selbuild.label = metrics.Label
-	selbuild.flds, selbuild.scan = &mq.fields, selbuild.Scan
-	return selbuild
+	mq.ctx.Fields = append(mq.ctx.Fields, fields...)
+	sbuild := &MetricsSelect{MetricsQuery: mq}
+	sbuild.label = metrics.Label
+	sbuild.flds, sbuild.scan = &mq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a MetricsSelect configured with the given aggregations.
@@ -303,7 +306,17 @@ func (mq *MetricsQuery) Aggregate(fns ...AggregateFunc) *MetricsSelect {
 }
 
 func (mq *MetricsQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range mq.fields {
+	for _, inter := range mq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, mq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range mq.ctx.Fields {
 		if !metrics.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -351,41 +364,22 @@ func (mq *MetricsQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(mq.modifiers) > 0 {
 		_spec.Modifiers = mq.modifiers
 	}
-	_spec.Node.Columns = mq.fields
-	if len(mq.fields) > 0 {
-		_spec.Unique = mq.unique != nil && *mq.unique
+	_spec.Node.Columns = mq.ctx.Fields
+	if len(mq.ctx.Fields) > 0 {
+		_spec.Unique = mq.ctx.Unique != nil && *mq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, mq.driver, _spec)
 }
 
-func (mq *MetricsQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := mq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (mq *MetricsQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   metrics.Table,
-			Columns: metrics.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: metrics.FieldID,
-			},
-		},
-		From:   mq.sql,
-		Unique: true,
-	}
-	if unique := mq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(metrics.Table, metrics.Columns, sqlgraph.NewFieldSpec(metrics.FieldID, field.TypeInt))
+	_spec.From = mq.sql
+	if unique := mq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if mq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := mq.fields; len(fields) > 0 {
+	if fields := mq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, metrics.FieldID)
 		for i := range fields {
@@ -401,10 +395,10 @@ func (mq *MetricsQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := mq.limit; limit != nil {
+	if limit := mq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := mq.offset; offset != nil {
+	if offset := mq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := mq.order; len(ps) > 0 {
@@ -420,7 +414,7 @@ func (mq *MetricsQuery) querySpec() *sqlgraph.QuerySpec {
 func (mq *MetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(mq.driver.Dialect())
 	t1 := builder.Table(metrics.Table)
-	columns := mq.fields
+	columns := mq.ctx.Fields
 	if len(columns) == 0 {
 		columns = metrics.Columns
 	}
@@ -429,7 +423,7 @@ func (mq *MetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = mq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if mq.unique != nil && *mq.unique {
+	if mq.ctx.Unique != nil && *mq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range mq.modifiers {
@@ -441,12 +435,12 @@ func (mq *MetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range mq.order {
 		p(selector)
 	}
-	if offset := mq.offset; offset != nil {
+	if offset := mq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := mq.limit; limit != nil {
+	if limit := mq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -486,13 +480,8 @@ func (mq *MetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *MetricsSelec
 
 // MetricsGroupBy is the group-by builder for Metrics entities.
 type MetricsGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *MetricsQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -501,58 +490,46 @@ func (mgb *MetricsGroupBy) Aggregate(fns ...AggregateFunc) *MetricsGroupBy {
 	return mgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (mgb *MetricsGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := mgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, mgb.build.ctx, "GroupBy")
+	if err := mgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	mgb.sql = query
-	return mgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*MetricsQuery, *MetricsGroupBy](ctx, mgb.build, mgb, mgb.build.inters, v)
 }
 
-func (mgb *MetricsGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range mgb.fields {
-		if !metrics.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (mgb *MetricsGroupBy) sqlScan(ctx context.Context, root *MetricsQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(mgb.fns))
+	for _, fn := range mgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := mgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*mgb.flds)+len(mgb.fns))
+		for _, f := range *mgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*mgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := mgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := mgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (mgb *MetricsGroupBy) sqlQuery() *sql.Selector {
-	selector := mgb.sql.Select()
-	aggregation := make([]string, 0, len(mgb.fns))
-	for _, fn := range mgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(mgb.fields)+len(mgb.fns))
-		for _, f := range mgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(mgb.fields...)...)
-}
-
 // MetricsSelect is the builder for selecting fields of Metrics entities.
 type MetricsSelect struct {
 	*MetricsQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -563,26 +540,27 @@ func (ms *MetricsSelect) Aggregate(fns ...AggregateFunc) *MetricsSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (ms *MetricsSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, ms.ctx, "Select")
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ms.sql = ms.MetricsQuery.sqlQuery(ctx)
-	return ms.sqlScan(ctx, v)
+	return scanWithInterceptors[*MetricsQuery, *MetricsSelect](ctx, ms.MetricsQuery, ms, ms.inters, v)
 }
 
-func (ms *MetricsSelect) sqlScan(ctx context.Context, v any) error {
+func (ms *MetricsSelect) sqlScan(ctx context.Context, root *MetricsQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(ms.fns))
 	for _, fn := range ms.fns {
-		aggregation = append(aggregation, fn(ms.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*ms.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		ms.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		ms.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := ms.sql.Query()
+	query, args := selector.Query()
 	if err := ms.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

@@ -157,40 +157,7 @@ func (mu *MetricsUpdate) Mutation() *MetricsMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (mu *MetricsUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(mu.hooks) == 0 {
-		if err = mu.check(); err != nil {
-			return 0, err
-		}
-		affected, err = mu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*MetricsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = mu.check(); err != nil {
-				return 0, err
-			}
-			mu.mutation = mutation
-			affected, err = mu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(mu.hooks) - 1; i >= 0; i-- {
-			if mu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = mu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, mu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, MetricsMutation](ctx, mu.sqlSave, mu.mutation, mu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -262,16 +229,10 @@ func (mu *MetricsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Metric
 }
 
 func (mu *MetricsUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   metrics.Table,
-			Columns: metrics.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: metrics.FieldID,
-			},
-		},
+	if err := mu.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(metrics.Table, metrics.Columns, sqlgraph.NewFieldSpec(metrics.FieldID, field.TypeInt))
 	if ps := mu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -339,6 +300,7 @@ func (mu *MetricsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	mu.mutation.done = true
 	return n, nil
 }
 
@@ -477,6 +439,12 @@ func (muo *MetricsUpdateOne) Mutation() *MetricsMutation {
 	return muo.mutation
 }
 
+// Where appends a list predicates to the MetricsUpdate builder.
+func (muo *MetricsUpdateOne) Where(ps ...predicate.Metrics) *MetricsUpdateOne {
+	muo.mutation.Where(ps...)
+	return muo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (muo *MetricsUpdateOne) Select(field string, fields ...string) *MetricsUpdateOne {
@@ -486,46 +454,7 @@ func (muo *MetricsUpdateOne) Select(field string, fields ...string) *MetricsUpda
 
 // Save executes the query and returns the updated Metrics entity.
 func (muo *MetricsUpdateOne) Save(ctx context.Context) (*Metrics, error) {
-	var (
-		err  error
-		node *Metrics
-	)
-	if len(muo.hooks) == 0 {
-		if err = muo.check(); err != nil {
-			return nil, err
-		}
-		node, err = muo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*MetricsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = muo.check(); err != nil {
-				return nil, err
-			}
-			muo.mutation = mutation
-			node, err = muo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(muo.hooks) - 1; i >= 0; i-- {
-			if muo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = muo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, muo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Metrics)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from MetricsMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*Metrics, MetricsMutation](ctx, muo.sqlSave, muo.mutation, muo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -597,16 +526,10 @@ func (muo *MetricsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Me
 }
 
 func (muo *MetricsUpdateOne) sqlSave(ctx context.Context) (_node *Metrics, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   metrics.Table,
-			Columns: metrics.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: metrics.FieldID,
-			},
-		},
+	if err := muo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(metrics.Table, metrics.Columns, sqlgraph.NewFieldSpec(metrics.FieldID, field.TypeInt))
 	id, ok := muo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Metrics.id" for update`)}
@@ -694,5 +617,6 @@ func (muo *MetricsUpdateOne) sqlSave(ctx context.Context) (_node *Metrics, err e
 		}
 		return nil, err
 	}
+	muo.mutation.done = true
 	return _node, nil
 }
