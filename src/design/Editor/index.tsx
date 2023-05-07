@@ -1,3 +1,4 @@
+import AutoSizer from "react-virtualized-auto-sizer";
 import type { EditorProps } from "@monaco-editor/react";
 import { FC } from "react";
 import MonacoEditor from "@monaco-editor/react";
@@ -23,24 +24,30 @@ const onMount: EditorProps["onMount"] = (editor, monaco) => {
 const Editor: FC<
   Omit<EditorProps, "beforeMount" | "onMount"> & { theme?: "light" | "dark" }
 > = ({ options, theme, ...props }) => (
-  <MonacoEditor
-    beforeMount={beforeMount}
-    onMount={onMount}
-    options={{
-      scrollBeyondLastLine: false,
-      cursorBlinking: "smooth",
-      wordWrap: true,
-      fontSize: "13px",
-      minimap: {
-        enabled: false,
-      },
-      ...options,
-    }}
-    loading=""
-    language="yaml"
-    theme={theme === "dark" ? "direktiv-dark" : "vs-light"}
-    {...props}
-  />
+  <AutoSizer>
+    {({ height, width }) => (
+      <MonacoEditor
+        width={width}
+        height={height}
+        beforeMount={beforeMount}
+        onMount={onMount}
+        options={{
+          scrollBeyondLastLine: false,
+          cursorBlinking: "smooth",
+          wordWrap: true,
+          fontSize: "13px",
+          minimap: {
+            enabled: false,
+          },
+          ...options,
+        }}
+        loading=""
+        language="yaml"
+        theme={theme === "dark" ? "direktiv-dark" : "vs-light"}
+        {...props}
+      />
+    )}
+  </AutoSizer>
 );
 
 export default Editor;
