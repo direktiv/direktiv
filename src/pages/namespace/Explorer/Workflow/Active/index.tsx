@@ -29,9 +29,7 @@ const WorkflowOverviewPage: FC = () => {
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {
-      if (typeof error === "object") {
-        setError(`${error?.message}`);
-      }
+      error && setError(error);
     },
   });
 
