@@ -1,7 +1,6 @@
 import type { EditorProps } from "@monaco-editor/react";
 import { FC } from "react";
 import MonacoEditor from "@monaco-editor/react";
-// import { useTheme } from "../../../../../util/store/theme";
 
 const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   monaco.editor.defineTheme("direktiv-dark", {
@@ -21,11 +20,10 @@ const onMount: EditorProps["onMount"] = (editor, monaco) => {
   });
 };
 
-const Editor: FC<Omit<EditorProps, "beforeMount" | "onMount">> = ({
-  options,
-  ...props
-}) => (
-  /* const theme = useTheme();*/ <MonacoEditor
+const Editor: FC<
+  Omit<EditorProps, "beforeMount" | "onMount"> & { theme?: "light" | "dark" }
+> = ({ options, theme, ...props }) => (
+  <MonacoEditor
     beforeMount={beforeMount}
     onMount={onMount}
     options={{
@@ -40,8 +38,7 @@ const Editor: FC<Omit<EditorProps, "beforeMount" | "onMount">> = ({
     }}
     loading=""
     language="yaml"
-    // theme={theme === "dark" ? "direktiv-dark" : "vs-light"}
-    theme="direktiv-dark"
+    theme={theme === "dark" ? "direktiv-dark" : "vs-light"}
     {...props}
   />
 );
