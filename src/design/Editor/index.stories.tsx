@@ -53,7 +53,7 @@ export const Default = () => (
 );
 
 export const Small = () => (
-  <div className="flex flex-col gap-y-3 bg-black p-4">
+  <div className="flex flex-col gap-y-3 bg-white p-4">
     <div>This Story is not aware of light and dark mode.</div>
     <div className="h-[500px] w-[500px]">
       <Editor value={value} />
