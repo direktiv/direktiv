@@ -52,6 +52,14 @@ export const Default = () => (
   </div>
 );
 
+export const Small = () => (
+  <div className="flex flex-col gap-y-3 bg-black p-4">
+    <div>This Story is not aware of light and dark mode.</div>
+    <div className="h-[500px] w-[500px]">
+      <Editor value={value} />
+    </div>
+  </div>
+);
 export const Darkmode = () => (
   <div className="flex flex-col gap-y-3 bg-black p-4">
     <div>This Story is not aware of light and dark mode.</div>
