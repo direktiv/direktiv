@@ -15,14 +15,14 @@ async function listInstancesAndFilter(ns, wf, status) {
     }
 
     var instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ns}/instances?limit=10&offset=0` + append)
-    .send()
-    
+        .send()
+
     // if filter, then try to wait
     if (wf || status) {
         for (let i = 0; i < 2000; i++) {
             instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ns}/instances?limit=10&offset=0` + append)
             if (status) {
-                var idFind = instancesResponse.body.instances.results.find(item => item.status === status);    
+                var idFind = instancesResponse.body.instances.results.find(item => item.status === status);
                 if (idFind) {
                     return idFind
                 }
@@ -30,7 +30,9 @@ async function listInstancesAndFilter(ns, wf, status) {
                 return instancesResponse.body.instances.results[0]
             }
             sleep(500)
-            instancesResponse = (function () { return; })();
+            instancesResponse = (function () {
+
+            })();
         }
     }
 
@@ -59,12 +61,12 @@ async function sendEventAndList(ns, event) {
     for (let i = 0; i < 50; i++) {
         var eventsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ns}/events?limit=100&offset=0`)
             .send()
-        idFind = eventsResponse.body.events.results.find(item => item.id === eventObject.id);    
+        idFind = eventsResponse.body.events.results.find(item => item.id === eventObject.id);
         if (idFind) {
             break
         }
         sleep(500)
-    } 
+    }
     return idFind
 }
 

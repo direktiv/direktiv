@@ -10,10 +10,12 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/metrics/ent/migrate"
 
-	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
-
+	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
+
+	stdsql "database/sql"
 )
 
 // Client is the client that holds all ent builders.
@@ -27,7 +29,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}}
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
 	cfg.options(opts...)
 	client := &Client{config: cfg}
 	client.init()
@@ -37,6 +39,55 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Metrics = NewMetricsClient(c.config)
+}
+
+type (
+	// config is the configuration for the client and its builder.
+	config struct {
+		// driver used for executing database requests.
+		driver dialect.Driver
+		// debug enable a debug logging.
+		debug bool
+		// log used for logging on debug mode.
+		log func(...any)
+		// hooks to execute on mutations.
+		hooks *hooks
+		// interceptors to execute on queries.
+		inters *inters
+	}
+	// Option function to configure the client.
+	Option func(*config)
+)
+
+// options applies the options on the config object.
+func (c *config) options(opts ...Option) {
+	for _, opt := range opts {
+		opt(c)
+	}
+	if c.debug {
+		c.driver = dialect.Debug(c.driver, c.log)
+	}
+}
+
+// Debug enables debug logging on the ent.Driver.
+func Debug() Option {
+	return func(c *config) {
+		c.debug = true
+	}
+}
+
+// Log sets the logging function for debug mode.
+func Log(fn func(...any)) Option {
+	return func(c *config) {
+		c.log = fn
+	}
+}
+
+// Driver configures the client driver.
+func Driver(driver dialect.Driver) Option {
+	return func(c *config) {
+		c.driver = driver
+	}
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -122,6 +173,22 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Metrics.Use(hooks...)
 }
 
+// Intercept adds the query interceptors to all the entity clients.
+// In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
+func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Metrics.Intercept(interceptors...)
+}
+
+// Mutate implements the ent.Mutator interface.
+func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
+	switch m := m.(type) {
+	case *MetricsMutation:
+		return c.Metrics.mutate(ctx, m)
+	default:
+		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
 // MetricsClient is a client for the Metrics schema.
 type MetricsClient struct {
 	config
@@ -136,6 +203,12 @@ func NewMetricsClient(c config) *MetricsClient {
 // A call to `Use(f, g, h)` equals to `metrics.Hooks(f(g(h())))`.
 func (c *MetricsClient) Use(hooks ...Hook) {
 	c.hooks.Metrics = append(c.hooks.Metrics, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `metrics.Intercept(f(g(h())))`.
+func (c *MetricsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Metrics = append(c.inters.Metrics, interceptors...)
 }
 
 // Create returns a builder for creating a Metrics entity.
@@ -190,6 +263,8 @@ func (c *MetricsClient) DeleteOneID(id int) *MetricsDeleteOne {
 func (c *MetricsClient) Query() *MetricsQuery {
 	return &MetricsQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeMetrics},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -210,4 +285,58 @@ func (c *MetricsClient) GetX(ctx context.Context, id int) *Metrics {
 // Hooks returns the client hooks.
 func (c *MetricsClient) Hooks() []Hook {
 	return c.hooks.Metrics
+}
+
+// Interceptors returns the client interceptors.
+func (c *MetricsClient) Interceptors() []Interceptor {
+	return c.inters.Metrics
+}
+
+func (c *MetricsClient) mutate(ctx context.Context, m *MetricsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MetricsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MetricsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Metrics mutation op: %q", m.Op())
+	}
+}
+
+// hooks and interceptors per client, for fast access.
+type (
+	hooks struct {
+		Metrics []ent.Hook
+	}
+	inters struct {
+		Metrics []ent.Interceptor
+	}
+)
+
+// ExecContext allows calling the underlying ExecContext method of the driver if it is supported by it.
+// See, database/sql#DB.ExecContext for more information.
+func (c *config) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := c.driver.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the driver if it is supported by it.
+// See, database/sql#DB.QueryContext for more information.
+func (c *config) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := c.driver.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
 }

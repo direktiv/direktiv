@@ -92,24 +92,12 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 
 # ENT
 
-.PHONY: ent-flow
-ent-flow: ## Manually regenerates ent database package for flow.
+.PHONY: ent-%
+ent-%: ## Manually regenerates ent database package.
 	docker run -it --rm \
     -v `pwd`:/app \
     -w /app \
-	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/flow/ent/schema
-
-.PHONY: ent-secrets
-ent-secrets: ## Manually regenerates ent database package for secrets. 
-	docker run -it --rm \
-    -v `pwd`:/app \
-    -w /app \
-	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/secrets/ent/schema
-
-.PHONY: ent-metrics
-ent-metrics: ## Manually regenerates ent database package for metrics. 
-	cd build/ent && docker build -t ent .
-	docker run -v `pwd`:/ent ent ./pkg/metrics/ent
+	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/$*/ent/schema
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.

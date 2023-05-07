@@ -11,7 +11,7 @@ describe('Test namespace listing functionality', () => {
     it(`should create a number of different namespaces`, async () => {
         for (let i = 0; i < namespaceNames.length; i++) {
             var name = namespaceNames[i]
-            var createResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${name}`)  
+            var createResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${name}`)
             expect(createResponse.statusCode).toEqual(200)
             expect(createResponse.body).toMatchObject({
                 namespace: {
@@ -155,7 +155,7 @@ describe('Test namespace listing functionality', () => {
 
         var alphabetical = [...namespaceNames]
         alphabetical.sort()
-        var expected = alphabetical.slice(0,4)
+        var expected = alphabetical.slice(0, 4)
 
         for (let i = 0; i < listResponse.body.results.length; i++) {
             expect(listResponse.body.results[i]).toMatchObject({
@@ -183,7 +183,7 @@ describe('Test namespace listing functionality', () => {
 
         var alphabetical = [...namespaceNames]
         alphabetical.sort()
-        var expected = alphabetical.slice(4,8)
+        var expected = alphabetical.slice(4, 8)
 
         for (let i = 0; i < listResponse.body.results.length; i++) {
             expect(listResponse.body.results[i]).toMatchObject({
@@ -211,7 +211,7 @@ describe('Test namespace listing functionality', () => {
 
         var alphabetical = [...namespaceNames]
         alphabetical.sort()
-        var expected = alphabetical.slice(8,10)
+        var expected = alphabetical.slice(8, 10)
 
         for (let i = 0; i < listResponse.body.results.length; i++) {
             expect(listResponse.body.results[i]).toMatchObject({
@@ -261,7 +261,7 @@ describe('Test namespace listing functionality', () => {
                     oid: "",
                     createdAt: expect.stringMatching(common.regex.timestampRegex),
                     updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                }, 
+                },
                 {
                     name: "that",
                     oid: "",

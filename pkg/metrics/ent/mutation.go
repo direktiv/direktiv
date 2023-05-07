@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
 	"github.com/direktiv/direktiv/pkg/metrics/ent/predicate"
-
-	"entgo.io/ent"
 )
 
 const (
@@ -675,9 +675,24 @@ func (m *MetricsMutation) Where(ps ...predicate.Metrics) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the MetricsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *MetricsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Metrics, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *MetricsMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *MetricsMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Metrics).
