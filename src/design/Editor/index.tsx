@@ -13,6 +13,16 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       "editor.selectionBackground": "#ffffff2e", // whiteA.whiteA7
     },
   });
+
+  monaco.editor.defineTheme("direktiv-light", {
+    base: "vs",
+    inherit: true,
+    rules: [],
+    colors: {
+      "editor.background": "#ffffff",
+      "editor.selectionBackground": "#00000012", // blackA.blackA4
+    },
+  });
 };
 
 const onMount: EditorProps["onMount"] = (editor, monaco) => {
@@ -43,7 +53,7 @@ const Editor: FC<
         }}
         loading=""
         language="yaml"
-        theme={theme === "dark" ? "direktiv-dark" : "vs-light"}
+        theme={theme === "dark" ? "direktiv-dark" : "direktiv-light"}
         {...props}
       />
     )}
