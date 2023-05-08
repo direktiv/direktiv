@@ -1,4 +1,4 @@
-package dblogstore
+package sql
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/logstore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -19,25 +19,19 @@ const (
 	mir = "mirror"
 )
 
-var _ logstore.LogStore = &SQLLogStore{} // Ensures SQLLogStore struct conforms to logstore.LogStore interface.
+var _ logengine.LogStore = &sqlLogStore{} // Ensures SQLLogStore struct conforms to logengine.LogStore interface.
 
-func NewSQLLogStore(db *gorm.DB) logstore.LogStore {
-	return &SQLLogStore{
-		db: db,
-	}
-}
-
-type SQLLogStore struct {
+type sqlLogStore struct {
 	db *gorm.DB
 }
 
-// Append implements logstore.LogStore.
+// Append implements logengine.LogStore.
 // - For instance-logs following Key Value pairs SHOULD be present: instance-id, callpath, root-instance-id
 // - For namespace-logs following Key Value pairs SHOULD be present: namespace-id
 // - For mirror-logs following Key Value pairs SHOULD be present: mirror-id
 // - For workflow-logs following Key Value pairs SHOULD be present: workflow-id
 // - All passed keysAndValues pair will be stored attached to the log-entry.
-func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues ...interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues ...interface{}) error {
 	fields, err := mapKeysAndValues(keysAndValues...)
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
@@ -48,11 +42,6 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	vals = append(vals, timestamp, msg)
 	lvl, ok := fields["level"]
 	if ok {
-		switch lvl {
-		case "debug", "info", "error", "panic":
-		default:
-			return fmt.Errorf("field level provided in keysAndValues has an invalid value %s", lvl)
-		}
 		cols = append(cols, "level")
 		vals = append(vals, lvl)
 		delete(fields, "level")
@@ -117,7 +106,7 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	return nil
 }
 
-// Get implements logstore.LogStore.
+// Get implements logengine.LogStore.
 // - To query server-logs pass: "recipientType", "server" via keysAndValues
 // - For pagination pass limit and | or offset. They MUST be passed as integer.
 // - level MUST be passed as a string. Valid values are "debug", "info", "error", "panic".
@@ -127,7 +116,7 @@ func (sl *SQLLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 // Returned log-entries will have same or higher level as the passed one.
 // - Passing a callpath will return all logs which have a callpath with the prefix as the passed callpath value.
 // when passing callpath the root-instance-id SHOULD be passed to optimize the performance of the query.
-func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([]*logstore.LogEntry, error) {
+func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([]*logengine.LogEntry, error) {
 	fields, err := mapKeysAndValues(keysAndValues...)
 	if err != nil {
 		return nil, err
@@ -189,14 +178,14 @@ func (sl *SQLLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	convertedList := make([]*logstore.LogEntry, 0, len(resultList))
+	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
 		for k, e := range e.Tags {
 			m[k] = e
 		}
 		m["level"] = e.Level
-		convertedList = append(convertedList, &logstore.LogEntry{
+		convertedList = append(convertedList, &logengine.LogEntry{
 			T:      e.T,
 			Msg:    e.Msg,
 			Fields: m,

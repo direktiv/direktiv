@@ -3,6 +3,7 @@ package sql
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"gorm.io/gorm"
 )
@@ -40,6 +41,13 @@ func (s *sqlStore) Mirror() mirror.Store {
 // FileAnnotations returns file annotations store.
 func (s *sqlStore) FileAnnotations() core.FileAnnotationsStore {
 	return &sqlFileAnnotationsStore{
+		db: s.db,
+	}
+}
+
+// Logs returns a log store
+func (s *sqlStore) Logs() logengine.LogStore {
+	return &sqlLogStore{
 		db: s.db,
 	}
 }
