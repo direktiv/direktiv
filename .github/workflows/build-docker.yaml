@@ -7,7 +7,7 @@ on:
     types:
       - completed
   pull_request:
-    branches: [ "feature/redesign" ]
+    branches: [ "main", "feature/redesign" ]
 
 env:
   REGISTRY: ghcr.io
