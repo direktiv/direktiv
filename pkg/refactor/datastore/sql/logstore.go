@@ -40,8 +40,8 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		return err
 	}
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "t", "msg")
-	vals = append(vals, timestamp, msg)
+	cols = append(cols, "oid", "t", "msg")
+	vals = append(vals, uuid.New(), timestamp, msg)
 	lvl, ok := fields["level"]
 	if ok {
 		cols = append(cols, "level")
