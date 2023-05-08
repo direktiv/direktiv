@@ -23,7 +23,15 @@ import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
 } from "../../design/Breadcrumbs";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandSeparator, CommandShortcut } from "../../design/Command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandSeparator,
+  CommandShortcut,
+} from "../../design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import {
   DropdownMenu,
@@ -90,13 +98,16 @@ const Breadcrumb = () => {
                   <CommandItem
                     key={ns.name}
                     onSelect={(currentValue: string) => {
-                      onNameSpaceChange(currentValue)
+                      onNameSpaceChange(currentValue);
                       setOpen(false);
                     }}
                   >
-                    <Circle className={
-                      clsx("mr-2 h-2 w-2 fill-current", namespace === ns.name ? "opacity-100" : "opacity-0")
-                    } />
+                    <Circle
+                      className={clsx(
+                        "mr-2 h-2 w-2 fill-current",
+                        namespace === ns.name ? "opacity-100" : "opacity-0"
+                      )}
+                    />
                     <span>{ns.name}</span>
                   </CommandItem>
                 ))}
@@ -139,10 +150,14 @@ const Breadcrumb = () => {
               )}
               <CommandSeparator />
               {/* <DialogTrigger> */}
-              <CommandItem>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                <span>Create new namespace</span>
-              </CommandItem>
+              <CommandGroup>
+                <CommandItem>
+                  <>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    <span>Create new namespace</span>
+                  </>
+                </CommandItem>
+              </CommandGroup>
               {/* </DialogTrigger> */}
             </Command>
           </PopoverContent>
