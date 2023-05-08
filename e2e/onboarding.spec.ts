@@ -53,6 +53,11 @@ test("if no namespaces exist, it renders the onboarding page", async ({
     "it should redirect to namespace/explorer/tree"
   ).toHaveURL(`/${namespace}/explorer/tree`);
 
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "the breadcrumb shows the new namespace"
+  ).toHaveText(namespace);
+
   // cleanup
   await deleteNamespace(namespace);
 });

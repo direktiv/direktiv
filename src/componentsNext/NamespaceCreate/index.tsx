@@ -89,6 +89,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
             </label>
             <Input
               id="name"
+              data-testid="new-namespace-name"
               placeholder="new-namespace-name"
               {...register("name")}
             />
@@ -100,6 +101,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           <Button variant="ghost">Cancel</Button>
         </DialogClose>
         <Button
+          data-testid="new-namespace-submit"
           type="submit"
           disabled={disableSubmit}
           loading={isLoading}

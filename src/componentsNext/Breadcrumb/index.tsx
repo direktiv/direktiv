@@ -65,7 +65,7 @@ const Breadcrumb = () => {
       <BreadcrumbLink noArrow>
         <Link to={pages.explorer.createHref({ namespace })}>
           <Home />
-          {namespace}
+          <span data-testid="breadcrumb-namespace">{namespace}</span>
         </Link>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Popover open={open} onOpenChange={setOpen}>
@@ -120,7 +120,7 @@ const Breadcrumb = () => {
                   </CommandStaticItem>
                 )}
                 <CommandStaticSeparator />
-                <DialogTrigger>
+                <DialogTrigger data-testid="new-namespace">
                   <CommandStaticItem>
                     <>
                       <PlusCircle className="mr-2 h-4 w-4" />

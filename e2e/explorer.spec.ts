@@ -1,4 +1,8 @@
-import { createNamespace, deleteNamespace } from "./utils/namespace";
+import {
+  createNamespace,
+  createNamespaceName,
+  deleteNamespace,
+} from "./utils/namespace";
 import { expect, test } from "@playwright/test";
 
 let namespace = "";
@@ -38,6 +42,32 @@ test("it is possible to navigate to a namespace via URL", async ({ page }) => {
   await expect(page.getByRole("link", { name: namespace })).toBeVisible();
 
   await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
+});
+
+test("it is possible to create a namespace via breadcrumbs", async ({
+  page,
+}) => {
+  const newNamespace = createNamespaceName();
+
+  await page.goto(`/${namespace}/explorer/tree`);
+  await expect(page.getByTestId("breadcrumb-namespace")).toHaveText(namespace);
+
+  await page.getByTestId("dropdown-trg-namespace").click();
+  await page.getByTestId("new-namespace").click();
+  await page.getByTestId("new-namespace-name").fill(newNamespace);
+  await page.getByTestId("new-namespace-submit").click();
+
+  await expect(page, "it redirects to namespace/explorer/tree").toHaveURL(
+    `/${newNamespace}/explorer/tree`
+  );
+
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "the breadcrumb shows the new namespace"
+  ).toHaveText(newNamespace);
+
+  // cleanup the manually created namespace
+  await deleteNamespace(newNamespace);
 });
 
 test("it is possible to create and delete a directory", async ({ page }) => {
