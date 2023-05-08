@@ -27,65 +27,40 @@ type sqlLogStore struct {
 }
 
 // Append implements logengine.LogStore.
-// - For instance-logs following Key Value pairs SHOULD be present: instance-id, callpath, root-instance-id
-// - For namespace-logs following Key Value pairs SHOULD be present: namespace-id
-// - For mirror-logs following Key Value pairs SHOULD be present: mirror-id
-// - For workflow-logs following Key Value pairs SHOULD be present: workflow-id
+// - For instance-logs following Key Value pairs SHOULD be present: instance_logs, log_instance_call_path, root_instance_id
+// - For namespace-logs following Key Value pairs SHOULD be present: namespace_logs
+// - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
+// - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
 // - All passed keysAndValues pair will be stored attached to the log-entry.
-func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues ...interface{}) error {
-	fields, err := mapKeysAndValues(keysAndValues...)
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
-	if err != nil {
-		return err
-	}
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
 	cols = append(cols, "oid", "t", "msg")
 	vals = append(vals, uuid.New(), timestamp, msg)
-	lvl, ok := fields["level"]
-	if ok {
-		cols = append(cols, "level")
-		vals = append(vals, lvl)
-		delete(fields, "level")
+	databaseCols := []string{
+		"instance_logs",
+		"log_instance_call_path",
+		"root_instance_id",
+		"workflow_id",
+		"namespace_logs",
+		"mirror_activity_id",
+		"level",
 	}
-	value, ok := fields["instance-id"]
-	if ok {
-		cols = append(cols, "instance_logs")
-		vals = append(vals, value)
+	for _, k := range databaseCols {
+		if v, ok := keysAndValues[k]; ok {
+			cols = append(cols, k)
+			vals = append(vals, v)
+		}
 	}
-	value, ok = fields["callpath"]
-	if ok {
-		cols = append(cols, "log_instance_call_path")
-		vals = append(vals, value)
-		delete(fields, "callpath")
+	if len(keysAndValues) > 0 {
+		b, err := json.Marshal(keysAndValues)
+		if err != nil {
+			return err
+		}
+		cols = append(cols, "tags")
+		vals = append(vals, b)
 	}
-	value, ok = fields["root-instance-id"]
-	if ok {
-		cols = append(cols, "root_instance_id")
-		vals = append(vals, value)
-		delete(fields, "root-instance-id")
-	}
-	value, ok = fields["workflow-id"]
-	if ok {
-		cols = append(cols, "workflow_id")
-		vals = append(vals, value)
-	}
-	value, ok = fields["namespace-id"]
-	if ok {
-		cols = append(cols, "namespace_logs")
-		vals = append(vals, value)
-	}
-	value, ok = fields["mirror-id"]
-	if ok {
-		cols = append(cols, "mirror_activity_id")
-		vals = append(vals, value)
-	}
-	b, err := json.Marshal(fields)
-	if err != nil {
-		return err
-	}
-	cols = append(cols, "tags")
-	vals = append(vals, b)
 	q := "INSERT INTO log_msgs ("
 	qTail := "VALUES ("
 	for i := range vals {
@@ -110,26 +85,33 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 
 // Get implements logengine.LogStore.
 // - To query server-logs pass: "recipientType", "server" via keysAndValues
-// - For pagination pass limit and | or offset. They MUST be passed as integer.
-// - level MUST be passed as a string. Valid values are "debug", "info", "error", "panic".
+// - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
 // - This method will search for any of followings keys and query all matching logs:
-// level, workflow-id, namespace-id, callpath, root-instance-id, mirror-id
+// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id
 // Any other not mentioned passed key value pair will be ignored.
 // Returned log-entries will have same or higher level as the passed one.
 // - Passing a callpath will return all logs which have a callpath with the prefix as the passed callpath value.
-// when passing callpath the root-instance-id SHOULD be passed to optimize the performance of the query.
-func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([]*logengine.LogEntry, error) {
-	fields, err := mapKeysAndValues(keysAndValues...)
-	if err != nil {
-		return nil, err
-	}
+// when passing callpath the root_instance_id SHOULD be passed to optimize the performance of the query.
+func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
-	if fields["recipientType"] == srv {
+	if keysAndValues["recipientType"] == srv {
 		wEq = append(wEq, "workflow_id IS NULL")
 		wEq = append(wEq, "namespace_logs IS NULL")
 		wEq = append(wEq, "instance_logs IS NULL")
 	}
-	level, ok := fields["level"]
+	databaseCols := []string{
+		"instance_logs",
+		"root_instance_id",
+		"workflow_id",
+		"namespace_logs",
+		"mirror_activity_id",
+	}
+	for _, k := range databaseCols {
+		if v, ok := keysAndValues[k]; ok {
+			wEq = append(wEq, fmt.Sprintf("%s = '%s'", k, v))
+		}
+	}
+	level, ok := keysAndValues["level"]
 	if ok {
 		levelValue, ok := level.(string)
 		if !ok {
@@ -137,43 +119,11 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues ...interface{}) ([
 		}
 		wEq = setMinumLogLevel(levelValue, wEq)
 	}
-	id, ok := fields["workflow-id"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("workflow_id = '%s'", id))
-	}
-	id, ok = fields["namespace-id"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("namespace_logs = '%s'", id))
-	}
-	prefix, ok := fields["callpath"]
+	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	}
-	id, ok = fields["root-instance-id"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("root_instance_id = '%s'", id))
-	}
-	id, ok = fields["mirror-id"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("mirror_activity_id = '%s'", id))
-	}
-	limit, ok := fields["limit"]
-	limitValue := -1
-	if ok {
-		limitValue, ok = limit.(int)
-		if !ok {
-			return nil, fmt.Errorf("limit should be an int")
-		}
-	}
-	offset, ok := fields["offset"]
-	offsetValue := -1
-	if ok {
-		offsetValue, ok = offset.(int)
-		if !ok {
-			return nil, fmt.Errorf("offset should be an int")
-		}
-	}
-	query := composeQuery(limitValue, offsetValue, wEq)
+	query := composeQuery(limit, offset, wEq)
 
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
@@ -208,27 +158,14 @@ func composeQuery(limit, offset int, wEq []string) string {
 		}
 	}
 	q += " ORDER BY t ASC"
-	if limit >= 0 {
+	if limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-	if offset >= 0 {
+	if offset > 0 {
 		q += fmt.Sprintf(" OFFSET %d ", offset)
 	}
 
 	return q + ";"
-}
-
-func mapKeysAndValues(keysAndValues ...interface{}) (map[string]interface{}, error) {
-	fields := make(map[string]interface{})
-	if len(keysAndValues) == 0 || len(keysAndValues)%2 != 0 {
-		return nil, fmt.Errorf("keysAndValues was not a list of key value pairs")
-	}
-	for i := 0; i < len(keysAndValues); i += 2 {
-		key := fmt.Sprintf("%s", keysAndValues[i])
-		fields[key] = keysAndValues[i+1]
-	}
-
-	return fields, nil
 }
 
 type gormLogMsg struct {
