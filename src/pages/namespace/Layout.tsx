@@ -29,7 +29,7 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../design/Appshell";
-import { Outlet, useLocation, useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
