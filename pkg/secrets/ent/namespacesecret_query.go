@@ -18,11 +18,9 @@ import (
 // NamespaceSecretQuery is the builder for querying NamespaceSecret entities.
 type NamespaceSecretQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
+	ctx        *QueryContext
 	order      []OrderFunc
-	fields     []string
+	inters     []Interceptor
 	predicates []predicate.NamespaceSecret
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -36,26 +34,26 @@ func (nsq *NamespaceSecretQuery) Where(ps ...predicate.NamespaceSecret) *Namespa
 	return nsq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (nsq *NamespaceSecretQuery) Limit(limit int) *NamespaceSecretQuery {
-	nsq.limit = &limit
+	nsq.ctx.Limit = &limit
 	return nsq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (nsq *NamespaceSecretQuery) Offset(offset int) *NamespaceSecretQuery {
-	nsq.offset = &offset
+	nsq.ctx.Offset = &offset
 	return nsq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (nsq *NamespaceSecretQuery) Unique(unique bool) *NamespaceSecretQuery {
-	nsq.unique = &unique
+	nsq.ctx.Unique = &unique
 	return nsq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (nsq *NamespaceSecretQuery) Order(o ...OrderFunc) *NamespaceSecretQuery {
 	nsq.order = append(nsq.order, o...)
 	return nsq
@@ -64,7 +62,7 @@ func (nsq *NamespaceSecretQuery) Order(o ...OrderFunc) *NamespaceSecretQuery {
 // First returns the first NamespaceSecret entity from the query.
 // Returns a *NotFoundError when no NamespaceSecret was found.
 func (nsq *NamespaceSecretQuery) First(ctx context.Context) (*NamespaceSecret, error) {
-	nodes, err := nsq.Limit(1).All(ctx)
+	nodes, err := nsq.Limit(1).All(setContextOp(ctx, nsq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +85,7 @@ func (nsq *NamespaceSecretQuery) FirstX(ctx context.Context) *NamespaceSecret {
 // Returns a *NotFoundError when no NamespaceSecret ID was found.
 func (nsq *NamespaceSecretQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = nsq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = nsq.Limit(1).IDs(setContextOp(ctx, nsq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -110,7 +108,7 @@ func (nsq *NamespaceSecretQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one NamespaceSecret entity is found.
 // Returns a *NotFoundError when no NamespaceSecret entities are found.
 func (nsq *NamespaceSecretQuery) Only(ctx context.Context) (*NamespaceSecret, error) {
-	nodes, err := nsq.Limit(2).All(ctx)
+	nodes, err := nsq.Limit(2).All(setContextOp(ctx, nsq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +136,7 @@ func (nsq *NamespaceSecretQuery) OnlyX(ctx context.Context) *NamespaceSecret {
 // Returns a *NotFoundError when no entities are found.
 func (nsq *NamespaceSecretQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = nsq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = nsq.Limit(2).IDs(setContextOp(ctx, nsq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -163,10 +161,12 @@ func (nsq *NamespaceSecretQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of NamespaceSecrets.
 func (nsq *NamespaceSecretQuery) All(ctx context.Context) ([]*NamespaceSecret, error) {
+	ctx = setContextOp(ctx, nsq.ctx, "All")
 	if err := nsq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return nsq.sqlAll(ctx)
+	qr := querierAll[[]*NamespaceSecret, *NamespaceSecretQuery]()
+	return withInterceptors[[]*NamespaceSecret](ctx, nsq, qr, nsq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -179,9 +179,12 @@ func (nsq *NamespaceSecretQuery) AllX(ctx context.Context) []*NamespaceSecret {
 }
 
 // IDs executes the query and returns a list of NamespaceSecret IDs.
-func (nsq *NamespaceSecretQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
-	if err := nsq.Select(namespacesecret.FieldID).Scan(ctx, &ids); err != nil {
+func (nsq *NamespaceSecretQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if nsq.ctx.Unique == nil && nsq.path != nil {
+		nsq.Unique(true)
+	}
+	ctx = setContextOp(ctx, nsq.ctx, "IDs")
+	if err = nsq.Select(namespacesecret.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -198,10 +201,11 @@ func (nsq *NamespaceSecretQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (nsq *NamespaceSecretQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, nsq.ctx, "Count")
 	if err := nsq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return nsq.sqlCount(ctx)
+	return withInterceptors[int](ctx, nsq, querierCount[*NamespaceSecretQuery](), nsq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -215,10 +219,15 @@ func (nsq *NamespaceSecretQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (nsq *NamespaceSecretQuery) Exist(ctx context.Context) (bool, error) {
-	if err := nsq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, nsq.ctx, "Exist")
+	switch _, err := nsq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return nsq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -238,14 +247,13 @@ func (nsq *NamespaceSecretQuery) Clone() *NamespaceSecretQuery {
 	}
 	return &NamespaceSecretQuery{
 		config:     nsq.config,
-		limit:      nsq.limit,
-		offset:     nsq.offset,
+		ctx:        nsq.ctx.Clone(),
 		order:      append([]OrderFunc{}, nsq.order...),
+		inters:     append([]Interceptor{}, nsq.inters...),
 		predicates: append([]predicate.NamespaceSecret{}, nsq.predicates...),
 		// clone intermediate query.
-		sql:    nsq.sql.Clone(),
-		path:   nsq.path,
-		unique: nsq.unique,
+		sql:  nsq.sql.Clone(),
+		path: nsq.path,
 	}
 }
 
@@ -264,16 +272,11 @@ func (nsq *NamespaceSecretQuery) Clone() *NamespaceSecretQuery {
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *NamespaceSecretGroupBy {
-	grbuild := &NamespaceSecretGroupBy{config: nsq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := nsq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return nsq.sqlQuery(ctx), nil
-	}
+	nsq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &NamespaceSecretGroupBy{build: nsq}
+	grbuild.flds = &nsq.ctx.Fields
 	grbuild.label = namespacesecret.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -290,11 +293,11 @@ func (nsq *NamespaceSecretQuery) GroupBy(field string, fields ...string) *Namesp
 //		Select(namespacesecret.FieldNs).
 //		Scan(ctx, &v)
 func (nsq *NamespaceSecretQuery) Select(fields ...string) *NamespaceSecretSelect {
-	nsq.fields = append(nsq.fields, fields...)
-	selbuild := &NamespaceSecretSelect{NamespaceSecretQuery: nsq}
-	selbuild.label = namespacesecret.Label
-	selbuild.flds, selbuild.scan = &nsq.fields, selbuild.Scan
-	return selbuild
+	nsq.ctx.Fields = append(nsq.ctx.Fields, fields...)
+	sbuild := &NamespaceSecretSelect{NamespaceSecretQuery: nsq}
+	sbuild.label = namespacesecret.Label
+	sbuild.flds, sbuild.scan = &nsq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a NamespaceSecretSelect configured with the given aggregations.
@@ -303,7 +306,17 @@ func (nsq *NamespaceSecretQuery) Aggregate(fns ...AggregateFunc) *NamespaceSecre
 }
 
 func (nsq *NamespaceSecretQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range nsq.fields {
+	for _, inter := range nsq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, nsq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range nsq.ctx.Fields {
 		if !namespacesecret.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -351,41 +364,22 @@ func (nsq *NamespaceSecretQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(nsq.modifiers) > 0 {
 		_spec.Modifiers = nsq.modifiers
 	}
-	_spec.Node.Columns = nsq.fields
-	if len(nsq.fields) > 0 {
-		_spec.Unique = nsq.unique != nil && *nsq.unique
+	_spec.Node.Columns = nsq.ctx.Fields
+	if len(nsq.ctx.Fields) > 0 {
+		_spec.Unique = nsq.ctx.Unique != nil && *nsq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, nsq.driver, _spec)
 }
 
-func (nsq *NamespaceSecretQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := nsq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (nsq *NamespaceSecretQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   namespacesecret.Table,
-			Columns: namespacesecret.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: namespacesecret.FieldID,
-			},
-		},
-		From:   nsq.sql,
-		Unique: true,
-	}
-	if unique := nsq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(namespacesecret.Table, namespacesecret.Columns, sqlgraph.NewFieldSpec(namespacesecret.FieldID, field.TypeInt))
+	_spec.From = nsq.sql
+	if unique := nsq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if nsq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := nsq.fields; len(fields) > 0 {
+	if fields := nsq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, namespacesecret.FieldID)
 		for i := range fields {
@@ -401,10 +395,10 @@ func (nsq *NamespaceSecretQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := nsq.limit; limit != nil {
+	if limit := nsq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := nsq.offset; offset != nil {
+	if offset := nsq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := nsq.order; len(ps) > 0 {
@@ -420,7 +414,7 @@ func (nsq *NamespaceSecretQuery) querySpec() *sqlgraph.QuerySpec {
 func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(nsq.driver.Dialect())
 	t1 := builder.Table(namespacesecret.Table)
-	columns := nsq.fields
+	columns := nsq.ctx.Fields
 	if len(columns) == 0 {
 		columns = namespacesecret.Columns
 	}
@@ -429,7 +423,7 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = nsq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if nsq.unique != nil && *nsq.unique {
+	if nsq.ctx.Unique != nil && *nsq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range nsq.modifiers {
@@ -441,12 +435,12 @@ func (nsq *NamespaceSecretQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range nsq.order {
 		p(selector)
 	}
-	if offset := nsq.offset; offset != nil {
+	if offset := nsq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := nsq.limit; limit != nil {
+	if limit := nsq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -486,13 +480,8 @@ func (nsq *NamespaceSecretQuery) Modify(modifiers ...func(s *sql.Selector)) *Nam
 
 // NamespaceSecretGroupBy is the group-by builder for NamespaceSecret entities.
 type NamespaceSecretGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *NamespaceSecretQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -501,58 +490,46 @@ func (nsgb *NamespaceSecretGroupBy) Aggregate(fns ...AggregateFunc) *NamespaceSe
 	return nsgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (nsgb *NamespaceSecretGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := nsgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, nsgb.build.ctx, "GroupBy")
+	if err := nsgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	nsgb.sql = query
-	return nsgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*NamespaceSecretQuery, *NamespaceSecretGroupBy](ctx, nsgb.build, nsgb, nsgb.build.inters, v)
 }
 
-func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range nsgb.fields {
-		if !namespacesecret.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (nsgb *NamespaceSecretGroupBy) sqlScan(ctx context.Context, root *NamespaceSecretQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(nsgb.fns))
+	for _, fn := range nsgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := nsgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*nsgb.flds)+len(nsgb.fns))
+		for _, f := range *nsgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*nsgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := nsgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := nsgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (nsgb *NamespaceSecretGroupBy) sqlQuery() *sql.Selector {
-	selector := nsgb.sql.Select()
-	aggregation := make([]string, 0, len(nsgb.fns))
-	for _, fn := range nsgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(nsgb.fields)+len(nsgb.fns))
-		for _, f := range nsgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(nsgb.fields...)...)
-}
-
 // NamespaceSecretSelect is the builder for selecting fields of NamespaceSecret entities.
 type NamespaceSecretSelect struct {
 	*NamespaceSecretQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -563,26 +540,27 @@ func (nss *NamespaceSecretSelect) Aggregate(fns ...AggregateFunc) *NamespaceSecr
 
 // Scan applies the selector query and scans the result into the given value.
 func (nss *NamespaceSecretSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, nss.ctx, "Select")
 	if err := nss.prepareQuery(ctx); err != nil {
 		return err
 	}
-	nss.sql = nss.NamespaceSecretQuery.sqlQuery(ctx)
-	return nss.sqlScan(ctx, v)
+	return scanWithInterceptors[*NamespaceSecretQuery, *NamespaceSecretSelect](ctx, nss.NamespaceSecretQuery, nss, nss.inters, v)
 }
 
-func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, v any) error {
+func (nss *NamespaceSecretSelect) sqlScan(ctx context.Context, root *NamespaceSecretQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(nss.fns))
 	for _, fn := range nss.fns {
-		aggregation = append(aggregation, fn(nss.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*nss.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		nss.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		nss.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := nss.sql.Query()
+	query, args := selector.Query()
 	if err := nss.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

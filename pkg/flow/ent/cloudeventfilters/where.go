@@ -10,285 +10,187 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.CloudEventFilters(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.CloudEventFilters(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id int) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.CloudEventFilters(sql.FieldLTE(FieldID, id))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldEQ(FieldName, v))
 }
 
 // Jscode applies equality check predicate on the "jscode" field. It's identical to JscodeEQ.
 func Jscode(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldEQ(FieldJscode, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldEQ(FieldName, v))
 }
 
 // NameNEQ applies the NEQ predicate on the "name" field.
 func NameNEQ(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldNEQ(FieldName, v))
 }
 
 // NameIn applies the In predicate on the "name" field.
 func NameIn(vs ...string) predicate.CloudEventFilters {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldName), v...))
-	})
+	return predicate.CloudEventFilters(sql.FieldIn(FieldName, vs...))
 }
 
 // NameNotIn applies the NotIn predicate on the "name" field.
 func NameNotIn(vs ...string) predicate.CloudEventFilters {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldName), v...))
-	})
+	return predicate.CloudEventFilters(sql.FieldNotIn(FieldName, vs...))
 }
 
 // NameGT applies the GT predicate on the "name" field.
 func NameGT(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldGT(FieldName, v))
 }
 
 // NameGTE applies the GTE predicate on the "name" field.
 func NameGTE(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldGTE(FieldName, v))
 }
 
 // NameLT applies the LT predicate on the "name" field.
 func NameLT(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldLT(FieldName, v))
 }
 
 // NameLTE applies the LTE predicate on the "name" field.
 func NameLTE(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldLTE(FieldName, v))
 }
 
 // NameContains applies the Contains predicate on the "name" field.
 func NameContains(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldContains(FieldName, v))
 }
 
 // NameHasPrefix applies the HasPrefix predicate on the "name" field.
 func NameHasPrefix(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldHasPrefix(FieldName, v))
 }
 
 // NameHasSuffix applies the HasSuffix predicate on the "name" field.
 func NameHasSuffix(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldHasSuffix(FieldName, v))
 }
 
 // NameEqualFold applies the EqualFold predicate on the "name" field.
 func NameEqualFold(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldEqualFold(FieldName, v))
 }
 
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldName), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldContainsFold(FieldName, v))
 }
 
 // JscodeEQ applies the EQ predicate on the "jscode" field.
 func JscodeEQ(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldEQ(FieldJscode, v))
 }
 
 // JscodeNEQ applies the NEQ predicate on the "jscode" field.
 func JscodeNEQ(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldNEQ(FieldJscode, v))
 }
 
 // JscodeIn applies the In predicate on the "jscode" field.
 func JscodeIn(vs ...string) predicate.CloudEventFilters {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldJscode), v...))
-	})
+	return predicate.CloudEventFilters(sql.FieldIn(FieldJscode, vs...))
 }
 
 // JscodeNotIn applies the NotIn predicate on the "jscode" field.
 func JscodeNotIn(vs ...string) predicate.CloudEventFilters {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldJscode), v...))
-	})
+	return predicate.CloudEventFilters(sql.FieldNotIn(FieldJscode, vs...))
 }
 
 // JscodeGT applies the GT predicate on the "jscode" field.
 func JscodeGT(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldGT(FieldJscode, v))
 }
 
 // JscodeGTE applies the GTE predicate on the "jscode" field.
 func JscodeGTE(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldGTE(FieldJscode, v))
 }
 
 // JscodeLT applies the LT predicate on the "jscode" field.
 func JscodeLT(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldLT(FieldJscode, v))
 }
 
 // JscodeLTE applies the LTE predicate on the "jscode" field.
 func JscodeLTE(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldLTE(FieldJscode, v))
 }
 
 // JscodeContains applies the Contains predicate on the "jscode" field.
 func JscodeContains(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldContains(FieldJscode, v))
 }
 
 // JscodeHasPrefix applies the HasPrefix predicate on the "jscode" field.
 func JscodeHasPrefix(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldHasPrefix(FieldJscode, v))
 }
 
 // JscodeHasSuffix applies the HasSuffix predicate on the "jscode" field.
 func JscodeHasSuffix(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldHasSuffix(FieldJscode, v))
 }
 
 // JscodeEqualFold applies the EqualFold predicate on the "jscode" field.
 func JscodeEqualFold(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldEqualFold(FieldJscode, v))
 }
 
 // JscodeContainsFold applies the ContainsFold predicate on the "jscode" field.
 func JscodeContainsFold(v string) predicate.CloudEventFilters {
-	return predicate.CloudEventFilters(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldJscode), v))
-	})
+	return predicate.CloudEventFilters(sql.FieldContainsFold(FieldJscode, v))
 }
 
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
@@ -296,7 +198,6 @@ func HasNamespace() predicate.CloudEventFilters {
 	return predicate.CloudEventFilters(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamespaceTable, NamespaceFieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)

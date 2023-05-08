@@ -43,79 +43,79 @@ describe('Test send events', () => {
 
     it(`should send event to namespace`, async () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
-        .set('Content-Type', 'application/json')
-        .send(eventDuplicate)
+            .set('Content-Type', 'application/json')
+            .send(eventDuplicate)
         expect(workflowEventResponse.statusCode).toEqual(200)
     })
 
     it(`fails with duplicate id`, async () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
-        .set('Content-Type', 'application/json')
-        .send(eventDuplicate)
+            .set('Content-Type', 'application/json')
+            .send(eventDuplicate)
         expect(workflowEventResponse.statusCode).toEqual(409)
     })
 
     it(`should send event to namespace with JSON`, async () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
-        .set('Content-Type', 'application/json')
-        .send(eventWithJSON)
+            .set('Content-Type', 'application/json')
+            .send(eventWithJSON)
         expect(workflowEventResponse.statusCode).toEqual(200)
     })
 
     it(`should send event to namespace with non-JSON`, async () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
-        .set('Content-Type', 'application/json')
-        .send(eventWithNonJSON)
+            .set('Content-Type', 'application/json')
+            .send(eventWithNonJSON)
         expect(workflowEventResponse.statusCode).toEqual(200)
     })
 
     it(`should send event as non-compliant`, async () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
-        .set('Content-Type', 'application/json')
-        .send("NON-COMPLIANT")
+            .set('Content-Type', 'application/json')
+            .send("NON-COMPLIANT")
         expect(workflowEventResponse.statusCode).toEqual(200)
     })
-        
+
     it(`should list events`, async () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/events?limit=10&offset=0`)
-        .send()
+            .send()
 
 
         expect(workflowEventResponse.statusCode).toEqual(200)
-        
+
         // test there are the four created
         expect(workflowEventResponse.body.events.pageInfo.total).toEqual(4)
 
         // test that all types are in
-        expect(workflowEventResponse.body.events.results).toEqual(          
-                expect.arrayContaining([      
-                expect.objectContaining({   
-                type: 'noncompliant'              
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'noncompliant'
                 })
             ])
         )
 
-        
-        expect(workflowEventResponse.body.events.results).toEqual(          
-                expect.arrayContaining([      
-                expect.objectContaining({   
-                type: 'testerDuplicate'              
+
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'testerDuplicate'
                 })
             ])
         )
 
-        expect(workflowEventResponse.body.events.results).toEqual(          
-                expect.arrayContaining([      
-                expect.objectContaining({   
-                type: 'testerXML'              
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'testerXML'
                 })
             ])
         )
 
-        expect(workflowEventResponse.body.events.results).toEqual(          
-                expect.arrayContaining([      
-                expect.objectContaining({   
-                type: 'testerJSON'              
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'testerJSON'
                 })
             ])
         )

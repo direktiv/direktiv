@@ -20,11 +20,9 @@ import (
 // InstanceRuntimeQuery is the builder for querying InstanceRuntime entities.
 type InstanceRuntimeQuery struct {
 	config
-	limit        *int
-	offset       *int
-	unique       *bool
+	ctx          *QueryContext
 	order        []OrderFunc
-	fields       []string
+	inters       []Interceptor
 	predicates   []predicate.InstanceRuntime
 	withInstance *InstanceQuery
 	withCaller   *InstanceQuery
@@ -41,26 +39,26 @@ func (irq *InstanceRuntimeQuery) Where(ps ...predicate.InstanceRuntime) *Instanc
 	return irq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (irq *InstanceRuntimeQuery) Limit(limit int) *InstanceRuntimeQuery {
-	irq.limit = &limit
+	irq.ctx.Limit = &limit
 	return irq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (irq *InstanceRuntimeQuery) Offset(offset int) *InstanceRuntimeQuery {
-	irq.offset = &offset
+	irq.ctx.Offset = &offset
 	return irq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (irq *InstanceRuntimeQuery) Unique(unique bool) *InstanceRuntimeQuery {
-	irq.unique = &unique
+	irq.ctx.Unique = &unique
 	return irq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (irq *InstanceRuntimeQuery) Order(o ...OrderFunc) *InstanceRuntimeQuery {
 	irq.order = append(irq.order, o...)
 	return irq
@@ -68,7 +66,7 @@ func (irq *InstanceRuntimeQuery) Order(o ...OrderFunc) *InstanceRuntimeQuery {
 
 // QueryInstance chains the current query on the "instance" edge.
 func (irq *InstanceRuntimeQuery) QueryInstance() *InstanceQuery {
-	query := &InstanceQuery{config: irq.config}
+	query := (&InstanceClient{config: irq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := irq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -90,7 +88,7 @@ func (irq *InstanceRuntimeQuery) QueryInstance() *InstanceQuery {
 
 // QueryCaller chains the current query on the "caller" edge.
 func (irq *InstanceRuntimeQuery) QueryCaller() *InstanceQuery {
-	query := &InstanceQuery{config: irq.config}
+	query := (&InstanceClient{config: irq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := irq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -113,7 +111,7 @@ func (irq *InstanceRuntimeQuery) QueryCaller() *InstanceQuery {
 // First returns the first InstanceRuntime entity from the query.
 // Returns a *NotFoundError when no InstanceRuntime was found.
 func (irq *InstanceRuntimeQuery) First(ctx context.Context) (*InstanceRuntime, error) {
-	nodes, err := irq.Limit(1).All(ctx)
+	nodes, err := irq.Limit(1).All(setContextOp(ctx, irq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +134,7 @@ func (irq *InstanceRuntimeQuery) FirstX(ctx context.Context) *InstanceRuntime {
 // Returns a *NotFoundError when no InstanceRuntime ID was found.
 func (irq *InstanceRuntimeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = irq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = irq.Limit(1).IDs(setContextOp(ctx, irq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -159,7 +157,7 @@ func (irq *InstanceRuntimeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one InstanceRuntime entity is found.
 // Returns a *NotFoundError when no InstanceRuntime entities are found.
 func (irq *InstanceRuntimeQuery) Only(ctx context.Context) (*InstanceRuntime, error) {
-	nodes, err := irq.Limit(2).All(ctx)
+	nodes, err := irq.Limit(2).All(setContextOp(ctx, irq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +185,7 @@ func (irq *InstanceRuntimeQuery) OnlyX(ctx context.Context) *InstanceRuntime {
 // Returns a *NotFoundError when no entities are found.
 func (irq *InstanceRuntimeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = irq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = irq.Limit(2).IDs(setContextOp(ctx, irq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -212,10 +210,12 @@ func (irq *InstanceRuntimeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of InstanceRuntimes.
 func (irq *InstanceRuntimeQuery) All(ctx context.Context) ([]*InstanceRuntime, error) {
+	ctx = setContextOp(ctx, irq.ctx, "All")
 	if err := irq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return irq.sqlAll(ctx)
+	qr := querierAll[[]*InstanceRuntime, *InstanceRuntimeQuery]()
+	return withInterceptors[[]*InstanceRuntime](ctx, irq, qr, irq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -228,9 +228,12 @@ func (irq *InstanceRuntimeQuery) AllX(ctx context.Context) []*InstanceRuntime {
 }
 
 // IDs executes the query and returns a list of InstanceRuntime IDs.
-func (irq *InstanceRuntimeQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := irq.Select(instanceruntime.FieldID).Scan(ctx, &ids); err != nil {
+func (irq *InstanceRuntimeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if irq.ctx.Unique == nil && irq.path != nil {
+		irq.Unique(true)
+	}
+	ctx = setContextOp(ctx, irq.ctx, "IDs")
+	if err = irq.Select(instanceruntime.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -247,10 +250,11 @@ func (irq *InstanceRuntimeQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (irq *InstanceRuntimeQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, irq.ctx, "Count")
 	if err := irq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return irq.sqlCount(ctx)
+	return withInterceptors[int](ctx, irq, querierCount[*InstanceRuntimeQuery](), irq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -264,10 +268,15 @@ func (irq *InstanceRuntimeQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (irq *InstanceRuntimeQuery) Exist(ctx context.Context) (bool, error) {
-	if err := irq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, irq.ctx, "Exist")
+	switch _, err := irq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return irq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -287,23 +296,22 @@ func (irq *InstanceRuntimeQuery) Clone() *InstanceRuntimeQuery {
 	}
 	return &InstanceRuntimeQuery{
 		config:       irq.config,
-		limit:        irq.limit,
-		offset:       irq.offset,
+		ctx:          irq.ctx.Clone(),
 		order:        append([]OrderFunc{}, irq.order...),
+		inters:       append([]Interceptor{}, irq.inters...),
 		predicates:   append([]predicate.InstanceRuntime{}, irq.predicates...),
 		withInstance: irq.withInstance.Clone(),
 		withCaller:   irq.withCaller.Clone(),
 		// clone intermediate query.
-		sql:    irq.sql.Clone(),
-		path:   irq.path,
-		unique: irq.unique,
+		sql:  irq.sql.Clone(),
+		path: irq.path,
 	}
 }
 
 // WithInstance tells the query-builder to eager-load the nodes that are connected to
 // the "instance" edge. The optional arguments are used to configure the query builder of the edge.
 func (irq *InstanceRuntimeQuery) WithInstance(opts ...func(*InstanceQuery)) *InstanceRuntimeQuery {
-	query := &InstanceQuery{config: irq.config}
+	query := (&InstanceClient{config: irq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -314,7 +322,7 @@ func (irq *InstanceRuntimeQuery) WithInstance(opts ...func(*InstanceQuery)) *Ins
 // WithCaller tells the query-builder to eager-load the nodes that are connected to
 // the "caller" edge. The optional arguments are used to configure the query builder of the edge.
 func (irq *InstanceRuntimeQuery) WithCaller(opts ...func(*InstanceQuery)) *InstanceRuntimeQuery {
-	query := &InstanceQuery{config: irq.config}
+	query := (&InstanceClient{config: irq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -337,16 +345,11 @@ func (irq *InstanceRuntimeQuery) WithCaller(opts ...func(*InstanceQuery)) *Insta
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (irq *InstanceRuntimeQuery) GroupBy(field string, fields ...string) *InstanceRuntimeGroupBy {
-	grbuild := &InstanceRuntimeGroupBy{config: irq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := irq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return irq.sqlQuery(ctx), nil
-	}
+	irq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &InstanceRuntimeGroupBy{build: irq}
+	grbuild.flds = &irq.ctx.Fields
 	grbuild.label = instanceruntime.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -363,11 +366,11 @@ func (irq *InstanceRuntimeQuery) GroupBy(field string, fields ...string) *Instan
 //		Select(instanceruntime.FieldInput).
 //		Scan(ctx, &v)
 func (irq *InstanceRuntimeQuery) Select(fields ...string) *InstanceRuntimeSelect {
-	irq.fields = append(irq.fields, fields...)
-	selbuild := &InstanceRuntimeSelect{InstanceRuntimeQuery: irq}
-	selbuild.label = instanceruntime.Label
-	selbuild.flds, selbuild.scan = &irq.fields, selbuild.Scan
-	return selbuild
+	irq.ctx.Fields = append(irq.ctx.Fields, fields...)
+	sbuild := &InstanceRuntimeSelect{InstanceRuntimeQuery: irq}
+	sbuild.label = instanceruntime.Label
+	sbuild.flds, sbuild.scan = &irq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a InstanceRuntimeSelect configured with the given aggregations.
@@ -376,7 +379,17 @@ func (irq *InstanceRuntimeQuery) Aggregate(fns ...AggregateFunc) *InstanceRuntim
 }
 
 func (irq *InstanceRuntimeQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range irq.fields {
+	for _, inter := range irq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, irq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range irq.ctx.Fields {
 		if !instanceruntime.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -456,6 +469,9 @@ func (irq *InstanceRuntimeQuery) loadInstance(ctx context.Context, query *Instan
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(instance.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -485,6 +501,9 @@ func (irq *InstanceRuntimeQuery) loadCaller(ctx context.Context, query *Instance
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(instance.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -507,41 +526,22 @@ func (irq *InstanceRuntimeQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(irq.modifiers) > 0 {
 		_spec.Modifiers = irq.modifiers
 	}
-	_spec.Node.Columns = irq.fields
-	if len(irq.fields) > 0 {
-		_spec.Unique = irq.unique != nil && *irq.unique
+	_spec.Node.Columns = irq.ctx.Fields
+	if len(irq.ctx.Fields) > 0 {
+		_spec.Unique = irq.ctx.Unique != nil && *irq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, irq.driver, _spec)
 }
 
-func (irq *InstanceRuntimeQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := irq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (irq *InstanceRuntimeQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   instanceruntime.Table,
-			Columns: instanceruntime.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: instanceruntime.FieldID,
-			},
-		},
-		From:   irq.sql,
-		Unique: true,
-	}
-	if unique := irq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(instanceruntime.Table, instanceruntime.Columns, sqlgraph.NewFieldSpec(instanceruntime.FieldID, field.TypeUUID))
+	_spec.From = irq.sql
+	if unique := irq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if irq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := irq.fields; len(fields) > 0 {
+	if fields := irq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, instanceruntime.FieldID)
 		for i := range fields {
@@ -557,10 +557,10 @@ func (irq *InstanceRuntimeQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := irq.limit; limit != nil {
+	if limit := irq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := irq.offset; offset != nil {
+	if offset := irq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := irq.order; len(ps) > 0 {
@@ -576,7 +576,7 @@ func (irq *InstanceRuntimeQuery) querySpec() *sqlgraph.QuerySpec {
 func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(irq.driver.Dialect())
 	t1 := builder.Table(instanceruntime.Table)
-	columns := irq.fields
+	columns := irq.ctx.Fields
 	if len(columns) == 0 {
 		columns = instanceruntime.Columns
 	}
@@ -585,7 +585,7 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = irq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if irq.unique != nil && *irq.unique {
+	if irq.ctx.Unique != nil && *irq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range irq.modifiers {
@@ -597,12 +597,12 @@ func (irq *InstanceRuntimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range irq.order {
 		p(selector)
 	}
-	if offset := irq.offset; offset != nil {
+	if offset := irq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := irq.limit; limit != nil {
+	if limit := irq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -642,13 +642,8 @@ func (irq *InstanceRuntimeQuery) Modify(modifiers ...func(s *sql.Selector)) *Ins
 
 // InstanceRuntimeGroupBy is the group-by builder for InstanceRuntime entities.
 type InstanceRuntimeGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *InstanceRuntimeQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -657,58 +652,46 @@ func (irgb *InstanceRuntimeGroupBy) Aggregate(fns ...AggregateFunc) *InstanceRun
 	return irgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (irgb *InstanceRuntimeGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := irgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, irgb.build.ctx, "GroupBy")
+	if err := irgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	irgb.sql = query
-	return irgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*InstanceRuntimeQuery, *InstanceRuntimeGroupBy](ctx, irgb.build, irgb, irgb.build.inters, v)
 }
 
-func (irgb *InstanceRuntimeGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range irgb.fields {
-		if !instanceruntime.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (irgb *InstanceRuntimeGroupBy) sqlScan(ctx context.Context, root *InstanceRuntimeQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(irgb.fns))
+	for _, fn := range irgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := irgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*irgb.flds)+len(irgb.fns))
+		for _, f := range *irgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*irgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := irgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := irgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (irgb *InstanceRuntimeGroupBy) sqlQuery() *sql.Selector {
-	selector := irgb.sql.Select()
-	aggregation := make([]string, 0, len(irgb.fns))
-	for _, fn := range irgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(irgb.fields)+len(irgb.fns))
-		for _, f := range irgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(irgb.fields...)...)
-}
-
 // InstanceRuntimeSelect is the builder for selecting fields of InstanceRuntime entities.
 type InstanceRuntimeSelect struct {
 	*InstanceRuntimeQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -719,26 +702,27 @@ func (irs *InstanceRuntimeSelect) Aggregate(fns ...AggregateFunc) *InstanceRunti
 
 // Scan applies the selector query and scans the result into the given value.
 func (irs *InstanceRuntimeSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, irs.ctx, "Select")
 	if err := irs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	irs.sql = irs.InstanceRuntimeQuery.sqlQuery(ctx)
-	return irs.sqlScan(ctx, v)
+	return scanWithInterceptors[*InstanceRuntimeQuery, *InstanceRuntimeSelect](ctx, irs.InstanceRuntimeQuery, irs, irs.inters, v)
 }
 
-func (irs *InstanceRuntimeSelect) sqlScan(ctx context.Context, v any) error {
+func (irs *InstanceRuntimeSelect) sqlScan(ctx context.Context, root *InstanceRuntimeQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(irs.fns))
 	for _, fn := range irs.fns {
-		aggregation = append(aggregation, fn(irs.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*irs.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		irs.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		irs.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := irs.sql.Query()
+	query, args := selector.Query()
 	if err := irs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

@@ -46,49 +46,7 @@ func (nsc *NamespaceSecretCreate) Mutation() *NamespaceSecretMutation {
 
 // Save creates the NamespaceSecret in the database.
 func (nsc *NamespaceSecretCreate) Save(ctx context.Context) (*NamespaceSecret, error) {
-	var (
-		err  error
-		node *NamespaceSecret
-	)
-	if len(nsc.hooks) == 0 {
-		if err = nsc.check(); err != nil {
-			return nil, err
-		}
-		node, err = nsc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NamespaceSecretMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = nsc.check(); err != nil {
-				return nil, err
-			}
-			nsc.mutation = mutation
-			if node, err = nsc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(nsc.hooks) - 1; i >= 0; i-- {
-			if nsc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = nsc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, nsc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*NamespaceSecret)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from NamespaceSecretMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*NamespaceSecret, NamespaceSecretMutation](ctx, nsc.sqlSave, nsc.mutation, nsc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -133,6 +91,9 @@ func (nsc *NamespaceSecretCreate) check() error {
 }
 
 func (nsc *NamespaceSecretCreate) sqlSave(ctx context.Context) (*NamespaceSecret, error) {
+	if err := nsc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := nsc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, nsc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -142,19 +103,15 @@ func (nsc *NamespaceSecretCreate) sqlSave(ctx context.Context) (*NamespaceSecret
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
+	nsc.mutation.id = &_node.ID
+	nsc.mutation.done = true
 	return _node, nil
 }
 
 func (nsc *NamespaceSecretCreate) createSpec() (*NamespaceSecret, *sqlgraph.CreateSpec) {
 	var (
 		_node = &NamespaceSecret{config: nsc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: namespacesecret.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: namespacesecret.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(namespacesecret.Table, sqlgraph.NewFieldSpec(namespacesecret.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = nsc.conflict
 	if value, ok := nsc.mutation.Ns(); ok {

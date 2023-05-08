@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (ced *CloudEventsDelete) Where(ps ...predicate.CloudEvents) *CloudEventsDel
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (ced *CloudEventsDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(ced.hooks) == 0 {
-		affected, err = ced.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*CloudEventsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			ced.mutation = mutation
-			affected, err = ced.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(ced.hooks) - 1; i >= 0; i-- {
-			if ced.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ced.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, ced.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, CloudEventsMutation](ctx, ced.sqlExec, ced.mutation, ced.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (ced *CloudEventsDelete) ExecX(ctx context.Context) int {
 }
 
 func (ced *CloudEventsDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: cloudevents.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: cloudevents.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(cloudevents.Table, sqlgraph.NewFieldSpec(cloudevents.FieldID, field.TypeUUID))
 	if ps := ced.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (ced *CloudEventsDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	ced.mutation.done = true
 	return affected, err
 }
 
 // CloudEventsDeleteOne is the builder for deleting a single CloudEvents entity.
 type CloudEventsDeleteOne struct {
 	ced *CloudEventsDelete
+}
+
+// Where appends a list predicates to the CloudEventsDelete builder.
+func (cedo *CloudEventsDeleteOne) Where(ps ...predicate.CloudEvents) *CloudEventsDeleteOne {
+	cedo.ced.mutation.Where(ps...)
+	return cedo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (cedo *CloudEventsDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (cedo *CloudEventsDeleteOne) ExecX(ctx context.Context) {
-	cedo.ced.ExecX(ctx)
+	if err := cedo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

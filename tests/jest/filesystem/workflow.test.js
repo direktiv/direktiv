@@ -37,7 +37,7 @@ describe('Test basic directory operations', () => {
 
     it(`should fail to create a workflow because of a missing namespace`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=create-workflow`)
-    
+
         expect(createWorkflowResponse.statusCode).toEqual(404)
         expect(createWorkflowResponse.body).toMatchObject({
             code: 404,
@@ -82,7 +82,7 @@ describe('Test basic directory operations', () => {
 
     it(`should fail to create a workflow at the root of the filesystem`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/?op=create-workflow`)
-    
+
         expect(createWorkflowResponse.statusCode).toEqual(406)
     })
 
@@ -178,7 +178,7 @@ describe('Test basic directory operations', () => {
                 order: [],
                 filter: [],
             },
-            results: [{ name: 'latest' }],
+            results: [{name: 'latest'}],
         })
     })
 

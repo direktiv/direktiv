@@ -82,7 +82,7 @@ func (ns *NamespaceSecret) assignValues(columns []string, values []any) error {
 // Note that you need to call NamespaceSecret.Unwrap() before calling this method if this NamespaceSecret
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (ns *NamespaceSecret) Update() *NamespaceSecretUpdateOne {
-	return (&NamespaceSecretClient{config: ns.config}).UpdateOne(ns)
+	return NewNamespaceSecretClient(ns.config).UpdateOne(ns)
 }
 
 // Unwrap unwraps the NamespaceSecret entity that was returned from a transaction after it was closed,
@@ -115,9 +115,3 @@ func (ns *NamespaceSecret) String() string {
 
 // NamespaceSecrets is a parsable slice of NamespaceSecret.
 type NamespaceSecrets []*NamespaceSecret
-
-func (ns NamespaceSecrets) config(cfg config) {
-	for _i := range ns {
-		ns[_i].config = cfg
-	}
-}

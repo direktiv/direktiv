@@ -21,11 +21,9 @@ import (
 // LogMsgQuery is the builder for querying LogMsg entities.
 type LogMsgQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
+	ctx           *QueryContext
 	order         []OrderFunc
-	fields        []string
+	inters        []Interceptor
 	predicates    []predicate.LogMsg
 	withNamespace *NamespaceQuery
 	withInstance  *InstanceQuery
@@ -42,26 +40,26 @@ func (lmq *LogMsgQuery) Where(ps ...predicate.LogMsg) *LogMsgQuery {
 	return lmq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (lmq *LogMsgQuery) Limit(limit int) *LogMsgQuery {
-	lmq.limit = &limit
+	lmq.ctx.Limit = &limit
 	return lmq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (lmq *LogMsgQuery) Offset(offset int) *LogMsgQuery {
-	lmq.offset = &offset
+	lmq.ctx.Offset = &offset
 	return lmq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (lmq *LogMsgQuery) Unique(unique bool) *LogMsgQuery {
-	lmq.unique = &unique
+	lmq.ctx.Unique = &unique
 	return lmq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (lmq *LogMsgQuery) Order(o ...OrderFunc) *LogMsgQuery {
 	lmq.order = append(lmq.order, o...)
 	return lmq
@@ -69,7 +67,7 @@ func (lmq *LogMsgQuery) Order(o ...OrderFunc) *LogMsgQuery {
 
 // QueryNamespace chains the current query on the "namespace" edge.
 func (lmq *LogMsgQuery) QueryNamespace() *NamespaceQuery {
-	query := &NamespaceQuery{config: lmq.config}
+	query := (&NamespaceClient{config: lmq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := lmq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -91,7 +89,7 @@ func (lmq *LogMsgQuery) QueryNamespace() *NamespaceQuery {
 
 // QueryInstance chains the current query on the "instance" edge.
 func (lmq *LogMsgQuery) QueryInstance() *InstanceQuery {
-	query := &InstanceQuery{config: lmq.config}
+	query := (&InstanceClient{config: lmq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := lmq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -114,7 +112,7 @@ func (lmq *LogMsgQuery) QueryInstance() *InstanceQuery {
 // First returns the first LogMsg entity from the query.
 // Returns a *NotFoundError when no LogMsg was found.
 func (lmq *LogMsgQuery) First(ctx context.Context) (*LogMsg, error) {
-	nodes, err := lmq.Limit(1).All(ctx)
+	nodes, err := lmq.Limit(1).All(setContextOp(ctx, lmq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +135,7 @@ func (lmq *LogMsgQuery) FirstX(ctx context.Context) *LogMsg {
 // Returns a *NotFoundError when no LogMsg ID was found.
 func (lmq *LogMsgQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = lmq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = lmq.Limit(1).IDs(setContextOp(ctx, lmq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -160,7 +158,7 @@ func (lmq *LogMsgQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one LogMsg entity is found.
 // Returns a *NotFoundError when no LogMsg entities are found.
 func (lmq *LogMsgQuery) Only(ctx context.Context) (*LogMsg, error) {
-	nodes, err := lmq.Limit(2).All(ctx)
+	nodes, err := lmq.Limit(2).All(setContextOp(ctx, lmq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +186,7 @@ func (lmq *LogMsgQuery) OnlyX(ctx context.Context) *LogMsg {
 // Returns a *NotFoundError when no entities are found.
 func (lmq *LogMsgQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = lmq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = lmq.Limit(2).IDs(setContextOp(ctx, lmq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -213,10 +211,12 @@ func (lmq *LogMsgQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of LogMsgs.
 func (lmq *LogMsgQuery) All(ctx context.Context) ([]*LogMsg, error) {
+	ctx = setContextOp(ctx, lmq.ctx, "All")
 	if err := lmq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return lmq.sqlAll(ctx)
+	qr := querierAll[[]*LogMsg, *LogMsgQuery]()
+	return withInterceptors[[]*LogMsg](ctx, lmq, qr, lmq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -229,9 +229,12 @@ func (lmq *LogMsgQuery) AllX(ctx context.Context) []*LogMsg {
 }
 
 // IDs executes the query and returns a list of LogMsg IDs.
-func (lmq *LogMsgQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := lmq.Select(logmsg.FieldID).Scan(ctx, &ids); err != nil {
+func (lmq *LogMsgQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if lmq.ctx.Unique == nil && lmq.path != nil {
+		lmq.Unique(true)
+	}
+	ctx = setContextOp(ctx, lmq.ctx, "IDs")
+	if err = lmq.Select(logmsg.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -248,10 +251,11 @@ func (lmq *LogMsgQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (lmq *LogMsgQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, lmq.ctx, "Count")
 	if err := lmq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return lmq.sqlCount(ctx)
+	return withInterceptors[int](ctx, lmq, querierCount[*LogMsgQuery](), lmq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -265,10 +269,15 @@ func (lmq *LogMsgQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (lmq *LogMsgQuery) Exist(ctx context.Context) (bool, error) {
-	if err := lmq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, lmq.ctx, "Exist")
+	switch _, err := lmq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return lmq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -288,23 +297,22 @@ func (lmq *LogMsgQuery) Clone() *LogMsgQuery {
 	}
 	return &LogMsgQuery{
 		config:        lmq.config,
-		limit:         lmq.limit,
-		offset:        lmq.offset,
+		ctx:           lmq.ctx.Clone(),
 		order:         append([]OrderFunc{}, lmq.order...),
+		inters:        append([]Interceptor{}, lmq.inters...),
 		predicates:    append([]predicate.LogMsg{}, lmq.predicates...),
 		withNamespace: lmq.withNamespace.Clone(),
 		withInstance:  lmq.withInstance.Clone(),
 		// clone intermediate query.
-		sql:    lmq.sql.Clone(),
-		path:   lmq.path,
-		unique: lmq.unique,
+		sql:  lmq.sql.Clone(),
+		path: lmq.path,
 	}
 }
 
 // WithNamespace tells the query-builder to eager-load the nodes that are connected to
 // the "namespace" edge. The optional arguments are used to configure the query builder of the edge.
 func (lmq *LogMsgQuery) WithNamespace(opts ...func(*NamespaceQuery)) *LogMsgQuery {
-	query := &NamespaceQuery{config: lmq.config}
+	query := (&NamespaceClient{config: lmq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -315,7 +323,7 @@ func (lmq *LogMsgQuery) WithNamespace(opts ...func(*NamespaceQuery)) *LogMsgQuer
 // WithInstance tells the query-builder to eager-load the nodes that are connected to
 // the "instance" edge. The optional arguments are used to configure the query builder of the edge.
 func (lmq *LogMsgQuery) WithInstance(opts ...func(*InstanceQuery)) *LogMsgQuery {
-	query := &InstanceQuery{config: lmq.config}
+	query := (&InstanceClient{config: lmq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -338,16 +346,11 @@ func (lmq *LogMsgQuery) WithInstance(opts ...func(*InstanceQuery)) *LogMsgQuery 
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (lmq *LogMsgQuery) GroupBy(field string, fields ...string) *LogMsgGroupBy {
-	grbuild := &LogMsgGroupBy{config: lmq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := lmq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return lmq.sqlQuery(ctx), nil
-	}
+	lmq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &LogMsgGroupBy{build: lmq}
+	grbuild.flds = &lmq.ctx.Fields
 	grbuild.label = logmsg.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -364,11 +367,11 @@ func (lmq *LogMsgQuery) GroupBy(field string, fields ...string) *LogMsgGroupBy {
 //		Select(logmsg.FieldT).
 //		Scan(ctx, &v)
 func (lmq *LogMsgQuery) Select(fields ...string) *LogMsgSelect {
-	lmq.fields = append(lmq.fields, fields...)
-	selbuild := &LogMsgSelect{LogMsgQuery: lmq}
-	selbuild.label = logmsg.Label
-	selbuild.flds, selbuild.scan = &lmq.fields, selbuild.Scan
-	return selbuild
+	lmq.ctx.Fields = append(lmq.ctx.Fields, fields...)
+	sbuild := &LogMsgSelect{LogMsgQuery: lmq}
+	sbuild.label = logmsg.Label
+	sbuild.flds, sbuild.scan = &lmq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a LogMsgSelect configured with the given aggregations.
@@ -377,7 +380,17 @@ func (lmq *LogMsgQuery) Aggregate(fns ...AggregateFunc) *LogMsgSelect {
 }
 
 func (lmq *LogMsgQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range lmq.fields {
+	for _, inter := range lmq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, lmq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range lmq.ctx.Fields {
 		if !logmsg.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -457,6 +470,9 @@ func (lmq *LogMsgQuery) loadNamespace(ctx context.Context, query *NamespaceQuery
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(namespace.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -486,6 +502,9 @@ func (lmq *LogMsgQuery) loadInstance(ctx context.Context, query *InstanceQuery, 
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(instance.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -508,41 +527,22 @@ func (lmq *LogMsgQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(lmq.modifiers) > 0 {
 		_spec.Modifiers = lmq.modifiers
 	}
-	_spec.Node.Columns = lmq.fields
-	if len(lmq.fields) > 0 {
-		_spec.Unique = lmq.unique != nil && *lmq.unique
+	_spec.Node.Columns = lmq.ctx.Fields
+	if len(lmq.ctx.Fields) > 0 {
+		_spec.Unique = lmq.ctx.Unique != nil && *lmq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, lmq.driver, _spec)
 }
 
-func (lmq *LogMsgQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := lmq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (lmq *LogMsgQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   logmsg.Table,
-			Columns: logmsg.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: logmsg.FieldID,
-			},
-		},
-		From:   lmq.sql,
-		Unique: true,
-	}
-	if unique := lmq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(logmsg.Table, logmsg.Columns, sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID))
+	_spec.From = lmq.sql
+	if unique := lmq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if lmq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := lmq.fields; len(fields) > 0 {
+	if fields := lmq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, logmsg.FieldID)
 		for i := range fields {
@@ -558,10 +558,10 @@ func (lmq *LogMsgQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := lmq.limit; limit != nil {
+	if limit := lmq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := lmq.offset; offset != nil {
+	if offset := lmq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := lmq.order; len(ps) > 0 {
@@ -577,7 +577,7 @@ func (lmq *LogMsgQuery) querySpec() *sqlgraph.QuerySpec {
 func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(lmq.driver.Dialect())
 	t1 := builder.Table(logmsg.Table)
-	columns := lmq.fields
+	columns := lmq.ctx.Fields
 	if len(columns) == 0 {
 		columns = logmsg.Columns
 	}
@@ -586,7 +586,7 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = lmq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if lmq.unique != nil && *lmq.unique {
+	if lmq.ctx.Unique != nil && *lmq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range lmq.modifiers {
@@ -598,12 +598,12 @@ func (lmq *LogMsgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range lmq.order {
 		p(selector)
 	}
-	if offset := lmq.offset; offset != nil {
+	if offset := lmq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := lmq.limit; limit != nil {
+	if limit := lmq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -643,13 +643,8 @@ func (lmq *LogMsgQuery) Modify(modifiers ...func(s *sql.Selector)) *LogMsgSelect
 
 // LogMsgGroupBy is the group-by builder for LogMsg entities.
 type LogMsgGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *LogMsgQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -658,58 +653,46 @@ func (lmgb *LogMsgGroupBy) Aggregate(fns ...AggregateFunc) *LogMsgGroupBy {
 	return lmgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (lmgb *LogMsgGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := lmgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, lmgb.build.ctx, "GroupBy")
+	if err := lmgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	lmgb.sql = query
-	return lmgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*LogMsgQuery, *LogMsgGroupBy](ctx, lmgb.build, lmgb, lmgb.build.inters, v)
 }
 
-func (lmgb *LogMsgGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range lmgb.fields {
-		if !logmsg.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (lmgb *LogMsgGroupBy) sqlScan(ctx context.Context, root *LogMsgQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(lmgb.fns))
+	for _, fn := range lmgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := lmgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*lmgb.flds)+len(lmgb.fns))
+		for _, f := range *lmgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*lmgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := lmgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := lmgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (lmgb *LogMsgGroupBy) sqlQuery() *sql.Selector {
-	selector := lmgb.sql.Select()
-	aggregation := make([]string, 0, len(lmgb.fns))
-	for _, fn := range lmgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(lmgb.fields)+len(lmgb.fns))
-		for _, f := range lmgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(lmgb.fields...)...)
-}
-
 // LogMsgSelect is the builder for selecting fields of LogMsg entities.
 type LogMsgSelect struct {
 	*LogMsgQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -720,26 +703,27 @@ func (lms *LogMsgSelect) Aggregate(fns ...AggregateFunc) *LogMsgSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (lms *LogMsgSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, lms.ctx, "Select")
 	if err := lms.prepareQuery(ctx); err != nil {
 		return err
 	}
-	lms.sql = lms.LogMsgQuery.sqlQuery(ctx)
-	return lms.sqlScan(ctx, v)
+	return scanWithInterceptors[*LogMsgQuery, *LogMsgSelect](ctx, lms.LogMsgQuery, lms, lms.inters, v)
 }
 
-func (lms *LogMsgSelect) sqlScan(ctx context.Context, v any) error {
+func (lms *LogMsgSelect) sqlScan(ctx context.Context, root *LogMsgQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(lms.fns))
 	for _, fn := range lms.fns {
-		aggregation = append(aggregation, fn(lms.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*lms.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		lms.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		lms.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := lms.sql.Query()
+	query, args := selector.Query()
 	if err := lms.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

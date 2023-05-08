@@ -189,19 +189,19 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 
 // QueryNamespace queries the "namespace" edge of the LogMsg entity.
 func (lm *LogMsg) QueryNamespace() *NamespaceQuery {
-	return (&LogMsgClient{config: lm.config}).QueryNamespace(lm)
+	return NewLogMsgClient(lm.config).QueryNamespace(lm)
 }
 
 // QueryInstance queries the "instance" edge of the LogMsg entity.
 func (lm *LogMsg) QueryInstance() *InstanceQuery {
-	return (&LogMsgClient{config: lm.config}).QueryInstance(lm)
+	return NewLogMsgClient(lm.config).QueryInstance(lm)
 }
 
 // Update returns a builder for updating this LogMsg.
 // Note that you need to call LogMsg.Unwrap() before calling this method if this LogMsg
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (lm *LogMsg) Update() *LogMsgUpdateOne {
-	return (&LogMsgClient{config: lm.config}).UpdateOne(lm)
+	return NewLogMsgClient(lm.config).UpdateOne(lm)
 }
 
 // Unwrap unwraps the LogMsg entity that was returned from a transaction after it was closed,
@@ -249,9 +249,3 @@ func (lm *LogMsg) String() string {
 
 // LogMsgs is a parsable slice of LogMsg.
 type LogMsgs []*LogMsg
-
-func (lm LogMsgs) config(cfg config) {
-	for _i := range lm {
-		lm[_i].config = cfg
-	}
-}

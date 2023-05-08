@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (nsd *NamespaceSecretDelete) Where(ps ...predicate.NamespaceSecret) *Namesp
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (nsd *NamespaceSecretDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(nsd.hooks) == 0 {
-		affected, err = nsd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*NamespaceSecretMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			nsd.mutation = mutation
-			affected, err = nsd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(nsd.hooks) - 1; i >= 0; i-- {
-			if nsd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = nsd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, nsd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, NamespaceSecretMutation](ctx, nsd.sqlExec, nsd.mutation, nsd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (nsd *NamespaceSecretDelete) ExecX(ctx context.Context) int {
 }
 
 func (nsd *NamespaceSecretDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: namespacesecret.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: namespacesecret.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(namespacesecret.Table, sqlgraph.NewFieldSpec(namespacesecret.FieldID, field.TypeInt))
 	if ps := nsd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (nsd *NamespaceSecretDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	nsd.mutation.done = true
 	return affected, err
 }
 
 // NamespaceSecretDeleteOne is the builder for deleting a single NamespaceSecret entity.
 type NamespaceSecretDeleteOne struct {
 	nsd *NamespaceSecretDelete
+}
+
+// Where appends a list predicates to the NamespaceSecretDelete builder.
+func (nsdo *NamespaceSecretDeleteOne) Where(ps ...predicate.NamespaceSecret) *NamespaceSecretDeleteOne {
+	nsdo.nsd.mutation.Where(ps...)
+	return nsdo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (nsdo *NamespaceSecretDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (nsdo *NamespaceSecretDeleteOne) ExecX(ctx context.Context) {
-	nsdo.nsd.ExecX(ctx)
+	if err := nsdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

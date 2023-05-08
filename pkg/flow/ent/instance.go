@@ -265,44 +265,44 @@ func (i *Instance) assignValues(columns []string, values []any) error {
 
 // QueryNamespace queries the "namespace" edge of the Instance entity.
 func (i *Instance) QueryNamespace() *NamespaceQuery {
-	return (&InstanceClient{config: i.config}).QueryNamespace(i)
+	return NewInstanceClient(i.config).QueryNamespace(i)
 }
 
 // QueryLogs queries the "logs" edge of the Instance entity.
 func (i *Instance) QueryLogs() *LogMsgQuery {
-	return (&InstanceClient{config: i.config}).QueryLogs(i)
+	return NewInstanceClient(i.config).QueryLogs(i)
 }
 
 // QueryVars queries the "vars" edge of the Instance entity.
 func (i *Instance) QueryVars() *VarRefQuery {
-	return (&InstanceClient{config: i.config}).QueryVars(i)
+	return NewInstanceClient(i.config).QueryVars(i)
 }
 
 // QueryRuntime queries the "runtime" edge of the Instance entity.
 func (i *Instance) QueryRuntime() *InstanceRuntimeQuery {
-	return (&InstanceClient{config: i.config}).QueryRuntime(i)
+	return NewInstanceClient(i.config).QueryRuntime(i)
 }
 
 // QueryChildren queries the "children" edge of the Instance entity.
 func (i *Instance) QueryChildren() *InstanceRuntimeQuery {
-	return (&InstanceClient{config: i.config}).QueryChildren(i)
+	return NewInstanceClient(i.config).QueryChildren(i)
 }
 
 // QueryEventlisteners queries the "eventlisteners" edge of the Instance entity.
 func (i *Instance) QueryEventlisteners() *EventsQuery {
-	return (&InstanceClient{config: i.config}).QueryEventlisteners(i)
+	return NewInstanceClient(i.config).QueryEventlisteners(i)
 }
 
 // QueryAnnotations queries the "annotations" edge of the Instance entity.
 func (i *Instance) QueryAnnotations() *AnnotationQuery {
-	return (&InstanceClient{config: i.config}).QueryAnnotations(i)
+	return NewInstanceClient(i.config).QueryAnnotations(i)
 }
 
 // Update returns a builder for updating this Instance.
 // Note that you need to call Instance.Unwrap() before calling this method if this Instance
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (i *Instance) Update() *InstanceUpdateOne {
-	return (&InstanceClient{config: i.config}).UpdateOne(i)
+	return NewInstanceClient(i.config).UpdateOne(i)
 }
 
 // Unwrap unwraps the Instance entity that was returned from a transaction after it was closed,
@@ -366,9 +366,3 @@ func (i *Instance) String() string {
 
 // Instances is a parsable slice of Instance.
 type Instances []*Instance
-
-func (i Instances) config(cfg config) {
-	for _i := range i {
-		i[_i].config = cfg
-	}
-}

@@ -41,7 +41,7 @@ states:
 
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
-                namespace: testNamespace,
+            namespace: testNamespace,
         })
     })
 })

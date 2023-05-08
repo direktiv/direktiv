@@ -187,7 +187,7 @@ func TestStoreUTF8NULLString(t *testing.T) {
 
 	l := &ent.LogMsg{
 		T:     time.Now(),
-		Msg:   "go-ocr/sdk/go1.17/test imports\n\t: malformed import path \"\": empty string\ngo-ocr/sdk/go1.17/test imports\n\t\u0000: malformed import path \"\\x00\": invalid char '\\x00'\ngo-ocr/sdk/go1.17/test imports\n\t\"`a`\": malformed import path \"\\\"`a`\\\"\": invalid char '\"'\ngo-ocr/sdk/go1.17/test imports\n\t/foo: \"/foo\" is not a package path; see 'go help packages'\n",
+		Msg:   "go-ocr/sdk/go1.20/test imports\n\t: malformed import path \"\": empty string\ngo-ocr/sdk/go1.20/test imports\n\t\u0000: malformed import path \"\\x00\": invalid char '\\x00'\ngo-ocr/sdk/go1.20/test imports\n\t\"`a`\": malformed import path \"\\\"`a`\\\"\": invalid char '\"'\ngo-ocr/sdk/go1.20/test imports\n\t/foo: \"/foo\" is not a package path; see 'go help packages'\n",
 		Level: "error",
 		Tags:  make(map[string]string),
 	}

@@ -11,6 +11,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/migrate"
 	"github.com/google/uuid"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
@@ -24,9 +28,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
+	stdsql "database/sql"
 )
 
 // Client is the client that holds all ent builders.
@@ -62,7 +64,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}}
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
 	cfg.options(opts...)
 	client := &Client{config: cfg}
 	client.init()
@@ -83,6 +85,55 @@ func (c *Client) init() {
 	c.Services = NewServicesClient(c.config)
 	c.VarData = NewVarDataClient(c.config)
 	c.VarRef = NewVarRefClient(c.config)
+}
+
+type (
+	// config is the configuration for the client and its builder.
+	config struct {
+		// driver used for executing database requests.
+		driver dialect.Driver
+		// debug enable a debug logging.
+		debug bool
+		// log used for logging on debug mode.
+		log func(...any)
+		// hooks to execute on mutations.
+		hooks *hooks
+		// interceptors to execute on queries.
+		inters *inters
+	}
+	// Option function to configure the client.
+	Option func(*config)
+)
+
+// options applies the options on the config object.
+func (c *config) options(opts ...Option) {
+	for _, opt := range opts {
+		opt(c)
+	}
+	if c.debug {
+		c.driver = dialect.Debug(c.driver, c.log)
+	}
+}
+
+// Debug enables debug logging on the ent.Driver.
+func Debug() Option {
+	return func(c *config) {
+		c.debug = true
+	}
+}
+
+// Log sets the logging function for debug mode.
+func Log(fn func(...any)) Option {
+	return func(c *config) {
+		c.log = fn
+	}
+}
+
+// Driver configures the client driver.
+func Driver(driver dialect.Driver) Option {
+	return func(c *config) {
+		c.driver = driver
+	}
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -187,18 +238,57 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Annotation.Use(hooks...)
-	c.CloudEventFilters.Use(hooks...)
-	c.CloudEvents.Use(hooks...)
-	c.Events.Use(hooks...)
-	c.EventsWait.Use(hooks...)
-	c.Instance.Use(hooks...)
-	c.InstanceRuntime.Use(hooks...)
-	c.LogMsg.Use(hooks...)
-	c.Namespace.Use(hooks...)
-	c.Services.Use(hooks...)
-	c.VarData.Use(hooks...)
-	c.VarRef.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
+		c.Instance, c.InstanceRuntime, c.LogMsg, c.Namespace, c.Services, c.VarData,
+		c.VarRef,
+	} {
+		n.Use(hooks...)
+	}
+}
+
+// Intercept adds the query interceptors to all the entity clients.
+// In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
+func (c *Client) Intercept(interceptors ...Interceptor) {
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
+		c.Instance, c.InstanceRuntime, c.LogMsg, c.Namespace, c.Services, c.VarData,
+		c.VarRef,
+	} {
+		n.Intercept(interceptors...)
+	}
+}
+
+// Mutate implements the ent.Mutator interface.
+func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
+	switch m := m.(type) {
+	case *AnnotationMutation:
+		return c.Annotation.mutate(ctx, m)
+	case *CloudEventFiltersMutation:
+		return c.CloudEventFilters.mutate(ctx, m)
+	case *CloudEventsMutation:
+		return c.CloudEvents.mutate(ctx, m)
+	case *EventsMutation:
+		return c.Events.mutate(ctx, m)
+	case *EventsWaitMutation:
+		return c.EventsWait.mutate(ctx, m)
+	case *InstanceMutation:
+		return c.Instance.mutate(ctx, m)
+	case *InstanceRuntimeMutation:
+		return c.InstanceRuntime.mutate(ctx, m)
+	case *LogMsgMutation:
+		return c.LogMsg.mutate(ctx, m)
+	case *NamespaceMutation:
+		return c.Namespace.mutate(ctx, m)
+	case *ServicesMutation:
+		return c.Services.mutate(ctx, m)
+	case *VarDataMutation:
+		return c.VarData.mutate(ctx, m)
+	case *VarRefMutation:
+		return c.VarRef.mutate(ctx, m)
+	default:
+		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
 }
 
 // AnnotationClient is a client for the Annotation schema.
@@ -215,6 +305,12 @@ func NewAnnotationClient(c config) *AnnotationClient {
 // A call to `Use(f, g, h)` equals to `annotation.Hooks(f(g(h())))`.
 func (c *AnnotationClient) Use(hooks ...Hook) {
 	c.hooks.Annotation = append(c.hooks.Annotation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `annotation.Intercept(f(g(h())))`.
+func (c *AnnotationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Annotation = append(c.inters.Annotation, interceptors...)
 }
 
 // Create returns a builder for creating a Annotation entity.
@@ -269,6 +365,8 @@ func (c *AnnotationClient) DeleteOneID(id uuid.UUID) *AnnotationDeleteOne {
 func (c *AnnotationClient) Query() *AnnotationQuery {
 	return &AnnotationQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeAnnotation},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -288,7 +386,7 @@ func (c *AnnotationClient) GetX(ctx context.Context, id uuid.UUID) *Annotation {
 
 // QueryNamespace queries the namespace edge of a Annotation.
 func (c *AnnotationClient) QueryNamespace(a *Annotation) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
@@ -304,7 +402,7 @@ func (c *AnnotationClient) QueryNamespace(a *Annotation) *NamespaceQuery {
 
 // QueryInstance queries the instance edge of a Annotation.
 func (c *AnnotationClient) QueryInstance(a *Annotation) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
@@ -323,6 +421,26 @@ func (c *AnnotationClient) Hooks() []Hook {
 	return c.hooks.Annotation
 }
 
+// Interceptors returns the client interceptors.
+func (c *AnnotationClient) Interceptors() []Interceptor {
+	return c.inters.Annotation
+}
+
+func (c *AnnotationClient) mutate(ctx context.Context, m *AnnotationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AnnotationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AnnotationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Annotation mutation op: %q", m.Op())
+	}
+}
+
 // CloudEventFiltersClient is a client for the CloudEventFilters schema.
 type CloudEventFiltersClient struct {
 	config
@@ -337,6 +455,12 @@ func NewCloudEventFiltersClient(c config) *CloudEventFiltersClient {
 // A call to `Use(f, g, h)` equals to `cloudeventfilters.Hooks(f(g(h())))`.
 func (c *CloudEventFiltersClient) Use(hooks ...Hook) {
 	c.hooks.CloudEventFilters = append(c.hooks.CloudEventFilters, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `cloudeventfilters.Intercept(f(g(h())))`.
+func (c *CloudEventFiltersClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CloudEventFilters = append(c.inters.CloudEventFilters, interceptors...)
 }
 
 // Create returns a builder for creating a CloudEventFilters entity.
@@ -391,6 +515,8 @@ func (c *CloudEventFiltersClient) DeleteOneID(id int) *CloudEventFiltersDeleteOn
 func (c *CloudEventFiltersClient) Query() *CloudEventFiltersQuery {
 	return &CloudEventFiltersQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeCloudEventFilters},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -410,7 +536,7 @@ func (c *CloudEventFiltersClient) GetX(ctx context.Context, id int) *CloudEventF
 
 // QueryNamespace queries the namespace edge of a CloudEventFilters.
 func (c *CloudEventFiltersClient) QueryNamespace(cef *CloudEventFilters) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := cef.ID
 		step := sqlgraph.NewStep(
@@ -429,6 +555,26 @@ func (c *CloudEventFiltersClient) Hooks() []Hook {
 	return c.hooks.CloudEventFilters
 }
 
+// Interceptors returns the client interceptors.
+func (c *CloudEventFiltersClient) Interceptors() []Interceptor {
+	return c.inters.CloudEventFilters
+}
+
+func (c *CloudEventFiltersClient) mutate(ctx context.Context, m *CloudEventFiltersMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CloudEventFiltersCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CloudEventFiltersUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CloudEventFiltersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CloudEventFiltersDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CloudEventFilters mutation op: %q", m.Op())
+	}
+}
+
 // CloudEventsClient is a client for the CloudEvents schema.
 type CloudEventsClient struct {
 	config
@@ -443,6 +589,12 @@ func NewCloudEventsClient(c config) *CloudEventsClient {
 // A call to `Use(f, g, h)` equals to `cloudevents.Hooks(f(g(h())))`.
 func (c *CloudEventsClient) Use(hooks ...Hook) {
 	c.hooks.CloudEvents = append(c.hooks.CloudEvents, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `cloudevents.Intercept(f(g(h())))`.
+func (c *CloudEventsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CloudEvents = append(c.inters.CloudEvents, interceptors...)
 }
 
 // Create returns a builder for creating a CloudEvents entity.
@@ -497,6 +649,8 @@ func (c *CloudEventsClient) DeleteOneID(id uuid.UUID) *CloudEventsDeleteOne {
 func (c *CloudEventsClient) Query() *CloudEventsQuery {
 	return &CloudEventsQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeCloudEvents},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -516,7 +670,7 @@ func (c *CloudEventsClient) GetX(ctx context.Context, id uuid.UUID) *CloudEvents
 
 // QueryNamespace queries the namespace edge of a CloudEvents.
 func (c *CloudEventsClient) QueryNamespace(ce *CloudEvents) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ce.ID
 		step := sqlgraph.NewStep(
@@ -535,6 +689,26 @@ func (c *CloudEventsClient) Hooks() []Hook {
 	return c.hooks.CloudEvents
 }
 
+// Interceptors returns the client interceptors.
+func (c *CloudEventsClient) Interceptors() []Interceptor {
+	return c.inters.CloudEvents
+}
+
+func (c *CloudEventsClient) mutate(ctx context.Context, m *CloudEventsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CloudEventsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CloudEventsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CloudEventsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CloudEvents mutation op: %q", m.Op())
+	}
+}
+
 // EventsClient is a client for the Events schema.
 type EventsClient struct {
 	config
@@ -549,6 +723,12 @@ func NewEventsClient(c config) *EventsClient {
 // A call to `Use(f, g, h)` equals to `events.Hooks(f(g(h())))`.
 func (c *EventsClient) Use(hooks ...Hook) {
 	c.hooks.Events = append(c.hooks.Events, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `events.Intercept(f(g(h())))`.
+func (c *EventsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Events = append(c.inters.Events, interceptors...)
 }
 
 // Create returns a builder for creating a Events entity.
@@ -603,6 +783,8 @@ func (c *EventsClient) DeleteOneID(id uuid.UUID) *EventsDeleteOne {
 func (c *EventsClient) Query() *EventsQuery {
 	return &EventsQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeEvents},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -622,7 +804,7 @@ func (c *EventsClient) GetX(ctx context.Context, id uuid.UUID) *Events {
 
 // QueryWfeventswait queries the wfeventswait edge of a Events.
 func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
-	query := &EventsWaitQuery{config: c.config}
+	query := (&EventsWaitClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
@@ -638,7 +820,7 @@ func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
 
 // QueryInstance queries the instance edge of a Events.
 func (c *EventsClient) QueryInstance(e *Events) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
@@ -654,7 +836,7 @@ func (c *EventsClient) QueryInstance(e *Events) *InstanceQuery {
 
 // QueryNamespace queries the namespace edge of a Events.
 func (c *EventsClient) QueryNamespace(e *Events) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
@@ -673,6 +855,26 @@ func (c *EventsClient) Hooks() []Hook {
 	return c.hooks.Events
 }
 
+// Interceptors returns the client interceptors.
+func (c *EventsClient) Interceptors() []Interceptor {
+	return c.inters.Events
+}
+
+func (c *EventsClient) mutate(ctx context.Context, m *EventsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EventsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EventsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EventsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Events mutation op: %q", m.Op())
+	}
+}
+
 // EventsWaitClient is a client for the EventsWait schema.
 type EventsWaitClient struct {
 	config
@@ -687,6 +889,12 @@ func NewEventsWaitClient(c config) *EventsWaitClient {
 // A call to `Use(f, g, h)` equals to `eventswait.Hooks(f(g(h())))`.
 func (c *EventsWaitClient) Use(hooks ...Hook) {
 	c.hooks.EventsWait = append(c.hooks.EventsWait, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `eventswait.Intercept(f(g(h())))`.
+func (c *EventsWaitClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EventsWait = append(c.inters.EventsWait, interceptors...)
 }
 
 // Create returns a builder for creating a EventsWait entity.
@@ -741,6 +949,8 @@ func (c *EventsWaitClient) DeleteOneID(id uuid.UUID) *EventsWaitDeleteOne {
 func (c *EventsWaitClient) Query() *EventsWaitQuery {
 	return &EventsWaitQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeEventsWait},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -760,7 +970,7 @@ func (c *EventsWaitClient) GetX(ctx context.Context, id uuid.UUID) *EventsWait {
 
 // QueryWorkflowevent queries the workflowevent edge of a EventsWait.
 func (c *EventsWaitClient) QueryWorkflowevent(ew *EventsWait) *EventsQuery {
-	query := &EventsQuery{config: c.config}
+	query := (&EventsClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ew.ID
 		step := sqlgraph.NewStep(
@@ -779,6 +989,26 @@ func (c *EventsWaitClient) Hooks() []Hook {
 	return c.hooks.EventsWait
 }
 
+// Interceptors returns the client interceptors.
+func (c *EventsWaitClient) Interceptors() []Interceptor {
+	return c.inters.EventsWait
+}
+
+func (c *EventsWaitClient) mutate(ctx context.Context, m *EventsWaitMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EventsWaitCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EventsWaitUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EventsWaitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EventsWaitDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EventsWait mutation op: %q", m.Op())
+	}
+}
+
 // InstanceClient is a client for the Instance schema.
 type InstanceClient struct {
 	config
@@ -793,6 +1023,12 @@ func NewInstanceClient(c config) *InstanceClient {
 // A call to `Use(f, g, h)` equals to `instance.Hooks(f(g(h())))`.
 func (c *InstanceClient) Use(hooks ...Hook) {
 	c.hooks.Instance = append(c.hooks.Instance, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `instance.Intercept(f(g(h())))`.
+func (c *InstanceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Instance = append(c.inters.Instance, interceptors...)
 }
 
 // Create returns a builder for creating a Instance entity.
@@ -847,6 +1083,8 @@ func (c *InstanceClient) DeleteOneID(id uuid.UUID) *InstanceDeleteOne {
 func (c *InstanceClient) Query() *InstanceQuery {
 	return &InstanceQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeInstance},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -866,7 +1104,7 @@ func (c *InstanceClient) GetX(ctx context.Context, id uuid.UUID) *Instance {
 
 // QueryNamespace queries the namespace edge of a Instance.
 func (c *InstanceClient) QueryNamespace(i *Instance) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -882,7 +1120,7 @@ func (c *InstanceClient) QueryNamespace(i *Instance) *NamespaceQuery {
 
 // QueryLogs queries the logs edge of a Instance.
 func (c *InstanceClient) QueryLogs(i *Instance) *LogMsgQuery {
-	query := &LogMsgQuery{config: c.config}
+	query := (&LogMsgClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -898,7 +1136,7 @@ func (c *InstanceClient) QueryLogs(i *Instance) *LogMsgQuery {
 
 // QueryVars queries the vars edge of a Instance.
 func (c *InstanceClient) QueryVars(i *Instance) *VarRefQuery {
-	query := &VarRefQuery{config: c.config}
+	query := (&VarRefClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -914,7 +1152,7 @@ func (c *InstanceClient) QueryVars(i *Instance) *VarRefQuery {
 
 // QueryRuntime queries the runtime edge of a Instance.
 func (c *InstanceClient) QueryRuntime(i *Instance) *InstanceRuntimeQuery {
-	query := &InstanceRuntimeQuery{config: c.config}
+	query := (&InstanceRuntimeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -930,7 +1168,7 @@ func (c *InstanceClient) QueryRuntime(i *Instance) *InstanceRuntimeQuery {
 
 // QueryChildren queries the children edge of a Instance.
 func (c *InstanceClient) QueryChildren(i *Instance) *InstanceRuntimeQuery {
-	query := &InstanceRuntimeQuery{config: c.config}
+	query := (&InstanceRuntimeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -946,7 +1184,7 @@ func (c *InstanceClient) QueryChildren(i *Instance) *InstanceRuntimeQuery {
 
 // QueryEventlisteners queries the eventlisteners edge of a Instance.
 func (c *InstanceClient) QueryEventlisteners(i *Instance) *EventsQuery {
-	query := &EventsQuery{config: c.config}
+	query := (&EventsClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -962,7 +1200,7 @@ func (c *InstanceClient) QueryEventlisteners(i *Instance) *EventsQuery {
 
 // QueryAnnotations queries the annotations edge of a Instance.
 func (c *InstanceClient) QueryAnnotations(i *Instance) *AnnotationQuery {
-	query := &AnnotationQuery{config: c.config}
+	query := (&AnnotationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -981,6 +1219,26 @@ func (c *InstanceClient) Hooks() []Hook {
 	return c.hooks.Instance
 }
 
+// Interceptors returns the client interceptors.
+func (c *InstanceClient) Interceptors() []Interceptor {
+	return c.inters.Instance
+}
+
+func (c *InstanceClient) mutate(ctx context.Context, m *InstanceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InstanceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InstanceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Instance mutation op: %q", m.Op())
+	}
+}
+
 // InstanceRuntimeClient is a client for the InstanceRuntime schema.
 type InstanceRuntimeClient struct {
 	config
@@ -995,6 +1253,12 @@ func NewInstanceRuntimeClient(c config) *InstanceRuntimeClient {
 // A call to `Use(f, g, h)` equals to `instanceruntime.Hooks(f(g(h())))`.
 func (c *InstanceRuntimeClient) Use(hooks ...Hook) {
 	c.hooks.InstanceRuntime = append(c.hooks.InstanceRuntime, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `instanceruntime.Intercept(f(g(h())))`.
+func (c *InstanceRuntimeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InstanceRuntime = append(c.inters.InstanceRuntime, interceptors...)
 }
 
 // Create returns a builder for creating a InstanceRuntime entity.
@@ -1049,6 +1313,8 @@ func (c *InstanceRuntimeClient) DeleteOneID(id uuid.UUID) *InstanceRuntimeDelete
 func (c *InstanceRuntimeClient) Query() *InstanceRuntimeQuery {
 	return &InstanceRuntimeQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeInstanceRuntime},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1068,7 +1334,7 @@ func (c *InstanceRuntimeClient) GetX(ctx context.Context, id uuid.UUID) *Instanc
 
 // QueryInstance queries the instance edge of a InstanceRuntime.
 func (c *InstanceRuntimeClient) QueryInstance(ir *InstanceRuntime) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ir.ID
 		step := sqlgraph.NewStep(
@@ -1084,7 +1350,7 @@ func (c *InstanceRuntimeClient) QueryInstance(ir *InstanceRuntime) *InstanceQuer
 
 // QueryCaller queries the caller edge of a InstanceRuntime.
 func (c *InstanceRuntimeClient) QueryCaller(ir *InstanceRuntime) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ir.ID
 		step := sqlgraph.NewStep(
@@ -1103,6 +1369,26 @@ func (c *InstanceRuntimeClient) Hooks() []Hook {
 	return c.hooks.InstanceRuntime
 }
 
+// Interceptors returns the client interceptors.
+func (c *InstanceRuntimeClient) Interceptors() []Interceptor {
+	return c.inters.InstanceRuntime
+}
+
+func (c *InstanceRuntimeClient) mutate(ctx context.Context, m *InstanceRuntimeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InstanceRuntimeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InstanceRuntimeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InstanceRuntimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InstanceRuntimeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InstanceRuntime mutation op: %q", m.Op())
+	}
+}
+
 // LogMsgClient is a client for the LogMsg schema.
 type LogMsgClient struct {
 	config
@@ -1117,6 +1403,12 @@ func NewLogMsgClient(c config) *LogMsgClient {
 // A call to `Use(f, g, h)` equals to `logmsg.Hooks(f(g(h())))`.
 func (c *LogMsgClient) Use(hooks ...Hook) {
 	c.hooks.LogMsg = append(c.hooks.LogMsg, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `logmsg.Intercept(f(g(h())))`.
+func (c *LogMsgClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LogMsg = append(c.inters.LogMsg, interceptors...)
 }
 
 // Create returns a builder for creating a LogMsg entity.
@@ -1171,6 +1463,8 @@ func (c *LogMsgClient) DeleteOneID(id uuid.UUID) *LogMsgDeleteOne {
 func (c *LogMsgClient) Query() *LogMsgQuery {
 	return &LogMsgQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeLogMsg},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1190,7 +1484,7 @@ func (c *LogMsgClient) GetX(ctx context.Context, id uuid.UUID) *LogMsg {
 
 // QueryNamespace queries the namespace edge of a LogMsg.
 func (c *LogMsgClient) QueryNamespace(lm *LogMsg) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := lm.ID
 		step := sqlgraph.NewStep(
@@ -1206,7 +1500,7 @@ func (c *LogMsgClient) QueryNamespace(lm *LogMsg) *NamespaceQuery {
 
 // QueryInstance queries the instance edge of a LogMsg.
 func (c *LogMsgClient) QueryInstance(lm *LogMsg) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := lm.ID
 		step := sqlgraph.NewStep(
@@ -1225,6 +1519,26 @@ func (c *LogMsgClient) Hooks() []Hook {
 	return c.hooks.LogMsg
 }
 
+// Interceptors returns the client interceptors.
+func (c *LogMsgClient) Interceptors() []Interceptor {
+	return c.inters.LogMsg
+}
+
+func (c *LogMsgClient) mutate(ctx context.Context, m *LogMsgMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LogMsgCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LogMsgUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LogMsgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LogMsgDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LogMsg mutation op: %q", m.Op())
+	}
+}
+
 // NamespaceClient is a client for the Namespace schema.
 type NamespaceClient struct {
 	config
@@ -1239,6 +1553,12 @@ func NewNamespaceClient(c config) *NamespaceClient {
 // A call to `Use(f, g, h)` equals to `namespace.Hooks(f(g(h())))`.
 func (c *NamespaceClient) Use(hooks ...Hook) {
 	c.hooks.Namespace = append(c.hooks.Namespace, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `namespace.Intercept(f(g(h())))`.
+func (c *NamespaceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Namespace = append(c.inters.Namespace, interceptors...)
 }
 
 // Create returns a builder for creating a Namespace entity.
@@ -1293,6 +1613,8 @@ func (c *NamespaceClient) DeleteOneID(id uuid.UUID) *NamespaceDeleteOne {
 func (c *NamespaceClient) Query() *NamespaceQuery {
 	return &NamespaceQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeNamespace},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1312,7 +1634,7 @@ func (c *NamespaceClient) GetX(ctx context.Context, id uuid.UUID) *Namespace {
 
 // QueryInstances queries the instances edge of a Namespace.
 func (c *NamespaceClient) QueryInstances(n *Namespace) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1328,7 +1650,7 @@ func (c *NamespaceClient) QueryInstances(n *Namespace) *InstanceQuery {
 
 // QueryLogs queries the logs edge of a Namespace.
 func (c *NamespaceClient) QueryLogs(n *Namespace) *LogMsgQuery {
-	query := &LogMsgQuery{config: c.config}
+	query := (&LogMsgClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1344,7 +1666,7 @@ func (c *NamespaceClient) QueryLogs(n *Namespace) *LogMsgQuery {
 
 // QueryVars queries the vars edge of a Namespace.
 func (c *NamespaceClient) QueryVars(n *Namespace) *VarRefQuery {
-	query := &VarRefQuery{config: c.config}
+	query := (&VarRefClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1360,7 +1682,7 @@ func (c *NamespaceClient) QueryVars(n *Namespace) *VarRefQuery {
 
 // QueryCloudevents queries the cloudevents edge of a Namespace.
 func (c *NamespaceClient) QueryCloudevents(n *Namespace) *CloudEventsQuery {
-	query := &CloudEventsQuery{config: c.config}
+	query := (&CloudEventsClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1376,7 +1698,7 @@ func (c *NamespaceClient) QueryCloudevents(n *Namespace) *CloudEventsQuery {
 
 // QueryNamespacelisteners queries the namespacelisteners edge of a Namespace.
 func (c *NamespaceClient) QueryNamespacelisteners(n *Namespace) *EventsQuery {
-	query := &EventsQuery{config: c.config}
+	query := (&EventsClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1392,7 +1714,7 @@ func (c *NamespaceClient) QueryNamespacelisteners(n *Namespace) *EventsQuery {
 
 // QueryAnnotations queries the annotations edge of a Namespace.
 func (c *NamespaceClient) QueryAnnotations(n *Namespace) *AnnotationQuery {
-	query := &AnnotationQuery{config: c.config}
+	query := (&AnnotationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1408,7 +1730,7 @@ func (c *NamespaceClient) QueryAnnotations(n *Namespace) *AnnotationQuery {
 
 // QueryCloudeventfilters queries the cloudeventfilters edge of a Namespace.
 func (c *NamespaceClient) QueryCloudeventfilters(n *Namespace) *CloudEventFiltersQuery {
-	query := &CloudEventFiltersQuery{config: c.config}
+	query := (&CloudEventFiltersClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1424,7 +1746,7 @@ func (c *NamespaceClient) QueryCloudeventfilters(n *Namespace) *CloudEventFilter
 
 // QueryServices queries the services edge of a Namespace.
 func (c *NamespaceClient) QueryServices(n *Namespace) *ServicesQuery {
-	query := &ServicesQuery{config: c.config}
+	query := (&ServicesClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := n.ID
 		step := sqlgraph.NewStep(
@@ -1443,6 +1765,26 @@ func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
 }
 
+// Interceptors returns the client interceptors.
+func (c *NamespaceClient) Interceptors() []Interceptor {
+	return c.inters.Namespace
+}
+
+func (c *NamespaceClient) mutate(ctx context.Context, m *NamespaceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NamespaceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NamespaceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NamespaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NamespaceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Namespace mutation op: %q", m.Op())
+	}
+}
+
 // ServicesClient is a client for the Services schema.
 type ServicesClient struct {
 	config
@@ -1457,6 +1799,12 @@ func NewServicesClient(c config) *ServicesClient {
 // A call to `Use(f, g, h)` equals to `services.Hooks(f(g(h())))`.
 func (c *ServicesClient) Use(hooks ...Hook) {
 	c.hooks.Services = append(c.hooks.Services, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `services.Intercept(f(g(h())))`.
+func (c *ServicesClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Services = append(c.inters.Services, interceptors...)
 }
 
 // Create returns a builder for creating a Services entity.
@@ -1511,6 +1859,8 @@ func (c *ServicesClient) DeleteOneID(id uuid.UUID) *ServicesDeleteOne {
 func (c *ServicesClient) Query() *ServicesQuery {
 	return &ServicesQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeServices},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1530,7 +1880,7 @@ func (c *ServicesClient) GetX(ctx context.Context, id uuid.UUID) *Services {
 
 // QueryNamespace queries the namespace edge of a Services.
 func (c *ServicesClient) QueryNamespace(s *Services) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
@@ -1549,6 +1899,26 @@ func (c *ServicesClient) Hooks() []Hook {
 	return c.hooks.Services
 }
 
+// Interceptors returns the client interceptors.
+func (c *ServicesClient) Interceptors() []Interceptor {
+	return c.inters.Services
+}
+
+func (c *ServicesClient) mutate(ctx context.Context, m *ServicesMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ServicesCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ServicesUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ServicesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ServicesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Services mutation op: %q", m.Op())
+	}
+}
+
 // VarDataClient is a client for the VarData schema.
 type VarDataClient struct {
 	config
@@ -1563,6 +1933,12 @@ func NewVarDataClient(c config) *VarDataClient {
 // A call to `Use(f, g, h)` equals to `vardata.Hooks(f(g(h())))`.
 func (c *VarDataClient) Use(hooks ...Hook) {
 	c.hooks.VarData = append(c.hooks.VarData, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `vardata.Intercept(f(g(h())))`.
+func (c *VarDataClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VarData = append(c.inters.VarData, interceptors...)
 }
 
 // Create returns a builder for creating a VarData entity.
@@ -1617,6 +1993,8 @@ func (c *VarDataClient) DeleteOneID(id uuid.UUID) *VarDataDeleteOne {
 func (c *VarDataClient) Query() *VarDataQuery {
 	return &VarDataQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeVarData},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1636,7 +2014,7 @@ func (c *VarDataClient) GetX(ctx context.Context, id uuid.UUID) *VarData {
 
 // QueryVarrefs queries the varrefs edge of a VarData.
 func (c *VarDataClient) QueryVarrefs(vd *VarData) *VarRefQuery {
-	query := &VarRefQuery{config: c.config}
+	query := (&VarRefClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := vd.ID
 		step := sqlgraph.NewStep(
@@ -1655,6 +2033,26 @@ func (c *VarDataClient) Hooks() []Hook {
 	return c.hooks.VarData
 }
 
+// Interceptors returns the client interceptors.
+func (c *VarDataClient) Interceptors() []Interceptor {
+	return c.inters.VarData
+}
+
+func (c *VarDataClient) mutate(ctx context.Context, m *VarDataMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VarDataCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VarDataUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VarDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VarDataDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VarData mutation op: %q", m.Op())
+	}
+}
+
 // VarRefClient is a client for the VarRef schema.
 type VarRefClient struct {
 	config
@@ -1669,6 +2067,12 @@ func NewVarRefClient(c config) *VarRefClient {
 // A call to `Use(f, g, h)` equals to `varref.Hooks(f(g(h())))`.
 func (c *VarRefClient) Use(hooks ...Hook) {
 	c.hooks.VarRef = append(c.hooks.VarRef, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `varref.Intercept(f(g(h())))`.
+func (c *VarRefClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VarRef = append(c.inters.VarRef, interceptors...)
 }
 
 // Create returns a builder for creating a VarRef entity.
@@ -1723,6 +2127,8 @@ func (c *VarRefClient) DeleteOneID(id uuid.UUID) *VarRefDeleteOne {
 func (c *VarRefClient) Query() *VarRefQuery {
 	return &VarRefQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeVarRef},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1742,7 +2148,7 @@ func (c *VarRefClient) GetX(ctx context.Context, id uuid.UUID) *VarRef {
 
 // QueryVardata queries the vardata edge of a VarRef.
 func (c *VarRefClient) QueryVardata(vr *VarRef) *VarDataQuery {
-	query := &VarDataQuery{config: c.config}
+	query := (&VarDataClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := vr.ID
 		step := sqlgraph.NewStep(
@@ -1758,7 +2164,7 @@ func (c *VarRefClient) QueryVardata(vr *VarRef) *VarDataQuery {
 
 // QueryNamespace queries the namespace edge of a VarRef.
 func (c *VarRefClient) QueryNamespace(vr *VarRef) *NamespaceQuery {
-	query := &NamespaceQuery{config: c.config}
+	query := (&NamespaceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := vr.ID
 		step := sqlgraph.NewStep(
@@ -1774,7 +2180,7 @@ func (c *VarRefClient) QueryNamespace(vr *VarRef) *NamespaceQuery {
 
 // QueryInstance queries the instance edge of a VarRef.
 func (c *VarRefClient) QueryInstance(vr *VarRef) *InstanceQuery {
-	query := &InstanceQuery{config: c.config}
+	query := (&InstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := vr.ID
 		step := sqlgraph.NewStep(
@@ -1791,4 +2197,60 @@ func (c *VarRefClient) QueryInstance(vr *VarRef) *InstanceQuery {
 // Hooks returns the client hooks.
 func (c *VarRefClient) Hooks() []Hook {
 	return c.hooks.VarRef
+}
+
+// Interceptors returns the client interceptors.
+func (c *VarRefClient) Interceptors() []Interceptor {
+	return c.inters.VarRef
+}
+
+func (c *VarRefClient) mutate(ctx context.Context, m *VarRefMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VarRefCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VarRefUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VarRefUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VarRefDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VarRef mutation op: %q", m.Op())
+	}
+}
+
+// hooks and interceptors per client, for fast access.
+type (
+	hooks struct {
+		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, Instance,
+		InstanceRuntime, LogMsg, Namespace, Services, VarData, VarRef []ent.Hook
+	}
+	inters struct {
+		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, Instance,
+		InstanceRuntime, LogMsg, Namespace, Services, VarData, VarRef []ent.Interceptor
+	}
+)
+
+// ExecContext allows calling the underlying ExecContext method of the driver if it is supported by it.
+// See, database/sql#DB.ExecContext for more information.
+func (c *config) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := c.driver.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the driver if it is supported by it.
+// See, database/sql#DB.QueryContext for more information.
+func (c *config) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := c.driver.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
 }

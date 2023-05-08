@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (vdd *VarDataDelete) Where(ps ...predicate.VarData) *VarDataDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (vdd *VarDataDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(vdd.hooks) == 0 {
-		affected, err = vdd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*VarDataMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			vdd.mutation = mutation
-			affected, err = vdd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(vdd.hooks) - 1; i >= 0; i-- {
-			if vdd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = vdd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, vdd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, VarDataMutation](ctx, vdd.sqlExec, vdd.mutation, vdd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (vdd *VarDataDelete) ExecX(ctx context.Context) int {
 }
 
 func (vdd *VarDataDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: vardata.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: vardata.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(vardata.Table, sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID))
 	if ps := vdd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (vdd *VarDataDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	vdd.mutation.done = true
 	return affected, err
 }
 
 // VarDataDeleteOne is the builder for deleting a single VarData entity.
 type VarDataDeleteOne struct {
 	vdd *VarDataDelete
+}
+
+// Where appends a list predicates to the VarDataDelete builder.
+func (vddo *VarDataDeleteOne) Where(ps ...predicate.VarData) *VarDataDeleteOne {
+	vddo.vdd.mutation.Where(ps...)
+	return vddo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (vddo *VarDataDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (vddo *VarDataDeleteOne) ExecX(ctx context.Context) {
-	vddo.vdd.ExecX(ctx)
+	if err := vddo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

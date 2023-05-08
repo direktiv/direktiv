@@ -62,50 +62,8 @@ func (ewc *EventsWaitCreate) Mutation() *EventsWaitMutation {
 
 // Save creates the EventsWait in the database.
 func (ewc *EventsWaitCreate) Save(ctx context.Context) (*EventsWait, error) {
-	var (
-		err  error
-		node *EventsWait
-	)
 	ewc.defaults()
-	if len(ewc.hooks) == 0 {
-		if err = ewc.check(); err != nil {
-			return nil, err
-		}
-		node, err = ewc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*EventsWaitMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = ewc.check(); err != nil {
-				return nil, err
-			}
-			ewc.mutation = mutation
-			if node, err = ewc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(ewc.hooks) - 1; i >= 0; i-- {
-			if ewc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ewc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, ewc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*EventsWait)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from EventsWaitMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*EventsWait, EventsWaitMutation](ctx, ewc.sqlSave, ewc.mutation, ewc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -150,6 +108,9 @@ func (ewc *EventsWaitCreate) check() error {
 }
 
 func (ewc *EventsWaitCreate) sqlSave(ctx context.Context) (*EventsWait, error) {
+	if err := ewc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := ewc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, ewc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -164,19 +125,15 @@ func (ewc *EventsWaitCreate) sqlSave(ctx context.Context) (*EventsWait, error) {
 			return nil, err
 		}
 	}
+	ewc.mutation.id = &_node.ID
+	ewc.mutation.done = true
 	return _node, nil
 }
 
 func (ewc *EventsWaitCreate) createSpec() (*EventsWait, *sqlgraph.CreateSpec) {
 	var (
 		_node = &EventsWait{config: ewc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: eventswait.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: eventswait.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(eventswait.Table, sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = ewc.conflict
 	if id, ok := ewc.mutation.ID(); ok {
@@ -195,10 +152,7 @@ func (ewc *EventsWaitCreate) createSpec() (*EventsWait, *sqlgraph.CreateSpec) {
 			Columns: []string{eventswait.WorkfloweventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: events.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(events.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

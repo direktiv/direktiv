@@ -12,7 +12,7 @@ describe('Test namespace regex constraints', () => {
 
     it(`should create namespaces with various valid names`, async () => {
         const names = [
-            "a", 
+            "a",
             "test-flow-namespace-regex-a",
             "test-flow-namespace-regex-1",
             "test-flow-namespace-regex-a_b.c",
@@ -34,7 +34,7 @@ describe('Test namespace regex constraints', () => {
 
     it(`should fail to create namespaces with various invalid names`, async () => {
         const names = [
-            "test-flow-namespace-regex-A", 
+            "test-flow-namespace-regex-A",
             "Test-flow-namespace-regex-a",
             "test-flow-namespace-reGex-a",
             "1test-flow-namespace-regex-a",

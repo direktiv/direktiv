@@ -238,19 +238,19 @@ func (ir *InstanceRuntime) assignValues(columns []string, values []any) error {
 
 // QueryInstance queries the "instance" edge of the InstanceRuntime entity.
 func (ir *InstanceRuntime) QueryInstance() *InstanceQuery {
-	return (&InstanceRuntimeClient{config: ir.config}).QueryInstance(ir)
+	return NewInstanceRuntimeClient(ir.config).QueryInstance(ir)
 }
 
 // QueryCaller queries the "caller" edge of the InstanceRuntime entity.
 func (ir *InstanceRuntime) QueryCaller() *InstanceQuery {
-	return (&InstanceRuntimeClient{config: ir.config}).QueryCaller(ir)
+	return NewInstanceRuntimeClient(ir.config).QueryCaller(ir)
 }
 
 // Update returns a builder for updating this InstanceRuntime.
 // Note that you need to call InstanceRuntime.Unwrap() before calling this method if this InstanceRuntime
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (ir *InstanceRuntime) Update() *InstanceRuntimeUpdateOne {
-	return (&InstanceRuntimeClient{config: ir.config}).UpdateOne(ir)
+	return NewInstanceRuntimeClient(ir.config).UpdateOne(ir)
 }
 
 // Unwrap unwraps the InstanceRuntime entity that was returned from a transaction after it was closed,
@@ -316,9 +316,3 @@ func (ir *InstanceRuntime) String() string {
 
 // InstanceRuntimes is a parsable slice of InstanceRuntime.
 type InstanceRuntimes []*InstanceRuntime
-
-func (ir InstanceRuntimes) config(cfg config) {
-	for _i := range ir {
-		ir[_i].config = cfg
-	}
-}

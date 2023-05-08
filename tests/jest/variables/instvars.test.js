@@ -71,7 +71,7 @@ describe('Test workflow variable operations', () => {
 
     it(`should create a workflow`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=create-workflow`)
-        .send(simpleWorkflow)
+            .send(simpleWorkflow)
 
         expect(createWorkflowResponse.statusCode).toEqual(200)
         var buf = Buffer.from(createWorkflowResponse.body.revision.source, 'base64')
@@ -88,7 +88,7 @@ describe('Test workflow variable operations', () => {
         expect(binData).toEqual(workflowVarResponse.body.var.binary2)
         expect(workflowVarResponse.body.var.json).toEqual(JSON.parse(jsonData))
         expect(workflowVarResponse.body.var.json2).toEqual(JSON.parse(jsonData))
-    
-    })            
+
+    })
 
 })
