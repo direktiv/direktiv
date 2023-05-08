@@ -29,7 +29,7 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../design/Appshell";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
@@ -117,20 +117,18 @@ const Layout = () => {
   const { data: version } = useVersion();
   const namespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
-  const { pathname } = useLocation();
+  const { namespace: namespaceFromUrl } = useParams();
 
+  // when url with namespace is called directly, this updates ns in local store
   useEffect(() => {
-    // when url with namespace is called directly, this updates ns in local store
-    const urlNamespace = pathname.split("/")[1];
-
-    if (namespace === urlNamespace) {
+    if (namespace === namespaceFromUrl) {
       return;
     }
 
-    if (urlNamespace) {
-      setNamespace(urlNamespace);
+    if (namespaceFromUrl) {
+      setNamespace(namespaceFromUrl);
     }
-  }, [namespace, pathname, setNamespace]);
+  }, [namespace, setNamespace, namespaceFromUrl]);
 
   return (
     <Root>
