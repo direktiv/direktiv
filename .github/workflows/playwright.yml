@@ -23,7 +23,7 @@ jobs:
         env:
           VITE_E2E_UI_HOST: ${{ vars.VITE_E2E_UI_HOST }}
           VITE_E2E_UI_PORT: ${{ vars.VITE_E2E_UI_PORT }}
-          VITE_E2E_API_HOST: ${{ vars.VITE_E2E_API_HOST }}
+          VITE_DEV_API_DOMAIN: ${{ vars.VITE_DEV_API_DOMAIN }}
       - uses: actions/upload-artifact@v3
         if: always()
         with:
