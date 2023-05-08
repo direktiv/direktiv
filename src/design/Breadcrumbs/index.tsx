@@ -1,6 +1,7 @@
 import { FC, HTMLAttributes } from "react";
 
 import { RxChevronRight } from "react-icons/rx";
+import { ScrollArea } from "../ScrollArea";
 import clsx from "clsx";
 
 export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
@@ -8,9 +9,11 @@ export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
 }) => (
-  <div className={clsx("cursor-pointer py-2 text-sm", className)} {...props}>
-    <ul className={clsx("flex flex-row flex-wrap items-center")}>{children}</ul>
-  </div>
+  <ScrollArea aria-orientation="horizontal" className="pb-2">
+    <div className={clsx("cursor-pointer py-2 text-sm", className)} {...props}>
+      <ul className={clsx("flex flex-row items-center")}>{children}</ul>
+    </div>
+  </ScrollArea>
 );
 
 export const Breadcrumb: FC<
@@ -33,7 +36,7 @@ export const Breadcrumb: FC<
     )}
     <div
       className={clsx(
-        "flex items-center gap-2",
+        "flex w-max items-center gap-2",
         "[&_a]:flex [&_a]:items-center [&_a]:gap-2",
         "[&_svg]:h-4 [&_svg]:w-auto"
       )}
@@ -41,5 +44,4 @@ export const Breadcrumb: FC<
       {children}
     </div>
   </li>
-  // </li>
 );

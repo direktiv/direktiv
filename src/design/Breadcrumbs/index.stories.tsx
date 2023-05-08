@@ -48,3 +48,58 @@ export const WithIconsAndLinks = () => (
     </Breadcrumb>
   </BreadcrumbRoot>
 );
+
+export const ResponsiveBreadcrumbs = () => (
+  <BreadcrumbRoot>
+    <Breadcrumb noArrow>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+    <Breadcrumb>
+      <a href="#">
+        <Home /> My-namespace
+      </a>
+    </Breadcrumb>
+  </BreadcrumbRoot>
+);
