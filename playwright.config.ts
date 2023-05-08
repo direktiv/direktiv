@@ -71,8 +71,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "yarn run vite",
-    url: "http://127.0.0.1:3000",
+    command: "yarn run vite --port 3333",
+    url: "http://127.0.0.1:3333",
     reuseExistingServer: !process.env.CI,
   },
 });
