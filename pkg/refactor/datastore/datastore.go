@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 )
 
@@ -15,4 +16,6 @@ type Store interface {
 	// FileAnnotations returns core.FileAnnotationsStore, is responsible for reading and writing file annotations
 	// information.
 	FileAnnotations() core.FileAnnotationsStore
+	// Logs returns logengine.LogStore, is responsible for reading and writing logs
+	Logs() logengine.LogStore
 }
