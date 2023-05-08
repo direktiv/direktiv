@@ -79,6 +79,7 @@ const Editor: FC<
           minimap: {
             enabled: false,
           },
+          contextmenu: false,
           ...options,
         }}
         loading=""
