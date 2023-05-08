@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
@@ -38,6 +39,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 	if err != nil {
 		return err
 	}
+	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
 	cols = append(cols, "t", "msg")
 	vals = append(vals, timestamp, msg)
 	lvl, ok := fields["level"]
