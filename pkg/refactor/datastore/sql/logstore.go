@@ -90,8 +90,8 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 // level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id
 // Any other not mentioned passed key value pair will be ignored.
 // Returned log-entries will have same or higher level as the passed one.
-// - Passing a callpath will return all logs which have a callpath with the prefix as the passed callpath value.
-// when passing callpath the root_instance_id SHOULD be passed to optimize the performance of the query.
+// - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
+// when passing log_instance_call_path the root_instance_id SHOULD be passed to optimize the performance of the query.
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
 	if keysAndValues["recipientType"] == srv {
