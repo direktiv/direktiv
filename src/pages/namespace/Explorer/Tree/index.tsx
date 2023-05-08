@@ -14,6 +14,7 @@ import {
 import { FC, useEffect, useState } from "react";
 import {
   Folder,
+  FolderOpen,
   FolderUp,
   MoreVertical,
   Play,
@@ -35,6 +36,7 @@ import { Link } from "react-router-dom";
 import { NodeSchemaType } from "../../../../api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "../../../../util/router/utils";
+import clsx from "clsx";
 import moment from "moment";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
@@ -43,7 +45,7 @@ import { useNodeContent } from "../../../../api/tree/query/get";
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const { data } = useNodeContent({ path });
+  const { data, isSuccess } = useNodeContent({ path });
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -64,13 +66,14 @@ const ExplorerPage: FC = () => {
 
   const results = data?.children?.results ?? [];
   const showTable = !isRoot || results.length > 0;
+  const isEmpty = isSuccess && results.length === 0;
 
   return (
     <div>
       <ExplorerHeader />
-      <div className="flex flex-col space-y-5 p-5 text-sm">
-        {showTable && (
-          <Card className="flex flex-col space-y-5">
+      <div className="p-5 text-sm">
+        <Card>
+          {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <Table>
                 <TableBody>
@@ -161,7 +164,6 @@ const ExplorerPage: FC = () => {
                   })}
                 </TableBody>
               </Table>
-
               <DialogContent>
                 {deleteNode && (
                   <Delete
@@ -184,8 +186,19 @@ const ExplorerPage: FC = () => {
                 )}
               </DialogContent>
             </Dialog>
-          </Card>
-        )}
+          )}
+          {isEmpty && (
+            <div
+              className={clsx(
+                "flex items-center justify-center gap-2 p-4 text-gray-8 dark:text-gray-dark-8",
+                showTable && "border-t border-gray-5 dark:border-gray-dark-5"
+              )}
+            >
+              <FolderOpen />
+              <div>this directory is empty</div>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );

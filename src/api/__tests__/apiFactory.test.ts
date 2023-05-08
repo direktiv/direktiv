@@ -22,6 +22,7 @@ const API_KEY = "THIS-IS-MY-API-KEY";
 const apiEndpoint = "http://localhost/my-api";
 const apiEndpointPost = "http://localhost/my-api-post";
 const apiEndpoint404 = "http://localhost/404";
+const apiEndpointJSONError = "http://localhost/returns-error";
 const apiEndpointWithDynamicSegment = "http://localhost/this-is-dynamic/my-api";
 const apiEndpointEmptyResponse = "http://localhost/empty-response";
 const apiEndpointTextResponse = "http://localhost/text-response";
@@ -46,6 +47,9 @@ const testApi = setupServer(
       : res(ctx.status(401))
   ),
   rest.get(apiEndpoint404, (_req, res, ctx) => res(ctx.status(404))),
+  rest.get(apiEndpointJSONError, (_req, res, ctx) =>
+    res(ctx.status(422), ctx.json({ my: "error" }))
+  ),
   rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
     res(ctx.text("this is a text response"))
@@ -101,6 +105,14 @@ const textResponse = apiFactory({
 
 const api404 = apiFactory({
   pathFn: () => apiEndpoint404,
+  method: "GET",
+  schema: z.object({
+    response: z.string(),
+  }),
+});
+
+const apiJSONError = apiFactory({
+  pathFn: () => apiEndpointJSONError,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -262,6 +274,39 @@ describe("processApiResponse", () => {
       expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(
         '"error 404 for GET http://localhost/404"'
       );
+    });
+  });
+
+  test("api that returns a JSON error", async () => {
+    const useCallWithApiKey = (onError: (err: unknown) => void) =>
+      useQuery({
+        queryKey: ["getmyapikey", API_KEY],
+        queryFn: () =>
+          apiJSONError({
+            apiKey: API_KEY,
+            params: undefined,
+            pathParams: undefined,
+          }),
+        onError,
+      });
+
+    const errorMock = vi.fn();
+    const { result } = renderHook(() => useCallWithApiKey(errorMock), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(false);
+      expect(result.current.status).toBe("error");
+
+      // calls?.[0]?.[0] does not work properly at this test,
+      // ignore it for now, since typesafety is not important here
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(`
+        {
+          "my": "error",
+        }
+      `);
     });
   });
 

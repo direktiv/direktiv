@@ -85,7 +85,14 @@ export const apiFactory =
         );
       }
     }
-    return Promise.reject(
-      `error ${res.status} for ${method} ${path(pathParams)}`
-    );
+
+    try {
+      const json = await res.json();
+      return Promise.reject(json);
+    } catch (error) {
+      process.env.NODE_ENV !== "test" && console.error(error);
+      return Promise.reject(
+        `error ${res.status} for ${method} ${path(pathParams)}`
+      );
+    }
   };

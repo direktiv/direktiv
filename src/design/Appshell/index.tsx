@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren } from "react";
 
 export const Root: FC<PropsWithChildren> = ({ children }) => (
-  <div className="min-h-full">{children}</div>
+  <div className="flex h-screen min-h-full flex-col">{children}</div>
 );
 
 export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
@@ -29,13 +29,13 @@ export const SidebarMain: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const Main: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex flex-col lg:pl-52">
-    <main className="flex-1">{children}</main>
+  <div className="flex grow flex-col lg:pl-52">
+    <main className="flex flex-1 flex-col">{children}</main>
   </div>
 );
 
 export const MainTop: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex items-center justify-between border-b border-gray-5 p-4 dark:border-gray-dark-5">
+  <div className="flex items-center justify-between border-b border-gray-5 px-4 py-2 dark:border-gray-dark-5">
     {children}
   </div>
 );
@@ -53,5 +53,5 @@ export const MainTopRight: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const MainContent: FC<PropsWithChildren> = ({ children }) => (
-  <div>{children}</div>
+  <div className="flex flex-1 flex-col">{children}</div>
 );

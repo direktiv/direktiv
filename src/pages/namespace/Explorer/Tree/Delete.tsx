@@ -34,7 +34,7 @@ const Delete = ({
         Are you sure you want to delete <b>{node.name}</b>? This can not be
         undone.&nbsp;
         {node.type === "directory" &&
-          "All content of this directoy will be deleted as well."}
+          "All content of this directory will be deleted as well."}
       </div>
       <DialogFooter>
         <DialogClose asChild>
