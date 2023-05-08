@@ -45,7 +45,7 @@ func (s *sqlStore) FileAnnotations() core.FileAnnotationsStore {
 	}
 }
 
-// Logs returns a log store
+// Logs returns a log store.
 func (s *sqlStore) Logs() logengine.LogStore {
 	return &sqlLogStore{
 		db: s.db,
