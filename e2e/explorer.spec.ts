@@ -1,4 +1,5 @@
 import {
+  assertNamespaceExists,
   createNamespace,
   createNamespaceName,
   deleteNamespace,
@@ -22,60 +23,81 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
   // visit page
   await page.goto("/");
 
-  await expect(page).toHaveTitle("direktiv.io");
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a namespace is loaded in the explorer"
+  ).toBeVisible();
 
   // at this point, any namespace may be loaded.
   // let's navigate to the test's namespace via breadcrumbs.
 
   await page.getByRole("main").getByTestId("dropdown-trg-namespace").click();
-
   await page.getByRole("menuitemradio", { name: namespace }).click();
 
-  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
-
-  await expect(page.getByRole("link", { name: namespace })).toBeVisible();
+  await expect(page, "the namespace is reflected in the url").toHaveURL(
+    `/${namespace}/explorer/tree`
+  );
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "the namespace is reflected in the breadcrumbs"
+  ).toHaveText(namespace);
 });
 
 test("it is possible to navigate to a namespace via URL", async ({ page }) => {
+  // visit url
   await page.goto(`/${namespace}/explorer/tree`);
 
-  await expect(page.getByRole("link", { name: namespace })).toBeVisible();
-
-  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
+  // make sure breadcrumb and url are correct after loading
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "the namespace is reflected in the breadcrumbs"
+  ).toHaveText(namespace);
+  await expect(page, "the namespace is reflected in the url").toHaveURL(
+    `/${namespace}/explorer/tree`
+  );
 });
 
 test("it is possible to create a namespace via breadcrumbs", async ({
   page,
 }) => {
-  const newNamespace = createNamespaceName();
-
+  // visit page and make sure explorer is loaded
   await page.goto(`/${namespace}/explorer/tree`);
-  await expect(page.getByTestId("breadcrumb-namespace")).toHaveText(namespace);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a namespace is loaded in the explorer"
+  ).toHaveText(namespace);
 
+  // create new namespace
+  const newNamespace = createNamespaceName();
   await page.getByTestId("dropdown-trg-namespace").click();
   await page.getByTestId("new-namespace").click();
   await page.getByTestId("new-namespace-name").fill(newNamespace);
   await page.getByTestId("new-namespace-submit").click();
 
-  await expect(page, "it redirects to namespace/explorer/tree").toHaveURL(
+  // make sure it has navigated to new namespace
+  await expect(page, "it redirects to the new namespace's url").toHaveURL(
     `/${newNamespace}/explorer/tree`
   );
 
   await expect(
     page.getByTestId("breadcrumb-namespace"),
-    "the breadcrumb shows the new namespace"
+    "the new namespace is reflected in the breadcrumbs"
   ).toHaveText(newNamespace);
 
-  // cleanup the manually created namespace
+  // make sure namespace exists in backend
+  await assertNamespaceExists(expect, newNamespace);
+
+  // cleanup
   await deleteNamespace(newNamespace);
 });
 
 test("it is possible to create and delete a directory", async ({ page }) => {
+  // visit page and make sure explorer is loaded
   await page.goto(`/${namespace}/explorer/tree`);
-
-  await expect(page.getByRole("link", { name: namespace })).toBeVisible();
-
-  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a namespace is loaded in the explorer"
+  ).toHaveText(namespace);
 
   // create folder
   await page.getByTestId("dropdown-trg-new").click();
@@ -96,7 +118,7 @@ test("it is possible to create and delete a directory", async ({ page }) => {
     page,
     "when clicking the tree icon, it navigates back to the tree root"
   ).toHaveURL(`/${namespace}/explorer/tree`);
-  await expect(page.getByRole("link", { name: namespace })).toBeVisible();
+  await expect(page.getByTestId("breadcrumb-namespace")).toHaveText(namespace);
 
   // navigate to folder by clicking on it
   await page.getByRole("link", { name: "awesome-folder" }).click();

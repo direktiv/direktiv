@@ -18,3 +18,31 @@ export const deleteNamespace = (namespace) =>
       method: "DELETE",
     }).then(() => resolve());
   });
+
+export const assertNamespaceExists = async (expect, namespace) => {
+  const response = await fetch(`${apiUrl}/api/namespaces`);
+  const namespaceExists = await response
+    .json()
+    .then((json) => json.results.find((ns) => ns.name === namespace));
+  return expect(namespaceExists).toBeTruthy();
+};
+
+// Not intended for regular use. Namespaces should be cleaned up after every test.
+// E.g., see the beforeEach and afterEach implementation in e2e/explorer.spec.ts.
+// If you have spammed namespaces while writing tests, call this temporarily:
+// await cleanupNamespace();
+export const cleanupNamespaces = async () => {
+  const response = await fetch(`${apiUrl}/api/namespaces`);
+  const namespaces = await response
+    .json()
+    .then((json) =>
+      json.results.filter((ns) => ns.name.includes("playwright"))
+    );
+  const requests = namespaces.map((ns) =>
+    fetch(`${apiUrl}/api/namespaces/${ns.name}?recursive=true`, {
+      method: "DELETE",
+    })
+  );
+
+  return Promise.all(requests);
+};
