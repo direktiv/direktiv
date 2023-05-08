@@ -32,9 +32,17 @@ func getRouter(ctx context.Context, fStore filestore.FileStore, store core.FileA
 
 	annotations, err := store.Get(ctx, file.ID)
 	if err != nil {
-		if !errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			return nil, nil, err
+		if errors.Is(err, core.ErrFileAnnotationsNotSet) {
+			t := time.Now()
+			annotations := &core.FileAnnotations{
+				FileID:    file.ID,
+				Data:      make(core.FileAnnotationsData),
+				CreatedAt: t,
+				UpdatedAt: t,
+			}
+			return annotations, router, nil
 		}
+		return nil, nil, err
 	} else {
 		s := annotations.Data.GetEntry(routerAnnotationKey)
 		if s != "" && s != `""` && s != `\"\"` {
