@@ -35,20 +35,26 @@ const WorkflowOverviewPage: FC = () => {
 
   const workflowData = data?.revision?.source && atob(data?.revision?.source);
   const [value, setValue] = useState<string | undefined>(workflowData);
-
-  const handleEditorChange = (value: string | undefined) => {
-    setValue(value);
-  };
-
   const theme = useTheme();
+
+  const onSave = (toSave: string | undefined) => {
+    if (toSave && path) {
+      setError(undefined);
+      updateWorkflow({
+        path,
+        fileContent: toSave,
+      });
+    }
+  };
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-4">
       <Card className="grow p-4">
         <Editor
           value={workflowData}
-          onChange={handleEditorChange}
+          onChange={setValue}
           theme={theme ?? undefined}
+          onSave={onSave}
         />
       </Card>
       <div className="flex flex-col items-center justify-end gap-4 sm:flex-row">
@@ -97,13 +103,7 @@ const WorkflowOverviewPage: FC = () => {
           variant="outline"
           disabled={isLoading}
           onClick={() => {
-            if (value && path) {
-              setError(undefined);
-              updateWorkflow({
-                path,
-                fileContent: value,
-              });
-            }
+            onSave(value);
           }}
         >
           <Save />

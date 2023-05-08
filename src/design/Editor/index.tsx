@@ -1,6 +1,7 @@
+import { FC, useRef } from "react";
+
 import AutoSizer from "react-virtualized-auto-sizer";
 import type { EditorProps } from "@monaco-editor/react";
-import { FC } from "react";
 import MonacoEditor from "@monaco-editor/react";
 
 // for reference:
@@ -55,40 +56,56 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   });
 };
 
-const onMount: EditorProps["onMount"] = (editor, monaco) => {
-  editor.addCommand(monaco.KeyCode.KEY_S, () => {
-    alert("you've the s key");
-  });
-};
+type EditorType = Parameters<NonNullable<EditorProps["onMount"]>>[0];
 
 const Editor: FC<
-  Omit<EditorProps, "beforeMount" | "onMount"> & { theme?: "light" | "dark" }
-> = ({ options, theme, ...props }) => (
-  <AutoSizer>
-    {({ height, width }) => (
-      <MonacoEditor
-        width={width}
-        height={height}
-        beforeMount={beforeMount}
-        onMount={onMount}
-        options={{
-          scrollBeyondLastLine: false,
-          cursorBlinking: "smooth",
-          wordWrap: true,
-          fontSize: "13px",
-          minimap: {
-            enabled: false,
-          },
-          contextmenu: false,
-          ...options,
-        }}
-        loading=""
-        language="yaml"
-        theme={theme === "dark" ? "direktiv-dark" : "direktiv-light"}
-        {...props}
-      />
-    )}
-  </AutoSizer>
-);
+  Omit<EditorProps, "beforeMount" | "onMount"> & {
+    theme?: "light" | "dark";
+    onSave?: (value: string | undefined) => void;
+  }
+> = ({ options, theme, onSave, ...props }) => {
+  const monacoRef = useRef<EditorType>();
+
+  const onMount: EditorProps["onMount"] = (editor, monaco) => {
+    monacoRef.current = editor;
+    editor.focus();
+    onSave &&
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+        onSave(
+          monacoRef.current?.getValue()
+            ? `${monacoRef.current?.getValue()}`
+            : undefined
+        );
+      });
+  };
+
+  return (
+    <AutoSizer>
+      {({ height, width }) => (
+        <MonacoEditor
+          width={width}
+          height={height}
+          beforeMount={beforeMount}
+          onMount={onMount}
+          options={{
+            scrollBeyondLastLine: false,
+            cursorBlinking: "smooth",
+            wordWrap: true,
+            fontSize: "13px",
+            minimap: {
+              enabled: false,
+            },
+            contextmenu: false,
+            ...options,
+          }}
+          loading=""
+          language="yaml"
+          theme={theme === "dark" ? "direktiv-dark" : "direktiv-light"}
+          {...props}
+        />
+      )}
+    </AutoSizer>
+  );
+};
 
 export default Editor;
