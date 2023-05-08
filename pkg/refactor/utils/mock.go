@@ -101,17 +101,17 @@ func NewMockGorm() (*gorm.DB, error) {
 	 		);
 	CREATE TABLE IF NOT EXISTS "log_msgs" 
 			 (
-				 "oid" uuid,
+				 "oid" text,
 				 "t" datetime,
 				 "msg" text,
 				 "level" text,
-				 "root_instance_id" uuid,
+				 "root_instance_id" text,
 				 "log_instance_call_path" text,
 				 "tags" jsonb,
-				 "workflow_id" uuid,
-				 "mirror_activity_id" uuid,
-				 "instance_logs" uuid,
-				 "namespace_logs" uuid,
+				 "workflow_id" text,
+				 "mirror_activity_id" text,
+				 "instance_logs" text,
+				 "namespace_logs" text,
 				 PRIMARY KEY ("oid")
 			 );
 `)
