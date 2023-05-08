@@ -9,8 +9,8 @@ export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
 }) => (
-  <ScrollArea aria-orientation="horizontal" className="pb-2">
-    <div className={clsx("cursor-pointer py-2 text-sm", className)} {...props}>
+  <ScrollArea aria-orientation="horizontal">
+    <div className={clsx("cursor-pointer py-4 text-sm", className)} {...props}>
       <ul className={clsx("flex flex-row items-center")}>{children}</ul>
     </div>
   </ScrollArea>
