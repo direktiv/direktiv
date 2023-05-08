@@ -14,7 +14,7 @@ export const treeKeys = {
         scope: "tree-node-content",
         apiKey,
         namespace,
-        path: forceLeadingSlash(path ?? ""),
+        path: forceLeadingSlash(path ?? "/"),
         revision,
       },
     ] as const,
@@ -27,7 +27,7 @@ export const treeKeys = {
         scope: "tree-revisions-list",
         apiKey,
         namespace,
-        path: forceLeadingSlash(path ?? ""),
+        path: forceLeadingSlash(path ?? "/"),
       },
     ] as const,
 };

@@ -2,7 +2,7 @@ import { NodeSchemaType } from "./schema";
 
 export const forceLeadingSlash = (path?: string) => {
   if (!path) {
-    return "";
+    return "/";
   }
   return path.startsWith("/") ? path : `/${path}`;
 };
