@@ -5,7 +5,7 @@ const apiUrl = process.env.VITE_DEV_API_DOMAIN;
 export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
 
 export const createNamespace = () =>
-  new Promise<string>((resolve, reject) => {
+  new Promise<string>((resolve) => {
     const name = createNamespaceName();
     fetch(`${apiUrl}/api/namespaces/${name}`, {
       method: "PUT",
@@ -13,7 +13,7 @@ export const createNamespace = () =>
   });
 
 export const deleteNamespace = (namespace) =>
-  new Promise<void>((resolve, reject) => {
+  new Promise<void>((resolve) => {
     fetch(`${apiUrl}/api/namespaces/${namespace}?recursive=true`, {
       method: "DELETE",
     }).then(() => resolve());
