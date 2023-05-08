@@ -1,11 +1,6 @@
 name: Create and push PR Docker image
 
 on:
-  # TODO: only trigger after linting and unit testing.
-  workflow_run:
-    workflows: [ "Make test build" ]
-    types:
-      - completed
   pull_request:
     branches: [ "main", "feature/redesign" ]
 
