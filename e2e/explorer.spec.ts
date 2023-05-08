@@ -16,7 +16,7 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
   page,
 }) => {
   // visit page
-  await page.goto(`http://localhost:3000/`);
+  await page.goto("/");
 
   await expect(page).toHaveTitle("direktiv.io");
 
@@ -27,31 +27,25 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
 
   await page.getByRole("menuitemradio", { name: namespace }).click();
 
-  await expect(page).toHaveURL(
-    `http://localhost:3000/${namespace}/explorer/tree`
-  );
+  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
 
   await expect(page.getByRole("link", { name: namespace })).toBeVisible();
 });
 
-test("it is possible to navigate to a namespace directly", async ({ page }) => {
-  await page.goto(`http://localhost:3000/${namespace}/explorer/tree`);
+test("it is possible to navigate to a namespace via URL", async ({ page }) => {
+  await page.goto(`/${namespace}/explorer/tree`);
 
   await expect(page.getByRole("link", { name: namespace })).toBeVisible();
 
-  await expect(page).toHaveURL(
-    `http://localhost:3000/${namespace}/explorer/tree`
-  );
+  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
 });
 
 test("it is possible to create and delete a directory", async ({ page }) => {
-  await page.goto(`http://localhost:3000/${namespace}/explorer/tree`);
+  await page.goto(`/${namespace}/explorer/tree`);
 
   await expect(page.getByRole("link", { name: namespace })).toBeVisible();
 
-  await expect(page).toHaveURL(
-    `http://localhost:3000/${namespace}/explorer/tree`
-  );
+  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
 
   // create folder
   await page.getByTestId("dropdown-trg-new").click();
@@ -64,16 +58,14 @@ test("it is possible to create and delete a directory", async ({ page }) => {
   await expect(
     page,
     "it creates a new folder and navigates to it automatically"
-  ).toHaveURL(
-    `http://localhost:3000/${namespace}/explorer/tree/awesome-folder`
-  );
+  ).toHaveURL(`/${namespace}/explorer/tree/awesome-folder`);
 
   // navigate back to tree root
   await page.getByTestId("tree-root").click();
   await expect(
     page,
     "when clicking the tree icon, it navigates back to the tree root"
-  ).toHaveURL(`http://localhost:3000/${namespace}/explorer/tree`);
+  ).toHaveURL(`/${namespace}/explorer/tree`);
   await expect(page.getByRole("link", { name: namespace })).toBeVisible();
 
   // navigate to folder by clicking on it
@@ -81,16 +73,14 @@ test("it is possible to create and delete a directory", async ({ page }) => {
   await expect(
     page,
     "when clicking on the folder, it navigates to it"
-  ).toHaveURL(
-    `http://localhost:3000/${namespace}/explorer/tree/awesome-folder`
-  );
+  ).toHaveURL(`/${namespace}/explorer/tree/awesome-folder`);
 
   // navigate back by clicking on .. "folder"
   await page.getByRole("link", { name: ".." }).click();
   await expect(
     page,
     "when clicking .. it navigates back to the tree root"
-  ).toHaveURL(`http://localhost:3000/${namespace}/explorer/tree`);
+  ).toHaveURL(`/${namespace}/explorer/tree`);
 
   // click delete and confirm
   await page.getByTestId("dropdown-trg-dir-actions").click();
@@ -98,9 +88,7 @@ test("it is possible to create and delete a directory", async ({ page }) => {
   await page.getByRole("button", { name: "Delete" }).click();
 
   await expect(page.getByRole("dialog", { name: "Delete" })).toHaveCount(0);
-  await expect(page).toHaveURL(
-    `http://localhost:3000/${namespace}/explorer/tree`
-  );
+  await expect(page).toHaveURL(`/${namespace}/explorer/tree`);
   await expect(
     page.getByRole("link", { name: "awesome-folder" }),
     "it deletes the folder"

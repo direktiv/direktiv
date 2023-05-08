@@ -1,12 +1,12 @@
-import { deleteNamespace, getNamespaceName } from "./utils/namespace";
+import { createNamespaceName, deleteNamespace } from "./utils/namespace";
 import { expect, test } from "@playwright/test";
 
 test("if no namespaces exist, it renders the onboarding page", async ({
   page,
 }) => {
-  const namespace = getNamespaceName();
+  const namespace = createNamespaceName();
   // mock namespaces endpoint with empty results
-  await page.route("http://localhost:3000/api/namespaces", async (route) => {
+  await page.route(`/api/namespaces`, async (route) => {
     if (route.request().method() === "GET") {
       const json = {
         pageInfo: {
@@ -23,7 +23,7 @@ test("if no namespaces exist, it renders the onboarding page", async ({
   });
 
   // visit page
-  await page.goto("http://localhost:3000/");
+  await page.goto("/");
 
   // check that elements exist
   await expect(
@@ -39,9 +39,7 @@ test("if no namespaces exist, it renders the onboarding page", async ({
   await expect(page.getByRole("link", { name: "GitHub" })).toBeVisible();
 
   // should always be true if checked too early, thus check after elements have rendered
-  await expect(page, "the url should not point to a namespace").toHaveURL(
-    "http://localhost:3000/"
-  );
+  await expect(page, "the url should not point to a namespace").toHaveURL("/");
 
   await expect(page).toHaveTitle("direktiv.io");
 
@@ -53,7 +51,7 @@ test("if no namespaces exist, it renders the onboarding page", async ({
   await await expect(
     page,
     "it should redirect to namespace/explorer/tree"
-  ).toHaveURL(`http://localhost:3000/${namespace}/explorer/tree`);
+  ).toHaveURL(`/${namespace}/explorer/tree`);
 
   // cleanup
   await deleteNamespace(namespace);

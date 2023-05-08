@@ -2,11 +2,11 @@ import { faker } from "@faker-js/faker";
 
 const apiUrl = process.env.VITE_DEV_API_DOMAIN;
 
-export const getNamespaceName = () => `playwright-${faker.git.shortSha()}`;
+export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
 
 export const createNamespace = () =>
   new Promise<string>((resolve, reject) => {
-    const name = getNamespaceName();
+    const name = createNamespaceName();
     fetch(`${apiUrl}/api/namespaces/${name}`, {
       method: "PUT",
     }).then(() => resolve(name));
