@@ -158,10 +158,10 @@ func composeQuery(limit, offset int, wEq []string) string {
 		}
 	}
 	q += " ORDER BY t ASC"
-	if limit > 0 {
+	if limit >= 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-	if offset > 0 {
+	if offset >= 0 {
 		q += fmt.Sprintf(" OFFSET %d ", offset)
 	}
 
