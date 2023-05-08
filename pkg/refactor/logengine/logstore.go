@@ -7,12 +7,11 @@ import (
 
 // LogStore manages storing and querying LogEntries.
 type LogStore interface {
-	// appends a log entry to the logs. Passed keyAnValues will be associated with the log entry.
-	// Example: store.Append(ctx, time.Time, "message", "key", "value", "other-key", "value")
-	Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues ...interface{}) error
-	// returns a list of log-entries that have matching associated fields with the provided keysAndValues pairs.
-	// Example: store.Get(ctx, "key1", value1, "key2", value2)
-	Get(ctx context.Context, keysAndValues ...interface{}) ([]*LogEntry, error)
+	// appends a log entry to the logs. Passed keysAnValues will be associated with the log entry.
+	Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues map[string]interface{}) error
+	// returns a limited number of log-entries that have matching associated fields with the provided keysAndValues pairs
+	// starting a given offset. For no offset or unlimited log-entries in the result set the value to -1.
+	Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*LogEntry, error)
 }
 
 // Represents an individual log entry.

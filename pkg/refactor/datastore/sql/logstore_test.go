@@ -20,16 +20,18 @@ func Test_Add_Get(t *testing.T) {
 	}
 	ds := sql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
-	// basic
-	addRandomMsgs(t, logstore, "namespace-id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "workflow-id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "root-instance-id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "mirror-id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "mirror-id", uuid.New(), "panic")
-	addRandomMsgs(t, logstore, "mirror-id", uuid.New(), "error")
-	addRandomMsgs(t, logstore, "mirror-id", uuid.New(), "info")
-	addRandomMsgs(t, logstore, "mirror-id", uuid.New(), "debug")
-	got, err := logstore.Get(context.Background(), "level", "info")
+
+	addRandomMsgs(t, logstore, "namespace_logs", uuid.New(), "")
+	addRandomMsgs(t, logstore, "workflow_id", uuid.New(), "")
+	addRandomMsgs(t, logstore, "root_instance_id", uuid.New(), "")
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "")
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "panic")
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "error")
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "info")
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "debug")
+	q := make(map[string]interface{}, 0)
+	q["level"] = "info"
+	got, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -65,31 +67,26 @@ func Test_Add_Get(t *testing.T) {
 	}
 }
 
-func add(t *testing.T, logstore logengine.LogStore, wantMsg string, col string, id uuid.UUID, keyValues ...interface{}) {
-	t.Helper()
-	in := make([]interface{}, 0)
-	in = append(in, col, id)
-	in = append(in, keyValues...)
-	err := logstore.Append(context.Background(), time.Now(), wantMsg, in...)
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level string) {
 	t.Helper()
 	want := []string{}
 	for i := 0; i < rand.Intn(20)+1; i++ { //nolint:gosec
 		want = append(want, fmt.Sprintf("test msg %d", rand.Intn(100)+1)) //nolint:gosec
 	}
+	in := map[string]interface{}{}
+	in[col] = id
 	for _, v := range want {
 		if level != "" {
-			add(t, logstore, v, col, id, "level", level)
-		} else {
-			add(t, logstore, v, col, id)
+			in["level"] = level
+		}
+		err := logstore.Append(context.Background(), time.Now(), v, in)
+		if err != nil {
+			t.Error(err)
 		}
 	}
-	got, err := logstore.Get(context.Background(), col, id)
+	q := map[string]interface{}{}
+	q[col] = id
+	got, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
