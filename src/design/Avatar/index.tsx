@@ -4,27 +4,25 @@ import clsx from "clsx";
 
 export type AvatarProps = HTMLAttributes<HTMLDivElement> & {
   className?: string;
-  forwaredRef?: React.ForwardedRef<HTMLDivElement>;
   children?: React.ReactNode;
 };
 
-const Avatar: FC<AvatarProps> = ({ className, children, ...props }) => (
-  <div
-    {...props}
-    className={clsx(
-      "flex h-7 w-7 items-center justify-center rounded-full text-xs",
-      "bg-primary-500 text-gray-1 dark:text-gray-dark-1",
-      className
-    )}
-  >
-    {children ? children : ""}
-  </div>
+const Avatar: FC<AvatarProps> = React.forwardRef<HTMLDivElement, AvatarProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      {...props}
+      className={clsx(
+        "flex h-7 w-7 items-center justify-center rounded-full text-xs",
+        "bg-primary-500 text-gray-1 dark:text-gray-dark-1",
+        className
+      )}
+      ref={ref}
+    >
+      {children ? children : ""}
+    </div>
+  )
 );
 
-const AvatarWithForwaredRef = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ ...props }, ref) => <Avatar forwaredRef={ref} {...props} />
-);
+Avatar.displayName = "Avatar";
 
-AvatarWithForwaredRef.displayName = "Avatar";
-
-export default AvatarWithForwaredRef;
+export default Avatar;
