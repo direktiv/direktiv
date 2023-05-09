@@ -35,7 +35,7 @@ const WorkflowRevisionsPage: FC = () => {
               const isTag = Math.random() > 0.5; // TODO: figure out if this is a tag
               const Icon = isTag ? GitMerge : Tag;
               return (
-                <TableRow key={i}>
+                <TableRow key={i} className="group">
                   <TableCell>
                     <div className="flex space-x-3">
                       <Icon aria-hidden="true" className="h-5" />
@@ -52,8 +52,17 @@ const WorkflowRevisionsPage: FC = () => {
                       </Link>
                     </div>
                   </TableCell>
-                  <TableCell className="w-0">
-                    <CopyButton value={rev.name} buttonProps={{ size: "sm" }} />
+                  <TableCell className="group w-24">
+                    <CopyButton
+                      value="copy me"
+                      buttonProps={{
+                        variant: "outline",
+                        className: "w-24 hidden group-hover:inline-flex",
+                        size: "sm",
+                      }}
+                    >
+                      {(copied) => (copied ? "copied" : "copy")}
+                    </CopyButton>
                   </TableCell>
                 </TableRow>
               );
