@@ -11,7 +11,7 @@ export const workflowExamples = {
   `,
 };
 
-export const assertNodeExists = async (expect, namespace, nodeName) => {
+export const checkIfNodeExists = async (namespace, nodeName) => {
   const response = await fetch(`${apiUrl}/api/namespaces/${namespace}/tree`);
   const nodeInResponse = await response
     .json()
@@ -20,5 +20,5 @@ export const assertNodeExists = async (expect, namespace, nodeName) => {
         .map((node) => node.name)
         .find((name) => name === nodeName)
     );
-  return expect(nodeInResponse).toBeTruthy();
+  return !!nodeInResponse;
 };

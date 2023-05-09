@@ -28,10 +28,11 @@ const BreadcrumbSegment: FC<{
   absolute: string;
   relative: string;
   namespace: string;
-}> = ({ absolute, relative, namespace }) => (
+}> = ({ absolute, relative, namespace, ...props }) => (
   <Link
     to={pages.explorer.createHref({ namespace, path: absolute })}
     className="hover:underline"
+    {...props}
   >
     {relative}
   </Link>
@@ -69,6 +70,7 @@ const ExplorerHeader: FC = () => {
             {segments
               .map((x) => (
                 <BreadcrumbSegment
+                  data-testid="breadcrumb-segment"
                   key={x.absolute}
                   absolute={x.absolute}
                   relative={x.relative}
