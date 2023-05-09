@@ -27,7 +27,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.15.0
+	github.com/prometheus/client_golang v1.15.1
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
 	github.com/robfig/cron/v3 v3.0.1
