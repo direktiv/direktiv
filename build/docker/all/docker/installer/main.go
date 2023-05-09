@@ -305,7 +305,7 @@ func runHelm() {
 		y = strings.Replace(y, "PROXY", "", 1)
 	}
 
-	err = os.WriteFile("/direktiv.yaml", []byte(y), 0755)
+	err = os.WriteFile("/direktiv.yaml", []byte(y), 0o755)
 	if err != nil {
 		panic(err)
 	}
@@ -318,7 +318,6 @@ func runHelm() {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func runRegistry() {
@@ -332,17 +331,14 @@ func runRegistry() {
 }
 
 func waitForPod(pod, ns string) {
-
 	log.Printf("waiting for %s in %s", pod, ns)
 	cmd := exec.Command("k3s", "kubectl", "wait", "--for=condition=ready", "pod", "-l", pod, "-n", ns)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
-
 }
 
 func downloadFile(url string) ([]byte, error) {
-
 	log.Printf("downloading %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -361,7 +357,6 @@ func createDecoder() runtime.Decoder {
 }
 
 func installKnative() {
-
 	log.Printf("installing knative\n")
 
 	var buf bytes.Buffer
@@ -373,7 +368,6 @@ func installKnative() {
 	waitForPod("name=knative-operator", "default")
 
 	b, err := downloadFile("https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml")
-
 	if err != nil {
 		panic(fmt.Sprintf("can not download knative yaml: %s", err.Error()))
 	}
@@ -430,10 +424,10 @@ func installKnative() {
 
 		y.PrintObj(depl, &buf)
 
-		os.WriteFile("/knative.yaml", buf.Bytes(), 0755)
+		os.WriteFile("/knative.yaml", buf.Bytes(), 0o755)
 
 	} else {
-		os.WriteFile("/knative.yaml", b, 0755)
+		os.WriteFile("/knative.yaml", b, 0o755)
 	}
 
 	// create namespace
