@@ -113,6 +113,7 @@ const NewWorkflow = ({
               Name
             </label>
             <Input
+              data-testid="new-workflow-name"
               id="name"
               placeholder="workflow-name"
               {...register("name")}
@@ -149,7 +150,11 @@ const NewWorkflow = ({
             </Select>
           </fieldset>
           <fieldset className="flex items-start gap-5">
-            <Textarea className="h-96" {...register("fileContent")} />
+            <Textarea
+              className="h-96"
+              data-testid="new-workflow-editor"
+              {...register("fileContent")}
+            />
           </fieldset>
         </form>
       </div>
@@ -158,6 +163,7 @@ const NewWorkflow = ({
           <Button variant="ghost">Cancel</Button>
         </DialogClose>
         <Button
+          data-testid="new-workflow-submit"
           type="submit"
           disabled={disableSubmit}
           loading={isLoading}

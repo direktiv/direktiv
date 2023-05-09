@@ -21,10 +21,10 @@ export const deleteNamespace = (namespace) =>
 
 export const assertNamespaceExists = async (expect, namespace) => {
   const response = await fetch(`${apiUrl}/api/namespaces`);
-  const namespaceExists = await response
+  const namespaceInResponse = await response
     .json()
     .then((json) => json.results.find((ns) => ns.name === namespace));
-  return expect(namespaceExists).toBeTruthy();
+  return expect(namespaceInResponse).toBeTruthy();
 };
 
 // Not intended for regular use. Namespaces should be cleaned up after every test.

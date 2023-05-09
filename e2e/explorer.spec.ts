@@ -4,6 +4,7 @@ import {
   createNamespaceName,
   deleteNamespace,
 } from "./utils/namespace";
+import { assertNodeExists, workflowExamples } from "./utils/workflow";
 import { expect, test } from "@playwright/test";
 
 let namespace = "";
@@ -25,7 +26,7 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
 
   await expect(
     page.getByTestId("breadcrumb-namespace"),
-    "a namespace is loaded in the explorer"
+    "it renders the breadcrumb for a namespace"
   ).toBeVisible();
 
   // at this point, any namespace may be loaded.
@@ -64,7 +65,7 @@ test("it is possible to create a namespace via breadcrumbs", async ({
   await page.goto(`/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
-    "a namespace is loaded in the explorer"
+    "a testing namespace is loaded in the explorer"
   ).toHaveText(namespace);
 
   // create new namespace
@@ -96,7 +97,7 @@ test("it is possible to create and delete a directory", async ({ page }) => {
   await page.goto(`/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
-    "a namespace is loaded in the explorer"
+    "a testing namespace is loaded in the explorer"
   ).toHaveText(namespace);
 
   // create folder
@@ -145,4 +146,51 @@ test("it is possible to create and delete a directory", async ({ page }) => {
     page.getByRole("link", { name: "awesome-folder" }),
     "it deletes the folder"
   ).toHaveCount(0);
+});
+
+test("it is possible to create a workflow", async ({ page }) => {
+  await page.goto(`/${namespace}/explorer/tree`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a testing namespace is loaded in the explorer"
+  ).toHaveText(namespace);
+
+  const filename = "awesome-workflow.yaml";
+
+  // create workflow
+  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByTestId("new-workflow").click();
+  await page.getByTestId("new-workflow-name").fill(filename);
+  await page.getByTestId("new-workflow-editor").fill(workflowExamples.noop);
+  await page.getByTestId("new-workflow-submit").click();
+
+  // assert it has created and navigated to workflow
+  await expect(
+    page,
+    "it creates the workflow and loads the active revision page"
+  ).toHaveURL(`${namespace}/explorer/workflow/active/${filename}`);
+
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "breadcrumbs reflect the correct namespace"
+  ).toHaveText(namespace);
+
+  await expect(
+    page.getByTestId("breadcrumb-segment"),
+    "breadcrumbs reflect the file name"
+  ).toHaveText(filename);
+
+  await expect(
+    page.getByTestId("workflow-header"),
+    "the page heading contains the file name"
+  ).toHaveText(filename);
+
+  await assertNodeExists(expect, namespace, filename);
+
+  // To do: replace selector with testid of editor when it is implemented
+  await expect(
+    page.getByText(
+      "description: A simple 'no-op' state that returns 'Hello world!'"
+    )
+  ).toBeVisible();
 });
