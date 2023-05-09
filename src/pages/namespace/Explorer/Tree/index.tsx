@@ -194,8 +194,10 @@ const ExplorerPage: FC = () => {
                 showTable && "border-t border-gray-5 dark:border-gray-dark-5"
               )}
             >
-              <FolderOpen className="h-auto w-8" />
-              <span className="text-center">this directory is empty</span>
+              <FolderOpen />
+              <span className="text-center text-sm">
+                this directory is empty
+              </span>
             </div>
           )}
         </Card>
