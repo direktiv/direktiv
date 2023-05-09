@@ -1,49 +1,61 @@
-import Badge from "../../../../../design/Badge";
+import { GitMerge, Tag } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "../../../../../design/Table";
+
 import { Card } from "../../../../../design/Card";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
-import { useNodeContent } from "../../../../../api/tree/query/get";
+// import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 
 const WorkflowRevisionsPage: FC = () => {
-  const { path, namespace, revision } = pages.explorer.useParams();
-  const { data } = useNodeContent({
-    path,
-    revision,
-  });
+  const { path, namespace } = pages.explorer.useParams();
+
+  // const { data } = useNodeContent({
+  //   path,
+  //   revision,
+  // });
 
   const { data: revisions } = useNodeRevisions({ path });
 
   if (!namespace) return null;
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
-      <h1>WorkflowRevisionsPage</h1>
-      <Card className="p-4">
-        <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
-      </Card>
-      <Card className="space-x-2 space-y-2 p-4">
-        {revisions?.results?.map((rev, i) => (
-          <Badge
-            variant={revision === rev.name ? undefined : "outline"}
-            key={i}
-          >
-            <Link
-              to={pages.explorer.createHref({
-                namespace,
-                path,
-                subpage: "workflow-revisions",
-                revision: rev.name,
-              })}
-            >
-              {rev.name}
-            </Link>
-          </Badge>
-        ))}
-      </Card>
-      <Card className="p-4">
-        {data?.revision?.source && atob(data?.revision?.source)}
+    <div className="p-5">
+      <Card>
+        <Table>
+          <TableBody>
+            {revisions?.results?.map((rev, i) => {
+              const isTag = Math.random() > 0.5; // TODO: figure out if this is a tag
+              const Icon = isTag ? GitMerge : Tag;
+              return (
+                <TableRow key={i}>
+                  <TableCell>
+                    <div className="flex space-x-3">
+                      <Icon aria-hidden="true" className="h-5" />
+                      <Link
+                        to={pages.explorer.createHref({
+                          namespace,
+                          path,
+                          subpage: "workflow-revisions",
+                          revision: rev.name,
+                        })}
+                      >
+                        {rev.name}
+                      </Link>
+                    </div>
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );
