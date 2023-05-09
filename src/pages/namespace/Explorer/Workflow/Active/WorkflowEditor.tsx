@@ -99,7 +99,7 @@ const WorkflowEditor: FC<{
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" disabled={hasUnsavedChanged}>
               <GitMerge />
               Revisions <RxChevronDown />
             </Button>
