@@ -1,4 +1,4 @@
-package psql_test
+package filestore_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
@@ -21,19 +21,19 @@ func TestRoot_CreateFileWithoutRootDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
 
-	assertRootErrorFileCreation(t, fs, root, "/file1.text", filestore.ErrNoParentDirectory)
-	assertRootErrorFileCreation(t, fs, root, "/dir1", filestore.ErrNoParentDirectory)
+	assertRootErrorFileCreation(t, fs, root.ID, "/file1.text", filestore.ErrNoParentDirectory)
+	assertRootErrorFileCreation(t, fs, root.ID, "/dir1", filestore.ErrNoParentDirectory)
 
-	assertRootCorrectFileCreation(t, fs, root, "/")
-	assertRootCorrectFileCreation(t, fs, root, "/file1.text")
-	assertRootCorrectFileCreation(t, fs, root, "/dir1")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/file1.text")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
 }
 
 func TestRoot_CreateFile(t *testing.T) {
@@ -41,7 +41,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
 	if err != nil {
@@ -59,7 +59,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("valid", func(t *testing.T) {
-			assertRootCorrectFileCreation(t, fs, root, tt.path)
+			assertRootCorrectFileCreation(t, fs, root.ID, tt.path)
 		})
 	}
 }
@@ -69,39 +69,39 @@ func TestRootQuery_IsEmptyDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
 
-	assertEmptyDirectory(t, fs, root, "/", false, filestore.ErrNotFound)
-	assertEmptyDirectory(t, fs, root, "/dir1", false, filestore.ErrNotFound)
+	assertEmptyDirectory(t, fs, root.ID, "/", false, filestore.ErrNotFound)
+	assertEmptyDirectory(t, fs, root.ID, "/dir1", false, filestore.ErrNotFound)
 
-	assertRootCorrectFileCreation(t, fs, root, "/")
-	assertEmptyDirectory(t, fs, root, "/", true, nil)
-	assertEmptyDirectory(t, fs, root, "/dir1", false, filestore.ErrNotFound)
+	assertRootCorrectFileCreation(t, fs, root.ID, "/")
+	assertEmptyDirectory(t, fs, root.ID, "/", true, nil)
+	assertEmptyDirectory(t, fs, root.ID, "/dir1", false, filestore.ErrNotFound)
 
-	assertRootCorrectFileCreation(t, fs, root, "/file1.text")
-	assertRootCorrectFileCreation(t, fs, root, "/file2.text")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/file1.text")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/file2.text")
 
-	assertRootCorrectFileCreation(t, fs, root, "/dir1")
-	assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text")
-	assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file3.text")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file4.text")
 
-	assertRootCorrectFileCreation(t, fs, root, "/dir2")
+	assertRootCorrectFileCreation(t, fs, root.ID, "/dir2")
 
-	assertEmptyDirectory(t, fs, root, "/", false, nil)
-	assertEmptyDirectory(t, fs, root, "/dir1", false, nil)
+	assertEmptyDirectory(t, fs, root.ID, "/", false, nil)
+	assertEmptyDirectory(t, fs, root.ID, "/dir1", false, nil)
 
-	assertEmptyDirectory(t, fs, root, "/dir2", true, nil)
+	assertEmptyDirectory(t, fs, root.ID, "/dir2", true, nil)
 }
 
-func assertEmptyDirectory(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, wantEmpty bool, wantErr error) {
+func assertEmptyDirectory(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, wantEmpty bool, wantErr error) {
 	t.Helper()
 
-	gotEmpty, gotErr := fs.ForRootID(root.ID).IsEmptyDirectory(context.Background(), path)
+	gotEmpty, gotErr := fs.ForRootID(rootID).IsEmptyDirectory(context.Background(), path)
 	if !errors.Is(gotErr, wantErr) {
 		t.Errorf("unexpected IsEmptyDirectory() error, got: %v, want: %v", gotErr, wantErr)
 
@@ -112,7 +112,7 @@ func assertEmptyDirectory(t *testing.T, fs filestore.FileStore, root *filestore.
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string) {
 	t.Helper()
 
 	var data []byte
@@ -122,13 +122,13 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, root *f
 		typ = filestore.FileTypeFile
 	}
 
-	assertRootCorrectFileCreationWithContent(t, fs, root, path, string(typ), data)
+	assertRootCorrectFileCreationWithContent(t, fs, rootID, path, string(typ), data)
 }
 
-func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, typ string, data []byte) {
+func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, _, err := fs.ForRootID(root.ID).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
+	file, _, err := fs.ForRootID(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 
@@ -155,7 +155,7 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 		}
 	}
 
-	file, err = fs.ForRootID(root.ID).GetFile(context.Background(), path)
+	file, err = fs.ForRootID(rootID).GetFile(context.Background(), path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 
@@ -173,7 +173,7 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 	}
 }
 
-func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, root *filestore.Root, path string, wantErr error) {
+func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, wantErr error) {
 	t.Helper()
 
 	typ := filestore.FileTypeDirectory
@@ -181,7 +181,7 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, root *fil
 		typ = filestore.FileTypeFile
 	}
 
-	file, rev, gotErr := fs.ForRootID(root.ID).CreateFile(context.Background(), path, typ, strings.NewReader(""))
+	file, rev, gotErr := fs.ForRootID(rootID).CreateFile(context.Background(), path, typ, strings.NewReader(""))
 	if file != nil {
 		t.Errorf("unexpected none nil CreateFile().file")
 
@@ -204,7 +204,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -213,11 +213,11 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/")
-		assertRootCorrectFileCreation(t, fs, root, "/file1.text")
-		assertRootCorrectFileCreation(t, fs, root, "/file2.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/file1.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/file2.text")
 
-		assertRootFilesInPath(t, fs, root, "/",
+		assertRootFilesInPath(t, fs, root.ID, "/",
 			"/file1.text",
 			"/file2.text",
 		)
@@ -225,15 +225,15 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Add /dir1 directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/dir1")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file3.text")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file4.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file3.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file4.text")
 
-		assertRootFilesInPath(t, fs, root, "/dir1",
+		assertRootFilesInPath(t, fs, root.ID, "/dir1",
 			"/dir1/file3.text",
 			"/dir1/file4.text",
 		)
-		assertRootFilesInPath(t, fs, root, "/",
+		assertRootFilesInPath(t, fs, root.ID, "/",
 			"/file1.text",
 			"/file2.text",
 			"/dir1",
@@ -242,20 +242,20 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Add /dir1/dir2 directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file5.text")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2/file6.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/dir2")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/dir2/file5.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/dir2/file6.text")
 
-		assertRootFilesInPath(t, fs, root, "/dir1/dir2",
+		assertRootFilesInPath(t, fs, root.ID, "/dir1/dir2",
 			"/dir1/dir2/file5.text",
 			"/dir1/dir2/file6.text",
 		)
-		assertRootFilesInPath(t, fs, root, "/dir1",
+		assertRootFilesInPath(t, fs, root.ID, "/dir1",
 			"/dir1/file3.text",
 			"/dir1/file4.text",
 			"/dir1/dir2",
 		)
-		assertRootFilesInPath(t, fs, root, "/",
+		assertRootFilesInPath(t, fs, root.ID, "/",
 			"/file1.text",
 			"/file2.text",
 			"/dir1",
@@ -268,7 +268,7 @@ func TestRoot_RenamePath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -277,10 +277,10 @@ func TestRoot_RenamePath(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root, "/")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/dir2")
-		assertRootCorrectFileCreation(t, fs, root, "/dir1/file.text")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/dir2")
+		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file.text")
 	}
 
 	f, err := fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/file.text")
@@ -292,7 +292,7 @@ func TestRoot_RenamePath(t *testing.T) {
 		t.Fatalf("unepxected SetPath() error = %v", err)
 	}
 
-	assertRootFilesInPath(t, fs, root, "/",
+	assertRootFilesInPath(t, fs, root.ID, "/",
 		"/dir1",
 		"/file.text",
 	)
@@ -306,7 +306,7 @@ func TestRoot_RenamePath(t *testing.T) {
 		t.Fatalf("unepxected SetPath() error = %v", err)
 	}
 
-	assertRootFilesInPath(t, fs, root, "/",
+	assertRootFilesInPath(t, fs, root.ID, "/",
 		"/dir1",
 		"/dir2",
 		"/file.text",
@@ -318,7 +318,7 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -331,15 +331,15 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/file1.text", "text", []byte("content1"))
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/file2.text", "text", []byte("content2"))
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/empty_dir", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/file3.text", "text", []byte("content3"))
-		assertRootCorrectFileCreationWithContent(t, fs, root, "/dir1/file4.text", "text", []byte("content4"))
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/", "directory", nil)
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/file1.text", "text", []byte("content1"))
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/file2.text", "text", []byte("content2"))
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/dir1", "directory", nil)
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/empty_dir", "directory", nil)
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/dir1/file3.text", "text", []byte("content3"))
+		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/dir1/file4.text", "text", []byte("content4"))
 
-		assertChecksums(t, fs, root,
+		assertChecksums(t, fs, root.ID,
 			"/", "",
 			"/file1.text", "---content1---",
 			"/file2.text", "---content2---",
@@ -351,10 +351,10 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 	}
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRootID(root.ID).ReadDirectory(context.Background(), searchPath)
+	files, err := fs.ForRootID(rootID).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 
@@ -375,10 +375,10 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore
 	}
 }
 
-func assertChecksums(t *testing.T, fs filestore.FileStore, root *filestore.Root, paths ...string) {
+func assertChecksums(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, paths ...string) {
 	t.Helper()
 
-	checksumsMap, err := fs.ForRootID(root.ID).CalculateChecksumsMap(context.Background())
+	checksumsMap, err := fs.ForRootID(rootID).CalculateChecksumsMap(context.Background())
 	if err != nil {
 		t.Errorf("unepxected CalculateChecksumsMap() error = %v", err)
 	}

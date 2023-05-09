@@ -1,4 +1,4 @@
-package sql_test
+package datastore_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
@@ -18,7 +18,7 @@ func Test_Add_Get(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
 
 	addRandomMsgs(t, logstore, "namespace_logs", uuid.New(), "")

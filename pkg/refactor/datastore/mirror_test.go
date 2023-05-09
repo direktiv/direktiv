@@ -1,10 +1,10 @@
-package sql_test
+package datastore_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
@@ -15,7 +15,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
 	newProcess := &mirror.Process{
 		ID:          uuid.New(),
@@ -94,7 +94,7 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
 	// test create.
 

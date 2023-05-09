@@ -1,4 +1,4 @@
-package sql_test
+package datastore_test
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
@@ -19,8 +19,8 @@ func Test_sqlFileAnnotationsStore_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	ds := sql.NewSQLStore(db, "some_secret_key_")
-	fs := psql.NewSQLFileStore(db)
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	fs := filestoresql.NewSQLFileStore(db)
 
 	file := createFile(t, fs)
 

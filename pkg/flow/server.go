@@ -21,9 +21,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -265,8 +265,8 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	srv.sugar.Debug("Initializing mirror manager.")
-	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
-	fStore := psql.NewSQLFileStore(srv.gormDB)
+	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
+	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
@@ -645,7 +645,7 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(res), sql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
+	return filestoresql.NewSQLFileStore(res), datastoresql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {

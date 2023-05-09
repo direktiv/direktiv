@@ -1,11 +1,11 @@
-package psql_test
+package filestore_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
@@ -15,7 +15,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	tests := []struct {
 		name  string
@@ -141,10 +141,10 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			}
 
 			for _, path := range tt.paths {
-				assertRootCorrectFileCreation(t, fs, root, path)
+				assertRootCorrectFileCreation(t, fs, root.ID, path)
 			}
 
-			assertAllPathsInRoot(t, fs, root, tt.paths...)
+			assertAllPathsInRoot(t, fs, root.ID, tt.paths...)
 
 			file, err := fs.ForRootID(root.ID).GetFile(context.Background(), tt.getPath)
 			if err != nil {
@@ -156,15 +156,15 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 				t.Fatalf("unepxected SetPath() error = %v", err)
 			}
 
-			assertAllPathsInRoot(t, fs, root, tt.pathsAfterChange...)
+			assertAllPathsInRoot(t, fs, root.ID, tt.pathsAfterChange...)
 		})
 	}
 }
 
-func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, root *filestore.Root, wantPaths ...string) {
+func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, wantPaths ...string) {
 	t.Helper()
 
-	gotPaths, err := fs.ForRootID(root.ID).ListAllFiles(context.Background())
+	gotPaths, err := fs.ForRootID(rootID).ListAllFiles(context.Background())
 	if err != nil {
 		t.Errorf("unexpected ListAllFiles() error = %v", err)
 
