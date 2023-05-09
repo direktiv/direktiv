@@ -74,11 +74,13 @@ const WorkflowEditor: FC<{
         <div className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8">
           {/* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */}
           {data.revision?.createdAt && (
-            <span>
+            <span className="text-center">
               Updated {moment(data.revision?.createdAt).fromNow(true)} ago
             </span>
           )}
-          {hasUnsavedChanged && <span>you have Unsaved changes</span>}
+          {hasUnsavedChanged && (
+            <span className="text-center">you have unsaved changes</span>
+          )}
         </div>
         {error && (
           <Popover defaultOpen>
