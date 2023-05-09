@@ -3,7 +3,7 @@ module github.com/direktiv/direktiv
 go 1.20
 
 require (
-	entgo.io/ent v0.11.10
+	entgo.io/ent v0.12.3
 	github.com/Masterminds/semver v1.5.0
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.14.0
@@ -45,7 +45,7 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.8.0
 	golang.org/x/sys v0.7.0
-	golang.org/x/tools v0.8.0
+	golang.org/x/tools v0.8.1-0.20230428195545-5283a0178901
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -61,7 +61,7 @@ require (
 )
 
 require (
-	ariga.io/atlas v0.10.1 // indirect
+	ariga.io/atlas v0.10.2-0.20230427182402-87a07dfb83bf // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230426101702-58e86b294756 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
