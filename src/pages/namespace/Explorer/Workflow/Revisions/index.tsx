@@ -1,4 +1,5 @@
-import { GitMerge, Tag } from "lucide-react";
+import { Copy, CopyCheck, GitMerge, Tag } from "lucide-react";
+import { FC, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -6,12 +7,38 @@ import {
   TableRow,
 } from "../../../../../design/Table";
 
+import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
-import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
 // import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
+
+const CopyButton: FC<{ value: string }> = ({ value }) => {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (copied === true) {
+      timeout = setTimeout(() => {
+        setCopied(false);
+      }, 1000);
+    }
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+      }}
+    >
+      {copied ? <CopyCheck /> : <Copy />}
+    </Button>
+  );
+};
 
 const WorkflowRevisionsPage: FC = () => {
   const { path, namespace } = pages.explorer.useParams();
@@ -38,6 +65,7 @@ const WorkflowRevisionsPage: FC = () => {
                   <TableCell>
                     <div className="flex space-x-3">
                       <Icon aria-hidden="true" className="h-5" />
+
                       <Link
                         to={pages.explorer.createHref({
                           namespace,
@@ -48,6 +76,7 @@ const WorkflowRevisionsPage: FC = () => {
                       >
                         {rev.name}
                       </Link>
+                      <CopyButton value={rev.name} />
                     </div>
                   </TableCell>
                   <TableCell />
