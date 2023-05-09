@@ -69,7 +69,7 @@ const ExplorerPage: FC = () => {
   const isEmpty = isSuccess && results.length === 0;
 
   return (
-    <div>
+    <>
       <ExplorerHeader />
       <div className="p-5 text-sm">
         <Card>
@@ -200,7 +200,7 @@ const ExplorerPage: FC = () => {
           )}
         </Card>
       </div>
-    </div>
+    </>
   );
 };
 
