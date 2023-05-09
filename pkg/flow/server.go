@@ -71,7 +71,8 @@ type server struct {
 	actions  *actions
 
 	metrics  *metrics.Client
-	logger   *internallogger.Logger
+	logger   *internallogger.Logger // TODO: remove
+	loggerw  *logengine.Loggerw
 	edb      *entwrapper.Database // TODO: remove
 	database *database.CachedDatabase
 }
@@ -268,6 +269,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing mirror manager.")
 	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := psql.NewSQLFileStore(srv.gormDB)
+	srv.loggerw = &logengine.Loggerw{Sugar: srv.sugar, Store: srv.loggerw.Store, Pub: srv.pubsub}
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
@@ -657,21 +659,6 @@ func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileSt
 	defer rollback()
 
 	if err := fun(fStore, store); err != nil {
-		return err
-	}
-
-	return commit(ctx)
-}
-
-func (flow *flow) log(ctx context.Context, tags map[string]interface{}, level string, msg string, a ...interface{}) error {
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback()
-	log := logengine.Logger(store.Logs(), *flow.sugar, flow.pubsub)
-
-	if err := log(tags, level, msg, a...); err != nil {
 		return err
 	}
 

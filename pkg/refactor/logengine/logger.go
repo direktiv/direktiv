@@ -14,23 +14,17 @@ type LogNotify interface {
 	NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType)
 }
 
-type loggerw struct {
-	sugar *zap.SugaredLogger
-	store LogStore
-	pub   LogNotify
+type Loggerw struct {
+	Sugar *zap.SugaredLogger
+	Store LogStore
+	Pub   LogNotify
 }
 
-type Log func(tags map[string]interface{}, level string, msg string, a ...interface{}) error
-
-func Logger(ls LogStore, sug zap.SugaredLogger, pub LogNotify) Log {
-	return loggerw{sugar: &sug, store: ls, pub: pub}.log
-}
-
-func (logger loggerw) log(tags map[string]interface{}, level string, msg string, a ...interface{}) error {
+func (logger *Loggerw) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) error {
 	msg = fmt.Sprintf(msg, a...)
 
 	if len(tags) == 0 {
-		logger.sugar.Infow(msg)
+		logger.Sugar.Infow(msg)
 	} else {
 		ar := make([]interface{}, len(tags)+len(tags))
 		i := 0
@@ -41,25 +35,25 @@ func (logger loggerw) log(tags map[string]interface{}, level string, msg string,
 		}
 		switch level {
 		case "info":
-			logger.sugar.Infow(msg, ar...)
+			logger.Sugar.Infow(msg, ar...)
 		case "debug":
-			logger.sugar.Debugw(msg, ar...)
+			logger.Sugar.Debugw(msg, ar...)
 		case "error":
-			logger.sugar.Errorw(msg, ar...)
+			logger.Sugar.Errorw(msg, ar...)
 		case "panic":
-			logger.sugar.Panicw(msg, ar...)
+			logger.Sugar.Panicw(msg, ar...)
 		default:
-			logger.sugar.Debugw(msg, ar...) // this should never happen
+			logger.Sugar.Debugw(msg, ar...) // this should never happen
 		}
 	}
 
 	tags["level"] = level
-	err := logger.store.Append(context.Background(), time.Now(), msg, tags)
+	err := logger.Store.Append(context.Background(), time.Now(), msg, tags)
 	if err != nil {
 		return err
 	}
 	id, _ := uuid.Parse(fmt.Sprintf("%s", tags["sender"]))
-	logger.pub.NotifyLogs(id, recipient.RecipientType(fmt.Sprintf("%s", tags["senderType"])))
+	logger.Pub.NotifyLogs(id, recipient.RecipientType(fmt.Sprintf("%s", tags["senderType"])))
 
 	return nil
 }
