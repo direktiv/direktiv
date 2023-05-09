@@ -35,7 +35,11 @@ const CopyButton: FC<{ value: string }> = ({ value }) => {
         setCopied(true);
       }}
     >
-      {copied ? <CopyCheck /> : <Copy />}
+      {copied ? (
+        <CopyCheck className="text-success-10 dark:text-success-dark-10" />
+      ) : (
+        <Copy />
+      )}
     </Button>
   );
 };
@@ -76,10 +80,11 @@ const WorkflowRevisionsPage: FC = () => {
                       >
                         {rev.name}
                       </Link>
-                      <CopyButton value={rev.name} />
                     </div>
                   </TableCell>
-                  <TableCell />
+                  <TableCell className="w-0">
+                    <CopyButton value={rev.name} />
+                  </TableCell>
                 </TableRow>
               );
             })}
