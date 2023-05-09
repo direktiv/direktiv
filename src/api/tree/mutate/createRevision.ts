@@ -7,7 +7,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const createRevision = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
+  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=save-workflow&ref=latest`,
@@ -25,13 +25,7 @@ export const useCreateRevision = () => {
   }
 
   return useMutation({
-    mutationFn: ({
-      path,
-      fileContent,
-    }: {
-      path: string;
-      fileContent: string;
-    }) =>
+    mutationFn: ({ path }: { path: string }) =>
       createRevision({
         apiKey: apiKey ?? undefined,
         params: undefined,
