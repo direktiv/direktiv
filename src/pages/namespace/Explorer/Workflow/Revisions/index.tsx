@@ -1,5 +1,4 @@
-import { Copy, CopyCheck, GitMerge, Tag } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { GitMerge, Tag } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,42 +6,13 @@ import {
   TableRow,
 } from "../../../../../design/Table";
 
-import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
+import CopyButton from "../../../../../design/CopyButton";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
 // import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
-
-const CopyButton: FC<{ value: string }> = ({ value }) => {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (copied === true) {
-      timeout = setTimeout(() => {
-        setCopied(false);
-      }, 1000);
-    }
-    return () => clearTimeout(timeout);
-  }, [copied]);
-
-  return (
-    <Button
-      size="sm"
-      variant="ghost"
-      onClick={() => {
-        navigator.clipboard.writeText(value);
-        setCopied(true);
-      }}
-    >
-      {copied ? (
-        <CopyCheck className="text-success-10 dark:text-success-dark-10" />
-      ) : (
-        <Copy />
-      )}
-    </Button>
-  );
-};
 
 const WorkflowRevisionsPage: FC = () => {
   const { path, namespace } = pages.explorer.useParams();
@@ -83,7 +53,7 @@ const WorkflowRevisionsPage: FC = () => {
                     </div>
                   </TableCell>
                   <TableCell className="w-0">
-                    <CopyButton value={rev.name} />
+                    <CopyButton value={rev.name} buttonProps={{ size: "sm" }} />
                   </TableCell>
                 </TableRow>
               );
