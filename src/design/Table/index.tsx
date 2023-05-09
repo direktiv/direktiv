@@ -58,8 +58,7 @@ export const TableCell = React.forwardRef<
     {...props}
     className={clsx(
       "whitespace-nowrap px-3 py-2 text-sm",
-      "text-gray-9",
-      "dark:text-gray-dark-9",
+
       className
     )}
   >
