@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type LogNotify interface {
-	NotifyLogs(recipientID string, recipientType string)
+	NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType)
 }
 
 type loggerw struct {
@@ -56,7 +58,8 @@ func (logger loggerw) log(tags map[string]interface{}, level string, msg string,
 	if err != nil {
 		return err
 	}
-	logger.pub.NotifyLogs(fmt.Sprintf("%s", tags["sender"]), fmt.Sprintf("%s", tags["senderType"]))
+	id, _ := uuid.Parse(fmt.Sprintf("%s", tags["sender"]))
+	logger.pub.NotifyLogs(id, recipient.RecipientType(fmt.Sprintf("%s", tags["senderType"])))
 
 	return nil
 }
