@@ -18,6 +18,7 @@ import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
 import moment from "moment";
 import { pages } from "../../../../../util/router/pages";
+import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
 import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useTheme } from "../../../../../util/store/theme";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
@@ -37,8 +38,12 @@ const WorkflowOverviewPage: FC = () => {
   const [value, setValue] = useState<string | undefined>(workflowData);
   const theme = useTheme();
 
+  const { mutate: createRevision } = useCreateRevision();
+
+  if (!path) return null;
+
   const onSave = (toSave: string | undefined) => {
-    if (toSave && path) {
+    if (toSave) {
       setError(undefined);
       updateWorkflow({
         path,
@@ -87,7 +92,13 @@ const WorkflowOverviewPage: FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                createRevision({
+                  path,
+                });
+              }}
+            >
               <GitBranchPlus className="mr-2 h-4 w-4" /> Make Revision
             </DropdownMenuItem>
             <DropdownMenuItem>
