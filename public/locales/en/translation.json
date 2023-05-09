@@ -28,6 +28,12 @@
           "settings": "Settings"
         },
         "actionsBtn": "Actions"
+      },
+      "breadcrumbs": {
+        "searchPlaceholder": "Search namespace...",
+        "notFound": "No namespace found.",
+        "createButton": "Create new namespace",
+        "loading": "loading..."
       }
     }
   }

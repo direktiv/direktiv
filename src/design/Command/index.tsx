@@ -132,6 +132,32 @@ const CommandItem = React.forwardRef<
 
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
+const CommandStaticItem = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    className={clsx(
+      "overflow-hidden p-1",
+      "text-gray-11",
+      "dark:text-gray-dark-11"
+    )}
+  >
+    <div
+      ref={ref}
+      className={clsx(
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium  outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "hover:bg-gray-3",
+        "dark:hover:bg-gray-dark-3 ",
+        className
+      )}
+      {...props}
+    />
+  </div>
+));
+
+CommandStaticItem.displayName = "CommandStaticItem";
+
 const CommandShortcut = ({
   className,
   ...props
@@ -158,4 +184,5 @@ export {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
+  CommandStaticItem,
 };

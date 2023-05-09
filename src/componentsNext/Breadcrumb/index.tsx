@@ -15,7 +15,9 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
   CommandSeparator,
+  CommandStaticItem,
 } from "../../design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import { Link, useNavigate } from "react-router-dom";
@@ -30,8 +32,10 @@ import { analyzePath } from "../../util/router/utils";
 import clsx from "clsx";
 import { pages } from "../../util/router/pages";
 import { useListNamespaces } from "../../api/namespaces/query/get";
+import { useTranslation } from "react-i18next";
 
 const Breadcrumb = () => {
+  const { t } = useTranslation();
   const namespace = useNamespace();
   const { data: availableNamespaces, isLoading } = useListNamespaces();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -66,44 +70,52 @@ const Breadcrumb = () => {
             </PopoverTrigger>
             <PopoverContent className="w-56 p-0">
               <Command>
-                <CommandInput placeholder="Search namespace..." />
-                <CommandEmpty>No framework found.</CommandEmpty>
-                <CommandGroup>
-                  {availableNamespaces?.results.map((ns) => (
-                    <CommandItem
-                      key={ns.name}
-                      onSelect={(currentValue: string) => {
-                        onNameSpaceChange(currentValue);
-                        setOpen(false);
-                      }}
-                    >
-                      <Circle
-                        className={clsx(
-                          "mr-2 h-2 w-2 fill-current",
-                          namespace === ns.name ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <span>{ns.name}</span>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
+                <CommandInput
+                  placeholder={t(
+                    "pages.explorer.breadcrumbs.searchPlaceholder"
+                  )}
+                />
+                <CommandList>
+                  <CommandEmpty>
+                    {t("pages.explorer.breadcrumbs.notFound")}
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {availableNamespaces?.results.map((ns) => (
+                      <CommandItem
+                        key={ns.name}
+                        onSelect={(currentValue: string) => {
+                          onNameSpaceChange(currentValue);
+                          setOpen(false);
+                        }}
+                      >
+                        <Circle
+                          className={clsx(
+                            "mr-2 h-2 w-2 fill-current",
+                            namespace === ns.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span>{ns.name}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
                 <CommandSeparator />
                 {isLoading && (
                   <CommandItem disabled>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    loading...
+                    {t("pages.explorer.breadcrumbs.loading")}
                   </CommandItem>
                 )}
                 <CommandSeparator />
                 <DialogTrigger>
-                  <CommandGroup>
-                    <CommandItem>
-                      <>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        <span>Create new namespace</span>
-                      </>
-                    </CommandItem>
-                  </CommandGroup>
+                  <CommandStaticItem>
+                    <>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      <span>
+                        {t("pages.explorer.breadcrumbs.createButton")}
+                      </span>
+                    </>
+                  </CommandStaticItem>
                 </DialogTrigger>
               </Command>
             </PopoverContent>
