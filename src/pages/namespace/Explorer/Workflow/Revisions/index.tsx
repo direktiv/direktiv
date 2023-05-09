@@ -1,4 +1,4 @@
-import { GitMerge, Tag } from "lucide-react";
+import { GitMerge, MoreVertical, Tag } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -6,6 +6,7 @@ import {
   TableRow,
 } from "../../../../../design/Table";
 
+import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import CopyButton from "../../../../../design/CopyButton";
 import { FC } from "react";
@@ -52,7 +53,7 @@ const WorkflowRevisionsPage: FC = () => {
                       </Link>
                     </div>
                   </TableCell>
-                  <TableCell className="group w-24">
+                  <TableCell className="group w-0 text-right">
                     <CopyButton
                       value="copy me"
                       buttonProps={{
@@ -63,6 +64,14 @@ const WorkflowRevisionsPage: FC = () => {
                     >
                       {(copied) => (copied ? "copied" : "copy")}
                     </CopyButton>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => e.preventDefault()}
+                      icon
+                    >
+                      <MoreVertical />
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
