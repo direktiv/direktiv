@@ -71,7 +71,7 @@ const ExplorerPage: FC = () => {
   return (
     <>
       <ExplorerHeader />
-      <div className="p-5 text-sm">
+      <div className="p-5">
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
