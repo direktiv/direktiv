@@ -281,7 +281,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	revision, err = fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
+	_, err = fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
 	if err != nil {
 		return nil, err
 	}
