@@ -60,7 +60,6 @@ const WorkflowEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-4">
-      {hasUnsavedChanged ? "unsaved" : "saved"}
       <Card className="grow p-4">
         <Editor
           value={workflowData}
@@ -72,11 +71,14 @@ const WorkflowEditor: FC<{
         />
       </Card>
       <div className="flex flex-col items-center justify-end gap-4 sm:flex-row">
-        <div className="grow text-sm text-gray-8 dark:text-gray-dark-8">
+        <div className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8">
           {/* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */}
-          {data?.revision?.createdAt && (
-            <>Updated {moment(data?.revision?.createdAt).fromNow(true)} ago</>
+          {data.revision?.createdAt && (
+            <span>
+              Updated {moment(data.revision?.createdAt).fromNow(true)} ago
+            </span>
           )}
+          {hasUnsavedChanged && <span>you have Unsaved changes</span>}
         </div>
         {error && (
           <Popover defaultOpen>
