@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
@@ -15,7 +15,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	tests := []struct {
 		name  string

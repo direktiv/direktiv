@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
@@ -21,7 +21,7 @@ func TestRoot_CreateFileWithoutRootDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
 	if err != nil {
@@ -41,7 +41,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.UUID{})
 	if err != nil {
@@ -69,7 +69,7 @@ func TestRootQuery_IsEmptyDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -204,7 +204,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -268,7 +268,7 @@ func TestRoot_RenamePath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -318,7 +318,7 @@ func TestRoot_CalculateChecksumDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {

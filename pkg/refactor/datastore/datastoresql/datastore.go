@@ -1,4 +1,4 @@
-package sql
+package datastoresql
 
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"

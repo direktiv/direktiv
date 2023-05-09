@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
@@ -71,7 +71,7 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	tests := []struct {
 		name string
@@ -93,7 +93,7 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
+	fs := filestoresql.NewSQLFileStore(db)
 
 	myRoot1 := uuid.New()
 	myRoot2 := uuid.New()
