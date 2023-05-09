@@ -43,7 +43,7 @@ export const useCreateRevision = () => {
     onSuccess(data) {
       toast({
         title: "Revision created",
-        description: `Revision ${data.node.name} was created`,
+        description: `Revision ${data.revision.name} was created`,
         variant: "success",
       });
     },
