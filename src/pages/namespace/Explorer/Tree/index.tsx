@@ -190,12 +190,12 @@ const ExplorerPage: FC = () => {
           {isEmpty && (
             <div
               className={clsx(
-                "flex items-center justify-center gap-2 p-4",
+                "flex flex-col items-center justify-center gap-2 p-10",
                 showTable && "border-t border-gray-5 dark:border-gray-dark-5"
               )}
             >
-              <FolderOpen />
-              <div>this directory is empty</div>
+              <FolderOpen className="h-auto w-8" />
+              <span className="text-center">this directory is empty</span>
             </div>
           )}
         </Card>
