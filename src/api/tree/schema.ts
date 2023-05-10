@@ -44,6 +44,8 @@ export const RevisionsListSchema = z.object({
   ),
 });
 
+export const TagsListSchema = RevisionsListSchema;
+
 export const TreeFolderCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
