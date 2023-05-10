@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import moment from "moment";
 
@@ -8,16 +8,16 @@ const minutesAgo = (date: moment.MomentInput) => {
   return moment.duration(now.diff(prev)).asMinutes();
 };
 
-const UpdatedAt: FC<{ date: moment.MomentInput }> = ({ date }) => {
+const useUpdatedAt = (date: moment.MomentInput): string => {
   const [updatedString, setUpdatedString] = useState(moment(date).fromNow());
   const [minAgo, setMinAgo] = useState(minutesAgo(date));
   const interval = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
+    setUpdatedString(moment(date).fromNow());
     if (minAgo < 60) {
       interval.current = setInterval(() => {
         setMinAgo(minutesAgo(date));
-        setUpdatedString(moment(date).fromNow());
       }, 60000);
     }
     return () => {
@@ -25,7 +25,7 @@ const UpdatedAt: FC<{ date: moment.MomentInput }> = ({ date }) => {
     };
   }, [date, minAgo]);
 
-  return <>{updatedString}</>;
+  return updatedString;
 };
 
-export default UpdatedAt;
+export default useUpdatedAt;

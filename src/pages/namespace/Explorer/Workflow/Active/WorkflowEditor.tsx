@@ -16,12 +16,12 @@ import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
-import UpdatedAt from "../../../../../design/UpdatedAt";
 import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
 import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useTheme } from "../../../../../util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
+import useUpdatedAt from "../../../../../hooksNext/useUpdatedAt";
 
 // get type of useNodeContent return value
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
@@ -34,6 +34,7 @@ const WorkflowEditor: FC<{
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
   const workflowData = data.revision?.source && atob(data?.revision?.source);
+  const updatedAt = useUpdatedAt(data.revision?.createdAt);
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {
@@ -78,8 +79,9 @@ const WorkflowEditor: FC<{
 
           {data.revision?.createdAt && (
             <>
-              {t("pages.explorer.workflow.updated")}{" "}
-              <UpdatedAt date={data?.revision?.createdAt} />
+              {t("pages.explorer.workflow.updated", {
+                relativeTime: updatedAt,
+              })}
             </>
           )}
           {hasUnsavedChanged && (

@@ -27,7 +27,7 @@
           "overview": "Overview",
           "settings": "Settings"
         },
-        "updated": "Updated",
+        "updated": "Updated {{relativeTime}}",
         "actionsBtn": "Actions"
       }
     }
