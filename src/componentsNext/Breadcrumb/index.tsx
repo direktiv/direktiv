@@ -16,8 +16,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
   CommandStaticItem,
+  CommandStaticSeparator,
 } from "../../design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import { Link, useNavigate } from "react-router-dom";
@@ -97,14 +97,13 @@ const Breadcrumb = () => {
                     ))}
                   </CommandGroup>
                 </CommandList>
-                <CommandSeparator />
-                {isLoading && (
+                {!isLoading && (
                   <CommandStaticItem>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {t("components.breadcrumb.loading")}
                   </CommandStaticItem>
                 )}
-                <CommandSeparator />
+                <CommandStaticSeparator />
                 <DialogTrigger>
                   <CommandStaticItem>
                     <>

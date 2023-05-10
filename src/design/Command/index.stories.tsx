@@ -30,6 +30,8 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
+  CommandStaticItem,
+  CommandStaticSeparator,
 } from "./index";
 
 import {
@@ -121,6 +123,12 @@ export const CommandDemo = () => (
           <CommandShortcut>⌘S</CommandShortcut>
         </CommandItem>
       </CommandGroup>
+      <CommandStaticSeparator />
+      <CommandStaticItem>
+        <CreditCard className="mr-2 h-auto w-4" />
+        <span>Static Item</span>
+        <CommandShortcut>⌘T</CommandShortcut>
+      </CommandStaticItem>
     </CommandList>
   </Command>
 );

@@ -114,6 +114,18 @@ const CommandSeparator = React.forwardRef<
 ));
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
+const CommandStaticSeparator = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={clsx("-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
+    {...props}
+  />
+));
+CommandStaticSeparator.displayName = "CommandStaticSeparator";
+
 const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
@@ -185,4 +197,5 @@ export {
   CommandShortcut,
   CommandSeparator,
   CommandStaticItem,
+  CommandStaticSeparator,
 };
