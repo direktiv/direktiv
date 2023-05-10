@@ -142,13 +142,12 @@ func updateGeneration_0_7_5(db *sql.Tx) error {
 		"events":      {"events_workflows_wfevents"},
 		"var_refs":    {"var_refs_workflows_vars"},
 	} {
-
 		for i := range v {
 			queries = append(queries, fmt.Sprintf("ALTER TABLE %s DROP CONSTRAINT %s;", k, v[i]))
 		}
 	}
 
-	queries = append(queries, fmt.Sprintf("DROP TABLE log_msgs;"))
+	queries = append(queries, "DROP TABLE log_msgs;")
 
 	for i := range queries {
 		_, err := db.Exec(queries[i])
