@@ -16,17 +16,18 @@ import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
-import moment from "moment";
+import UpdatedAt from "../../../../../design/UpdatedAt";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useTheme } from "../../../../../util/store/theme";
+import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path });
   const [error, setError] = useState<string | undefined>();
-
+  const { t } = useTranslation();
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {
       error && setError(error);
@@ -61,9 +62,13 @@ const WorkflowOverviewPage: FC = () => {
         <div className="grow text-sm text-gray-8 dark:text-gray-dark-8">
           {/* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */}
           {data?.revision?.createdAt && (
-            <>Updated {moment(data?.revision?.createdAt).fromNow(true)} ago</>
+            <>
+              {t("pages.explorer.workflow.updated")}{" "}
+              <UpdatedAt date={data?.revision?.createdAt} />
+            </>
           )}
         </div>
+
         {error && (
           <Popover defaultOpen>
             <PopoverTrigger asChild>
