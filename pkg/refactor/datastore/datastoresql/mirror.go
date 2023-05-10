@@ -129,9 +129,10 @@ func cryptDecryptConfig(config *mirror.Config, key string, encrypt bool) (*mirro
 		)
 		if encrypt {
 			b, err = util.EncryptDataBase64([]byte(key), []byte(*t))
-		} else {
+		} else if len(*t) > 0 {
 			b, err = util.DecryptDataBase64([]byte(key), *t)
 		}
+
 		if err != nil {
 			return nil, err
 		}
