@@ -14,7 +14,6 @@ import {
 import { FC, useEffect, useState } from "react";
 import {
   Folder,
-  FolderOpen,
   FolderUp,
   MoreVertical,
   Play,
@@ -33,10 +32,10 @@ import { Card } from "../../../../design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
+import NoResult from "./NoResult";
 import { NodeSchemaType } from "../../../../api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "../../../../util/router/utils";
-import clsx from "clsx";
 import moment from "moment";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
@@ -68,7 +67,7 @@ const ExplorerPage: FC = () => {
 
   const results = data?.children?.results ?? [];
   const showTable = !isRoot || results.length > 0;
-  const isEmpty = isSuccess && results.length === 0;
+  const noResults = isSuccess && results.length === 0;
 
   return (
     <>
@@ -203,31 +202,7 @@ const ExplorerPage: FC = () => {
               </DialogContent>
             </Dialog>
           )}
-          {isEmpty && (
-            <div
-              className={clsx(
-                "flex flex-col items-center gap-y-5 p-10",
-                showTable && "border-t border-gray-5 dark:border-gray-dark-5"
-              )}
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
-                <FolderOpen />
-                <span className="text-center text-sm">
-                  {t("pages.explorer.tree.list.empty.title")}
-                </span>
-              </div>
-              <div className="flex flex-col gap-5 sm:flex-row">
-                <Button>
-                  <Play />
-                  {t("pages.explorer.tree.list.empty.createWorkflow")}
-                </Button>
-                <Button variant="outline">
-                  <Folder />
-                  {t("pages.explorer.tree.list.empty.createDirectory")}
-                </Button>
-              </div>
-            </div>
-          )}
+          {noResults && <NoResult />}
         </Card>
       </div>
     </>
