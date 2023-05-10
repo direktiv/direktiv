@@ -65,7 +65,7 @@ export const useCreateRevision = () => {
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not create workflow 😢",
+        description: "could not create revision 😢",
         variant: "error",
       });
     },
