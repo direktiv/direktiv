@@ -49,7 +49,6 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 		if err != nil {
 			return nil, err
 		}
-		err = nil
 	}
 
 	cached.File = file
