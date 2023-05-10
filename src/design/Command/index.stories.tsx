@@ -89,7 +89,7 @@ export const Default: Story = {
 export const CommandDemo = () => (
   <Command className="rounded-lg border border-gray-4 shadow-md dark:border-gray-dark-4">
     <CommandInput placeholder="Type a command or search..." />
-    <CommandList>
+    <CommandList className="max-h-[200px]">
       <CommandEmpty>No results found.</CommandEmpty>
       <CommandGroup heading="Suggestions">
         <CommandItem>
@@ -338,7 +338,7 @@ export function CommandPopover() {
                     onSelect={(value) => {
                       setSelectedStatus(
                         statuses.find((priority) => priority.value === value) ||
-                          null
+                        null
                       );
                       setOpen(false);
                     }}

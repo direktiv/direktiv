@@ -73,7 +73,7 @@ const Breadcrumb = () => {
                 <CommandInput
                   placeholder={t("components.breadcrumb.searchPlaceholder")}
                 />
-                <CommandList>
+                <CommandList className="max-h-[250px]">
                   <CommandEmpty>
                     {t("components.breadcrumb.notFound")}
                   </CommandEmpty>
@@ -97,7 +97,7 @@ const Breadcrumb = () => {
                     ))}
                   </CommandGroup>
                 </CommandList>
-                {!isLoading && (
+                {isLoading && (
                   <CommandStaticItem>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {t("components.breadcrumb.loading")}
