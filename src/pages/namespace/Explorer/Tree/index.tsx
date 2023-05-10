@@ -41,6 +41,7 @@ import moment from "moment";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
 import { useNodeContent } from "../../../../api/tree/query/get";
+import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
@@ -54,6 +55,7 @@ const ExplorerPage: FC = () => {
   // set the pointer to that node for the dialog
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -88,7 +90,9 @@ const ExplorerPage: FC = () => {
                           className="flex items-center space-x-3 hover:underline"
                         >
                           <FolderUp className="h-5" />
-                          <span>..</span>
+                          <span>
+                            {t("pages.explorer.tree.list.oneLevelUp")}
+                          </span>
                         </Link>
                       </TableCell>
                     </TableRow>
@@ -134,7 +138,11 @@ const ExplorerPage: FC = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-40">
-                              <DropdownMenuLabel>Edit</DropdownMenuLabel>
+                              <DropdownMenuLabel>
+                                {t(
+                                  "pages.explorer.tree.list.contextMenu.title"
+                                )}
+                              </DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DialogTrigger
                                 onClick={() => {
@@ -143,7 +151,11 @@ const ExplorerPage: FC = () => {
                               >
                                 <DropdownMenuItem>
                                   <Trash className="mr-2 h-4 w-4" />
-                                  <span>Delete</span>
+                                  <span>
+                                    {t(
+                                      "pages.explorer.tree.list.contextMenu.delete"
+                                    )}
+                                  </span>
                                 </DropdownMenuItem>
                               </DialogTrigger>
                               <DialogTrigger
@@ -153,7 +165,11 @@ const ExplorerPage: FC = () => {
                               >
                                 <DropdownMenuItem>
                                   <TextCursorInput className="mr-2 h-4 w-4" />
-                                  <span>Rename</span>
+                                  <span>
+                                    {t(
+                                      "pages.explorer.tree.list.contextMenu.rename"
+                                    )}
+                                  </span>
                                 </DropdownMenuItem>
                               </DialogTrigger>
                             </DropdownMenuContent>
@@ -190,14 +206,26 @@ const ExplorerPage: FC = () => {
           {isEmpty && (
             <div
               className={clsx(
-                "flex flex-col items-center justify-center gap-2 p-10",
+                "flex flex-col items-center gap-y-5 p-10",
                 showTable && "border-t border-gray-5 dark:border-gray-dark-5"
               )}
             >
-              <FolderOpen />
-              <span className="text-center text-sm">
-                this directory is empty
-              </span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <FolderOpen />
+                <span className="text-center text-sm">
+                  {t("pages.explorer.tree.list.empty.title")}
+                </span>
+              </div>
+              <div className="flex flex-col gap-5 sm:flex-row">
+                <Button>
+                  <Play />
+                  {t("pages.explorer.tree.list.empty.createWorkflow")}
+                </Button>
+                <Button variant="outline">
+                  <Folder />
+                  {t("pages.explorer.tree.list.empty.createDirectory")}
+                </Button>
+              </div>
             </div>
           )}
         </Card>

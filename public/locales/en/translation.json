@@ -20,6 +20,21 @@
       }
     },
     "explorer": {
+      "tree": {
+        "list": {
+          "oneLevelUp": "..",
+          "contextMenu": {
+            "title": "Edit",
+            "delete": "Delete",
+            "rename": "Rename"
+          },
+          "empty": {
+            "title": "this directory is empty",
+            "createWorkflow": "Create Workflow",
+            "createDirectory": "Create Directory"
+          }
+        }
+      },
       "workflow": {
         "menu": {
           "activeRevision": "Active Revision",
