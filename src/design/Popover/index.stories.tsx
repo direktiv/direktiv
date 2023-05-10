@@ -14,7 +14,9 @@ export const Default: Story = {
   render: () => (
     <Popover>
       <PopoverTrigger>Open</PopoverTrigger>
-      <PopoverContent>Place content for the popover here.</PopoverContent>
+      <PopoverContent className="p-4">
+        Place content for the popover here.
+      </PopoverContent>
     </Popover>
   ),
   tags: ["autodocs"],
@@ -40,7 +42,9 @@ export const Default: Story = {
 export const DefaultOpen = () => (
   <Popover defaultOpen>
     <PopoverTrigger>Open</PopoverTrigger>
-    <PopoverContent>Place content for the popover here.</PopoverContent>
+    <PopoverContent className="p-4">
+      Place content for the popover here.
+    </PopoverContent>
   </Popover>
 );
 
@@ -50,7 +54,7 @@ export const AlignPopoverContent = () => (
       <PopoverTrigger asChild>
         <Button>Align Start</Button>
       </PopoverTrigger>
-      <PopoverContent align="start">
+      <PopoverContent align="start" className="p-4">
         Place content for the popover here.
       </PopoverContent>
     </Popover>
@@ -58,7 +62,7 @@ export const AlignPopoverContent = () => (
       <PopoverTrigger asChild>
         <Button>Align Center</Button>
       </PopoverTrigger>
-      <PopoverContent align="center">
+      <PopoverContent align="center" className="p-4">
         Place content for the popover here.
       </PopoverContent>
     </Popover>
@@ -66,7 +70,7 @@ export const AlignPopoverContent = () => (
       <PopoverTrigger>
         <Button>Align End</Button>
       </PopoverTrigger>
-      <PopoverContent align="end">
+      <PopoverContent align="end" className="p-4">
         Place content for the popover here.
       </PopoverContent>
     </Popover>

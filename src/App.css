@@ -17,6 +17,7 @@ html,
  */
 html[data-theme="dark"] {
   @apply bg-black;
+  color-scheme: dark;
 }
 
 @font-face {

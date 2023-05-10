@@ -2,37 +2,44 @@ import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
 } from "../../design/Breadcrumbs";
-import { ChevronsUpDown, Home, Loader2, PlusCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../../design/Dropdown";
+  ChevronsUpDown,
+  Circle,
+  Home,
+  Loader2,
+  PlusCircle,
+} from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandStaticItem,
+  CommandStaticSeparator,
+} from "../../design/Command";
+import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
 import { Link, useNavigate } from "react-router-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "../../design/Popover";
+import React, { useState } from "react";
 import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 
 import BreadcrumbSegment from "./BreadcrumbSegment";
 import Button from "../../design/Button";
 import NamespaceCreate from "../NamespaceCreate";
 import { analyzePath } from "../../util/router/utils";
+import clsx from "clsx";
 import { pages } from "../../util/router/pages";
 import { useListNamespaces } from "../../api/namespaces/query/get";
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Breadcrumb = () => {
+  const { t } = useTranslation();
   const namespace = useNamespace();
-  const {
-    data: availableNamespaces,
-    isLoading,
-    isSuccess,
-  } = useListNamespaces();
+  const { data: availableNamespaces, isLoading } = useListNamespaces();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const { path: pathParams } = pages.explorer.useParams();
 
@@ -55,47 +62,60 @@ const Breadcrumb = () => {
           {namespace}
         </Link>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
               <Button size="sm" variant="ghost" circle>
                 <ChevronsUpDown />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Namespaces</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={namespace}
-                onValueChange={onNameSpaceChange}
-              >
-                {availableNamespaces?.results.map((ns) => (
-                  <DropdownMenuRadioItem
-                    key={ns.name}
-                    value={ns.name}
-                    textValue={ns.name}
-                  >
-                    {ns.name}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-              {isSuccess && availableNamespaces?.results.length === 0 && (
-                <DropdownMenuItem disabled>no Namespaces</DropdownMenuItem>
-              )}
-              {isLoading && (
-                <DropdownMenuItem disabled>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  loading...
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DialogTrigger>
-                <DropdownMenuItem>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span>Create new namespace</span>
-                </DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-0">
+              <Command>
+                <CommandInput
+                  placeholder={t("components.breadcrumb.searchPlaceholder")}
+                />
+                <CommandList className="max-h-[278px]">
+                  <CommandEmpty>
+                    {t("components.breadcrumb.notFound")}
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {availableNamespaces?.results.map((ns) => (
+                      <CommandItem
+                        key={ns.name}
+                        value={ns.name}
+                        onSelect={(currentValue: string) => {
+                          onNameSpaceChange(currentValue);
+                          setOpen(false);
+                        }}
+                      >
+                        <Circle
+                          className={clsx(
+                            "mr-2 h-2 w-2 fill-current",
+                            namespace === ns.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span>{ns.name}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+                {isLoading && (
+                  <CommandStaticItem>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("components.breadcrumb.loading")}
+                  </CommandStaticItem>
+                )}
+                <CommandStaticSeparator />
+                <DialogTrigger>
+                  <CommandStaticItem>
+                    <>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      <span>{t("components.breadcrumb.createButton")}</span>
+                    </>
+                  </CommandStaticItem>
+                </DialogTrigger>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <DialogContent>
             <NamespaceCreate close={() => setDialogOpen(false)} />
           </DialogContent>
