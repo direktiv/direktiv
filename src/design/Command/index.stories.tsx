@@ -424,7 +424,7 @@ export function CommandDropdownMenu() {
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-danger-9">
+            <DropdownMenuItem className="text-danger-9 dark:text-danger-dark-9">
               <Trash className="mr-2 h-4 w-4" />
               Delete
               <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
