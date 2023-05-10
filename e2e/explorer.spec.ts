@@ -98,7 +98,7 @@ test("it is possible to create a namespace via breadcrumbs", async ({
   await deleteNamespace(newNamespace);
 });
 
-test("it is possible to create and delete a folder", async ({ page }) => {
+test("it is possible to create a folder", async ({ page }) => {
   // visit page and make sure explorer is loaded
   await page.goto(`/${namespace}/explorer/tree`);
   await expect(
@@ -129,10 +129,14 @@ test("it is possible to create and delete a folder", async ({ page }) => {
     page,
     "when clicking the tree icon, it navigates back to the tree root"
   ).toHaveURL(`/${namespace}/explorer/tree`);
-  await expect(page.getByTestId("breadcrumb-namespace")).toHaveText(namespace);
+
+  await expect(
+    page.getByTestId(`explorer-item-${folderName}`),
+    "it renders the node in the explorer"
+  ).toBeVisible();
 
   // navigate to folder by clicking on it
-  await page.getByRole("link", { name: folderName }).click();
+  await page.getByTestId(`explorer-item-${folderName}`).click();
   await expect(
     page,
     "when clicking on the folder, it navigates to it"
@@ -145,23 +149,13 @@ test("it is possible to create and delete a folder", async ({ page }) => {
     "when clicking .. it navigates back to the tree root"
   ).toHaveURL(`/${namespace}/explorer/tree`);
 
-  // click delete and confirm
-  await page
-    .getByTestId(`explorer-item-${folderName}`)
-    .getByTestId("dropdown-trg-node-actions")
-    .click();
-  await page.getByTestId("node-actions-delete").click();
-  await page.getByTestId("node-delete-confirm").click();
-
-  // make sure node is no longer rendered
-  await expect(page.getByTestId(`explorer-item-${folderName}`)).toHaveCount(0);
-
-  // make sure node was deleted in backend
-  const nodeExists = await checkIfNodeExists(namespace, folderName);
-  await expect(nodeExists).toBeFalsy();
+  await expect(
+    page.getByTestId(`explorer-item-${folderName}`),
+    "it renders the node in the explorer"
+  ).toBeVisible();
 });
 
-test("it is possible to create and delete a workflow", async ({ page }) => {
+test("it is possible to create a workflow", async ({ page }) => {
   await page.goto(`/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -208,22 +202,17 @@ test("it is possible to create and delete a workflow", async ({ page }) => {
     )
   ).toBeVisible();
 
-  // delete workflow
-  await page.getByTestId("breadcrumb-namespace").click();
-  await page
-    .getByTestId(`explorer-item-${filename}`)
-    .getByTestId("dropdown-trg-node-actions")
-    .click();
-  await page.getByTestId("node-actions-delete").click();
+  // navigate back by clicking on the namespace breadcrumb"
+  await page.getByTestId("breadcrumb-namespace").getByText(namespace).click(),
+    await expect(
+      page,
+      "when clicking the namespace breadcrumb it navigates to tree root"
+    ).toHaveURL(`/${namespace}/explorer/tree`);
 
-  await page.getByTestId("node-delete-confirm").click();
-
-  // make sure node is no longer rendered
-  await expect(page.getByTestId(`explorer-item-${filename}`)).toHaveCount(0);
-
-  // make sure node was deleted in backend
-  const nodeExists = await checkIfNodeExists(namespace, filename);
-  await expect(nodeExists).toBeFalsy();
+  await expect(
+    page.getByTestId(`explorer-item-${filename}`),
+    "it renders the node in the explorer"
+  ).toBeVisible();
 });
 
 test(`it is possible to delete a worfklow`, async ({ page }) => {
