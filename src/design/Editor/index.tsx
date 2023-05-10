@@ -59,16 +59,23 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
 type EditorType = Parameters<NonNullable<EditorProps["onMount"]>>[0];
 
 const Editor: FC<
-  Omit<EditorProps, "beforeMount" | "onMount"> & {
+  Omit<EditorProps, "beforeMount" | "onMount" | "onChange"> & {
     theme?: "light" | "dark";
     onSave?: (value: string | undefined) => void;
+    onChange?: (value: string | undefined) => void;
   }
-> = ({ options, theme, onSave, ...props }) => {
+> = ({ options, theme, onSave, onChange, ...props }) => {
   const monacoRef = useRef<EditorType>();
+
+  const handleChange = () => {
+    onChange && onChange(monacoRef.current?.getValue());
+  };
 
   const onMount: EditorProps["onMount"] = (editor, monaco) => {
     monacoRef.current = editor;
     editor.focus();
+    monacoRef.current.onDidChangeModelContent(handleChange);
+
     onSave &&
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         onSave(
