@@ -37,7 +37,12 @@ import { useTranslation } from "react-i18next";
 const Breadcrumb = () => {
   const { t } = useTranslation();
   const namespace = useNamespace();
-  const { data: availableNamespaces, isLoading } = useListNamespaces();
+  const {
+    data: availableNamespaces,
+    isLoading,
+    isSuccess,
+  } = useListNamespaces();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [open, setOpen] = React.useState(false);
 
@@ -49,6 +54,7 @@ const Breadcrumb = () => {
   if (!namespace) return null;
 
   const path = analyzePath(pathParams);
+  const hasResults = isSuccess && availableNamespaces?.results.length > 0;
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);
@@ -73,31 +79,35 @@ const Breadcrumb = () => {
                 <CommandInput
                   placeholder={t("components.breadcrumb.searchPlaceholder")}
                 />
-                <CommandList className="max-h-[278px]">
-                  <CommandEmpty>
-                    {t("components.breadcrumb.notFound")}
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {availableNamespaces?.results.map((ns) => (
-                      <CommandItem
-                        key={ns.name}
-                        value={ns.name}
-                        onSelect={(currentValue: string) => {
-                          onNameSpaceChange(currentValue);
-                          setOpen(false);
-                        }}
-                      >
-                        <Circle
-                          className={clsx(
-                            "mr-2 h-2 w-2 fill-current",
-                            namespace === ns.name ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <span>{ns.name}</span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
+                {hasResults && (
+                  <CommandList className="max-h-[278px]">
+                    <CommandEmpty>
+                      {t("components.breadcrumb.notFound")}
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {availableNamespaces?.results.map((ns) => (
+                        <CommandItem
+                          key={ns.name}
+                          value={ns.name}
+                          onSelect={(currentValue: string) => {
+                            onNameSpaceChange(currentValue);
+                            setOpen(false);
+                          }}
+                        >
+                          <Circle
+                            className={clsx(
+                              "mr-2 h-2 w-2 fill-current",
+                              namespace === ns.name
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          <span>{ns.name}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                )}
                 {isLoading && (
                   <CommandStaticItem>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
