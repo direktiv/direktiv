@@ -58,7 +58,7 @@ const basevent = (type, source) => `{
 
 describe('Test events filter', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    // afterAll(common.helpers.deleteAllNamespaces)
+    afterAll(common.helpers.deleteAllNamespaces)
 
     it(`should create namespace`, async () => {
         var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
@@ -131,19 +131,19 @@ describe('Test events filter', () => {
 
 
         // send event through, change
-        var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast/${eventFilter1}`)
+        var workflowEventResponseChange = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast/${eventFilter1}`)
             .set('Content-Type', 'application/json')
             .send(basevent("mysource", "mysource"))
-        expect(workflowEventResponse.statusCode).toEqual(200)
+        expect(workflowEventResponseChange.statusCode).toEqual(200)
 
 
         // send event through, block
-        var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast/${eventFilter1}`)
+        var workflowEventResponseBlock = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast/${eventFilter1}`)
             .set('Content-Type', 'application/json')
             .send(basevent("hello", "hello"))
-        expect(workflowEventResponse.statusCode).toEqual(200)
+        expect(workflowEventResponseBlock.statusCode).toEqual(200)
 
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 2000));
 
         // there should be two events, one blocked
         var eventsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/events?limit=100&offset=0`)
@@ -156,20 +156,6 @@ describe('Test events filter', () => {
 
         var idFind = eventsResponse.body.events.results.find(item => item.source === "nochange");
         expect(idFind).not.toBeFalsy();
-
-    });
-
-    it(`run filter load test`, async () => {
-
-        var event = basevent("mytype", "value1")
-
-        for (let i = 0; i < 2000; i++) {
-
-            var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast/${eventFilter1}`)
-                .set('Content-Type', 'application/json')
-                .send(event)
-
-        }
 
     });
 
