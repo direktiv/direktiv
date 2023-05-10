@@ -138,7 +138,7 @@ func updateGeneration_0_7_5(db *sql.Tx) error {
 
 	for k, v := range map[string][]string{
 		"annotations": {"annotations_workflows_annotations", "annotations_inodes_annotations"},
-		"instances":   {"instances_workflow_instances", "instances_revisions_instances"},
+		"instances":   {"instances_workflows_instances", "instances_revisions_instances"},
 		"events":      {"events_workflows_wfevents"},
 		"var_refs":    {"var_refs_workflows_vars"},
 	} {
