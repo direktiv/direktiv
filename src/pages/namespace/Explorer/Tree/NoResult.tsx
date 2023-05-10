@@ -10,11 +10,9 @@ import Button from "../../../../design/Button";
 import NewDirectory from "./NewDirectory";
 import NewWorkflow from "./NewWorkflow";
 import { pages } from "../../../../util/router/pages";
-import { useNamespace } from "../../../../util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const NoResult: FC = () => {
-  const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { t } = useTranslation();
 
