@@ -81,6 +81,7 @@ const Breadcrumb = () => {
                     {availableNamespaces?.results.map((ns) => (
                       <CommandItem
                         key={ns.name}
+                        value={ns.name}
                         onSelect={(currentValue: string) => {
                           onNameSpaceChange(currentValue);
                           setOpen(false);

@@ -70,15 +70,15 @@ export const Default: Story = {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            <CommandItem>Calendar</CommandItem>
-            <CommandItem>Search Emoji</CommandItem>
-            <CommandItem>Calculator</CommandItem>
+            <CommandItem value="Calendar">Calendar</CommandItem>
+            <CommandItem value="Search Emoji">Search Emoji</CommandItem>
+            <CommandItem value="Calculator">Calculator</CommandItem>
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="Settings">
-            <CommandItem>Profile</CommandItem>
-            <CommandItem>Billing</CommandItem>
-            <CommandItem>Settings</CommandItem>
+            <CommandItem value="Profile">Profile</CommandItem>
+            <CommandItem value="Billing">Billing</CommandItem>
+            <CommandItem value="Settings">Settings</CommandItem>
           </CommandGroup>
         </CommandList>
       </Command>
@@ -92,22 +92,22 @@ export const CommandDemo = () => (
     <CommandList className="max-h-[200px]">
       <CommandEmpty>No results found.</CommandEmpty>
       <CommandGroup heading="Suggestions">
-        <CommandItem>
+        <CommandItem value="Calendar">
           <Calendar className="mr-2 h-auto w-4" />
           <span>Calendar</span>
         </CommandItem>
-        <CommandItem>
+        <CommandItem value="Search Emoji">
           <Smile className="mr-2 h-auto w-4" />
           <span>Search Emoji</span>
         </CommandItem>
-        <CommandItem>
+        <CommandItem value="Calculator">
           <Calculator className="mr-2 h-auto w-4" />
           <span>Calculator</span>
         </CommandItem>
       </CommandGroup>
       <CommandSeparator />
       <CommandGroup heading="Settings">
-        <CommandItem>
+        <CommandItem value="Profile">
           <User className="mr-2 h-auto w-4" />
           <span>Profile</span>
           <CommandShortcut>⌘P</CommandShortcut>
@@ -117,7 +117,7 @@ export const CommandDemo = () => (
           <span>Billing</span>
           <CommandShortcut>⌘B</CommandShortcut>
         </CommandItem>
-        <CommandItem>
+        <CommandItem value="Settings">
           <Settings className="mr-2 h-auto w-4" />
           <span>Settings</span>
           <CommandShortcut>⌘S</CommandShortcut>
@@ -160,32 +160,32 @@ export function CommandDialogDemo() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            <CommandItem>
+            <CommandItem value="Calendar">
               <Calendar className="mr-2 h-auto w-4" />
               <span>Calendar</span>
             </CommandItem>
-            <CommandItem>
+            <CommandItem value="Search Emoji">
               <Smile className="mr-2 h-auto w-4" />
               <span>Search Emoji</span>
             </CommandItem>
-            <CommandItem>
+            <CommandItem value="Calculator">
               <Calculator className="mr-2 h-auto w-4" />
               <span>Calculator</span>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="Settings">
-            <CommandItem>
+            <CommandItem value="Profile">
               <User className="mr-2 h-auto w-4" />
               <span>Profile</span>
               <CommandShortcut>⌘P</CommandShortcut>
             </CommandItem>
-            <CommandItem>
+            <CommandItem value="Billing">
               <CreditCard className="mr-2 h-auto w-4" />
               <span>Billing</span>
               <CommandShortcut>⌘B</CommandShortcut>
             </CommandItem>
-            <CommandItem>
+            <CommandItem value="Settings">
               <Settings className="mr-2 h-auto w-4" />
               <span>Settings</span>
               <CommandShortcut>⌘S</CommandShortcut>
@@ -246,6 +246,7 @@ export function CommandCombobox() {
           <CommandGroup>
             {frameworks.map((framework) => (
               <CommandItem
+                value={framework.value}
                 key={framework.value}
                 onSelect={(currentValue) => {
                   setValue(currentValue === value ? "" : currentValue);
@@ -334,6 +335,7 @@ export function CommandPopover() {
               <CommandGroup>
                 {statuses.map((status) => (
                   <CommandItem
+                    value={status.value}
                     key={status.value}
                     onSelect={(value) => {
                       setSelectedStatus(
@@ -412,6 +414,7 @@ export function CommandDropdownMenu() {
                     <CommandGroup>
                       {labels.map((label) => (
                         <CommandItem
+                          value={label}
                           key={label}
                           onSelect={(value) => {
                             setLabel(value);
