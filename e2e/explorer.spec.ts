@@ -319,7 +319,7 @@ test(`it is possible to delete a directory`, async ({ page }) => {
 });
 
 // API currently returns a 500 error when trying to rename directory
-test.skip(`it is possible to rename a directory`, async ({ page }) => {
+test(`it is possible to rename a directory`, async ({ page }) => {
   const oldname = "old-name";
   const newname = "new-name";
   await createDirectory(namespace, oldname);
@@ -353,9 +353,9 @@ test.skip(`it is possible to rename a directory`, async ({ page }) => {
     "it does not render the old folder name"
   ).toHaveCount(0);
 
-  const originalExists = checkIfNodeExists(namespace, oldname);
+  const originalExists = await checkIfNodeExists(namespace, oldname);
   await expect(originalExists).toBeFalsy();
 
-  const isRenamed = checkIfNodeExists(namespace, newname);
+  const isRenamed = await checkIfNodeExists(namespace, newname);
   await expect(isRenamed).toBeTruthy();
 });
