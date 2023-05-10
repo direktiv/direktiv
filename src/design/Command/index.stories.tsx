@@ -46,9 +46,10 @@ import {
 } from "../Dropdown";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
-import Button from "../Button";
-import clsx from "clsx";
 import Badge from "../Badge";
+import Button from "../Button";
+import { Card } from "../Card";
+import clsx from "clsx";
 
 const meta = {
   title: "Components/Command",
@@ -370,11 +371,13 @@ export function CommandDropdownMenu() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="flex w-full flex-col items-start justify-between rounded-md border border-gray-4 px-4 py-3 dark:border-gray-dark-4 sm:flex-row sm:items-center">
-      <p className="text-sm font-medium leading-none">
-        <Badge>{label}</Badge>{" "}
-        <span className="text-gray-11">Create a new project</span>
-      </p>
+    <Card
+      noShadow
+      className="flex w-full flex-col items-start justify-between p-3 sm:flex-row sm:items-center"
+    >
+      <div className="text-sm">
+        <Badge>{label}</Badge> Create a new project
+      </div>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
@@ -432,6 +435,6 @@ export function CommandDropdownMenu() {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-    </div>
+    </Card>
   );
 }
