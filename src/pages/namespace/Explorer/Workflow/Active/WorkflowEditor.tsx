@@ -104,7 +104,7 @@ const WorkflowEditor: FC<{
               Revisions <RxChevronDown />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
+          <DropdownMenuContent className="w-60">
             <DropdownMenuItem
               onClick={() => {
                 createRevision({
@@ -115,7 +115,7 @@ const WorkflowEditor: FC<{
               <GitBranchPlus className="mr-2 h-4 w-4" /> Make Revision
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Undo className="mr-2 h-4 w-4" /> Revert
+              <Undo className="mr-2 h-4 w-4" /> Revert to previous revision
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
