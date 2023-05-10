@@ -11,6 +11,7 @@ import {
   CreditCard,
   HelpCircle,
   MoreHorizontal,
+  PlusCircle,
   Settings,
   Smile,
   Tags,
@@ -301,21 +302,19 @@ export function CommandPopover() {
 
   return (
     <div className="flex items-center space-x-4">
-      <p className="text-sm text-gray-11 dark:text-gray-dark-11">Status</p>
+      <p className="text-sm">Status</p>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-[150px] justify-start"
-          >
+          <Button variant="outline" className="justify-start">
             {selectedStatus ? (
               <>
-                <selectedStatus.icon className="mr-2 h-4 w-4 shrink-0" />
+                <selectedStatus.icon />
                 {selectedStatus.label}
               </>
             ) : (
-              <>+ Set status</>
+              <>
+                <PlusCircle /> Set status
+              </>
             )}
           </Button>
         </PopoverTrigger>
@@ -336,14 +335,7 @@ export function CommandPopover() {
                       setOpen(false);
                     }}
                   >
-                    <status.icon
-                      className={clsx(
-                        "mr-2 h-4 w-4",
-                        status.value === selectedStatus?.value
-                          ? "opacity-100"
-                          : "opacity-40"
-                      )}
-                    />
+                    <status.icon className={clsx("mr-2 h-auto w-4")} />
                     <span>{status.label}</span>
                   </CommandItem>
                 ))}
