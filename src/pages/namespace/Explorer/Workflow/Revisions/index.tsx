@@ -6,6 +6,7 @@ import {
   TableRow,
 } from "../../../../../design/Table";
 
+import Badge from "../../../../../design/Badge";
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import CopyButton from "../../../../../design/CopyButton";
@@ -34,6 +35,10 @@ const WorkflowRevisionsPage: FC = () => {
 
   return (
     <div className="p-5">
+      <Card className="mb-4 flex gap-x-3 p-4">
+        {Array.isArray(tags?.results) &&
+          tags?.results?.map((x, i) => <Badge key={i}>{x.name}</Badge>)}
+      </Card>
       <Card>
         <Table>
           <TableBody>
