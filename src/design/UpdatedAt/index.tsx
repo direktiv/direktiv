@@ -1,47 +1,31 @@
-import React, { FC, useCallback, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import moment from "moment";
 
-const useForceRerender = () => {
-  const [, setState] = React.useState({ value: 10 });
-  function rerenderForcefully() {
-    setState((prev) => ({ ...prev }));
-  }
-  return rerenderForcefully;
+const minutesAgo = (date: moment.MomentInput) => {
+  const prev = moment(date);
+  const now = moment();
+  return moment.duration(now.diff(prev)).asMinutes();
 };
 
-const UpdatedAt: FC<{ date?: string }> = ({ date }) => {
-  const forceUpdate = useForceRerender();
-
+const UpdatedAt: FC<{ date: moment.MomentInput }> = ({ date }) => {
+  const [updatedString, setUpdatedString] = useState(moment(date).fromNow());
+  const [minAgo, setMinAgo] = useState(minutesAgo(date));
   const interval = useRef<ReturnType<typeof setInterval>>();
 
-  const checkTime = useCallback(() => {
-    const prev = moment(date);
-    const now = moment(new Date());
-    const duration = moment.duration(prev.diff(now));
-    const mins = duration.asMinutes();
-    if (mins < 60) {
-      forceUpdate();
-    } else {
-      clearInterval(interval.current);
-      forceUpdate();
-    }
-  }, [date, forceUpdate]);
   useEffect(() => {
-    const prev = moment(date);
-    const now = moment(new Date());
-    const duration = moment.duration(now.diff(prev));
-    const mins = duration.asMinutes();
-    if (mins < 60) {
+    if (minAgo < 60) {
       interval.current = setInterval(() => {
-        checkTime();
+        setMinAgo(minutesAgo(date));
+        setUpdatedString(moment(date).fromNow());
       }, 60000);
     }
     return () => {
       clearInterval(interval.current);
     };
-  }, [date, checkTime]);
-  return <>{moment(date).fromNow()}</>;
+  }, [date, minAgo]);
+
+  return <>{updatedString}</>;
 };
 
 export default UpdatedAt;
