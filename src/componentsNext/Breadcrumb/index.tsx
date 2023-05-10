@@ -99,10 +99,10 @@ const Breadcrumb = () => {
                 </CommandList>
                 <CommandSeparator />
                 {isLoading && (
-                  <CommandItem disabled>
+                  <CommandStaticItem>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {t("components.breadcrumb.loading")}
-                  </CommandItem>
+                  </CommandStaticItem>
                 )}
                 <CommandSeparator />
                 <DialogTrigger>
@@ -116,7 +116,6 @@ const Breadcrumb = () => {
               </Command>
             </PopoverContent>
           </Popover>
-
           <DialogContent>
             <NamespaceCreate close={() => setDialogOpen(false)} />
           </DialogContent>
