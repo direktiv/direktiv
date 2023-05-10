@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react";
 import UpdatedAt from "./index";
+import moment from "moment";
 
 const meta = {
   title: "Components/UpdateAt",
@@ -7,15 +8,8 @@ const meta = {
 } satisfies Meta<typeof UpdatedAt>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: ({ ...args }) => <UpdatedAt {...args} />,
-  argTypes: {},
-};
+export const Default = () => <UpdatedAt date={new Date()} />;
 
-export const UpdatedNow = () => (
-  <div>
-    <UpdatedAt date={new Date().toLocaleString()} />
-  </div>
-);
+export const UpdatesForOneHour = () => <UpdatedAt date={moment()} />;
+export const WillNotUpdate = () => <UpdatedAt date={moment("12.20.2022")} />;
