@@ -76,7 +76,7 @@ const Rename = ({
           </Alert>
         )}
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <Input {...register("name")} />
+          <Input {...register("name")} data-testid="node-rename-input" />
         </form>
       </div>
       <DialogFooter>
@@ -84,6 +84,7 @@ const Rename = ({
           <Button variant="ghost">Cancel</Button>
         </DialogClose>
         <Button
+          data-testid="node-rename-submit"
           type="submit"
           disabled={disableSubmit}
           loading={isLoading}

@@ -4,7 +4,12 @@ import {
   createNamespaceName,
   deleteNamespace,
 } from "./utils/namespace";
-import { checkIfNodeExists, workflowExamples } from "./utils/workflow";
+import {
+  checkIfNodeExists,
+  createDirectory,
+  createWorkflow,
+  workflowExamples,
+} from "./utils/node";
 import { expect, test } from "@playwright/test";
 
 let namespace = "";
@@ -110,10 +115,9 @@ test("it is possible to create and delete a folder", async ({ page }) => {
   await page.getByRole("button", { name: "Create" }).click();
 
   // it automatically navigates to the folder
-  await page
-    .getByTestId("breadcrumb-segment")
-    .getByText(folderName)
-    .isVisible();
+  await expect(
+    page.getByTestId("breadcrumb-segment").getByText(folderName).first()
+  ).toBeVisible();
   await expect(
     page,
     "it creates a new folder and navigates to it automatically"
@@ -220,4 +224,149 @@ test("it is possible to create and delete a workflow", async ({ page }) => {
   // make sure node was deleted in backend
   const nodeExists = await checkIfNodeExists(namespace, filename);
   await expect(nodeExists).toBeFalsy();
+});
+
+test(`it is possible to delete a worfklow`, async ({ page }) => {
+  const name = "workflow.yaml";
+  await createWorkflow(namespace, name);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${name}`),
+    "it renders the node in the explorer"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${name}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-delete").click();
+  await page.getByTestId("node-delete-confirm").click();
+
+  await expect(
+    page.getByTestId(`explorer-item-${name}`),
+    "it does not render the old folder name"
+  ).toHaveCount(0);
+
+  const nodeExists = await checkIfNodeExists(namespace, name);
+  await expect(nodeExists).toBeFalsy();
+});
+
+test(`it is possible to rename a workflow`, async ({ page }) => {
+  const oldname = "old-name.yaml";
+  const newname = "new-name.yaml";
+  await createWorkflow(namespace, oldname);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldname}`),
+    "it renders the folder"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldname}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(newname);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newname}`),
+    "it renders the new folder name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldname}`),
+    "it does not render the old folder name"
+  ).toHaveCount(0);
+
+  const originalExists = await checkIfNodeExists(namespace, oldname);
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = await checkIfNodeExists(namespace, newname);
+  await expect(isRenamed).toBeTruthy();
+});
+
+test(`it is possible to delete a directory`, async ({ page }) => {
+  const name = "directory";
+  await createDirectory(namespace, name);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${name}`),
+    "it renders the node in the explorer"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${name}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-delete").click();
+  await page.getByTestId("node-delete-confirm").click();
+
+  await expect(
+    page.getByTestId(`explorer-item-${name}`),
+    "it does not render the old folder name"
+  ).toHaveCount(0);
+
+  const nodeExists = await checkIfNodeExists(namespace, name);
+  await expect(nodeExists).toBeFalsy();
+});
+
+// API currently returns a 500 error when trying to rename directory
+test.skip(`it is possible to rename a directory`, async ({ page }) => {
+  const oldname = "old-name";
+  const newname = "new-name";
+  await createDirectory(namespace, oldname);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldname}`),
+    "it renders the folder"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldname}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(newname);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newname}`),
+    "it renders the new folder name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldname}`),
+    "it does not render the old folder name"
+  ).toHaveCount(0);
+
+  const originalExists = checkIfNodeExists(namespace, oldname);
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = checkIfNodeExists(namespace, newname);
+  await expect(isRenamed).toBeTruthy();
 });
