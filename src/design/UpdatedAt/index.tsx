@@ -2,7 +2,7 @@ import React, { FC, useCallback, useEffect } from "react";
 
 import moment from "moment";
 
-let interval: number;
+let interval: ReturnType<typeof setInterval>;
 
 const useForceRerender = () => {
   const [, setState] = React.useState({ value: 10 });
@@ -34,7 +34,7 @@ const UpdatedAt: FC<{ date?: string }> = ({ date }) => {
     if (mins < 60) {
       interval = setInterval(() => {
         checkTime();
-      }, 60000) as unknown as number;
+      }, 60000);
     }
     return () => {
       clearInterval(interval);
