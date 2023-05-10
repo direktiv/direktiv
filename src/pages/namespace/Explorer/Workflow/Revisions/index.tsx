@@ -12,6 +12,7 @@ import CopyButton from "../../../../../design/CopyButton";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
+import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
 // import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../api/tree/query/tags";
@@ -26,8 +27,10 @@ const WorkflowRevisionsPage: FC = () => {
 
   const { data: revisions } = useNodeRevisions({ path });
   const { data: tags } = useNodeTags({ path });
+  const { mutate: deleteRevision } = useDeleteRevision();
 
   if (!namespace) return null;
+  if (!path) return null;
 
   return (
     <div className="p-5">
@@ -66,6 +69,25 @@ const WorkflowRevisionsPage: FC = () => {
                     >
                       {(copied) => (copied ? "copied" : "copy")}
                     </CopyButton>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+
+                        if (isTag === true) {
+                          // TODO: add delete tatg
+                        } else {
+                          deleteRevision({
+                            path,
+                            revision: rev.name,
+                          });
+                        }
+                      }}
+                      icon
+                    >
+                      Delete
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
