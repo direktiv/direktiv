@@ -55,7 +55,7 @@ const WorkflowRevisionsPage: FC = () => {
                       </Link>
                     </div>
                   </TableCell>
-                  <TableCell className="group w-0 text-right">
+                  <TableCell className="group flex w-auto justify-end gap-x-3">
                     <CopyButton
                       value={rev.name}
                       buttonProps={{
