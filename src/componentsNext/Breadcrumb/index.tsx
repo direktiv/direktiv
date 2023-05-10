@@ -71,13 +71,11 @@ const Breadcrumb = () => {
             <PopoverContent className="w-56 p-0">
               <Command>
                 <CommandInput
-                  placeholder={t(
-                    "pages.explorer.breadcrumbs.searchPlaceholder"
-                  )}
+                  placeholder={t("components.breadcrumb.searchPlaceholder")}
                 />
                 <CommandList>
                   <CommandEmpty>
-                    {t("pages.explorer.breadcrumbs.notFound")}
+                    {t("components.breadcrumb.notFound")}
                   </CommandEmpty>
                   <CommandGroup>
                     {availableNamespaces?.results.map((ns) => (
@@ -103,7 +101,7 @@ const Breadcrumb = () => {
                 {isLoading && (
                   <CommandItem disabled>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("pages.explorer.breadcrumbs.loading")}
+                    {t("components.breadcrumb.loading")}
                   </CommandItem>
                 )}
                 <CommandSeparator />
@@ -111,9 +109,7 @@ const Breadcrumb = () => {
                   <CommandStaticItem>
                     <>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      <span>
-                        {t("pages.explorer.breadcrumbs.createButton")}
-                      </span>
+                      <span>{t("components.breadcrumb.createButton")}</span>
                     </>
                   </CommandStaticItem>
                 </DialogTrigger>
