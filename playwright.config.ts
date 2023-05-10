@@ -2,12 +2,11 @@ import * as dotenv from "dotenv";
 
 import { defineConfig, devices } from "@playwright/test";
 
-/**
- *
- */
-dotenv.config();
+import { envVariablesSchema } from "./src/config/env/schema";
 
-const baseURL = `${process.env.VITE_E2E_UI_HOST}:${process.env.VITE_E2E_UI_PORT}`;
+dotenv.config();
+const env = envVariablesSchema.parse(process.env);
+const baseURL = `${env.VITE_E2E_UI_HOST}:${env.VITE_E2E_UI_PORT}`;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
