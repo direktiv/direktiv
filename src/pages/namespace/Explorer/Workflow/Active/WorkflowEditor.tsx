@@ -19,6 +19,7 @@ import { RxChevronDown } from "react-icons/rx";
 import moment from "moment";
 import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
 import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useRevertRevision } from "../../../../../api/tree/mutate/revertRevision";
 import { useTheme } from "../../../../../util/store/theme";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
@@ -43,6 +44,7 @@ const WorkflowEditor: FC<{
   const theme = useTheme();
 
   const { mutate: createRevision } = useCreateRevision();
+  const { mutate: revertRevision } = useRevertRevision();
 
   useEffect(() => {
     setHasUnsavedChanged(workflowData !== value);
@@ -114,7 +116,13 @@ const WorkflowEditor: FC<{
             >
               <GitBranchPlus className="mr-2 h-4 w-4" /> Make Revision
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                revertRevision({
+                  path,
+                });
+              }}
+            >
               <Undo className="mr-2 h-4 w-4" /> Revert to previous revision
             </DropdownMenuItem>
           </DropdownMenuContent>
