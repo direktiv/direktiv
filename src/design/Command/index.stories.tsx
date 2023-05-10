@@ -48,6 +48,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
 import Button from "../Button";
 import clsx from "clsx";
+import Badge from "../Badge";
 
 const meta = {
   title: "Components/Command",
@@ -371,9 +372,7 @@ export function CommandDropdownMenu() {
   return (
     <div className="flex w-full flex-col items-start justify-between rounded-md border border-gray-4 px-4 py-3 dark:border-gray-dark-4 sm:flex-row sm:items-center">
       <p className="text-sm font-medium leading-none">
-        <span className="mr-2 rounded-lg bg-gray-11 px-2 py-1 text-xs text-gray-1 dark:bg-gray-dark-11 dark:text-gray-dark-1">
-          {label}
-        </span>
+        <Badge>{label}</Badge>{" "}
         <span className="text-gray-11">Create a new project</span>
       </p>
       <DropdownMenu open={open} onOpenChange={setOpen}>
