@@ -15,6 +15,7 @@ import (
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -41,7 +42,14 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, filestore.ErrNotFound) {
+			return nil, err
+		}
+		file, err = fStore.GetFile(ctx, cached.Instance.Workflow)
+		if err != nil {
+			return nil, err
+		}
+		err = nil
 	}
 
 	cached.File = file
@@ -287,9 +295,11 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.File.Name()
-	rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
-	rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
+	if cached.File != nil {
+		rwf.Name = cached.File.Name()
+		rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
+		rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
+	}
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}
@@ -333,9 +343,11 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = cached.File.Name()
-	rwf.Parent = cached.Dir()
-	rwf.Path = cached.File.Path
+	if cached.File != nil {
+		rwf.Name = cached.File.Name()
+		rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
+		rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
+	}
 	if cached.Revision != nil {
 		rwf.Revision = cached.Revision.ID.String()
 	}
