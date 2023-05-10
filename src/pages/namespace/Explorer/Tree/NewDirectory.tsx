@@ -29,7 +29,7 @@ const NewDirectory = ({
 }: {
   path?: string;
   close: () => void;
-  unallowedNames: string[];
+  unallowedNames?: string[];
 }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
@@ -41,9 +41,11 @@ const NewDirectory = ({
     resolver: zodResolver(
       z.object({
         name: fileNameSchema.and(
-          z.string().refine((name) => !unallowedNames.some((n) => n === name), {
-            message: "The name already exists",
-          })
+          z
+            .string()
+            .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
+              message: "The name already exists",
+            })
         ),
       })
     ),
