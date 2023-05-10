@@ -269,7 +269,10 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing mirror manager.")
 	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := psql.NewSQLFileStore(srv.gormDB)
-	srv.loggerw = &logengine.Loggerw{Sugar: srv.sugar, Store: srv.loggerw.Store, Pub: srv.pubsub}
+
+	cls, closeLogger := logengine.NewCachedLogger(store.Logs())
+
+	srv.loggerw = &logengine.Loggerw{Sugar: srv.sugar, Store: cls, Pub: srv.pubsub}
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
@@ -395,6 +398,7 @@ func (srv *server) start(ctx context.Context) error {
 	wg.Wait()
 
 	srv.logger.CloseLogWorkers()
+	closeLogger()
 
 	if err != nil {
 		return err

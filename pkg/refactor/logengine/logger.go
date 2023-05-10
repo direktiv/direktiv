@@ -3,6 +3,7 @@ package logengine
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -56,4 +57,62 @@ func (logger *Loggerw) Log(tags map[string]interface{}, level string, msg string
 	logger.Pub.NotifyLogs(id, recipient.RecipientType(fmt.Sprintf("%s", tags["senderType"])))
 
 	return nil
+}
+
+type cachedSQLLogStore struct {
+	store        LogStore
+	logQueue     chan *logMessage
+	logWorkersWG sync.WaitGroup
+}
+
+type logMessage struct {
+	t      time.Time
+	msg    string
+	fields map[string]interface{}
+}
+
+func (cls *cachedSQLLogStore) logWorker() {
+	defer cls.logWorkersWG.Done()
+
+	for {
+		l, more := <-cls.logQueue
+		if !more {
+			return
+		}
+		_ = cls.store.Append(context.Background(), l.t, l.msg, l.fields)
+	}
+}
+
+var _ LogStore = &cachedSQLLogStore{}
+
+// wraps the logstore with a caching layer.
+// defer to func() to shutdown the logger.
+func NewCachedLogger(store LogStore) (LogStore, func()) {
+	cls := cachedSQLLogStore{store: store}
+	cls.logWorkersWG.Add(1)
+	go cls.logWorker()
+
+	return &cls, cls.closeLogWorkers
+}
+
+func (cls *cachedSQLLogStore) closeLogWorkers() {
+	close(cls.logQueue)
+	cls.logWorkersWG.Wait()
+}
+
+// Append implements logengine.LogStore.
+func (cls *cachedSQLLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues map[string]interface{}) error {
+	_ = ctx
+	cls.logQueue <- &logMessage{
+		t:      timestamp,
+		msg:    msg,
+		fields: keysAndValues,
+	}
+
+	return nil
+}
+
+// Get implements logengine.LogStore.
+func (cls *cachedSQLLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit int, offset int) ([]*LogEntry, error) {
+	return cls.store.Get(ctx, keysAndValues, limit, offset)
 }
