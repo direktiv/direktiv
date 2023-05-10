@@ -24,7 +24,7 @@ func (LogMsg) Fields() []ent.Field {
 		field.String("logInstanceCallPath").Default(""),
 		field.JSON("tags", map[string]string{}).Optional(),
 		// TODO: check out if Nillable is required here.
-		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("workflow_id"),
+		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("new_workflow_id"),
 		// TODO: check out if Nillable is required here.
 		field.UUID("mirror_activity_id", uuid.UUID{}).Optional().StorageKey("mirror_activity_id"),
 	}
