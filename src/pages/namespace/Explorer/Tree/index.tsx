@@ -190,7 +190,7 @@ const ExplorerPage: FC = () => {
           {isEmpty && (
             <div
               className={clsx(
-                "flex items-center justify-center gap-2 p-4 text-gray-8 dark:text-gray-dark-8",
+                "flex items-center justify-center gap-2 p-4",
                 showTable && "border-t border-gray-5 dark:border-gray-dark-5"
               )}
             >
