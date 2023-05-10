@@ -99,6 +99,10 @@ func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestor
 		Where("id", id).
 		First(rev)
 	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, nil, fmt.Errorf("revision '%s': %w", id, filestore.ErrNotFound)
+		}
+
 		return nil, nil, res.Error
 	}
 
@@ -107,6 +111,10 @@ func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestor
 		Where("id", rev.FileID).
 		First(file)
 	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, nil, fmt.Errorf("file '%s': %w", rev.FileID, filestore.ErrNotFound)
+		}
+
 		return nil, nil, res.Error
 	}
 

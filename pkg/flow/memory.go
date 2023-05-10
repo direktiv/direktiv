@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -89,8 +90,12 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 		im.cached.Instance = entwrapper.EntInstance(in)
 		im.cached.Instance.Namespace = im.cached.Namespace.ID
-		im.cached.Instance.Workflow = im.cached.File.ID
-		im.cached.Instance.Revision = im.cached.Revision.ID
+		if im.cached.File != nil {
+			im.cached.Instance.Workflow = im.cached.File.ID
+		}
+		if im.cached.Revision != nil {
+			im.cached.Instance.Revision = im.cached.Revision.ID
+		}
 		im.cached.Instance.Runtime = im.runtime.ID
 
 		err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
@@ -264,7 +269,9 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 
 	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, filestore.ErrNotFound) {
+			return nil, err
+		}
 	}
 
 	cached.File = file
@@ -286,6 +293,12 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 			err = e
 		}
 	}()
+
+	if cached.File == nil || cached.Revision == nil {
+		err = errors.New("the workflow or revision was deleted")
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		return nil, err
+	}
 
 	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
 	if err != nil {

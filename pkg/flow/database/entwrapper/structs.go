@@ -41,6 +41,7 @@ func entInstance(inst *ent.Instance) *database.Instance {
 		Invoker:      inst.Invoker,
 		CallPath:     inst.Callpath,
 		Revision:     *inst.RevisionID,
+		Workflow:     *inst.WorkflowID,
 	}
 
 	if inst.Edges.Namespace != nil {
