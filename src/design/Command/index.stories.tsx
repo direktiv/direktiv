@@ -82,7 +82,7 @@ export const Default: Story = {
 };
 
 export const CommandDemo = () => (
-  <Command className="rounded-lg border shadow-md">
+  <Command className="rounded-lg border border-gray-4 shadow-md dark:border-gray-dark-4">
     <CommandInput placeholder="Type a command or search..." />
     <CommandList>
       <CommandEmpty>No results found.</CommandEmpty>
@@ -140,7 +140,7 @@ export function CommandDialogDemo() {
     <>
       <p className="text-sm text-gray-11 dark:text-gray-dark-11">
         Press{" "}
-        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-gray-1 px-1.5 font-mono text-[10px] font-medium text-gray-11 opacity-100 dark:bg-gray-dark-1 dark:text-gray-dark-11">
+        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-gray-4 bg-gray-1 px-1.5 font-mono text-[10px] font-medium text-gray-11 opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1 dark:text-gray-dark-11">
           <span className="text-xs">⌘</span>J
         </kbd>
       </p>
@@ -369,7 +369,7 @@ export function CommandDropdownMenu() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="flex w-full flex-col items-start justify-between rounded-md border px-4 py-3 sm:flex-row sm:items-center">
+    <div className="flex w-full flex-col items-start justify-between rounded-md border border-gray-4 px-4 py-3 dark:border-gray-dark-4 sm:flex-row sm:items-center">
       <p className="text-sm font-medium leading-none">
         <span className="mr-2 rounded-lg bg-gray-11 px-2 py-1 text-xs text-gray-1 dark:bg-gray-dark-11 dark:text-gray-dark-1">
           {label}
