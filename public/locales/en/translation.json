@@ -42,8 +42,17 @@
           "overview": "Overview",
           "settings": "Settings"
         },
+        "updated": "Updated {{relativeTime}}",
         "actionsBtn": "Actions"
       }
+    }
+  },
+  "components": {
+    "breadcrumb": {
+      "searchPlaceholder": "Search namespace...",
+      "notFound": "No namespace found.",
+      "createButton": "Create new namespace",
+      "loading": "loading..."
     }
   }
 }
