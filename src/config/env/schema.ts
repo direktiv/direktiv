@@ -19,4 +19,8 @@ export const envVariablesSchema = z.object({
     .string()
     .optional()
     .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
+  VITE_RQ_DEV_TOOLS: z
+    .string()
+    .optional()
+    .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
 });
