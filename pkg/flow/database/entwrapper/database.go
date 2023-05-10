@@ -115,8 +115,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 CREATE TABLE IF NOT EXISTS "filesystem_roots"
 			(
 				"id" uuid,
-				"created_at" timestamptz NOT NULL DEFAULT NOW(),
-				"updated_at" timestamptz NOT NULL DEFAULT NOW(),
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
 				CONSTRAINT "fk_namespaces_filesystem_roots"
 				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
@@ -128,8 +128,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 				"depth" integer NOT NULL,
 				"typ" text NOT NULL,
 				"root_id" uuid NOT NULL,
-				"created_at" timestamptz NOT NULL DEFAULT NOW(),
-				"updated_at" timestamptz NOT NULL DEFAULT NOW(),
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
 				CONSTRAINT "fk_filesystem_roots_filesystem_files"
 				FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -142,8 +142,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 				"data" bytea NOT NULL,
 				"checksum" text NOT NULL,
 				"file_id" uuid NOT NULL,
-				"created_at" timestamptz NOT NULL DEFAULT NOW(),
-				"updated_at" timestamptz NOT NULL DEFAULT NOW(),
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
 				CONSTRAINT "fk_filesystem_files_filesystem_revisions"
 				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -152,8 +152,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 			(
 				"file_id" uuid,
 				"data" text,
-				"created_at" timestamptz NOT NULL DEFAULT NOW(),
-				"updated_at" timestamptz NOT NULL DEFAULT NOW(),
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("file_id"),
 				CONSTRAINT "fk_filesystem_files_file_annotations"
 				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -167,8 +167,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "public_key" text,
 	 		    "private_key" text,
 	 		    "private_key_passphrase" text,
-	 		    "created_at" timestamptz NOT NULL DEFAULT NOW(),
-	 		    "updated_at" timestamptz NOT NULL DEFAULT NOW(),
+	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	 		    PRIMARY KEY ("namespace_id"),
 				CONSTRAINT "fk_namespaces_mirror_configs"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
@@ -180,8 +180,8 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    "status" text NOT NULL,
 				"typ" 	 text NOT NULL,
 	 		    "ended_at" timestamptz,
-	 		    "created_at" timestamptz NOT NULL DEFAULT NOW(),
-	 		    "updated_at" timestamptz NOT NULL DEFAULT NOW(),
+	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	 		    PRIMARY KEY ("id"),
 	 		    CONSTRAINT "fk_namespaces_mirror_processes"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
