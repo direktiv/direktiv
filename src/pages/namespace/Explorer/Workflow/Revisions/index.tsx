@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
 // import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
+import { useNodeTags } from "../../../../../api/tree/query/tags";
 
 const WorkflowRevisionsPage: FC = () => {
   const { path, namespace } = pages.explorer.useParams();
@@ -24,6 +25,7 @@ const WorkflowRevisionsPage: FC = () => {
   // });
 
   const { data: revisions } = useNodeRevisions({ path });
+  const { data: tags } = useNodeTags({ path });
 
   if (!namespace) return null;
 
@@ -33,8 +35,8 @@ const WorkflowRevisionsPage: FC = () => {
         <Table>
           <TableBody>
             {revisions?.results?.map((rev, i) => {
-              const isTag = Math.random() > 0.5; // TODO: figure out if this is a tag
-              const Icon = isTag ? GitMerge : Tag;
+              const isTag = tags?.results?.some((tag) => tag.name === rev.name);
+              const Icon = isTag ? Tag : GitMerge;
               return (
                 <TableRow key={i} className="group">
                   <TableCell>
