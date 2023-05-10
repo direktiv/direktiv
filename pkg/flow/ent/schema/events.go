@@ -25,7 +25,7 @@ func (Events) Fields() []ent.Field {
 		field.Int("count"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("new_workflow_id"),
+		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("workflow_id"),
 	}
 }
 
