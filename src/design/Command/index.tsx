@@ -121,7 +121,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium  outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       "aria-selected:bg-gray-3",
       "dark:aria-selected:bg-gray-dark-3 ",
       className
@@ -146,7 +146,7 @@ const CommandStaticItem = React.forwardRef<
     <div
       ref={ref}
       className={clsx(
-        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium  outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         "hover:bg-gray-3",
         "dark:hover:bg-gray-dark-3 ",
         className
