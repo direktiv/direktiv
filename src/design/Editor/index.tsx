@@ -18,6 +18,10 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "6473FF", // primary.400
+        token: "number",
+      },
+      {
+        foreground: "6473FF", // primary.400
         token: "string.yaml",
       },
       {
@@ -39,6 +43,10 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
         foreground: "C7C7C7", // gray.gray8
         fontStyle: "italic",
         token: "comment",
+      },
+      {
+        foreground: "5364FF", // primary.500
+        token: "number",
       },
       {
         foreground: "5364FF", // primary.500
