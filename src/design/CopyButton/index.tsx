@@ -1,5 +1,5 @@
+import { Check, Copy } from "lucide-react";
 import { ComponentProps, FC, useEffect, useState } from "react";
-import { Copy, CopyCheck } from "lucide-react";
 
 import Button from "../Button";
 
@@ -31,7 +31,7 @@ const CopyButton: FC<{
       }}
       {...buttonProps}
     >
-      {copied ? <CopyCheck /> : <Copy />}
+      {copied ? <Check /> : <Copy />}
       {children && children(copied)}
     </Button>
   );
