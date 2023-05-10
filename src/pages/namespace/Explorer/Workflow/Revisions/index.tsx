@@ -57,7 +57,7 @@ const WorkflowRevisionsPage: FC = () => {
                   </TableCell>
                   <TableCell className="group w-0 text-right">
                     <CopyButton
-                      value="copy me"
+                      value={rev.name}
                       buttonProps={{
                         variant: "outline",
                         className: "w-24 hidden group-hover:inline-flex",
