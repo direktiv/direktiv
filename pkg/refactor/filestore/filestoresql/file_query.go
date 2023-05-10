@@ -39,7 +39,7 @@ func (q *FileQuery) setPathForDirectoryType(ctx context.Context, path string) er
 	// To overcome this problem with REPLACE(), we prefix REPLACE() parameter with "//" string.
 
 	res := q.db.WithContext(ctx).Exec(`
-							UPDATE filesystem_files SET path = REPLACE( "//" || path, "//" || ?, ?), depth = ?
+							UPDATE filesystem_files SET path = REPLACE( '//' || path, '//' || ?, ?), depth = ?
 							             WHERE (root_id = ? AND path = ?)
 							             OR (root_id = ? AND path LIKE ?)`,
 		q.file.Path, path, filestore.GetPathDepth(path),

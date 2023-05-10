@@ -97,6 +97,10 @@ func RunApplication() {
 			version: semver.MustParse("0.7.3"),
 			logic:   updateGeneration_0_7_3,
 		},
+		{
+			version: semver.MustParse("0.7.5"),
+			logic:   updateGeneration_0_7_5,
+		},
 	}
 
 	for _, upgrader := range upgraders {
@@ -127,6 +131,32 @@ func RunApplication() {
 type generationUpgrader struct {
 	version *semver.Version
 	logic   func(tx *sql.Tx) error
+}
+
+func updateGeneration_0_7_5(db *sql.Tx) error {
+	queries := []string{}
+
+	for k, v := range map[string][]string{
+		"annotations": {"annotations_workflows_annotations", "annotations_inodes_annotations"},
+		"instances":   {"instances_workflow_instances", "instances_revisions_instances"},
+		"events":      {"events_workflows_wfevents"},
+		"var_refs":    {"var_refs_workflows_vars"},
+	} {
+		for i := range v {
+			queries = append(queries, fmt.Sprintf("ALTER TABLE %s DROP CONSTRAINT %s;", k, v[i]))
+		}
+	}
+
+	queries = append(queries, "DROP TABLE log_msgs;")
+
+	for i := range queries {
+		_, err := db.Exec(queries[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func updateGeneration_0_7_3(db *sql.Tx) error {
