@@ -16,10 +16,11 @@ import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
-import moment from "moment";
+import UpdatedAt from "../../../../../design/UpdatedAt";
 import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
 import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useTheme } from "../../../../../util/store/theme";
+import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
 // get type of useNodeContent return value
@@ -29,6 +30,7 @@ const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
 }> = ({ data, path }) => {
+  const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
   const workflowData = data.revision?.source && atob(data?.revision?.source);
@@ -73,10 +75,12 @@ const WorkflowEditor: FC<{
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <div className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8">
           {/* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */}
+
           {data.revision?.createdAt && (
-            <span className="text-center">
-              Updated {moment(data.revision?.createdAt).fromNow(true)} ago
-            </span>
+            <>
+              {t("pages.explorer.workflow.updated")}{" "}
+              <UpdatedAt date={data?.revision?.createdAt} />
+            </>
           )}
           {hasUnsavedChanged && (
             <span className="text-center">you have unsaved changes</span>
