@@ -1,8 +1,10 @@
-import { WorkflowCreatedSchema } from "../schema";
+import { TreeListSchemaType, WorkflowCreatedSchema } from "../schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
+import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
@@ -19,6 +21,7 @@ export const useRevertRevision = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -34,7 +37,14 @@ export const useRevertRevision = () => {
           path,
         },
       }),
-    onSuccess: () => {
+    onSuccess(data, variables) {
+      queryClient.setQueryData<TreeListSchemaType>(
+        treeKeys.nodeContent(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.path,
+        }),
+        () => data
+      );
       toast({
         title: "Restored workflow",
         description: `The latest revision was restored`,
