@@ -73,7 +73,7 @@ const Breadcrumb = () => {
                 <CommandInput
                   placeholder={t("components.breadcrumb.searchPlaceholder")}
                 />
-                <CommandList className="max-h-[250px]">
+                <CommandList className="max-h-[278px]">
                   <CommandEmpty>
                     {t("components.breadcrumb.notFound")}
                   </CommandEmpty>
