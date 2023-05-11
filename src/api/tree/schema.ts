@@ -73,4 +73,5 @@ export const fileNameSchema = z
 
 export type TreeListSchemaType = z.infer<typeof TreeListSchema>;
 export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
+export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
