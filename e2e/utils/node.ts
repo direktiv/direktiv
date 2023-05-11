@@ -11,7 +11,7 @@ export const workflowExamples = {
   `,
 };
 
-export const createWorkflow = async (namespace: string, name: string) =>
+export const createWorkflow = (namespace: string, name: string) =>
   new Promise<string>((resolve, reject) => {
     fetch(
       `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=create-workflow`,
@@ -26,7 +26,7 @@ export const createWorkflow = async (namespace: string, name: string) =>
     });
   });
 
-export const createDirectory = async (namespace: string, name: string) =>
+export const createDirectory = (namespace: string, name: string) =>
   new Promise<string>((resolve, reject) => {
     fetch(
       `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=create-directory`,
@@ -40,7 +40,7 @@ export const createDirectory = async (namespace: string, name: string) =>
     });
   });
 
-export const deleteNode = async (namespace: string, type: Node, name: string) =>
+export const deleteNode = (namespace: string, type: Node, name: string) =>
   new Promise<void>((resolve, reject) => {
     fetch(
       `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-${type}`,
@@ -54,17 +54,17 @@ export const deleteNode = async (namespace: string, type: Node, name: string) =>
     });
   });
 
-export const checkIfNodeExists = async (
-  namespace: string,
-  nodeName: string
-) => {
-  const response = await fetch(`${apiUrl}/api/namespaces/${namespace}/tree`);
-  const nodeInResponse = await response
-    .json()
-    .then((json) =>
-      json.children.results
-        .map((node) => node.name)
-        .find((name) => name === nodeName)
-    );
-  return !!nodeInResponse;
-};
+export const checkIfNodeExists = (namespace: string, nodeName: string) =>
+  new Promise<boolean>((resolve, reject) => {
+    fetch(`${apiUrl}/api/namespaces/${namespace}/tree`).then((response) => {
+      if (!response.ok) {
+        return reject(`fetching nodes failed with code ${response.status}`);
+      }
+      response.json().then((json) => {
+        const nodeInResponse = json.children.results
+          .map((node) => node.name)
+          .find((name) => name === nodeName);
+        resolve(!!nodeInResponse);
+      });
+    });
+  });
