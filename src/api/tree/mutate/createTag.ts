@@ -25,7 +25,7 @@ const createTag = apiFactory({
   schema: TagCreatedSchema,
 });
 
-export const useCreateTag = () => {
+export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -73,6 +73,7 @@ export const useCreateTag = () => {
         description: `Tag ${variables.tag} was created`,
         variant: "success",
       });
+      onSuccess?.();
     },
     onError: () => {
       toast({
