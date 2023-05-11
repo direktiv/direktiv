@@ -82,37 +82,3 @@ func (cls *cachedSQLLogStore) logWorker() {
 		_ = cls.store.Append(context.Background(), l.t, l.msg, l.fields)
 	}
 }
-
-var _ LogStore = &cachedSQLLogStore{}
-
-// wraps the logstore with a caching layer.
-// defer to func() to shutdown the logger.
-func NewCachedLogger(store LogStore) (LogStore, func()) {
-	cls := cachedSQLLogStore{store: store}
-	cls.logWorkersWG.Add(1)
-	go cls.logWorker()
-
-	return &cls, cls.closeLogWorkers
-}
-
-func (cls *cachedSQLLogStore) closeLogWorkers() {
-	close(cls.logQueue)
-	cls.logWorkersWG.Wait()
-}
-
-// Append implements logengine.LogStore.
-func (cls *cachedSQLLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues map[string]interface{}) error {
-	_ = ctx
-	cls.logQueue <- &logMessage{
-		t:      timestamp,
-		msg:    msg,
-		fields: keysAndValues,
-	}
-
-	return nil
-}
-
-// Get implements logengine.LogStore.
-func (cls *cachedSQLLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit int, offset int) ([]*LogEntry, error) {
-	return cls.store.Get(ctx, keysAndValues, limit, offset)
-}
