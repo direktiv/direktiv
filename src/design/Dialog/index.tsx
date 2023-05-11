@@ -28,9 +28,11 @@ const DialogOverlay = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
-    className={clsx(
-      "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
-      className
+    className={twMerge(
+      clsx(
+        "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
+        className
+      )
     )}
     {...props}
     ref={ref}
@@ -66,9 +68,8 @@ const DialogHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={clsx(
-      "flex flex-col space-y-2 text-center sm:text-left",
-      className
+    className={twMerge(
+      clsx("flex flex-col space-y-2 text-center sm:text-left", className)
     )}
     {...props}
   />
@@ -80,9 +81,11 @@ const DialogFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={clsx(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
+    className={twMerge(
+      clsx(
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        className
+      )
     )}
     {...props}
   />
@@ -95,10 +98,12 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={clsx(
-      "flex items-center gap-2 text-lg font-semibold text-gray-12",
-      "dark:text-gray-dark-12",
-      className
+    className={twMerge(
+      clsx(
+        "flex items-center gap-2 text-lg font-semibold text-gray-12",
+        "dark:text-gray-dark-12",
+        className
+      )
     )}
     {...props}
   />
@@ -111,10 +116,8 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={clsx(
-      "text-sm text-gray-10",
-      "dark:text-gray-dark-10",
-      className
+    className={twMerge(
+      clsx("text-sm text-gray-10", "dark:text-gray-dark-10", className)
     )}
     {...props}
   />
