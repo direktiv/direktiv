@@ -68,11 +68,19 @@ const WorkflowRevisionsPage: FC = () => {
   if (!path) return null;
 
   return (
-    <div className="p-5">
-      <Card className="mb-4 flex gap-x-3 p-4">
+    <div className="flex flex-col gap-y-4 p-5 ">
+      <h3 className="flex items-center gap-x-2 font-bold text-gray-10">
+        <Tag className="h-5" />
+        Tags
+      </h3>
+      <Card className="flex gap-x-3 p-4">
         {Array.isArray(tags?.results) &&
           tags?.results?.map((x, i) => <Badge key={i}>{x.name}</Badge>)}
       </Card>
+      <h3 className="flex items-center gap-x-2 font-bold text-gray-10">
+        <Tag className="h-5" />
+        Revisions
+      </h3>
       <Card>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Table>
