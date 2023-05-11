@@ -42,6 +42,13 @@
                 "delete": "Delete",
                 "tag": "Create Tag"
               }
+            },
+            "delete": {
+              "titleTag": "Delete Tag",
+              "titleRevision": "Delete Revision",
+              "description": "Are you sure you want to delete {{name}}? This can not be undone.",
+              "cancelBtn": "Cancel",
+              "deleteBtn": "Delete"
             }
           }
         }

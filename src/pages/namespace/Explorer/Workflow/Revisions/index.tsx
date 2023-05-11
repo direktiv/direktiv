@@ -24,6 +24,7 @@ import Badge from "../../../../../design/Badge";
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import CopyButton from "../../../../../design/CopyButton";
+import Delete from "./Delete";
 import { Link } from "react-router-dom";
 import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { faker } from "@faker-js/faker";
@@ -66,8 +67,6 @@ const WorkflowRevisionsPage: FC = () => {
       setDialogCreateTag(undefined);
     }
   }, [dialogOpen]);
-
-  // const [renameNode, setRenameNode] = useState<NodeSchemaType>();
 
   if (!namespace) return null;
   if (!path) return null;
@@ -208,8 +207,26 @@ const WorkflowRevisionsPage: FC = () => {
             </TableBody>
           </Table>
           <DialogContent>
-            {dialogDeleteRev && `delete revision ${dialogDeleteRev.name}`}
-            {dialogDeleteTag && `delete tag ${dialogDeleteTag.name}`}
+            {dialogDeleteRev && (
+              <Delete
+                path={path}
+                isTag={false}
+                close={() => {
+                  setDialogOpen(false);
+                }}
+                revision={dialogDeleteRev}
+              />
+            )}
+            {dialogDeleteTag && (
+              <Delete
+                path={path}
+                isTag={true}
+                close={() => {
+                  setDialogOpen(false);
+                }}
+                revision={dialogDeleteTag}
+              />
+            )}
             {dialogCreateTag && `creat tag from ${dialogCreateTag.name}`}
           </DialogContent>
         </Dialog>
