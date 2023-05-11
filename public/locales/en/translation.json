@@ -66,6 +66,11 @@
               "error": {
                 "title": "Error",
                 "description": "Something went wrong reverting this workflow."
+              },
+              "success": {
+                "title": "Successfully reverted",
+                "description": "Your workflow was reverted to {{name}}.",
+                "action": "Open workflow"
               }
             }
           }
