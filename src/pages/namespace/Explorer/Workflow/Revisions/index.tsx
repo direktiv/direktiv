@@ -14,6 +14,7 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
 import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
+import { useDeleteTag } from "../../../../../api/tree/mutate/deleteTag";
 // import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../api/tree/query/tags";
@@ -29,6 +30,7 @@ const WorkflowRevisionsPage: FC = () => {
   const { data: revisions } = useNodeRevisions({ path });
   const { data: tags } = useNodeTags({ path });
   const { mutate: deleteRevision } = useDeleteRevision();
+  const { mutate: deleteTag } = useDeleteTag();
 
   if (!namespace) return null;
   if (!path) return null;
@@ -82,6 +84,10 @@ const WorkflowRevisionsPage: FC = () => {
 
                         if (isTag === true) {
                           // TODO: add delete tatg
+                          deleteTag({
+                            path,
+                            tag: rev.name,
+                          });
                         } else {
                           deleteRevision({
                             path,
