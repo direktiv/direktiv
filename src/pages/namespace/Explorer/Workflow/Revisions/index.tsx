@@ -83,7 +83,6 @@ const WorkflowRevisionsPage: FC = () => {
                           tag: fakeTag,
                         });
                       }}
-                      icon
                       className="w-[170px]"
                     >
                       Create Tag {fakeTag}
@@ -104,7 +103,6 @@ const WorkflowRevisionsPage: FC = () => {
                           });
                         }
                       }}
-                      icon
                     >
                       Delete
                     </Button>
