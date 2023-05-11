@@ -59,6 +59,8 @@ export const WorkflowCreatedSchema = z.object({
 
 export const TreeNodeDeletedSchema = z.null();
 
+export const TagCreatedSchema = z.null();
+
 export const TreeNodeRenameSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
