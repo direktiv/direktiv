@@ -4,13 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../../../design/Dialog";
+import { Trans, useTranslation } from "react-i18next";
 
 import Button from "../../../../../design/Button";
 import { Trash } from "lucide-react";
 import { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
 import { useDeleteTag } from "../../../../../api/tree/mutate/deleteTag";
-import { useTranslation } from "react-i18next";
 
 const Delete = ({
   path,
@@ -49,9 +49,10 @@ const Delete = ({
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
-        {t("pages.explorer.tree.workflow.revisions.delete.description", {
-          name: revision.name,
-        })}
+        <Trans
+          i18nKey="pages.explorer.tree.workflow.revisions.delete.description"
+          values={{ name: revision.name }}
+        />
       </div>
       <DialogFooter>
         <DialogClose asChild>

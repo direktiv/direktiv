@@ -46,7 +46,7 @@
             "delete": {
               "titleTag": "Delete Tag",
               "titleRevision": "Delete Revision",
-              "description": "Are you sure you want to delete {{name}}? This can not be undone.",
+              "description": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
               "cancelBtn": "Cancel",
               "deleteBtn": "Delete"
             }
