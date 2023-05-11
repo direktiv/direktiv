@@ -25,7 +25,9 @@ const deleteRevision = apiFactory({
   schema: TreeNodeDeletedSchema,
 });
 
-export const useDeleteRevision = () => {
+export const useDeleteRevision = ({
+  onSuccess,
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -69,6 +71,7 @@ export const useDeleteRevision = () => {
           path: variables.path,
         })
       );
+      onSuccess?.();
     },
     onError: () => {
       toast({

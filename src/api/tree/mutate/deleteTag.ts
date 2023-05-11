@@ -29,7 +29,9 @@ const deleteTag = apiFactory({
   schema: TreeNodeDeletedSchema,
 });
 
-export const useDeleteTag = () => {
+export const useDeleteTag = ({
+  onSuccess,
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -98,6 +100,7 @@ export const useDeleteTag = () => {
           };
         }
       );
+      onSuccess?.();
     },
     onError: () => {
       toast({
