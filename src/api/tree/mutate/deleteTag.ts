@@ -85,12 +85,12 @@ export const useDeleteTag = () => {
         }),
         (oldData) => {
           if (!oldData) return undefined;
-          const oldRevisions = oldData?.results;
+          const oldTags = oldData?.results;
           return {
             ...oldData,
-            ...(oldRevisions
+            ...(oldTags
               ? {
-                  results: oldRevisions?.filter(
+                  results: oldTags?.filter(
                     (child) => child.name !== variables.tag
                   ),
                 }
