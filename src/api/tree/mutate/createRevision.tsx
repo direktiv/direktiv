@@ -41,7 +41,7 @@ export const useCreateRevision = () => {
     onSuccess: (data, variables) => {
       toast({
         title: "Revision created",
-        description: `Revision ${data.revision.name.slice(0, 8)} was created`,
+        description: `Revision ${data.revision.name} was created`,
         variant: "success",
         action: (
           <ToastAction

@@ -51,7 +51,7 @@ export const useDeleteRevision = ({
     onSuccess(_, variables) {
       toast({
         title: `revision deleted`,
-        description: `revision ${variables.revision.slice(0, 8)} was deleted`,
+        description: `revision ${variables.revision} was deleted`,
         variant: "success",
       });
       // deleting a revision, deletes all corresponding tags,
