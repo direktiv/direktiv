@@ -112,7 +112,7 @@
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './src/**/*.{js,jsx,ts,tsx,json,scss,css}'",
     "check:test": "vitest run",
-    "e2e:headless": "npx playwright test",
+    "e2e:headless": "npx playwright test --project \"chromium\" --project \"firefox\"",
     "e2e:ui": "npx playwright test --ui",
     "prettier": "prettier --write './src/**/*.{js,jsx,ts,tsx,json,scss,css}'"
   },
