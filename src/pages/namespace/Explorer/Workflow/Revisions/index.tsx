@@ -187,20 +187,20 @@ const WorkflowRevisionsPage: FC = () => {
               <Delete
                 path={path}
                 isTag={false}
+                revision={deleteRev}
                 close={() => {
                   setDialogOpen(false);
                 }}
-                revision={deleteRev}
               />
             )}
             {deleteTag && (
               <Delete
                 path={path}
                 isTag={true}
+                revision={deleteTag}
                 close={() => {
                   setDialogOpen(false);
                 }}
-                revision={deleteTag}
               />
             )}
             {dialogCreateTag && `creat tag from ${dialogCreateTag.name}`}
