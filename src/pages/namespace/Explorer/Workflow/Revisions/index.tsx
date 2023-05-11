@@ -30,8 +30,6 @@ import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { faker } from "@faker-js/faker";
 import { pages } from "../../../../../util/router/pages";
 import { useCreateTag } from "../../../../../api/tree/mutate/createTag";
-import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
-import { useDeleteTag } from "../../../../../api/tree/mutate/deleteTag";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../api/tree/query/tags";
 import { useTranslation } from "react-i18next";
@@ -42,18 +40,16 @@ const WorkflowRevisionsPage: FC = () => {
   const { data: revisions } = useNodeRevisions({ path });
   const { data: tags } = useNodeTags({ path });
 
-  const { mutate: deleteRevision } = useDeleteRevision();
-  const { mutate: deleteTag } = useDeleteTag();
   const { mutate: createTag } = useCreateTag();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that revision for the dialog
-  const [dialogDeleteRev, setDialogDeleteRev] = useState<
+  const [deleteRev, setDeleteRev] = useState<
     TrimedRevisionSchemaType | undefined
   >();
-  const [dialogDeleteTag, setDialogDeleteTag] = useState<
+  const [deleteTag, setDeleteTag] = useState<
     TrimedRevisionSchemaType | undefined
   >();
   const [dialogCreateTag, setDialogCreateTag] = useState<
@@ -62,8 +58,8 @@ const WorkflowRevisionsPage: FC = () => {
 
   useEffect(() => {
     if (dialogOpen === false) {
-      setDialogDeleteRev(undefined);
-      setDialogDeleteTag(undefined);
+      setDeleteRev(undefined);
+      setDeleteTag(undefined);
       setDialogCreateTag(undefined);
     }
   }, [dialogOpen]);
@@ -128,26 +124,6 @@ const WorkflowRevisionsPage: FC = () => {
                       >
                         tag
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          if (isTag === true) {
-                            deleteTag({
-                              path,
-                              tag: rev.name,
-                            });
-                          } else {
-                            deleteRevision({
-                              path,
-                              revision: rev.name,
-                            });
-                          }
-                        }}
-                      >
-                        Delete
-                      </Button>
-
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -169,9 +145,9 @@ const WorkflowRevisionsPage: FC = () => {
                           <DialogTrigger
                             onClick={() => {
                               if (isTag) {
-                                setDialogDeleteTag(rev);
+                                setDeleteTag(rev);
                               } else {
-                                setDialogDeleteRev(rev);
+                                setDeleteRev(rev);
                               }
                             }}
                           >
@@ -207,24 +183,24 @@ const WorkflowRevisionsPage: FC = () => {
             </TableBody>
           </Table>
           <DialogContent>
-            {dialogDeleteRev && (
+            {deleteRev && (
               <Delete
                 path={path}
                 isTag={false}
                 close={() => {
                   setDialogOpen(false);
                 }}
-                revision={dialogDeleteRev}
+                revision={deleteRev}
               />
             )}
-            {dialogDeleteTag && (
+            {deleteTag && (
               <Delete
                 path={path}
                 isTag={true}
                 close={() => {
                   setDialogOpen(false);
                 }}
-                revision={dialogDeleteTag}
+                revision={deleteTag}
               />
             )}
             {dialogCreateTag && `creat tag from ${dialogCreateTag.name}`}
