@@ -15,17 +15,11 @@ import { Link } from "react-router-dom";
 import { pages } from "../../../../../util/router/pages";
 import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
 import { useDeleteTag } from "../../../../../api/tree/mutate/deleteTag";
-// import { useNodeContent } from "../../../../../api/tree/query/get";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../api/tree/query/tags";
 
 const WorkflowRevisionsPage: FC = () => {
   const { path, namespace } = pages.explorer.useParams();
-
-  // const { data } = useNodeContent({
-  //   path,
-  //   revision,
-  // });
 
   const { data: revisions } = useNodeRevisions({ path });
   const { data: tags } = useNodeTags({ path });
