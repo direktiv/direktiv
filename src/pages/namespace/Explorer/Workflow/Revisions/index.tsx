@@ -81,7 +81,6 @@ const WorkflowRevisionsPage: FC = () => {
                       size="sm"
                       onClick={() => {
                         if (isTag === true) {
-                          // TODO: add delete tatg
                           deleteTag({
                             path,
                             tag: rev.name,
