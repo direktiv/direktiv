@@ -69,7 +69,7 @@ const WorkflowRevisionsPage: FC = () => {
 
   return (
     <div className="flex flex-col gap-y-4 p-5 ">
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10">
+      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
         <Tag className="h-5" />
         Tags
       </h3>
@@ -77,8 +77,8 @@ const WorkflowRevisionsPage: FC = () => {
         {Array.isArray(tags?.results) &&
           tags?.results?.map((x, i) => <Badge key={i}>{x.name}</Badge>)}
       </Card>
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10">
-        <Tag className="h-5" />
+      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+        <GitMerge className="h-5" />
         Revisions
       </h3>
       <Card>
