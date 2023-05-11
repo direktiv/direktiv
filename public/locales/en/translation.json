@@ -33,6 +33,17 @@
             "createWorkflow": "Create Workflow",
             "createDirectory": "Create Directory"
           }
+        },
+        "workflow": {
+          "revisions": {
+            "list": {
+              "contextMenu": {
+                "title": "Actions",
+                "delete": "Delete",
+                "tag": "Create Tag"
+              }
+            }
+          }
         }
       },
       "workflow": {

@@ -55,11 +55,15 @@ const WorkflowRevisionsPage: FC = () => {
   const [dialogDeleteTag, setDialogDeleteTag] = useState<
     TrimedRevisionSchemaType | undefined
   >();
+  const [dialogCreateTag, setDialogCreateTag] = useState<
+    TrimedRevisionSchemaType | undefined
+  >();
 
   useEffect(() => {
     if (dialogOpen === false) {
       setDialogDeleteRev(undefined);
       setDialogDeleteTag(undefined);
+      setDialogCreateTag(undefined);
     }
   }, [dialogOpen]);
 
@@ -158,7 +162,9 @@ const WorkflowRevisionsPage: FC = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-40">
                           <DropdownMenuLabel>
-                            {t("pages.explorer.tree.list.contextMenu.title")}
+                            {t(
+                              "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
+                            )}
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DialogTrigger
@@ -174,7 +180,21 @@ const WorkflowRevisionsPage: FC = () => {
                               <Trash className="mr-2 h-4 w-4" />
                               <span>
                                 {t(
-                                  "pages.explorer.tree.list.contextMenu.delete"
+                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
+                                )}
+                              </span>
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <DialogTrigger
+                            onClick={() => {
+                              setDialogCreateTag(rev);
+                            }}
+                          >
+                            <DropdownMenuItem>
+                              <Tag className="mr-2 h-4 w-4" />
+                              <span>
+                                {t(
+                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
                                 )}
                               </span>
                             </DropdownMenuItem>
@@ -190,6 +210,7 @@ const WorkflowRevisionsPage: FC = () => {
           <DialogContent>
             {dialogDeleteRev && `delete revision ${dialogDeleteRev.name}`}
             {dialogDeleteTag && `delete tag ${dialogDeleteTag.name}`}
+            {dialogCreateTag && `creat tag from ${dialogCreateTag.name}`}
           </DialogContent>
         </Dialog>
       </Card>
