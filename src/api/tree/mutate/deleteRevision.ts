@@ -1,6 +1,6 @@
-import { RevisionsListSchemaType, TreeNodeDeletedSchema } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { TreeNodeDeletedSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
