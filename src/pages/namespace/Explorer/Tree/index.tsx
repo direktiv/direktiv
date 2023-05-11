@@ -150,11 +150,9 @@ const ExplorerPage: FC = () => {
                               >
                                 <DropdownMenuItem>
                                   <Trash className="mr-2 h-4 w-4" />
-                                  <span>
-                                    {t(
-                                      "pages.explorer.tree.list.contextMenu.delete"
-                                    )}
-                                  </span>
+                                  {t(
+                                    "pages.explorer.tree.list.contextMenu.delete"
+                                  )}
                                 </DropdownMenuItem>
                               </DialogTrigger>
                               <DialogTrigger
@@ -164,11 +162,9 @@ const ExplorerPage: FC = () => {
                               >
                                 <DropdownMenuItem>
                                   <TextCursorInput className="mr-2 h-4 w-4" />
-                                  <span>
-                                    {t(
-                                      "pages.explorer.tree.list.contextMenu.rename"
-                                    )}
-                                  </span>
+                                  {t(
+                                    "pages.explorer.tree.list.contextMenu.rename"
+                                  )}
                                 </DropdownMenuItem>
                               </DialogTrigger>
                             </DropdownMenuContent>
