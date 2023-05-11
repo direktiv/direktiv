@@ -1,8 +1,10 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { TagCreatedSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
+import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
@@ -27,6 +29,7 @@ export const useCreateTag = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -52,6 +55,19 @@ export const useCreateTag = () => {
         },
       }),
     onSuccess: (_, variables) => {
+      // update tags and revisions cache. the order ins not predictable, so no way to update the cache ourselves)
+      queryClient.invalidateQueries(
+        treeKeys.tagsList(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.path,
+        })
+      );
+      queryClient.invalidateQueries(
+        treeKeys.revisionsList(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.path,
+        })
+      );
       toast({
         title: "Tag created",
         description: `Tag ${variables.tag} was created`,
