@@ -38,7 +38,11 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
   // let's navigate to the test's namespace via breadcrumbs.
 
   await page.getByTestId("dropdown-trg-namespace").click();
-  await page.getByRole("menuitemradio", { name: namespace }).click();
+  await page
+    .getByRole("option", {
+      name: namespace,
+    })
+    .click();
 
   await expect(page, "the namespace is reflected in the url").toHaveURL(
     `/${namespace}/explorer/tree`
