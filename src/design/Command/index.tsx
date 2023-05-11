@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from "../Dialog";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -13,11 +14,13 @@ const Command = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive
     ref={ref}
-    className={clsx(
-      "flex h-full w-full flex-col overflow-hidden rounded-md",
-      "bg-gray-1 text-gray-11",
-      "dark:bg-gray-dark-1 dark:text-gray-dark-11",
-      className
+    className={twMerge(
+      clsx(
+        "flex h-full w-full flex-col overflow-hidden rounded-md",
+        "bg-gray-1 text-gray-11",
+        "dark:bg-gray-dark-1 dark:text-gray-dark-11",
+        className
+      )
     )}
     {...props}
   />
@@ -42,11 +45,13 @@ const CommandInput = React.forwardRef<
     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
     <CommandPrimitive.Input
       ref={ref}
-      className={clsx(
-        "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
-        "placeholder:text-gray-10",
-        "dark:placeholder:text-gray-dark-10",
-        className
+      className={twMerge(
+        clsx(
+          "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "placeholder:text-gray-10",
+          "dark:placeholder:text-gray-dark-10",
+          className
+        )
       )}
       {...props}
     />
@@ -61,9 +66,8 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={clsx(
-      "max-h-[300px] overflow-y-auto overflow-x-hidden",
-      className
+    className={twMerge(
+      clsx("max-h-[300px] overflow-y-auto overflow-x-hidden", className)
     )}
     {...props}
   />
@@ -90,11 +94,13 @@ const CommandGroup = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Group
     ref={ref}
-    className={clsx(
-      "overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium ",
-      "text-gray-11 [&_[cmdk-group-heading]]:text-gray-10",
-      "dark:text-gray-dark-11 dark:[&_[cmdk-group-heading]]:text-gray-dark-10",
-      className
+    className={twMerge(
+      clsx(
+        "overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium ",
+        "text-gray-11 [&_[cmdk-group-heading]]:text-gray-10",
+        "dark:text-gray-dark-11 dark:[&_[cmdk-group-heading]]:text-gray-dark-10",
+        className
+      )
     )}
     {...props}
   />
@@ -108,7 +114,9 @@ const CommandSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Separator
     ref={ref}
-    className={clsx("-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
+    className={twMerge(
+      clsx("-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)
+    )}
     {...props}
   />
 ));
@@ -120,7 +128,9 @@ const CommandStaticSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={clsx("-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
+    className={twMerge(
+      clsx("-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)
+    )}
     {...props}
   />
 ));
@@ -132,11 +142,13 @@ const CommandItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Item
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "aria-selected:bg-gray-3",
-      "dark:aria-selected:bg-gray-dark-3 ",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "aria-selected:bg-gray-3",
+        "dark:aria-selected:bg-gray-dark-3 ",
+        className
+      )
     )}
     {...props}
   />
@@ -157,11 +169,13 @@ const CommandStaticItem = React.forwardRef<
   >
     <div
       ref={ref}
-      className={clsx(
-        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        "hover:bg-gray-3",
-        "dark:hover:bg-gray-dark-3 ",
-        className
+      className={twMerge(
+        clsx(
+          "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          "hover:bg-gray-3",
+          "dark:hover:bg-gray-dark-3 ",
+          className
+        )
       )}
       {...props}
     />
@@ -175,11 +189,13 @@ const CommandShortcut = ({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
-    className={clsx(
-      "ml-auto text-xs tracking-widest",
-      "text-gray-8",
-      "dark:text-gray-8",
-      className
+    className={twMerge(
+      clsx(
+        "ml-auto text-xs tracking-widest",
+        "text-gray-8",
+        "dark:text-gray-8",
+        className
+      )
     )}
     {...props}
   />
