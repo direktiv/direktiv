@@ -57,6 +57,12 @@
               "alreadyExist": "This tag already exists.",
               "cancelBtn": "Cancel",
               "createBtn": "Create Tag"
+            },
+            "revert": {
+              "titleTag": "Revert to Revision",
+              "description": "Are you sure you want to revert to <b>{{name}}</b>?",
+              "cancelBtn": "Cancel",
+              "createBtn": "Revert"
             }
           }
         }
