@@ -81,7 +81,10 @@ const WorkflowRevisionsPage: FC = () => {
                 const isTag = tags?.results?.some(
                   (tag) => tag.name === rev.name
                 );
+
+                const isLatest = rev.name === "latest";
                 const Icon = isTag ? Tag : GitMerge;
+
                 return (
                   <TableRow key={i} className="group">
                     <TableCell>
@@ -100,71 +103,75 @@ const WorkflowRevisionsPage: FC = () => {
                       </div>
                     </TableCell>
                     <TableCell className="group flex w-auto justify-end gap-x-3">
-                      <CopyButton
-                        value={rev.name}
-                        buttonProps={{
-                          variant: "outline",
-                          className: "w-24 hidden group-hover:inline-flex",
-                          size: "sm",
-                        }}
-                      >
-                        {(copied) => (copied ? "copied" : "copy")}
-                      </CopyButton>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" icon>
-                            <MoreVertical />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-44">
-                          <DropdownMenuLabel>
-                            {t(
-                              "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
-                            )}
-                          </DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DialogTrigger
-                            onClick={() => {
-                              if (isTag) {
-                                setDeleteTag(rev);
-                              } else {
-                                setDeleteRev(rev);
-                              }
-                            }}
-                          >
-                            <DropdownMenuItem>
-                              <Trash className="mr-2 h-4 w-4" />
+                      {!isLatest && (
+                        <CopyButton
+                          value={rev.name}
+                          buttonProps={{
+                            variant: "outline",
+                            className: "w-24 hidden group-hover:inline-flex",
+                            size: "sm",
+                          }}
+                        >
+                          {(copied) => (copied ? "copied" : "copy")}
+                        </CopyButton>
+                      )}
+                      {!isLatest && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" icon>
+                              <MoreVertical />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-44">
+                            <DropdownMenuLabel>
                               {t(
-                                "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
+                                "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
                               )}
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogTrigger
-                            onClick={() => {
-                              setCreateTag(rev);
-                            }}
-                          >
-                            <DropdownMenuItem>
-                              <Tag className="mr-2 h-4 w-4" />
-                              {t(
-                                "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
-                              )}
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogTrigger
-                            onClick={() => {
-                              setRevert(rev);
-                            }}
-                          >
-                            <DropdownMenuItem>
-                              <Undo className="mr-2 h-4 w-4" />
-                              {t(
-                                "pages.explorer.tree.workflow.revisions.list.contextMenu.revert"
-                              )}
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DialogTrigger
+                              onClick={() => {
+                                if (isTag) {
+                                  setDeleteTag(rev);
+                                } else {
+                                  setDeleteRev(rev);
+                                }
+                              }}
+                            >
+                              <DropdownMenuItem>
+                                <Trash className="mr-2 h-4 w-4" />
+                                {t(
+                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
+                                )}
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogTrigger
+                              onClick={() => {
+                                setCreateTag(rev);
+                              }}
+                            >
+                              <DropdownMenuItem>
+                                <Tag className="mr-2 h-4 w-4" />
+                                {t(
+                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
+                                )}
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogTrigger
+                              onClick={() => {
+                                setRevert(rev);
+                              }}
+                            >
+                              <DropdownMenuItem>
+                                <Undo className="mr-2 h-4 w-4" />
+                                {t(
+                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.revert"
+                                )}
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

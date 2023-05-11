@@ -56,7 +56,9 @@ export const TableCell = React.forwardRef<
   <td
     ref={ref}
     {...props}
-    className={twMerge(clsx("whitespace-nowrap px-3 py-2 text-sm", className))}
+    className={twMerge(
+      clsx("h-10 whitespace-nowrap px-3 py-2 text-sm", className)
+    )}
   >
     {children}
   </td>
