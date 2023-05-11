@@ -109,12 +109,7 @@ const WorkflowRevisionsPage: FC = () => {
                       </CopyButton>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => e.preventDefault()}
-                            icon
-                          >
+                          <Button variant="ghost" size="sm" icon>
                             <MoreVertical />
                           </Button>
                         </DropdownMenuTrigger>
@@ -136,11 +131,9 @@ const WorkflowRevisionsPage: FC = () => {
                           >
                             <DropdownMenuItem>
                               <Trash className="mr-2 h-4 w-4" />
-                              <span>
-                                {t(
-                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
-                                )}
-                              </span>
+                              {t(
+                                "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
+                              )}
                             </DropdownMenuItem>
                           </DialogTrigger>
                           <DialogTrigger
@@ -150,11 +143,9 @@ const WorkflowRevisionsPage: FC = () => {
                           >
                             <DropdownMenuItem>
                               <Tag className="mr-2 h-4 w-4" />
-                              <span>
-                                {t(
-                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
-                                )}
-                              </span>
+                              {t(
+                                "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
+                              )}
                             </DropdownMenuItem>
                           </DialogTrigger>
                         </DropdownMenuContent>
