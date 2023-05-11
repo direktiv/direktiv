@@ -59,10 +59,14 @@
               "createBtn": "Create Tag"
             },
             "revert": {
-              "titleTag": "Revert to Revision",
+              "title": "Revert to Revision",
               "description": "Are you sure you want to revert to <b>{{name}}</b>?",
               "cancelBtn": "Cancel",
-              "createBtn": "Revert"
+              "revertBtn": "Revert",
+              "error": {
+                "title": "Error",
+                "description": "Something went wrong reverting this workflow."
+              }
             }
           }
         }

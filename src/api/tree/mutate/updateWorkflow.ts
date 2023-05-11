@@ -18,8 +18,12 @@ const updateWorkflow = apiFactory({
 });
 
 export const useUpdateWorkflow = ({
+  onSuccess,
   onError,
-}: { onError?: (e: string | undefined) => void } = {}) => {
+}: {
+  onSuccess?: () => void;
+  onError?: (e: string | undefined) => void;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
@@ -52,6 +56,7 @@ export const useUpdateWorkflow = ({
         }),
         () => data
       );
+      onSuccess?.();
     },
     onError: (e) => {
       const message = z

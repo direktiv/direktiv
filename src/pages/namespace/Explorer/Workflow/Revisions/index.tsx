@@ -27,6 +27,7 @@ import CopyButton from "../../../../../design/CopyButton";
 import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { Link } from "react-router-dom";
+import Revert from "./Revert";
 import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
@@ -199,6 +200,15 @@ const WorkflowRevisionsPage: FC = () => {
                   setDialogOpen(false);
                 }}
                 unallowedNames={tags?.results?.map((x) => x.name) ?? []}
+              />
+            )}
+            {revert && (
+              <Revert
+                path={path}
+                revision={revert}
+                close={() => {
+                  setDialogOpen(false);
+                }}
               />
             )}
           </DialogContent>
