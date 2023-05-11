@@ -52,25 +52,22 @@ export const useDeleteRevision = () => {
         description: `revision ${variables.revision.slice(0, 8)} was deleted`,
         variant: "success",
       });
-      queryClient.setQueryData<RevisionsListSchemaType>(
+      // deleting a revision, deletes all corresponding tags,
+      // since we don't know that relation, we have to invalidate
+      // our cache to force a refetch
+      queryClient.invalidateQueries(
+        treeKeys.tagsList(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.path,
+        })
+      );
+      // since tags are part of the revisions list, it must also be
+      // invalidated (and revision we just deleted must be removed as well)
+      queryClient.invalidateQueries(
         treeKeys.revisionsList(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.path,
-        }),
-        (oldData) => {
-          if (!oldData) return undefined;
-          const oldRevisions = oldData?.results;
-          return {
-            ...oldData,
-            ...(oldRevisions
-              ? {
-                  results: oldRevisions?.filter(
-                    (child) => child.name !== variables.revision
-                  ),
-                }
-              : {}),
-          };
-        }
+        })
       );
     },
     onError: () => {
