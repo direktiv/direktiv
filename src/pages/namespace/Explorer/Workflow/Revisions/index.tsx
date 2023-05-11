@@ -24,12 +24,11 @@ import Badge from "../../../../../design/Badge";
 import Button from "../../../../../design/Button";
 import { Card } from "../../../../../design/Card";
 import CopyButton from "../../../../../design/CopyButton";
+import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { Link } from "react-router-dom";
 import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
-import { faker } from "@faker-js/faker";
 import { pages } from "../../../../../util/router/pages";
-import { useCreateTag } from "../../../../../api/tree/mutate/createTag";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../api/tree/query/tags";
 import { useTranslation } from "react-i18next";
@@ -39,8 +38,6 @@ const WorkflowRevisionsPage: FC = () => {
   const { path, namespace } = pages.explorer.useParams();
   const { data: revisions } = useNodeRevisions({ path });
   const { data: tags } = useNodeTags({ path });
-
-  const { mutate: createTag } = useCreateTag();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   // we only want to use one dialog component for the whole list,
@@ -52,7 +49,7 @@ const WorkflowRevisionsPage: FC = () => {
   const [deleteTag, setDeleteTag] = useState<
     TrimedRevisionSchemaType | undefined
   >();
-  const [dialogCreateTag, setDialogCreateTag] = useState<
+  const [createTag, setCreateTag] = useState<
     TrimedRevisionSchemaType | undefined
   >();
 
@@ -60,7 +57,7 @@ const WorkflowRevisionsPage: FC = () => {
     if (dialogOpen === false) {
       setDeleteRev(undefined);
       setDeleteTag(undefined);
-      setDialogCreateTag(undefined);
+      setCreateTag(undefined);
     }
   }, [dialogOpen]);
 
@@ -82,7 +79,6 @@ const WorkflowRevisionsPage: FC = () => {
                   (tag) => tag.name === rev.name
                 );
                 const Icon = isTag ? Tag : GitMerge;
-                const fakeTag = faker.word.adjective(5);
                 return (
                   <TableRow key={i} className="group">
                     <TableCell>
@@ -111,19 +107,6 @@ const WorkflowRevisionsPage: FC = () => {
                       >
                         {(copied) => (copied ? "copied" : "copy")}
                       </CopyButton>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          createTag({
-                            path,
-                            ref: rev.name,
-                            tag: fakeTag,
-                          });
-                        }}
-                      >
-                        tag
-                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -162,7 +145,7 @@ const WorkflowRevisionsPage: FC = () => {
                           </DialogTrigger>
                           <DialogTrigger
                             onClick={() => {
-                              setDialogCreateTag(rev);
+                              setCreateTag(rev);
                             }}
                           >
                             <DropdownMenuItem>
@@ -203,7 +186,16 @@ const WorkflowRevisionsPage: FC = () => {
                 }}
               />
             )}
-            {dialogCreateTag && `creat tag from ${dialogCreateTag.name}`}
+            {createTag && (
+              <CreateTag
+                path={path}
+                revision={createTag}
+                close={() => {
+                  setDialogOpen(false);
+                }}
+                unallowedNames={tags?.results?.map((x) => x.name) ?? []}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </Card>
