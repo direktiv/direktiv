@@ -21,7 +21,7 @@ func RunApplication() {
 
 	go func() {
 		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.Signal(0xA))
 		<-sig
 		srv.Stop()
 		<-sig

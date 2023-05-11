@@ -3,9 +3,8 @@ package sidecar
 import (
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
-
-	"golang.org/x/sys/unix"
 )
 
 // SignalListener controls the signals for a sidecar.
@@ -18,7 +17,7 @@ type SignalListener struct {
 func (sl *SignalListener) Start() {
 	sl.signals = make(chan os.Signal, 2)
 	sl.stopper = make(chan *time.Time, 1)
-	signal.Notify(sl.signals, os.Interrupt, unix.SIGTERM)
+	signal.Notify(sl.signals, os.Interrupt, syscall.SIGTERM)
 
 	log.Debug("Listening for signals.")
 
