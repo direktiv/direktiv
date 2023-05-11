@@ -63,9 +63,12 @@ const Breadcrumb = () => {
   return (
     <BreadcrumbRoot>
       <BreadcrumbLink noArrow>
-        <Link to={pages.explorer.createHref({ namespace })}>
+        <Link
+          to={pages.explorer.createHref({ namespace })}
+          data-testid="breadcrumb-namespace"
+        >
           <Home />
-          <span data-testid="breadcrumb-namespace">{namespace}</span>
+          {namespace}
         </Link>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Popover open={open} onOpenChange={setOpen}>
