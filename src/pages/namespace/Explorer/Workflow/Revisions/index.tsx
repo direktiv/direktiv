@@ -79,9 +79,7 @@ const WorkflowRevisionsPage: FC = () => {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-
+                      onClick={() => {
                         if (isTag === true) {
                           // TODO: add delete tatg
                           deleteTag({
@@ -99,12 +97,7 @@ const WorkflowRevisionsPage: FC = () => {
                     >
                       Delete
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => e.preventDefault()}
-                      icon
-                    >
+                    <Button variant="ghost" size="sm" icon>
                       <MoreVertical />
                     </Button>
                   </TableCell>
