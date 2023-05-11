@@ -83,9 +83,8 @@ const WorkflowRevisionsPage: FC = () => {
                           tag: fakeTag,
                         });
                       }}
-                      className="w-[170px]"
                     >
-                      Create Tag {fakeTag}
+                      tag
                     </Button>
                     <Button
                       variant="destructive"
