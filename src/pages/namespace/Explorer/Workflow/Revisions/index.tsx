@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "../../../../../design/Dropdown";
 import { FC, useEffect, useState } from "react";
-import { GitMerge, MoreVertical, Tag, Trash } from "lucide-react";
+import { GitMerge, MoreVertical, Tag, Trash, Undo } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -52,12 +52,14 @@ const WorkflowRevisionsPage: FC = () => {
   const [createTag, setCreateTag] = useState<
     TrimedRevisionSchemaType | undefined
   >();
+  const [revert, setRevert] = useState<TrimedRevisionSchemaType | undefined>();
 
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteRev(undefined);
       setDeleteTag(undefined);
       setCreateTag(undefined);
+      setRevert(undefined);
     }
   }, [dialogOpen]);
 
@@ -113,7 +115,7 @@ const WorkflowRevisionsPage: FC = () => {
                             <MoreVertical />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-40">
+                        <DropdownMenuContent className="w-44">
                           <DropdownMenuLabel>
                             {t(
                               "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
@@ -145,6 +147,18 @@ const WorkflowRevisionsPage: FC = () => {
                               <Tag className="mr-2 h-4 w-4" />
                               {t(
                                 "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
+                              )}
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <DialogTrigger
+                            onClick={() => {
+                              setRevert(rev);
+                            }}
+                          >
+                            <DropdownMenuItem>
+                              <Undo className="mr-2 h-4 w-4" />
+                              {t(
+                                "pages.explorer.tree.workflow.revisions.list.contextMenu.revert"
                               )}
                             </DropdownMenuItem>
                           </DialogTrigger>

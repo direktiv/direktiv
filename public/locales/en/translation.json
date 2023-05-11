@@ -40,7 +40,8 @@
               "contextMenu": {
                 "title": "Actions",
                 "delete": "Delete",
-                "tag": "Create Tag"
+                "tag": "Create Tag",
+                "revert": "Revert to Revision"
               }
             },
             "delete": {
