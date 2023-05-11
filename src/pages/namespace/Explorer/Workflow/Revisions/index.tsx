@@ -52,10 +52,14 @@ const WorkflowRevisionsPage: FC = () => {
   const [dialogDeleteRev, setDialogDeleteRev] = useState<
     TrimedRevisionSchemaType | undefined
   >();
+  const [dialogDeleteTag, setDialogDeleteTag] = useState<
+    TrimedRevisionSchemaType | undefined
+  >();
 
   useEffect(() => {
     if (dialogOpen === false) {
       setDialogDeleteRev(undefined);
+      setDialogDeleteTag(undefined);
     }
   }, [dialogOpen]);
 
@@ -159,7 +163,11 @@ const WorkflowRevisionsPage: FC = () => {
                           <DropdownMenuSeparator />
                           <DialogTrigger
                             onClick={() => {
-                              setDialogDeleteRev(rev);
+                              if (isTag) {
+                                setDialogDeleteTag(rev);
+                              } else {
+                                setDialogDeleteRev(rev);
+                              }
                             }}
                           >
                             <DropdownMenuItem>
@@ -181,6 +189,7 @@ const WorkflowRevisionsPage: FC = () => {
           </Table>
           <DialogContent>
             {dialogDeleteRev && `delete revision ${dialogDeleteRev.name}`}
+            {dialogDeleteTag && `delete tag ${dialogDeleteTag.name}`}
           </DialogContent>
         </Dialog>
       </Card>
