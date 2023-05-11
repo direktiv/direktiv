@@ -12,7 +12,9 @@ import { Card } from "../../../../../design/Card";
 import CopyButton from "../../../../../design/CopyButton";
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import { faker } from "@faker-js/faker";
 import { pages } from "../../../../../util/router/pages";
+import { useCreateTag } from "../../../../../api/tree/mutate/createTag";
 import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
 import { useDeleteTag } from "../../../../../api/tree/mutate/deleteTag";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
@@ -25,6 +27,7 @@ const WorkflowRevisionsPage: FC = () => {
   const { data: tags } = useNodeTags({ path });
   const { mutate: deleteRevision } = useDeleteRevision();
   const { mutate: deleteTag } = useDeleteTag();
+  const { mutate: createTag } = useCreateTag();
 
   if (!namespace) return null;
   if (!path) return null;
@@ -41,12 +44,12 @@ const WorkflowRevisionsPage: FC = () => {
             {revisions?.results?.map((rev, i) => {
               const isTag = tags?.results?.some((tag) => tag.name === rev.name);
               const Icon = isTag ? Tag : GitMerge;
+              const fakeTag = faker.word.adjective(5);
               return (
                 <TableRow key={i} className="group">
                   <TableCell>
                     <div className="flex space-x-3">
                       <Icon aria-hidden="true" className="h-5" />
-
                       <Link
                         to={pages.explorer.createHref({
                           namespace,
@@ -70,6 +73,21 @@ const WorkflowRevisionsPage: FC = () => {
                     >
                       {(copied) => (copied ? "copied" : "copy")}
                     </CopyButton>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        createTag({
+                          path,
+                          ref: rev.name,
+                          tag: fakeTag,
+                        });
+                      }}
+                      icon
+                      className="w-[170px]"
+                    >
+                      Create Tag {fakeTag}
+                    </Button>
                     <Button
                       variant="destructive"
                       size="sm"
