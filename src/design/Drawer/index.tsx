@@ -2,6 +2,7 @@ import * as DrawerPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 const Drawer = DrawerPrimitive.Root;
 
@@ -38,9 +39,11 @@ const DrawerOverlay = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
-    className={clsx(
-      "fixed inset-0 z-50 bg-black-alpha-9 backdrop-grayscale-0 transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in dark:bg-white-alpha-9",
-      className
+    className={twMerge(
+      clsx(
+        "fixed inset-0 z-50 bg-black-alpha-9 backdrop-grayscale-0 transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in dark:bg-white-alpha-9",
+        className
+      )
     )}
     {...props}
     ref={ref}
@@ -56,11 +59,13 @@ const DrawerContent = React.forwardRef<
     <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
-      className={clsx(
-        "fixed inset-0 z-50 scale-100 gap-4 bg-gray-1 opacity-100 shadow-lg dark:bg-gray-dark-1 ",
-        "h-full animate-in slide-in-from-left duration-300",
-        "w-52 p-4",
-        className
+      className={twMerge(
+        clsx(
+          "fixed inset-0 z-50 scale-100 gap-4 bg-gray-1 opacity-100 shadow-lg dark:bg-gray-dark-1 ",
+          "h-full animate-in slide-in-from-left duration-300",
+          "w-52 p-4 focus:outline-none",
+          className
+        )
       )}
       {...props}
     >
@@ -75,9 +80,8 @@ const DrawerHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={clsx(
-      "flex flex-col space-y-2 text-center sm:text-left",
-      className
+    className={twMerge(
+      clsx("flex flex-col space-y-2 text-center sm:text-left", className)
     )}
     {...props}
   />
@@ -89,9 +93,11 @@ const DrawerFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={clsx(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
+    className={twMerge(
+      clsx(
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        className
+      )
     )}
     {...props}
   />
@@ -104,9 +110,8 @@ const DrawerTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Title
     ref={ref}
-    className={clsx(
-      "text-lg font-semibold text-black dark:text-white",
-      className
+    className={twMerge(
+      clsx("text-lg font-semibold text-black dark:text-white", className)
     )}
     {...props}
   />
@@ -119,7 +124,7 @@ const DrawerDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Description
     ref={ref}
-    className={clsx("text-sm text-black dark:text-white", className)}
+    className={twMerge(clsx("text-sm text-black dark:text-white", className))}
     {...props}
   />
 ));

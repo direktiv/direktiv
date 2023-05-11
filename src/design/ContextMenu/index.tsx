@@ -4,6 +4,7 @@ import * as React from "react";
 import { Check, ChevronRight, Circle } from "lucide-react";
 
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 const ContextMenu = ContextMenuPrimitive.Root;
 
@@ -25,12 +26,14 @@ const ContextMenuSubTrigger = React.forwardRef<
 >(({ className, inset, children, ...props }, ref) => (
   <ContextMenuPrimitive.SubTrigger
     ref={ref}
-    className={clsx(
-      "flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none",
-      " focus:bg-gray-2 data-[state=open]:bg-gray-2",
-      "dark:focus:bg-gray-dark-2 dark:data-[state=open]:bg-gray-dark-2",
-      inset && "pl-8",
-      className
+    className={twMerge(
+      clsx(
+        "flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none",
+        " focus:bg-gray-2 data-[state=open]:bg-gray-2",
+        "dark:focus:bg-gray-dark-2 dark:data-[state=open]:bg-gray-dark-2",
+        inset && "pl-8",
+        className
+      )
     )}
     {...props}
   >
@@ -46,11 +49,13 @@ const ContextMenuSubContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ContextMenuPrimitive.SubContent
     ref={ref}
-    className={clsx(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md animate-in slide-in-from-left-1 ",
-      "border-gray-3 bg-gray-1",
-      "dark:border-gray-dark-3 dark:bg-gray-dark-1",
-      className
+    className={twMerge(
+      clsx(
+        "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md animate-in slide-in-from-left-1 ",
+        "border-gray-3 bg-gray-1",
+        "dark:border-gray-dark-3 dark:bg-gray-dark-1",
+        className
+      )
     )}
     {...props}
   />
@@ -64,11 +69,13 @@ const ContextMenuContent = React.forwardRef<
   <ContextMenuPrimitive.Portal>
     <ContextMenuPrimitive.Content
       ref={ref}
-      className={clsx(
-        "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md  animate-in fade-in-80 ",
-        "border-gray-3 bg-gray-1 ",
-        "dark:border-gray-dark-3 dark:bg-gray-dark-1",
-        className
+      className={twMerge(
+        clsx(
+          "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md  animate-in fade-in-80 ",
+          "border-gray-3 bg-gray-1 ",
+          "dark:border-gray-dark-3 dark:bg-gray-dark-1",
+          className
+        )
       )}
       {...props}
     />
@@ -84,12 +91,14 @@ const ContextMenuItem = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <ContextMenuPrimitive.Item
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
-      "focus:bg-gray-3",
-      "dark:focus:bg-gray-dark-3",
-      inset && "pl-8",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
+        "focus:bg-gray-3",
+        "dark:focus:bg-gray-dark-3",
+        inset && "pl-8",
+        className
+      )
     )}
     {...props}
   />
@@ -102,11 +111,13 @@ const ContextMenuCheckboxItem = React.forwardRef<
 >(({ className, children, checked, ...props }, ref) => (
   <ContextMenuPrimitive.CheckboxItem
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
-      "focus:bg-gray-3",
-      "dark:focus:bg-gray-dark-3",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ",
+        "focus:bg-gray-3",
+        "dark:focus:bg-gray-dark-3",
+        className
+      )
     )}
     checked={checked}
     {...props}
@@ -128,11 +139,13 @@ const ContextMenuRadioItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <ContextMenuPrimitive.RadioItem
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "focus:bg-gray-3",
-      "dark:focus:bg-gray-dark-3",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-gray-3",
+        "dark:focus:bg-gray-dark-3",
+        className
+      )
     )}
     {...props}
   >
@@ -154,10 +167,8 @@ const ContextMenuLabel = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <ContextMenuPrimitive.Label
     ref={ref}
-    className={clsx(
-      "px-2 py-1.5 text-sm font-semibold",
-      inset && "pl-8",
-      className
+    className={twMerge(
+      clsx("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)
     )}
     {...props}
   />
@@ -170,7 +181,9 @@ const ContextMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ContextMenuPrimitive.Separator
     ref={ref}
-    className={clsx("-mx-1 my-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
+    className={twMerge(
+      clsx("-mx-1 my-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)
+    )}
     {...props}
   />
 ));
@@ -181,9 +194,11 @@ const ContextMenuShortcut = ({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
-    className={clsx(
-      "ml-auto text-xs tracking-widest text-gray-8 dark:text-gray-dark-8",
-      className
+    className={twMerge(
+      clsx(
+        "ml-auto text-xs tracking-widest text-gray-8 dark:text-gray-dark-8",
+        className
+      )
     )}
     {...props}
   />

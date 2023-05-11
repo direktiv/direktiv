@@ -4,6 +4,7 @@ import * as React from "react";
 import { Check, ChevronRight, Circle } from "lucide-react";
 
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -25,12 +26,14 @@ const DropdownMenuSubTrigger = React.forwardRef<
 >(({ className, inset, children, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
-    className={clsx(
-      "flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none",
-      "focus:bg-gray-3 data-[state=open]:bg-gray-3",
-      "dark:focus:bg-gray-dark-3 dark:data-[state=open]:bg-gray-dark-3",
-      inset && "pl-8",
-      className
+    className={twMerge(
+      clsx(
+        "flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none",
+        "focus:bg-gray-3 data-[state=open]:bg-gray-3",
+        "dark:focus:bg-gray-dark-3 dark:data-[state=open]:bg-gray-dark-3",
+        inset && "pl-8",
+        className
+      )
     )}
     {...props}
   >
@@ -47,11 +50,13 @@ const DropdownMenuSubContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.SubContent
     ref={ref}
-    className={clsx(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md p-1 shadow-md ring-1",
-      "bg-gray-1 ring-gray-3",
-      "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
-      className
+    className={twMerge(
+      clsx(
+        "z-50 min-w-[8rem] overflow-hidden rounded-md p-1 shadow-md ring-1",
+        "bg-gray-1 ring-gray-3",
+        "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
+        className
+      )
     )}
     {...props}
   />
@@ -67,12 +72,14 @@ const DropdownMenuContent = React.forwardRef<
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={clsx(
-        "z-50 min-w-[8rem] overflow-hidden animate-in data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
-        "rounded-md shadow-md ring-1",
-        "bg-gray-1 ring-gray-3",
-        "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
-        className
+      className={twMerge(
+        clsx(
+          "z-50 min-w-[8rem] overflow-hidden animate-in data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
+          "rounded-md shadow-md ring-1",
+          "bg-gray-1 ring-gray-3",
+          "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
+          className
+        )
       )}
       {...props}
     />
@@ -88,12 +95,14 @@ const DropdownMenuItem = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "focus:bg-gray-3",
-      "dark:focus:bg-gray-dark-3",
-      inset && "pl-8",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-gray-3",
+        "dark:focus:bg-gray-dark-3",
+        inset && "pl-8",
+        className
+      )
     )}
     {...props}
   />
@@ -106,11 +115,13 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 >(({ className, children, checked, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "focus:bg-gray-3",
-      "dark:focus:bg-gray-dark-3",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-gray-3",
+        "dark:focus:bg-gray-dark-3",
+        className
+      )
     )}
     checked={checked}
     {...props}
@@ -132,11 +143,13 @@ const DropdownMenuRadioItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "focus:bg-gray-3",
-      "dark:focus:bg-gray-dark-3",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-gray-3",
+        "dark:focus:bg-gray-dark-3",
+        className
+      )
     )}
     {...props}
   >
@@ -158,10 +171,12 @@ const DropdownMenuLabel = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
-    className={clsx(
-      "px-2 py-1.5 text-sm font-semibold text-gray-9 dark:text-gray-dark-9",
-      inset && "pl-8",
-      className
+    className={twMerge(
+      clsx(
+        "px-2 py-1.5 text-sm font-semibold text-gray-9 dark:text-gray-dark-9",
+        inset && "pl-8",
+        className
+      )
     )}
     {...props}
   />
@@ -174,7 +189,9 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={clsx("-mx-1 my-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)}
+    className={twMerge(
+      clsx("-mx-1 my-1 h-px bg-gray-3 dark:bg-gray-dark-3", className)
+    )}
     {...props}
   />
 ));
@@ -185,9 +202,11 @@ const DropdownMenuShortcut = ({
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
-    className={clsx(
-      "ml-auto text-xs tracking-widest text-gray-8 dark:text-gray-dark-8",
-      className
+    className={twMerge(
+      clsx(
+        "ml-auto text-xs tracking-widest text-gray-8 dark:text-gray-dark-8",
+        className
+      )
     )}
     {...props}
   />

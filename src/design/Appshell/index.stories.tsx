@@ -55,6 +55,7 @@ import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export default {
   title: "Components/AppShell",
@@ -104,7 +105,7 @@ const TopRightComponent: FC<{
   theme: "light" | "dark" | undefined;
   onThemeChange: () => void;
 }> = ({ className, theme, onThemeChange }) => (
-  <div className={clsx("flex space-x-2", className)}>
+  <div className={twMerge(clsx("flex space-x-2", className))}>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" icon>
