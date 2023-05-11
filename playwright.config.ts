@@ -14,9 +14,7 @@ const baseURL = `${env.VITE_E2E_UI_HOST}:${env.VITE_E2E_UI_PORT}`;
 export default defineConfig({
   testDir: "./e2e",
   /* Run tests in files in parallel */
-  // Running in parallel should be possible, but as every test will spam a new
-  // namespace this will clutter up the interface.
-  fullyParallel: false,
+  fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -33,6 +31,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
+
+  timeout: 10000, // defaults to 30000
 
   /* Configure projects for major browsers */
   projects: [
