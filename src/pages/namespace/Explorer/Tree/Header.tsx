@@ -15,6 +15,7 @@ import { FC, Fragment, useEffect, useState } from "react";
 import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
 
 import Button from "../../../../design/Button";
+import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
 import NewWorkflow from "./NewWorkflow";
@@ -95,24 +96,28 @@ const ExplorerHeader: FC = () => {
             <DropdownMenuContent className="w-40">
               <DropdownMenuLabel>Create</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DialogTrigger
-                onClick={() => {
-                  setSelectedDialog("new-dir");
-                }}
-              >
-                <DropdownMenuItem>
-                  <Folder className="mr-2 h-4 w-4" /> New Directory
-                </DropdownMenuItem>
-              </DialogTrigger>
-              <DialogTrigger
-                onClick={() => {
-                  setSelectedDialog("new-workflow");
-                }}
-              >
-                <DropdownMenuItem>
-                  <Play className="mr-2 h-4 w-4" /> New Workflow
-                </DropdownMenuItem>
-              </DialogTrigger>
+              <DropdownMenuGroup>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-dir");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Folder className="mr-2 h-4 w-4" /> New Directory
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-workflow");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Play className="mr-2 h-4 w-4" /> New Workflow
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent>

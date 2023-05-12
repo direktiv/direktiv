@@ -144,6 +144,7 @@ const ExplorerPage: FC = () => {
                               </DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DialogTrigger
+                                className="w-full"
                                 onClick={() => {
                                   setDeleteNode(file);
                                 }}
@@ -156,6 +157,7 @@ const ExplorerPage: FC = () => {
                                 </DropdownMenuItem>
                               </DialogTrigger>
                               <DialogTrigger
+                                className="w-full"
                                 onClick={() => {
                                   setRenameNode(file);
                                 }}
