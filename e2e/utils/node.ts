@@ -68,26 +68,3 @@ export const checkIfNodeExists = (namespace: string, nodeName: string) =>
       });
     });
   });
-
-// TODO: possible future implementation of api stuff, the advantage would be
-// - that we don't need to rewrite api methods,
-// - api changes (like the future v2 api) would only be changed in one place
-// - we have type safety in the response (fetch returns a promise<any> by default)
-
-// in this example, getTree is not exportet yet and it would need
-// and optional string parameter to preprend to the url string
-// import { getTree } from "../../src/api/tree/query/get";
-
-// export const checkIfNodeExists = async (
-//   namespace: string,
-//   nodeName: string
-// ) =>
-//   await getTree({
-//     params: undefined,
-//     pathParams: {
-//       namespace: namespace,
-//       path: nodeName,
-//     },
-//   })
-//     .then(() => true)
-//     .catch(() => false);
