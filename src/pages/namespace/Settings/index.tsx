@@ -8,7 +8,7 @@ import { FC } from "react";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useVersion } from "~/api/version";
 
-const SettiongsPage: FC = () => {
+const SettingsPage: FC = () => {
   const apiKey = useApiKey();
   const { setApiKey } = useApiActions();
   const theme = useTheme();
@@ -76,4 +76,4 @@ const SettiongsPage: FC = () => {
   );
 };
 
-export default SettiongsPage;
+export default SettingsPage;
