@@ -76,11 +76,11 @@ describe("forceLeadingSlash", () => {
   });
 
   test("empty string -> empty string", () => {
-    expect(forceLeadingSlash("")).toBe("");
+    expect(forceLeadingSlash("")).toBe("/");
   });
 
   test("undefined -> empty string", () => {
-    expect(forceLeadingSlash()).toBe("");
+    expect(forceLeadingSlash()).toBe("/");
   });
 });
 

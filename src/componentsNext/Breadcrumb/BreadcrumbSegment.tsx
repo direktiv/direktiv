@@ -27,7 +27,7 @@ const BreadcrumbSegment: FC<{
 
   return (
     <BreadcrumbLink>
-      <Link to={link}>
+      <Link to={link} data-testid="breadcrumb-segment">
         <Icon aria-hidden="true" />
         {relative}
       </Link>

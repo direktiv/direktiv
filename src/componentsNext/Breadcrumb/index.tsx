@@ -63,14 +63,22 @@ const Breadcrumb = () => {
   return (
     <BreadcrumbRoot>
       <BreadcrumbLink noArrow>
-        <Link to={pages.explorer.createHref({ namespace })}>
+        <Link
+          to={pages.explorer.createHref({ namespace })}
+          data-testid="breadcrumb-namespace"
+        >
           <Home />
           {namespace}
         </Link>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-              <Button size="sm" variant="ghost" circle>
+              <Button
+                size="sm"
+                variant="ghost"
+                circle
+                data-testid="dropdown-trg-namespace"
+              >
                 <ChevronsUpDown />
               </Button>
             </PopoverTrigger>
@@ -115,7 +123,7 @@ const Breadcrumb = () => {
                   </CommandStaticItem>
                 )}
                 <CommandStaticSeparator />
-                <DialogTrigger>
+                <DialogTrigger data-testid="new-namespace">
                   <CommandStaticItem>
                     <>
                       <PlusCircle className="mr-2 h-4 w-4" />

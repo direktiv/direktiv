@@ -28,10 +28,11 @@ const BreadcrumbSegment: FC<{
   absolute: string;
   relative: string;
   namespace: string;
-}> = ({ absolute, relative, namespace }) => (
+}> = ({ absolute, relative, namespace, ...props }) => (
   <Link
     to={pages.explorer.createHref({ namespace, path: absolute })}
     className="hover:underline"
+    {...props}
   >
     {relative}
   </Link>
@@ -58,6 +59,7 @@ const ExplorerHeader: FC = () => {
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Link
+            data-testid="tree-root"
             to={pages.explorer.createHref({ namespace })}
             className="hover:underline"
           >
@@ -68,6 +70,7 @@ const ExplorerHeader: FC = () => {
             {segments
               .map((x) => (
                 <BreadcrumbSegment
+                  data-testid="breadcrumb-segment"
                   key={x.absolute}
                   absolute={x.absolute}
                   relative={x.relative}
@@ -88,7 +91,7 @@ const ExplorerHeader: FC = () => {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="primary">
+              <Button variant="primary" data-testid="dropdown-trg-new">
                 <PlusCircle /> New <RxChevronDown />
               </Button>
             </DropdownMenuTrigger>
@@ -96,6 +99,7 @@ const ExplorerHeader: FC = () => {
               <DropdownMenuLabel>Create</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DialogTrigger
+                data-testid="new-dir"
                 onClick={() => {
                   setSelectedDialog("new-dir");
                 }}
@@ -105,6 +109,7 @@ const ExplorerHeader: FC = () => {
                 </DropdownMenuItem>
               </DialogTrigger>
               <DialogTrigger
+                data-testid="new-workflow"
                 onClick={() => {
                   setSelectedDialog("new-workflow");
                 }}
