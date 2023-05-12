@@ -26,7 +26,7 @@ const getAuthHeader = (apiKey: string) => ({
 type ApiParams<TParams, TPathParams> = {
   apiKey?: string;
   params: TParams extends undefined ? undefined : TParams;
-  pathParams: TPathParams;
+  urlParams: TPathParams;
 };
 
 export const apiFactory =
@@ -51,9 +51,9 @@ export const apiFactory =
   }): (({
     apiKey,
     params,
-    pathParams,
+    urlParams: pathParams,
   }: ApiParams<TParams, TPathParams>) => Promise<TSchema>) =>
-  async ({ apiKey, params, pathParams }): Promise<TSchema> => {
+  async ({ apiKey, params, urlParams: pathParams }): Promise<TSchema> => {
     const res = await fetch(path(pathParams), {
       method,
       headers: {

@@ -48,7 +48,7 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
       createTag({
         apiKey: apiKey ?? undefined,
         params: { tag },
-        pathParams: {
+        urlParams: {
           namespace: namespace,
           path,
           ref,

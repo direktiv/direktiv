@@ -41,7 +41,7 @@ export const useCreateDirectory = ({
       createDirectory({
         apiKey: apiKey ?? undefined,
         params: undefined,
-        pathParams: {
+        urlParams: {
           directory,
           namespace: namespace,
           path,

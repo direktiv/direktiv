@@ -33,7 +33,7 @@ const fetchTree = async ({
   getNodeContent({
     apiKey: apiKey,
     params: undefined,
-    pathParams: {
+    urlParams: {
       namespace,
       path,
       revision,

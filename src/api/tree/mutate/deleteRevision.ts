@@ -42,7 +42,7 @@ export const useDeleteRevision = ({
       deleteRevision({
         apiKey: apiKey ?? undefined,
         params: undefined,
-        pathParams: {
+        urlParams: {
           path,
           namespace: namespace,
           revision,

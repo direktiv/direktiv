@@ -50,7 +50,7 @@ export const useRenameNode = ({
         params: {
           new: `${removeLeadingSlash(node.parent)}/${newName}`,
         },
-        pathParams: {
+        urlParams: {
           path: node.path,
           namespace: namespace,
         },

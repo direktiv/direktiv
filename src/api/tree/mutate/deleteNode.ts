@@ -38,7 +38,7 @@ export const useDeleteNode = ({
       deleteNode({
         apiKey: apiKey ?? undefined,
         params: undefined,
-        pathParams: {
+        urlParams: {
           path: node.path,
           namespace: namespace,
         },

@@ -32,7 +32,7 @@ export const useRevertRevision = () => {
       revertRevision({
         apiKey: apiKey ?? undefined,
         params: undefined,
-        pathParams: {
+        urlParams: {
           namespace: namespace,
           path,
         },

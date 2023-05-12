@@ -49,7 +49,7 @@ export const useCreateWorkflow = ({
       createWorkflow({
         apiKey: apiKey ?? undefined,
         params: fileContent,
-        pathParams: {
+        urlParams: {
           namespace: namespace,
           path,
           name,

@@ -145,7 +145,7 @@ describe("processApiResponse", () => {
           getMyApi({
             apiKey: API_KEY,
             params: undefined,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
       });
 
@@ -166,7 +166,7 @@ describe("processApiResponse", () => {
           getMyApi({
             apiKey: "wrong-api-key",
             params: undefined,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
         onError,
       });
@@ -191,7 +191,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           emptyResponse({
             params: undefined,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
       });
 
@@ -211,7 +211,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           textResponse({
             params: undefined,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
       });
 
@@ -232,7 +232,7 @@ describe("processApiResponse", () => {
           getMyApiWrongSchema({
             apiKey: API_KEY,
             params: undefined,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
         onError,
       });
@@ -255,7 +255,7 @@ describe("processApiResponse", () => {
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
         queryFn: () =>
-          api404({ apiKey: API_KEY, params: undefined, pathParams: undefined }),
+          api404({ apiKey: API_KEY, params: undefined, urlParams: undefined }),
         onError,
       });
 
@@ -285,7 +285,7 @@ describe("processApiResponse", () => {
           apiJSONError({
             apiKey: API_KEY,
             params: undefined,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
         onError,
       });
@@ -318,7 +318,7 @@ describe("processApiResponse", () => {
           getMyWithDynamicSegment({
             apiKey: API_KEY,
             params: null,
-            pathParams: pathParams,
+            urlParams: pathParams,
           }),
       });
 
@@ -341,7 +341,7 @@ describe("processApiResponse", () => {
           apiPost({
             apiKey: API_KEY,
             params,
-            pathParams: undefined,
+            urlParams: undefined,
           }),
       });
 

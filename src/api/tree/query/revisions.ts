@@ -20,7 +20,7 @@ const fetchRevisions = async ({
   getRevisions({
     apiKey: apiKey,
     params: undefined,
-    pathParams: {
+    urlParams: {
       namespace,
       path,
     },

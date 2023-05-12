@@ -28,7 +28,7 @@ export const useCreateNamespace = ({
       createNamespace({
         apiKey: apiKey ?? undefined,
         params: undefined,
-        pathParams: {
+        urlParams: {
           name,
         },
       }),
