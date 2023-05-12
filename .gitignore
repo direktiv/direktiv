@@ -141,3 +141,6 @@ reactjs-embed
 yalc.lock
 
 storybook-static
+/test-results/
+/playwright-report/
+/playwright/.cache/

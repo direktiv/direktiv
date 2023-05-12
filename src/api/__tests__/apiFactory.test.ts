@@ -76,7 +76,7 @@ afterEach(() => {
 });
 
 const getMyApi = apiFactory({
-  pathFn: () => apiEndpoint,
+  url: () => apiEndpoint,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -84,7 +84,7 @@ const getMyApi = apiFactory({
 });
 
 const getMyApiWrongSchema = apiFactory({
-  pathFn: () => apiEndpoint,
+  url: () => apiEndpoint,
   method: "GET",
   schema: z.object({
     response: z.number(), // this will fail, since the repsonse is a string
@@ -92,19 +92,19 @@ const getMyApiWrongSchema = apiFactory({
 });
 
 const emptyResponse = apiFactory({
-  pathFn: () => apiEndpointEmptyResponse,
+  url: () => apiEndpointEmptyResponse,
   method: "GET",
   schema: z.null(),
 });
 
 const textResponse = apiFactory({
-  pathFn: () => apiEndpointTextResponse,
+  url: () => apiEndpointTextResponse,
   method: "GET",
   schema: z.string(),
 });
 
 const api404 = apiFactory({
-  pathFn: () => apiEndpoint404,
+  url: () => apiEndpoint404,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -112,7 +112,7 @@ const api404 = apiFactory({
 });
 
 const apiJSONError = apiFactory({
-  pathFn: () => apiEndpointJSONError,
+  url: () => apiEndpointJSONError,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -120,7 +120,7 @@ const apiJSONError = apiFactory({
 });
 
 const apiPost = apiFactory({
-  pathFn: () => apiEndpointPost,
+  url: () => apiEndpointPost,
   method: "POST",
   schema: z.object({
     body: z.string(),
@@ -128,7 +128,7 @@ const apiPost = apiFactory({
 });
 
 const getMyWithDynamicSegment = apiFactory({
-  pathFn: ({ segment }: { segment: string }) =>
+  url: ({ segment }: { segment: string }) =>
     `http://localhost/${segment}/my-api`,
   method: "GET",
   schema: z.object({
@@ -144,8 +144,8 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: API_KEY,
-            params: undefined,
-            pathParams: undefined,
+            payload: undefined,
+            urlParams: undefined,
           }),
       });
 
@@ -165,8 +165,8 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: "wrong-api-key",
-            params: undefined,
-            pathParams: undefined,
+            payload: undefined,
+            urlParams: undefined,
           }),
         onError,
       });
@@ -190,8 +190,8 @@ describe("processApiResponse", () => {
         queryKey: ["emptyresponse"],
         queryFn: () =>
           emptyResponse({
-            params: undefined,
-            pathParams: undefined,
+            payload: undefined,
+            urlParams: undefined,
           }),
       });
 
@@ -210,8 +210,8 @@ describe("processApiResponse", () => {
         queryKey: ["textResponse"],
         queryFn: () =>
           textResponse({
-            params: undefined,
-            pathParams: undefined,
+            payload: undefined,
+            urlParams: undefined,
           }),
       });
 
@@ -231,8 +231,8 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApiWrongSchema({
             apiKey: API_KEY,
-            params: undefined,
-            pathParams: undefined,
+            payload: undefined,
+            urlParams: undefined,
           }),
         onError,
       });
@@ -255,7 +255,7 @@ describe("processApiResponse", () => {
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
         queryFn: () =>
-          api404({ apiKey: API_KEY, params: undefined, pathParams: undefined }),
+          api404({ apiKey: API_KEY, payload: undefined, urlParams: undefined }),
         onError,
       });
 
@@ -284,8 +284,8 @@ describe("processApiResponse", () => {
         queryFn: () =>
           apiJSONError({
             apiKey: API_KEY,
-            params: undefined,
-            pathParams: undefined,
+            payload: undefined,
+            urlParams: undefined,
           }),
         onError,
       });
@@ -317,8 +317,8 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyWithDynamicSegment({
             apiKey: API_KEY,
-            params: null,
-            pathParams: pathParams,
+            payload: null,
+            urlParams: pathParams,
           }),
       });
 
@@ -340,8 +340,8 @@ describe("processApiResponse", () => {
         mutationFn: () =>
           apiPost({
             apiKey: API_KEY,
-            params,
-            pathParams: undefined,
+            payload: params,
+            urlParams: undefined,
           }),
       });
 

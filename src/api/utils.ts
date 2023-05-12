@@ -23,16 +23,16 @@ const getAuthHeader = (apiKey: string) => ({
  * lose typesafety when some api enpoints have required params
  *
  */
-type ApiParams<TParams, TPathParams> = {
+type ApiParams<TPayload, TUrlParams> = {
   apiKey?: string;
-  params: TParams extends undefined ? undefined : TParams;
-  pathParams: TPathParams;
+  payload: TPayload extends undefined ? undefined : TPayload;
+  urlParams: TUrlParams;
 };
 
 export const apiFactory =
-  <TSchema, TParams, TPathParams>({
+  <TSchema, TPayload, TUrlParams>({
     // the path to the api endpoint
-    pathFn: path,
+    url: path,
     // the http method that should be used for the request
     method,
     // the zod schema that the response should be parsed against. This will give
@@ -45,16 +45,16 @@ export const apiFactory =
     // even worse user experience).
     schema,
   }: {
-    pathFn: (pathParams: TPathParams) => string;
+    url: (urlParams: TUrlParams) => string;
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     schema: z.ZodSchema<TSchema>;
   }): (({
     apiKey,
-    params,
-    pathParams,
-  }: ApiParams<TParams, TPathParams>) => Promise<TSchema>) =>
-  async ({ apiKey, params, pathParams }): Promise<TSchema> => {
-    const res = await fetch(path(pathParams), {
+    payload,
+    urlParams,
+  }: ApiParams<TPayload, TUrlParams>) => Promise<TSchema>) =>
+  async ({ apiKey, payload: params, urlParams }): Promise<TSchema> => {
+    const res = await fetch(path(urlParams), {
       method,
       headers: {
         ...(apiKey ? getAuthHeader(apiKey) : {}),
@@ -81,7 +81,7 @@ export const apiFactory =
       } catch (error) {
         process.env.NODE_ENV !== "test" && console.error(error);
         return Promise.reject(
-          `could not format response for ${method} ${path(pathParams)}`
+          `could not format response for ${method} ${path(urlParams)}`
         );
       }
     }
@@ -92,7 +92,7 @@ export const apiFactory =
     } catch (error) {
       process.env.NODE_ENV !== "test" && console.error(error);
       return Promise.reject(
-        `error ${res.status} for ${method} ${path(pathParams)}`
+        `error ${res.status} for ${method} ${path(urlParams)}`
       );
     }
   };

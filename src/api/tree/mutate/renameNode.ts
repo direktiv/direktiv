@@ -1,7 +1,7 @@
 import {
+  NodeListSchemaType,
+  NodeRenameSchema,
   NodeSchemaType,
-  TreeListSchemaType,
-  TreeNodeRenameSchema,
 } from "../schema";
 import {
   forceLeadingSlash,
@@ -17,12 +17,12 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const renameNode = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}/?op=rename-node`,
   method: "POST",
-  schema: TreeNodeRenameSchema,
+  schema: NodeRenameSchema,
 });
 
 export const useRenameNode = ({
@@ -47,16 +47,16 @@ export const useRenameNode = ({
     }) =>
       renameNode({
         apiKey: apiKey ?? undefined,
-        params: {
+        payload: {
           new: `${removeLeadingSlash(node.parent)}/${newName}`,
         },
-        pathParams: {
+        urlParams: {
           path: node.path,
           namespace: namespace,
         },
       }),
     onSuccess(data, variables) {
-      queryClient.setQueryData<TreeListSchemaType>(
+      queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.node.parent,

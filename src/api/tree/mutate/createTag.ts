@@ -9,7 +9,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const createTag = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     ref,
@@ -47,8 +47,8 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
     }) =>
       createTag({
         apiKey: apiKey ?? undefined,
-        params: { tag },
-        pathParams: {
+        payload: { tag },
+        urlParams: {
           namespace: namespace,
           path,
           ref,

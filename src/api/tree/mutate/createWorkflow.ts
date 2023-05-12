@@ -7,7 +7,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const createWorkflow = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     name,
@@ -48,8 +48,8 @@ export const useCreateWorkflow = ({
     }) =>
       createWorkflow({
         apiKey: apiKey ?? undefined,
-        params: fileContent,
-        pathParams: {
+        payload: fileContent,
+        urlParams: {
           namespace: namespace,
           path,
           name,

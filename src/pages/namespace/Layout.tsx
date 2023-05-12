@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../design/Dropdown";
+import { FC, useEffect } from "react";
 import {
   Main,
   MainContent,
@@ -28,15 +29,15 @@ import {
   SidebarMain,
   SidebarTop,
 } from "../../design/Appshell";
+import { Outlet, useParams } from "react-router-dom";
+import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
 import { useTheme, useThemeActions } from "../../util/store/theme";
 
 import Avatar from "../../design/Avatar";
 import Breadcrumb from "../../componentsNext/Breadcrumb";
 import Button from "../../design/Button";
-import { FC } from "react";
 import Logo from "../../design/Logo";
 import Navigation from "../../componentsNext/Navigation";
-import { Outlet } from "react-router-dom";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 import { useVersion } from "../../api/version";
@@ -49,7 +50,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
     <div className={clsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" icon>
+          <Button variant="ghost" icon data-testid="dropdown-trg-appearance">
             <Settings2 />
             <RxChevronDown />
           </Button>
@@ -93,6 +94,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
             className="items-center px-1"
             role="button"
             icon
+            data-testid="dropdown-trg-user"
           >
             <Avatar>Ad</Avatar>
             <RxChevronDown />
@@ -113,6 +115,20 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
 
 const Layout = () => {
   const { data: version } = useVersion();
+  const namespace = useNamespace();
+  const { setNamespace } = useNamespaceActions();
+  const { namespace: namespaceFromUrl } = useParams();
+
+  // when url with namespace is called directly, this updates ns in local store
+  useEffect(() => {
+    if (namespace === namespaceFromUrl) {
+      return;
+    }
+
+    if (namespaceFromUrl) {
+      setNamespace(namespaceFromUrl);
+    }
+  }, [namespace, setNamespace, namespaceFromUrl]);
 
   return (
     <Root>
@@ -145,7 +161,8 @@ const Layout = () => {
             </MainTopRight>
           </MainTop>
           <MainContent>
-            <Outlet />
+            {/* error would be thrown if namespace is not yet defined */}
+            {!!namespace && <Outlet />}
           </MainContent>
         </Main>
         <DrawerContent>

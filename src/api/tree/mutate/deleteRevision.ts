@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { TreeNodeDeletedSchema } from "../schema";
+import { NodeDeletedSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
@@ -9,7 +9,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const deleteRevision = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     revision,
@@ -22,7 +22,7 @@ const deleteRevision = apiFactory({
       path
     )}/?op=delete-revision&ref=${revision}`,
   method: "POST",
-  schema: TreeNodeDeletedSchema,
+  schema: NodeDeletedSchema,
 });
 
 export const useDeleteRevision = ({
@@ -41,8 +41,8 @@ export const useDeleteRevision = ({
     mutationFn: ({ path, revision }: { path: string; revision: string }) =>
       deleteRevision({
         apiKey: apiKey ?? undefined,
-        params: undefined,
-        pathParams: {
+        payload: undefined,
+        urlParams: {
           path,
           namespace: namespace,
           revision,

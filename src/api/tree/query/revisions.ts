@@ -8,7 +8,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
 const getRevisions = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
+  url: ({ namespace, path }: { namespace: string; path?: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}?op=refs`,
   method: "GET",
   schema: RevisionsListSchema,
@@ -19,8 +19,8 @@ const fetchRevisions = async ({
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["revisionsList"]>>) =>
   getRevisions({
     apiKey: apiKey,
-    params: undefined,
-    pathParams: {
+    payload: undefined,
+    urlParams: {
       namespace,
       path,
     },

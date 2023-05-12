@@ -1,7 +1,7 @@
 import {
+  NodeDeletedSchema,
+  NodeListSchemaType,
   NodeSchemaType,
-  TreeListSchemaType,
-  TreeNodeDeletedSchema,
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -13,12 +13,12 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const deleteNode = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}/?op=delete-node&recursive=true`,
   method: "DELETE",
-  schema: TreeNodeDeletedSchema,
+  schema: NodeDeletedSchema,
 });
 
 export const useDeleteNode = ({
@@ -37,14 +37,14 @@ export const useDeleteNode = ({
     mutationFn: ({ node }: { node: NodeSchemaType }) =>
       deleteNode({
         apiKey: apiKey ?? undefined,
-        params: undefined,
-        pathParams: {
+        payload: undefined,
+        urlParams: {
           path: node.path,
           namespace: namespace,
         },
       }),
     onSuccess(_, variables) {
-      queryClient.setQueryData<TreeListSchemaType>(
+      queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.node.parent,

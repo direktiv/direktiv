@@ -10,7 +10,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useNavigate } from "react-router-dom";
 
 const createRevision = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=save-workflow&ref=latest`,
@@ -32,8 +32,8 @@ export const useCreateRevision = () => {
     mutationFn: ({ path }: { path: string }) =>
       createRevision({
         apiKey: apiKey ?? undefined,
-        params: undefined,
-        pathParams: {
+        payload: undefined,
+        urlParams: {
           namespace: namespace,
           path,
         },

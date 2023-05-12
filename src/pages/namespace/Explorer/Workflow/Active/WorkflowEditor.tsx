@@ -17,7 +17,7 @@ import { Card } from "../../../../../design/Card";
 import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
 import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
-import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../../api/tree/query/node";
 import { useRevertRevision } from "../../../../../api/tree/mutate/revertRevision";
 import { useTheme } from "../../../../../util/store/theme";
 import { useTranslation } from "react-i18next";

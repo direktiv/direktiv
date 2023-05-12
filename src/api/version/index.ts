@@ -5,7 +5,7 @@ import { useApiKey } from "../../util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 
 const getVersion = apiFactory({
-  pathFn: () => `/api/version`,
+  url: () => `/api/version`,
   method: "GET",
   schema: VersionSchema,
 });
@@ -15,8 +15,8 @@ const fetchVersions = async ({
 }: QueryFunctionContext<ReturnType<(typeof versionKeys)["all"]>>) =>
   getVersion({
     apiKey: apiKey,
-    params: undefined,
-    pathParams: undefined,
+    payload: undefined,
+    urlParams: undefined,
   });
 
 const versionKeys = {

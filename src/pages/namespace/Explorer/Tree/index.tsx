@@ -39,7 +39,7 @@ import { analyzePath } from "../../../../util/router/utils";
 import moment from "moment";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
-import { useNodeContent } from "../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
@@ -109,7 +109,10 @@ const ExplorerPage: FC = () => {
                     });
 
                     return (
-                      <TableRow key={file.name}>
+                      <TableRow
+                        key={file.name}
+                        data-testid={`explorer-item-${file.name}`}
+                      >
                         <TableCell>
                           <div className="flex space-x-3">
                             <Icon className="h-5" />
@@ -128,6 +131,7 @@ const ExplorerPage: FC = () => {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
+                                data-testid="dropdown-trg-node-actions"
                                 variant="ghost"
                                 size="sm"
                                 onClick={(e) => e.preventDefault()}
@@ -145,6 +149,7 @@ const ExplorerPage: FC = () => {
                               <DropdownMenuSeparator />
                               <DialogTrigger
                                 className="w-full"
+                                data-testid="node-actions-delete"
                                 onClick={() => {
                                   setDeleteNode(file);
                                 }}
@@ -158,6 +163,7 @@ const ExplorerPage: FC = () => {
                               </DialogTrigger>
                               <DialogTrigger
                                 className="w-full"
+                                data-testid="node-actions-rename"
                                 onClick={() => {
                                   setRenameNode(file);
                                 }}

@@ -1,15 +1,17 @@
 import { forceLeadingSlash, sortFoldersFirst } from "../utils";
 
+import { NodeListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import { TreeListSchema } from "../schema";
 import { apiFactory } from "../../utils";
-import { treeKeys } from "../";
+import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
-const getTree = apiFactory({
-  pathFn: ({
+// a node can be a directory or a file, the returned content could either
+// be the list of files (if it's a direkctory) or the content of the file
+const getNodeContent = apiFactory({
+  url: ({
     namespace,
     path,
     revision,
@@ -22,16 +24,16 @@ const getTree = apiFactory({
       revision ? `?ref=${revision}` : ""
     }`,
   method: "GET",
-  schema: TreeListSchema,
+  schema: NodeListSchema,
 });
 
 const fetchTree = async ({
   queryKey: [{ apiKey, namespace, path, revision }],
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["nodeContent"]>>) =>
-  getTree({
+  getNodeContent({
     apiKey: apiKey,
-    params: undefined,
-    pathParams: {
+    payload: undefined,
+    urlParams: {
       namespace,
       path,
       revision,

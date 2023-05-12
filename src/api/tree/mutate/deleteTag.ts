@@ -1,7 +1,7 @@
 import {
+  NodeDeletedSchema,
   RevisionsListSchemaType,
   TagsListSchemaType,
-  TreeNodeDeletedSchema,
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -13,7 +13,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const deleteTag = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     tag,
@@ -26,7 +26,7 @@ const deleteTag = apiFactory({
       path
     )}/?op=untag&ref=${tag}`,
   method: "POST",
-  schema: TreeNodeDeletedSchema,
+  schema: NodeDeletedSchema,
 });
 
 export const useDeleteTag = ({
@@ -45,8 +45,8 @@ export const useDeleteTag = ({
     mutationFn: ({ path, tag }: { path: string; tag: string }) =>
       deleteTag({
         apiKey: apiKey ?? undefined,
-        params: undefined,
-        pathParams: {
+        payload: undefined,
+        urlParams: {
           path,
           namespace: namespace,
           tag,

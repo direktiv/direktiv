@@ -1,4 +1,4 @@
-import { TreeListSchemaType, WorkflowCreatedSchema } from "../schema";
+import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "../../utils";
@@ -9,7 +9,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { z } from "zod";
 
 const updateWorkflow = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
+  url: ({ namespace, path }: { namespace: string; path?: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=update-workflow`,
@@ -42,14 +42,14 @@ export const useUpdateWorkflow = ({
     }) =>
       updateWorkflow({
         apiKey: apiKey ?? undefined,
-        params: fileContent,
-        pathParams: {
+        payload: fileContent,
+        urlParams: {
           namespace: namespace,
           path,
         },
       }),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData<TreeListSchemaType>(
+      queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.path,

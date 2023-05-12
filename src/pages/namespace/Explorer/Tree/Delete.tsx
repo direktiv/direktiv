@@ -41,6 +41,7 @@ const Delete = ({
           <Button variant="ghost">Cancel</Button>
         </DialogClose>
         <Button
+          data-testid="node-delete-confirm"
           onClick={() => {
             deleteNode({ node });
           }}
