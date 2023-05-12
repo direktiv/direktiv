@@ -14,7 +14,6 @@ import {
 import { FC, useEffect, useState } from "react";
 import {
   Folder,
-  FolderOpen,
   FolderUp,
   MoreVertical,
   Play,
@@ -33,14 +32,15 @@ import { Card } from "../../../../design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
+import NoResult from "./NoResult";
 import { NodeSchemaType } from "../../../../api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "../../../../util/router/utils";
-import clsx from "clsx";
 import moment from "moment";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
 import { useNodeContent } from "../../../../api/tree/query/get";
+import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
@@ -54,6 +54,7 @@ const ExplorerPage: FC = () => {
   // set the pointer to that node for the dialog
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -66,12 +67,12 @@ const ExplorerPage: FC = () => {
 
   const results = data?.children?.results ?? [];
   const showTable = !isRoot || results.length > 0;
-  const isEmpty = isSuccess && results.length === 0;
+  const noResults = isSuccess && results.length === 0;
 
   return (
-    <div>
+    <>
       <ExplorerHeader />
-      <div className="p-5 text-sm">
+      <div className="p-5">
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -88,7 +89,9 @@ const ExplorerPage: FC = () => {
                           className="flex items-center space-x-3 hover:underline"
                         >
                           <FolderUp className="h-5" />
-                          <span>..</span>
+                          <span>
+                            {t("pages.explorer.tree.list.oneLevelUp")}
+                          </span>
                         </Link>
                       </TableCell>
                     </TableRow>
@@ -138,7 +141,11 @@ const ExplorerPage: FC = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-40">
-                              <DropdownMenuLabel>Edit</DropdownMenuLabel>
+                              <DropdownMenuLabel>
+                                {t(
+                                  "pages.explorer.tree.list.contextMenu.title"
+                                )}
+                              </DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DialogTrigger
                                 data-testid="node-actions-delete"
@@ -148,7 +155,9 @@ const ExplorerPage: FC = () => {
                               >
                                 <DropdownMenuItem>
                                   <Trash className="mr-2 h-4 w-4" />
-                                  <span>Delete</span>
+                                  {t(
+                                    "pages.explorer.tree.list.contextMenu.delete"
+                                  )}
                                 </DropdownMenuItem>
                               </DialogTrigger>
                               <DialogTrigger
@@ -159,7 +168,9 @@ const ExplorerPage: FC = () => {
                               >
                                 <DropdownMenuItem>
                                   <TextCursorInput className="mr-2 h-4 w-4" />
-                                  <span>Rename</span>
+                                  {t(
+                                    "pages.explorer.tree.list.contextMenu.rename"
+                                  )}
                                 </DropdownMenuItem>
                               </DialogTrigger>
                             </DropdownMenuContent>
@@ -193,20 +204,10 @@ const ExplorerPage: FC = () => {
               </DialogContent>
             </Dialog>
           )}
-          {isEmpty && (
-            <div
-              className={clsx(
-                "flex items-center justify-center gap-2 p-4",
-                showTable && "border-t border-gray-5 dark:border-gray-dark-5"
-              )}
-            >
-              <FolderOpen />
-              <div>this directory is empty</div>
-            </div>
-          )}
+          {noResults && <NoResult />}
         </Card>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -15,6 +15,7 @@ import { Datepicker } from "./index";
 import type { Meta } from "@storybook/react";
 import React from "react";
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 const meta = {
   title: "Components/Datepicker",
@@ -63,7 +64,7 @@ export function DateRangePicker({
   });
 
   return (
-    <div className={clsx("grid gap-2", className)}>
+    <div className={twMerge(clsx("grid gap-2", className))}>
       <Popover>
         <PopoverTrigger asChild>
           <Button id="date" variant="outline" className="w-[300px]">

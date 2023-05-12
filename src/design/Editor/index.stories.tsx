@@ -15,7 +15,7 @@ functions:
 - id: solve2
   image: direktiv/solve:v3
   type: knative-workflow
-description: A simple 'eventXor' that waits for events to be received.
+description: 1
 states:
 - id: event-xor
   type: eventXor

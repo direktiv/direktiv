@@ -6,26 +6,21 @@ import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
-import { z } from "zod";
+import { useToast } from "../../../design/Toast";
 
-const updateWorkflow = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path?: string }) =>
+const revertRevision = apiFactory({
+  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
-    )}?op=update-workflow`,
+    )}?op=discard-workflow&ref=latest`,
   method: "POST",
   schema: WorkflowCreatedSchema,
 });
 
-export const useUpdateWorkflow = ({
-  onSuccess,
-  onError,
-}: {
-  onSuccess?: () => void;
-  onError?: (e: string | undefined) => void;
-} = {}) => {
+export const useRevertRevision = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   if (!namespace) {
@@ -33,22 +28,16 @@ export const useUpdateWorkflow = ({
   }
 
   return useMutation({
-    mutationFn: ({
-      path,
-      fileContent,
-    }: {
-      path: string;
-      fileContent: string;
-    }) =>
-      updateWorkflow({
+    mutationFn: ({ path }: { path: string }) =>
+      revertRevision({
         apiKey: apiKey ?? undefined,
-        params: fileContent,
+        params: undefined,
         pathParams: {
           namespace: namespace,
           path,
         },
       }),
-    onSuccess: (data, variables) => {
+    onSuccess(data, variables) {
       queryClient.setQueryData<TreeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
@@ -56,15 +45,18 @@ export const useUpdateWorkflow = ({
         }),
         () => data
       );
-      onSuccess?.();
+      toast({
+        title: "Restored workflow",
+        description: `The latest revision was restored`,
+        variant: "success",
+      });
     },
-    onError: (e) => {
-      const message = z
-        .object({
-          message: z.string(),
-        })
-        .safeParse(e);
-      message.success ? onError?.(message.data.message) : onError?.(undefined);
+    onError: () => {
+      toast({
+        title: "An error occurred",
+        description: "could not revert workflow 😢",
+        variant: "error",
+      });
     },
   });
 };

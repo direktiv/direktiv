@@ -41,7 +41,7 @@ export const useCreateRevision = () => {
     onSuccess: (data, variables) => {
       toast({
         title: "Revision created",
-        description: `Revision ${data.revision.name.slice(0, 8)} was created`,
+        description: `Revision ${data.revision.name} was created`,
         variant: "success",
         action: (
           <ToastAction
@@ -65,7 +65,7 @@ export const useCreateRevision = () => {
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not create workflow 😢",
+        description: "could not create revision 😢",
         variant: "error",
       });
     },

@@ -61,7 +61,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "js-yaml": "^4.1.0",
     "json-to-pretty-yaml": "^1.2.2",
-    "lucide-react": "^0.115.0",
+    "lucide-react": "^0.214.0",
     "moment": "^2.29.4",
     "monaco": "^1.201704190613.0",
     "msw": "^1.1.0",

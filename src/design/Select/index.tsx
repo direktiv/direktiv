@@ -5,6 +5,7 @@ import Button, { ButtonProps } from "../Button";
 import { RxCheck, RxChevronDown } from "react-icons/rx";
 
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 // this component is mostly copied from https://ui.shadcn.com/docs/primitives/select
 
@@ -25,7 +26,7 @@ const SelectTrigger = React.forwardRef<
   ) => (
     <SelectPrimitive.Trigger
       ref={ref}
-      className={clsx(block && "w-full", className)}
+      className={twMerge(clsx(block && "w-full", className))}
       {...props}
       asChild
     >
@@ -50,14 +51,16 @@ const SelectContent = React.forwardRef<
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
-      className={clsx(
-        "z-50 shadow-md",
-        "rounded-md ring-1",
-        "ring-gray-3",
-        "dark:ring-gray-dark-3",
-        "bg-gray-1",
-        "dark:bg-gray-dark-1",
-        className
+      className={twMerge(
+        clsx(
+          "z-50 shadow-md",
+          "rounded-md ring-1",
+          "ring-gray-3",
+          "dark:ring-gray-dark-3",
+          "bg-gray-1",
+          "dark:bg-gray-dark-1",
+          className
+        )
       )}
       {...props}
     >
@@ -76,11 +79,13 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={clsx(
-      "py-1.5 pr-2 pl-8 text-sm font-medium",
-      "text-gray-8 ",
-      "dark:text-gray-dark-8",
-      className
+    className={twMerge(
+      clsx(
+        "py-1.5 pr-2 pl-8 text-sm font-medium",
+        "text-gray-8 ",
+        "dark:text-gray-dark-8",
+        className
+      )
     )}
     {...props}
   />
@@ -93,13 +98,15 @@ const SelectItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
-    className={clsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      " focus:bg-gray-3 ",
-      " dark:focus:bg-gray-dark-3 ",
-      "hover:outline-none",
-      "focus:outline-none",
-      className
+    className={twMerge(
+      clsx(
+        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        " focus:bg-gray-3 ",
+        " dark:focus:bg-gray-dark-3 ",
+        "hover:outline-none",
+        "focus:outline-none",
+        className
+      )
     )}
     {...props}
   >
@@ -120,11 +127,8 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={clsx(
-      "-mx-1 my-1 h-px",
-      " bg-gray-3",
-      " dark:bg-gray-dark-3",
-      className
+    className={twMerge(
+      clsx("-mx-1 my-1 h-px", " bg-gray-3", " dark:bg-gray-dark-3", className)
     )}
     {...props}
   />

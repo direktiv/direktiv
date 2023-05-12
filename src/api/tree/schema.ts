@@ -33,16 +33,19 @@ export const TreeListSchema = z.object({
   revision: RevisionSchema.optional(), // only for workflows
 });
 
+// the revisions scheme in the revisions list only has a subset of the fields
+const TrimedRevisionSchema = z.object({
+  name: z.string(),
+});
+
 export const RevisionsListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
   pageInfo: PageinfoSchema,
-  results: z.array(
-    z.object({
-      name: z.string(),
-    })
-  ),
+  results: z.array(TrimedRevisionSchema),
 });
+
+export const TagsListSchema = RevisionsListSchema;
 
 export const TreeFolderCreatedSchema = z.object({
   namespace: z.string(),
@@ -57,6 +60,8 @@ export const WorkflowCreatedSchema = z.object({
 
 export const TreeNodeDeletedSchema = z.null();
 
+export const TagCreatedSchema = z.null();
+
 export const TreeNodeRenameSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
@@ -70,4 +75,7 @@ export const fileNameSchema = z
   });
 
 export type TreeListSchemaType = z.infer<typeof TreeListSchema>;
+export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
+export type TrimedRevisionSchemaType = z.infer<typeof TrimedRevisionSchema>;
+export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;

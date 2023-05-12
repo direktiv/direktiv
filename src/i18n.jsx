@@ -17,10 +17,14 @@ import { initReactI18next } from "react-i18next";
 i18n
   .use(Backend)
   .use(initReactI18next) // passes i18n down to react-i18next
+
   .init({
     lng: "en",
     fallbackLng: "en",
     debug: true,
+    react: {
+      transKeepBasicHtmlNodesFor: ["br", "strong", "i", "p", "b"],
+    },
     interpolation: {
       escapeValue: false, // react already safes from xss
     },

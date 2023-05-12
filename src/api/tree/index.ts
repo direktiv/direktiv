@@ -30,4 +30,16 @@ export const treeKeys = {
         path: forceLeadingSlash(path ?? "/"),
       },
     ] as const,
+  tagsList: (
+    namespace: string,
+    { apiKey, path }: { apiKey?: string; path?: string }
+  ) =>
+    [
+      {
+        scope: "tree-tags-list",
+        apiKey,
+        namespace,
+        path: forceLeadingSlash(path ?? ""),
+      },
+    ] as const,
 };

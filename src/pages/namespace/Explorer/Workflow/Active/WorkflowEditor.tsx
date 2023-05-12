@@ -18,6 +18,7 @@ import Editor from "../../../../../design/Editor";
 import { RxChevronDown } from "react-icons/rx";
 import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
 import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useRevertRevision } from "../../../../../api/tree/mutate/revertRevision";
 import { useTheme } from "../../../../../util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
@@ -46,6 +47,7 @@ const WorkflowEditor: FC<{
   const theme = useTheme();
 
   const { mutate: createRevision } = useCreateRevision();
+  const { mutate: revertRevision } = useRevertRevision();
 
   useEffect(() => {
     setHasUnsavedChanged(workflowData !== value);
@@ -110,7 +112,7 @@ const WorkflowEditor: FC<{
               Revisions <RxChevronDown />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
+          <DropdownMenuContent className="w-60">
             <DropdownMenuItem
               onClick={() => {
                 createRevision({
@@ -120,8 +122,14 @@ const WorkflowEditor: FC<{
             >
               <GitBranchPlus className="mr-2 h-4 w-4" /> Make Revision
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Undo className="mr-2 h-4 w-4" /> Revert
+            <DropdownMenuItem
+              onClick={() => {
+                revertRevision({
+                  path,
+                });
+              }}
+            >
+              <Undo className="mr-2 h-4 w-4" /> Revert to previous revision
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
