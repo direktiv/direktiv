@@ -1,7 +1,7 @@
 import { forceLeadingSlash, sortFoldersFirst } from "../utils";
 
+import { NodeListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import { TreeListSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
@@ -24,7 +24,7 @@ const getNodeContent = apiFactory({
       revision ? `?ref=${revision}` : ""
     }`,
   method: "GET",
-  schema: TreeListSchema,
+  schema: NodeListSchema,
 });
 
 const fetchTree = async ({

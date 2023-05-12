@@ -1,4 +1,4 @@
-import { TreeListSchemaType, WorkflowCreatedSchema } from "../schema";
+import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "../../utils";
@@ -38,7 +38,7 @@ export const useRevertRevision = () => {
         },
       }),
     onSuccess(data, variables) {
-      queryClient.setQueryData<TreeListSchemaType>(
+      queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.path,

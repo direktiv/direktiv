@@ -1,4 +1,4 @@
-import { TreeFolderCreatedSchema } from "../schema";
+import { FolderCreatedSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "../../../util/store/apiKey";
@@ -20,7 +20,7 @@ const createDirectory = apiFactory({
       path
     )}/${directory}?op=create-directory`,
   method: "PUT",
-  schema: TreeFolderCreatedSchema,
+  schema: FolderCreatedSchema,
 });
 
 type ResolvedCreateDirectory = Awaited<ReturnType<typeof createDirectory>>;

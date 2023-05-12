@@ -21,7 +21,7 @@ const RevisionSchema = z.object({
   name: z.string(),
 });
 
-export const TreeListSchema = z.object({
+export const NodeListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
   children: z
@@ -47,7 +47,7 @@ export const RevisionsListSchema = z.object({
 
 export const TagsListSchema = RevisionsListSchema;
 
-export const TreeFolderCreatedSchema = z.object({
+export const FolderCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
 });
@@ -58,14 +58,14 @@ export const WorkflowCreatedSchema = z.object({
   revision: RevisionSchema,
 });
 
-export const TreeNodeDeletedSchema = z.null();
+export const NodeDeletedSchema = z.null();
 
-export const TagCreatedSchema = z.null();
-
-export const TreeNodeRenameSchema = z.object({
+export const NodeRenameSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
 });
+
+export const TagCreatedSchema = z.null();
 
 export const fileNameSchema = z
   .string()
@@ -74,7 +74,7 @@ export const fileNameSchema = z
       "Please use a name that only contains lowercase letters, use - or _ instead of whitespaces.",
   });
 
-export type TreeListSchemaType = z.infer<typeof TreeListSchema>;
+export type NodeListSchemaType = z.infer<typeof NodeListSchema>;
 export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
 export type TrimedRevisionSchemaType = z.infer<typeof TrimedRevisionSchema>;
 export type TagsListSchemaType = z.infer<typeof TagsListSchema>;

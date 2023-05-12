@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { TreeNodeDeletedSchema } from "../schema";
+import { NodeDeletedSchema } from "../schema";
 import { apiFactory } from "../../utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
@@ -22,7 +22,7 @@ const deleteRevision = apiFactory({
       path
     )}/?op=delete-revision&ref=${revision}`,
   method: "POST",
-  schema: TreeNodeDeletedSchema,
+  schema: NodeDeletedSchema,
 });
 
 export const useDeleteRevision = ({

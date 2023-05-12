@@ -1,7 +1,7 @@
 import {
+  NodeDeletedSchema,
+  NodeListSchemaType,
   NodeSchemaType,
-  TreeListSchemaType,
-  TreeNodeDeletedSchema,
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -18,7 +18,7 @@ const deleteNode = apiFactory({
       path
     )}/?op=delete-node&recursive=true`,
   method: "DELETE",
-  schema: TreeNodeDeletedSchema,
+  schema: NodeDeletedSchema,
 });
 
 export const useDeleteNode = ({
@@ -44,7 +44,7 @@ export const useDeleteNode = ({
         },
       }),
     onSuccess(_, variables) {
-      queryClient.setQueryData<TreeListSchemaType>(
+      queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.node.parent,

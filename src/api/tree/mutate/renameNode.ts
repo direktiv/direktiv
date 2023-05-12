@@ -1,7 +1,7 @@
 import {
+  NodeListSchemaType,
+  NodeRenameSchema,
   NodeSchemaType,
-  TreeListSchemaType,
-  TreeNodeRenameSchema,
 } from "../schema";
 import {
   forceLeadingSlash,
@@ -22,7 +22,7 @@ const renameNode = apiFactory({
       path
     )}/?op=rename-node`,
   method: "POST",
-  schema: TreeNodeRenameSchema,
+  schema: NodeRenameSchema,
 });
 
 export const useRenameNode = ({
@@ -56,7 +56,7 @@ export const useRenameNode = ({
         },
       }),
     onSuccess(data, variables) {
-      queryClient.setQueryData<TreeListSchemaType>(
+      queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.node.parent,

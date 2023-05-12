@@ -1,7 +1,7 @@
 import {
+  NodeDeletedSchema,
   RevisionsListSchemaType,
   TagsListSchemaType,
-  TreeNodeDeletedSchema,
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -26,7 +26,7 @@ const deleteTag = apiFactory({
       path
     )}/?op=untag&ref=${tag}`,
   method: "POST",
-  schema: TreeNodeDeletedSchema,
+  schema: NodeDeletedSchema,
 });
 
 export const useDeleteTag = ({
