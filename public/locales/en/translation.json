@@ -48,6 +48,7 @@
               "titleTag": "Delete Tag",
               "titleRevision": "Delete Revision",
               "description": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
+              "revisionNote": "Please note that this will also delte all corresponding tags as well.",
               "cancelBtn": "Cancel",
               "deleteBtn": "Delete"
             },

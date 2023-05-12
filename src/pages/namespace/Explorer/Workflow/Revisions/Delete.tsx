@@ -48,11 +48,18 @@ const Delete = ({
             : t("pages.explorer.tree.workflow.revisions.delete.titleRevision")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-3">
-        <Trans
-          i18nKey="pages.explorer.tree.workflow.revisions.delete.description"
-          values={{ name: revision.name }}
-        />
+      <div className="my-3 flex flex-col gap-y-5">
+        <div>
+          <Trans
+            i18nKey="pages.explorer.tree.workflow.revisions.delete.description"
+            values={{ name: revision.name }}
+          />
+        </div>
+        {!isTag && (
+          <div>
+            {t("pages.explorer.tree.workflow.revisions.delete.revisionNote")}
+          </div>
+        )}
       </div>
       <DialogFooter>
         <DialogClose asChild>
