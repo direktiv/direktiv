@@ -32,7 +32,7 @@ type ApiParams<TParams, TPathParams> = {
 export const apiFactory =
   <TSchema, TParams, TPathParams>({
     // the path to the api endpoint
-    pathFn: path,
+    url: path,
     // the http method that should be used for the request
     method,
     // the zod schema that the response should be parsed against. This will give
@@ -45,7 +45,7 @@ export const apiFactory =
     // even worse user experience).
     schema,
   }: {
-    pathFn: (pathParams: TPathParams) => string;
+    url: (pathParams: TPathParams) => string;
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     schema: z.ZodSchema<TSchema>;
   }): (({

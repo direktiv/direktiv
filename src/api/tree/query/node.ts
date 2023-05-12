@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 // a node can be a directory or a file, the returned content could either
 // be the list of files (if it's a direkctory) or the content of the file
 const getNodeContent = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     revision,

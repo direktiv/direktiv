@@ -9,7 +9,7 @@ import { useApiKey } from "../../../util/store/apiKey";
 import { useToast } from "../../../design/Toast";
 
 const createNamespace = apiFactory({
-  pathFn: ({ name }: { name: string }) => `/api/namespaces/${name}`,
+  url: ({ name }: { name: string }) => `/api/namespaces/${name}`,
   method: "PUT",
   schema: NamespaceCreatedSchema,
 });

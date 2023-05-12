@@ -7,7 +7,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const createDirectory = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     directory,

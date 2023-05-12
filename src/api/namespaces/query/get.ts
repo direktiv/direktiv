@@ -6,7 +6,7 @@ import { useApiKey } from "../../../util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 
 const getNamespaces = apiFactory({
-  pathFn: () => `/api/namespaces`,
+  url: () => `/api/namespaces`,
   method: "GET",
   schema: NamespaceListSchema,
 });

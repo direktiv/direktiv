@@ -76,7 +76,7 @@ afterEach(() => {
 });
 
 const getMyApi = apiFactory({
-  pathFn: () => apiEndpoint,
+  url: () => apiEndpoint,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -84,7 +84,7 @@ const getMyApi = apiFactory({
 });
 
 const getMyApiWrongSchema = apiFactory({
-  pathFn: () => apiEndpoint,
+  url: () => apiEndpoint,
   method: "GET",
   schema: z.object({
     response: z.number(), // this will fail, since the repsonse is a string
@@ -92,19 +92,19 @@ const getMyApiWrongSchema = apiFactory({
 });
 
 const emptyResponse = apiFactory({
-  pathFn: () => apiEndpointEmptyResponse,
+  url: () => apiEndpointEmptyResponse,
   method: "GET",
   schema: z.null(),
 });
 
 const textResponse = apiFactory({
-  pathFn: () => apiEndpointTextResponse,
+  url: () => apiEndpointTextResponse,
   method: "GET",
   schema: z.string(),
 });
 
 const api404 = apiFactory({
-  pathFn: () => apiEndpoint404,
+  url: () => apiEndpoint404,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -112,7 +112,7 @@ const api404 = apiFactory({
 });
 
 const apiJSONError = apiFactory({
-  pathFn: () => apiEndpointJSONError,
+  url: () => apiEndpointJSONError,
   method: "GET",
   schema: z.object({
     response: z.string(),
@@ -120,7 +120,7 @@ const apiJSONError = apiFactory({
 });
 
 const apiPost = apiFactory({
-  pathFn: () => apiEndpointPost,
+  url: () => apiEndpointPost,
   method: "POST",
   schema: z.object({
     body: z.string(),
@@ -128,7 +128,7 @@ const apiPost = apiFactory({
 });
 
 const getMyWithDynamicSegment = apiFactory({
-  pathFn: ({ segment }: { segment: string }) =>
+  url: ({ segment }: { segment: string }) =>
     `http://localhost/${segment}/my-api`,
   method: "GET",
   schema: z.object({

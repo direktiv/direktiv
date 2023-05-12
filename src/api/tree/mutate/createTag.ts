@@ -9,7 +9,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const createTag = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     ref,

@@ -9,7 +9,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const revertRevision = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=discard-workflow&ref=latest`,

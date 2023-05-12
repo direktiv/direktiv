@@ -9,7 +9,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const deleteRevision = apiFactory({
-  pathFn: ({
+  url: ({
     namespace,
     path,
     revision,

@@ -13,7 +13,7 @@ import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
 
 const deleteNode = apiFactory({
-  pathFn: ({ namespace, path }: { namespace: string; path: string }) =>
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}/?op=delete-node&recursive=true`,
