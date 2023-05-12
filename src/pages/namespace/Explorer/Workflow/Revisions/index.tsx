@@ -138,6 +138,7 @@ const WorkflowRevisionsPage: FC = () => {
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DialogTrigger
+                              className="w-full"
                               onClick={() => {
                                 if (isTag) {
                                   setDeleteTag(rev);
@@ -154,6 +155,7 @@ const WorkflowRevisionsPage: FC = () => {
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <DialogTrigger
+                              className="w-full"
                               onClick={() => {
                                 setCreateTag(rev);
                               }}
@@ -166,6 +168,7 @@ const WorkflowRevisionsPage: FC = () => {
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <DialogTrigger
+                              className="w-full"
                               onClick={() => {
                                 setRevert(rev);
                               }}

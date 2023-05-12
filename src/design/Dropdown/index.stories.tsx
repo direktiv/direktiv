@@ -16,6 +16,17 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../Dialog";
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -34,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "./index";
 import Button from "../Button";
+import { DialogClose } from "@radix-ui/react-dialog";
 import type { Meta } from "@storybook/react";
 import { useState } from "react";
 
@@ -205,6 +217,96 @@ export const WithCheckboxes = () => {
           </DropdownMenuCheckboxItem>
         </DropdownMenuContent>
       </DropdownMenu>
+    </div>
+  );
+};
+
+export const MenuItemInDialogTrigger = () => {
+  const [dialog, setDialog] = useState<string>("");
+
+  return (
+    <div className="flex justify-center">
+      <Dialog>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              Open Dropdown <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DialogTrigger
+                className="w-full"
+                onClick={() => {
+                  setDialog("profile");
+                }}
+              >
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogTrigger
+                className="w-full"
+                onClick={() => {
+                  setDialog("billing");
+                }}
+              >
+                <DropdownMenuItem>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
+                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DialogTrigger>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DialogContent>
+          {dialog === "profile" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  <Settings />
+                  Profile Dialog Title
+                </DialogTitle>
+                <DialogDescription>
+                  This is a description of the profile dialog.
+                </DialogDescription>
+              </DialogHeader>
+              Profile content goes here
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="ghost">Cancel</Button>
+                </DialogClose>
+                <Button>Submit</Button>
+              </DialogFooter>
+            </>
+          )}
+          {dialog === "billing" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  <Settings />
+                  Dialog Billing
+                </DialogTitle>
+                <DialogDescription>
+                  This is a description of the billing dialog.
+                </DialogDescription>
+              </DialogHeader>
+              Billing content goes here
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="ghost">Cancel</Button>
+                </DialogClose>
+                <Button>Submit</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
