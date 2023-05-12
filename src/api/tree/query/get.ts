@@ -8,7 +8,9 @@ import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
-const getTree = apiFactory({
+// a node can be a directory or a file, the returned content could either
+// be the list of files (if it's a direkctory) or the content of the file
+const getNodeContent = apiFactory({
   pathFn: ({
     namespace,
     path,
@@ -28,7 +30,7 @@ const getTree = apiFactory({
 const fetchTree = async ({
   queryKey: [{ apiKey, namespace, path, revision }],
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["nodeContent"]>>) =>
-  getTree({
+  getNodeContent({
     apiKey: apiKey,
     params: undefined,
     pathParams: {
