@@ -45,7 +45,7 @@ export const useDeleteTag = ({
     mutationFn: ({ path, tag }: { path: string; tag: string }) =>
       deleteTag({
         apiKey: apiKey ?? undefined,
-        params: undefined,
+        payload: undefined,
         urlParams: {
           path,
           namespace: namespace,

@@ -37,7 +37,7 @@ export const useDeleteNode = ({
     mutationFn: ({ node }: { node: NodeSchemaType }) =>
       deleteNode({
         apiKey: apiKey ?? undefined,
-        params: undefined,
+        payload: undefined,
         urlParams: {
           path: node.path,
           namespace: namespace,

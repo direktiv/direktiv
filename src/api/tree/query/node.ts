@@ -32,7 +32,7 @@ const fetchTree = async ({
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["nodeContent"]>>) =>
   getNodeContent({
     apiKey: apiKey,
-    params: undefined,
+    payload: undefined,
     urlParams: {
       namespace,
       path,

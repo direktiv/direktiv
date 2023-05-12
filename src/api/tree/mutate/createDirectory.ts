@@ -40,7 +40,7 @@ export const useCreateDirectory = ({
     mutationFn: ({ path, directory }: { path?: string; directory: string }) =>
       createDirectory({
         apiKey: apiKey ?? undefined,
-        params: undefined,
+        payload: undefined,
         urlParams: {
           directory,
           namespace: namespace,

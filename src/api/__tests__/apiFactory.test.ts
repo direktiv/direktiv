@@ -144,7 +144,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: API_KEY,
-            params: undefined,
+            payload: undefined,
             urlParams: undefined,
           }),
       });
@@ -165,7 +165,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: "wrong-api-key",
-            params: undefined,
+            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -190,7 +190,7 @@ describe("processApiResponse", () => {
         queryKey: ["emptyresponse"],
         queryFn: () =>
           emptyResponse({
-            params: undefined,
+            payload: undefined,
             urlParams: undefined,
           }),
       });
@@ -210,7 +210,7 @@ describe("processApiResponse", () => {
         queryKey: ["textResponse"],
         queryFn: () =>
           textResponse({
-            params: undefined,
+            payload: undefined,
             urlParams: undefined,
           }),
       });
@@ -231,7 +231,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApiWrongSchema({
             apiKey: API_KEY,
-            params: undefined,
+            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -255,7 +255,7 @@ describe("processApiResponse", () => {
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
         queryFn: () =>
-          api404({ apiKey: API_KEY, params: undefined, urlParams: undefined }),
+          api404({ apiKey: API_KEY, payload: undefined, urlParams: undefined }),
         onError,
       });
 
@@ -284,7 +284,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           apiJSONError({
             apiKey: API_KEY,
-            params: undefined,
+            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -317,7 +317,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyWithDynamicSegment({
             apiKey: API_KEY,
-            params: null,
+            payload: null,
             urlParams: pathParams,
           }),
       });
@@ -340,7 +340,7 @@ describe("processApiResponse", () => {
         mutationFn: () =>
           apiPost({
             apiKey: API_KEY,
-            params,
+            payload: params,
             urlParams: undefined,
           }),
       });

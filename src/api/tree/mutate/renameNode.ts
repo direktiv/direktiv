@@ -47,7 +47,7 @@ export const useRenameNode = ({
     }) =>
       renameNode({
         apiKey: apiKey ?? undefined,
-        params: {
+        payload: {
           new: `${removeLeadingSlash(node.parent)}/${newName}`,
         },
         urlParams: {

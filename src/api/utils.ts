@@ -25,7 +25,7 @@ const getAuthHeader = (apiKey: string) => ({
  */
 type ApiParams<TParams, TPathParams> = {
   apiKey?: string;
-  params: TParams extends undefined ? undefined : TParams;
+  payload: TParams extends undefined ? undefined : TParams;
   urlParams: TPathParams;
 };
 
@@ -50,10 +50,14 @@ export const apiFactory =
     schema: z.ZodSchema<TSchema>;
   }): (({
     apiKey,
-    params,
+    payload: params,
     urlParams: pathParams,
   }: ApiParams<TParams, TPathParams>) => Promise<TSchema>) =>
-  async ({ apiKey, params, urlParams: pathParams }): Promise<TSchema> => {
+  async ({
+    apiKey,
+    payload: params,
+    urlParams: pathParams,
+  }): Promise<TSchema> => {
     const res = await fetch(path(pathParams), {
       method,
       headers: {

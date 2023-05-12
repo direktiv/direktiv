@@ -27,7 +27,7 @@ export const useCreateNamespace = ({
     mutationFn: ({ name }: { name: string }) =>
       createNamespace({
         apiKey: apiKey ?? undefined,
-        params: undefined,
+        payload: undefined,
         urlParams: {
           name,
         },

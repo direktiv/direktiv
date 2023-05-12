@@ -42,7 +42,7 @@ export const useUpdateWorkflow = ({
     }) =>
       updateWorkflow({
         apiKey: apiKey ?? undefined,
-        params: fileContent,
+        payload: fileContent,
         urlParams: {
           namespace: namespace,
           path,
