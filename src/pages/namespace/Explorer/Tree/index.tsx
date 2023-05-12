@@ -39,7 +39,7 @@ import { analyzePath } from "../../../../util/router/utils";
 import moment from "moment";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
-import { useNodeContent } from "../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {

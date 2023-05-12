@@ -22,7 +22,7 @@ import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "../../../../util/router/utils";
 import { pages } from "../../../../util/router/pages";
 import { useNamespace } from "../../../../util/store/namespace";
-import { useNodeContent } from "../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../api/tree/query/node";
 
 const BreadcrumbSegment: FC<{
   absolute: string;

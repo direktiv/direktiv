@@ -2,7 +2,7 @@ import Badge from "../../../../../design/Badge";
 import { Card } from "../../../../../design/Card";
 import { FC } from "react";
 import { pages } from "../../../../../util/router/pages";
-import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../../api/tree/query/node";
 
 const ActiveWorkflowPage: FC = () => {
   const { path } = pages.explorer.useParams();

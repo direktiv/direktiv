@@ -13,7 +13,7 @@ import { Undo } from "lucide-react";
 import { pages } from "../../../../../util/router/pages";
 import { useNamespace } from "../../../../../util/store/namespace";
 import { useNavigate } from "react-router-dom";
-import { useNodeContent } from "../../../../../api/tree/query/get";
+import { useNodeContent } from "../../../../../api/tree/query/node";
 import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
 
 const Revert = ({
