@@ -3,8 +3,6 @@ package logengine
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -59,10 +57,7 @@ type DataStoreActionLogger struct {
 }
 
 func (s DataStoreActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
-	// TODO: Alax, Please evaluate if mutation is OK here.
-
-	tags["level"] = level
-	err := s.Store.Append(context.Background(), time.Now(), msg, tags)
+	err := s.Store.Append(context.Background(), level, msg, tags)
 	if err != nil {
 		s.ErrorLogger.Error("writing action log to the database", "error", err)
 	}
