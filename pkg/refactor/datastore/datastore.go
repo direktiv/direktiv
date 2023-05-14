@@ -18,4 +18,6 @@ type Store interface {
 	FileAnnotations() core.FileAnnotationsStore
 	// Logs returns logengine.LogStore, is responsible for reading and writing logs
 	Logs() logengine.LogStore
+
+	Secrets() core.SecretsStore
 }
