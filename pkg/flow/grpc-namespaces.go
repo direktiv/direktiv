@@ -318,7 +318,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	flow.deleteNamespaceSecrets(ns)
+	// TODO: fix secretes.
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()

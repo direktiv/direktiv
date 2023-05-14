@@ -62,7 +62,6 @@ type server struct {
 
 	mirrorManager mirror.Manager
 
-	secrets  *secrets
 	flow     *flow
 	internal *internal
 	events   *events
@@ -128,11 +127,7 @@ func (srv *server) start(ctx context.Context) error {
 	}()
 
 	srv.sugar.Debug("Initializing secrets.")
-	srv.secrets, err = initSecrets()
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.secrets.Close)
+	// TODO: fix secretes.
 
 	srv.sugar.Debug("Initializing locks.")
 
