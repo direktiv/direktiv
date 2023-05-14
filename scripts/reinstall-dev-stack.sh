@@ -18,7 +18,7 @@ helm repo add direktiv https://chart.direktiv.io
 
 if [ ! -d "$dir/direktiv-charts" ]; then
   git clone https://github.com/direktiv/direktiv-charts.git $dir/direktiv-charts;
-  git checkout dev;
+  git -C $dir/direktiv-charts checkout dev;
 fi
 
 cd $dir/direktiv-charts/charts/knative-instance && helm dependency update $dir/direktiv-charts/charts/knative-instance
