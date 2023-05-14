@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -103,6 +104,21 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) 
 	var result []*grpc.MirrorActivityInfo
 	for _, f := range list {
 		result = append(result, ConvertMirrorProcessToGrpcMirrorActivity(f))
+	}
+
+	return result
+}
+
+func ConvertSecretToGrpcSecret(secret *core.Secret) *grpc.Secret {
+	return &grpc.Secret{
+		Name: secret.Name,
+	}
+}
+
+func ConvertSecretsToGrpcSecretList(list []*core.Secret) []*grpc.Secret {
+	var result []*grpc.Secret
+	for _, f := range list {
+		result = append(result, ConvertSecretToGrpcSecret(f))
 	}
 
 	return result
