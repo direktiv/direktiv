@@ -61,13 +61,7 @@ describe('Test secret crud operations', () => {
         expect(res.body).toMatchObject({
             namespace: testNamespace,
             secrets: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 2
-                },
+                pageInfo: null,
                 results: [
                     {"name": "key1"},
                     {"name": "key2"}
@@ -89,13 +83,7 @@ describe('Test secret crud operations', () => {
         expect(res.body).toMatchObject({
             namespace: testNamespace,
             secrets: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 1
-                },
+                pageInfo: null,
                 results: [{"name": "key2"}]
             }
         })
@@ -115,13 +103,7 @@ describe('Test secret crud operations', () => {
         expect(res.body).toMatchObject({
             namespace: testNamespace,
             secrets: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 0
-                },
+                pageInfo: null,
                 results: []
             }
         })

@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -104,10 +105,11 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 	}
 	defer rollback()
 
-	err = store.Secrets().Set(ctx, ns.ID, &core.Secret{
-		Namespace: ns.ID,
-		Name:      req.GetKey(),
-		Data:      req.GetData(),
+	err = store.Secrets().Set(ctx, &core.Secret{
+		ID:          uuid.New(),
+		NamespaceID: ns.ID,
+		Name:        req.GetKey(),
+		Data:        req.GetData(),
 	})
 	if err != nil {
 		return nil, err
@@ -238,10 +240,10 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	}
 	defer rollback()
 
-	err = store.Secrets().Update(ctx, ns.ID, &core.Secret{
-		Namespace: ns.ID,
-		Name:      req.GetKey(),
-		Data:      req.GetData(),
+	err = store.Secrets().Update(ctx, &core.Secret{
+		NamespaceID: ns.ID,
+		Name:        req.GetKey(),
+		Data:        req.GetData(),
 	})
 	if err != nil {
 		return nil, err
