@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
@@ -70,11 +71,11 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	metrics  *metrics.Client
-	logger   *internallogger.Logger // TODO: remove
-	loggerw  *logengine.Loggerw
-	edb      *entwrapper.Database // TODO: remove
-	database *database.CachedDatabase
+	metrics    *metrics.Client
+	logger     *internallogger.Logger // TODO: remove
+	loggerBeta logengine.ActionLogger
+	edb        *entwrapper.Database // TODO: remove
+	database   *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -270,7 +271,13 @@ func (srv *server) start(ctx context.Context) error {
 	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := psql.NewSQLFileStore(srv.gormDB)
 
-	srv.loggerw = &logengine.Loggerw{Sugar: srv.sugar, Store: store.Logs(), Pub: srv.pubsub}
+	srv.loggerBeta = logengine.ChainedActionLogger{
+		logengine.SugarActionLogger{Sugar: srv.sugar},
+		logengine.DataStoreActionLogger{Store: store.Logs()},
+		logengine.NotifierActionLogger{Callback: func(objectID uuid.UUID, objectType string) {
+			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+		}},
+	}
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)

@@ -3,29 +3,23 @@ package logengine
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
-type LogNotify interface {
-	NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType)
+type ActionLogger interface {
+	Log(tags map[string]interface{}, level string, msg string, a ...interface{})
 }
 
-type Loggerw struct {
+type SugarActionLogger struct {
 	Sugar *zap.SugaredLogger
-	Store LogStore
-	Pub   LogNotify
 }
 
-func (logger *Loggerw) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) error {
-	msg = fmt.Sprintf(msg, a...)
-
+func (s SugarActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
 	if len(tags) == 0 {
-		logger.Sugar.Infow(msg)
+		s.Sugar.Infow(msg)
 	} else {
 		ar := make([]interface{}, len(tags)+len(tags))
 		i := 0
@@ -36,49 +30,68 @@ func (logger *Loggerw) Log(tags map[string]interface{}, level string, msg string
 		}
 		switch level {
 		case "info":
-			logger.Sugar.Infow(msg, ar...)
+			s.Sugar.Infow(msg, ar...)
 		case "debug":
-			logger.Sugar.Debugw(msg, ar...)
+			s.Sugar.Debugw(msg, ar...)
 		case "error":
-			logger.Sugar.Errorw(msg, ar...)
+			s.Sugar.Errorw(msg, ar...)
 		case "panic":
-			logger.Sugar.Panicw(msg, ar...)
+			s.Sugar.Panicw(msg, ar...)
 		default:
-			logger.Sugar.Debugw(msg, ar...) // this should never happen
+			s.Sugar.Debugw(msg, ar...) // this should never happen
 		}
 	}
+}
+
+type ChainedActionLogger []ActionLogger
+
+func (loggers ChainedActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+	for i := range loggers {
+		loggers[i].Log(tags, level, msg, a...)
+	}
+}
+
+// DataStoreActionLogger records log information into the datastore so that UI frontend page can show log data about
+// different objects.
+type DataStoreActionLogger struct {
+	Store       LogStore
+	ErrorLogger *zap.SugaredLogger
+}
+
+func (s DataStoreActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+	// TODO: Alax, Please evaluate if mutation is OK here.
 
 	tags["level"] = level
-	err := logger.Store.Append(context.Background(), time.Now(), msg, tags)
+	err := s.Store.Append(context.Background(), time.Now(), msg, tags)
 	if err != nil {
-		return err
+		s.ErrorLogger.Error("writing action log to the database", "error", err)
 	}
-	id, _ := uuid.Parse(fmt.Sprintf("%s", tags["sender"]))
-	logger.Pub.NotifyLogs(id, recipient.RecipientType(fmt.Sprintf("%s", tags["senderType"])))
-
-	return nil
 }
 
-type cachedSQLLogStore struct {
-	store        LogStore
-	logQueue     chan *logMessage
-	logWorkersWG sync.WaitGroup
+// NotifierActionLogger is a pseudo action logger that doesn't log any information, instead it calls a callback
+// that reporting the object that was logged.
+type NotifierActionLogger struct {
+	Callback    func(objectID uuid.UUID, objectType string)
+	ErrorLogger *zap.SugaredLogger
 }
 
-type logMessage struct {
-	t      time.Time
-	msg    string
-	fields map[string]interface{}
-}
-
-func (cls *cachedSQLLogStore) logWorker() {
-	defer cls.logWorkersWG.Done()
-
-	for {
-		l, more := <-cls.logQueue
-		if !more {
-			return
-		}
-		_ = cls.store.Append(context.Background(), l.t, l.msg, l.fields)
+func (n NotifierActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+	tags["level"] = level
+	senderID, ok := tags["sender"]
+	if !ok {
+		n.ErrorLogger.Error("cannot find sender id in action log tags", "tags", tags)
+		return
 	}
+	senderType, ok := tags["senderType"]
+	if !ok {
+		n.ErrorLogger.Error("cannot find sender type in action log tags", "tags", tags)
+		return
+	}
+	id, err := uuid.Parse(fmt.Sprintf("%s", senderID))
+	if err != nil {
+		n.ErrorLogger.Error("cannot parse sender id in action log tags", "tags", tags, "error", err)
+		return
+	}
+
+	n.Callback(id, fmt.Sprintf("%s", senderType))
 }
