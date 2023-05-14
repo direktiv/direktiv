@@ -192,6 +192,7 @@ func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError
 }
 
 func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
+	// TODO: yassir, fix secrets here.
 	return "", nil
 }
 
