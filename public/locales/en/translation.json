@@ -157,6 +157,21 @@
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         }
+      },
+      "theme": {
+        "title": "Theme"
+      },
+      "namespace": {
+        "title": "Namespace"
+      },
+      "apiKey": {
+        "title": "Api Key"
+      },
+      "version": {
+        "title": "Version"
+      },
+      "namespacesList": {
+        "title": "Namespaces"
       }
     }
   },
