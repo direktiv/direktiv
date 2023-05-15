@@ -148,6 +148,16 @@
           "saveBtn": "Save"
         }
       }
+    },
+    "settings": {
+      "secrets": {
+        "list": {
+          "title": "Secrets"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        }
+      }
     }
   },
   "components": {
