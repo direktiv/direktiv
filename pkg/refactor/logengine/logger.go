@@ -3,19 +3,21 @@ package logengine
 import (
 	"context"
 	"fmt"
+
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
-type ActionLogger interface {
+type BetterLogger interface {
 	Log(tags map[string]interface{}, level string, msg string, a ...interface{})
 }
 
-type SugarActionLogger struct {
+type SugarBetterLogger struct {
 	Sugar *zap.SugaredLogger
 }
 
-func (s SugarActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (s SugarBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+	msg = fmt.Sprintf(msg, a)
 	if len(tags) == 0 {
 		s.Sugar.Infow(msg)
 	} else {
@@ -41,50 +43,54 @@ func (s SugarActionLogger) Log(tags map[string]interface{}, level string, msg st
 	}
 }
 
-type ChainedActionLogger []ActionLogger
+type ChainedBetterLogger []BetterLogger
 
-func (loggers ChainedActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (loggers ChainedBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
 	for i := range loggers {
 		loggers[i].Log(tags, level, msg, a...)
 	}
 }
 
-// DataStoreActionLogger records log information into the datastore so that UI frontend page can show log data about
+// DataStoreBetterLogger records log information into the datastore so that UI frontend page can show log data about
 // different objects.
-type DataStoreActionLogger struct {
+type DataStoreBetterLogger struct {
 	Store       LogStore
 	ErrorLogger *zap.SugaredLogger
 }
 
-func (s DataStoreActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+	_ = a
 	err := s.Store.Append(context.Background(), level, msg, tags)
 	if err != nil {
 		s.ErrorLogger.Error("writing action log to the database", "error", err)
 	}
 }
 
-// NotifierActionLogger is a pseudo action logger that doesn't log any information, instead it calls a callback
+// NotifierBetterLogger is a pseudo action logger that doesn't log any information, instead it calls a callback
 // that reporting the object that was logged.
-type NotifierActionLogger struct {
+type NotifierBetterLogger struct {
 	Callback    func(objectID uuid.UUID, objectType string)
 	ErrorLogger *zap.SugaredLogger
 }
 
-func (n NotifierActionLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (n NotifierBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
 	tags["level"] = level
 	senderID, ok := tags["sender"]
 	if !ok {
 		n.ErrorLogger.Error("cannot find sender id in action log tags", "tags", tags)
+
 		return
 	}
 	senderType, ok := tags["senderType"]
 	if !ok {
 		n.ErrorLogger.Error("cannot find sender type in action log tags", "tags", tags)
+
 		return
 	}
 	id, err := uuid.Parse(fmt.Sprintf("%s", senderID))
 	if err != nil {
 		n.ErrorLogger.Error("cannot parse sender id in action log tags", "tags", tags, "error", err)
+
 		return
 	}
 

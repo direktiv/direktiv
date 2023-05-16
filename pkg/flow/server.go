@@ -73,7 +73,7 @@ type server struct {
 
 	metrics    *metrics.Client
 	logger     *internallogger.Logger // TODO: remove
-	loggerBeta logengine.ActionLogger
+	loggerBeta logengine.BetterLogger
 	edb        *entwrapper.Database // TODO: remove
 	database   *database.CachedDatabase
 }
@@ -271,10 +271,10 @@ func (srv *server) start(ctx context.Context) error {
 	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := psql.NewSQLFileStore(srv.gormDB)
 
-	srv.loggerBeta = logengine.ChainedActionLogger{
-		logengine.SugarActionLogger{Sugar: srv.sugar},
-		logengine.DataStoreActionLogger{Store: store.Logs()},
-		logengine.NotifierActionLogger{Callback: func(objectID uuid.UUID, objectType string) {
+	srv.loggerBeta = logengine.ChainedBetterLogger{
+		logengine.SugarBetterLogger{Sugar: srv.sugar},
+		logengine.DataStoreBetterLogger{Store: store.Logs()},
+		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
 		}},
 	}
