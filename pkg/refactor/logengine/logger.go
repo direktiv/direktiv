@@ -75,6 +75,7 @@ type NotifierBetterLogger struct {
 
 func (n NotifierBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
 	tags["level"] = level
+	_ = msg
 	senderID, ok := tags["sender"]
 	if !ok {
 		n.ErrorLogger.Error("cannot find sender id in action log tags", "tags", tags)
