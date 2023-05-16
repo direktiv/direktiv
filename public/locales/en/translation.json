@@ -36,6 +36,15 @@
         },
         "workflow": {
           "revisions": {
+            "trafficShaping": {
+              "revisionSelector": {
+                "placeholder": "Select Revision...",
+                "searchPlaceholder": "Search Revisions...",
+                "tags": "Tags",
+                "revisions": "Revisions",
+                "notFound": "No Revisions found."
+              }
+            },
             "list": {
               "contextMenu": {
                 "title": "Actions",
