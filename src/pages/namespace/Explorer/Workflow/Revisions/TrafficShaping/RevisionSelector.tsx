@@ -21,7 +21,7 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 const RevisionSelector: FC<
-  ComponentPropsWithoutRef<typeof Button> & {
+  Omit<ComponentPropsWithoutRef<typeof Button>, "onSelect"> & {
     tags: TrimedRevisionSchemaType[];
     revisions: TrimedRevisionSchemaType[];
     isLoading?: boolean;
