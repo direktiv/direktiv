@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -6,7 +6,7 @@ import {
   CommandInput,
   CommandItem,
 } from "../../../../../../design/Command";
-import { ComponentProps, ComponentPropsWithoutRef, FC, useState } from "react";
+import { ComponentPropsWithoutRef, FC, useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -56,7 +56,7 @@ const RevisionSelector: FC<ComponentPropsWithoutRef<typeof Button>> = ({
           {value
             ? frameworks.find((framework) => framework.value === value)?.label
             : "Select framework..."}
-          <ChevronsUpDown className="h-auto w-4" />
+          <ChevronDown />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px]">
