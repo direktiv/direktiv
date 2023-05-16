@@ -28,6 +28,7 @@ import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { Link } from "react-router-dom";
 import Revert from "./Revert";
+import TrafficShaping from "./TrafficShaping/indesx";
 import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
@@ -80,6 +81,9 @@ const WorkflowRevisionsPage: FC = () => {
         {Array.isArray(tags?.results) &&
           tags?.results?.map((x, i) => <Badge key={i}>{x.name}</Badge>)}
       </Card>
+
+      <TrafficShaping />
+
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
         <GitMerge className="h-5" />
         Revisions
