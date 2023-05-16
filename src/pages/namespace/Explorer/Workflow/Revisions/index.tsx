@@ -28,7 +28,7 @@ import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { Link } from "react-router-dom";
 import Revert from "./Revert";
-import TrafficShaping from "./TrafficShaping/indesx";
+import TrafficShaping from "./TrafficShaping";
 import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
