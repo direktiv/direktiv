@@ -47,6 +47,18 @@ export const RevisionsListSchema = z.object({
 
 export const TagsListSchema = RevisionsListSchema;
 
+const RouteSchema = z.object({
+  ref: z.string(),
+  weight: z.number(),
+});
+
+export const RouterSchema = z.object({
+  namespace: z.string(),
+  node: NodeSchema,
+  live: z.boolean(),
+  routes: z.array(RouteSchema),
+});
+
 export const FolderCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
