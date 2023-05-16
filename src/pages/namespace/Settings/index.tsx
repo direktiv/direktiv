@@ -67,7 +67,7 @@ const SettingsPage: FC = () => {
             {secrets.data?.secrets.results.map((secret, i) => (
               <TableRow key={i}>
                 <TableCell>{secret.name}</TableCell>
-                <TableCell className="">
+                <TableCell className="w-0">
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger data-testid="secret-delete">
                       <Button variant="ghost">
