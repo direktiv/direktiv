@@ -1,5 +1,6 @@
+import { FC, useState } from "react";
+
 import { Card } from "../../../../../../design/Card";
-import { FC } from "react";
 import { Network } from "lucide-react";
 import RevisionSelector from "./RevisionSelector";
 import { Slider } from "../../../../../../design/Slider";
@@ -15,8 +16,9 @@ const TrafficShaping: FC = () => {
     path,
   });
   const { data: tags, isLoading: tagsLoading } = useNodeTags({ path });
-
   const isLoading = tagsLoading || revisionsLoading;
+  const [, setA] = useState("");
+  const [, setB] = useState("");
 
   return (
     <>
@@ -24,22 +26,22 @@ const TrafficShaping: FC = () => {
         <Network />
         {t("pages.explorer.tree.workflow.revisions.trafficShaping.title")}
       </h3>
-      <Card className="flex gap-x-3 p-4">
+      <Card className="flex flex-col gap-3 p-4 sm:flex-row">
         <RevisionSelector
-          className="grow"
+          className="flex w-full"
           tags={tags?.results ?? []}
           revisions={revisions?.results ?? []}
           isLoading={isLoading}
-          onSelect={(rev) => console.log(rev)}
+          onSelect={setA}
         />
         <RevisionSelector
-          className="grow"
+          className="flex w-full"
           tags={tags?.results ?? []}
           revisions={revisions?.results ?? []}
           isLoading={isLoading}
-          onSelect={(rev) => console.log(rev)}
+          onSelect={setB}
         />
-        <div className="grow p-4">
+        <div className="flex w-full">
           <Slider />
         </div>
       </Card>
