@@ -19,8 +19,16 @@ func (s sqlSecretsStore) CreateFolder(ctx context.Context, namespace uuid.UUID, 
 }
 
 func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error {
-	// TODO yassir: implement me
-	panic("implement me")
+	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data = ? WHERE namespace_id = ? and name = ?`,
+		secret.Data, secret.NamespaceID, secret.Name)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return nil
 }
 
 func (s sqlSecretsStore) DeleteFolder(ctx context.Context, id uuid.UUID, key string) error {
