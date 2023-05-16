@@ -3,7 +3,6 @@ import { FC } from "react";
 import { Network } from "lucide-react";
 import RevisionSelector from "./RevisionSelector";
 import { Slider } from "../../../../../../design/Slider";
-import clsx from "clsx";
 
 const TrafficShaping: FC = () => (
   <>
