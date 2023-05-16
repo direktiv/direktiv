@@ -31,6 +31,8 @@ const RevisionSelector: FC<
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [tagSelected, setTagSelected] = useState(false);
+
   const revisionsWithoutTags = revisions.filter(
     (rev) => !tags.some((t) => t.name === rev.name)
   );
@@ -48,7 +50,9 @@ const RevisionSelector: FC<
           {...props}
         >
           {value
-            ? tagsAndRevisions.find((rev) => rev.name === value)?.name
+            ? tagsAndRevisions
+                .find((rev) => rev.name === value)
+                ?.name.slice(0, tagSelected ? undefined : 8)
             : t(
                 "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.placeholder"
               )}
@@ -77,6 +81,7 @@ const RevisionSelector: FC<
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     onSelect?.(currentValue === value ? "" : currentValue);
+                    setTagSelected(true);
                     setOpen(false);
                   }}
                 >
@@ -104,6 +109,7 @@ const RevisionSelector: FC<
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     onSelect?.(currentValue === value ? "" : currentValue);
+                    setTagSelected(false);
                     setOpen(false);
                   }}
                 >
