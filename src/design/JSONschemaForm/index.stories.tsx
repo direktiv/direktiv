@@ -11,16 +11,29 @@ export default {
 export const Default = () => (
   <Form
     schema={{
+      title: "A registration form",
       type: "object",
-      required: ["expressions"],
+      required: ["firstName", "lastName"],
       properties: {
-        expressions: {
-          type: "array",
-          description: "expressions to solve",
-          title: "Expressions",
-          items: {
-            type: "string",
-          },
+        password: {
+          type: "string",
+          title: "Password",
+        },
+        lastName: {
+          type: "string",
+          title: "Last name",
+        },
+        bio: {
+          type: "string",
+          title: "Bio",
+        },
+        firstName: {
+          type: "string",
+          title: "First name",
+        },
+        age: {
+          type: "integer",
+          title: "Age",
         },
       },
     }}
