@@ -2,12 +2,12 @@ package flow
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -213,7 +213,6 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 		return nil, err
 	}
 
-	err = commit(ctx)
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
@@ -249,7 +248,6 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 		return nil, err
 	}
 
-	err = commit(ctx)
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
