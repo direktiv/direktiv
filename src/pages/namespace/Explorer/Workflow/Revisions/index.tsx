@@ -32,6 +32,7 @@ import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
 import { pages } from "../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../api/tree/query/tags";
+import { useRouter } from "../../../../../api/tree/query/router";
 import { useTranslation } from "react-i18next";
 
 const WorkflowRevisionsPage: FC = () => {
@@ -54,6 +55,8 @@ const WorkflowRevisionsPage: FC = () => {
     TrimedRevisionSchemaType | undefined
   >();
   const [revert, setRevert] = useState<TrimedRevisionSchemaType | undefined>();
+
+  const { data: router } = useRouter({ path });
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -90,6 +93,8 @@ const WorkflowRevisionsPage: FC = () => {
                   (tag) => tag.name === rev.name
                 );
 
+                const shaping = router?.routes?.find((x) => x.ref === rev.name);
+
                 const isLatest = rev.name === "latest";
                 const Icon = isTag ? Tag : GitMerge;
 
@@ -109,6 +114,9 @@ const WorkflowRevisionsPage: FC = () => {
                           {rev.name}
                         </Link>
                       </div>
+                    </TableCell>
+                    <TableCell className="w-auto justify-end gap-x-3">
+                      {shaping?.weight}
                     </TableCell>
                     <TableCell className="group flex w-auto justify-end gap-x-3">
                       {!isLatest && (
