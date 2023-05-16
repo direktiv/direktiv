@@ -37,6 +37,7 @@
         "workflow": {
           "revisions": {
             "trafficShaping": {
+              "title": "Traffic Shaping",
               "revisionSelector": {
                 "placeholder": "Select Revision...",
                 "searchPlaceholder": "Search Revisions...",
