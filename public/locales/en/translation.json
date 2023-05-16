@@ -46,6 +46,7 @@
               }
             },
             "list": {
+              "title": "Revisions",
               "contextMenu": {
                 "title": "Actions",
                 "delete": "Delete",
