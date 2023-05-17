@@ -48,6 +48,7 @@
             },
             "list": {
               "title": "Revisions",
+              "distribution": "{{count}} % of traffic distribution",
               "contextMenu": {
                 "title": "Actions",
                 "delete": "Delete",

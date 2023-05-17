@@ -11,6 +11,7 @@ import { FC, useEffect, useState } from "react";
 import { GitMerge, MoreVertical, Tag, Trash, Undo } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
+import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
@@ -75,14 +76,16 @@ const RevisionsList: FC = () => {
                   (tag) => tag.name === rev.name
                 );
 
-                const shaping = router?.routes?.find((x) => x.ref === rev.name);
+                const index = router?.routes?.findIndex(
+                  (x) => x.ref === rev.name
+                );
 
                 const isLatest = rev.name === "latest";
                 const Icon = isTag ? Tag : GitMerge;
 
                 return (
                   <TableRow key={i} className="group">
-                    <TableCell>
+                    <TableCell className="w-0">
                       <div className="flex space-x-3">
                         <Icon aria-hidden="true" className="h-5" />
                         <Link
@@ -97,16 +100,35 @@ const RevisionsList: FC = () => {
                         </Link>
                       </div>
                     </TableCell>
-                    <TableCell className="w-auto justify-end gap-x-3">
-                      {shaping?.weight}
+                    <TableCell className="w-0 justify-start gap-x-3">
+                      {index === 0 && (
+                        <Badge>
+                          {t(
+                            "pages.explorer.tree.workflow.revisions.list.distribution",
+                            {
+                              count: router?.routes?.[0]?.weight,
+                            }
+                          )}
+                        </Badge>
+                      )}
+                      {index === 1 && (
+                        <Badge variant="outline">
+                          {t(
+                            "pages.explorer.tree.workflow.revisions.list.distribution",
+                            {
+                              count: router?.routes?.[1]?.weight,
+                            }
+                          )}
+                        </Badge>
+                      )}
                     </TableCell>
-                    <TableCell className="group flex w-auto justify-end gap-x-3">
+                    <TableCell className="flex w-auto justify-end gap-x-3">
                       {!isLatest && (
                         <CopyButton
                           value={rev.name}
                           buttonProps={{
                             variant: "outline",
-                            className: "w-24 hidden group-hover:inline-flex",
+                            className: "hidden group-hover:inline-flex",
                             size: "sm",
                           }}
                         >
