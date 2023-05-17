@@ -1,9 +1,9 @@
+import { forceLeadingSlash, sortByRef } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { RouterSchema } from "../schema";
 import type { RouterSchemaType } from "../schema";
 import { apiFactory } from "~/api/utils";
-import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
@@ -55,7 +55,11 @@ export const useSetRouter = () => {
           apiKey: apiKey ?? undefined,
           path: variables.path,
         }),
-        () => data
+        () => ({
+          ...data,
+          // TODO: waiting for DIR-576 to get fixed
+          routes: [...data.routes.sort(sortByRef)],
+        })
       );
       toast({
         title: "Restored workflow",
