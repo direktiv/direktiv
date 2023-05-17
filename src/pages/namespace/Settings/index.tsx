@@ -82,11 +82,7 @@ const SettingsPage: FC = () => {
     });
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isDirty, errors, isValid, isSubmitted },
-  } = useForm<SecretFormInput>({
+  const { register, handleSubmit, reset } = useForm<SecretFormInput>({
     resolver: zodResolver(
       z.object({
         name: z.string(),
@@ -97,6 +93,15 @@ const SettingsPage: FC = () => {
 
   const { t } = useTranslation();
 
+  const resetDialog = (isOpening: boolean) => {
+    if (!isOpening) {
+      setDeleteSecret(undefined);
+      setCreateSecret(false);
+      reset();
+    }
+    setDialogOpen(isOpening);
+  };
+
   return (
     <div className="flex flex-col space-y-5 p-10">
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
@@ -105,7 +110,10 @@ const SettingsPage: FC = () => {
       </h3>
 
       <Card>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog
+          open={dialogOpen}
+          onOpenChange={(isOpening) => resetDialog(isOpening)}
+        >
           <Table>
             <TableBody>
               {secrets.data?.secrets.results.map((secret, i) => (
