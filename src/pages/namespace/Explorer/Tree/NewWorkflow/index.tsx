@@ -23,6 +23,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import workflowTemplates from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +44,7 @@ const NewWorkflow = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
+  const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
   const {
@@ -57,7 +59,7 @@ const NewWorkflow = ({
           z
             .string()
             .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
-              message: "The name already exists",
+              message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
             })
         ),
         fileContent: z.string(),
@@ -95,7 +97,7 @@ const NewWorkflow = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Play /> Create a new Workflow
+          <Play /> {t("pages.explorer.tree.newWorkflow.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -112,7 +114,7 @@ const NewWorkflow = ({
         >
           <fieldset className="flex items-center gap-5">
             <label className="w-[150px] text-right text-[15px]" htmlFor="name">
-              Name
+              {t("pages.explorer.tree.newWorkflow.workflowName")}
             </label>
             <Input
               data-testid="new-workflow-name"
@@ -126,7 +128,7 @@ const NewWorkflow = ({
               className="w-[150px] text-right text-[15px]"
               htmlFor="template"
             >
-              template
+              {t("pages.explorer.tree.newWorkflow.template")}
             </label>
             <Select
               onValueChange={(value) => {
@@ -172,7 +174,7 @@ const NewWorkflow = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          Create
+          {t("pages.explorer.tree.newWorkflow.create")}
         </Button>
       </DialogFooter>
     </>

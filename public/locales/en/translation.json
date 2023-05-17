@@ -59,6 +59,15 @@
           "newWorkflow": "New Workflow",
           "new": "New"
         },
+        "newWorkflow":{
+         "title": "Create a new workflow",
+          "name": "Name",
+          "create": "Create",
+          "workflowName": "workflow-name",
+          "nameAlreadyExists": "The name already exists",
+          "cancel": "Cancel",
+          "template": "template"
+        },
         "workflow": {
           "revisions": {
             "list": {
@@ -132,6 +141,14 @@
       "notFound": "No namespace found.",
       "createButton": "Create new namespace",
       "loading": "loading..."
+    },
+    "namespaceCreate":{
+      "title": "Create a new namespace",
+      "newNamespaceName": "new-namespace-name",
+      "create": "Create",
+      "namespace": "Namespace",
+      "nameAlreadyExists": "The name already exists",
+      "cancel": "Cancel"
     }
   }
 }
