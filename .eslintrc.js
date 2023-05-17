@@ -20,6 +20,7 @@ module.exports = {
     },
     // Tells eslint how to resolve imports
     "import/resolver": {
+      typescript: {},
       node: {
         paths: ["src"],
         extensions: [".js", ".jsx", ".ts", ".tsx"],
