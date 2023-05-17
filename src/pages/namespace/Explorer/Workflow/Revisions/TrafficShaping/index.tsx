@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import Button from "../../../../../../design/Button";
 import { Card } from "../../../../../../design/Card";
@@ -9,6 +9,8 @@ import { Slider } from "../../../../../../design/Slider";
 import { pages } from "../../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../../api/tree/query/tags";
+import { useRouter } from "~/api/tree/query/router";
+import { useSetRouter } from "~/api/tree/mutate/setRouter";
 import { useTranslation } from "react-i18next";
 
 const TrafficShaping: FC = () => {
@@ -17,11 +19,32 @@ const TrafficShaping: FC = () => {
   const { data: revisions, isLoading: revisionsLoading } = useNodeRevisions({
     path,
   });
+  const { data: router } = useRouter({ path });
   const { data: tags, isLoading: tagsLoading } = useNodeTags({ path });
-  const isLoading = tagsLoading || revisionsLoading;
+  const { mutate: setRouter, isLoading: isLoadingMutation } = useSetRouter();
+  const isLoadingData = tagsLoading || revisionsLoading;
+
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const [weight, setWeight] = useState(50);
+
+  const aServer = router?.routes?.[0]?.ref;
+  const bServer = router?.routes?.[0]?.ref;
+  const weightServer = router?.routes?.[0]?.weight;
+
+  useEffect(() => {
+    if (aServer) setA(aServer);
+  }, [aServer]);
+
+  useEffect(() => {
+    if (bServer) setB(bServer);
+  }, [bServer]);
+
+  useEffect(() => {
+    if (weightServer) setWeight(weightServer);
+  }, [weightServer]);
+
+  if (!path) return null;
 
   return (
     <>
@@ -35,14 +58,14 @@ const TrafficShaping: FC = () => {
             className="flex w-full"
             tags={tags?.results ?? []}
             revisions={revisions?.results ?? []}
-            isLoading={isLoading}
+            isLoading={isLoadingData}
             onSelect={setA}
           />
           <RevisionSelector
             className="flex w-full"
             tags={tags?.results ?? []}
             revisions={revisions?.results ?? []}
-            isLoading={isLoading}
+            isLoading={isLoadingData}
             onSelect={setB}
           />
           <div className="flex w-full">
@@ -57,10 +80,31 @@ const TrafficShaping: FC = () => {
             />
           </div>
           <div>
-            <Button variant="primary">Save</Button>
+            <Button
+              variant="primary"
+              disabled={isLoadingMutation || a.length === 0 || b.length === 0}
+              onClick={() => {
+                setRouter({
+                  path,
+                  routeA: {
+                    ref: a,
+                    weight,
+                  },
+                  routeB: {
+                    ref: b,
+                    weight: 100 - weight,
+                  },
+                });
+              }}
+            >
+              Save
+            </Button>
           </div>
         </div>
         <Separator className="my-4" />
+        <div>
+          {aServer} - {bServer} - {weightServer ?? "none"}
+        </div>
         <div>
           {a} - {b} - {weight ?? "none"}
         </div>
