@@ -64,7 +64,7 @@ const SettingsPage: FC = () => {
   });
 
   const { mutate: createSecretMutation } = useCreateSecret({
-    onSuccess: (data) => {
+    onSuccess: () => {
       setCreateSecret(false);
       setDialogOpen(false);
     },
@@ -103,184 +103,194 @@ const SettingsPage: FC = () => {
   };
 
   return (
-    <div className="flex flex-col space-y-5 p-10">
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <SquareAsterisk className="h-5" />
-        {t("pages.settings.secrets.list.title")}
-      </h3>
-
-      <Card>
+    <div className="flex flex-col space-y-6 p-10">
+      <section>
         <Dialog
           open={dialogOpen}
           onOpenChange={(isOpening) => resetDialog(isOpening)}
         >
-          <Table>
-            <TableBody>
-              {secrets.data?.secrets.results.map((secret, i) => (
-                <TableRow key={i}>
-                  <TableCell>{secret.name}</TableCell>
-                  <TableCell className="w-0">
-                    <DialogTrigger
-                      asChild
-                      data-testid="secret-delete"
-                      onClick={() => setDeleteSecret(secret)}
-                    >
-                      <Button variant="ghost">
-                        <Trash />
-                      </Button>
-                    </DialogTrigger>
-                  </TableCell>
-                </TableRow>
-              ))}
-              <TableRow>
-                <TableCell colSpan={2}>
-                  <DialogTrigger
-                    asChild
-                    data-testid="secret-create"
-                    onClick={() => setCreateSecret(true)}
-                  >
-                    <Button variant="ghost">
-                      <PlusCircle />
-                    </Button>
-                  </DialogTrigger>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-          {deleteSecret && (
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  <Trash /> Delete
-                </DialogTitle>
-              </DialogHeader>
-              <div className="my-3">
-                <Trans
-                  i18nKey="pages.settings.secrets.delete.description"
-                  values={{ name: deleteSecret.name }}
-                />
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="ghost">Cancel</Button>
-                </DialogClose>
-                <Button
-                  data-testid="secret-delete-confirm"
-                  onClick={() => deleteSecretMutation({ secret: deleteSecret })}
-                  variant="destructive"
-                >
-                  Delete
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          )}
-          {createSecret && (
-            <DialogContent>
-              <form
-                id="create-secret"
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex flex-col space-y-5"
-              >
+          <div className="mb-3 flex flex-row justify-between">
+            <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+              <SquareAsterisk className="h-5" />
+              {t("pages.settings.secrets.list.title")}
+            </h3>
+
+            <DialogTrigger
+              asChild
+              data-testid="secret-create"
+              onClick={() => setCreateSecret(true)}
+            >
+              <Button variant="ghost">
+                <PlusCircle />
+              </Button>
+            </DialogTrigger>
+          </div>
+
+          <Card>
+            <Table>
+              <TableBody>
+                {secrets.data?.secrets.results.map((secret, i) => (
+                  <TableRow key={i}>
+                    <TableCell>{secret.name}</TableCell>
+                    <TableCell className="w-0">
+                      <DialogTrigger
+                        asChild
+                        data-testid="secret-delete"
+                        onClick={() => setDeleteSecret(secret)}
+                      >
+                        <Button variant="ghost">
+                          <Trash />
+                        </Button>
+                      </DialogTrigger>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {deleteSecret && (
+              <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    <Trash /> Create
+                    <Trash /> Delete
                   </DialogTitle>
                 </DialogHeader>
-
-                <fieldset className="flex items-center gap-5">
-                  <label
-                    className="w-[150px] text-right text-[15px]"
-                    htmlFor="name"
-                  >
-                    Name
-                  </label>
-                  <Input
-                    data-testid="new-secret-name"
-                    id="name"
-                    placeholder="secret-name"
-                    {...register("name")}
+                <div className="my-3">
+                  <Trans
+                    i18nKey="pages.settings.secrets.delete.description"
+                    values={{ name: deleteSecret.name }}
                   />
-                </fieldset>
-
-                <fieldset className="flex items-start gap-5">
-                  <Textarea
-                    className="h-96"
-                    data-testid="new-workflow-editor"
-                    {...register("value")}
-                  />
-                </fieldset>
-
+                </div>
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button variant="ghost">Cancel</Button>
                   </DialogClose>
                   <Button
-                    data-testid="secret-create-submit"
-                    type="submit"
-                    variant="primary"
+                    data-testid="secret-delete-confirm"
+                    onClick={() =>
+                      deleteSecretMutation({ secret: deleteSecret })
+                    }
+                    variant="destructive"
                   >
-                    Create
+                    Delete
                   </Button>
                 </DialogFooter>
-              </form>
-            </DialogContent>
-          )}
+              </DialogContent>
+            )}
+            {createSecret && (
+              <DialogContent>
+                <form
+                  id="create-secret"
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="flex flex-col space-y-5"
+                >
+                  <DialogHeader>
+                    <DialogTitle>
+                      <Trash /> Create
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  <fieldset className="flex items-center gap-5">
+                    <label
+                      className="w-[150px] text-right text-[15px]"
+                      htmlFor="name"
+                    >
+                      Name
+                    </label>
+                    <Input
+                      data-testid="new-secret-name"
+                      id="name"
+                      placeholder="secret-name"
+                      {...register("name")}
+                    />
+                  </fieldset>
+
+                  <fieldset className="flex items-start gap-5">
+                    <Textarea
+                      className="h-96"
+                      data-testid="new-workflow-editor"
+                      {...register("value")}
+                    />
+                  </fieldset>
+
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="ghost">Cancel</Button>
+                    </DialogClose>
+                    <Button
+                      data-testid="secret-create-submit"
+                      type="submit"
+                      variant="primary"
+                    >
+                      Create
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            )}
+          </Card>
         </Dialog>
-      </Card>
+      </section>
 
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <Palette className="h-5" />
-        {t("pages.settings.theme.title")} {theme}
-      </h3>
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Palette className="h-5" />
+          {t("pages.settings.theme.title")} {theme}
+        </h3>
 
-      <Card className="flex gap-x-3 p-4">
-        <div className="flex space-x-5">
-          <Button onClick={() => setTheme("dark")}>darkmode</Button>
-          <Button className="" onClick={() => setTheme("light")}>
-            lightmode
-          </Button>
-          <Button onClick={() => setTheme(null)}>reset theme</Button>
-        </div>
-      </Card>
+        <Card className="flex gap-x-3 p-4">
+          <div className="flex space-x-5">
+            <Button onClick={() => setTheme("dark")}>darkmode</Button>
+            <Button className="" onClick={() => setTheme("light")}>
+              lightmode
+            </Button>
+            <Button onClick={() => setTheme(null)}>reset theme</Button>
+          </div>
+        </Card>
+      </section>
 
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <Hexagon className="h-5" />
-        {t("pages.settings.namespace.title")} {selectedNamespace}
-      </h3>
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Hexagon className="h-5" />
+          {t("pages.settings.namespace.title")} {selectedNamespace}
+        </h3>
 
-      <Card className="flex gap-x-3 p-4">
-        <div className="flex space-x-5">
-          <Button variant="destructive" onClick={() => setNamespace(null)}>
-            reset namespace
-          </Button>
-        </div>
-      </Card>
+        <Card className="flex gap-x-3 p-4">
+          <div className="flex space-x-5">
+            <Button variant="destructive" onClick={() => setNamespace(null)}>
+              reset namespace
+            </Button>
+          </div>
+        </Card>
+      </section>
 
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <Key className="h-5" />
-        {t("pages.settings.apiKey.title")} {apiKey}
-      </h3>
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Key className="h-5" />
+          {t("pages.settings.apiKey.title")} {apiKey}
+        </h3>
 
-      <Card className="flex gap-x-3 p-4">
-        <div className="flex space-x-5">
-          <Button onClick={() => setApiKey("password")}>
-            set Api key to password
-          </Button>
-          <Button variant="destructive" onClick={() => setApiKey(null)}>
-            reset api key
-          </Button>
-        </div>
-      </Card>
-      <div>
-        <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+        <Card className="flex gap-x-3 p-4">
+          <div className="flex space-x-5">
+            <Button onClick={() => setApiKey("password")}>
+              set Api key to password
+            </Button>
+            <Button variant="destructive" onClick={() => setApiKey(null)}>
+              reset api key
+            </Button>
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
           <GitCommit className="h-5" />
           {t("pages.settings.version.title")}
         </h3>
         <div className="mt-2 ml-2">
           {isVersionLoading ? "Loading version...." : version?.api}
         </div>
-      </div>
-      <div>
+      </section>
+      <section>
         <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
           <FolderTree className="h-5" />
           {t("pages.settings.namespacesList.title")}
@@ -292,7 +302,7 @@ const SettingsPage: FC = () => {
                 <div key={namespace.name}>{namespace.name}</div>
               ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 };
