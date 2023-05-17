@@ -192,8 +192,18 @@ func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError
 }
 
 func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
-	// TODO: yassir, fix secrets here.
-	return "", nil
+	_, store, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer rollback()
+
+	secretData, err := store.Secrets().Get(ctx, im.cached.Namespace.ID, secret)
+	if err != nil {
+		return "", err
+	}
+
+	return string(secretData.Data), nil
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
