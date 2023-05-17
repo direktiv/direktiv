@@ -19,8 +19,9 @@ const TrafficShaping: FC = () => {
   });
   const { data: tags, isLoading: tagsLoading } = useNodeTags({ path });
   const isLoading = tagsLoading || revisionsLoading;
-  const [, setA] = useState("");
-  const [, setB] = useState("");
+  const [a, setA] = useState("");
+  const [b, setB] = useState("");
+  const [weight, setWeight] = useState(50);
 
   return (
     <>
@@ -45,13 +46,24 @@ const TrafficShaping: FC = () => {
             onSelect={setB}
           />
           <div className="flex w-full">
-            <Slider />
+            <Slider
+              step={1}
+              min={0}
+              max={100}
+              value={[weight]}
+              onValueChange={(e) => {
+                setWeight(e?.[0] || 0);
+              }}
+            />
           </div>
           <div>
             <Button variant="primary">Save</Button>
           </div>
         </div>
-        <Separator className="mt-4" />
+        <Separator className="my-4" />
+        <div>
+          {a} - {b} - {weight ?? "none"}
+        </div>
       </Card>
     </>
   );
