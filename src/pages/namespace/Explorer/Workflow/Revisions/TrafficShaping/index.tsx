@@ -66,8 +66,7 @@ const TrafficShaping: FC = () => {
 
   if (!path) return null;
 
-  // wait for server data to to avoid layout shift and reduce the need of side effect handling
-  // f.e. the defaultValue of <RevisionSelector /> will only use the first time the component is rendered
+  // wait for server data to to avoid layout shift
   if (!isFetched) return null;
 
   return (

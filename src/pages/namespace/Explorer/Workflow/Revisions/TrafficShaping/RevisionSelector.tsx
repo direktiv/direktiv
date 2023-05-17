@@ -8,7 +8,7 @@ import {
   CommandList,
   CommandStaticItem,
 } from "../../../../../../design/Command";
-import { ComponentPropsWithoutRef, FC, useState } from "react";
+import { ComponentPropsWithoutRef, FC, useEffect, useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -37,6 +37,10 @@ const RevisionSelector: FC<
   const revisionsWithoutTags = revisions.filter(
     (rev) => !tags.some((t) => t.name === rev.name)
   );
+
+  useEffect(() => {
+    setValue(defaultValue ?? "");
+  }, [defaultValue]);
 
   const tagsAndRevisions = [...revisions]; // revisions have tags included
 
