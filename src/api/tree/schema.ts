@@ -56,7 +56,9 @@ export const RouterSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
   live: z.boolean(),
-  routes: z.array(RouteSchema).refine((routes) => routes.length === 2),
+  routes: z
+    .array(RouteSchema)
+    .refine((routes) => [0, 2].includes(routes.length)),
 });
 
 export const FolderCreatedSchema = z.object({
