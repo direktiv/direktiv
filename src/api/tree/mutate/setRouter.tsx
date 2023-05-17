@@ -8,6 +8,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { Trans, Translation, useTranslation } from "react-i18next";
 
 const setRouter = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
@@ -22,6 +23,7 @@ export const useSetRouter = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   if (!namespace) {
@@ -62,15 +64,26 @@ export const useSetRouter = () => {
         })
       );
       toast({
-        title: "Restored workflow",
-        description: `The latest revision was restored`,
+        title: t("api.tree.mutate.setRouter.success.title"),
+        description: (
+          <Trans
+            i18nKey="api.tree.mutate.setRouter.success.description"
+            values={{
+              aName: variables.routeA.ref,
+              bName: variables.routeB.ref,
+              aWeight: variables.routeA.weight,
+              bWeight: variables.routeB.weight,
+            }}
+          />
+        ),
+
         variant: "success",
       });
     },
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not revert workflow 😢",
+        description: "could set traffic shaping 😢",
         variant: "error",
       });
     },
