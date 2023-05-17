@@ -9,6 +9,8 @@ import (
 )
 
 type BetterLogger interface {
+	// Logs a log message with contextual information, which are passed via tags.
+	// Remember to pass the trace-id for the logentry via the tags with the key trace.
 	Log(tags map[string]interface{}, level string, msg string, a ...interface{})
 }
 
@@ -17,7 +19,7 @@ type SugarBetterLogger struct {
 }
 
 func (s SugarBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
-	msg = fmt.Sprintf(msg, a)
+	msg = fmt.Sprintf(msg, a...)
 	if len(tags) == 0 {
 		s.Sugar.Infow(msg)
 	} else {
@@ -59,8 +61,7 @@ type DataStoreBetterLogger struct {
 }
 
 func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
-	_ = a
-	err := s.Store.Append(context.Background(), level, msg, tags)
+	err := s.Store.Append(context.Background(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
 		s.ErrorLogger.Error("writing action log to the database", "error", err)
 	}

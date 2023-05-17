@@ -8,6 +8,11 @@ import (
 // LogStore manages storing and querying LogEntries.
 type LogStore interface {
 	// appends a log entry to the logs. Passed keysAnValues will be associated with the log entry.
+	// - For instance-logs following Key Value pairs SHOULD be present: instance_logs, log_instance_call_path, root_instance_id
+	// - For namespace-logs following Key Value pairs SHOULD be present: namespace_logs
+	// - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
+	// - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
+	// - All passed keysAndValues pair will be stored attached to the log-entry.
 	Append(ctx context.Context, level string, msg string, keysAndValues map[string]interface{}) error
 	// returns a limited number of log-entries that have matching associated fields with the provided keysAndValues pairs
 	// starting a given offset. For no offset or unlimited log-entries in the result set the value to -1.
