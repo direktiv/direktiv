@@ -3,13 +3,13 @@ import {
   createNamespace,
   createNamespaceName,
   deleteNamespace,
-} from "./utils/namespace";
+} from "../utils/namespace";
 import {
   checkIfNodeExists,
   createDirectory,
   createWorkflow,
   workflowExamples,
-} from "./utils/node";
+} from "../utils/node";
 import { expect, test } from "@playwright/test";
 
 let namespace = "";
@@ -322,7 +322,6 @@ test(`it is possible to delete a directory`, async ({ page }) => {
   await expect(nodeExists).toBeFalsy();
 });
 
-// API currently returns a 500 error when trying to rename directory
 test(`it is possible to rename a directory`, async ({ page }) => {
   const oldname = "old-name";
   const newname = "new-name";
