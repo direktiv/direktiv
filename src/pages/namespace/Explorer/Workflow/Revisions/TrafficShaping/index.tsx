@@ -13,6 +13,7 @@ import { useRouter } from "~/api/tree/query/router";
 import { useSetRouter } from "~/api/tree/mutate/setRouter";
 import { useTranslation } from "react-i18next";
 
+// give tags and revisions a shared loading and fetched state
 const useRevisionsAndTags = ({ path }: { path?: string }) => {
   const {
     data: tags,
@@ -26,7 +27,7 @@ const useRevisionsAndTags = ({ path }: { path?: string }) => {
   } = useNodeRevisions({
     path,
   });
-  const isLoading = isLoadingTags || isLoadingRevisions;
+  const isLoading = isLoadingTags && isLoadingRevisions;
   const isFetched = isFetchedTags && isFetchedRevisions;
   return { tags, revisions, isLoading, isFetched };
 };
@@ -47,7 +48,7 @@ const TrafficShaping: FC = () => {
   // server state
   const { mutate: setRouter, isLoading: isLoadingMutation } = useSetRouter();
   const routeAServer = router?.routes?.[0]?.ref;
-  const routeBServer = router?.routes?.[0]?.ref;
+  const routeBServer = router?.routes?.[1]?.ref;
   const weightServer = router?.routes?.[0]?.weight;
 
   // synch component state with server state
@@ -57,8 +58,17 @@ const TrafficShaping: FC = () => {
     if (routeBServer) setRouteB(routeBServer);
   }, [weightServer, routeAServer, routeBServer]);
 
-  if (!isFetched) return null; // wait for data to to avoid layout shift
+  const saveButtonDisabled =
+    isLoadingMutation ||
+    routeA.length === 0 ||
+    routeB.length === 0 ||
+    routeA === routeB;
+
   if (!path) return null;
+
+  // wait for server data to to avoid layout shift and reduce the need of side effect handling
+  // f.e. the defaultValue of <RevisionSelector /> will only use the first time the component is rendered
+  if (!isFetched) return null;
 
   return (
     <>
@@ -79,11 +89,13 @@ const TrafficShaping: FC = () => {
             tags={tags?.results ?? []}
             revisions={revisions?.results ?? []}
             isLoading={isLoading}
+            defaultValue={routeAServer}
             onSelect={setRouteA}
           />
           <RevisionSelector
             className="flex w-full"
             tags={tags?.results ?? []}
+            defaultValue={routeBServer}
             revisions={revisions?.results ?? []}
             isLoading={isLoading}
             onSelect={setRouteB}
@@ -95,16 +107,14 @@ const TrafficShaping: FC = () => {
               max={100}
               value={[weight]}
               onValueChange={(e) => {
-                setWeight(e?.[0] || 0);
+                setWeight(e[0] ?? 0);
               }}
             />
           </div>
           <div>
             <Button
               variant="primary"
-              disabled={
-                isLoadingMutation || routeA.length === 0 || routeB.length === 0
-              }
+              disabled={saveButtonDisabled}
               onClick={() => {
                 setRouter({
                   path,

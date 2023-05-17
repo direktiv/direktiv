@@ -21,23 +21,24 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 const RevisionSelector: FC<
-  Omit<ComponentPropsWithoutRef<typeof Button>, "onSelect"> & {
+  Omit<ComponentPropsWithoutRef<typeof Button>, "onSelect" | "defaultValue"> & {
     tags: TrimedRevisionSchemaType[];
     revisions: TrimedRevisionSchemaType[];
     isLoading?: boolean;
     onSelect?: (revision: string) => void;
+    defaultValue?: string;
   }
-> = ({ tags, revisions, isLoading, onSelect, ...props }) => {
+> = ({ tags, revisions, isLoading, onSelect, defaultValue, ...props }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(defaultValue ?? "");
   const [tagSelected, setTagSelected] = useState(false);
 
   const revisionsWithoutTags = revisions.filter(
     (rev) => !tags.some((t) => t.name === rev.name)
   );
 
-  const tagsAndRevisions = [...revisions]; // revisions have tags include
+  const tagsAndRevisions = [...revisions]; // revisions have tags included
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
