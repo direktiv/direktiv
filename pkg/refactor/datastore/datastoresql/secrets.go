@@ -13,8 +13,9 @@ type sqlSecretsStore struct {
 	db *gorm.DB
 }
 
+// nolint
 func (s sqlSecretsStore) CreateFolder(ctx context.Context, namespace uuid.UUID, name string) error {
-	// TODO: yassir: implement me
+	// TODO: potential un-used feature that we can remove, check with Jens.
 	panic("implement me")
 }
 
@@ -31,8 +32,9 @@ func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error 
 	return nil
 }
 
+// nolint
 func (s sqlSecretsStore) DeleteFolder(ctx context.Context, id uuid.UUID, key string) error {
-	// TODO yassir: implement me
+	// TODO: potential un-used feature that we can remove, check with Jens.
 	panic("implement me")
 }
 
@@ -49,8 +51,9 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespaceID uuid.UUID, name
 	return nil
 }
 
+// nolint
 func (s sqlSecretsStore) Search(ctx context.Context, namespace uuid.UUID, name string) ([]*core.Secret, error) {
-	// TODO yassir: implement me
+	// TODO: potential un-used feature that we can remove, check with Jens.
 	panic("implement me")
 }
 
