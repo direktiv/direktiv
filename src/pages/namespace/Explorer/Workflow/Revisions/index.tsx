@@ -11,7 +11,6 @@ import { FC, useEffect, useState } from "react";
 import { GitMerge, MoreVertical, Tag, Trash, Undo } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
-import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
@@ -64,17 +63,7 @@ const WorkflowRevisionsPage: FC = () => {
 
   return (
     <div className="flex flex-col gap-y-4 p-5 ">
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <Tag className="h-5" />
-        Tags
-      </h3>
-      <Card className="flex gap-x-3 p-4">
-        {Array.isArray(tags?.results) &&
-          tags?.results?.map((x, i) => <Badge key={i}>{x.name}</Badge>)}
-      </Card>
-
       <TrafficShaping />
-
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
         <GitMerge className="h-5" />
         {t("pages.explorer.tree.workflow.revisions.list.title")}
