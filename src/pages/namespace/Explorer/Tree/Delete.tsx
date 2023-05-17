@@ -40,8 +40,9 @@ const Delete = ({
               name: `${node.name}`,
             }) +
             "&nbsp;" +
-            (node.type === "directory" ?
-              t("pages.explorer.tree.delete.directoryMsg") : ""),
+            (node.type === "directory"
+              ? t("pages.explorer.tree.delete.directoryMsg")
+              : ""),
         }}
       />
       <DialogFooter>

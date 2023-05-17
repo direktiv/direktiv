@@ -100,7 +100,9 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">{t("components.namespaceCreate.cancel")}</Button>
+          <Button variant="ghost">
+            {t("components.namespaceCreate.cancel")}
+          </Button>
         </DialogClose>
         <Button
           data-testid="new-namespace-submit"
