@@ -1,7 +1,6 @@
 import "./i18n";
 
 import React, { lazy } from "react";
-
 import { createRoot } from "react-dom/client";
 import env from "./config/env/";
 

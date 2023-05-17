@@ -3,14 +3,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../../design/Dialog";
+} from "~/design/Dialog";
 import { Trans, useTranslation } from "react-i18next";
 
-import Button from "../../../../../design/Button";
+import Button from "~/design/Button";
 import { Trash } from "lucide-react";
-import { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
-import { useDeleteRevision } from "../../../../../api/tree/mutate/deleteRevision";
-import { useDeleteTag } from "../../../../../api/tree/mutate/deleteTag";
+import { TrimedRevisionSchemaType } from "~/api/tree/schema";
+import { useDeleteRevision } from "~/api/tree/mutate/deleteRevision";
+import { useDeleteTag } from "~/api/tree/mutate/deleteTag";
 
 const Delete = ({
   path,

@@ -1,8 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "../../../../../design/Dialog";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,30 +6,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../../../design/Dropdown";
+} from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
 import { GitMerge, MoreVertical, Tag, Trash, Undo } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "../../../../../design/Table";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
-import Badge from "../../../../../design/Badge";
-import Button from "../../../../../design/Button";
-import { Card } from "../../../../../design/Card";
-import CopyButton from "../../../../../design/CopyButton";
+import Badge from "~/design/Badge";
+import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import CopyButton from "~/design/CopyButton";
 import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { Link } from "react-router-dom";
 import Revert from "./Revert";
 import TrafficShaping from "./TrafficShaping";
-import type { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
-import { pages } from "../../../../../util/router/pages";
-import { useNodeRevisions } from "../../../../../api/tree/query/revisions";
-import { useNodeTags } from "../../../../../api/tree/query/tags";
-import { useRouter } from "../../../../../api/tree/query/router";
+import type { TrimedRevisionSchemaType } from "~/api/tree/schema";
+import { pages } from "~/util/router/pages";
+import { useNodeRevisions } from "~/api/tree/query/revisions";
+import { useNodeTags } from "~/api/tree/query/tags";
+import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
 
 const WorkflowRevisionsPage: FC = () => {

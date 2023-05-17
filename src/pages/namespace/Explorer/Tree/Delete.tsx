@@ -3,12 +3,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../design/Dialog";
+} from "~/design/Dialog";
 
-import Button from "../../../../design/Button";
-import { NodeSchemaType } from "../../../../api/tree/schema";
+import Button from "~/design/Button";
+import { NodeSchemaType } from "~/api/tree/schema";
 import { Trash } from "lucide-react";
-import { useDeleteNode } from "../../../../api/tree/mutate/deleteNode";
+import { useDeleteNode } from "~/api/tree/mutate/deleteNode";
 
 const Delete = ({
   node,

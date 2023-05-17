@@ -10,11 +10,11 @@ import {
 } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { treeKeys } from "..";
-import { useApiKey } from "../../../util/store/apiKey";
-import { useNamespace } from "../../../util/store/namespace";
-import { useToast } from "../../../design/Toast";
+import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
+import { useToast } from "~/design/Toast";
 
 const renameNode = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>

@@ -1,10 +1,10 @@
 import { FolderOpen, Play } from "lucide-react";
 
-import { Breadcrumb as BreadcrumbLink } from "../../design/Breadcrumbs";
+import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { pages } from "../../util/router/pages";
-import { useNamespace } from "../../util/store/namespace";
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
