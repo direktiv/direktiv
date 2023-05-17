@@ -32,17 +32,20 @@ type SecretsStore interface {
 	GetAll(ctx context.Context, namespaceID uuid.UUID) ([]*Secret, error)
 
 	// Search filter out secretes by name.
+	// TODO: potential un-used feature that we can remove, check with Jens.
 	Search(ctx context.Context, namespaceID uuid.UUID, name string) ([]*Secret, error)
 
 	// CreateFolder creates a new secret folder.
+	// TODO: potential un-used feature that we can remove, check with Jens.
 	CreateFolder(ctx context.Context, namespaceID uuid.UUID, name string) error
+
+	// DeleteFolder removes the whole secrets folder by name.
+	// TODO: potential un-used feature that we can remove, check with Jens.
+	DeleteFolder(ctx context.Context, namespaceID uuid.UUID, name string) error
 
 	// Update changes a secret data.
 	Update(ctx context.Context, secret *Secret) error
 
-	// DeleteFolder removes the whole secrets folder by name.
-	DeleteFolder(ctx context.Context, namespaceID uuid.UUID, key string) error
-
 	// Delete removes a specific secret by name.
-	Delete(ctx context.Context, namespaceID uuid.UUID, key string) error
+	Delete(ctx context.Context, namespaceID uuid.UUID, name string) error
 }
