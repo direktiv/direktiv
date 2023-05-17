@@ -109,13 +109,17 @@
     }
   },
   "api": {
+    "generic": {
+      "error": "title"
+    },
     "tree": {
       "mutate": {
         "setRouter": {
           "success": {
             "title": "Traffic shaping was updated",
             "description": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %"
-          }
+          },
+          "error": "could set traffic shaping"
         }
       }
     }

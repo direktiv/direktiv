@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "react-i18next";
 import { forceLeadingSlash, sortByRef } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -8,7 +9,6 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
-import { Trans, Translation, useTranslation } from "react-i18next";
 
 const setRouter = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
@@ -82,8 +82,8 @@ export const useSetRouter = () => {
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could set traffic shaping 😢",
+        title: t("api.generic.error"),
+        description: t("api.tree.mutate.setRouter.error"),
         variant: "error",
       });
     },
