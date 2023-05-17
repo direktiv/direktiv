@@ -14,9 +14,11 @@ import {
   Hexagon,
   Key,
   Palette,
+  PlusCircle,
   SquareAsterisk,
   Trash,
 } from "lucide-react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { Trans, useTranslation } from "react-i18next";
 import { useApiActions, useApiKey } from "~/util/store/apiKey";
@@ -25,11 +27,16 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import Input from "~/design/Input";
 import { SecretSchemaType } from "~/api/secrets/schema";
+import { Textarea } from "~/design/TextArea";
+import { useCreateSecret } from "~/api/secrets/mutate/createSecret";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useVersion } from "~/api/version";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const SettingsPage: FC = () => {
   const apiKey = useApiKey();
@@ -47,12 +54,45 @@ const SettingsPage: FC = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteSecret, setDeleteSecret] = useState<SecretSchemaType>();
+  const [createSecret, setCreateSecret] = useState(false);
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
       setDeleteSecret(undefined);
       setDialogOpen(false);
     },
+  });
+
+  const { mutate: createSecretMutation } = useCreateSecret({
+    onSuccess: (data) => {
+      setCreateSecret(false);
+      setDialogOpen(false);
+    },
+  });
+
+  type SecretFormInput = {
+    name: string;
+    value: string;
+  };
+
+  const onSubmit: SubmitHandler<SecretFormInput> = ({ name, value }) => {
+    createSecretMutation({
+      name,
+      value,
+    });
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isDirty, errors, isValid, isSubmitted },
+  } = useForm<SecretFormInput>({
+    resolver: zodResolver(
+      z.object({
+        name: z.string(),
+        value: z.string(),
+      })
+    ),
   });
 
   const { t } = useTranslation();
@@ -73,8 +113,8 @@ const SettingsPage: FC = () => {
                   <TableCell>{secret.name}</TableCell>
                   <TableCell className="w-0">
                     <DialogTrigger
-                      data-testid="secret-delete"
                       asChild
+                      data-testid="secret-delete"
                       onClick={() => setDeleteSecret(secret)}
                     >
                       <Button variant="ghost">
@@ -84,6 +124,19 @@ const SettingsPage: FC = () => {
                   </TableCell>
                 </TableRow>
               ))}
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <DialogTrigger
+                    asChild
+                    data-testid="secret-create"
+                    onClick={() => setCreateSecret(true)}
+                  >
+                    <Button variant="ghost">
+                      <PlusCircle />
+                    </Button>
+                  </DialogTrigger>
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
           {deleteSecret && (
@@ -104,13 +157,64 @@ const SettingsPage: FC = () => {
                   <Button variant="ghost">Cancel</Button>
                 </DialogClose>
                 <Button
-                  data-testid="node-delete-confirm"
+                  data-testid="secret-delete-confirm"
                   onClick={() => deleteSecretMutation({ secret: deleteSecret })}
                   variant="destructive"
                 >
                   Delete
                 </Button>
               </DialogFooter>
+            </DialogContent>
+          )}
+          {createSecret && (
+            <DialogContent>
+              <form
+                id="create-secret"
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col space-y-5"
+              >
+                <DialogHeader>
+                  <DialogTitle>
+                    <Trash /> Create
+                  </DialogTitle>
+                </DialogHeader>
+
+                <fieldset className="flex items-center gap-5">
+                  <label
+                    className="w-[150px] text-right text-[15px]"
+                    htmlFor="name"
+                  >
+                    Name
+                  </label>
+                  <Input
+                    data-testid="new-secret-name"
+                    id="name"
+                    placeholder="secret-name"
+                    {...register("name")}
+                  />
+                </fieldset>
+
+                <fieldset className="flex items-start gap-5">
+                  <Textarea
+                    className="h-96"
+                    data-testid="new-workflow-editor"
+                    {...register("value")}
+                  />
+                </fieldset>
+
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="ghost">Cancel</Button>
+                  </DialogClose>
+                  <Button
+                    data-testid="secret-create-submit"
+                    type="submit"
+                    variant="primary"
+                  >
+                    Create
+                  </Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           )}
         </Dialog>

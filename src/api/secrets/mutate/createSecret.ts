@@ -1,47 +1,46 @@
 import {
-  SecretDeletedSchema,
+  SecretCreatedSchema,
+  SecretCreatedSchemaType,
   SecretListSchemaType,
   SecretSchemaType,
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { secretKeys } from "..";
-import { useApiKey } from "../../../util/store/apiKey";
-import { useNamespace } from "../../../util/store/namespace";
-import { useToast } from "../../../design/Toast";
+import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
+import { useToast } from "~/design/Toast";
 
 const updateCache = (
   oldData: SecretListSchemaType | undefined,
-  deletedItem: SecretSchemaType
+  createdItem: SecretCreatedSchemaType
 ) => {
   if (!oldData) return undefined;
-  const oldSecrets = oldData.secrets.results;
-
+  const newListItem: SecretSchemaType = { name: createdItem.key };
+  const oldResults = oldData.secrets.results;
   return {
     ...oldData,
-    ...(oldSecrets
-      ? {
-          secrets: {
-            results: oldSecrets.filter(
-              (item: SecretSchemaType) => item.name !== deletedItem.name
-            ),
-          },
-        }
-      : {}),
+    secrets: {
+      results: [...oldResults, newListItem].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      ),
+    },
   };
 };
 
-const deleteSecret = apiFactory({
+const createSecret = apiFactory({
   url: ({ namespace, name }: { namespace: string; name: string }) =>
     `/api/namespaces/${namespace}/secrets/${name}`,
-  method: "DELETE",
-  schema: SecretDeletedSchema,
+  method: "PUT",
+  schema: SecretCreatedSchema,
 });
 
-export const useDeleteSecret = ({
+export const useCreateSecret = ({
   onSuccess,
-}: { onSuccess?: () => void } = {}) => {
+}: {
+  onSuccess?: (secret: SecretCreatedSchemaType) => void;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -52,34 +51,33 @@ export const useDeleteSecret = ({
   }
 
   return useMutation({
-    mutationFn: ({ secret }: { secret: SecretSchemaType }) =>
-      deleteSecret({
+    mutationFn: ({ name, value }: { name: string; value: string }) =>
+      createSecret({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
+        payload: value,
         urlParams: {
-          name: secret.name,
           namespace: namespace,
+          name,
         },
       }),
-    onSuccess(_, variables) {
-      const deletedItem = variables.secret;
+    onSuccess(secret) {
       queryClient.setQueryData<SecretListSchemaType>(
         secretKeys.secretsList(namespace, {
           apiKey: apiKey ?? undefined,
         }),
-        (oldData) => updateCache(oldData, deletedItem)
+        (oldData) => updateCache(oldData, secret)
       );
       toast({
-        title: "secret deleted",
-        description: `tag ${variables.secret.name} was deleted`,
+        title: "Secret created",
+        description: `Secret ${secret.key} was created.`,
         variant: "success",
       });
-      onSuccess?.();
+      onSuccess?.(secret);
     },
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not delete 😢",
+        description: "could not create secret 😢",
         variant: "error",
       });
     },
