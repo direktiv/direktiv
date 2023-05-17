@@ -147,7 +147,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT oid, t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
+	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
 	FROM log_msgs `
 	q += "WHERE "
 	for i, e := range wEq {
@@ -168,7 +168,6 @@ func composeQuery(limit, offset int, wEq []string) string {
 }
 
 type gormLogMsg struct {
-	Oid                 uuid.UUID
 	T                   time.Time
 	Msg                 string
 	Level               string
