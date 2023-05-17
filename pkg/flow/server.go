@@ -273,10 +273,10 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.loggerBeta = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{Sugar: srv.sugar},
-		logengine.DataStoreBetterLogger{Store: store.Logs()},
+		logengine.DataStoreBetterLogger{Store: store.Logs(), LogError: srv.sugar.Errorf},
 		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
-		}},
+		}, LogError: srv.sugar.Errorf},
 	}
 
 	cc := func(ctx context.Context, file *filestore.File) error {

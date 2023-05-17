@@ -56,22 +56,22 @@ func (loggers ChainedBetterLogger) Log(tags map[string]interface{}, level string
 // DataStoreBetterLogger records log information into the datastore so that UI frontend page can show log data about
 // different objects.
 type DataStoreBetterLogger struct {
-	Store       LogStore
-	ErrorLogger *zap.SugaredLogger
+	Store    LogStore
+	LogError func(template string, args ...interface{})
 }
 
 func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
 	err := s.Store.Append(context.Background(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
-		s.ErrorLogger.Error("writing action log to the database", "error", err)
+		s.LogError("writing action log to the database", "error", err)
 	}
 }
 
 // NotifierBetterLogger is a pseudo action logger that doesn't log any information, instead it calls a callback
 // that reporting the object that was logged.
 type NotifierBetterLogger struct {
-	Callback    func(objectID uuid.UUID, objectType string)
-	ErrorLogger *zap.SugaredLogger
+	Callback func(objectID uuid.UUID, objectType string)
+	LogError func(template string, args ...interface{})
 }
 
 func (n NotifierBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
@@ -80,19 +80,19 @@ func (n NotifierBetterLogger) Log(tags map[string]interface{}, level string, msg
 	_ = a
 	senderID, ok := tags["sender"]
 	if !ok {
-		n.ErrorLogger.Error("cannot find sender id in action log tags", "tags", tags)
+		n.LogError("cannot find sender id in action log tags", "tags", tags)
 
 		return
 	}
 	senderType, ok := tags["senderType"]
 	if !ok {
-		n.ErrorLogger.Error("cannot find sender type in action log tags", "tags", tags)
+		n.LogError("cannot find sender type in action log tags", "tags", tags)
 
 		return
 	}
 	id, err := uuid.Parse(fmt.Sprintf("%s", senderID))
 	if err != nil {
-		n.ErrorLogger.Error("cannot parse sender id in action log tags", "tags", tags, "error", err)
+		n.LogError("cannot parse sender id in action log tags", "tags", tags, "error", err)
 
 		return
 	}
