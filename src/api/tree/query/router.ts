@@ -48,7 +48,7 @@ export const useRouter = ({
     enabled: !!namespace,
     // TODO: waiting for DIR-576 to get fixed
     select: (data) => ({
-      data,
+      ...data,
       routes: [...data.routes.sort(sortByRef)],
     }),
   });
