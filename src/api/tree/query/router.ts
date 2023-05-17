@@ -1,7 +1,8 @@
+import { forceLeadingSlash, sortByRef } from "../utils";
+
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { RouterSchema } from "../schema";
 import { apiFactory } from "../../utils";
-import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -45,5 +46,10 @@ export const useRouter = ({
     }),
     queryFn: fetchRouter,
     enabled: !!namespace,
+    // TODO: waiting for DIR-576 to get fixed
+    select: (data) => ({
+      data,
+      routes: [...data.routes.sort(sortByRef)],
+    }),
   });
 };
