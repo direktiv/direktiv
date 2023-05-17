@@ -29,8 +29,11 @@ import { useTranslation } from "react-i18next";
 const RevisionsList: FC = () => {
   const { t } = useTranslation();
   const { path, namespace } = pages.explorer.useParams();
-  const { data: revisions } = useNodeRevisions({ path });
-  const { data: tags } = useNodeTags({ path });
+  const { data: revisions, isFetched: isFetchedRevisions } = useNodeRevisions({
+    path,
+  });
+  const { data: tags, isFetched: isFetchedTags } = useNodeTags({ path });
+  const isFetched = isFetchedRevisions && isFetchedTags;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   // we only want to use one dialog component for the whole list,
@@ -60,6 +63,8 @@ const RevisionsList: FC = () => {
 
   if (!namespace) return null;
   if (!path) return null;
+  // wait for server data to to avoid layout shift
+  if (!isFetched) return null;
 
   return (
     <>
