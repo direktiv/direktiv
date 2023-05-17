@@ -1,17 +1,16 @@
 import { FC, useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import Button from "../../../../../../design/Button";
 import { Card } from "../../../../../../design/Card";
 import { Network } from "lucide-react";
 import RevisionSelector from "./RevisionSelector";
-import { Separator } from "../../../../../../design/Separator";
 import { Slider } from "../../../../../../design/Slider";
 import { pages } from "../../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../../api/tree/query/revisions";
 import { useNodeTags } from "../../../../../../api/tree/query/tags";
 import { useRouter } from "~/api/tree/query/router";
 import { useSetRouter } from "~/api/tree/mutate/setRouter";
-import { useTranslation } from "react-i18next";
 
 // give tags and revisions a shared loading and fetched state
 const useRevisionsAndTags = ({ path }: { path?: string }) => {
@@ -58,6 +57,8 @@ const TrafficShaping: FC = () => {
     if (routeBServer) setRouteB(routeBServer);
   }, [weightServer, routeAServer, routeBServer]);
 
+  const isEnabled = routeA && routeB && routeA !== routeB;
+
   const saveButtonDisabled =
     isLoadingMutation ||
     routeA.length === 0 ||
@@ -75,13 +76,12 @@ const TrafficShaping: FC = () => {
         <Network />
         {t("pages.explorer.tree.workflow.revisions.trafficShaping.title")}
       </h3>
-      <Card className="p-4">
-        <div className="text-gray-12 dark:text-gray-dark-12">
-          <h1>No traffic distribution for this workflow is configured. </h1>
-          You can choose two revisions and set a weight between 0 and 100 to
-          distribute the traffic between them.
+      <Card className="flex flex-col gap-y-6 p-4">
+        <div className="text-sm font-medium">
+          {t(
+            "pages.explorer.tree.workflow.revisions.trafficShaping.description"
+          )}
         </div>
-        <Separator className="my-4" />
         <div className="flex flex-col gap-3 sm:flex-row">
           <RevisionSelector
             className="flex w-full"
@@ -112,7 +112,7 @@ const TrafficShaping: FC = () => {
           </div>
           <div>
             <Button
-              variant="primary"
+              block
               disabled={saveButtonDisabled}
               onClick={() => {
                 setRouter({
@@ -128,9 +128,26 @@ const TrafficShaping: FC = () => {
                 });
               }}
             >
-              Save
+              {t(
+                "pages.explorer.tree.workflow.revisions.trafficShaping.saveBtn"
+              )}
             </Button>
           </div>
+        </div>
+        <div className="text-sm">
+          {isEnabled ? (
+            <Trans
+              i18nKey="pages.explorer.tree.workflow.revisions.trafficShaping.setup"
+              values={{
+                aName: routeA,
+                bName: routeB,
+                aWeight: weight,
+                bWeight: 100 - weight,
+              }}
+            />
+          ) : (
+            t("pages.explorer.tree.workflow.revisions.trafficShaping.hint")
+          )}
         </div>
       </Card>
     </>
