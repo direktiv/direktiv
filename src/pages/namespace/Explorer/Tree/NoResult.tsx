@@ -1,15 +1,11 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "../../../../design/Dialog";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import { Folder, FolderOpen, Play } from "lucide-react";
 
-import Button from "../../../../design/Button";
+import Button from "~/design/Button";
 import NewDirectory from "./NewDirectory";
 import NewWorkflow from "./NewWorkflow";
-import { pages } from "../../../../util/router/pages";
+import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const NoResult: FC = () => {

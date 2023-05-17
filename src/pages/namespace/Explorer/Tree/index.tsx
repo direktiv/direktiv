@@ -1,8 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "../../../../design/Dialog";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +6,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../../design/Dropdown";
+} from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
 import {
   Folder,
@@ -20,26 +16,21 @@ import {
   TextCursorInput,
   Trash,
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "../../../../design/Table";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
-import Button from "../../../../design/Button";
-import { Card } from "../../../../design/Card";
+import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "../../../../api/tree/schema";
+import { NodeSchemaType } from "~/api/tree/schema";
 import Rename from "./Rename";
-import { analyzePath } from "../../../../util/router/utils";
+import { analyzePath } from "~/util/router/utils";
 import moment from "moment";
-import { pages } from "../../../../util/router/pages";
-import { useNamespace } from "../../../../util/store/namespace";
-import { useNodeContent } from "../../../../api/tree/query/node";
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
+import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {

@@ -1,13 +1,13 @@
 import "./App.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useTheme, useThemeActions } from "./util/store/theme";
+import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "react-router-dom";
-import { Toaster } from "./design/Toast";
+import { Toaster } from "~/design/Toast";
 import env from "./config/env/";
-import { router } from "./util/router";
+import { router } from "~/util/router";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient({

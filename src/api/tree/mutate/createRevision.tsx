@@ -1,12 +1,12 @@
-import { ToastAction, useToast } from "../../../design/Toast";
+import { ToastAction, useToast } from "~/design/Toast";
 
 import { WorkflowCreatedSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { forceLeadingSlash } from "../utils";
-import { pages } from "../../../util/router/pages";
-import { useApiKey } from "../../../util/store/apiKey";
+import { pages } from "~/util/router/pages";
+import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
-import { useNamespace } from "../../../util/store/namespace";
+import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 
 const createRevision = apiFactory({

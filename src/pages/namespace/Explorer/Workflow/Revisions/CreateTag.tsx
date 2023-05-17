@@ -3,16 +3,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../../design/Dialog";
+} from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 
-import Alert from "../../../../../design/Alert";
-import Button from "../../../../../design/Button";
-import Input from "../../../../../design/Input";
+import Alert from "~/design/Alert";
+import Button from "~/design/Button";
+import Input from "~/design/Input";
 import { Tag } from "lucide-react";
-import { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
-import { useCreateTag } from "../../../../../api/tree/mutate/createTag";
+import { TrimedRevisionSchemaType } from "~/api/tree/schema";
+import { useCreateTag } from "~/api/tree/mutate/createTag";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 

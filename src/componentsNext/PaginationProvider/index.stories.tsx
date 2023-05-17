@@ -1,4 +1,4 @@
-import { Pagination, PaginationLink } from "../../design/Pagination";
+import { Pagination, PaginationLink } from "~/design/Pagination";
 import React, { useState } from "react";
 import {
   Select,
@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../design/Select";
+} from "~/design/Select";
 
 import PaginationProvider from ".";
 
