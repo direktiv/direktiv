@@ -5,12 +5,12 @@ import {
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
-import { useApiKey } from "../../../util/store/apiKey";
-import { useNamespace } from "../../../util/store/namespace";
-import { useToast } from "../../../design/Toast";
+import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
+import { useToast } from "~/design/Toast";
 
 const deleteNode = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>

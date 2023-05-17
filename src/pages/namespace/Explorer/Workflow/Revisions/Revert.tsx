@@ -3,18 +3,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../../design/Dialog";
-import { ToastAction, useToast } from "../../../../../design/Toast";
+} from "~/design/Dialog";
+import { ToastAction, useToast } from "~/design/Toast";
 import { Trans, useTranslation } from "react-i18next";
 
-import Button from "../../../../../design/Button";
-import { TrimedRevisionSchemaType } from "../../../../../api/tree/schema";
+import Button from "~/design/Button";
+import { TrimedRevisionSchemaType } from "~/api/tree/schema";
 import { Undo } from "lucide-react";
-import { pages } from "../../../../../util/router/pages";
-import { useNamespace } from "../../../../../util/store/namespace";
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
-import { useNodeContent } from "../../../../../api/tree/query/node";
-import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
+import { useNodeContent } from "~/api/tree/query/node";
+import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
 const Revert = ({
   path,

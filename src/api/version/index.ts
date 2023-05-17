@@ -1,7 +1,7 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { VersionSchema } from "./schema";
 import { apiFactory } from "../utils";
-import { useApiKey } from "../../util/store/apiKey";
+import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 
 const getVersion = apiFactory({

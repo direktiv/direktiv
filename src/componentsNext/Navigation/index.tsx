@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { NavLink } from "react-router-dom";
-import { createClassNames } from "../../design/NavigationLink";
-import { pages } from "../../util/router/pages";
-import { useNamespace } from "../../util/store/namespace";
+import { createClassNames } from "~/design/NavigationLink";
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 
 const Navigation: FC = () => {
   const namespace = useNamespace();

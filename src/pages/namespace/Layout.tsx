@@ -8,7 +8,7 @@ import {
   Sun,
   Terminal,
 } from "lucide-react";
-import { Drawer, DrawerContent, DrawerTrigger } from "../../design/Drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "~/design/Drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../design/Dropdown";
+} from "~/design/Dropdown";
 import { FC, useEffect } from "react";
 import {
   Main,
@@ -28,19 +28,19 @@ import {
   Sidebar,
   SidebarMain,
   SidebarTop,
-} from "../../design/Appshell";
+} from "~/design/Appshell";
 import { Outlet, useParams } from "react-router-dom";
-import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
-import { useTheme, useThemeActions } from "../../util/store/theme";
+import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
+import { useTheme, useThemeActions } from "~/util/store/theme";
 
-import Avatar from "../../design/Avatar";
-import Breadcrumb from "../../componentsNext/Breadcrumb";
-import Button from "../../design/Button";
-import Logo from "../../design/Logo";
-import Navigation from "../../componentsNext/Navigation";
+import Avatar from "~/design/Avatar";
+import Breadcrumb from "~/componentsNext/Breadcrumb";
+import Button from "~/design/Button";
+import Logo from "~/design/Logo";
+import Navigation from "~/componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
-import { useVersion } from "../../api/version";
+import { useVersion } from "~/api/version";
 
 // TODO: move to own file
 const TopRightComponent: FC<{ className?: string }> = ({ className }) => {

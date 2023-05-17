@@ -3,15 +3,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../design/Dialog";
-import { NodeSchemaType, fileNameSchema } from "../../../../api/tree/schema";
+} from "~/design/Dialog";
+import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "../../../../design/Alert";
-import Button from "../../../../design/Button";
-import Input from "../../../../design/Input";
+import Alert from "~/design/Alert";
+import Button from "~/design/Button";
+import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
-import { useRenameNode } from "../../../../api/tree/mutate/renameNode";
+import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 

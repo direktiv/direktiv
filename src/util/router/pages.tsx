@@ -11,13 +11,13 @@ import {
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import type { RouteObject } from "react-router-dom";
-import SettiongsPage from "../../pages/namespace/Settings";
-import TreePage from "../../pages/namespace/Explorer/Tree";
-import WorkflowPage from "../../pages/namespace/Explorer/Workflow";
-import WorkflowPageActive from "../../pages/namespace/Explorer/Workflow/Active";
-import WorkflowPageOverview from "../../pages/namespace/Explorer/Workflow/Overview";
-import WorkflowPageRevisions from "../../pages/namespace/Explorer/Workflow/Revisions";
-import WorkflowPageSettings from "../../pages/namespace/Explorer/Workflow/Settings";
+import SettiongsPage from "~/pages/namespace/Settings";
+import TreePage from "~/pages/namespace/Explorer/Tree";
+import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
+import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
+import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
+import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions";
+import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {

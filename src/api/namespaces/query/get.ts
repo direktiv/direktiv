@@ -1,8 +1,8 @@
 import { NamespaceListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { namespaceKeys } from "../";
-import { useApiKey } from "../../../util/store/apiKey";
+import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 
 const getNamespaces = apiFactory({
