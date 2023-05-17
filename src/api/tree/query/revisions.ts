@@ -1,10 +1,10 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { RevisionsListSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "../";
-import { useApiKey } from "../../../util/store/apiKey";
-import { useNamespace } from "../../../util/store/namespace";
+import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
 const getRevisions = apiFactory({

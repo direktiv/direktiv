@@ -1,8 +1,8 @@
-import Badge from "../../../../../design/Badge";
-import { Card } from "../../../../../design/Card";
+import Badge from "~/design/Badge";
+import { Card } from "~/design/Card";
 import { FC } from "react";
-import { pages } from "../../../../../util/router/pages";
-import { useNodeContent } from "../../../../../api/tree/query/node";
+import { pages } from "~/util/router/pages";
+import { useNodeContent } from "~/api/tree/query/node";
 
 const WorkflowSettingsPage: FC = () => {
   const { path } = pages.explorer.useParams();

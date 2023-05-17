@@ -3,18 +3,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../design/Dialog";
+} from "~/design/Dialog";
 import { Home, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "../../design/Alert";
-import Button from "../../design/Button";
-import Input from "../../design/Input";
-import { fileNameSchema } from "../../api/tree/schema";
-import { pages } from "../../util/router/pages";
-import { useCreateNamespace } from "../../api/namespaces/mutate/createNamespace";
-import { useListNamespaces } from "../../api/namespaces/query/get";
-import { useNamespaceActions } from "../../util/store/namespace";
+import Alert from "~/design/Alert";
+import Button from "~/design/Button";
+import Input from "~/design/Input";
+import { fileNameSchema } from "~/api/tree/schema";
+import { pages } from "~/util/router/pages";
+import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
+import { useListNamespaces } from "~/api/namespaces/query/get";
+import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

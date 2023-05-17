@@ -1,13 +1,13 @@
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger } from "../../../../design/Tabs";
+import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import Button from "../../../../design/Button";
+import Button from "~/design/Button";
 import { FC } from "react";
 import { RxChevronDown } from "react-icons/rx";
-import { analyzePath } from "../../../../util/router/utils";
-import { pages } from "../../../../util/router/pages";
-import { useNamespace } from "../../../../util/store/namespace";
+import { analyzePath } from "~/util/router/utils";
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {

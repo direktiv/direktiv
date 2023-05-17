@@ -2,11 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { namespaceKeys } from "..";
-import { sortByName } from "../../tree/utils";
-import { useApiKey } from "../../../util/store/apiKey";
-import { useToast } from "../../../design/Toast";
+import { sortByName } from "~/api/tree/utils";
+import { useApiKey } from "~/util/store/apiKey";
+import { useToast } from "~/design/Toast";
 
 const createNamespace = apiFactory({
   url: ({ name }: { name: string }) => `/api/namespaces/${name}`,

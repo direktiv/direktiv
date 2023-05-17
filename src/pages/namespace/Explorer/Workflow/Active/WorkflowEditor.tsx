@@ -4,25 +4,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../../../../design/Dropdown";
+} from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../../../../../design/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
-import Button from "../../../../../design/Button";
-import { Card } from "../../../../../design/Card";
-import Editor from "../../../../../design/Editor";
+import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import { RxChevronDown } from "react-icons/rx";
-import { useCreateRevision } from "../../../../../api/tree/mutate/createRevision";
-import { useNodeContent } from "../../../../../api/tree/query/node";
-import { useRevertRevision } from "../../../../../api/tree/mutate/revertRevision";
-import { useTheme } from "../../../../../util/store/theme";
+import { useCreateRevision } from "~/api/tree/mutate/createRevision";
+import { useNodeContent } from "~/api/tree/query/node";
+import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "../../../../../api/tree/mutate/updateWorkflow";
-import useUpdatedAt from "../../../../../hooksNext/useUpdatedAt";
+import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 // get type of useNodeContent return value
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
@@ -87,7 +83,9 @@ const WorkflowEditor: FC<{
             </>
           )}
           {hasUnsavedChanged && (
-            <span className="text-center">{t("pages.explorer.workflow.editor.haveUnsaved")}</span>
+            <span className="text-center">
+              {t("pages.explorer.workflow.editor.haveUnsaved")}
+            </span>
           )}
         </div>
         {error && (
@@ -120,7 +118,8 @@ const WorkflowEditor: FC<{
                 });
               }}
             >
-              <GitBranchPlus className="mr-2 h-4 w-4" /> {t("pages.explorer.workflow.editor.makeRevision")}
+              <GitBranchPlus className="mr-2 h-4 w-4" />{" "}
+              {t("pages.explorer.workflow.editor.makeRevision")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -129,7 +128,8 @@ const WorkflowEditor: FC<{
                 });
               }}
             >
-              <Undo className="mr-2 h-4 w-4" />  {t("pages.explorer.workflow.editor.revertToPrevious")}
+              <Undo className="mr-2 h-4 w-4" />{" "}
+              {t("pages.explorer.workflow.editor.revertToPrevious")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -3,12 +3,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../design/Dialog";
+} from "~/design/Dialog";
 
-import Button from "../../../../design/Button";
-import { NodeSchemaType } from "../../../../api/tree/schema";
+import Button from "~/design/Button";
+import { NodeSchemaType } from "~/api/tree/schema";
 import { Trash } from "lucide-react";
-import { useDeleteNode } from "../../../../api/tree/mutate/deleteNode";
+import { useDeleteNode } from "~/api/tree/mutate/deleteNode";
+import { useTranslation } from "react-i18next";
 
 const Delete = ({
   node,
@@ -17,6 +18,7 @@ const Delete = ({
   node: NodeSchemaType;
   close: () => void;
 }) => {
+  const { t } = useTranslation();
   const { mutate: deleteNode, isLoading } = useDeleteNode({
     onSuccess: () => {
       close();
@@ -27,18 +29,26 @@ const Delete = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Trash /> Delete
+          <Trash /> {t("pages.explorer.tree.delete.title")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-3">
-        Are you sure you want to delete <b>{node.name}</b>? This can not be
-        undone.&nbsp;
-        {node.type === "directory" &&
-          "All content of this directory will be deleted as well."}
-      </div>
+      <div
+        className="my-3"
+        dangerouslySetInnerHTML={{
+          __html:
+            t("pages.explorer.tree.delete.commonMsg", {
+              name: `${node.name}`,
+            }) +
+            "&nbsp;" +
+            (node.type === "directory" &&
+              t("pages.explorer.tree.delete.directoryMsg")),
+        }}
+      />
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <Button variant="ghost">
+            {t("pages.explorer.tree.delete.cancel")}
+          </Button>
         </DialogClose>
         <Button
           data-testid="node-delete-confirm"
@@ -49,7 +59,7 @@ const Delete = ({
           loading={isLoading}
         >
           {!isLoading && <Trash />}
-          Delete
+          {t("pages.explorer.tree.delete.title")}
         </Button>
       </DialogFooter>
     </>

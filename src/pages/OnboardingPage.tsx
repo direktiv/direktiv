@@ -1,13 +1,13 @@
 import { Book, Github, PlusCircle, Slack } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "../design/Dialog";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { useEffect, useState } from "react";
-import { useNamespace, useNamespaceActions } from "../util/store/namespace";
+import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
-import Button from "../design/Button";
-import Logo from "../design/Logo";
-import NamespaceCreate from "../componentsNext/NamespaceCreate";
-import { pages } from "../util/router/pages";
-import { useListNamespaces } from "../api/namespaces/query/get";
+import Button from "~/design/Button";
+import Logo from "~/design/Logo";
+import NamespaceCreate from "~/componentsNext/NamespaceCreate";
+import { pages } from "~/util/router/pages";
+import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 

@@ -3,15 +3,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../../design/Dialog";
-import { NodeSchemaType, fileNameSchema } from "../../../../api/tree/schema";
+} from "~/design/Dialog";
+import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "../../../../design/Alert";
-import Button from "../../../../design/Button";
-import Input from "../../../../design/Input";
+import Alert from "~/design/Alert";
+import Button from "~/design/Button";
+import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
-import { useRenameNode } from "../../../../api/tree/mutate/renameNode";
+import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,7 +69,8 @@ const Rename = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <TextCursorInput />{t("pages.explorer.tree.rename.title")}
+          <TextCursorInput />
+          {t("pages.explorer.tree.rename.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
@@ -84,7 +85,9 @@ const Rename = ({
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">{t("pages.explorer.tree.rename.cancel")}</Button>
+          <Button variant="ghost">
+            {t("pages.explorer.tree.rename.cancel")}
+          </Button>
         </DialogClose>
         <Button
           data-testid="node-rename-submit"

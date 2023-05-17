@@ -1,7 +1,7 @@
 import {
   Breadcrumb as BreadcrumbLink,
   BreadcrumbRoot,
-} from "../../design/Breadcrumbs";
+} from "~/design/Breadcrumbs";
 import {
   ChevronsUpDown,
   Circle,
@@ -18,20 +18,20 @@ import {
   CommandList,
   CommandStaticItem,
   CommandStaticSeparator,
-} from "../../design/Command";
-import { Dialog, DialogContent, DialogTrigger } from "../../design/Dialog";
+} from "~/design/Command";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Link, useNavigate } from "react-router-dom";
-import { Popover, PopoverContent, PopoverTrigger } from "../../design/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import React, { useState } from "react";
-import { useNamespace, useNamespaceActions } from "../../util/store/namespace";
+import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import BreadcrumbSegment from "./BreadcrumbSegment";
-import Button from "../../design/Button";
+import Button from "~/design/Button";
 import NamespaceCreate from "../NamespaceCreate";
-import { analyzePath } from "../../util/router/utils";
+import { analyzePath } from "~/util/router/utils";
 import clsx from "clsx";
-import { pages } from "../../util/router/pages";
-import { useListNamespaces } from "../../api/namespaces/query/get";
+import { pages } from "~/util/router/pages";
+import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useTranslation } from "react-i18next";
 
 const Breadcrumb = () => {

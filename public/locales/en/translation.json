@@ -39,6 +39,26 @@
           "cancel": "Cancel",
           "nameAlreadyExists": "The name already exists"
         },
+        "newDirectory":{
+          "title": "Create a new directory",
+          "name": "Name",
+          "create": "Create",
+          "folderName": "folder-name",
+          "nameAlreadyExists": "The name already exists",
+          "cancel": "Cancel"
+        },
+        "delete": {
+          "title": "Delete",
+          "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
+          "directoryMsg": "All content of this directory will be deleted as well.",
+          "cancel": "Cancel"
+        },
+        "header": {
+          "newDirectory": "New Directory",
+          "create": "Create",
+          "newWorkflow": "New Workflow",
+          "new": "New"
+        },
         "workflow": {
           "revisions": {
             "list": {

@@ -1,10 +1,10 @@
 import { WorkflowCreatedSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/utils";
 import { forceLeadingSlash } from "../utils";
-import { useApiKey } from "../../../util/store/apiKey";
+import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
-import { useNamespace } from "../../../util/store/namespace";
-import { useToast } from "../../../design/Toast";
+import { useNamespace } from "~/util/store/namespace";
+import { useToast } from "~/design/Toast";
 
 const createWorkflow = apiFactory({
   url: ({
