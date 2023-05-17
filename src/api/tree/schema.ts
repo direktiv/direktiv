@@ -93,3 +93,4 @@ export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
 export type TrimedRevisionSchemaType = z.infer<typeof TrimedRevisionSchema>;
 export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
+export type RouterSchemaType = z.infer<typeof RouterSchema>;
