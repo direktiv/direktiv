@@ -126,9 +126,6 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Debug("Initializing secrets.")
-	// TODO: fix secretes.
-
 	srv.sugar.Debug("Initializing locks.")
 
 	db := os.Getenv(util.DBConn)

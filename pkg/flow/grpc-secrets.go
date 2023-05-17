@@ -33,6 +33,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 
 	resp.Namespace = ns.Name
 	resp.Secrets = new(grpc.Secrets)
+	// TODO: investigate is PageInfo can be nil.
 	resp.Secrets.PageInfo = nil
 
 	resp.Secrets.Results = bytedata.ConvertSecretsToGrpcSecretList(list)
@@ -85,6 +86,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 
 	resp.Namespace = ns.Name
 	resp.Secrets = new(grpc.Secrets)
+	// TODO: investigate is PageInfo can be nil.
 	resp.Secrets.PageInfo = nil
 
 	resp.Secrets.Results = bytedata.ConvertSecretsToGrpcSecretList(list)
