@@ -1,8 +1,10 @@
 import { FC, useState } from "react";
 
+import Button from "../../../../../../design/Button";
 import { Card } from "../../../../../../design/Card";
 import { Network } from "lucide-react";
 import RevisionSelector from "./RevisionSelector";
+import { Separator } from "../../../../../../design/Separator";
 import { Slider } from "../../../../../../design/Slider";
 import { pages } from "../../../../../../util/router/pages";
 import { useNodeRevisions } from "../../../../../../api/tree/query/revisions";
@@ -26,24 +28,30 @@ const TrafficShaping: FC = () => {
         <Network />
         {t("pages.explorer.tree.workflow.revisions.trafficShaping.title")}
       </h3>
-      <Card className="flex flex-col gap-3 p-4 sm:flex-row">
-        <RevisionSelector
-          className="flex w-full"
-          tags={tags?.results ?? []}
-          revisions={revisions?.results ?? []}
-          isLoading={isLoading}
-          onSelect={setA}
-        />
-        <RevisionSelector
-          className="flex w-full"
-          tags={tags?.results ?? []}
-          revisions={revisions?.results ?? []}
-          isLoading={isLoading}
-          onSelect={setB}
-        />
-        <div className="flex w-full">
-          <Slider />
+      <Card className="p-4">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <RevisionSelector
+            className="flex w-full"
+            tags={tags?.results ?? []}
+            revisions={revisions?.results ?? []}
+            isLoading={isLoading}
+            onSelect={setA}
+          />
+          <RevisionSelector
+            className="flex w-full"
+            tags={tags?.results ?? []}
+            revisions={revisions?.results ?? []}
+            isLoading={isLoading}
+            onSelect={setB}
+          />
+          <div className="flex w-full">
+            <Slider />
+          </div>
+          <div>
+            <Button variant="primary">Save</Button>
+          </div>
         </div>
+        <Separator className="mt-4" />
       </Card>
     </>
   );
