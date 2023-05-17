@@ -54,7 +54,8 @@ describe('Test secret crud operations', () => {
     })
 
 
-    it(`should read all secrets`, async () => {
+
+    it(`should list all secrets`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/namespaces/${testNamespace}/secrets`)
         expect(res.statusCode).toEqual(200)
@@ -76,7 +77,7 @@ describe('Test secret crud operations', () => {
         expect(res.statusCode).toEqual(200)
     })
 
-    it(`should read one secrets`, async () => {
+    it(`should list one secrets`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/namespaces/${testNamespace}/secrets`)
         expect(res.statusCode).toEqual(200)
@@ -96,7 +97,7 @@ describe('Test secret crud operations', () => {
         expect(res.statusCode).toEqual(200)
     })
 
-    it(`should read all secrets`, async () => {
+    it(`should list empty`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/namespaces/${testNamespace}/secrets`)
         expect(res.statusCode).toEqual(200)
@@ -108,8 +109,5 @@ describe('Test secret crud operations', () => {
             }
         })
     })
-
-
-
 })
 
