@@ -12,6 +12,7 @@ import Button from "../../../../design/Button";
 import Input from "../../../../design/Input";
 import { TextCursorInput } from "lucide-react";
 import { useRenameNode } from "../../../../api/tree/mutate/renameNode";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -28,6 +29,7 @@ const Rename = ({
   close: () => void;
   unallowedNames: string[];
 }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -37,7 +39,7 @@ const Rename = ({
       z.object({
         name: fileNameSchema.and(
           z.string().refine((name) => !unallowedNames.some((n) => n === name), {
-            message: "The name already exists",
+            message: t("pages.explorer.tree.rename.nameAlreadyExists"),
           })
         ),
       })
@@ -62,11 +64,12 @@ const Rename = ({
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   const formId = `new-dir-${node.path}`;
+
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <TextCursorInput /> Rename
+          <TextCursorInput />{t("pages.explorer.tree.rename.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
@@ -81,7 +84,7 @@ const Rename = ({
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <Button variant="ghost">{t("pages.explorer.tree.rename.cancel")}</Button>
         </DialogClose>
         <Button
           data-testid="node-rename-submit"
@@ -91,7 +94,7 @@ const Rename = ({
           form={formId}
         >
           {!isLoading && <TextCursorInput />}
-          Rename
+          {t("pages.explorer.tree.rename.title")}
         </Button>
       </DialogFooter>
     </>

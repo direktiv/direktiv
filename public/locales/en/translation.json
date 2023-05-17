@@ -34,6 +34,11 @@
             "createDirectory": "Create Directory"
           }
         },
+        "rename": {
+          "title": "Rename",
+          "cancel": "Cancel",
+          "nameAlreadyExists": "The name already exists"
+        },
         "workflow": {
           "revisions": {
             "list": {
@@ -85,7 +90,19 @@
           "settings": "Settings"
         },
         "updated": "Updated {{relativeTime}}",
-        "actionsBtn": "Actions"
+        "actionsBtn": "Actions",
+        "editor": {
+          "haveUnsaved": "you have unsaved changes",
+          "theresOneIssue": "There is one issue",
+          "revisions": "Revisions",
+          "makeRevision": "Make Revision",
+          "revertToPrevious": "Revert to previous revision",
+          "run": "Run",
+          "save": "Save"
+        },
+        "overview": {
+          "title": "ActiveWorkflowPage"
+        }
       }
     }
   },

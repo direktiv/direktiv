@@ -87,7 +87,7 @@ const WorkflowEditor: FC<{
             </>
           )}
           {hasUnsavedChanged && (
-            <span className="text-center">you have unsaved changes</span>
+            <span className="text-center">{t("pages.explorer.workflow.editor.haveUnsaved")}</span>
           )}
         </div>
         {error && (
@@ -95,7 +95,7 @@ const WorkflowEditor: FC<{
             <PopoverTrigger asChild>
               <Button variant="destructive">
                 <Bug />
-                There is one issue
+                {t("pages.explorer.workflow.editor.theresOneIssue")}
               </Button>
             </PopoverTrigger>
             <PopoverContent asChild>
@@ -109,7 +109,7 @@ const WorkflowEditor: FC<{
           <DropdownMenuTrigger asChild>
             <Button variant="outline" disabled={hasUnsavedChanged}>
               <GitMerge />
-              Revisions <RxChevronDown />
+              {t("pages.explorer.workflow.editor.revisions")} <RxChevronDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-60">
@@ -120,7 +120,7 @@ const WorkflowEditor: FC<{
                 });
               }}
             >
-              <GitBranchPlus className="mr-2 h-4 w-4" /> Make Revision
+              <GitBranchPlus className="mr-2 h-4 w-4" /> {t("pages.explorer.workflow.editor.makeRevision")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -129,13 +129,13 @@ const WorkflowEditor: FC<{
                 });
               }}
             >
-              <Undo className="mr-2 h-4 w-4" /> Revert to previous revision
+              <Undo className="mr-2 h-4 w-4" />  {t("pages.explorer.workflow.editor.revertToPrevious")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button variant="outline">
           <Play />
-          Run
+          {t("pages.explorer.workflow.editor.run")}
         </Button>
         <Button
           variant="outline"
@@ -145,7 +145,7 @@ const WorkflowEditor: FC<{
           }}
         >
           <Save />
-          Save
+          {t("pages.explorer.workflow.editor.save")}
         </Button>
       </div>
     </div>
