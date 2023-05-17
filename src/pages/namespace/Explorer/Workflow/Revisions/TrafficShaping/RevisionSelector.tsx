@@ -40,7 +40,8 @@ const RevisionSelector: FC<
 
   useEffect(() => {
     setValue(defaultValue ?? "");
-  }, [defaultValue]);
+    setTagSelected(tags.some((t) => t.name === defaultValue));
+  }, [defaultValue, tags]);
 
   const tagsAndRevisions = [...revisions]; // revisions have tags included
 
