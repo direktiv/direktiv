@@ -32,7 +32,7 @@ const RevisionSelector: FC<
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(defaultValue ?? "");
-  const [tagSelected, setTagSelected] = useState(false);
+  const [isTagSelected, setIsTagSelected] = useState(false);
 
   const revisionsWithoutTags = revisions.filter(
     (rev) => !tags.some((t) => t.name === rev.name)
@@ -40,7 +40,7 @@ const RevisionSelector: FC<
 
   useEffect(() => {
     setValue(defaultValue ?? "");
-    setTagSelected(tags.some((t) => t.name === defaultValue));
+    setIsTagSelected(tags.some((t) => t.name === defaultValue));
   }, [defaultValue, tags]);
 
   const tagsAndRevisions = [...revisions]; // revisions have tags included
@@ -58,7 +58,7 @@ const RevisionSelector: FC<
           {value
             ? tagsAndRevisions
                 .find((rev) => rev.name === value)
-                ?.name.slice(0, tagSelected ? undefined : 8)
+                ?.name.slice(0, isTagSelected ? undefined : 8)
             : t(
                 "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.placeholder"
               )}
@@ -87,7 +87,7 @@ const RevisionSelector: FC<
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     onSelect?.(currentValue === value ? "" : currentValue);
-                    setTagSelected(true);
+                    setIsTagSelected(true);
                     setOpen(false);
                   }}
                 >
@@ -115,7 +115,7 @@ const RevisionSelector: FC<
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     onSelect?.(currentValue === value ? "" : currentValue);
-                    setTagSelected(false);
+                    setIsTagSelected(false);
                     setOpen(false);
                   }}
                 >
