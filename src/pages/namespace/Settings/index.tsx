@@ -25,6 +25,7 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useSecrets } from "~/api/secrets/query/get";
@@ -45,9 +46,11 @@ const SettingsPage: FC = () => {
     useListNamespaces();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteSecret, setDeleteSecret] = useState<SecretSchemaType>();
 
-  const { mutate: deleteSecret } = useDeleteSecret({
+  const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
+      setDeleteSecret(undefined);
       setDialogOpen(false);
     },
   });
@@ -62,49 +65,55 @@ const SettingsPage: FC = () => {
       </h3>
 
       <Card>
-        <Table>
-          <TableBody>
-            {secrets.data?.secrets.results.map((secret, i) => (
-              <TableRow key={i}>
-                <TableCell>{secret.name}</TableCell>
-                <TableCell className="w-0">
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger data-testid="secret-delete">
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Table>
+            <TableBody>
+              {secrets.data?.secrets.results.map((secret, i) => (
+                <TableRow key={i}>
+                  <TableCell>{secret.name}</TableCell>
+                  <TableCell className="w-0">
+                    <DialogTrigger
+                      data-testid="secret-delete"
+                      asChild
+                      onClick={() => setDeleteSecret(secret)}
+                    >
                       <Button variant="ghost">
                         <Trash />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>
-                          <Trash /> Delete
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="my-3">
-                        <Trans
-                          i18nKey="pages.settings.secrets.delete.description"
-                          values={{ name: secret.name }}
-                        />
-                      </div>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button variant="ghost">Cancel</Button>
-                        </DialogClose>
-                        <Button
-                          data-testid="node-delete-confirm"
-                          onClick={() => deleteSecret({ secret })}
-                          variant="destructive"
-                        >
-                          Delete
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {deleteSecret && (
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  <Trash /> Delete
+                </DialogTitle>
+              </DialogHeader>
+              <div className="my-3">
+                <Trans
+                  i18nKey="pages.settings.secrets.delete.description"
+                  values={{ name: deleteSecret.name }}
+                />
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="ghost">Cancel</Button>
+                </DialogClose>
+                <Button
+                  data-testid="node-delete-confirm"
+                  onClick={() => deleteSecretMutation({ secret: deleteSecret })}
+                  variant="destructive"
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          )}
+        </Dialog>
       </Card>
 
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
