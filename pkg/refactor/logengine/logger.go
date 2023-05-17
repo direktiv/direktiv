@@ -3,6 +3,7 @@ package logengine
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -61,7 +62,7 @@ type DataStoreBetterLogger struct {
 }
 
 func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
-	err := s.Store.Append(context.Background(), level, fmt.Sprintf(msg, a...), tags)
+	err := s.Store.Append(context.Background(), time.Now(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
 		s.LogError("writing action log to the database", "error", err)
 	}

@@ -15,9 +15,10 @@ type mockstore struct {
 	logs map[string]*logengine.LogEntry
 }
 
-func (m *mockstore) Append(ctx context.Context, level string, msg string, keysAndValues map[string]interface{}) error {
+func (m *mockstore) Append(ctx context.Context, timestamp time.Time, level string, msg string, keysAndValues map[string]interface{}) error {
 	_ = ctx
 	_ = level
+	_ = timestamp
 	if _, ok := keysAndValues["some_DB_Col"]; !ok {
 		return fmt.Errorf("provide some_DB_Col")
 	}

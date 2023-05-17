@@ -32,12 +32,12 @@ type sqlLogStore struct {
 // - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
 // - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
 // - All passed keysAndValues pair will be stored attached to the log-entry.
-func (sl *sqlLogStore) Append(ctx context.Context, level string, msg string, keysAndValues map[string]interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level string, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
 	cols = append(cols, "oid", "t", "level", "msg")
-	vals = append(vals, uuid.New(), time.Now(), level, msg)
+	vals = append(vals, uuid.New(), timestamp, level, msg)
 	databaseCols := []string{
 		"instance_logs",
 		"log_instance_call_path",

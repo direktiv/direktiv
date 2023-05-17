@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
@@ -75,7 +76,7 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 	in := map[string]interface{}{}
 	in[col] = id
 	for _, v := range want {
-		err := logstore.Append(context.Background(), level, v, in)
+		err := logstore.Append(context.Background(), time.Now(), level, v, in)
 		if err != nil {
 			t.Error(err)
 		}
