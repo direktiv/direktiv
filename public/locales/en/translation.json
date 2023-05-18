@@ -51,7 +51,8 @@
           "title": "Delete",
           "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
           "directoryMsg": "All content of this directory will be deleted as well.",
-          "cancel": "Cancel"
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
         },
         "header": {
           "newDirectory": "New Directory",

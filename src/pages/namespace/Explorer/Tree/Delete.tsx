@@ -43,7 +43,7 @@ const Delete = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.delete.cancel")}
+            {t("pages.explorer.tree.delete.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -55,7 +55,7 @@ const Delete = ({
           loading={isLoading}
         >
           {!isLoading && <Trash />}
-          {t("pages.explorer.tree.delete.title")}
+          {t("pages.explorer.tree.delete.deleteBtn")}
         </Button>
       </DialogFooter>
     </>
