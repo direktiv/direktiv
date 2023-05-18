@@ -3,25 +3,17 @@ package flow
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -34,108 +26,8 @@ func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloude
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
 	x := make([]states.Variable, 0)
 
-	clients := im.engine.edb.Clients(ctx)
-
-	for _, selector := range vars {
-		var err error
-		var ref *ent.VarRef
-
-		scope := selector.Scope
-		key := selector.Key
-
-		switch scope {
-		case util.VarScopeInstance:
-			ref, err = clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(im.cached.Instance.ID))).Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
-
-		case util.VarScopeThread:
-			ref, err = clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(im.cached.Instance.ID))).Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
-
-		case util.VarScopeWorkflow:
-
-			// // NOTE: this hack seems to be necessary for some reason...
-			// wf, err = im.engine.db.Workflow.Get(ctx, wf.ID)
-			// if err != nil {
-			// 	return nil, derrors.NewInternalError(err)
-			// }
-
-			ref, err = clients.VarRef.Query().Where(entvar.WorkflowID(im.cached.File.ID)).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
-
-		case util.VarScopeNamespace:
-
-			// // NOTE: this hack seems to be necessary for some reason...
-			// ns, err = im.engine.db.Namespace.Get(ctx, ns.ID)
-			// if err != nil {
-			// 	return nil, derrors.NewInternalError(err)
-			// }
-
-			ref, err = clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(im.cached.Namespace.ID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
-
-		case util.VarScopeFileSystem:
-			break
-		default:
-			return nil, derrors.NewInternalError(errors.New("invalid scope"))
-		}
-
-		var data []byte
-
-		if err != nil {
-			if !derrors.IsNotFound(err) {
-				return nil, derrors.NewInternalError(err)
-			}
-
-			data = make([]byte, 0)
-		} else if ref == nil && scope == util.VarScopeFileSystem {
-			fStore, _, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
-			if err != nil {
-				return nil, err
-			}
-			defer rollback()
-
-			file, err := fStore.ForRootID(im.cached.Namespace.ID).GetFile(ctx, key)
-			if errors.Is(err, filestore.ErrNotFound) {
-				data = make([]byte, 0)
-			} else if err != nil {
-				return nil, err
-			} else {
-				// TODO: alan, maybe need to enhance the GetData function to also return us some information like mime type, checksum, and size
-				if file.Typ != filestore.FileTypeFile {
-					return nil, model.ErrVarNotFile
-				}
-				rc, err := fStore.ForFile(file).GetData(ctx)
-				if err != nil {
-					return nil, err
-				}
-				defer func() { _ = rc.Close() }()
-				data, err = ioutil.ReadAll(rc)
-				if err != nil {
-					return nil, err
-				}
-				err = rc.Close()
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			rollback()
-		} else if ref == nil {
-			data = make([]byte, 0)
-		} else {
-			if ref.Edges.Vardata == nil {
-				err = &derrors.NotFoundError{
-					Label: "variable data not found",
-				}
-
-				return nil, err
-			}
-
-			data = ref.Edges.Vardata.Data
-		}
-
-		x = append(x, states.Variable{
-			Scope: scope,
-			Key:   key,
-			Data:  data,
-		})
+	for range vars {
+		// TODO: need change here.
 	}
 
 	return x, nil
@@ -213,80 +105,9 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	}
 	defer rollback(tx)
 
-	clients := im.engine.edb.Clients(tctx)
+	_ = im.engine.edb.Clients(tctx)
 
-	for idx := range vars {
-		v := vars[idx]
-
-		var q varQuerier
-
-		var thread bool
-
-		switch v.Scope {
-		case "":
-
-			fallthrough
-
-		case "instance":
-
-			q = &entInstanceVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-		case "thread":
-
-			q = &entInstanceVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-			thread = true
-
-		case "workflow":
-
-			q = &entWorkflowVarQuerier{
-				clients: clients,
-				ns:      im.cached.Namespace,
-				f:       im.cached.File,
-			}
-
-		case "namespace":
-
-			q = &entNamespaceVarQuerier{
-				clients: clients,
-				cached:  im.cached,
-			}
-
-		default:
-			return derrors.NewInternalError(errors.New("invalid scope"))
-		}
-
-		// if statements have to be same order
-
-		d := string(v.Data)
-
-		if len(d) == 0 {
-			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil && !ent.IsNotFound(err) {
-				return err
-			}
-			continue
-		}
-
-		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil && !ent.IsNotFound(err) {
-				return err
-			}
-			continue
-		} else {
-			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	// TODO: need fix here.
 
 	err = tx.Commit()
 	if err != nil {

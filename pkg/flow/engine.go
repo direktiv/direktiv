@@ -713,13 +713,9 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	if err != nil {
 		return nil, err
 	}
-	clients := engine.edb.Clients(context.Background())
 
-	for _, tv := range threadVars {
-		err = clients.VarRef.Create().SetBehaviour("thread").SetInstanceID(im.cached.Instance.ID).SetName(tv.Name).SetVardataID(tv.VarData).Exec(ctx)
-		if err != nil {
-			return nil, derrors.NewInternalError(err)
-		}
+	for range threadVars {
+		// TODO need change here.
 	}
 	im.AddAttribute("loop-index", caller.Iterator)
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())

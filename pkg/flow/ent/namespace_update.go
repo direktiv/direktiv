@@ -20,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
 )
 
@@ -92,21 +91,6 @@ func (nu *NamespaceUpdate) AddLogs(l ...*LogMsg) *NamespaceUpdate {
 		ids[i] = l[i].ID
 	}
 	return nu.AddLogIDs(ids...)
-}
-
-// AddVarIDs adds the "vars" edge to the VarRef entity by IDs.
-func (nu *NamespaceUpdate) AddVarIDs(ids ...uuid.UUID) *NamespaceUpdate {
-	nu.mutation.AddVarIDs(ids...)
-	return nu
-}
-
-// AddVars adds the "vars" edges to the VarRef entity.
-func (nu *NamespaceUpdate) AddVars(v ...*VarRef) *NamespaceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return nu.AddVarIDs(ids...)
 }
 
 // AddCloudeventIDs adds the "cloudevents" edge to the CloudEvents entity by IDs.
@@ -229,27 +213,6 @@ func (nu *NamespaceUpdate) RemoveLogs(l ...*LogMsg) *NamespaceUpdate {
 		ids[i] = l[i].ID
 	}
 	return nu.RemoveLogIDs(ids...)
-}
-
-// ClearVars clears all "vars" edges to the VarRef entity.
-func (nu *NamespaceUpdate) ClearVars() *NamespaceUpdate {
-	nu.mutation.ClearVars()
-	return nu
-}
-
-// RemoveVarIDs removes the "vars" edge to VarRef entities by IDs.
-func (nu *NamespaceUpdate) RemoveVarIDs(ids ...uuid.UUID) *NamespaceUpdate {
-	nu.mutation.RemoveVarIDs(ids...)
-	return nu
-}
-
-// RemoveVars removes "vars" edges to VarRef entities.
-func (nu *NamespaceUpdate) RemoveVars(v ...*VarRef) *NamespaceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return nu.RemoveVarIDs(ids...)
 }
 
 // ClearCloudevents clears all "cloudevents" edges to the CloudEvents entity.
@@ -513,51 +476,6 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if nu.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.VarsTable,
-			Columns: []string{namespace.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.RemovedVarsIDs(); len(nodes) > 0 && !nu.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.VarsTable,
-			Columns: []string{namespace.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.VarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.VarsTable,
-			Columns: []string{namespace.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -868,21 +786,6 @@ func (nuo *NamespaceUpdateOne) AddLogs(l ...*LogMsg) *NamespaceUpdateOne {
 	return nuo.AddLogIDs(ids...)
 }
 
-// AddVarIDs adds the "vars" edge to the VarRef entity by IDs.
-func (nuo *NamespaceUpdateOne) AddVarIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
-	nuo.mutation.AddVarIDs(ids...)
-	return nuo
-}
-
-// AddVars adds the "vars" edges to the VarRef entity.
-func (nuo *NamespaceUpdateOne) AddVars(v ...*VarRef) *NamespaceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return nuo.AddVarIDs(ids...)
-}
-
 // AddCloudeventIDs adds the "cloudevents" edge to the CloudEvents entity by IDs.
 func (nuo *NamespaceUpdateOne) AddCloudeventIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
 	nuo.mutation.AddCloudeventIDs(ids...)
@@ -1003,27 +906,6 @@ func (nuo *NamespaceUpdateOne) RemoveLogs(l ...*LogMsg) *NamespaceUpdateOne {
 		ids[i] = l[i].ID
 	}
 	return nuo.RemoveLogIDs(ids...)
-}
-
-// ClearVars clears all "vars" edges to the VarRef entity.
-func (nuo *NamespaceUpdateOne) ClearVars() *NamespaceUpdateOne {
-	nuo.mutation.ClearVars()
-	return nuo
-}
-
-// RemoveVarIDs removes the "vars" edge to VarRef entities by IDs.
-func (nuo *NamespaceUpdateOne) RemoveVarIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
-	nuo.mutation.RemoveVarIDs(ids...)
-	return nuo
-}
-
-// RemoveVars removes "vars" edges to VarRef entities.
-func (nuo *NamespaceUpdateOne) RemoveVars(v ...*VarRef) *NamespaceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return nuo.RemoveVarIDs(ids...)
 }
 
 // ClearCloudevents clears all "cloudevents" edges to the CloudEvents entity.
@@ -1317,51 +1199,6 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if nuo.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.VarsTable,
-			Columns: []string{namespace.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.RemovedVarsIDs(); len(nodes) > 0 && !nuo.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.VarsTable,
-			Columns: []string{namespace.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.VarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.VarsTable,
-			Columns: []string{namespace.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
