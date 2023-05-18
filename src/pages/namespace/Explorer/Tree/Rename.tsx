@@ -86,7 +86,7 @@ const Rename = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.rename.cancel")}
+            {t("pages.explorer.tree.rename.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -97,7 +97,7 @@ const Rename = ({
           form={formId}
         >
           {!isLoading && <TextCursorInput />}
-          {t("pages.explorer.tree.rename.title")}
+          {t("pages.explorer.tree.rename.renameBtn")}
         </Button>
       </DialogFooter>
     </>

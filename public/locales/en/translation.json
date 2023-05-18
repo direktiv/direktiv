@@ -36,7 +36,8 @@
         },
         "rename": {
           "title": "Rename",
-          "cancel": "Cancel",
+          "renameBtn": "Rename",
+          "cancelBtn": "Cancel",
           "nameAlreadyExists": "The name already exists"
         },
         "newDirectory": {
