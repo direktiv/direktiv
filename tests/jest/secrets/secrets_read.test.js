@@ -2,7 +2,7 @@ import request from 'supertest'
 import common from "../common";
 
 const testNamespace = "test-secrets-namespace"
-let testWorkflow = "test-secret.yaml"
+let testWorkflow = "test-secret"
 
 beforeAll(async () => {
     // delete a 'test-namespace' if it's already exit.
@@ -39,22 +39,50 @@ describe('Test secret read operations', () => {
         })
     })
 
-    it(`should create a workflow to test secret read`, async () => {
+    it(`should create the first workflow in a pair to test secret read`, async () => {
 
         const res = await request(common.config.getDirektivHost())
-            .put(`/api/namespaces/${testNamespace}/tree/${testWorkflow}?op=create-workflow`)
+        .put(`/api/namespaces/${testNamespace}/tree/${testWorkflow}-parent.yaml?op=create-workflow`)
+        .set({
+            'Content-Type': 'text/plain',
+        })
+
+        .send(`
+functions:
+- id: echo
+  workflow: ${testWorkflow}-child.yaml
+  type: subflow
+states:
+- id: echo
+  type: action
+  action:
+    function: echo
+    secrets: [key1]
+    input: 
+      secret: 'jq(.secrets.key1)'
+  transform: 
+    result: 'jq(.return.secret)'
+`)
+
+    expect(res.statusCode).toEqual(200)
+    expect(res.body).toMatchObject({
+        namespace: testNamespace,
+    })
+})
+
+    it(`should create the second workflow in a pair to test secret read`, async () => {
+
+        const res = await request(common.config.getDirektivHost())
+            .put(`/api/namespaces/${testNamespace}/tree/${testWorkflow}-child.yaml?op=create-workflow`)
             .set({
                 'Content-Type': 'text/plain',
             })
 
-            // TODO: Alan, please write a workflow that test reading 'key1' secret ant print it.
             .send(`
-description: A simple that sould test secret read'
 states:
 - id: helloworld
   type: noop
-  transform:
-    result: value1`)
+`)
 
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -62,8 +90,8 @@ states:
         })
     })
 
-    it(`should invoke the '/${testWorkflow}' workflow`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/${testWorkflow}?op=wait`)
+    it(`should invoke the '/${testWorkflow}-parent.yaml' workflow`, async () => {
+        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/${testWorkflow}-parent.yaml?op=wait`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             result: 'value1',
