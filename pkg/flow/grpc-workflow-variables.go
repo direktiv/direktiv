@@ -228,8 +228,7 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 	}
 }
 
-type varQuerier interface {
-}
+type varQuerier interface{}
 
 type entNamespaceVarQuerier struct {
 	clients *entwrapper.EntClients

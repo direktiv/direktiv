@@ -332,7 +332,6 @@ func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, ke
 }
 
 func (db *Database) ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*database.VarRef, error) {
-
 	return nil, nil
 }
 
