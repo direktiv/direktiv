@@ -54,20 +54,15 @@ describe('Test secret crud operations', () => {
     })
 
 
-    it(`should read all secrets`, async () => {
+
+    it(`should list all secrets`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/namespaces/${testNamespace}/secrets`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             namespace: testNamespace,
             secrets: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 2
-                },
+                pageInfo: null,
                 results: [
                     {"name": "key1"},
                     {"name": "key2"}
@@ -82,20 +77,14 @@ describe('Test secret crud operations', () => {
         expect(res.statusCode).toEqual(200)
     })
 
-    it(`should read one secrets`, async () => {
+    it(`should list one secrets`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/namespaces/${testNamespace}/secrets`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             namespace: testNamespace,
             secrets: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 1
-                },
+                pageInfo: null,
                 results: [{"name": "key2"}]
             }
         })
@@ -108,26 +97,17 @@ describe('Test secret crud operations', () => {
         expect(res.statusCode).toEqual(200)
     })
 
-    it(`should read all secrets`, async () => {
+    it(`should list empty`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/namespaces/${testNamespace}/secrets`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             namespace: testNamespace,
             secrets: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 0
-                },
+                pageInfo: null,
                 results: []
             }
         })
     })
-
-
-
 })
 

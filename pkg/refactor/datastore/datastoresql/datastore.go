@@ -51,3 +51,10 @@ func (s *sqlStore) Logs() logengine.LogStore {
 		db: s.db,
 	}
 }
+
+// Secrets returns secrets store.
+func (s *sqlStore) Secrets() core.SecretsStore {
+	return &sqlSecretsStore{
+		db: s.db,
+	}
+}

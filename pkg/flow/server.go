@@ -62,7 +62,6 @@ type server struct {
 
 	mirrorManager mirror.Manager
 
-	secrets  *secrets
 	flow     *flow
 	internal *internal
 	events   *events
@@ -127,13 +126,6 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Debug("Initializing secrets.")
-	srv.secrets, err = initSecrets()
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.secrets.Close)
-
 	srv.sugar.Debug("Initializing locks.")
 
 	db := os.Getenv(util.DBConn)
@@ -171,7 +163,7 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Silent,
+				LogLevel: logger.Info,
 			},
 		),
 	})

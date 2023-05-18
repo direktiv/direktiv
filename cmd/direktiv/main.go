@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/cmd/flow"
 	flow_dbinit "github.com/direktiv/direktiv/cmd/flow-dbinit"
 	"github.com/direktiv/direktiv/cmd/functions"
-	"github.com/direktiv/direktiv/cmd/secrets"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 )
 
@@ -19,8 +18,6 @@ func main() {
 	switch appName {
 	case "api":
 		api.RunApplication()
-	case "secrets":
-		secrets.RunApplication()
 	case "sidecar":
 		sidecar.RunApplication()
 	case "flow":
