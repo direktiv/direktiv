@@ -39,7 +39,7 @@
           "cancel": "Cancel",
           "nameAlreadyExists": "The name already exists"
         },
-        "newDirectory":{
+        "newDirectory": {
           "title": "Create a new directory",
           "name": "Name",
           "create": "Create",
@@ -59,8 +59,8 @@
           "newWorkflow": "New Workflow",
           "new": "New"
         },
-        "newWorkflow":{
-         "title": "Create a new workflow",
+        "newWorkflow": {
+          "title": "Create a new workflow",
           "name": "Name",
           "create": "Create",
           "workflowName": "workflow-name",
