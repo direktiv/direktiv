@@ -97,7 +97,8 @@ const NewWorkflow = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Play /> {t("pages.explorer.tree.newWorkflow.title")}
+          <Play />
+          {t("pages.explorer.tree.newWorkflow.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -114,12 +115,12 @@ const NewWorkflow = ({
         >
           <fieldset className="flex items-center gap-5">
             <label className="w-[150px] text-right text-[15px]" htmlFor="name">
-              {t("pages.explorer.tree.newWorkflow.workflowName")}
+              {t("pages.explorer.tree.newWorkflow.nameLabel")}
             </label>
             <Input
               data-testid="new-workflow-name"
               id="name"
-              placeholder="workflow-name"
+              placeholder={t("pages.explorer.tree.newWorkflow.namePlaceholder")}
               {...register("name")}
             />
           </fieldset>
@@ -128,7 +129,7 @@ const NewWorkflow = ({
               className="w-[150px] text-right text-[15px]"
               htmlFor="template"
             >
-              {t("pages.explorer.tree.newWorkflow.template")}
+              {t("pages.explorer.tree.newWorkflow.templateLabel")}
             </label>
             <Select
               onValueChange={(value) => {
@@ -164,7 +165,9 @@ const NewWorkflow = ({
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <Button variant="ghost">
+            {t("pages.explorer.tree.newWorkflow.cancelBtn")}
+          </Button>
         </DialogClose>
         <Button
           data-testid="new-workflow-submit"
@@ -174,7 +177,7 @@ const NewWorkflow = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          {t("pages.explorer.tree.newWorkflow.create")}
+          {t("pages.explorer.tree.newWorkflow.createBtn")}
         </Button>
       </DialogFooter>
     </>

@@ -55,19 +55,19 @@
           "deleteBtn": "Delete"
         },
         "header": {
+          "newBtn": "New",
+          "createLabel": "Create",
           "newDirectory": "New Directory",
-          "create": "Create",
-          "newWorkflow": "New Workflow",
-          "new": "New"
+          "newWorkflow": "New Workflow"
         },
         "newWorkflow": {
           "title": "Create a new workflow",
-          "name": "Name",
-          "create": "Create",
-          "workflowName": "workflow-name",
+          "nameLabel": "Name",
+          "namePlaceholder": "workflow-name.yaml",
+          "templateLabel": "template",
           "nameAlreadyExists": "The name already exists",
-          "cancel": "Cancel",
-          "template": "template"
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
         },
         "workflow": {
           "revisions": {

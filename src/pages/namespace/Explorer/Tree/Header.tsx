@@ -91,13 +91,14 @@ const ExplorerHeader: FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="primary" data-testid="dropdown-trg-new">
-                <PlusCircle /> {t("pages.explorer.tree.header.new")}{" "}
+                <PlusCircle />
+                {t("pages.explorer.tree.header.newBtn")}
                 <RxChevronDown />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
               <DropdownMenuLabel>
-                {t("pages.explorer.tree.header.create")}
+                {t("pages.explorer.tree.header.createLabel")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
