@@ -41,11 +41,11 @@
         },
         "newDirectory": {
           "title": "Create a new directory",
-          "name": "Name",
-          "create": "Create",
-          "folderName": "folder-name",
+          "nameLabel": "Name",
+          "folderPlaceholder": "folder-name",
           "nameAlreadyExists": "The name already exists",
-          "cancel": "Cancel"
+          "createBtn": "Create",
+          "cancelBtn": "Cancel"
         },
         "delete": {
           "title": "Delete",

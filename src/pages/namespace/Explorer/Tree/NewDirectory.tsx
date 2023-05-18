@@ -89,11 +89,13 @@ const NewDirectory = ({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              {t("pages.explorer.tree.newDirectory.name")}
+              {t("pages.explorer.tree.newDirectory.nameLabel")}
             </label>
             <Input
               id="name"
-              placeholder={t("pages.explorer.tree.newDirectory.folderName")}
+              placeholder={t(
+                "pages.explorer.tree.newDirectory.folderPlaceholder"
+              )}
               {...register("name")}
             />
           </fieldset>
@@ -102,7 +104,7 @@ const NewDirectory = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.newDirectory.cancel")}
+            {t("pages.explorer.tree.newDirectory.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -112,7 +114,7 @@ const NewDirectory = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          {t("pages.explorer.tree.newDirectory.create")}
+          {t("pages.explorer.tree.newDirectory.createBtn")}
         </Button>
       </DialogFooter>
     </>
