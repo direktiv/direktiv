@@ -139,16 +139,16 @@
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",
       "notFound": "No namespace found.",
-      "createButton": "Create new namespace",
+      "createBtn": "Create new namespace",
       "loading": "loading..."
     },
-    "namespaceCreate":{
+    "namespaceCreate": {
       "title": "Create a new namespace",
-      "newNamespaceName": "new-namespace-name",
-      "create": "Create",
-      "namespace": "Namespace",
-      "nameAlreadyExists": "The name already exists",
-      "cancel": "Cancel"
+      "placeholder": "new-namespace-name",
+      "createBtn": "Create",
+      "label": "Namespace",
+      "alreadyExists": "The name already exists",
+      "cancelBtn": "Cancel"
     }
   }
 }

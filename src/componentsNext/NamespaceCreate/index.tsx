@@ -42,7 +42,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           z
             .string()
             .refine((name) => !existingNamespaces.some((n) => n === name), {
-              message: t("components.namespaceCreate.nameAlreadyExists"),
+              message: t("components.namespaceCreate.alreadyExists"),
             })
         ),
       })
@@ -87,12 +87,12 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              {t("components.namespaceCreate.namespace")}
+              {t("components.namespaceCreate.label")}
             </label>
             <Input
               id="name"
               data-testid="new-namespace-name"
-              placeholder="new-namespace-name"
+              placeholder={t("components.namespaceCreate.placeholder")}
               {...register("name")}
             />
           </fieldset>
@@ -101,7 +101,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("components.namespaceCreate.cancel")}
+            {t("components.namespaceCreate.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -112,7 +112,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          {t("components.namespaceCreate.create")}
+          {t("components.namespaceCreate.createBtn")}
         </Button>
       </DialogFooter>
     </>
