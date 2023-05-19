@@ -108,6 +108,7 @@ const ExplorerPage: FC = () => {
                           <div className="flex space-x-3">
                             <Icon className="h-5" />
                             <Link
+                              data-testid={`explorer-item-link-${file.name}`}
                               to={linkTarget}
                               className="flex-1 hover:underline"
                             >

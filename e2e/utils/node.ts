@@ -38,9 +38,9 @@ export const createDirectory = (namespace: string, name: string) =>
     return name;
   });
 
-export const deleteNode = (namespace: string, type: Node, name: string) =>
+export const deleteNode = (namespace: string, name: string) =>
   fetch(
-    `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-${type}`,
+    `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-node`,
     {
       method: "DELETE",
     }

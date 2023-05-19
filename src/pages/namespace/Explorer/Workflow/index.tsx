@@ -92,7 +92,12 @@ const Header: FC = () => {
             <Tabs defaultValue={tabs.find((x) => x.active)?.value}>
               <TabsList>
                 {tabs.map((tab) => (
-                  <TabsTrigger asChild value={tab.value} key={tab.value}>
+                  <TabsTrigger
+                    asChild
+                    value={tab.value}
+                    key={tab.value}
+                    data-testid={`workflow-tabs-trg-${tab.value}`}
+                  >
                     <Link to={tab.link}>
                       {tab.icon}
                       {tab.title}
