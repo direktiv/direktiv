@@ -76,7 +76,10 @@ const TrafficShaping: FC = () => {
         <Network />
         {t("pages.explorer.tree.workflow.revisions.trafficShaping.title")}
       </h3>
-      <Card className="flex flex-col gap-y-6 p-4">
+      <Card
+        className="flex flex-col gap-y-6 p-4"
+        data-testid="traffic-shaping-container"
+      >
         <div className="text-sm font-medium">
           {t(
             "pages.explorer.tree.workflow.revisions.trafficShaping.description"
@@ -90,6 +93,7 @@ const TrafficShaping: FC = () => {
             isLoading={isLoading}
             defaultValue={routeAServer}
             onSelect={setRouteA}
+            data-testid="route-a-selector"
           />
           <RevisionSelector
             className="flex w-full"
@@ -98,6 +102,7 @@ const TrafficShaping: FC = () => {
             revisions={revisions?.results ?? []}
             isLoading={isLoading}
             onSelect={setRouteB}
+            data-testid="route-b-selector"
           />
           <div className="flex w-full">
             <Slider
@@ -114,6 +119,7 @@ const TrafficShaping: FC = () => {
             <Button
               block
               disabled={saveButtonDisabled}
+              data-testid="traffic-shaping-save-btn"
               onClick={() => {
                 setRouter({
                   path,
@@ -134,7 +140,7 @@ const TrafficShaping: FC = () => {
             </Button>
           </div>
         </div>
-        <div className="text-sm">
+        <div className="text-sm" data-testid="traffic-shaping-note">
           {isEnabled ? (
             <Trans
               i18nKey="pages.explorer.tree.workflow.revisions.trafficShaping.setup"
