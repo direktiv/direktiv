@@ -34,18 +34,18 @@ const useRevisionsAndTags = ({ path }: { path?: string }) => {
 const TrafficShaping: FC = () => {
   const { t } = useTranslation();
   const { path } = pages.explorer.useParams();
+  const { mutate: setRouter, isLoading: isLoadingMutation } = useSetRouter();
   const { data: router } = useRouter({ path });
   const { tags, revisions, isLoading, isFetched } = useRevisionsAndTags({
     path,
   });
 
-  // component state
+  // local state
   const [routeA, setRouteA] = useState("");
   const [routeB, setRouteB] = useState("");
   const [weight, setWeight] = useState(0);
 
   // server state
-  const { mutate: setRouter, isLoading: isLoadingMutation } = useSetRouter();
   const routeAServer = router?.routes?.[0]?.ref;
   const routeBServer = router?.routes?.[1]?.ref;
   const weightServer = router?.routes?.[0]?.weight;
@@ -67,7 +67,7 @@ const TrafficShaping: FC = () => {
 
   if (!path) return null;
 
-  // wait for server data to to avoid layout shift
+  // wait for server data to avoid layout shifts
   if (!isFetched) return null;
 
   return (

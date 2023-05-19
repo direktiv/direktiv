@@ -29,18 +29,6 @@ test("by default, traffic shaping is not enabled", async ({ page }) => {
     },
   });
 
-  /**
-   * TODO: to be discussed. Please remove this in the PR review.
-   * In some places I use texts from the translation files and I wonder if we can keep it that way.
-   * because generally I would prefer to use a test id, but I have some cases where this is not possible
-   * or would introduce dom notes just for testing, which I don't like either. The downside is, that
-   * the tests break when when we change some translations but it's also a very easy fix.
-   *
-   * examples where I use text:
-   * "Select Revision..." this is the eaysiest way to find out if the dropdown is unused. There is no data attribute or something else
-   * "Please select 2 different revisions to configure traffic shaping." - I would prefer this instead of introducing a new dom element
-   */
-
   await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
   await expect(
     page.getByTestId("traffic-shaping-container"),

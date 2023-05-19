@@ -38,12 +38,11 @@ const RevisionSelector: FC<
     (rev) => !tags.some((t) => t.name === rev.name)
   );
 
+  // when defaultValue is changing, synch it with component state
   useEffect(() => {
     setValue(defaultValue ?? "");
     setIsTagSelected(tags.some((t) => t.name === defaultValue));
   }, [defaultValue, tags]);
-
-  const tagsAndRevisions = [...revisions]; // revisions have tags included
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -56,7 +55,7 @@ const RevisionSelector: FC<
           {...props}
         >
           {value
-            ? tagsAndRevisions
+            ? revisions
                 .find((rev) => rev.name === value)
                 ?.name.slice(0, isTagSelected ? undefined : 8)
             : t(
