@@ -113,6 +113,7 @@ const TrafficShaping: FC = () => {
               onValueChange={(e) => {
                 setWeight(e[0] ?? 0);
               }}
+              data-testid="traffic-shaping-slider"
             />
           </div>
           <div>
