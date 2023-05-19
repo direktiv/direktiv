@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
 import { NodeSchemaType } from "~/api/tree/schema";
@@ -17,6 +18,7 @@ const Delete = ({
   node: NodeSchemaType;
   close: () => void;
 }) => {
+  const { t } = useTranslation();
   const { mutate: deleteNode, isLoading } = useDeleteNode({
     onSuccess: () => {
       close();
@@ -27,18 +29,22 @@ const Delete = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Trash /> Delete
+          <Trash /> {t("pages.explorer.tree.delete.title")}
         </DialogTitle>
       </DialogHeader>
+
       <div className="my-3">
-        Are you sure you want to delete <b>{node.name}</b>? This can not be
-        undone.&nbsp;
-        {node.type === "directory" &&
-          "All content of this directory will be deleted as well."}
+        <Trans
+          i18nKey="pages.explorer.tree.delete.commonMsg"
+          values={{ name: node.name }}
+        />{" "}
+        {t("pages.explorer.tree.delete.directoryMsg")}
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <Button variant="ghost">
+            {t("pages.explorer.tree.delete.cancelBtn")}
+          </Button>
         </DialogClose>
         <Button
           data-testid="node-delete-confirm"
@@ -49,7 +55,7 @@ const Delete = ({
           loading={isLoading}
         >
           {!isLoading && <Trash />}
-          Delete
+          {t("pages.explorer.tree.delete.deleteBtn")}
         </Button>
       </DialogFooter>
     </>
