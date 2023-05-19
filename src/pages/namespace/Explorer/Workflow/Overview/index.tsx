@@ -3,10 +3,8 @@ import { Card } from "~/design/Card";
 import { FC } from "react";
 import { pages } from "~/util/router/pages";
 import { useNodeContent } from "~/api/tree/query/node";
-import { useTranslation } from "react-i18next";
 
 const ActiveWorkflowPage: FC = () => {
-  const { t } = useTranslation();
   const { path } = pages.explorer.useParams();
   const { data } = useNodeContent({
     path,
