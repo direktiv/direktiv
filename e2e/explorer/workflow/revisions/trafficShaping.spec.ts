@@ -70,6 +70,38 @@ test("by default, traffic shaping is not enabled", async ({ page }) => {
   );
 });
 
+test("you can't save, traffic shaping with two of the same revisions", async ({
+  page,
+}) => {
+  const name = faker.system.commonFileName("yaml");
+
+  await createWorkflow({
+    payload: basicWorkflow.data,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name,
+    },
+  });
+
+  await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
+
+  // select the latest revision for both routes
+  await page.getByTestId(`route-a-selector`).click();
+  await page.getByTestId("latest").click();
+  await page.getByTestId(`route-b-selector`).click();
+  await page.getByTestId("latest").click();
+
+  // double check if the selection was actually made
+  await expect(page.getByTestId(`route-a-selector`)).toHaveText("latest");
+  await expect(page.getByTestId(`route-b-selector`)).toHaveText("latest");
+
+  await expect(
+    page.getByTestId("traffic-shaping-save-btn"),
+    "button is disabled"
+  ).toBeDisabled();
+});
+
 test("it is possible to configure traffic shaping", async ({ page }) => {
   const name = faker.system.commonFileName("yaml");
   const {
