@@ -14,7 +14,6 @@ const ActiveWorkflowPage: FC = () => {
 
   return (
     <div className="flex flex-col space-y-4 p-4">
-      <h1>{t("pages.explorer.workflow.overview.title")}</h1>
       <Card className="p-4">
         <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
       </Card>

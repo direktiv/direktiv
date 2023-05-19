@@ -42,7 +42,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           z
             .string()
             .refine((name) => !existingNamespaces.some((n) => n === name), {
-              message: t("components.namespaceCreate.alreadyExists"),
+              message: t("components.namespaceCreate.nameAlreadyExists"),
             })
         ),
       })
@@ -87,7 +87,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              {t("components.namespaceCreate.label")}
+              {t("components.namespaceCreate.namespaceLabel")}
             </label>
             <Input
               id="name"

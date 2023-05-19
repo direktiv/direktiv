@@ -84,7 +84,7 @@ const WorkflowEditor: FC<{
           )}
           {hasUnsavedChanged && (
             <span className="text-center">
-              {t("pages.explorer.workflow.editor.haveUnsaved")}
+              {t("pages.explorer.workflow.editor.unsavedNote")}
             </span>
           )}
         </div>
@@ -107,7 +107,8 @@ const WorkflowEditor: FC<{
           <DropdownMenuTrigger asChild>
             <Button variant="outline" disabled={hasUnsavedChanged}>
               <GitMerge />
-              {t("pages.explorer.workflow.editor.revisions")} <RxChevronDown />
+              {t("pages.explorer.workflow.editor.revisionsBtn")}
+              <RxChevronDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-60">
@@ -118,7 +119,7 @@ const WorkflowEditor: FC<{
                 });
               }}
             >
-              <GitBranchPlus className="mr-2 h-4 w-4" />{" "}
+              <GitBranchPlus className="mr-2 h-4 w-4" />
               {t("pages.explorer.workflow.editor.makeRevision")}
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -128,14 +129,14 @@ const WorkflowEditor: FC<{
                 });
               }}
             >
-              <Undo className="mr-2 h-4 w-4" />{" "}
+              <Undo className="mr-2 h-4 w-4" />
               {t("pages.explorer.workflow.editor.revertToPrevious")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button variant="outline">
           <Play />
-          {t("pages.explorer.workflow.editor.run")}
+          {t("pages.explorer.workflow.editor.runBtn")}
         </Button>
         <Button
           variant="outline"
@@ -145,7 +146,7 @@ const WorkflowEditor: FC<{
           }}
         >
           <Save />
-          {t("pages.explorer.workflow.editor.save")}
+          {t("pages.explorer.workflow.editor.saveBtn")}
         </Button>
       </div>
     </div>

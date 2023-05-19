@@ -91,7 +91,7 @@
             "tag": {
               "titleTag": "Create a Tag",
               "description": "You are about to create a tag based on <b>{{name}}</b>.",
-              "alreadyExist": "This tag already exists.",
+              "tagAlreadyExist": "This tag already exists.",
               "cancelBtn": "Cancel",
               "createBtn": "Create Tag"
             },
@@ -123,16 +123,13 @@
         "updated": "Updated {{relativeTime}}",
         "actionsBtn": "Actions",
         "editor": {
-          "haveUnsaved": "you have unsaved changes",
+          "unsavedNote": "you have unsaved changes",
           "theresOneIssue": "There is one issue",
-          "revisions": "Revisions",
+          "revisionsBtn": "Revisions",
           "makeRevision": "Make Revision",
           "revertToPrevious": "Revert to previous revision",
-          "run": "Run",
-          "save": "Save"
-        },
-        "overview": {
-          "title": "ActiveWorkflowPage"
+          "runBtn": "Run",
+          "saveBtn": "Save"
         }
       }
     }
@@ -148,8 +145,8 @@
       "title": "Create a new namespace",
       "placeholder": "new-namespace-name",
       "createBtn": "Create",
-      "label": "Namespace",
-      "alreadyExists": "The name already exists",
+      "namespaceLabel": "Namespace",
+      "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel"
     }
   }
