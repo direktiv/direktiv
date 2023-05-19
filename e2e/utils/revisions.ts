@@ -11,53 +11,53 @@ states:
 
 export const createWorkflowWithThreeRevisions = async (
   namespace: string,
-  workflowName: string
+  workflowName: string,
+  path?: string
 ) => {
   const contentRevision1 = changeContentForRevisions(1);
   const contentRevision2 = changeContentForRevisions(2);
   const contentRevision3 = changeContentForRevisions(3);
 
-  const workflowUrlParams = {
+  const commonUrlParams = {
     baseUrl: process.env.VITE_DEV_API_DOMAIN,
     namespace,
-    name: workflowName,
-  };
-
-  const revisionUrlParams = {
-    baseUrl: process.env.VITE_DEV_API_DOMAIN,
-    namespace,
-    path: workflowName,
+    path: `${path ?? ""}${workflowName}`,
   };
 
   // revision 1
   await createWorkflow({
     payload: contentRevision1,
-    urlParams: workflowUrlParams,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      path: path,
+      name: workflowName,
+    },
   });
 
   const firstRevision = await createRevision({
     payload: undefined,
-    urlParams: revisionUrlParams,
+    urlParams: commonUrlParams,
   });
 
   // revision 2
   await updateWorkflow({
     payload: contentRevision2,
-    urlParams: workflowUrlParams,
+    urlParams: commonUrlParams,
   });
   const secondRevision = await createRevision({
     payload: undefined,
-    urlParams: revisionUrlParams,
+    urlParams: commonUrlParams,
   });
 
   // revision 3
   await updateWorkflow({
     payload: contentRevision3,
-    urlParams: workflowUrlParams,
+    urlParams: commonUrlParams,
   });
   const thridRevision = await createRevision({
     payload: undefined,
-    urlParams: revisionUrlParams,
+    urlParams: commonUrlParams,
   });
 
   return {
