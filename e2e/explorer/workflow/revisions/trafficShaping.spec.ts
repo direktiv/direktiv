@@ -1,7 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
+import { faker } from "@faker-js/faker";
 
 let namespace = "";
 
@@ -14,21 +17,11 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-/**
- * planed tests
- * - select two tags
- *  - slider is enabled
- *  - button is enabled
- *  - save and reload
- *  - note shows details about the config
- * - selecting the same tag twice, will still show the defailt note and keeps the button disabled
- */
-
 test("by default, traffic shaping is not enabled", async ({ page }) => {
-  const name = "workflow.yaml";
+  const name = faker.system.commonFileName("yaml");
 
   await createWorkflow({
-    payload: basicWorkflow,
+    payload: basicWorkflow.data,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -71,8 +64,46 @@ test("by default, traffic shaping is not enabled", async ({ page }) => {
 
   await expect(
     page.getByTestId("traffic-shaping-note"),
-    "route b selector is empty"
+    "there is a hint that describes the traffic shaping"
   ).toHaveText(
     "Please select 2 different revisions to configure traffic shaping."
   );
+});
+
+test("it is possible to configure traffic shaping", async ({ page }) => {
+  const name = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [firstRevision, secondRevision],
+  } = await createWorkflowWithThreeRevisions(namespace, name);
+
+  await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
+  await page.getByTestId(`route-a-selector`).click();
+  await page.getByTestId(firstRevision.revision.name).click();
+  await page.getByTestId(`route-b-selector`).click();
+  await page.getByTestId(secondRevision.revision.name).click();
+
+  // move slider
+  const slider = await page
+    .getByTestId("traffic-shaping-slider")
+    .getByRole("slider");
+  await slider.dragTo(slider, {
+    force: true,
+    targetPosition: { x: 50, y: 0 },
+  });
+  const sliderValue = await slider.getAttribute("aria-valuenow");
+  expect(sliderValue).not.toBe("0");
+
+  await expect(
+    page.getByTestId("traffic-shaping-note"),
+    "there is a hint that describes the traffic shaping"
+  ).toHaveText(
+    `The traffic will be split between ${firstRevision.revision.name} and ${
+      secondRevision.revision.name
+    } with a ratio of ${sliderValue} to ${100 - parseInt(sliderValue ?? "")} %`
+  );
+
+  // save
+  await page.getByTestId("traffic-shaping-save-btn").click();
+
+  // TODO: check for toast message
 });
