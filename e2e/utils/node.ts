@@ -11,12 +11,16 @@ export const workflowExamples = {
   `,
 };
 
-export const createWorkflow = (namespace: string, name: string) =>
+export const createWorkflow = (
+  namespace: string,
+  name: string,
+  workflowContent?: string
+) =>
   fetch(
     `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=create-workflow`,
     {
       method: "PUT",
-      body: workflowExamples.noop,
+      body: workflowContent && workflowExamples.noop,
     }
   ).then((response) => {
     if (!response.ok) {
