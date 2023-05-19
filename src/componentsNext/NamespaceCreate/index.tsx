@@ -16,6 +16,7 @@ import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -24,6 +25,7 @@ type FormInput = {
 };
 
 const NamespaceCreate = ({ close }: { close: () => void }) => {
+  const { t } = useTranslation();
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
   const existingNamespaces = data?.results.map((n) => n.name) || [];
@@ -40,7 +42,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           z
             .string()
             .refine((name) => !existingNamespaces.some((n) => n === name), {
-              message: "The name already exists",
+              message: t("components.namespaceCreate.nameAlreadyExists"),
             })
         ),
       })
@@ -72,7 +74,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     <>
       <DialogHeader>
         <DialogTitle>
-          <Home /> Create a new namespace
+          <Home /> {t("components.namespaceCreate.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -85,12 +87,12 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              Namespace
+              {t("components.namespaceCreate.namespaceLabel")}
             </label>
             <Input
               id="name"
               data-testid="new-namespace-name"
-              placeholder="new-namespace-name"
+              placeholder={t("components.namespaceCreate.placeholder")}
               {...register("name")}
             />
           </fieldset>
@@ -98,7 +100,9 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <Button variant="ghost">
+            {t("components.namespaceCreate.cancelBtn")}
+          </Button>
         </DialogClose>
         <Button
           data-testid="new-namespace-submit"
@@ -108,7 +112,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          Create
+          {t("components.namespaceCreate.createBtn")}
         </Button>
       </DialogFooter>
     </>

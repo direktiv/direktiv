@@ -43,7 +43,7 @@ const CreateTag = ({
           .string()
           .refine((name) => !unallowedNames.some((n) => n === name), {
             message: t(
-              "pages.explorer.tree.workflow.revisions.tag.alreadyExist"
+              "pages.explorer.tree.workflow.revisions.tag.tagAlreadyExist"
             ),
           }),
       })
