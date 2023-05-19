@@ -1,3 +1,5 @@
+import { NodeListSchemaType } from "~/api/tree/schema";
+
 const apiUrl = process.env.VITE_DEV_API_DOMAIN;
 
 export const workflowExamples = {
@@ -60,8 +62,8 @@ export const checkIfNodeExists = (namespace: string, nodeName: string) =>
     if (!response.ok) {
       throw `fetching nodes failed with code ${response.status}`;
     }
-    return response.json().then((json) => {
-      const nodeInResponse = json.children.results
+    return response.json().then((json: NodeListSchemaType) => {
+      const nodeInResponse = json?.children?.results
         .map((node) => node.name)
         .find((name) => name === nodeName);
       return !!nodeInResponse;
