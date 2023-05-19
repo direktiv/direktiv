@@ -108,7 +108,11 @@ const WorkflowEditor: FC<{
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" disabled={hasUnsavedChanged}>
+            <Button
+              variant="outline"
+              disabled={hasUnsavedChanged}
+              data-testid="workflow-edit-trg-revision"
+            >
               <GitMerge />
               {t("pages.explorer.workflow.editor.revisionsBtn")}
               <RxChevronDown />
@@ -121,6 +125,7 @@ const WorkflowEditor: FC<{
                   path,
                 });
               }}
+              data-testid="workflow-editor-btn-make-revision"
             >
               <GitBranchPlus className="mr-2 h-4 w-4" />
               {t("pages.explorer.workflow.editor.makeRevision")}
@@ -131,6 +136,7 @@ const WorkflowEditor: FC<{
                   path,
                 });
               }}
+              data-testid="workflow-editor-btn-revert-revision"
             >
               <Undo className="mr-2 h-4 w-4" />
               {t("pages.explorer.workflow.editor.revertToPrevious")}

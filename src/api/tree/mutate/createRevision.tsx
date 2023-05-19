@@ -45,6 +45,7 @@ export const useCreateRevision = () => {
         variant: "success",
         action: (
           <ToastAction
+            data-testid="make-revision-toast-success-action"
             altText="Open Revision"
             onClick={() => {
               navigate(
