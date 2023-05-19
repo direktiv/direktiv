@@ -84,6 +84,7 @@ const RevisionSelector: FC<
                 <CommandItem
                   value={tag.name}
                   key={tag.name}
+                  data-testid={tag.name}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     onSelect?.(currentValue === value ? "" : currentValue);
@@ -112,6 +113,7 @@ const RevisionSelector: FC<
                 <CommandItem
                   value={revision.name}
                   key={revision.name}
+                  data-testid={revision.name}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     onSelect?.(currentValue === value ? "" : currentValue);
