@@ -4,7 +4,7 @@ import common from "../common"
 
 import events from "./send_helper.js"
 
-const namespaceName = "sendevents"
+const namespaceName = "wfevents"
 
 const basevent = (type, id, value) => `{
     "specversion" : "1.0",

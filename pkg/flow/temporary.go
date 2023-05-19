@@ -21,11 +21,8 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	secretsgrpc "github.com/direktiv/direktiv/pkg/secrets/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // TEMPORARY EVERYTHING
@@ -195,23 +192,18 @@ func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError
 }
 
 func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
-	var resp *secretsgrpc.SecretsRetrieveResponse
-
-	ns := im.cached.Namespace.ID.String()
-
-	resp, err := im.engine.secrets.client.RetrieveSecret(ctx, &secretsgrpc.SecretsRetrieveRequest{
-		Namespace: &ns,
-		Name:      &secret,
-	})
+	_, store, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
 	if err != nil {
-		s := status.Convert(err)
-		if s.Code() == codes.NotFound {
-			return "", derrors.NewUncatchableError("direktiv.secrets.notFound", "secret '%s' not found", secret)
-		}
-		return "", derrors.NewInternalError(err)
+		return "", err
+	}
+	defer rollback()
+
+	secretData, err := store.Secrets().Get(ctx, im.cached.Namespace.ID, secret)
+	if err != nil {
+		return "", err
 	}
 
-	return string(resp.GetData()), nil
+	return string(secretData.Data), nil
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {

@@ -22,9 +22,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -64,7 +64,6 @@ type server struct {
 
 	mirrorManager mirror.Manager
 
-	secrets  *secrets
 	flow     *flow
 	internal *internal
 	events   *events
@@ -130,13 +129,6 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Debug("Initializing secrets.")
-	srv.secrets, err = initSecrets()
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.secrets.Close)
-
 	srv.sugar.Debug("Initializing locks.")
 
 	db := os.Getenv(util.DBConn)
@@ -174,7 +166,7 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Silent,
+				LogLevel: logger.Info,
 			},
 		),
 	})
@@ -268,8 +260,8 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	srv.sugar.Debug("Initializing mirror manager.")
-	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
-	fStore := psql.NewSQLFileStore(srv.gormDB)
+	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
+	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
 
 	srv.loggerBeta = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{Sugar: srv.sugar},
@@ -656,7 +648,7 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(res), sql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
+	return filestoresql.NewSQLFileStore(res), datastoresql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {

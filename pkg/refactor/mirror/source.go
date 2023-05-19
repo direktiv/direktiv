@@ -51,9 +51,10 @@ func (m *GitSource) PullInPath(config *Config, dst string) error {
 	prefix := "https://"
 
 	cloneOptions := &git.CloneOptions{
-		URL:           uri,
-		Progress:      os.Stdout,
-		ReferenceName: plumbing.NewBranchReferenceName(config.GitRef),
+		InsecureSkipTLS: true, // This has to be a toggle in the UI
+		URL:             uri,
+		Progress:        os.Stdout,
+		ReferenceName:   plumbing.NewBranchReferenceName(config.GitRef),
 	}
 
 	// https with access token case. Put passphrase inside the git url.

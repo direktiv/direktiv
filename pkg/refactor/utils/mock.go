@@ -28,8 +28,8 @@ func NewMockGorm() (*gorm.DB, error) {
 	 CREATE TABLE IF NOT EXISTS "filesystem_roots"
 			(
 				"id" text,
-				"created_at" datetime,
-				"updated_at" datetime,
+				"created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
 				CONSTRAINT "fk_namespaces_filesystem_roots"
 				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
@@ -37,12 +37,12 @@ func NewMockGorm() (*gorm.DB, error) {
 	 CREATE TABLE IF NOT EXISTS "filesystem_files"
 			(
 				"id" text,
-				"path" text,
-				"depth" integer,
-				"typ" text,
-				"root_id" text,
-				"created_at" datetime,
-				"updated_at" datetime,
+				"path" text NOT NULL,
+				"depth" integer NOT NULL,
+				"typ" text NOT NULL,
+				"root_id" text NOT NULL,
+				"created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
 				CONSTRAINT "fk_filesystem_roots_filesystem_files"
 				FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -51,12 +51,12 @@ func NewMockGorm() (*gorm.DB, error) {
 			(
 				"id" text,
 				"tags" text,
-				"is_current" numeric,
-				"data" blob,
-				"checksum" text,
-				"file_id" text,
-				"created_at" datetime,
-				"updated_at" datetime,
+				"is_current" numeric NOT NULL,
+				"data" blob NOT NULL,
+				"checksum" text NOT NULL,
+				"file_id" text NOT NULL,
+				"created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
 				CONSTRAINT "fk_filesystem_files_filesystem_revisions"
 				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -65,8 +65,8 @@ func NewMockGorm() (*gorm.DB, error) {
 			(
 				"file_id" text,
 				"data" text,
-				"created_at" datetime,
-				"updated_at" datetime,
+				"created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("file_id"),
 				CONSTRAINT "fk_filesystem_files_file_annotations"
 				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -74,14 +74,14 @@ func NewMockGorm() (*gorm.DB, error) {
 	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
 	 		(
 	 		    "namespace_id" text,
-	 		    "url" text,
-	 		    "git_ref" text,
+	 		    "url" text NOT NULL,
+	 		    "git_ref" text NOT NULL,
 	 		    "git_commit_hash" text,
 	 		    "public_key" text,
 	 		    "private_key" text,
 	 		    "private_key_passphrase" text,
-	 		    "created_at" datetime,
-	 		    "updated_at" datetime,
+	 		    "created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	 		    PRIMARY KEY ("namespace_id"),
 				CONSTRAINT "fk_namespaces_mirror_configs"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
@@ -89,12 +89,12 @@ func NewMockGorm() (*gorm.DB, error) {
 	 CREATE TABLE IF NOT EXISTS "mirror_processes"
 	 		(
 	 		    "id" text,
-	 		    "namespace_id" text,
-	 		    "status" text,
-	            "typ" text,
+	 		    "namespace_id" text NOT NULL,
+	 		    "status" text NOT NULL,
+				"typ" 	 text NOT NULL,
 	 		    "ended_at" datetime,
-	 		    "created_at" datetime,
-	 		    "updated_at" datetime,
+	 		    "created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	 		    PRIMARY KEY ("id"),
 	 		    CONSTRAINT "fk_namespaces_mirror_processes"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
@@ -114,6 +114,18 @@ func NewMockGorm() (*gorm.DB, error) {
 				 "namespace_logs" text,
 				 PRIMARY KEY ("oid")
 			 );
+	 CREATE TABLE IF NOT EXISTS "secrets"
+	 		(
+	 		    "id" text,
+	 		    "namespace_id" text NOT NULL,
+	 		    "name" text NOT NULL,
+				"data" 	 blob NOT NULL,
+	 		    "created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    PRIMARY KEY ("id"),
+	 		    CONSTRAINT "fk_namespaces_secrets"
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+	 		);
 `)
 
 	if res.Error != nil {

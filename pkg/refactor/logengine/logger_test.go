@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 )
@@ -14,7 +14,7 @@ func Test_Log(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	sq := sql.NewSQLStore(db, "some_secret_key_")
+	sq := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := sq.Logs()
 
 	ds := logengine.DataStoreBetterLogger{Store: logstore, LogError: func(template string, args ...interface{}) { t.Errorf(template, args...) }}
