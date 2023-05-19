@@ -89,7 +89,7 @@ const RevisionsList: FC = () => {
                 const Icon = isTag ? Tag : GitMerge;
 
                 return (
-                  <TableRow key={i} className="group">
+                  <TableRow key={i} className="group" data-testid={rev.name}>
                     <TableCell className="w-0">
                       <div className="flex space-x-3">
                         <Icon aria-hidden="true" className="h-5" />
