@@ -14,7 +14,8 @@ const useUpdatedAt = (date: moment.MomentInput): string => {
   const interval = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
-    setUpdatedString(moment(date).fromNow());
+    /* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */
+    setUpdatedString(moment(date).fromNow(true));
     if (minAgo < 60) {
       interval.current = setInterval(() => {
         setMinAgo(minutesAgo(date));

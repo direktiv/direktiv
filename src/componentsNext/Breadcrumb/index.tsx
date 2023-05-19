@@ -127,7 +127,7 @@ const Breadcrumb = () => {
                   <CommandStaticItem>
                     <>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      <span>{t("components.breadcrumb.createButton")}</span>
+                      <span>{t("components.breadcrumb.createBtn")}</span>
                     </>
                   </CommandStaticItem>
                 </DialogTrigger>

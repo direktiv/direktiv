@@ -34,6 +34,42 @@
             "createDirectory": "Create Directory"
           }
         },
+        "rename": {
+          "title": "Rename",
+          "renameBtn": "Rename",
+          "cancelBtn": "Cancel",
+          "nameAlreadyExists": "The name already exists"
+        },
+        "newDirectory": {
+          "title": "Create a new directory",
+          "nameLabel": "Name",
+          "folderPlaceholder": "folder-name",
+          "nameAlreadyExists": "The name already exists",
+          "createBtn": "Create",
+          "cancelBtn": "Cancel"
+        },
+        "delete": {
+          "title": "Delete",
+          "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
+          "directoryMsg": "All content of this directory will be deleted as well.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        },
+        "header": {
+          "newBtn": "New",
+          "createLabel": "Create",
+          "newDirectory": "New Directory",
+          "newWorkflow": "New Workflow"
+        },
+        "newWorkflow": {
+          "title": "Create a new workflow",
+          "nameLabel": "Name",
+          "namePlaceholder": "workflow-name.yaml",
+          "templateLabel": "template",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "workflow": {
           "revisions": {
             "trafficShaping": {
@@ -71,7 +107,7 @@
             "tag": {
               "titleTag": "Create a Tag",
               "description": "You are about to create a tag based on <b>{{name}}</b>.",
-              "alreadyExist": "This tag already exists.",
+              "tagAlreadyExist": "This tag already exists.",
               "cancelBtn": "Cancel",
               "createBtn": "Create Tag"
             },
@@ -101,7 +137,16 @@
           "settings": "Settings"
         },
         "updated": "Updated {{relativeTime}}",
-        "actionsBtn": "Actions"
+        "actionsBtn": "Actions",
+        "editor": {
+          "unsavedNote": "you have unsaved changes",
+          "theresOneIssue": "There is one issue",
+          "revisionsBtn": "Revisions",
+          "makeRevision": "Make Revision",
+          "revertToPrevious": "Revert to previous revision",
+          "runBtn": "Run",
+          "saveBtn": "Save"
+        }
       }
     }
   },
@@ -109,8 +154,16 @@
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",
       "notFound": "No namespace found.",
-      "createButton": "Create new namespace",
+      "createBtn": "Create new namespace",
       "loading": "loading..."
+    },
+    "namespaceCreate": {
+      "title": "Create a new namespace",
+      "placeholder": "new-namespace-name",
+      "createBtn": "Create",
+      "namespaceLabel": "Namespace",
+      "nameAlreadyExists": "The name already exists",
+      "cancelBtn": "Cancel"
     }
   },
   "api": {

@@ -15,6 +15,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateDirectory } from "~/api/tree/mutate/createDirectory";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -31,6 +32,7 @@ const NewDirectory = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
+  const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
   const {
@@ -44,7 +46,7 @@ const NewDirectory = ({
           z
             .string()
             .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
-              message: "The name already exists",
+              message: t("pages.explorer.tree.newDirectory.nameAlreadyExists"),
             })
         ),
       })
@@ -74,7 +76,7 @@ const NewDirectory = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Folder /> Create a new directory
+          <Folder /> {t("pages.explorer.tree.newDirectory.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -87,15 +89,23 @@ const NewDirectory = ({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[15px]" htmlFor="name">
-              Name
+              {t("pages.explorer.tree.newDirectory.nameLabel")}
             </label>
-            <Input id="name" placeholder="folder-name" {...register("name")} />
+            <Input
+              id="name"
+              placeholder={t(
+                "pages.explorer.tree.newDirectory.folderPlaceholder"
+              )}
+              {...register("name")}
+            />
           </fieldset>
         </form>
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <Button variant="ghost">
+            {t("pages.explorer.tree.newDirectory.cancelBtn")}
+          </Button>
         </DialogClose>
         <Button
           type="submit"
@@ -104,7 +114,7 @@ const NewDirectory = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          Create
+          {t("pages.explorer.tree.newDirectory.createBtn")}
         </Button>
       </DialogFooter>
     </>

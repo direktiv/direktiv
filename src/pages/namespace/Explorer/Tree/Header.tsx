@@ -20,6 +20,7 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
+import { useTranslation } from "react-i18next";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -36,6 +37,7 @@ const BreadcrumbSegment: FC<{
 );
 
 const ExplorerHeader: FC = () => {
+  const { t } = useTranslation();
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
@@ -89,11 +91,15 @@ const ExplorerHeader: FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="primary" data-testid="dropdown-trg-new">
-                <PlusCircle /> New <RxChevronDown />
+                <PlusCircle />
+                {t("pages.explorer.tree.header.newBtn")}
+                <RxChevronDown />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-40">
-              <DropdownMenuLabel>Create</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {t("pages.explorer.tree.header.createLabel")}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DialogTrigger
@@ -104,7 +110,8 @@ const ExplorerHeader: FC = () => {
                   }}
                 >
                   <DropdownMenuItem>
-                    <Folder className="mr-2 h-4 w-4" /> New Directory
+                    <Folder className="mr-2 h-4 w-4" />{" "}
+                    {t("pages.explorer.tree.header.newDirectory")}
                   </DropdownMenuItem>
                 </DialogTrigger>
                 <DialogTrigger
@@ -115,7 +122,8 @@ const ExplorerHeader: FC = () => {
                   }}
                 >
                   <DropdownMenuItem>
-                    <Play className="mr-2 h-4 w-4" /> New Workflow
+                    <Play className="mr-2 h-4 w-4" />{" "}
+                    {t("pages.explorer.tree.header.newWorkflow")}
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuGroup>
