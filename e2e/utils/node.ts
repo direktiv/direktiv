@@ -22,7 +22,7 @@ export const createWorkflow = (
     `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=create-workflow`,
     {
       method: "PUT",
-      body: workflowContent && workflowExamples.noop,
+      body: workflowContent ?? workflowExamples.noop,
     }
   ).then((response) => {
     if (!response.ok) {
