@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "../../../utils/node";
+import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 
 let namespace = "";
 
@@ -26,7 +26,15 @@ test.afterEach(async () => {
 
 test("by default, traffic shaping is not enabled", async ({ page }) => {
   const name = "workflow.yaml";
-  await createWorkflow(namespace, name);
+
+  await createWorkflow({
+    payload: basicWorkflow,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name,
+    },
+  });
 
   /**
    * TODO: to be discussed. Please remove this in the PR review.
