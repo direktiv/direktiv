@@ -139,6 +139,9 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
   // save
   await page.getByTestId("traffic-shaping-save-btn").click();
 
+  // TODO: check if success toast is shown
+  // TODO: check if revisions list shows the traffic distribution
+
   // reload page
   await page.reload();
 
@@ -157,7 +160,4 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
       ? `The traffic will be split between ${firstRevisionName} and ${secondRevisionName} with a ratio of ${sliderValue} to ${secondShaping} %`
       : `The traffic will be split between ${secondRevisionName} and ${firstRevisionName} with a ratio of ${secondShaping} to ${sliderValue} %`
   );
-
-  // reload page
-  // check if the shaping is displayey in the list
 });
