@@ -89,7 +89,11 @@ const RevisionsList: FC = () => {
                 const Icon = isTag ? Tag : GitMerge;
 
                 return (
-                  <TableRow key={i} className="group" data-testid={rev.name}>
+                  <TableRow
+                    key={i}
+                    className="group"
+                    data-testid={`revisions-list-${rev.name}`}
+                  >
                     <TableCell className="w-0">
                       <div className="flex space-x-3">
                         <Icon aria-hidden="true" className="h-5" />
@@ -107,7 +111,7 @@ const RevisionsList: FC = () => {
                     </TableCell>
                     <TableCell className="w-0 justify-start gap-x-3">
                       {index === 0 && (
-                        <Badge>
+                        <Badge data-testid="traffic-distribution-primary">
                           {t(
                             "pages.explorer.tree.workflow.revisions.list.distribution",
                             {
@@ -117,7 +121,10 @@ const RevisionsList: FC = () => {
                         </Badge>
                       )}
                       {index === 1 && (
-                        <Badge variant="outline">
+                        <Badge
+                          data-testid="traffic-distribution-secondary"
+                          variant="outline"
+                        >
                           {t(
                             "pages.explorer.tree.workflow.revisions.list.distribution",
                             {

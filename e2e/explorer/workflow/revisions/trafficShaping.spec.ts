@@ -139,8 +139,19 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
   // save
   await page.getByTestId("traffic-shaping-save-btn").click();
 
-  // TODO: check if success toast is shown
-  // TODO: check if revisions list shows the traffic distribution
+  const firstRevisionRow = await page.getByTestId(
+    `revisions-list-${firstRevisionName}`
+  );
+  await expect(
+    firstRevisionRow.getByTestId("traffic-distribution-primary")
+  ).toHaveText(`${sliderValue} % of traffic distribution`);
+
+  const secondRevisionRow = await page.getByTestId(
+    `revisions-list-${secondRevisionName}`
+  );
+  await expect(
+    secondRevisionRow.getByTestId("traffic-distribution-secondary")
+  ).toHaveText(`${secondShaping} % of traffic distribution`);
 
   // reload page
   await page.reload();
