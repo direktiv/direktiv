@@ -12,7 +12,7 @@ require (
 	github.com/eko/gocache/lib/v4 v4.1.3
 	github.com/eko/gocache/store/go_cache/v4 v4.1.2
 	github.com/emicklei/go-restful/v3 v3.10.2
-	github.com/fergusstrange/embedded-postgres v1.21.0
+	github.com/fergusstrange/embedded-postgres v1.22.0
 	github.com/gabriel-vasile/mimetype v1.4.2
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-git/go-git/v5 v5.6.1
