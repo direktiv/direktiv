@@ -1071,8 +1071,8 @@ knative.dev/networking v0.0.0-20230419144338-e5d04e805e50 h1:X9rPBYr7Vrm075q0iXT
 knative.dev/networking v0.0.0-20230419144338-e5d04e805e50/go.mod h1:o2MyGpGfU5DoSAWCE2f/jnSC9GjGOplCslbA99yDkGo=
 knative.dev/pkg v0.0.0-20230420071539-300df436f953 h1:GAB1JB35FWv5zqypwzmO7v4EPY8xXsomPtHEtb8xdx4=
 knative.dev/pkg v0.0.0-20230420071539-300df436f953/go.mod h1:2qWPP9Gjh9Q7ETti+WRHnBnGCSCq+6q7m3p/nmUQviE=
-knative.dev/serving v0.37.0 h1:hp/HconGRzv0kh2az9I/af1K1DY3NG3zcyiVc2rHyOk=
-knative.dev/serving v0.37.0/go.mod h1:v0Xbfp7olb0Gljm5l4qNuLsIf8/2p1rIt/mphxvx1z0=
+knative.dev/serving v0.37.1 h1:msn1sJ9yVBVWu/5slqkpSXXqCEQRIysHR+fKMO4EXlI=
+knative.dev/serving v0.37.1/go.mod h1:v0Xbfp7olb0Gljm5l4qNuLsIf8/2p1rIt/mphxvx1z0=
 modernc.org/libc v1.22.5 h1:91BNch/e5B0uPbJFgqbxXuOnxBQjlS//icfQEGmvyjE=
 modernc.org/libc v1.22.5/go.mod h1:jj+Z7dTNX8fBScMVNRAYZ/jF91K8fdT2hYMThc3YjBY=
 modernc.org/mathutil v1.5.0 h1:rV0Ko/6SfM+8G+yKiyI830l3Wuz1zRutdslNoQ0kfiQ=
