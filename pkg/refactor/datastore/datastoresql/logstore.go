@@ -32,12 +32,12 @@ type sqlLogStore struct {
 // - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
 // - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
 // - All passed keysAndValues pair will be stored attached to the log-entry.
-func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg string, keysAndValues map[string]interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level string, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "oid", "t", "msg")
-	vals = append(vals, uuid.New(), timestamp, msg)
+	cols = append(cols, "oid", "t", "level", "msg")
+	vals = append(vals, uuid.New(), timestamp, level, msg)
 	databaseCols := []string{
 		"instance_logs",
 		"log_instance_call_path",
@@ -45,7 +45,6 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, msg stri
 		"workflow_id",
 		"namespace_logs",
 		"mirror_activity_id",
-		"level",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -148,7 +147,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT oid, t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
+	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
 	FROM log_msgs `
 	q += "WHERE "
 	for i, e := range wEq {
@@ -169,7 +168,6 @@ func composeQuery(limit, offset int, wEq []string) string {
 }
 
 type gormLogMsg struct {
-	Oid                 uuid.UUID
 	T                   time.Time
 	Msg                 string
 	Level               string

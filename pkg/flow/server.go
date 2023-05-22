@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
@@ -24,6 +25,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -68,10 +70,11 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	metrics  *metrics.Client
-	logger   *internallogger.Logger
-	edb      *entwrapper.Database // TODO: remove
-	database *database.CachedDatabase
+	metrics    *metrics.Client
+	logger     *internallogger.Logger // TODO: remove
+	loggerBeta logengine.BetterLogger
+	edb        *entwrapper.Database // TODO: remove
+	database   *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -259,6 +262,14 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing mirror manager.")
 	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
+
+	srv.loggerBeta = logengine.ChainedBetterLogger{
+		logengine.SugarBetterLogger{Sugar: srv.sugar},
+		logengine.DataStoreBetterLogger{Store: store.Logs(), LogError: srv.sugar.Errorf},
+		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
+			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+		}, LogError: srv.sugar.Errorf},
+	}
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
