@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -53,6 +54,7 @@ type HasAttributes interface {
 func GetAttributes(recipientType string, a ...HasAttributes) map[string]interface{} {
 	m := make(map[string]interface{})
 	m["sender_type"] = recipientType
+
 	for _, x := range a {
 		y := x.GetAttributes()
 		for k, v := range y {
@@ -64,22 +66,30 @@ func GetAttributes(recipientType string, a ...HasAttributes) map[string]interfac
 
 func (cached *CacheData) GetAttributes(recipientType string) map[string]interface{} {
 	tags := make(map[string]interface{})
+	callpath := ""
 	tags["sender_type"] = recipientType
 	switch recipientType {
 	case "namespace":
 		tags["sender"] = cached.Namespace.ID
 	case "instance":
 		tags["sender"] = cached.Instance.ID
+		callpath = internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+		rootInstance, err := internallogger.GetRootinstanceID(callpath)
+		if err != nil {
+			panic("malformed callpath")
+		}
+		tags["root_instance_id"] = rootInstance
 	case "workflow":
 		tags["sender"] = cached.File.ID
 	}
 	if cached.Instance != nil {
 		tags["instance_logs"] = cached.Instance.ID
 		tags["invoker"] = cached.Instance.Invoker
-		tags["log_instance_call_path"] = cached.Instance.CallPath
 		tags["workflow"] = GetWorkflow(cached.Instance.As)
 	}
-
+	if callpath != "" {
+		tags["log_instance_call_path"] = callpath
+	}
 	if cached.File != nil {
 		tags["workflow_id"] = cached.File.ID
 	}

@@ -17,8 +17,8 @@ type Namespace struct {
 
 func (ns *Namespace) GetAttributes() map[string]interface{} {
 	return map[string]interface{}{
-		"namespace":    ns.Name,
-		"namespace-id": ns.ID,
+		"namespace":      ns.Name,
+		"namespace_logs": ns.ID,
 	}
 }
 
