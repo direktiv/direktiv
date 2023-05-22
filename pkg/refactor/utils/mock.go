@@ -104,7 +104,7 @@ func NewMockGorm() (*gorm.DB, error) {
 				 "oid" text,
 				 "t" datetime,
 				 "msg" text,
-				 "level" text,
+				 "level" integer,
 				 "root_instance_id" text,
 				 "log_instance_call_path" text,
 				 "tags" jsonb,

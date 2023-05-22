@@ -32,7 +32,7 @@ type sqlLogStore struct {
 // - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
 // - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
 // - All passed keysAndValues pair will be stored attached to the log-entry.
-func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level string, msg string, keysAndValues map[string]interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
@@ -112,11 +112,11 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		levelValue, ok := level.(string)
+		levelValue, ok := level.(int)
 		if !ok {
-			return nil, fmt.Errorf("level should be a string")
+			return nil, fmt.Errorf("level should be a int")
 		}
-		wEq = setMinumLogLevel(levelValue, wEq)
+		wEq = append(wEq, fmt.Sprintf("level >= '%d' ", levelValue))
 	}
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
@@ -170,7 +170,7 @@ func composeQuery(limit, offset int, wEq []string) string {
 type gormLogMsg struct {
 	T                   time.Time
 	Msg                 string
-	Level               string
+	Level               int
 	Tags                map[string]interface{}
 	WorkflowID          string
 	MirrorActivityID    string
@@ -178,28 +178,4 @@ type gormLogMsg struct {
 	NamespaceLogs       string
 	RootInstanceID      string
 	LogInstanceCallPath string
-}
-
-func setMinumLogLevel(loglevel string, wEq []string) []string {
-	levels := []string{"debug", "info", "error", "panic"}
-	switch loglevel {
-	case "debug":
-		return wEq
-	case "info":
-		levels = levels[1:]
-	case "error":
-		levels = levels[2:]
-	case "panic":
-		levels = levels[3:]
-	}
-	q := "( "
-	for i, e := range levels {
-		q += fmt.Sprintf("level = '%s' ", e)
-		if i < len(levels)-1 {
-			q += " OR "
-		}
-	}
-	q += " )"
-
-	return append(wEq, q)
 }
