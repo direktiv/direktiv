@@ -12,14 +12,14 @@ import (
 type BetterLogger interface {
 	// Logs a log message with contextual information, which are passed via tags.
 	// Remember to pass the trace-id for the logentry via the tags with the key trace.
-	Log(tags map[string]interface{}, level string, msg string, a ...interface{})
+	Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{})
 }
 
 type SugarBetterLogger struct {
 	Sugar *zap.SugaredLogger
 }
 
-func (s SugarBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (s SugarBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
 	msg = fmt.Sprintf(msg, a...)
 	if len(tags) == 0 {
 		s.Sugar.Infow(msg)
@@ -32,14 +32,12 @@ func (s SugarBetterLogger) Log(tags map[string]interface{}, level string, msg st
 			i += 2
 		}
 		switch level {
-		case "info":
-			s.Sugar.Infow(msg, ar...)
-		case "debug":
+		case Debug:
 			s.Sugar.Debugw(msg, ar...)
-		case "error":
+		case Info:
+			s.Sugar.Infow(msg, ar...)
+		case Error:
 			s.Sugar.Errorw(msg, ar...)
-		case "panic":
-			s.Sugar.Panicw(msg, ar...)
 		default:
 			s.Sugar.Debugw(msg, ar...) // this should never happen
 		}
@@ -48,7 +46,7 @@ func (s SugarBetterLogger) Log(tags map[string]interface{}, level string, msg st
 
 type ChainedBetterLogger []BetterLogger
 
-func (loggers ChainedBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (loggers ChainedBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
 	for i := range loggers {
 		loggers[i].Log(tags, level, msg, a...)
 	}
@@ -61,7 +59,7 @@ type DataStoreBetterLogger struct {
 	LogError func(template string, args ...interface{})
 }
 
-func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
 	err := s.Store.Append(context.Background(), time.Now(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
 		s.LogError("writing action log to the database", "error", err)
@@ -75,7 +73,7 @@ type NotifierBetterLogger struct {
 	LogError func(template string, args ...interface{})
 }
 
-func (n NotifierBetterLogger) Log(tags map[string]interface{}, level string, msg string, a ...interface{}) {
+func (n NotifierBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
 	tags["level"] = level
 	_ = msg
 	_ = a
