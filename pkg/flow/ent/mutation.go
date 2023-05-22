@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
@@ -44,7 +43,6 @@ const (
 	TypeEventsWait        = "EventsWait"
 	TypeInstance          = "Instance"
 	TypeInstanceRuntime   = "InstanceRuntime"
-	TypeLogMsg            = "LogMsg"
 	TypeNamespace         = "Namespace"
 	TypeServices          = "Services"
 	TypeVarData           = "VarData"
@@ -3327,9 +3325,6 @@ type InstanceMutation struct {
 	clearedFields         map[string]struct{}
 	namespace             *uuid.UUID
 	clearednamespace      bool
-	logs                  map[uuid.UUID]struct{}
-	removedlogs           map[uuid.UUID]struct{}
-	clearedlogs           bool
 	vars                  map[uuid.UUID]struct{}
 	removedvars           map[uuid.UUID]struct{}
 	clearedvars           bool
@@ -4002,60 +3997,6 @@ func (m *InstanceMutation) ResetNamespace() {
 	m.clearednamespace = false
 }
 
-// AddLogIDs adds the "logs" edge to the LogMsg entity by ids.
-func (m *InstanceMutation) AddLogIDs(ids ...uuid.UUID) {
-	if m.logs == nil {
-		m.logs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.logs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearLogs clears the "logs" edge to the LogMsg entity.
-func (m *InstanceMutation) ClearLogs() {
-	m.clearedlogs = true
-}
-
-// LogsCleared reports if the "logs" edge to the LogMsg entity was cleared.
-func (m *InstanceMutation) LogsCleared() bool {
-	return m.clearedlogs
-}
-
-// RemoveLogIDs removes the "logs" edge to the LogMsg entity by IDs.
-func (m *InstanceMutation) RemoveLogIDs(ids ...uuid.UUID) {
-	if m.removedlogs == nil {
-		m.removedlogs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.logs, ids[i])
-		m.removedlogs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedLogs returns the removed IDs of the "logs" edge to the LogMsg entity.
-func (m *InstanceMutation) RemovedLogsIDs() (ids []uuid.UUID) {
-	for id := range m.removedlogs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// LogsIDs returns the "logs" edge IDs in the mutation.
-func (m *InstanceMutation) LogsIDs() (ids []uuid.UUID) {
-	for id := range m.logs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetLogs resets all changes to the "logs" edge.
-func (m *InstanceMutation) ResetLogs() {
-	m.logs = nil
-	m.clearedlogs = false
-	m.removedlogs = nil
-}
-
 // AddVarIDs adds the "vars" edge to the VarRef entity by ids.
 func (m *InstanceMutation) AddVarIDs(ids ...uuid.UUID) {
 	if m.vars == nil {
@@ -4670,12 +4611,9 @@ func (m *InstanceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InstanceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.namespace != nil {
 		edges = append(edges, instance.EdgeNamespace)
-	}
-	if m.logs != nil {
-		edges = append(edges, instance.EdgeLogs)
 	}
 	if m.vars != nil {
 		edges = append(edges, instance.EdgeVars)
@@ -4703,12 +4641,6 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.namespace; id != nil {
 			return []ent.Value{*id}
 		}
-	case instance.EdgeLogs:
-		ids := make([]ent.Value, 0, len(m.logs))
-		for id := range m.logs {
-			ids = append(ids, id)
-		}
-		return ids
 	case instance.EdgeVars:
 		ids := make([]ent.Value, 0, len(m.vars))
 		for id := range m.vars {
@@ -4743,10 +4675,7 @@ func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InstanceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
-	if m.removedlogs != nil {
-		edges = append(edges, instance.EdgeLogs)
-	}
+	edges := make([]string, 0, 6)
 	if m.removedvars != nil {
 		edges = append(edges, instance.EdgeVars)
 	}
@@ -4766,12 +4695,6 @@ func (m *InstanceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case instance.EdgeLogs:
-		ids := make([]ent.Value, 0, len(m.removedlogs))
-		for id := range m.removedlogs {
-			ids = append(ids, id)
-		}
-		return ids
 	case instance.EdgeVars:
 		ids := make([]ent.Value, 0, len(m.removedvars))
 		for id := range m.removedvars {
@@ -4802,12 +4725,9 @@ func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InstanceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.clearednamespace {
 		edges = append(edges, instance.EdgeNamespace)
-	}
-	if m.clearedlogs {
-		edges = append(edges, instance.EdgeLogs)
 	}
 	if m.clearedvars {
 		edges = append(edges, instance.EdgeVars)
@@ -4833,8 +4753,6 @@ func (m *InstanceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case instance.EdgeNamespace:
 		return m.clearednamespace
-	case instance.EdgeLogs:
-		return m.clearedlogs
 	case instance.EdgeVars:
 		return m.clearedvars
 	case instance.EdgeRuntime:
@@ -4869,9 +4787,6 @@ func (m *InstanceMutation) ResetEdge(name string) error {
 	switch name {
 	case instance.EdgeNamespace:
 		m.ResetNamespace()
-		return nil
-	case instance.EdgeLogs:
-		m.ResetLogs()
 		return nil
 	case instance.EdgeVars:
 		m.ResetVars()
@@ -6337,902 +6252,6 @@ func (m *InstanceRuntimeMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown InstanceRuntime edge %s", name)
 }
 
-// LogMsgMutation represents an operation that mutates the LogMsg nodes in the graph.
-type LogMsgMutation struct {
-	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	t                   *time.Time
-	msg                 *string
-	level               *string
-	rootInstanceId      *string
-	logInstanceCallPath *string
-	tags                *map[string]string
-	workflow_id         *uuid.UUID
-	mirror_activity_id  *uuid.UUID
-	clearedFields       map[string]struct{}
-	namespace           *uuid.UUID
-	clearednamespace    bool
-	instance            *uuid.UUID
-	clearedinstance     bool
-	done                bool
-	oldValue            func(context.Context) (*LogMsg, error)
-	predicates          []predicate.LogMsg
-}
-
-var _ ent.Mutation = (*LogMsgMutation)(nil)
-
-// logmsgOption allows management of the mutation configuration using functional options.
-type logmsgOption func(*LogMsgMutation)
-
-// newLogMsgMutation creates new mutation for the LogMsg entity.
-func newLogMsgMutation(c config, op Op, opts ...logmsgOption) *LogMsgMutation {
-	m := &LogMsgMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeLogMsg,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withLogMsgID sets the ID field of the mutation.
-func withLogMsgID(id uuid.UUID) logmsgOption {
-	return func(m *LogMsgMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *LogMsg
-		)
-		m.oldValue = func(ctx context.Context) (*LogMsg, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().LogMsg.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withLogMsg sets the old LogMsg of the mutation.
-func withLogMsg(node *LogMsg) logmsgOption {
-	return func(m *LogMsgMutation) {
-		m.oldValue = func(context.Context) (*LogMsg, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m LogMsgMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m LogMsgMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of LogMsg entities.
-func (m *LogMsgMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *LogMsgMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *LogMsgMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().LogMsg.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetT sets the "t" field.
-func (m *LogMsgMutation) SetT(t time.Time) {
-	m.t = &t
-}
-
-// T returns the value of the "t" field in the mutation.
-func (m *LogMsgMutation) T() (r time.Time, exists bool) {
-	v := m.t
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldT returns the old "t" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldT(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldT is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldT requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldT: %w", err)
-	}
-	return oldValue.T, nil
-}
-
-// ResetT resets all changes to the "t" field.
-func (m *LogMsgMutation) ResetT() {
-	m.t = nil
-}
-
-// SetMsg sets the "msg" field.
-func (m *LogMsgMutation) SetMsg(s string) {
-	m.msg = &s
-}
-
-// Msg returns the value of the "msg" field in the mutation.
-func (m *LogMsgMutation) Msg() (r string, exists bool) {
-	v := m.msg
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMsg returns the old "msg" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldMsg(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMsg is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMsg requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMsg: %w", err)
-	}
-	return oldValue.Msg, nil
-}
-
-// ResetMsg resets all changes to the "msg" field.
-func (m *LogMsgMutation) ResetMsg() {
-	m.msg = nil
-}
-
-// SetLevel sets the "level" field.
-func (m *LogMsgMutation) SetLevel(s string) {
-	m.level = &s
-}
-
-// Level returns the value of the "level" field in the mutation.
-func (m *LogMsgMutation) Level() (r string, exists bool) {
-	v := m.level
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLevel returns the old "level" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldLevel(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLevel is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLevel requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLevel: %w", err)
-	}
-	return oldValue.Level, nil
-}
-
-// ResetLevel resets all changes to the "level" field.
-func (m *LogMsgMutation) ResetLevel() {
-	m.level = nil
-}
-
-// SetRootInstanceId sets the "rootInstanceId" field.
-func (m *LogMsgMutation) SetRootInstanceId(s string) {
-	m.rootInstanceId = &s
-}
-
-// RootInstanceId returns the value of the "rootInstanceId" field in the mutation.
-func (m *LogMsgMutation) RootInstanceId() (r string, exists bool) {
-	v := m.rootInstanceId
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRootInstanceId returns the old "rootInstanceId" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldRootInstanceId(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRootInstanceId is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRootInstanceId requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRootInstanceId: %w", err)
-	}
-	return oldValue.RootInstanceId, nil
-}
-
-// ResetRootInstanceId resets all changes to the "rootInstanceId" field.
-func (m *LogMsgMutation) ResetRootInstanceId() {
-	m.rootInstanceId = nil
-}
-
-// SetLogInstanceCallPath sets the "logInstanceCallPath" field.
-func (m *LogMsgMutation) SetLogInstanceCallPath(s string) {
-	m.logInstanceCallPath = &s
-}
-
-// LogInstanceCallPath returns the value of the "logInstanceCallPath" field in the mutation.
-func (m *LogMsgMutation) LogInstanceCallPath() (r string, exists bool) {
-	v := m.logInstanceCallPath
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLogInstanceCallPath returns the old "logInstanceCallPath" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldLogInstanceCallPath(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLogInstanceCallPath is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLogInstanceCallPath requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLogInstanceCallPath: %w", err)
-	}
-	return oldValue.LogInstanceCallPath, nil
-}
-
-// ResetLogInstanceCallPath resets all changes to the "logInstanceCallPath" field.
-func (m *LogMsgMutation) ResetLogInstanceCallPath() {
-	m.logInstanceCallPath = nil
-}
-
-// SetTags sets the "tags" field.
-func (m *LogMsgMutation) SetTags(value map[string]string) {
-	m.tags = &value
-}
-
-// Tags returns the value of the "tags" field in the mutation.
-func (m *LogMsgMutation) Tags() (r map[string]string, exists bool) {
-	v := m.tags
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTags returns the old "tags" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldTags(ctx context.Context) (v map[string]string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTags is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTags requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTags: %w", err)
-	}
-	return oldValue.Tags, nil
-}
-
-// ClearTags clears the value of the "tags" field.
-func (m *LogMsgMutation) ClearTags() {
-	m.tags = nil
-	m.clearedFields[logmsg.FieldTags] = struct{}{}
-}
-
-// TagsCleared returns if the "tags" field was cleared in this mutation.
-func (m *LogMsgMutation) TagsCleared() bool {
-	_, ok := m.clearedFields[logmsg.FieldTags]
-	return ok
-}
-
-// ResetTags resets all changes to the "tags" field.
-func (m *LogMsgMutation) ResetTags() {
-	m.tags = nil
-	delete(m.clearedFields, logmsg.FieldTags)
-}
-
-// SetWorkflowID sets the "workflow_id" field.
-func (m *LogMsgMutation) SetWorkflowID(u uuid.UUID) {
-	m.workflow_id = &u
-}
-
-// WorkflowID returns the value of the "workflow_id" field in the mutation.
-func (m *LogMsgMutation) WorkflowID() (r uuid.UUID, exists bool) {
-	v := m.workflow_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWorkflowID returns the old "workflow_id" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldWorkflowID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkflowID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkflowID: %w", err)
-	}
-	return oldValue.WorkflowID, nil
-}
-
-// ClearWorkflowID clears the value of the "workflow_id" field.
-func (m *LogMsgMutation) ClearWorkflowID() {
-	m.workflow_id = nil
-	m.clearedFields[logmsg.FieldWorkflowID] = struct{}{}
-}
-
-// WorkflowIDCleared returns if the "workflow_id" field was cleared in this mutation.
-func (m *LogMsgMutation) WorkflowIDCleared() bool {
-	_, ok := m.clearedFields[logmsg.FieldWorkflowID]
-	return ok
-}
-
-// ResetWorkflowID resets all changes to the "workflow_id" field.
-func (m *LogMsgMutation) ResetWorkflowID() {
-	m.workflow_id = nil
-	delete(m.clearedFields, logmsg.FieldWorkflowID)
-}
-
-// SetMirrorActivityID sets the "mirror_activity_id" field.
-func (m *LogMsgMutation) SetMirrorActivityID(u uuid.UUID) {
-	m.mirror_activity_id = &u
-}
-
-// MirrorActivityID returns the value of the "mirror_activity_id" field in the mutation.
-func (m *LogMsgMutation) MirrorActivityID() (r uuid.UUID, exists bool) {
-	v := m.mirror_activity_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMirrorActivityID returns the old "mirror_activity_id" field's value of the LogMsg entity.
-// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LogMsgMutation) OldMirrorActivityID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMirrorActivityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMirrorActivityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMirrorActivityID: %w", err)
-	}
-	return oldValue.MirrorActivityID, nil
-}
-
-// ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
-func (m *LogMsgMutation) ClearMirrorActivityID() {
-	m.mirror_activity_id = nil
-	m.clearedFields[logmsg.FieldMirrorActivityID] = struct{}{}
-}
-
-// MirrorActivityIDCleared returns if the "mirror_activity_id" field was cleared in this mutation.
-func (m *LogMsgMutation) MirrorActivityIDCleared() bool {
-	_, ok := m.clearedFields[logmsg.FieldMirrorActivityID]
-	return ok
-}
-
-// ResetMirrorActivityID resets all changes to the "mirror_activity_id" field.
-func (m *LogMsgMutation) ResetMirrorActivityID() {
-	m.mirror_activity_id = nil
-	delete(m.clearedFields, logmsg.FieldMirrorActivityID)
-}
-
-// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
-func (m *LogMsgMutation) SetNamespaceID(id uuid.UUID) {
-	m.namespace = &id
-}
-
-// ClearNamespace clears the "namespace" edge to the Namespace entity.
-func (m *LogMsgMutation) ClearNamespace() {
-	m.clearednamespace = true
-}
-
-// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
-func (m *LogMsgMutation) NamespaceCleared() bool {
-	return m.clearednamespace
-}
-
-// NamespaceID returns the "namespace" edge ID in the mutation.
-func (m *LogMsgMutation) NamespaceID() (id uuid.UUID, exists bool) {
-	if m.namespace != nil {
-		return *m.namespace, true
-	}
-	return
-}
-
-// NamespaceIDs returns the "namespace" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NamespaceID instead. It exists only for internal usage by the builders.
-func (m *LogMsgMutation) NamespaceIDs() (ids []uuid.UUID) {
-	if id := m.namespace; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetNamespace resets all changes to the "namespace" edge.
-func (m *LogMsgMutation) ResetNamespace() {
-	m.namespace = nil
-	m.clearednamespace = false
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by id.
-func (m *LogMsgMutation) SetInstanceID(id uuid.UUID) {
-	m.instance = &id
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (m *LogMsgMutation) ClearInstance() {
-	m.clearedinstance = true
-}
-
-// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
-func (m *LogMsgMutation) InstanceCleared() bool {
-	return m.clearedinstance
-}
-
-// InstanceID returns the "instance" edge ID in the mutation.
-func (m *LogMsgMutation) InstanceID() (id uuid.UUID, exists bool) {
-	if m.instance != nil {
-		return *m.instance, true
-	}
-	return
-}
-
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InstanceID instead. It exists only for internal usage by the builders.
-func (m *LogMsgMutation) InstanceIDs() (ids []uuid.UUID) {
-	if id := m.instance; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInstance resets all changes to the "instance" edge.
-func (m *LogMsgMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
-}
-
-// Where appends a list predicates to the LogMsgMutation builder.
-func (m *LogMsgMutation) Where(ps ...predicate.LogMsg) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the LogMsgMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *LogMsgMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.LogMsg, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *LogMsgMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *LogMsgMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (LogMsg).
-func (m *LogMsgMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *LogMsgMutation) Fields() []string {
-	fields := make([]string, 0, 8)
-	if m.t != nil {
-		fields = append(fields, logmsg.FieldT)
-	}
-	if m.msg != nil {
-		fields = append(fields, logmsg.FieldMsg)
-	}
-	if m.level != nil {
-		fields = append(fields, logmsg.FieldLevel)
-	}
-	if m.rootInstanceId != nil {
-		fields = append(fields, logmsg.FieldRootInstanceId)
-	}
-	if m.logInstanceCallPath != nil {
-		fields = append(fields, logmsg.FieldLogInstanceCallPath)
-	}
-	if m.tags != nil {
-		fields = append(fields, logmsg.FieldTags)
-	}
-	if m.workflow_id != nil {
-		fields = append(fields, logmsg.FieldWorkflowID)
-	}
-	if m.mirror_activity_id != nil {
-		fields = append(fields, logmsg.FieldMirrorActivityID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *LogMsgMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case logmsg.FieldT:
-		return m.T()
-	case logmsg.FieldMsg:
-		return m.Msg()
-	case logmsg.FieldLevel:
-		return m.Level()
-	case logmsg.FieldRootInstanceId:
-		return m.RootInstanceId()
-	case logmsg.FieldLogInstanceCallPath:
-		return m.LogInstanceCallPath()
-	case logmsg.FieldTags:
-		return m.Tags()
-	case logmsg.FieldWorkflowID:
-		return m.WorkflowID()
-	case logmsg.FieldMirrorActivityID:
-		return m.MirrorActivityID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *LogMsgMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case logmsg.FieldT:
-		return m.OldT(ctx)
-	case logmsg.FieldMsg:
-		return m.OldMsg(ctx)
-	case logmsg.FieldLevel:
-		return m.OldLevel(ctx)
-	case logmsg.FieldRootInstanceId:
-		return m.OldRootInstanceId(ctx)
-	case logmsg.FieldLogInstanceCallPath:
-		return m.OldLogInstanceCallPath(ctx)
-	case logmsg.FieldTags:
-		return m.OldTags(ctx)
-	case logmsg.FieldWorkflowID:
-		return m.OldWorkflowID(ctx)
-	case logmsg.FieldMirrorActivityID:
-		return m.OldMirrorActivityID(ctx)
-	}
-	return nil, fmt.Errorf("unknown LogMsg field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case logmsg.FieldT:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetT(v)
-		return nil
-	case logmsg.FieldMsg:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMsg(v)
-		return nil
-	case logmsg.FieldLevel:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLevel(v)
-		return nil
-	case logmsg.FieldRootInstanceId:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRootInstanceId(v)
-		return nil
-	case logmsg.FieldLogInstanceCallPath:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLogInstanceCallPath(v)
-		return nil
-	case logmsg.FieldTags:
-		v, ok := value.(map[string]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTags(v)
-		return nil
-	case logmsg.FieldWorkflowID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWorkflowID(v)
-		return nil
-	case logmsg.FieldMirrorActivityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMirrorActivityID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown LogMsg field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *LogMsgMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *LogMsgMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *LogMsgMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown LogMsg numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *LogMsgMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(logmsg.FieldTags) {
-		fields = append(fields, logmsg.FieldTags)
-	}
-	if m.FieldCleared(logmsg.FieldWorkflowID) {
-		fields = append(fields, logmsg.FieldWorkflowID)
-	}
-	if m.FieldCleared(logmsg.FieldMirrorActivityID) {
-		fields = append(fields, logmsg.FieldMirrorActivityID)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *LogMsgMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *LogMsgMutation) ClearField(name string) error {
-	switch name {
-	case logmsg.FieldTags:
-		m.ClearTags()
-		return nil
-	case logmsg.FieldWorkflowID:
-		m.ClearWorkflowID()
-		return nil
-	case logmsg.FieldMirrorActivityID:
-		m.ClearMirrorActivityID()
-		return nil
-	}
-	return fmt.Errorf("unknown LogMsg nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *LogMsgMutation) ResetField(name string) error {
-	switch name {
-	case logmsg.FieldT:
-		m.ResetT()
-		return nil
-	case logmsg.FieldMsg:
-		m.ResetMsg()
-		return nil
-	case logmsg.FieldLevel:
-		m.ResetLevel()
-		return nil
-	case logmsg.FieldRootInstanceId:
-		m.ResetRootInstanceId()
-		return nil
-	case logmsg.FieldLogInstanceCallPath:
-		m.ResetLogInstanceCallPath()
-		return nil
-	case logmsg.FieldTags:
-		m.ResetTags()
-		return nil
-	case logmsg.FieldWorkflowID:
-		m.ResetWorkflowID()
-		return nil
-	case logmsg.FieldMirrorActivityID:
-		m.ResetMirrorActivityID()
-		return nil
-	}
-	return fmt.Errorf("unknown LogMsg field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *LogMsgMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.namespace != nil {
-		edges = append(edges, logmsg.EdgeNamespace)
-	}
-	if m.instance != nil {
-		edges = append(edges, logmsg.EdgeInstance)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *LogMsgMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case logmsg.EdgeNamespace:
-		if id := m.namespace; id != nil {
-			return []ent.Value{*id}
-		}
-	case logmsg.EdgeInstance:
-		if id := m.instance; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *LogMsgMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *LogMsgMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *LogMsgMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearednamespace {
-		edges = append(edges, logmsg.EdgeNamespace)
-	}
-	if m.clearedinstance {
-		edges = append(edges, logmsg.EdgeInstance)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *LogMsgMutation) EdgeCleared(name string) bool {
-	switch name {
-	case logmsg.EdgeNamespace:
-		return m.clearednamespace
-	case logmsg.EdgeInstance:
-		return m.clearedinstance
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *LogMsgMutation) ClearEdge(name string) error {
-	switch name {
-	case logmsg.EdgeNamespace:
-		m.ClearNamespace()
-		return nil
-	case logmsg.EdgeInstance:
-		m.ClearInstance()
-		return nil
-	}
-	return fmt.Errorf("unknown LogMsg unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *LogMsgMutation) ResetEdge(name string) error {
-	switch name {
-	case logmsg.EdgeNamespace:
-		m.ResetNamespace()
-		return nil
-	case logmsg.EdgeInstance:
-		m.ResetInstance()
-		return nil
-	}
-	return fmt.Errorf("unknown LogMsg edge %s", name)
-}
-
 // NamespaceMutation represents an operation that mutates the Namespace nodes in the graph.
 type NamespaceMutation struct {
 	config
@@ -7247,9 +6266,6 @@ type NamespaceMutation struct {
 	instances                 map[uuid.UUID]struct{}
 	removedinstances          map[uuid.UUID]struct{}
 	clearedinstances          bool
-	logs                      map[uuid.UUID]struct{}
-	removedlogs               map[uuid.UUID]struct{}
-	clearedlogs               bool
 	vars                      map[uuid.UUID]struct{}
 	removedvars               map[uuid.UUID]struct{}
 	clearedvars               bool
@@ -7573,60 +6589,6 @@ func (m *NamespaceMutation) ResetInstances() {
 	m.instances = nil
 	m.clearedinstances = false
 	m.removedinstances = nil
-}
-
-// AddLogIDs adds the "logs" edge to the LogMsg entity by ids.
-func (m *NamespaceMutation) AddLogIDs(ids ...uuid.UUID) {
-	if m.logs == nil {
-		m.logs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.logs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearLogs clears the "logs" edge to the LogMsg entity.
-func (m *NamespaceMutation) ClearLogs() {
-	m.clearedlogs = true
-}
-
-// LogsCleared reports if the "logs" edge to the LogMsg entity was cleared.
-func (m *NamespaceMutation) LogsCleared() bool {
-	return m.clearedlogs
-}
-
-// RemoveLogIDs removes the "logs" edge to the LogMsg entity by IDs.
-func (m *NamespaceMutation) RemoveLogIDs(ids ...uuid.UUID) {
-	if m.removedlogs == nil {
-		m.removedlogs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.logs, ids[i])
-		m.removedlogs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedLogs returns the removed IDs of the "logs" edge to the LogMsg entity.
-func (m *NamespaceMutation) RemovedLogsIDs() (ids []uuid.UUID) {
-	for id := range m.removedlogs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// LogsIDs returns the "logs" edge IDs in the mutation.
-func (m *NamespaceMutation) LogsIDs() (ids []uuid.UUID) {
-	for id := range m.logs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetLogs resets all changes to the "logs" edge.
-func (m *NamespaceMutation) ResetLogs() {
-	m.logs = nil
-	m.clearedlogs = false
-	m.removedlogs = nil
 }
 
 // AddVarIDs adds the "vars" edge to the VarRef entity by ids.
@@ -8137,12 +7099,9 @@ func (m *NamespaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NamespaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 7)
 	if m.instances != nil {
 		edges = append(edges, namespace.EdgeInstances)
-	}
-	if m.logs != nil {
-		edges = append(edges, namespace.EdgeLogs)
 	}
 	if m.vars != nil {
 		edges = append(edges, namespace.EdgeVars)
@@ -8172,12 +7131,6 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 	case namespace.EdgeInstances:
 		ids := make([]ent.Value, 0, len(m.instances))
 		for id := range m.instances {
-			ids = append(ids, id)
-		}
-		return ids
-	case namespace.EdgeLogs:
-		ids := make([]ent.Value, 0, len(m.logs))
-		for id := range m.logs {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8223,12 +7176,9 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NamespaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 7)
 	if m.removedinstances != nil {
 		edges = append(edges, namespace.EdgeInstances)
-	}
-	if m.removedlogs != nil {
-		edges = append(edges, namespace.EdgeLogs)
 	}
 	if m.removedvars != nil {
 		edges = append(edges, namespace.EdgeVars)
@@ -8258,12 +7208,6 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 	case namespace.EdgeInstances:
 		ids := make([]ent.Value, 0, len(m.removedinstances))
 		for id := range m.removedinstances {
-			ids = append(ids, id)
-		}
-		return ids
-	case namespace.EdgeLogs:
-		ids := make([]ent.Value, 0, len(m.removedlogs))
-		for id := range m.removedlogs {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8309,12 +7253,9 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NamespaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 7)
 	if m.clearedinstances {
 		edges = append(edges, namespace.EdgeInstances)
-	}
-	if m.clearedlogs {
-		edges = append(edges, namespace.EdgeLogs)
 	}
 	if m.clearedvars {
 		edges = append(edges, namespace.EdgeVars)
@@ -8343,8 +7284,6 @@ func (m *NamespaceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case namespace.EdgeInstances:
 		return m.clearedinstances
-	case namespace.EdgeLogs:
-		return m.clearedlogs
 	case namespace.EdgeVars:
 		return m.clearedvars
 	case namespace.EdgeCloudevents:
@@ -8375,9 +7314,6 @@ func (m *NamespaceMutation) ResetEdge(name string) error {
 	switch name {
 	case namespace.EdgeInstances:
 		m.ResetInstances()
-		return nil
-	case namespace.EdgeLogs:
-		m.ResetLogs()
 		return nil
 	case namespace.EdgeVars:
 		m.ResetVars()

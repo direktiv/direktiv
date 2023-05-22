@@ -16,7 +16,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	enteventsfilter "github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
@@ -27,6 +26,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -883,7 +883,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 func (events *events) ReplayCloudevent(ctx context.Context, cached *database.CacheData, cevent *ent.CloudEvents) error {
 	event := cevent.Event
 
-	events.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	err := events.handleEvent(cached.Namespace, &event)
 	if err != nil {
@@ -900,7 +900,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
-	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("namespace", ns)), logengine.Info, "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 
@@ -977,7 +977,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
+	events.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Info, "Registered to receive events.")
 
 	return nil
 }
@@ -1031,7 +1031,7 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 
 	// add logging function
 	err = vm.Set("nslog", func(txt interface{}) {
-		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), fmt.Sprintf("%v", txt))
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, fmt.Sprintf("%v", txt))
 	})
 	if err != nil {
 		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
@@ -1039,19 +1039,19 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 
 	_, err = vm.RunString(script)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Error, "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
 		return newBytesEvent, err
 	}
 
 	f, ok := goja.AssertFunction(vm.Get("filter"))
 	if !ok {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "cloudEvent filter '%s' error: %v", filterName, err)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Error, "cloudEvent filter '%s' error: %v", filterName, err)
 		return newBytesEvent, err
 	}
 
 	newEventMap, err := f(goja.Undefined())
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Error, "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
 		return newBytesEvent, err
 	}
 
@@ -1064,7 +1064,7 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 
 	newBytesEvent, err = json.Marshal(newEventMap)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Error, "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
 		return newBytesEvent, err
 	}
 
@@ -1088,14 +1088,14 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 
 	b, err := flow.execFilter(ctx, namespace, filterName, cloudevent)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Error,
 			"executing filter failed: %s", err.Error())
 		return resp, err
 	}
 
 	// dropped event
 	if len(b) == 0 {
-		flow.logger.Debugf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Debug,
 			"dropping event %s", string(cloudevent))
 		return resp, nil
 	}

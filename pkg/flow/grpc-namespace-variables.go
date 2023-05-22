@@ -9,13 +9,13 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -371,9 +371,9 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Created namespace variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Updated namespace variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -472,9 +472,9 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace variable '%s'.", key)
+		internal.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Created namespace variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
+		internal.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Updated namespace variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -580,9 +580,9 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Created namespace variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Updated namespace variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -637,8 +637,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	if err != nil {
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Deleted namespace variable '%s'.", vref.Name)
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	// Broadcast Event
@@ -686,7 +685,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("namespace")), logengine.Info, "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.RenameNamespaceVariableResponse

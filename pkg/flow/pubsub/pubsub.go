@@ -11,7 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
@@ -440,17 +439,17 @@ func pubsubDisconnect(key string) *PubsubUpdate {
 	}
 }
 
-func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType) {
+func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType string) {
 	switch recipientType {
-	case recipient.Server:
+	case "server":
 		pubsub.Publish(pubsubNotify(""))
-	case recipient.Instance:
+	case "instance":
 		pubsub.Publish(pubsubNotify(pubsub.instanceLogs(&recipientID)))
-	case recipient.Workflow:
+	case "workflow":
 		pubsub.Publish(pubsubNotify(pubsub.workflowLogs(&recipientID)))
-	case recipient.Namespace:
+	case "namespace":
 		pubsub.Publish(pubsubNotify(pubsub.namespaceLogs(&recipientID)))
-	case recipient.Mirror:
+	case "mirror":
 		pubsub.Publish(pubsubNotify(pubsub.activityLogs(&recipientID)))
 	default:
 		panic("how?")

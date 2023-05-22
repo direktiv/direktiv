@@ -15,9 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -70,8 +68,8 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	metrics    *metrics.Client
-	logger     *internallogger.Logger // TODO: remove
+	metrics *metrics.Client
+	// logger     *internallogger.Logger // TODO: remove
 	loggerBeta logengine.BetterLogger
 	edb        *entwrapper.Database // TODO: remove
 	database   *database.CachedDatabase
@@ -105,7 +103,7 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 		return nil, err
 	}
 
-	srv.logger = internallogger.InitLogger()
+	// srv.logger = internallogger.InitLogger()
 	srv.initJQ()
 
 	return srv, nil
@@ -198,7 +196,7 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-	srv.logger.StartLogWorkers(1, srv.edb, srv.pubsub, srv.sugar)
+	// srv.logger.StartLogWorkers(1, srv.edb, srv.pubsub, srv.sugar)
 
 	srv.sugar.Debug("Initializing timers.")
 
@@ -267,7 +265,7 @@ func (srv *server) start(ctx context.Context) error {
 		logengine.SugarBetterLogger{Sugar: srv.sugar},
 		logengine.DataStoreBetterLogger{Store: store.Logs(), LogError: srv.sugar.Errorf},
 		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+			srv.pubsub.NotifyLogs(objectID, objectType)
 		}, LogError: srv.sugar.Errorf},
 	}
 
@@ -289,22 +287,22 @@ func (srv *server) start(ctx context.Context) error {
 		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
 			srv.sugar.Infow(msg, keysAndValues...)
 
-			tags := map[string]string{
-				"recipientType": "mirror",
-				"mirror-id":     mirrorProcessID.String(),
+			tags := map[string]interface{}{
+				"log-origin": "mirror",
+				"mirror-id":  mirrorProcessID,
 			}
 			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
-			srv.logger.Infof(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+			srv.loggerBeta.Log(addTraceFrom(context.Background(), tags), logengine.Info, msg, keysAndValues...)
 		},
 		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
 			srv.sugar.Errorw(msg, keysAndValues...)
 
-			tags := map[string]string{
-				"recipientType": "mirror",
-				"mirror-id":     mirrorProcessID.String(),
+			tags := map[string]interface{}{
+				"log-origin": "mirror",
+				"mirror-id":  mirrorProcessID,
 			}
 			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
-			srv.logger.Errorf(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+			srv.loggerBeta.Log(addTraceFrom(context.Background(), tags), logengine.Error, msg, keysAndValues...)
 		},
 		store.Mirror(),
 		fStore,
@@ -394,7 +392,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	wg.Wait()
 
-	srv.logger.CloseLogWorkers()
+	// srv.logger.CloseLogWorkers()
 
 	if err != nil {
 		return err
@@ -584,7 +582,7 @@ func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResp
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
+	engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Info, msg, a...)
 
 	if attr := im.runtime.LogToEvents; attr != "" {
 		s := fmt.Sprintf(msg, a...)
@@ -610,7 +608,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Info, "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 }
 

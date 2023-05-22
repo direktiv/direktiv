@@ -183,3 +183,10 @@ func traceActionResult(ctx context.Context, results *actionResultPayload) {
 		},
 	)
 }
+
+func addTraceFrom(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
+	span := trace.SpanFromContext(ctx)
+	tid := span.SpanContext().TraceID()
+	toTags["trace"] = tid
+	return toTags
+}

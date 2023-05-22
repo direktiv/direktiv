@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
@@ -21,6 +20,7 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -602,9 +602,9 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Created workflow variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Created workflow variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Updated workflow variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Updated workflow variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowVariables(file.ID)
@@ -704,9 +704,9 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.File.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
+		internal.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("workflow")), logengine.Info, "Created workflow variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.File.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
+		internal.loggerBeta.Log(addTraceFrom(ctx, cached.GetAttributes("workflow")), logengine.Info, "Updated workflow variable '%s'.", key)
 	}
 
 	internal.pubsub.NotifyWorkflowVariables(cached.File.ID)
@@ -812,9 +812,9 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Created workflow variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Created workflow variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Updated workflow variable '%s'.", key)
+		flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Updated workflow variable '%s'.", key)
 	}
 
 	flow.pubsub.NotifyWorkflowVariables(file.ID)
@@ -870,7 +870,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow variable '%s'.", vref.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Deleted workflow variable '%s'.", vref.Name)
 	flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	// Broadcast Event
@@ -918,7 +918,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.RenameWorkflowVariableResponse

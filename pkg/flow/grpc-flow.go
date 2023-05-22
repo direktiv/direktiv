@@ -9,7 +9,6 @@ import (
 
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -68,20 +67,20 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			}
 		}
 	}()
-
-	go func() {
-		// logs garbage collector
-		ctx := context.Background()
-		<-time.After(3 * time.Minute)
-		for {
-			<-time.After(time.Hour)
-			t := time.Now().Add(time.Hour * -24)
-			_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
-			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
-			}
-		}
-	}()
+	// TODO
+	// go func() {
+	// 	// logs garbage collector
+	// 	ctx := context.Background()
+	// 	<-time.After(3 * time.Minute)
+	// 	for {
+	// 		<-time.After(time.Hour)
+	// 		t := time.Now().Add(time.Hour * -24)
+	// 		_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+	// 		if err != nil {
+	// 			flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
+	// 		}
+	// 	}
+	// }()
 
 	go func() {
 		// timed-out instance retrier
@@ -185,8 +184,9 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 	return &resp, nil
 }
 
-func (flow *flow) GetAttributes() map[string]string {
-	tags := make(map[string]string)
-	tags["recipientType"] = "server"
+func (flow *flow) GetAttributes() map[string]interface{} {
+	tags := make(map[string]interface{})
+	tags["sender_type"] = "server"
+	tags["sender"] = flow.ID
 	return tags
 }

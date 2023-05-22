@@ -62,7 +62,7 @@ type DataStoreBetterLogger struct {
 func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
 	err := s.Store.Append(context.Background(), time.Now(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
-		s.LogError("writing action log to the database", "error", err)
+		s.LogError("writing better log to the database", "error", err)
 	}
 }
 
@@ -83,7 +83,7 @@ func (n NotifierBetterLogger) Log(tags map[string]interface{}, level LogLevel, m
 
 		return
 	}
-	senderType, ok := tags["senderType"]
+	senderType, ok := tags["sender_type"]
 	if !ok {
 		n.LogError("cannot find sender type in action log tags", "tags", tags)
 

@@ -6,11 +6,11 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -94,7 +94,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	if err != nil {
 		return nil, err
 	}
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Info, "Created namespace as git mirror '%s'.", ns.Name)
 
 	var resp grpc.CreateNamespaceResponse
 	err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
@@ -162,7 +162,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Info, "Updated mirror configs for namespace: %s", ns.Name)
 
 	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
 	if err != nil {
@@ -218,7 +218,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Info, "Starting mirror process for namespace: %s", ns.Name)
 
 	var resp emptypb.Empty
 
@@ -290,112 +290,113 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
+	// ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// _, store, _, rollback, err := flow.beginSqlTx(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer rollback()
 
-	mirProcess, err := store.Mirror().GetProcess(ctx, ns.ID)
-	if err != nil {
-		return nil, err
-	}
+	// mirProcess, err := store.Mirror().GetProcess(ctx, ns.ID)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	clients := flow.edb.Clients(ctx)
+	// clients := flow.edb.Clients(ctx)
 
-	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
+	// // query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	if err != nil {
-		return nil, err
-	}
+	// // results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	// // if err != nil {
+	// // 	return nil, err
+	// // }
 
-	resp := new(grpc.MirrorActivityLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = pi
+	// resp := new(grpc.MirrorActivityLogsResponse)
+	// resp.Namespace = ns.Name
+	// resp.Activity = mirProcess.ID.String()
+	// resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return nil, err
-	}
+	// err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return resp, nil
+	return nil, nil
 }
 
 func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest, srv grpc.Flow_MirrorActivityLogsParcelsServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ctx := srv.Context()
+	// 	ctx := srv.Context()
 
-	mirProcessID, err := uuid.Parse(req.GetActivity())
-	if err != nil {
-		return err
-	}
+	// 	mirProcessID, err := uuid.Parse(req.GetActivity())
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
-	}
+	// 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	var tailing bool
+	// 	var tailing bool
 
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback()
+	// 	_, store, _, rollback, err := flow.beginSqlTx(ctx)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer rollback()
 
-	mirProcess, err := store.Mirror().GetProcess(ctx, mirProcessID)
-	if err != nil {
-		return err
-	}
+	// 	mirProcess, err := store.Mirror().GetProcess(ctx, mirProcessID)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcess.ID)
-	defer flow.cleanup(sub.Close)
+	// 	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcess.ID)
+	// 	defer flow.cleanup(sub.Close)
 
-resend:
+	// resend:
 
-	clients := flow.edb.Clients(ctx)
+	// 	clients := flow.edb.Clients(ctx)
 
-	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
+	// 	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
 
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	if err != nil {
-		return err
-	}
+	// 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	resp := new(grpc.MirrorActivityLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = pi
+	// 	resp := new(grpc.MirrorActivityLogsResponse)
+	// 	resp.Namespace = ns.Name
+	// 	resp.Activity = mirProcess.ID.String()
+	// 	resp.PageInfo = pi
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	if err != nil {
-		return err
-	}
+	// 	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
+	// 	if len(resp.Results) != 0 || !tailing {
+	// 		tailing = true
 
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
+	// 		err = srv.Send(resp)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
-	}
+	// 		req.Pagination.Offset += int32(len(resp.Results))
+	// 	}
 
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
+	// 	more := sub.Wait(ctx)
+	// 	if !more {
+	// 		return nil
+	// 	}
 
-	goto resend
+	// 	goto resend
+	return nil
 }
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
@@ -405,8 +406,7 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 	if err != nil {
 		return nil, err
 	}
-
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "cancelled by api request")
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Debug, "cancelled by api request")
 	err = flow.mirrorManager.CancelMirroringProcess(ctx, mirProcessID)
 	if err != nil {
 		return nil, err

@@ -10,11 +10,11 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -156,8 +156,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
-
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("namespace", ns)), logengine.Info, "Created workflow '%s'.", file.Path)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{

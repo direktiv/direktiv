@@ -21,6 +21,7 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -158,13 +159,11 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	switch level {
 	case log.Info:
-		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Info, a, x...)
 	case log.Debug:
-		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Debug, a, x...)
 	case log.Error:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case log.Panic:
-		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Error, a, x...)
 	}
 }
 
@@ -354,7 +353,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.Step = im.Step()
 		caller.As = im.cached.Instance.As
 		caller.CallPath = im.cached.Instance.CallPath
-		caller.CallerState = im.GetState()
+		caller.CallerState = fmt.Sprintf("%s", im.GetState())
 		caller.Iterator = fmt.Sprintf("%d", args.Iterator)
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.cached, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {

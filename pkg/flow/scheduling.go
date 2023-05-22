@@ -7,6 +7,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 )
 
 func (engine *engine) InstanceYield(im *instanceMemory) {
@@ -28,7 +29,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(ctx, im)
 
 	if caller != nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
+		engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Info, "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
 			InstanceID: caller.InstanceID.String(),

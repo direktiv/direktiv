@@ -6,10 +6,10 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -204,8 +204,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Tagged workflow: %s -> %s.", req.GetTag(), revision.ID.String())
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Tagged workflow: %s -> %s.", req.GetTag(), revision.ID.String())
 
 	var resp emptypb.Empty
 
@@ -240,8 +239,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err = commit(ctx); err != nil {
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow tag: %s.", req.GetTag())
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("workflow", ns, fileAttributes(*file))), logengine.Info, "Deleted workflow tag: %s.", req.GetTag())
 
 	var resp emptypb.Empty
 

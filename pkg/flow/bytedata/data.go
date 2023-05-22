@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -192,7 +192,7 @@ func ConvertDataForOutput(a, b interface{}) error {
 	return nil
 }
 
-func ConvertLogMsgForOutput(a []*ent.LogMsg) ([]*grpc.Log, error) {
+func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 	results := make([]*grpc.Log, 0, len(a))
 	for _, v := range a {
 		t := timestamppb.New(v.T)
@@ -201,10 +201,10 @@ func ConvertLogMsgForOutput(a []*ent.LogMsg) ([]*grpc.Log, error) {
 			return nil, err
 		}
 		r := grpc.Log{
-			T:     t,
-			Level: v.Level,
-			Msg:   v.Msg,
-			Tags:  v.Tags,
+			T: t,
+			// Level: v.Level,
+			Msg: v.Msg,
+			// Tags:  v.Tags,
 		}
 		results = append(results, &r)
 	}

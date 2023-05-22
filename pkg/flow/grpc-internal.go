@@ -7,8 +7,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -106,13 +106,13 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	flow := rt.Flow
 	stateID := flow[len(flow)-1]
 
-	tags := cached.GetAttributes(recipient.Instance)
+	tags := cached.GetAttributes("instance")
 	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
-		internal.logger.Infof(ctx, cached.Instance.ID, tags, res)
+		internal.loggerBeta.Log(addTraceFrom(ctx, tags), logengine.Info, res)
 	}
 
 	var resp emptypb.Empty

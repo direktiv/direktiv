@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -16,6 +15,7 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -247,7 +247,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	err = tx.Commit()
 	if err != nil {
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create namespace '%s'.", ns.Name)
+		flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Error, "Failed to create namespace '%s'.", ns.Name)
 		return nil, err
 	}
 
@@ -269,8 +269,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		_ = clients.Namespace.DeleteOneID(ns.ID).Exec(context.Background()) // NOTE: need to find a better way to do this.
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Info, "Created namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 	var resp grpc.CreateNamespaceResponse
@@ -317,8 +316,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	if err != nil {
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Error, "Deleted namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 
@@ -365,12 +363,11 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	err = tx.Commit()
 	if err != nil {
-		flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Could not rename namespace '%s'.", ns.Name)
+		flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Error, "Could not rename namespace '%s'.", ns.Name)
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.loggerBeta.Log(addTraceFrom(ctx, flow.GetAttributes()), logengine.Info, "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("namespace", ns)), logengine.Info, "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 

@@ -8,11 +8,11 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -138,8 +138,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 	if err != nil {
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("namespace", ns)), logengine.Info, "Created directory '%s'.", file.Path)
 
 	// Broadcast
 	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
@@ -236,8 +235,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 			return nil, err
 		}
 	}
-
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("namespace", ns)), logengine.Info, "Deleted %s '%s'.", file.Typ, file.Path)
 
 	var resp emptypb.Empty
 
@@ -281,8 +279,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	if err := commit(ctx); err != nil {
 		return nil, err
 	}
-
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
+	flow.loggerBeta.Log(addTraceFrom(ctx, database.GetAttributes("namespace", ns)), logengine.Info, "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
 
 	var resp grpc.RenameNodeResponse
 

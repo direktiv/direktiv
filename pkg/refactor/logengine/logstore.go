@@ -43,3 +43,46 @@ const (
 	Info           = iota
 	Error          = iota
 )
+
+// type LogField string
+
+// const (
+// 	Origin      string = "sender_type"
+// 	Loopindex   string = "loop_index"
+// 	State       string = "state_id"
+// 	StateType   string = "state_type"
+// 	NamespaceID string = "namespace_id"
+// 	// Namespace   string = "namespace"
+// 	WorkflowID string = "workflow_id"
+// 	// Workflow    string = "workflow"
+// 	InstanceID string = "instance_id"
+// 	Callpath   string = "callpath"
+// 	Revision   string = "revision"
+// 	MirrorId   string = "mirror_id"
+// 	AS         string = "as"
+// 	Trace      string = "trace"
+// 	Invoker    string = "invoker"
+// )
+
+// type RecipientType string
+
+// const (
+// 	Server    RecipientType = "server"
+// 	Namespace RecipientType = "namespace"
+// 	Workflow  RecipientType = "workflow"
+// 	Instance  RecipientType = "instance"
+// 	Mirror    RecipientType = "mirror"
+// )
+
+// func Convert(recipientType string) (RecipientType, bool) {
+// 	ok := false
+// 	switch recipientType {
+// 	case "server", "namespace", "workflow", "instance", "mirror":
+// 		ok = true
+// 	}
+// 	return RecipientType(recipientType), ok
+// }
+
+// func (rt RecipientType) String() string {
+// 	return string(rt)
+// }

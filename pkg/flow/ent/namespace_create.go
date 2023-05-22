@@ -17,7 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
@@ -107,21 +106,6 @@ func (nc *NamespaceCreate) AddInstances(i ...*Instance) *NamespaceCreate {
 		ids[j] = i[j].ID
 	}
 	return nc.AddInstanceIDs(ids...)
-}
-
-// AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
-func (nc *NamespaceCreate) AddLogIDs(ids ...uuid.UUID) *NamespaceCreate {
-	nc.mutation.AddLogIDs(ids...)
-	return nc
-}
-
-// AddLogs adds the "logs" edges to the LogMsg entity.
-func (nc *NamespaceCreate) AddLogs(l ...*LogMsg) *NamespaceCreate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
-	}
-	return nc.AddLogIDs(ids...)
 }
 
 // AddVarIDs adds the "vars" edge to the VarRef entity by IDs.
@@ -347,22 +331,6 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := nc.mutation.LogsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.LogsTable,
-			Columns: []string{namespace.LogsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

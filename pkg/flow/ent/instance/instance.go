@@ -39,8 +39,6 @@ const (
 	FieldRevisionID = "revision_id"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
-	// EdgeLogs holds the string denoting the logs edge name in mutations.
-	EdgeLogs = "logs"
 	// EdgeVars holds the string denoting the vars edge name in mutations.
 	EdgeVars = "vars"
 	// EdgeRuntime holds the string denoting the runtime edge name in mutations.
@@ -60,13 +58,6 @@ const (
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_instances"
-	// LogsTable is the table that holds the logs relation/edge.
-	LogsTable = "log_msgs"
-	// LogsInverseTable is the table name for the LogMsg entity.
-	// It exists in this package in order to avoid circular dependency with the "logmsg" package.
-	LogsInverseTable = "log_msgs"
-	// LogsColumn is the table column denoting the logs relation/edge.
-	LogsColumn = "instance_logs"
 	// VarsTable is the table that holds the vars relation/edge.
 	VarsTable = "var_refs"
 	// VarsInverseTable is the table name for the VarRef entity.

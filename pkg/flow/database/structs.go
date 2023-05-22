@@ -15,10 +15,10 @@ type Namespace struct {
 	Root      uuid.UUID `json:"root,omitempty"`
 }
 
-func (ns *Namespace) GetAttributes() map[string]string {
-	return map[string]string{
+func (ns *Namespace) GetAttributes() map[string]interface{} {
+	return map[string]interface{}{
 		"namespace":    ns.Name,
-		"namespace-id": ns.ID.String(),
+		"namespace-id": ns.ID,
 	}
 }
 

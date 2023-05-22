@@ -63,7 +63,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	q := "INSERT INTO log_msgs ("
 	qTail := "VALUES ("
 	for i := range vals {
-		q += fmt.Sprintf("'%s'", cols[i])
+		q += fmt.Sprintf(cols[i])
 		qTail += fmt.Sprintf("$%d", i+1)
 		if i != len(vals)-1 {
 			q += ", "
