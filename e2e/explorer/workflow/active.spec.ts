@@ -13,37 +13,10 @@ let namespace = "";
 let workflow = "";
 const defaultDescription = 'A simple \'no-op\' state that returns \'Hello world!\''
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
   workflow = await createWorkflow(namespace, faker.git.shortSha() + '.yaml');
   test.setTimeout(120000)
-  await page.goto("/");
-  
-  await expect(
-    page.getByTestId("breadcrumb-namespace"),
-    "it renders the breadcrumb for a namespace"
-  ).toBeVisible();
-
-  // at this point, any namespace may be loaded.
-  // let's navigate to the test's namespace via breadcrumbs.
-
-  await page.getByTestId("dropdown-trg-namespace").click();
-  await page
-    .getByRole("option", {
-      name: namespace,
-    })
-    .click();
-
-  await expect(page, "the namespace is reflected in the url").toHaveURL(
-    `/${namespace}/explorer/tree`
-  );
-  await expect(
-    page.getByTestId("breadcrumb-namespace"),
-    "the namespace is reflected in the breadcrumbs"
-  ).toHaveText(namespace);
-
-  await page.getByTestId(`explorer-item-link-${workflow}`).click()
-  await expect(page.getByTestId('workflow-tabs-trg-activeRevision'), 'screen should have activeRevision tab').toBeVisible()
 });
 
 test.afterEach(async () => {
@@ -51,13 +24,16 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-const testSaveWorkflow = async (page: Page) =>{
+const navigateToActiveWorkflow = async (page: Page) => {
+  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`)
+}
+const testSaveWorkflow = async (page: Page) => {
   const description = page.getByText(defaultDescription);
   await description.click()
   // type random text in that textarea which is for description
   const testText = faker.random.alphaNumeric(9);
   await page.type("textarea", testText);
-  
+
   //now click on Save
   const saveButton = page.getByTestId("workflow-editor-btn-save");
   await saveButton.click();
@@ -65,18 +41,18 @@ const testSaveWorkflow = async (page: Page) =>{
   // save button should be disabled/enabled while/after the api call
   await expect(saveButton, 'save button should be disabled during the api call').toBeDisabled();
   await expect(saveButton, 'save button should be enabled after the api call').toBeEnabled();
-  
+
   // after saving is completed screen should have those new changed text before/after the page reload
   await expect(page.getByText(testText), 'after saving, screen should have the updated text').toBeVisible();
-  await page.reload({waitUntil: 'load'});
+  await page.reload({ waitUntil: 'load' });
   await expect(page.getByText(testText), 'after reloading, screen should have the updated text').toBeVisible();
 
   // check the text at the bottom left
   await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
 }
 
-const testMakeRevision = async (page: Page) =>{
-   const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
+const testMakeRevision = async (page: Page) => {
+  const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
   await revisionTrigger.click();
   const makeRevisionButton = page.getByTestId("workflow-editor-btn-make-revision");
   await makeRevisionButton.click();
@@ -94,25 +70,56 @@ const testMakeRevision = async (page: Page) =>{
   await page.getByTestId('workflow-tabs-trg-activeRevision').click()
 }
 
+test("it is possible to navigate to the active revision", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+  // at this point, any namespace may be loaded.
+  // let's navigate to the test's namespace via breadcrumbs.
+  await page.getByTestId("dropdown-trg-namespace").click();
+  await page
+    .getByRole("option", {
+      name: namespace,
+    })
+    .click();
+  await expect(page, "the namespace is reflected in the url").toHaveURL(
+    `/${namespace}/explorer/tree`
+  );
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "the namespace is reflected in the breadcrumbs"
+  ).toHaveText(namespace);
+
+  await page.getByTestId(`explorer-item-link-${workflow}`).click();
+  await expect(page.getByTestId('workflow-tabs-trg-activeRevision'), 'screen should have activeRevision tab').toBeVisible();
+  await expect(page, "the workflow is reflected in the url").toHaveURL(
+    `${namespace}/explorer/workflow/active/${workflow}`
+  );
+})
+
 test("it is possible to save the workflow", async ({
   page,
 }) => {
   // click on the description so it can have input focus
-  await testSaveWorkflow(page)
+  await navigateToActiveWorkflow(page);
+  await testSaveWorkflow(page);
 });
 
 test("it is possible to make the revision", async ({
   page,
 }) => {
-  //now click on Revision Menu Trigger
-  await testMakeRevision(page)
+  await navigateToActiveWorkflow(page);
+  await testMakeRevision(page);
 });
 
 test("it is possible to revert the revision", async ({
   page,
 }) => {
-  await testMakeRevision(page)
-  await testSaveWorkflow(page)
+  await navigateToActiveWorkflow(page);
+  await testMakeRevision(page);
+  await testSaveWorkflow(page);
   //now click on Revision Menu Trigger
   const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
   await revisionTrigger.click();
@@ -131,7 +138,7 @@ test("it is possible to revert the revision", async ({
   await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
 
   //check both after page reload
-  await page.reload({waitUntil: 'load'});
+  await page.reload({ waitUntil: 'load' });
   await expect(page.getByText(defaultDescription), "description should be reverted to the default").toBeVisible();
   await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
 });
