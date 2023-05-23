@@ -6,21 +6,27 @@ export const RegistrySchema = z.object({
   user: z.string(),
 });
 
+export const RegistryFormSchema = z.object({
+  url: z.string().url(),
+  user: z.string(),
+  password: z.string(),
+});
+
 // this is the format required when POSTing a new registry
 export const RegistryPostSchema = z.object({
   data: z.string(), // format: user:pwd
-  reg: z.string(), // this is the url
+  reg: z.string().url(), // this is the url
 });
-
-// not sure how this is supposed to look
-export const RegistryCreatedSchema = z.object({});
 
 export const RegistryListSchema = z.object({
   registries: z.array(RegistrySchema),
 });
+
+export const RegistryCreatedSchema = z.null();
 
 export const RegistryDeletedSchema = z.null();
 
 export type RegistrySchemaType = z.infer<typeof RegistrySchema>;
 export type RegistryCreatedSchemaType = z.infer<typeof RegistryCreatedSchema>;
 export type RegistryListSchemaType = z.infer<typeof RegistryListSchema>;
+export type RegistryFormSchemaType = z.infer<typeof RegistryFormSchema>;

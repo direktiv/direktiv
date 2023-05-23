@@ -9,6 +9,11 @@ import {
 } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { PlusCircle, SquareAsterisk, Trash } from "lucide-react";
+import {
+  RegistryFormSchema,
+  RegistryFormSchemaType,
+  RegistrySchemaType,
+} from "~/api/registries/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { Trans, useTranslation } from "react-i18next";
@@ -16,18 +21,10 @@ import { Trans, useTranslation } from "react-i18next";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Input from "~/design/Input";
-import { RegistrySchemaType } from "~/api/registries/schema";
-import { Textarea } from "~/design/TextArea";
-// import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
+import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
 import { useDeleteRegistry } from "~/api/registries/mutate/deleteRegistry";
 import { useRegistries } from "~/api/registries/query/get";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-type RegistryFormInput = {
-  name: string;
-  value: string;
-};
 
 const RegistriesList: FC = () => {
   const { t } = useTranslation();
@@ -45,27 +42,19 @@ const RegistriesList: FC = () => {
     },
   });
 
-  // const { mutate: createRegistryMutation } = useCreateRegistry({
-  //   onSuccess: () => {
-  //     setCreateRegistry(false);
-  //     setDialogOpen(false);
-  //   },
-  // });
+  const { mutate: createRegistryMutation } = useCreateRegistry({
+    onSuccess: () => {
+      setCreateRegistry(false);
+      setDialogOpen(false);
+    },
+  });
 
-  // const onSubmit: SubmitHandler<RegistryFormInput> = ({ name, value }) => {
-  //   createRegistryMutation({
-  //     name,
-  //     value,
-  //   });
-  // };
+  const onSubmit: SubmitHandler<RegistryFormSchemaType> = (data) => {
+    createRegistryMutation(data);
+  };
 
-  const { register, handleSubmit, reset } = useForm<RegistryFormInput>({
-    resolver: zodResolver(
-      z.object({
-        name: z.string(),
-        value: z.string(),
-      })
-    ),
+  const { register, handleSubmit, reset } = useForm<RegistryFormSchemaType>({
+    resolver: zodResolver(RegistryFormSchema),
   });
 
   const resetDialog = (isOpening: boolean) => {
@@ -155,7 +144,7 @@ const RegistriesList: FC = () => {
           <DialogContent>
             <form
               id="create-registry"
-              // onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col space-y-5"
             >
               <DialogHeader>
@@ -172,18 +161,26 @@ const RegistriesList: FC = () => {
                   Name
                 </label>
                 <Input
-                  data-testid="new-registry-name"
+                  data-testid="new-registry-url"
                   id="name"
                   placeholder="registry-name"
-                  // {...register("name")}
+                  {...register("url")}
                 />
               </fieldset>
 
               <fieldset className="flex items-start gap-5">
-                <Textarea
+                <Input
                   className="h-96"
-                  data-testid="new-workflow-editor"
-                  // {...register("value")}
+                  data-testid="new-registry-user"
+                  {...register("user")}
+                />
+              </fieldset>
+
+              <fieldset className="flex items-start gap-5">
+                <Input
+                  className="h-96"
+                  data-testid="new-registry-pwd"
+                  {...register("password")}
                 />
               </fieldset>
 
