@@ -112,11 +112,11 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		levelValue, ok := level.(int)
-		if !ok {
-			return nil, fmt.Errorf("level should be a int")
-		}
-		wEq = append(wEq, fmt.Sprintf("level >= '%d' ", levelValue))
+		// levelValue, ok := level.(int)
+		// if !ok {
+		// 	return nil, fmt.Errorf("level should be a int")
+		// }
+		wEq = append(wEq, fmt.Sprintf("level >= '%v' ", level))
 	}
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {

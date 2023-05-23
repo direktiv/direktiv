@@ -62,7 +62,6 @@ func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, in
 
 	err = srv.database.Instance(ctx, cached, id)
 	if err != nil {
-
 		srv.loggerBeta.Log(addTraceFrom(ctx, srv.flow.GetAttributes()), logengine.Error, "Failed to resolve instance %s", instance)
 		return nil, nil, nil, err
 	}
