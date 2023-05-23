@@ -39,7 +39,7 @@ const Delete = ({
   const isLoading = isLoadingRevision || isLoadingTag;
 
   return (
-    <>
+    <div data-testid="dialog-delete-revision">
       <DialogHeader>
         <DialogTitle>
           <Trash />
@@ -83,12 +83,13 @@ const Delete = ({
           }}
           variant="destructive"
           loading={isLoading}
+          data-testid="dialog-delete-revision-btn-submit"
         >
           {!isLoading && <Trash />}
           {t("pages.explorer.tree.workflow.revisions.delete.deleteBtn")}
         </Button>
       </DialogFooter>
-    </>
+    </div>
   );
 };
 

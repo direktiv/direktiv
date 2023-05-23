@@ -96,6 +96,7 @@ const WorkflowRevisionsPage: FC = () => {
                             subpage: "workflow-revisions",
                             revision: rev.name,
                           })}
+                          data-testid={`workflow-revisions-link-item-${rev.name}`}
                         >
                           {rev.name}
                         </Link>
@@ -116,12 +117,18 @@ const WorkflowRevisionsPage: FC = () => {
                       )}
                       {!isLatest && (
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger
+                            data-testid={`workflow-revisions-item-menu-trg-${rev.name}`}
+                            asChild
+                          >
                             <Button variant="ghost" size="sm" icon>
                               <MoreVertical />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-44">
+                          <DropdownMenuContent
+                            className="w-44"
+                            data-testid={`workflow-revisions-item-menu-content-${rev.name}`}
+                          >
                             <DropdownMenuLabel>
                               {t(
                                 "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
@@ -137,6 +144,7 @@ const WorkflowRevisionsPage: FC = () => {
                                   setDeleteRev(rev);
                                 }
                               }}
+                              data-testid={`workflow-revisions-trg-delete-dlg-${rev.name}`}
                             >
                               <DropdownMenuItem>
                                 <Trash className="mr-2 h-4 w-4" />
