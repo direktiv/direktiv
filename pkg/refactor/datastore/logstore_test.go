@@ -45,10 +45,10 @@ func Test_Add_Get(t *testing.T) {
 		if le.Fields["level"] == logengine.Debug {
 			t.Errorf("query for info level should not contain debug msgs")
 		}
-		if le.Fields["level"] == logengine.Info {
+		if le.Fields["level"] == "info" {
 			foundInfoMsg = true
 		}
-		if le.Fields["level"] == logengine.Error {
+		if le.Fields["level"] == "error" {
 			foundErrorMsg = true
 		}
 	}
@@ -95,15 +95,11 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 		if !ok {
 			t.Error("missing level value")
 		}
-		v, ok := res.(int)
-		if !ok {
-			t.Errorf("got wrong type for level")
-			t.Fail()
-		}
-		wantLevelValue := fmt.Sprintf("%d", level)
-		gotLevelValue := fmt.Sprintf("%d", v)
+		levels := []string{"debug", "info", "error"}
+		wantLevelValue := levels[level]
+		gotLevelValue := fmt.Sprintf("%v", res)
 		if wantLevelValue != gotLevelValue {
-			t.Errorf("wanted level %d got %s", level, res)
+			t.Errorf("wanted level %s got %s", wantLevelValue, res)
 		}
 	}
 }

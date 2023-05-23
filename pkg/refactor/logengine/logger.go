@@ -60,7 +60,7 @@ type DataStoreBetterLogger struct {
 }
 
 func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
-	err := s.Store.Append(context.Background(), time.Now(), level, fmt.Sprintf(msg, a...), tags)
+	err := s.Store.Append(context.Background(), time.Now().UTC(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
 		s.LogError("writing better log to the database", "error", err)
 	}
