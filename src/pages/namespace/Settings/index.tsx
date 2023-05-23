@@ -6,6 +6,7 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { FC } from "react";
+import RegistriesList from "./RegistriesList";
 import SecretsList from "./SecretsList";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,10 @@ const SettingsPage: FC = () => {
     <div className="flex flex-col space-y-6 p-10">
       <section>
         <SecretsList />
+      </section>
+
+      <section>
+        <RegistriesList />
       </section>
 
       <section>

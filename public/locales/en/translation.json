@@ -158,7 +158,18 @@
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
         "create": {
-          "description": "Create a secret"
+          "description": "Add a secret"
+        }
+      },
+      "registries": {
+        "list": {
+          "title": "Container Registries"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "description": "Add a container registry"
         }
       },
       "theme": {
