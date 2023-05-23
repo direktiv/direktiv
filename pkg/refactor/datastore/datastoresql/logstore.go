@@ -86,7 +86,8 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 // - To query server-logs pass: "recipientType", "server" via keysAndValues
 // - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
 // - This method will search for any of followings keys and query all matching logs:
-// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id
+// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id,
+// "workflow", "state-id", "loop-index", "invoker", "namespace", "sender_type",	"state-type", "trace"
 // Any other not mentioned passed key value pair will be ignored.
 // Returned log-entries will have same or higher level as the passed one.
 // - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
@@ -121,6 +122,23 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
+	}
+
+	jsonCols := []string{
+		"workflow",
+		"state-id",
+		"loop-index",
+		"invoker",
+		"namespace",
+		"sender_type",
+		"state-type",
+		"trace",
+	}
+
+	for _, k := range jsonCols {
+		if v, ok := keysAndValues[k]; ok {
+			wEq = append(wEq, fmt.Sprintf(" tags->> '%s' = '%s'", k, v))
+		}
 	}
 	query := composeQuery(limit, offset, wEq)
 

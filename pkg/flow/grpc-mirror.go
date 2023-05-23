@@ -290,113 +290,113 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// _, store, _, rollback, err := flow.beginSqlTx(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rollback()
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+	_, store, _, rollback, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback()
 
-	// mirProcess, err := store.Mirror().GetProcess(ctx, ns.ID)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	mirProcess, err := store.Mirror().GetProcess(ctx, ns.ID)
+	if err != nil {
+		return nil, err
+	}
+	qu := make(map[string]interface{})
+	qu["mirror_activity_id"] = mirProcess
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return nil, err
+	}
+	le := make([]*logengine.LogEntry, 0)
+	res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+	if err != nil {
+		return nil, err
+	}
+	le = append(le, res...)
 
-	// clients := flow.edb.Clients(ctx)
+	resp := new(grpc.MirrorActivityLogsResponse)
+	resp.Namespace = ns.Name
+	resp.Activity = mirProcess.ID.String()
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return nil, err
+	}
 
-	// // query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
-
-	// // results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// // if err != nil {
-	// // 	return nil, err
-	// // }
-
-	// resp := new(grpc.MirrorActivityLogsResponse)
-	// resp.Namespace = ns.Name
-	// resp.Activity = mirProcess.ID.String()
-	// resp.PageInfo = pi
-
-	// err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return nil, nil
+	return resp, nil
 }
 
 func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest, srv grpc.Flow_MirrorActivityLogsParcelsServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// 	ctx := srv.Context()
+	ctx := srv.Context()
 
-	// 	mirProcessID, err := uuid.Parse(req.GetActivity())
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	mirProcessID, err := uuid.Parse(req.GetActivity())
+	if err != nil {
+		return err
+	}
 
-	// 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	if err != nil {
+		return err
+	}
 
-	// 	var tailing bool
+	var tailing bool
 
-	// 	_, store, _, rollback, err := flow.beginSqlTx(ctx)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer rollback()
+	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcessID)
+	defer flow.cleanup(sub.Close)
 
-	// 	mirProcess, err := store.Mirror().GetProcess(ctx, mirProcessID)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+resend:
 
-	// 	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcess.ID)
-	// 	defer flow.cleanup(sub.Close)
+	le := make([]*logengine.LogEntry, 0)
+	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["mirror_activity_id"] = mirProcessID
+		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
+		if err != nil {
+			return err
+		}
+		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// resend:
+	if err != nil {
+		return err
+	}
 
-	// 	clients := flow.edb.Clients(ctx)
+	resp := new(grpc.MirrorActivityLogsResponse)
+	resp.Namespace = ns.Name
+	resp.Activity = mirProcessID.String()
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
+	if len(resp.Results) != 0 || !tailing {
+		tailing = true
 
-	// 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
 
-	// 	resp := new(grpc.MirrorActivityLogsResponse)
-	// 	resp.Namespace = ns.Name
-	// 	resp.Activity = mirProcess.ID.String()
-	// 	resp.PageInfo = pi
+		req.Pagination.Offset += int32(len(resp.Results))
+	}
 
-	// 	err = bytedata.ConvertDataForOutput(results, &resp.Results)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
 
-	// 	if len(resp.Results) != 0 || !tailing {
-	// 		tailing = true
-
-	// 		err = srv.Send(resp)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-
-	// 		req.Pagination.Offset += int32(len(resp.Results))
-	// 	}
-
-	// 	more := sub.Wait(ctx)
-	// 	if !more {
-	// 		return nil
-	// 	}
-
-	// 	goto resend
-	return nil
+	goto resend
 }
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {

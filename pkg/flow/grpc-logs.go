@@ -52,7 +52,7 @@ func addFiltersToQuery(query map[string]interface{}, filters ...*grpc.PageFilter
 				query["workflow"] = values[0]
 			}
 			if len(values) > 1 && values[1] != "" {
-				query["state"] = values[1]
+				query["state-id"] = values[1]
 			}
 			if len(values) > 2 && values[2] != "" {
 				query["loop-index"] = values[2]
@@ -162,6 +162,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
 		qu["namespace_logs"] = cached.Namespace.ID
+		qu["sender_type"] = "namespace"
 		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
@@ -210,6 +211,7 @@ resend:
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
 		qu["namespace_logs"] = cached.Namespace.ID
+		qu["sender_type"] = "namespace"
 		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
