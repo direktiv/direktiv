@@ -18,13 +18,13 @@ import { Card } from "~/design/Card";
 import Input from "~/design/Input";
 import { RegistrySchemaType } from "~/api/registries/schema";
 import { Textarea } from "~/design/TextArea";
-import { useCreateSecret } from "~/api/secrets/mutate/createSecret";
-// import { useDeleteRegistry } from "~/api/registries/mutate/deleteRegistry";
+// import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
+import { useDeleteRegistry } from "~/api/registries/mutate/deleteRegistry";
 import { useRegistries } from "~/api/registries/query/get";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type SecretFormInput = {
+type RegistryFormInput = {
   name: string;
   value: string;
 };
@@ -38,43 +38,43 @@ const RegistriesList: FC = () => {
 
   const registries = useRegistries();
 
-  // const { mutate: deleteRegistryMutation } = useDeleteRegistry({
+  const { mutate: deleteRegistryMutation } = useDeleteRegistry({
+    onSuccess: () => {
+      setDeleteRegistry(undefined);
+      setDialogOpen(false);
+    },
+  });
+
+  // const { mutate: createRegistryMutation } = useCreateRegistry({
   //   onSuccess: () => {
-  //     setDeleteRegistry(undefined);
+  //     setCreateRegistry(false);
   //     setDialogOpen(false);
   //   },
   // });
 
-  // const { mutate: createSecretMutation } = useCreateSecret({
-  //   onSuccess: () => {
-  //     setCreateSecret(false);
-  //     setDialogOpen(false);
-  //   },
-  // });
-
-  // const onSubmit: SubmitHandler<SecretFormInput> = ({ name, value }) => {
-  //   createSecretMutation({
+  // const onSubmit: SubmitHandler<RegistryFormInput> = ({ name, value }) => {
+  //   createRegistryMutation({
   //     name,
   //     value,
   //   });
   // };
 
-  // const { register, handleSubmit, reset } = useForm<SecretFormInput>({
-  //   resolver: zodResolver(
-  //     z.object({
-  //       name: z.string(),
-  //       value: z.string(),
-  //     })
-  //   ),
-  // });
+  const { register, handleSubmit, reset } = useForm<RegistryFormInput>({
+    resolver: zodResolver(
+      z.object({
+        name: z.string(),
+        value: z.string(),
+      })
+    ),
+  });
 
   const resetDialog = (isOpening: boolean) => {
-    // if (!isOpening) {
-    //   setDeleteSecret(undefined);
-    //   setCreateSecret(false);
-    //   reset();
-    // }
-    // setDialogOpen(isOpening);
+    if (!isOpening) {
+      setDeleteRegistry(undefined);
+      setCreateRegistry(false);
+      reset();
+    }
+    setDialogOpen(isOpening);
   };
 
   return (
@@ -90,7 +90,7 @@ const RegistriesList: FC = () => {
 
         <DialogTrigger
           asChild
-          data-testid="secret-create"
+          data-testid="registry-create"
           onClick={() => setCreateRegistry(true)}
         >
           <Button variant="ghost">
@@ -108,7 +108,7 @@ const RegistriesList: FC = () => {
                 <TableCell className="w-0">
                   <DialogTrigger
                     asChild
-                    data-testid="secret-delete"
+                    data-testid="registry-delete"
                     onClick={() => {
                       setDeleteRegistry(item);
                     }}
@@ -140,8 +140,10 @@ const RegistriesList: FC = () => {
                 <Button variant="ghost">Cancel</Button>
               </DialogClose>
               <Button
-                data-testid="secret-delete-confirm"
-                // onClick={() => deleteRegistryMutation({})}
+                data-testid="registry-delete-confirm"
+                onClick={() =>
+                  deleteRegistryMutation({ registry: deleteRegistry })
+                }
                 variant="destructive"
               >
                 Delete
@@ -152,7 +154,7 @@ const RegistriesList: FC = () => {
         {createRegistry && (
           <DialogContent>
             <form
-              id="create-secret"
+              id="create-registry"
               // onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col space-y-5"
             >
@@ -170,9 +172,9 @@ const RegistriesList: FC = () => {
                   Name
                 </label>
                 <Input
-                  data-testid="new-secret-name"
+                  data-testid="new-registry-name"
                   id="name"
-                  placeholder="secret-name"
+                  placeholder="registry-name"
                   // {...register("name")}
                 />
               </fieldset>
@@ -190,7 +192,7 @@ const RegistriesList: FC = () => {
                   <Button variant="ghost">Cancel</Button>
                 </DialogClose>
                 <Button
-                  data-testid="secret-create-submit"
+                  data-testid="registry-create-submit"
                   type="submit"
                   variant="primary"
                 >
