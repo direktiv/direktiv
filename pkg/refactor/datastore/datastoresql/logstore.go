@@ -139,7 +139,8 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 		// for k, e := range e.Tags {
 		// 	m[k] = e
 		// }
-		m["level"] = e.Level
+		levels := []string{"debug", "info", "error"}
+		m["level"] = levels[e.Level]
 		convertedList = append(convertedList, &logengine.LogEntry{
 			T:      e.T,
 			Msg:    e.Msg,
@@ -161,10 +162,10 @@ func composeQuery(limit, offset int, wEq []string) string {
 		}
 	}
 	q += " ORDER BY t ASC"
-	if limit >= 0 {
+	if limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-	if offset >= 0 {
+	if offset > 0 {
 		q += fmt.Sprintf(" OFFSET %d ", offset)
 	}
 

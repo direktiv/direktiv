@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -71,7 +71,7 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 
 	if !result.Valid() {
 		for _, reason := range result.Errors() {
-			logic.Log(ctx, log.Error, "Schema validation error: %s", reason.String())
+			logic.Log(ctx, logengine.Error, "Schema validation error: %s", reason.String())
 		}
 		return nil, derrors.NewCatchableError(ErrCodeFailedSchemaValidation, fmt.Sprintf("subject failed its JSONSchema validation: %v", err))
 	}

@@ -6,8 +6,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
 )
 
@@ -23,7 +23,7 @@ type Instance interface {
 	GetVariables(ctx context.Context, vars []VariableSelector) ([]Variable, error)
 	Sleep(ctx context.Context, d time.Duration, x interface{}) error
 	Raise(ctx context.Context, err *derrors.CatchableError) error
-	Log(ctx context.Context, level log.Level, a string, x ...interface{})
+	Log(ctx context.Context, level logengine.LogLevel, a string, x ...interface{})
 	AddAttribute(tag, value string)
 	SetVariables(ctx context.Context, vars []VariableSetter) error
 	BroadcastCloudevent(ctx context.Context, event *cloudevents.Event, dd int64) error

@@ -9,8 +9,8 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
 )
 
@@ -148,7 +148,7 @@ func (instance *testerInstance) LivingChildren(ctx context.Context) []*ChildInfo
 	return nil
 }
 
-func (instance *testerInstance) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+func (instance *testerInstance) Log(ctx context.Context, level logengine.LogLevel, a string, x ...interface{}) {
 }
 
 func (instance *testerInstance) AddAttribute(tag, value string) {

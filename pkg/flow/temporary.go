@@ -15,7 +15,6 @@ import (
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -156,15 +155,8 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	return nil
 }
 
-func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
-	switch level {
-	case log.Info:
-		im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Info, a, x...)
-	case log.Debug:
-		im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Debug, a, x...)
-	case log.Error:
-		im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), logengine.Error, a, x...)
-	}
+func (im *instanceMemory) Log(ctx context.Context, level logengine.LogLevel, a string, x ...interface{}) {
+	im.engine.loggerBeta.Log(addTraceFrom(ctx, im.GetAttributes()), level, a, x...)
 }
 
 func (im *instanceMemory) AddAttribute(tag, value string) {

@@ -207,10 +207,9 @@ func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 		}
 		r := grpc.Log{
 			T:     t,
-			Level: "info",
-			// Level: tags["level"],
-			Msg:  v.Msg,
-			Tags: tags,
+			Level: tags["level"],
+			Msg:   v.Msg,
+			Tags:  tags,
 		}
 		results = append(results, &r)
 	}

@@ -83,7 +83,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 
 	resp := new(grpc.ServerLogsResponse)
 	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
-	// resp.Results =
+
 	var err error
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
@@ -174,7 +174,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
-	// resp.Results =
+
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return nil, err
@@ -197,16 +197,9 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 		return err
 	}
 
-	// 	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
-	// 	defer flow.cleanup(sub.Close)
-
-	// 	clients := flow.edb.Clients(ctx)
-
-	// 	ctx := srv.Context()
-
 	var tailing bool
 
-	sub := flow.pubsub.SubscribeServerLogs()
+	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
 	defer flow.cleanup(sub.Close)
 
 resend:
@@ -369,11 +362,15 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-
+	root, err := internallogger.GetRootinstanceID(prefix)
+	if err != nil {
+		return nil, err
+	}
 	le := make([]*logengine.LogEntry, 0)
 	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
 		qu["log_instance_call_path"] = prefix
+		qu["root_instance_id"] = root
 		res, err := store.Logs().Get(ctx, qu, -1, -1)
 		if err != nil {
 			return err
@@ -430,22 +427,18 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
 	defer flow.cleanup(sub.Close)
 	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
-
+	root, err := internallogger.GetRootinstanceID(prefix)
+	if err != nil {
+		return err
+	}
 resend:
 
 	le := make([]*logengine.LogEntry, 0)
 	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
 		qu["log_instance_call_path"] = prefix
-		limit := int(req.Pagination.Limit)
-		offset := int(req.Pagination.Offset)
-		if limit == 0 {
-			limit = -1
-		}
-		if offset == 0 {
-			offset = -1
-		}
-		res, err := store.Logs().Get(ctx, qu, limit, offset)
+		qu["root_instance_id"] = root
+		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
