@@ -3,9 +3,14 @@ package flow
 import (
 	"context"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 )
 
 type fileAttributes filestore.File
@@ -64,210 +69,237 @@ var logsOrderings = []*orderingInfo{
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["recipientType"] = "server"
+		res, err := store.Logs().Get(ctx, qu, -1, -1)
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// clients := flow.edb.Clients(ctx)
+	resp := new(grpc.ServerLogsResponse)
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
+	// resp.Results =
+	var err error
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return nil, err
+	}
 
-	// query := clients.LogMsg.Query()
-
-	// query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.WorkflowIDIsNil())
-
-	// results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// resp := new(grpc.ServerLogsResponse)
-	// resp.PageInfo = pi
-
-	// resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return nil, nil
+	return resp, nil
 }
 
 func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_ServerLogsParcelsServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	ctx := srv.Context()
 
 	// 	ctx := srv.Context()
 
-	// 	var tailing bool
+	var tailing bool
 
-	// 	sub := flow.pubsub.SubscribeServerLogs()
-	// 	defer flow.cleanup(sub.Close)
+	sub := flow.pubsub.SubscribeServerLogs()
+	defer flow.cleanup(sub.Close)
 
-	// resend:
+resend:
 
-	// 	clients := flow.edb.Clients(ctx)
-	// 	query := clients.LogMsg.Query()
-	// 	query = query.Where(entlog.Not(entlog.HasNamespace()), entlog.Not(entlog.WorkflowID(uuid.UUID{})))
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["recipientType"] = "server"
+		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	var err error
+	resp := new(grpc.ServerLogsResponse)
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 	resp := new(grpc.ServerLogsResponse)
-	// 	resp.PageInfo = pi
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	if len(resp.Results) != 0 || !tailing {
+		tailing = true
 
-	// 	if len(resp.Results) != 0 || !tailing {
-	// 		tailing = true
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
 
-	// 		err = srv.Send(resp)
-	// 		if err != nil {
-	// 			return err
-	// 		}
+		req.Pagination.Offset += int32(len(resp.Results))
+	}
 
-	// 		req.Pagination.Offset += int32(len(resp.Results))
-	// 	}
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
 
-	// 	more := sub.Wait(ctx)
-	// 	if !more {
-	// 		return nil
-	// 	}
-
-	// 	goto resend
-	return nil
+	goto resend
 }
 
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// cached := new(database.CacheData)
+	cached := new(database.CacheData)
 
-	// err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
-	// if err != nil {
-	// 	return nil, err
-	// }
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
-	// clients := flow.edb.Clients(ctx)
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["namespace_logs"] = cached.Namespace.ID
+		res, err := store.Logs().Get(ctx, qu, -1, -1)
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
+	resp := new(grpc.NamespaceLogsResponse)
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
+	// resp.Results =
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return nil, err
+	}
 
-	// results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// resp := new(grpc.NamespaceLogsResponse)
-	// resp.Namespace = cached.Namespace.Name
-	// resp.PageInfo = pi
-
-	// resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return nil, nil
+	return resp, nil
 }
 
 func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.Flow_NamespaceLogsParcelsServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// 	ctx := srv.Context()
+	ctx := srv.Context()
 
 	// 	var tailing bool
 
-	// 	cached := new(database.CacheData)
+	cached := new(database.CacheData)
 
-	// 	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	err := flow.database.NamespaceByName(ctx, cached, req.GetNamespace())
+	if err != nil {
+		return err
+	}
 
 	// 	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
 	// 	defer flow.cleanup(sub.Close)
 
 	// 	clients := flow.edb.Clients(ctx)
 
-	// resend:
+	// 	ctx := srv.Context()
 
-	// 	query := clients.LogMsg.Query().Where(entlog.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
+	var tailing bool
 
-	// 	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	sub := flow.pubsub.SubscribeServerLogs()
+	defer flow.cleanup(sub.Close)
 
-	// 	resp := new(grpc.NamespaceLogsResponse)
-	// 	resp.Namespace = cached.Namespace.Name
-	// 	resp.PageInfo = pi
+resend:
 
-	// 	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["namespace_logs"] = cached.Namespace.ID
+		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// 	if len(resp.Results) != 0 || !tailing {
-	// 		tailing = true
+	resp := new(grpc.NamespaceLogsResponse)
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 		err = srv.Send(resp)
-	// 		if err != nil {
-	// 			return err
-	// 		}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 		req.Pagination.Offset += int32(len(resp.Results))
-	// 	}
+	if len(resp.Results) != 0 || !tailing {
+		tailing = true
 
-	// 	more := sub.Wait(ctx)
-	// 	if !more {
-	// 		return nil
-	// 	}
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
 
-	// 	goto resend
-	return nil
+		req.Pagination.Offset += int32(len(resp.Results))
+	}
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
 }
 
 func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsRequest) (*grpc.WorkflowLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
-	// if err != nil {
-	// 	return nil, err
-	// }
+	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return nil, err
+	}
 
-	// clients := flow.edb.Clients(ctx)
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["workflow_id"] = f.ID
+		res, err := store.Logs().Get(ctx, qu, -1, -1)
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// query := clients.LogMsg.Query().Where(entlog.WorkflowID(f.ID))
+	resp := new(grpc.WorkflowLogsResponse)
+	resp.Namespace = ns.Name
+	resp.Path = f.Path
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return nil, err
+	}
 
-	// results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// resp := new(grpc.WorkflowLogsResponse)
-	// resp.Namespace = ns.Name
-	// resp.Path = f.Path
-	// resp.PageInfo = pi
-
-	// resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return nil, nil
+	return resp, nil
 }
 
 func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Flow_WorkflowLogsParcelsServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// 	ctx := srv.Context()
+	ctx := srv.Context()
 
 	// 	var tailing bool
 
-	// 	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
+	if err != nil {
+		return err
+	}
 
-	// 	sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
-	// 	defer flow.cleanup(sub.Close)
+	sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
+	defer flow.cleanup(sub.Close)
 
 	// resend:
 
@@ -280,43 +312,86 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 	// 		return err
 	// 	}
 
-	// 	resp := new(grpc.WorkflowLogsResponse)
-	// 	resp.Namespace = ns.Name
-	// 	resp.Path = f.Path
-	// 	resp.PageInfo = pi
+	var tailing bool
 
-	// 	resp.Results, err = bytedata.ConvertLogMsgForOutput(results)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+resend:
 
-	// 	if len(resp.Results) != 0 || !tailing {
-	// 		tailing = true
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["workflow_id"] = f.ID
+		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
 
-	// 		err = srv.Send(resp)
-	// 		if err != nil {
-	// 			return err
-	// 		}
+	resp := new(grpc.WorkflowLogsResponse)
+	resp.Namespace = ns.Name
+	resp.Path = f.Path
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 		req.Pagination.Offset += int32(len(resp.Results))
-	// 	}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
 
-	// 	more := sub.Wait(ctx)
-	// 	if !more {
-	// 		return nil
-	// 	}
+	if len(resp.Results) != 0 || !tailing {
+		tailing = true
 
-	// 	goto resend
-	return nil
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+
+		req.Pagination.Offset += int32(len(resp.Results))
+	}
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
 }
 
 func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsRequest) (*grpc.InstanceLogsResponse, error) {
-	// flow.sugar.Debugf("Handling gRPC request: %s", this())
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
-	// if err != nil {
-	// 	return nil, err
-	// }
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	if err != nil {
+		return nil, err
+	}
+	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["log_instance_call_path"] = prefix
+		res, err := store.Logs().Get(ctx, qu, -1, -1)
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
+
+	resp := new(grpc.InstanceLogsResponse)
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 
 	// // its important to append the instanceID to the callpath since we don't do it when creating the database entry
 	// prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
@@ -339,25 +414,74 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	// resp := results
 
 	// return resp, nil
-	return nil, nil
 }
 
 func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Flow_InstanceLogsParcelsServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	// 	ctx := srv.Context()
+	ctx := srv.Context()
 
-	// 	var tailing bool
+	var tailing bool
 
-	// 	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	if err != nil {
+		return err
+	}
+	sub := flow.pubsub.SubscribeInstanceLogs(cached)
+	defer flow.cleanup(sub.Close)
+	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
 
-	// 	sub := flow.pubsub.SubscribeInstanceLogs(cached)
-	// 	defer flow.cleanup(sub.Close)
+resend:
+
+	le := make([]*logengine.LogEntry, 0)
+	flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+		qu := make(map[string]interface{})
+		qu["log_instance_call_path"] = prefix
+		limit := int(req.Pagination.Limit)
+		offset := int(req.Pagination.Offset)
+		if limit == 0 {
+			limit = -1
+		}
+		if offset == 0 {
+			offset = -1
+		}
+		res, err := store.Logs().Get(ctx, qu, limit, offset)
+		if err != nil {
+			return err
+		}
+		le = append(le, res...)
+		return nil
+	})
+
+	resp := new(grpc.InstanceLogsResponse)
+	resp.Namespace = cached.Namespace.Name
+	resp.Instance = cached.Instance.ID.String()
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	if err != nil {
+		return err
+	}
+
+	if len(resp.Results) != 0 || !tailing {
+		tailing = true
+
+		err = srv.Send(resp)
+		if err != nil {
+			return err
+		}
+
+		req.Pagination.Offset += int32(len(resp.Results))
+	}
+
+	more := sub.Wait(ctx)
+	if !more {
+		return nil
+	}
+
+	goto resend
+
 	// 	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
-	// 	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
 	// 	root, err := internallogger.GetRootinstanceID(prefix)
 	// 	callerIsRoot := root == cached.Instance.ID.String()
 	// 	if err != nil {
@@ -393,9 +517,6 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	// 	if !more {
 	// 		return nil
 	// 	}
-
-	// 	goto resend
-	return nil
 }
 
 // // filters the passed *ent.LogMsg if the given filter is supported if

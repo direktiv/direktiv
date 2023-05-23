@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"reflect"
 	"strings"
@@ -195,16 +196,21 @@ func ConvertDataForOutput(a, b interface{}) error {
 func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 	results := make([]*grpc.Log, 0, len(a))
 	for _, v := range a {
+		tags := make(map[string]string)
+		for t, e := range v.Fields {
+			tags[t] = fmt.Sprintf("%v", e)
+		}
 		t := timestamppb.New(v.T)
 		err := t.CheckValid()
 		if err != nil {
 			return nil, err
 		}
 		r := grpc.Log{
-			T: t,
-			// Level: v.Level,
-			Msg: v.Msg,
-			// Tags:  v.Tags,
+			T:     t,
+			Level: "info",
+			// Level: tags["level"],
+			Msg:  v.Msg,
+			Tags: tags,
 		}
 		results = append(results, &r)
 	}

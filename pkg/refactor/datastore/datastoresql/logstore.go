@@ -132,9 +132,13 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		for k, e := range e.Tags {
-			m[k] = e
+		err := json.Unmarshal(e.Tags, &m)
+		if err != nil {
+			return nil, err
 		}
+		// for k, e := range e.Tags {
+		// 	m[k] = e
+		// }
 		m["level"] = e.Level
 		convertedList = append(convertedList, &logengine.LogEntry{
 			T:      e.T,
@@ -171,7 +175,7 @@ type gormLogMsg struct {
 	T                   time.Time
 	Msg                 string
 	Level               int
-	Tags                map[string]interface{}
+	Tags                []byte
 	WorkflowID          string
 	MirrorActivityID    string
 	InstanceLogs        string

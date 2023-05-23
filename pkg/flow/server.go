@@ -68,8 +68,7 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	metrics *metrics.Client
-	// logger     *internallogger.Logger // TODO: remove
+	metrics    *metrics.Client
 	loggerBeta logengine.BetterLogger
 	edb        *entwrapper.Database // TODO: remove
 	database   *database.CachedDatabase
@@ -288,8 +287,8 @@ func (srv *server) start(ctx context.Context) error {
 			srv.sugar.Infow(msg, keysAndValues...)
 
 			tags := map[string]interface{}{
-				"log-origin": "mirror",
-				"mirror-id":  mirrorProcessID,
+				"sender_type":        "mirror",
+				"mirror_activity_id": mirrorProcessID,
 			}
 			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
 			srv.loggerBeta.Log(addTraceFrom(context.Background(), tags), logengine.Info, msg, keysAndValues...)
@@ -298,8 +297,8 @@ func (srv *server) start(ctx context.Context) error {
 			srv.sugar.Errorw(msg, keysAndValues...)
 
 			tags := map[string]interface{}{
-				"log-origin": "mirror",
-				"mirror-id":  mirrorProcessID,
+				"sender_type":        "mirror",
+				"mirror_activity_id": mirrorProcessID,
 			}
 			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
 			srv.loggerBeta.Log(addTraceFrom(context.Background(), tags), logengine.Error, msg, keysAndValues...)
