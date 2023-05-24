@@ -9,66 +9,77 @@ import (
 	"go.uber.org/zap"
 )
 
-type ConvenientLogger struct {
-	BetterLogger
-	AddTraceFrom func(ctx context.Context, toTags map[string]interface{}) map[string]interface{}
-}
-
-func (loggers ConvenientLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	loggers.Log(loggers.AddTraceFrom(ctx, tags), Debug, msg, a...)
-}
-
-func (loggers ConvenientLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	loggers.Log(loggers.AddTraceFrom(ctx, tags), Info, msg, a...)
-}
-
-func (loggers ConvenientLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	loggers.Log(loggers.AddTraceFrom(ctx, tags), Error, msg, a...)
-}
-
 type BetterLogger interface {
-	// Logs a log message with contextual information, which are passed via tags.
-	// Remember to pass the trace-id for the logentry via the tags with the key trace.
-	Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{})
+	Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{})
+	Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{})
+	Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{})
 }
 
 type SugarBetterLogger struct {
-	Sugar *zap.SugaredLogger
+	Sugar        *zap.SugaredLogger
+	AddTraceFrom func(ctx context.Context, toTags map[string]interface{}) map[string]interface{}
 }
 
-func (s SugarBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
+func (s SugarBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	_ = ctx
 	msg = fmt.Sprintf(msg, a...)
-	if len(tags) == 0 {
-		s.Sugar.Infow(msg)
-	} else {
-		ar := make([]interface{}, len(tags)+len(tags))
-		i := 0
-		for k, v := range tags {
-			ar[i] = k
-			ar[i+1] = v
-			i += 2
-		}
-		switch level {
-		case Debug:
-			s.Sugar.Debugw(msg, ar...)
-		case Info:
-			s.Sugar.Infow(msg, ar...)
-		case Error:
-			s.Sugar.Errorw(msg, ar...)
-		default:
-			s.Sugar.Debugw(msg, ar...) // this should never happen
-		}
+	tags = s.AddTraceFrom(ctx, tags)
+	tags["sender"] = recipientID
+	s.log(Debug, tags, msg)
+}
+
+func (s SugarBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	_ = ctx
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	tags["sender"] = recipientID
+	s.log(Info, tags, msg)
+}
+
+func (s SugarBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	_ = ctx
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	tags["sender"] = recipientID
+	s.log(Error, tags, msg)
+}
+
+func (s SugarBetterLogger) log(level LogLevel, tags map[string]interface{}, msg string) {
+	logToSuggar := s.Sugar.Debugw
+	switch level {
+	case Debug:
+	case Info:
+		logToSuggar = s.Sugar.Infow
+	case Error:
+		logToSuggar = s.Sugar.Errorw
 	}
+	ar := make([]interface{}, len(tags)+len(tags))
+	i := 0
+	for k, v := range tags {
+		ar[i] = k
+		ar[i+1] = v
+		i += 2
+	}
+	logToSuggar(msg, ar...)
 }
 
 type ChainedBetterLogger []BetterLogger
 
-func (loggers ChainedBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
+func (loggers ChainedBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	for i := range loggers {
-		loggers[i].Log(tags, level, msg, a...)
+		loggers[i].Debugf(ctx, recipientID, tags, msg, a...)
+	}
+}
+
+func (loggers ChainedBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	for i := range loggers {
+		loggers[i].Infof(ctx, recipientID, tags, msg, a...)
+	}
+}
+
+func (loggers ChainedBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	for i := range loggers {
+		loggers[i].Errorf(ctx, recipientID, tags, msg, a...)
 	}
 }
 
@@ -79,8 +90,28 @@ type DataStoreBetterLogger struct {
 	LogError func(template string, args ...interface{})
 }
 
-func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
-	err := s.Store.Append(context.Background(), time.Now(), level, fmt.Sprintf(msg, a...), tags)
+func (s DataStoreBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	tags["sender"] = recipientID
+	_ = ctx
+	err := s.Store.Append(context.Background(), time.Now(), Debug, fmt.Sprintf(msg, a...), tags)
+	if err != nil {
+		s.LogError("writing better-logs to the database", "error", err)
+	}
+}
+
+func (s DataStoreBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	tags["sender"] = recipientID
+	_ = ctx
+	err := s.Store.Append(context.Background(), time.Now(), Info, fmt.Sprintf(msg, a...), tags)
+	if err != nil {
+		s.LogError("writing better-logs to the database", "error", err)
+	}
+}
+
+func (s DataStoreBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	tags["sender"] = recipientID
+	_ = ctx
+	err := s.Store.Append(context.Background(), time.Now(), Error, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
 		s.LogError("writing better-logs to the database", "error", err)
 	}
@@ -93,28 +124,34 @@ type NotifierBetterLogger struct {
 	LogError func(template string, args ...interface{})
 }
 
-func (n NotifierBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
-	tags["level"] = level
+func (n NotifierBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = msg
 	_ = a
-	senderID, ok := tags["sender"]
-	if !ok {
-		n.LogError("cannot find sender id in better-logs tags", "tags", tags)
+	_ = ctx
+	n.log(recipientID, tags)
+}
 
-		return
-	}
+func (n NotifierBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	_ = msg
+	_ = a
+	_ = ctx
+	n.log(recipientID, tags)
+}
+
+func (n NotifierBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	_ = msg
+	_ = a
+	_ = ctx
+	n.log(recipientID, tags)
+}
+
+func (n NotifierBetterLogger) log(recipientID uuid.UUID, tags map[string]interface{}) {
 	senderType, ok := tags["sender_type"]
 	if !ok {
 		n.LogError("cannot find sender type in better-logs tags", "tags", tags)
 
 		return
 	}
-	id, err := uuid.Parse(fmt.Sprintf("%s", senderID))
-	if err != nil {
-		n.LogError("cannot parse sender id in better-logs tags", "tags", tags, "error", err)
 
-		return
-	}
-
-	n.Callback(id, fmt.Sprintf("%s", senderType))
+	n.Callback(recipientID, fmt.Sprintf("%s", senderType))
 }
