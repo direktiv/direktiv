@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/design/Dialog";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { PlusCircle, SquareAsterisk, Trash } from "lucide-react";
 import {
   RegistryFormSchema,
@@ -57,20 +57,16 @@ const RegistriesList: FC = () => {
     resolver: zodResolver(RegistryFormSchema),
   });
 
-  const resetDialog = (isOpening: boolean) => {
-    if (!isOpening) {
+  useEffect(() => {
+    if (dialogOpen === false) {
       setDeleteRegistry(undefined);
       setCreateRegistry(false);
       reset();
     }
-    setDialogOpen(isOpening);
-  };
+  }, [dialogOpen, reset]);
 
   return (
-    <Dialog
-      open={dialogOpen}
-      onOpenChange={(isOpening) => resetDialog(isOpening)}
-    >
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="mb-3 flex flex-row justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
           <SquareAsterisk className="h-5" />
