@@ -26,12 +26,6 @@ type sqlLogStore struct {
 	db *gorm.DB
 }
 
-// Append implements logengine.LogStore.
-// - For instance-logs following Key Value pairs SHOULD be present: instance_logs, log_instance_call_path, root_instance_id
-// - For namespace-logs following Key Value pairs SHOULD be present: namespace_logs
-// - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
-// - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
-// - All passed keysAndValues pair will be stored attached to the log-entry.
 func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
@@ -63,7 +57,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	q := "INSERT INTO log_msgs ("
 	qTail := "VALUES ("
 	for i := range vals {
-		q += fmt.Sprintf("'%s'", cols[i])
+		q += fmt.Sprintf(cols[i])
 		qTail += fmt.Sprintf("$%d", i+1)
 		if i != len(vals)-1 {
 			q += ", "
@@ -82,18 +76,9 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-// Get implements logengine.LogStore.
-// - To query server-logs pass: "recipientType", "server" via keysAndValues
-// - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
-// - This method will search for any of followings keys and query all matching logs:
-// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id
-// Any other not mentioned passed key value pair will be ignored.
-// Returned log-entries will have same or higher level as the passed one.
-// - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
-// when passing log_instance_call_path the root_instance_id SHOULD be passed to optimize the performance of the query.
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
-	if keysAndValues["recipientType"] == srv {
+	if keysAndValues["sender_type"] == srv {
 		wEq = append(wEq, "workflow_id IS NULL")
 		wEq = append(wEq, "namespace_logs IS NULL")
 		wEq = append(wEq, "instance_logs IS NULL")
@@ -112,16 +97,13 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		levelValue, ok := level.(int)
-		if !ok {
-			return nil, fmt.Errorf("level should be a int")
-		}
-		wEq = append(wEq, fmt.Sprintf("level >= '%d' ", levelValue))
+		wEq = append(wEq, fmt.Sprintf("level >= '%v' ", level))
 	}
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	}
+
 	query := composeQuery(limit, offset, wEq)
 
 	resultList := make([]*gormLogMsg, 0)
@@ -132,10 +114,13 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		for k, e := range e.Tags {
-			m[k] = e
+		err := json.Unmarshal(e.Tags, &m)
+		if err != nil {
+			return nil, err
 		}
-		m["level"] = e.Level
+
+		levels := []string{"debug", "info", "error"}
+		m["level"] = levels[e.Level]
 		convertedList = append(convertedList, &logengine.LogEntry{
 			T:      e.T,
 			Msg:    e.Msg,
@@ -157,10 +142,10 @@ func composeQuery(limit, offset int, wEq []string) string {
 		}
 	}
 	q += " ORDER BY t ASC"
-	if limit >= 0 {
+	if limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-	if offset >= 0 {
+	if offset > 0 {
 		q += fmt.Sprintf(" OFFSET %d ", offset)
 	}
 
@@ -171,7 +156,7 @@ type gormLogMsg struct {
 	T                   time.Time
 	Msg                 string
 	Level               int
-	Tags                map[string]interface{}
+	Tags                []byte
 	WorkflowID          string
 	MirrorActivityID    string
 	InstanceLogs        string

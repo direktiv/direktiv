@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
+	"github.com/google/uuid"
 )
 
 func Test_Log(t *testing.T) {
@@ -19,10 +20,11 @@ func Test_Log(t *testing.T) {
 
 	ds := logengine.DataStoreBetterLogger{Store: logstore, LogError: func(template string, args ...interface{}) { t.Errorf(template, args...) }}
 	tags := make(map[string]interface{})
-	tags["workflow_id"] = "some-id"
-	ds.Log(tags, logengine.Error, "test %s", "msg")
+	id := uuid.New()
+	tags["workflow_id"] = id
+	ds.Errorf(context.Background(), id, tags, "test %s", "msg")
 	keysNValues := make(map[string]interface{})
-	keysNValues["workflow_id"] = "some-id"
+	keysNValues["workflow_id"] = id
 	got, err := ds.Store.Get(context.Background(), keysNValues, -1, -1)
 	if err != nil {
 		t.Error(err)
