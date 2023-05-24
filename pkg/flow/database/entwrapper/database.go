@@ -34,7 +34,6 @@ type EntClients struct {
 	VarRef            *ent.VarRefClient
 	VarData           *ent.VarDataClient
 	Instance          *ent.InstanceClient
-	LogMsg            *ent.LogMsgClient
 	InstanceRuntime   *ent.InstanceRuntimeClient
 }
 
@@ -56,7 +55,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 			VarRef:            db.Client.VarRef,
 			VarData:           db.Client.VarData,
 			Instance:          db.Client.Instance,
-			LogMsg:            db.Client.LogMsg,
 			InstanceRuntime:   db.Client.InstanceRuntime,
 		}
 	}
@@ -72,7 +70,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 		VarRef:            x.VarRef,
 		VarData:           x.VarData,
 		Instance:          x.Instance,
-		LogMsg:            x.LogMsg,
 		InstanceRuntime:   x.InstanceRuntime,
 	}
 }

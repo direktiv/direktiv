@@ -101,7 +101,7 @@ ent-%: ## Manually regenerates ent database package.
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-ent: ent-flow ent-secrets ent-metrics
+ent: ent-flow ent-metrics
 
 # Not need anymore, commented out for now to not accidentally building those
 # Cleans API client inside of pkg api

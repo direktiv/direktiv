@@ -6,9 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -21,49 +18,6 @@ const (
 	ns string = "ns"
 	wf string = "workflow"
 )
-
-var logsOrderings = []*orderingInfo{
-	{
-		db:           entlog.FieldT,
-		req:          "TIMESTAMP",
-		defaultOrder: ent.Asc,
-	},
-}
-
-var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error){
-	{
-		field: "ID",
-		ftype: "MATCH",
-	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		id, err := uuid.Parse(v)
-		if err != nil {
-			return nil, err
-		}
-		return query.Where(entlog.HasInstanceWith(entinst.IDEQ(id))), nil
-	},
-	{
-		field: "LEVEL",
-		ftype: "MATCH",
-	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		return query.Where(entlog.LevelEQ(v)), nil
-	},
-	{
-		field: "LEVEL",
-		ftype: "STARTING",
-	}: func(query *ent.LogMsgQuery, v string) (*ent.LogMsgQuery, error) {
-		levels := []string{"debug", "info", "error", "panic"}
-		switch v {
-		case "debug":
-		case "info":
-			levels = levels[1:]
-		case "error":
-			levels = levels[2:]
-		case "panic":
-			levels = levels[3:]
-		}
-		return query.Where(entlog.LevelIn(levels...)), nil
-	},
-}
 
 type fileAttributes filestore.File
 

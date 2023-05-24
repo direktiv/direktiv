@@ -313,33 +313,6 @@ func HasInstancesWith(preds ...predicate.Instance) predicate.Namespace {
 	})
 }
 
-// HasLogs applies the HasEdge predicate on the "logs" edge.
-func HasLogs() predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LogsTable, LogsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasLogsWith applies the HasEdge predicate on the "logs" edge with a given conditions (other predicates).
-func HasLogsWith(preds ...predicate.LogMsg) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(LogsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LogsTable, LogsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasVars applies the HasEdge predicate on the "vars" edge.
 func HasVars() predicate.Namespace {
 	return predicate.Namespace(func(s *sql.Selector) {
