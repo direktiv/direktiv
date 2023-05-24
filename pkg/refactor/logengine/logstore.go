@@ -52,9 +52,10 @@ func FilterLogs(logs []*LogEntry, keysAndValues map[string]interface{}) []*LogEn
 		"workflow_id",
 		"namespace_logs",
 		"mirror_activity_id",
+		"level",
 	}
 
-	for k := range keysAndValues {
+	for k := range keysAndValues { // the logstorer filters using db-cols
 		for _, v2 := range databaseCols {
 			if v2 == k {
 				delete(keysAndValues, k)
