@@ -193,6 +193,7 @@ const RegistriesList: FC = () => {
                 <Input
                   className="h-96"
                   data-testid="new-registry-pwd"
+                  type="password"
                   placeholder="password"
                   {...register("password")}
                 />
