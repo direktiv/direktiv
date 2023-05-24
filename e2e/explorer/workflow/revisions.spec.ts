@@ -81,19 +81,28 @@ const actionWaitForSuccessToast = async (page: Page) => {
     await expect(successToast, 'success toast should disappear after click toast-close').toBeHidden();
 }
 
-const testMakeRevision = async (page: Page) => {
+const actionCreateRevisionAndTag = async (page: Page) => {
+    await navigateToWorkflowEditor(page);
+    await testEditAndSaveWorkflow(page);
     await actionMakeRevision(page);
-    // check the success toast action button
-    const toastAction = page.getByTestId("make-revision-toast-success-action");
-    await expect(toastAction, 'success toast should appear after make-revision button click').toBeVisible();
+    await actionWaitForSuccessToast(page);
+    await navigateToRevisions(page);
 
-    await toastAction.click();
-    await expect(toastAction, 'success toast should disappear after toast action click').toBeHidden();
-    await expect(page, "page url should have revision param").toHaveURL(/revision=/);
-    const revisionId = page.url().split('revision=').pop()!;
-    await expect(page.getByText(revisionId), "revisionId should be in the revision list").toBeVisible();
-    //go back to the workflow editor
-    await page.getByTestId('workflow-tabs-trg-activeRevision').click()
+    //open context menu & click on create-tag
+    const firstRevision = await page.getByTestId(/workflow-revisions-link-item/).nth(1).innerText();
+    const firstItemMenuTrg = page.getByTestId(`workflow-revisions-item-menu-trg-${firstRevision}`);
+    await firstItemMenuTrg.click();
+
+    const createTagTrg = page.getByTestId(`workflow-revisions-trg-create-tag-dlg-${firstRevision}`);
+    await createTagTrg.click();
+
+    //type name and save & wait for the success toast
+    const inputName = page.getByTestId('dialog-create-tag-input-name');
+    const newTag = faker.random.alphaNumeric(9);
+    await inputName.type(newTag);
+    await page.getByTestId('dialog-create-tag-btn-submit').click();
+    await actionWaitForSuccessToast(page);
+    return [firstRevision, newTag];
 }
 
 test("it is possible to navigate to the revisions tab", async ({ page }) => {
@@ -187,4 +196,44 @@ test("it is possible to delete the revision", async ({
     await expect(revisions, "revisions should have the name latest").toHaveText("latest")
     await expect(revisions, "number of revisions should be one").toHaveCount(1);
 
+});
+
+test("it is possible to create tags", async ({ page }) => {
+    //make revision and create a tag for that
+    const [, newTag] = await actionCreateRevisionAndTag(page);
+
+    //validate all appears as expectation
+    const newRevisionItem = page.getByTestId(`workflow-revisions-link-item-${newTag}`);
+    await expect(newRevisionItem, "new revision item should appear in the revisions list").toBeVisible();
+    await page.reload();
+    await expect(newRevisionItem, "after reload, the new revision item should be visible too").toBeVisible();
+
+});
+
+test("it is possible to delete the tag by deleting the base revision", async ({ page }) => {
+    //create a revision, and a tag from that revision
+    const [revision, tag] = await actionCreateRevisionAndTag(page);
+
+    //delete the revision
+    const menuTrg = page.getByTestId(`workflow-revisions-item-menu-trg-${revision}`);
+    await menuTrg.click();
+    const deleteTrg = page.getByTestId(`workflow-revisions-trg-delete-dlg-${revision}`);
+    await deleteTrg.click();
+
+    const deleteDialog = page.getByTestId("dialog-delete-revision");
+    await expect(deleteDialog, "after click delete menu, it should show the delete confirm dialog").toBeVisible();
+    const submitButton = page.getByTestId("dialog-delete-revision-btn-submit");
+    await submitButton.click();
+
+    await actionWaitForSuccessToast(page);
+
+    //both the revision and the tag should disappear from the list
+    const revisionItem = page.getByTestId(`workflow-revisions-link-item-${revision}`)
+    await expect(revisionItem, "revision item should not be visible in the page").not.toBeVisible();
+    const tagItem = page.getByTestId(`workflow-revisions-link-item-${tag}`)
+    await expect(tagItem, "tag item should not be visible in the page").not.toBeVisible();
+
+    await page.reload();
+    await expect(revisionItem, "after reload, revision item should not be visible in the page").not.toBeVisible();
+    await expect(tagItem, "after reload, tag item should not be visible in the page").not.toBeVisible();
 });

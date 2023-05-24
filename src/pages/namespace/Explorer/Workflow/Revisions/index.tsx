@@ -158,6 +158,7 @@ const WorkflowRevisionsPage: FC = () => {
                               onClick={() => {
                                 setCreateTag(rev);
                               }}
+                              data-testid={`workflow-revisions-trg-create-tag-dlg-${rev.name}`}
                             >
                               <DropdownMenuItem>
                                 <Tag className="mr-2 h-4 w-4" />
