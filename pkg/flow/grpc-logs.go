@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	ns string = "ns"
+	ns string = "namespace"
 	wf string = "workflow"
 )
 
@@ -164,14 +164,14 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	}
 
 	le := make([]*logengine.LogEntry, 0)
+	qu := make(map[string]interface{})
+	qu["namespace_logs"] = cached.Namespace.ID
+	qu["sender_type"] = ns
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return nil, err
+	}
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		qu := make(map[string]interface{})
-		qu["namespace_logs"] = cached.Namespace.ID
-		qu["sender_type"] = ns
-		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-		if err != nil {
-			return err
-		}
 		res, err := store.Logs().Get(ctx, qu, -1, -1)
 		if err != nil {
 			return err
@@ -182,6 +182,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	if err != nil {
 		return nil, err
 	}
+	le = logengine.FilterLogs(le, qu)
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
 
@@ -213,15 +214,15 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 resend:
 
 	le := make([]*logengine.LogEntry, 0)
+	qu := make(map[string]interface{})
+	qu["namespace_logs"] = cached.Namespace.ID
+	qu["sender_type"] = ns
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		qu := make(map[string]interface{})
-		qu["namespace_logs"] = cached.Namespace.ID
-		qu["sender_type"] = ns
-		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
 		}
-		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, err := store.Logs().Get(ctx, qu, -1, -1)
 		if err != nil {
 			return err
 		}
@@ -232,10 +233,10 @@ resend:
 	if err != nil {
 		return err
 	}
-
+	leFiltered := logengine.FilterLogs(le, qu)
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(leFiltered))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return err
 	}
@@ -248,7 +249,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		req.Pagination.Offset += int32(len(le))
 	}
 
 	more := sub.Wait(ctx)
@@ -266,16 +267,15 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	if err != nil {
 		return nil, err
 	}
-
+	qu := make(map[string]interface{})
+	qu["workflow_id"] = f.ID
+	qu["sender_type"] = wf
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return nil, err
+	}
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		qu := make(map[string]interface{})
-		qu["workflow_id"] = f.ID
-		qu["sender_type"] = wf
-		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-		if err != nil {
-			return err
-		}
 		res, err := store.Logs().Get(ctx, qu, -1, -1)
 		if err != nil {
 			return err
@@ -286,6 +286,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	if err != nil {
 		return nil, err
 	}
+	le = logengine.FilterLogs(le, qu)
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Path = f.Path
@@ -314,16 +315,15 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 	var tailing bool
 
 resend:
-
+	qu := make(map[string]interface{})
+	qu["workflow_id"] = f.ID
+	qu["sender_type"] = wf
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return err
+	}
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		qu := make(map[string]interface{})
-		qu["workflow_id"] = f.ID
-		qu["sender_type"] = wf
-		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-		if err != nil {
-			return err
-		}
 		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
@@ -334,16 +334,12 @@ resend:
 	if err != nil {
 		return err
 	}
+	leFiltered := logengine.FilterLogs(le, qu)
+
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Path = f.Path
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return err
-	}
-
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return err
 	}
@@ -356,7 +352,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		req.Pagination.Offset += int32(len(le))
 	}
 
 	more := sub.Wait(ctx)
@@ -379,15 +375,15 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
+	qu := make(map[string]interface{})
+	qu["log_instance_call_path"] = prefix
+	qu["root_instance_id"] = root
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return nil, err
+	}
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		qu := make(map[string]interface{})
-		qu["log_instance_call_path"] = prefix
-		qu["root_instance_id"] = root
-		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-		if err != nil {
-			return err
-		}
 		res, err := store.Logs().Get(ctx, qu, -1, -1)
 		if err != nil {
 			return err
@@ -398,11 +394,12 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
+	leFiltered := logengine.FilterLogs(le, qu)
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
-	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(leFiltered))}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return nil, err
 	}
@@ -429,16 +426,15 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 		return err
 	}
 resend:
-
+	qu := make(map[string]interface{})
+	qu["log_instance_call_path"] = prefix
+	qu["root_instance_id"] = root
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return err
+	}
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		qu := make(map[string]interface{})
-		qu["log_instance_call_path"] = prefix
-		qu["root_instance_id"] = root
-		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-		if err != nil {
-			return err
-		}
 		res, err := store.Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
@@ -449,13 +445,13 @@ resend:
 	if err != nil {
 		return err
 	}
-
+	leFiltered := logengine.FilterLogs(le, qu)
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(leFiltered))}
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return err
 	}
@@ -468,7 +464,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		req.Pagination.Offset += int32(len(le))
 	}
 
 	more := sub.Wait(ctx)

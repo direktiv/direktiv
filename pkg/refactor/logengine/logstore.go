@@ -43,3 +43,45 @@ const (
 	Info           = iota
 	Error          = iota
 )
+
+func FilterLogs(logs []*LogEntry, keysAndValues map[string]interface{}) []*LogEntry {
+	databaseCols := []string{
+		"instance_logs",
+		"log_instance_call_path",
+		"root_instance_id",
+		"workflow_id",
+		"namespace_logs",
+		"mirror_activity_id",
+	}
+
+	for k := range keysAndValues {
+		for _, v2 := range databaseCols {
+			if v2 == k {
+				delete(keysAndValues, k)
+			}
+		}
+	}
+
+	filteredLogs := make([]*LogEntry, 0)
+
+	for _, l := range logs {
+		if shouldAdd(keysAndValues, l.Fields) {
+			filteredLogs = append(filteredLogs, l)
+		}
+	}
+
+	return filteredLogs
+}
+
+// returns true if all key values pairs are present in the fields and the values match
+// returns always true if keyAndValues is empty
+func shouldAdd(keysAndValues map[string]interface{}, fields map[string]interface{}) bool {
+	match := true
+	for k, e := range keysAndValues {
+		t, ok := fields[k]
+		if ok {
+			match = match && e == t
+		}
+	}
+	return match
+}
