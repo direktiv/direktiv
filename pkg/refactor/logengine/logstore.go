@@ -74,8 +74,8 @@ func FilterLogs(logs []*LogEntry, keysAndValues map[string]interface{}) []*LogEn
 	return filteredLogs
 }
 
-// returns true if all key values pairs are present in the fields and the values match
-// returns always true if keyAndValues is empty
+// returns true if all key values pairs are present in the fields and the values match.
+// returns always true if keyAndValues is empty.
 func shouldAdd(keysAndValues map[string]interface{}, fields map[string]interface{}) bool {
 	match := true
 	for k, e := range keysAndValues {
@@ -84,5 +84,6 @@ func shouldAdd(keysAndValues map[string]interface{}, fields map[string]interface
 			match = match && e == t
 		}
 	}
+
 	return match
 }
