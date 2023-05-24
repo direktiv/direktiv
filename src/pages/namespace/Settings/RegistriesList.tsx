@@ -115,7 +115,7 @@ const RegistriesList: FC = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                <Trash /> Delete
+                <Trash /> {t("components.dialog.header.confirm")}
               </DialogTitle>
             </DialogHeader>
             <div className="my-3">
@@ -135,7 +135,7 @@ const RegistriesList: FC = () => {
                 }
                 variant="destructive"
               >
-                Delete
+                {t("components.button.label.delete")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -149,7 +149,8 @@ const RegistriesList: FC = () => {
             >
               <DialogHeader>
                 <DialogTitle>
-                  <Trash /> Create
+                  <PlusCircle />
+                  {t("pages.settings.registries.create.description")}
                 </DialogTitle>
               </DialogHeader>
 
@@ -158,42 +159,57 @@ const RegistriesList: FC = () => {
                   className="w-[150px] text-right text-[15px]"
                   htmlFor="name"
                 >
-                  Name
+                  {t("pages.settings.registries.create.url")}
                 </label>
                 <Input
                   data-testid="new-registry-url"
-                  id="name"
-                  placeholder="registry-name"
+                  placeholder="https://example.com/registry"
                   {...register("url")}
                 />
               </fieldset>
 
-              <fieldset className="flex items-start gap-5">
+              <fieldset className="flex items-center gap-5">
+                <label
+                  className="w-[150px] text-right text-[15px]"
+                  htmlFor="name"
+                >
+                  {t("pages.settings.registries.create.user")}
+                </label>
                 <Input
                   className="h-96"
                   data-testid="new-registry-user"
+                  placeholder="user-name"
                   {...register("user")}
                 />
               </fieldset>
 
-              <fieldset className="flex items-start gap-5">
+              <fieldset className="flex items-center gap-5">
+                <label
+                  className="w-[150px] text-right text-[15px]"
+                  htmlFor="name"
+                >
+                  {t("pages.settings.registries.create.password")}
+                </label>
                 <Input
                   className="h-96"
                   data-testid="new-registry-pwd"
+                  placeholder="password"
                   {...register("password")}
                 />
               </fieldset>
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="ghost">Cancel</Button>
+                  <Button variant="ghost">
+                    {t("components.button.label.cancel")}
+                  </Button>
                 </DialogClose>
                 <Button
                   data-testid="registry-create-submit"
                   type="submit"
                   variant="primary"
                 >
-                  Create
+                  {t("components.button.label.create")}
                 </Button>
               </DialogFooter>
             </form>

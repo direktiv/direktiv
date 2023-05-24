@@ -158,7 +158,8 @@
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
         "create": {
-          "description": "Add a secret"
+          "description": "Add a secret",
+          "name": "Name"
         }
       },
       "registries": {
@@ -169,7 +170,10 @@
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
         "create": {
-          "description": "Add a container registry"
+          "description": "Add a container registry",
+          "url": "URL",
+          "user": "User",
+          "password": "Password"
         }
       },
       "theme": {
@@ -203,6 +207,18 @@
       "namespaceLabel": "Namespace",
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel"
+    },
+    "button": {
+      "label": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "delete": "Delete"
+      }
+    },
+    "dialog": {
+      "header": {
+        "confirm": "Confirmation required"
+      }
     }
   },
   "api": {

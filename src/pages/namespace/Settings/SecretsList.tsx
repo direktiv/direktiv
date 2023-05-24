@@ -124,7 +124,7 @@ const SecretsList: FC = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                <Trash /> Delete
+                <Trash /> {t("components.dialog.header.confirm")}
               </DialogTitle>
             </DialogHeader>
             <div className="my-3">
@@ -135,14 +135,16 @@ const SecretsList: FC = () => {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="ghost">Cancel</Button>
+                <Button variant="ghost">
+                  {t("components.button.label.cancel")}
+                </Button>
               </DialogClose>
               <Button
                 data-testid="secret-delete-confirm"
                 onClick={() => deleteSecretMutation({ secret: deleteSecret })}
                 variant="destructive"
               >
-                Delete
+                {t("components.button.label.delete")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -156,7 +158,8 @@ const SecretsList: FC = () => {
             >
               <DialogHeader>
                 <DialogTitle>
-                  <Trash /> Create
+                  <PlusCircle />{" "}
+                  {t("pages.settings.secrets.create.description")}
                 </DialogTitle>
               </DialogHeader>
 
@@ -165,7 +168,7 @@ const SecretsList: FC = () => {
                   className="w-[150px] text-right text-[15px]"
                   htmlFor="name"
                 >
-                  Name
+                  {t("pages.settings.secrets.create.name")}
                 </label>
                 <Input
                   data-testid="new-secret-name"
@@ -185,14 +188,16 @@ const SecretsList: FC = () => {
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="ghost">Cancel</Button>
+                  <Button variant="ghost">
+                    {t("components.button.label.cancel")}
+                  </Button>
                 </DialogClose>
                 <Button
                   data-testid="secret-create-submit"
                   type="submit"
                   variant="primary"
                 >
-                  Create
+                  {t("components.button.label.create")}
                 </Button>
               </DialogFooter>
             </form>
