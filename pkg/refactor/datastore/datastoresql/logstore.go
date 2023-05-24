@@ -63,7 +63,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	q := "INSERT INTO log_msgs ("
 	qTail := "VALUES ("
 	for i := range vals {
-		q += fmt.Sprintf("'%s'", cols[i])
+		q += fmt.Sprintf(cols[i])
 		qTail += fmt.Sprintf("$%d", i+1)
 		if i != len(vals)-1 {
 			q += ", "
@@ -86,7 +86,8 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 // - To query server-logs pass: "recipientType", "server" via keysAndValues
 // - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
 // - This method will search for any of followings keys and query all matching logs:
-// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id
+// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id,
+// "workflow", "state-id", "loop-index", "invoker", "namespace", "sender_type",	"state-type", "trace"
 // Any other not mentioned passed key value pair will be ignored.
 // Returned log-entries will have same or higher level as the passed one.
 // - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
@@ -112,15 +113,28 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		levelValue, ok := level.(int)
-		if !ok {
-			return nil, fmt.Errorf("level should be a int")
-		}
-		wEq = append(wEq, fmt.Sprintf("level >= '%d' ", levelValue))
+		wEq = append(wEq, fmt.Sprintf("level >= '%v' ", level))
 	}
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
+	}
+
+	jsonCols := []string{
+		"workflow",
+		"state-id",
+		"loop-index",
+		"invoker",
+		"namespace",
+		"sender_type",
+		"state-type",
+		"trace",
+	}
+
+	for _, k := range jsonCols {
+		if v, ok := keysAndValues[k]; ok {
+			wEq = append(wEq, fmt.Sprintf(" tags->> '%s' = '%s'", k, v))
+		}
 	}
 	query := composeQuery(limit, offset, wEq)
 
@@ -132,10 +146,13 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		for k, e := range e.Tags {
-			m[k] = e
+		err := json.Unmarshal(e.Tags, &m)
+		if err != nil {
+			return nil, err
 		}
-		m["level"] = e.Level
+
+		levels := []string{"debug", "info", "error"}
+		m["level"] = levels[e.Level]
 		convertedList = append(convertedList, &logengine.LogEntry{
 			T:      e.T,
 			Msg:    e.Msg,
@@ -157,10 +174,10 @@ func composeQuery(limit, offset int, wEq []string) string {
 		}
 	}
 	q += " ORDER BY t ASC"
-	if limit >= 0 {
+	if limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-	if offset >= 0 {
+	if offset > 0 {
 		q += fmt.Sprintf(" OFFSET %d ", offset)
 	}
 
@@ -171,7 +188,7 @@ type gormLogMsg struct {
 	T                   time.Time
 	Msg                 string
 	Level               int
-	Tags                map[string]interface{}
+	Tags                []byte
 	WorkflowID          string
 	MirrorActivityID    string
 	InstanceLogs        string

@@ -15,7 +15,7 @@ type LogStore interface {
 	// - All passed keysAndValues pair will be stored attached to the log-entry.
 	Append(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error
 	// returns a limited number of log-entries that have matching associated fields with the provided keysAndValues pairs
-	// starting a given offset. For no offset or unlimited log-entries in the result set the value to -1.
+	// starting a given offset. For no offset or unlimited log-entries in the result set the value to 0.
 	// - To query server-logs pass: "recipientType", "server" via keysAndValues
 	// - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
 	// - This method will search for any of followings keys and query all matching logs:
