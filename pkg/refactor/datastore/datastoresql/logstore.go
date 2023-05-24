@@ -83,7 +83,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 }
 
 // Get implements logengine.LogStore.
-// - To query server-logs pass: "recipientType", "server" via keysAndValues
+// - To query server-logs pass: "sender_type", "server" via keysAndValues
 // - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
 // - This method will search for any of followings keys and query all matching logs:
 // level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id,
@@ -94,7 +94,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 // when passing log_instance_call_path the root_instance_id SHOULD be passed to optimize the performance of the query.
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
-	if keysAndValues["recipientType"] == srv {
+	if keysAndValues["sender_type"] == srv {
 		wEq = append(wEq, "workflow_id IS NULL")
 		wEq = append(wEq, "namespace_logs IS NULL")
 		wEq = append(wEq, "instance_logs IS NULL")

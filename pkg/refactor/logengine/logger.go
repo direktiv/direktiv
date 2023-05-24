@@ -9,6 +9,26 @@ import (
 	"go.uber.org/zap"
 )
 
+type ConvenientLogger struct {
+	BetterLogger
+	AddTraceFrom func(ctx context.Context, toTags map[string]interface{}) map[string]interface{}
+}
+
+func (loggers ConvenientLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	tags["sender"] = recipientID
+	loggers.Log(loggers.AddTraceFrom(ctx, tags), Debug, msg, a...)
+}
+
+func (loggers ConvenientLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	tags["sender"] = recipientID
+	loggers.Log(loggers.AddTraceFrom(ctx, tags), Info, msg, a...)
+}
+
+func (loggers ConvenientLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
+	tags["sender"] = recipientID
+	loggers.Log(loggers.AddTraceFrom(ctx, tags), Error, msg, a...)
+}
+
 type BetterLogger interface {
 	// Logs a log message with contextual information, which are passed via tags.
 	// Remember to pass the trace-id for the logentry via the tags with the key trace.
@@ -62,7 +82,7 @@ type DataStoreBetterLogger struct {
 func (s DataStoreBetterLogger) Log(tags map[string]interface{}, level LogLevel, msg string, a ...interface{}) {
 	err := s.Store.Append(context.Background(), time.Now(), level, fmt.Sprintf(msg, a...), tags)
 	if err != nil {
-		s.LogError("writing action log to the database", "error", err)
+		s.LogError("writing better-logs to the database", "error", err)
 	}
 }
 
@@ -79,19 +99,19 @@ func (n NotifierBetterLogger) Log(tags map[string]interface{}, level LogLevel, m
 	_ = a
 	senderID, ok := tags["sender"]
 	if !ok {
-		n.LogError("cannot find sender id in action log tags", "tags", tags)
+		n.LogError("cannot find sender id in better-logs tags", "tags", tags)
 
 		return
 	}
-	senderType, ok := tags["senderType"]
+	senderType, ok := tags["sender_type"]
 	if !ok {
-		n.LogError("cannot find sender type in action log tags", "tags", tags)
+		n.LogError("cannot find sender type in better-logs tags", "tags", tags)
 
 		return
 	}
 	id, err := uuid.Parse(fmt.Sprintf("%s", senderID))
 	if err != nil {
-		n.LogError("cannot parse sender id in action log tags", "tags", tags, "error", err)
+		n.LogError("cannot parse sender id in better-logs tags", "tags", tags, "error", err)
 
 		return
 	}
