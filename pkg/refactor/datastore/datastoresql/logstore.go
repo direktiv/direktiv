@@ -26,12 +26,6 @@ type sqlLogStore struct {
 	db *gorm.DB
 }
 
-// Append implements logengine.LogStore.
-// - For instance-logs following Key Value pairs SHOULD be present: instance_logs, log_instance_call_path, root_instance_id
-// - For namespace-logs following Key Value pairs SHOULD be present: namespace_logs
-// - For mirror-logs following Key Value pairs SHOULD be present: mirror_activity_id
-// - For workflow-logs following Key Value pairs SHOULD be present: workflow_id
-// - All passed keysAndValues pair will be stored attached to the log-entry.
 func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
@@ -82,16 +76,6 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-// Get implements logengine.LogStore.
-// - To query server-logs pass: "sender_type", "server" via keysAndValues
-// - level SHOULD be passed as a string. Valid values are "debug", "info", "error", "panic".
-// - This method will search for any of followings keys and query all matching logs:
-// level, workflow_id, namespace_logs, log_instance_call_path, root_instance_id, mirror_activity_id,
-// "workflow", "state-id", "loop-index", "invoker", "namespace", "sender_type",	"state-type", "trace"
-// Any other not mentioned passed key value pair will be ignored.
-// Returned log-entries will have same or higher level as the passed one.
-// - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
-// when passing log_instance_call_path the root_instance_id SHOULD be passed to optimize the performance of the query.
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
 	if keysAndValues["sender_type"] == srv {
@@ -120,22 +104,6 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	}
 
-	jsonCols := []string{
-		"workflow",
-		"state-id",
-		"loop-index",
-		"invoker",
-		"namespace",
-		"sender_type",
-		"state-type",
-		"trace",
-	}
-
-	for _, k := range jsonCols {
-		if v, ok := keysAndValues[k]; ok {
-			wEq = append(wEq, fmt.Sprintf(" tags->> '%s' = '%s'", k, v))
-		}
-	}
 	query := composeQuery(limit, offset, wEq)
 
 	resultList := make([]*gormLogMsg, 0)
