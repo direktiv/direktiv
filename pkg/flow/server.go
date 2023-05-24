@@ -17,7 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -71,11 +70,10 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	metrics    *metrics.Client
-	logger     *internallogger.Logger // TODO: remove
-	loggerBeta logengine.BetterLogger
-	edb        *entwrapper.Database // TODO: remove
-	database   *database.CachedDatabase
+	metrics  *metrics.Client
+	logger   logengine.BetterLogger
+	edb      *entwrapper.Database // TODO: remove
+	database *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -106,7 +104,6 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 		return nil, err
 	}
 
-	srv.logger = internallogger.InitLogger()
 	srv.initJQ()
 
 	return srv, nil
@@ -199,7 +196,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-	srv.logger.StartLogWorkers(1, srv.edb, srv.pubsub, srv.sugar)
 
 	srv.sugar.Debug("Initializing timers.")
 
@@ -263,7 +259,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing mirror manager.")
 	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
-	srv.loggerBeta = logengine.ChainedBetterLogger{
+	srv.logger = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
 			AddTraceFrom: func(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
@@ -297,7 +293,7 @@ func (srv *server) start(ctx context.Context) error {
 		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
 			srv.sugar.Infow(msg, keysAndValues...)
 
-			tags := map[string]string{
+			tags := map[string]interface{}{
 				"recipientType": "mirror",
 				"mirror-id":     mirrorProcessID.String(),
 			}
@@ -307,7 +303,7 @@ func (srv *server) start(ctx context.Context) error {
 		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
 			srv.sugar.Errorw(msg, keysAndValues...)
 
-			tags := map[string]string{
+			tags := map[string]interface{}{
 				"recipientType": "mirror",
 				"mirror-id":     mirrorProcessID.String(),
 			}
@@ -401,8 +397,6 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Info("Flow server started.")
 
 	wg.Wait()
-
-	srv.logger.CloseLogWorkers()
 
 	if err != nil {
 		return err

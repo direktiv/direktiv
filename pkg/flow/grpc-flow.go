@@ -19,6 +19,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const srv string = "server"
+
 type flow struct {
 	*server
 	listener net.Listener
@@ -185,8 +187,9 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 	return &resp, nil
 }
 
-func (flow *flow) GetAttributes() map[string]string {
-	tags := make(map[string]string)
-	tags["recipientType"] = "server"
+func (flow *flow) GetAttributes() map[string]interface{} {
+	tags := make(map[string]interface{})
+	tags["sender_type"] = srv
+	tags["sender"] = flow.ID
 	return tags
 }

@@ -163,8 +163,6 @@ func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x 
 		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Error:
 		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case log.Panic:
-		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 
@@ -354,7 +352,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		caller.Step = im.Step()
 		caller.As = im.cached.Instance.As
 		caller.CallPath = im.cached.Instance.CallPath
-		caller.CallerState = im.GetState()
+		caller.CallerState = fmt.Sprintf("%v", im.GetState())
 		caller.Iterator = fmt.Sprintf("%d", args.Iterator)
 		sfim, err := im.engine.subflowInvoke(ctx, caller, im.cached, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {

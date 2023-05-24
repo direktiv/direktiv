@@ -586,7 +586,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logger.Debug(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
+	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {

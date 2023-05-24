@@ -11,7 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -220,14 +219,14 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	return nil
 }
 
-func (im *instanceMemory) GetAttributes() map[string]string {
-	tags := im.cached.GetAttributes(recipient.Instance)
+func (im *instanceMemory) GetAttributes() map[string]interface{} {
+	tags := im.cached.GetAttributes("instance")
 	for k, v := range im.tags {
 		tags[k] = v
 	}
 	if im.logic != nil {
 		tags["state-id"] = im.logic.GetID()
-		tags["state-type"] = im.logic.GetType().String()
+		tags["state-type"] = im.logic.GetType()
 	}
 	a := strings.Split(im.cached.Instance.InvokerState, ":")
 	if len(a) >= 1 && a[0] != "" {
@@ -239,8 +238,8 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 	return tags
 }
 
-func (im *instanceMemory) GetState() string {
-	tags := im.cached.GetAttributes(recipient.Instance)
+func (im *instanceMemory) GetState() interface{} {
+	tags := im.cached.GetAttributes("instance")
 	if im.logic != nil {
 		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
 	}

@@ -198,6 +198,21 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	 		    CONSTRAINT "fk_namespaces_secrets"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
+	CREATE TABLE IF NOT EXISTS "log_msgs" 
+			 (				
+				 "oid" uuid,
+				 "t" timestamptz,
+				 "msg" text,
+				 "level" integer,
+				 "root_instance_id" uuid,
+				 "log_instance_call_path" text,
+				 "tags" jsonb,
+				 "workflow_id" uuid,
+				 "mirror_activity_id" uuid,
+				 "instance_logs" uuid,
+				 "namespace_logs" uuid,
+				 PRIMARY KEY ("oid")
+			 );
 `)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize filesystem tables: %w\n", err)

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -48,12 +49,13 @@ func (cached *CacheData) Dir() string {
 }
 
 type HasAttributes interface {
-	GetAttributes() map[string]string
+	GetAttributes() map[string]interface{}
 }
 
-func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) map[string]string {
-	m := make(map[string]string)
-	m["recipientType"] = string(recipientType)
+func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) map[string]interface{} {
+	m := make(map[string]interface{})
+	m["sender_type"] = recipientType
+
 	for _, x := range a {
 		y := x.GetAttributes()
 		for k, v := range y {
@@ -63,38 +65,56 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 	return m
 }
 
-func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]string {
-	tags := make(map[string]string)
-	tags["recipientType"] = string(recipientType)
+func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]interface{} {
+	tags := make(map[string]interface{})
+	callpath := ""
+	tags["sender_type"] = recipientType
+	switch recipientType {
+	case "namespace":
+		tags["sender"] = cached.Namespace.ID
+	case "instance":
+		tags["sender"] = cached.Instance.ID
+		callpath = internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+		rootInstance, err := internallogger.GetRootinstanceID(callpath)
+		if err != nil {
+			panic("malformed callpath")
+		}
+		tags["root_instance_id"] = rootInstance
+	case "workflow":
+		tags["sender"] = cached.File.ID
+	}
 	if cached.Instance != nil {
-		tags["instance-id"] = cached.Instance.ID.String()
+		tags["instance_logs"] = cached.Instance.ID
 		tags["invoker"] = cached.Instance.Invoker
-		tags["callpath"] = cached.Instance.CallPath
 		tags["workflow"] = GetWorkflow(cached.Instance.As)
 	}
-
+	if callpath != "" {
+		tags["log_instance_call_path"] = callpath
+	}
 	if cached.File != nil {
-		tags["workflow-id"] = cached.File.ID.String()
+		tags["workflow_id"] = cached.File.ID
 	}
 
 	if cached.Namespace != nil {
 		tags["namespace"] = cached.Namespace.Name
-		tags["namespace-id"] = cached.Namespace.ID.String()
+		tags["namespace_logs"] = cached.Namespace.ID
 	}
 	return tags
 }
 
-func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
-	tags := cached.GetAttributes(recipient.Namespace)
-	tags["mirror-id"] = m.ID.String()
-	tags["recipientType"] = "mirror"
+func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]interface{} {
+	tags := cached.GetAttributes("namespace")
+	tags["mirror_activity_id"] = m.ID
+	tags["sender_type"] = "mirror"
+	tags["sender"] = m.ID
 	return tags
 }
 
-func (cached *CacheData) SentLogs(m *Mirror) map[string]string {
-	tags := cached.GetAttributes(recipient.Namespace)
-	tags["mirror-id"] = m.ID.String()
-	tags["recipientType"] = "mirror"
+func (cached *CacheData) SentLogs(m *Mirror) map[string]interface{} {
+	tags := cached.GetAttributes("namespace")
+	tags["mirror_activity_id"] = m.ID
+	tags["sender"] = m.ID
+	tags["sender_type"] = "mirror"
 	return tags
 }
 
