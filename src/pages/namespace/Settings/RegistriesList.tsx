@@ -1,3 +1,4 @@
+import { Boxes, PlusCircle, Trash } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -8,7 +9,6 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { PlusCircle, SquareAsterisk, Trash } from "lucide-react";
 import {
   RegistryFormSchema,
   RegistryFormSchemaType,
@@ -69,7 +69,7 @@ const RegistriesList: FC = () => {
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="mb-3 flex flex-row justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-          <SquareAsterisk className="h-5" />
+          <Boxes className="h-5" />
           {t("pages.settings.registries.list.title")}
         </h3>
 
@@ -122,7 +122,9 @@ const RegistriesList: FC = () => {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="ghost">Cancel</Button>
+                <Button variant="ghost">
+                  {t("components.button.label.cancel")}
+                </Button>
               </DialogClose>
               <Button
                 data-testid="registry-delete-confirm"
