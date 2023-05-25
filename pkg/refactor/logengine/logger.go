@@ -99,9 +99,7 @@ type logMessage struct {
 	level          LogLevel
 }
 
-func (cls *CachedSQLLogStore) LogWorker() {
-	// defer cls.logWorkersWG.Done()
-
+func (cls *CachedSQLLogStore) logWorker() {
 	for {
 		l, more := <-cls.logQueue
 		if !more {
@@ -123,7 +121,7 @@ func NewCachedLogger(
 ) (BetterLogger, func(), func()) {
 	cls := CachedSQLLogStore{storeAdd: storeAdd, callback: pub, logError: logError, logQueue: make(chan *logMessage, queueSize)}
 
-	return &cls, cls.LogWorker, cls.closeLogWorkers
+	return &cls, cls.logWorker, cls.closeLogWorkers
 }
 
 func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
