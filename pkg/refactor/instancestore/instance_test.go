@@ -177,8 +177,8 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 	}
 
 	expect = []byte(``)
-	if !isIdenticalBytes(expect, idata.TemporaryMemory) {
-		t.Errorf("unexpected idata.TemporaryMemory, got: >%v<, want: >%v<", idata.TemporaryMemory, expect)
+	if !isIdenticalBytes(expect, idata.StateMemory) {
+		t.Errorf("unexpected idata.StateMemory, got: >%v<, want: >%v<", idata.StateMemory, expect)
 
 		return
 	}
@@ -322,8 +322,8 @@ func assertInstanceDataIsSummary(t *testing.T, idata *instancestore.InstanceData
 		return
 	}
 
-	if idata.TemporaryMemory != nil {
-		t.Errorf("unexpected idata.TemporaryMemory")
+	if idata.StateMemory != nil {
+		t.Errorf("unexpected idata.StateMemory")
 
 		return
 	}

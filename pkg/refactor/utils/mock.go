@@ -149,7 +149,7 @@ func NewMockGorm() (*gorm.DB, error) {
 				"children_info" blob NOT NULL,
 				"input" blob NOT NULL,
 				"live_data" blob NOT NULL,
-				"temporary_memory" blob NOT NULL,
+				"state_memory" blob NOT NULL,
 				"output" blob,
 				"error_message" blob,
 				"metadata" blob,

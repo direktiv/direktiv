@@ -13,31 +13,31 @@ var (
 )
 
 type InstanceData struct {
-	ID              uuid.UUID
-	NamespaceID     uuid.UUID
-	WorkflowID      uuid.UUID
-	RevisionID      uuid.UUID
-	RootInstanceID  uuid.UUID
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	EndedAt         *time.Time
-	Deadline        *time.Time
-	Status          string // TODO: alan, turn this into an enum so we can do arithmetic comparisons on it
-	CalledAs        string
-	ErrorCode       string
-	Invoker         string
-	Definition      []byte // TODO: alan, we should strip comments
-	Settings        []byte
-	DescentInfo     []byte
-	TelemetryInfo   []byte
-	RuntimeInfo     []byte
-	ChildrenInfo    []byte
-	Input           []byte
-	LiveData        []byte
-	TemporaryMemory []byte
-	Output          []byte
-	ErrorMessage    []byte
-	Metadata        []byte
+	ID             uuid.UUID
+	NamespaceID    uuid.UUID
+	WorkflowID     uuid.UUID
+	RevisionID     uuid.UUID
+	RootInstanceID uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	EndedAt        *time.Time
+	Deadline       *time.Time
+	Status         string // TODO: alan, turn this into an enum so we can do arithmetic comparisons on it
+	CalledAs       string
+	ErrorCode      string
+	Invoker        string
+	Definition     []byte // TODO: alan, we should strip comments
+	Settings       []byte
+	DescentInfo    []byte
+	TelemetryInfo  []byte
+	RuntimeInfo    []byte
+	ChildrenInfo   []byte
+	Input          []byte
+	LiveData       []byte
+	StateMemory    []byte
+	Output         []byte
+	ErrorMessage   []byte
+	Metadata       []byte
 	// TODO: alan, should we consider compressing these binary fields?
 }
 
