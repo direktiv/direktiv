@@ -73,6 +73,8 @@ type InstanceDataQuery interface {
 	GetSummary(ctx context.Context) (*InstanceData, error)
 
 	// TODO: alan, implement more fine-grained getters?
+	// - get everything except blobs that could be large AND are almost never read by the engine, only written: (input, output, error_message, metadata)
+	// - what about things that are only sometimes relevent to the engine? (children_info)
 }
 
 type Store interface {
