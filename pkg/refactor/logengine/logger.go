@@ -83,43 +83,9 @@ func (loggers ChainedBetterLogger) Errorf(ctx context.Context, recipientID uuid.
 	}
 }
 
-// DataStoreBetterLogger records log information into the datastore so that UI frontend page can show log data about
-// different objects.
-type DataStoreBetterLogger struct {
-	Store    LogStore
-	LogError func(template string, args ...interface{})
-}
-
-func (s DataStoreBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Debug, fmt.Sprintf(msg, a...), tags)
-	if err != nil {
-		s.LogError("writing better-logs to the database", "error", err)
-	}
-}
-
-func (s DataStoreBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Info, fmt.Sprintf(msg, a...), tags)
-	if err != nil {
-		s.LogError("writing better-logs to the database", "error", err)
-	}
-}
-
-func (s DataStoreBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Error, fmt.Sprintf(msg, a...), tags)
-	if err != nil {
-		s.LogError("writing better-logs to the database", "error", err)
-	}
-}
-
 type CachedSQLLogStore struct {
 	logQueue chan *logMessage
-	store    func(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error
+	storeAdd func(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error
 	callback func(objectID uuid.UUID, objectType string)
 	logError func(template string, args ...interface{})
 }
@@ -141,7 +107,7 @@ func (cls *CachedSQLLogStore) LogWorker() {
 		if !more {
 			return
 		}
-		err := cls.store(context.Background(), l.time, l.level, l.msg, l.tags)
+		err := cls.storeAdd(context.Background(), l.time, l.level, l.msg, l.tags)
 		if err != nil {
 			cls.logError("cachedSQLLogStore error storing logs, %v", err)
 		}
@@ -155,7 +121,7 @@ func NewCachedLogger(
 	pub func(objectID uuid.UUID, objectType string),
 	logError func(template string, args ...interface{}),
 ) (BetterLogger, func(), func()) {
-	cls := CachedSQLLogStore{store: storeAdd, callback: pub, logError: logError, logQueue: make(chan *logMessage, queueSize)}
+	cls := CachedSQLLogStore{storeAdd: storeAdd, callback: pub, logError: logError, logQueue: make(chan *logMessage, queueSize)}
 
 	return &cls, cls.LogWorker, cls.closeLogWorkers
 }
