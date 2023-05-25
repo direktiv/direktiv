@@ -8,12 +8,10 @@ import (
 
 // TODO: alan, move this outside this package?
 type ParentInfo struct {
-	ID          string
-	State       string
-	Step        int
-	CallPath    string // TODO: alan, is this still necessary? Is there still value in it even if redundant?
-	CallerState string // TODO: alan, is this not redundant with ParentState?
-	Branch      int    // NOTE: renamed iterator to branch
+	ID     string
+	State  string
+	Step   int
+	Branch int // NOTE: renamed iterator to branch
 }
 
 type DescentInfo struct {
@@ -54,9 +52,7 @@ type Settings struct {
 
 // TODO: alan, move this outside this package?
 type TelemetryInfo struct {
-	Version      string // to let us identify and correct outdated versions of this struct
-	InvokerState string
-	Callpath     string
-	TraceID      string
-	SpanID       string
+	Version string // to let us identify and correct outdated versions of this struct
+	TraceID string
+	SpanID  string
 }
