@@ -126,6 +126,37 @@ func NewMockGorm() (*gorm.DB, error) {
 	 		    CONSTRAINT "fk_namespaces_secrets"
 				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
+	CREATE TABLE IF NOT EXISTS "instances_v2"
+            (
+                "id" text,
+				"namespace_id" text NOT NULL,
+				"workflow_id" text NOT NULL,
+				"revision_id" text NOT NULL,
+				"root_instance_id" text NOT NULL,
+				"created_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"ended_at" datetime,
+				"deadline" datetime,
+				"status" text NOT NULL,
+				"called_as" text NOT NULL,
+				"error_code" text NOT NULL,
+				"invoker" text NOT NULL,
+				"definition" blob NOT NULL,
+				"settings" blob NOT NULL,
+				"descent_info" blob NOT NULL,
+				"telemetry_info" blob NOT NULL,
+				"runtime_info" blob NOT NULL,
+				"children_info" blob NOT NULL,
+				"input" blob NOT NULL,
+				"live_data" blob NOT NULL,
+				"temporary_memory" blob NOT NULL,
+				"output" blob,
+				"error_message" blob,
+				"metadata" blob,
+				PRIMARY KEY ("id"),
+				CONSTRAINT "fk_namespaces_instances"
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+			);
 `)
 
 	if res.Error != nil {
