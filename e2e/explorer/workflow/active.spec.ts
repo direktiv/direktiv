@@ -1,4 +1,5 @@
 import { Page, expect, test } from "@playwright/test";
+import { actionMakeRevision, actionRevertRevision, actionWaitForSuccessToast } from "../../utils/workflow/actions";
 import {
   createNamespace,
   deleteNamespace,
@@ -16,7 +17,6 @@ const defaultDescription = 'A simple \'no-op\' state that returns \'Hello world!
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
   workflow = await createWorkflow(namespace, faker.git.shortSha() + '.yaml');
-  test.setTimeout(120000)
 });
 
 test.afterEach(async () => {
@@ -24,7 +24,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-const navigateToActiveWorkflow = async (page: Page) => {
+const actionNavigateToActiveWorkflow = async (page: Page) => {
   await page.goto(`${namespace}/explorer/workflow/active/${workflow}`)
 }
 const testSaveWorkflow = async (page: Page) => {
@@ -52,11 +52,7 @@ const testSaveWorkflow = async (page: Page) => {
 }
 
 const testMakeRevision = async (page: Page) => {
-  const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
-  await revisionTrigger.click();
-  const makeRevisionButton = page.getByTestId("workflow-editor-btn-make-revision");
-  await makeRevisionButton.click();
-
+  await actionMakeRevision(page);
   // check the success toast action button
   const toastAction = page.getByTestId("make-revision-toast-success-action");
   await expect(toastAction, 'success toast should appear after make-revision button click').toBeVisible();
@@ -102,35 +98,29 @@ test("it is possible to navigate to the active revision", async ({ page }) => {
 test("it is possible to save the workflow", async ({
   page,
 }) => {
+  // page.getByText() takes long than getByTestId
+  test.setTimeout(20000);
   // click on the description so it can have input focus
-  await navigateToActiveWorkflow(page);
+  await actionNavigateToActiveWorkflow(page);
   await testSaveWorkflow(page);
 });
 
 test("it is possible to make the revision", async ({
   page,
 }) => {
-  await navigateToActiveWorkflow(page);
+  await actionNavigateToActiveWorkflow(page);
   await testMakeRevision(page);
 });
 
 test("it is possible to revert the revision", async ({
   page,
 }) => {
-  await navigateToActiveWorkflow(page);
+  test.setTimeout(20000);
+  await actionNavigateToActiveWorkflow(page);
   await testMakeRevision(page);
   await testSaveWorkflow(page);
-  //now click on Revision Menu Trigger
-  const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
-  await revisionTrigger.click();
-  const revertRevisionButton = page.getByTestId("workflow-editor-btn-revert-revision");
-  await revertRevisionButton.click();
-
-  // check the success toast success
-  const successToast = page.getByTestId("toast-success");
-  await expect(successToast, 'success toast should appear after revert-revision button click').toBeVisible();
-  await page.getByTestId("toast-close").click();
-  await expect(successToast, 'success toast should disappear after click toast-close').toBeHidden();
+  await actionRevertRevision(page);
+  await actionWaitForSuccessToast(page);
 
   // check the description is reverted
   await expect(page.getByText(defaultDescription), "description should be reverted to the default").toBeVisible();

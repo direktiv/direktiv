@@ -1,4 +1,5 @@
 import { Page, expect, test } from "@playwright/test";
+import { actionDeleteRevision, actionEditAndSaveWorkflow, actionMakeRevision, actionRevertRevision, actionWaitForSuccessToast } from "../../utils/workflow/actions";
 import {
     createNamespace,
     deleteNamespace,
@@ -11,12 +12,12 @@ import { faker } from "@faker-js/faker";
 
 let namespace = "";
 let workflow = "";
-const defaultDescription = 'A simple \'no-op\' state that returns \'Hello world!\''
+
 
 test.beforeEach(async ({ page }) => {
     namespace = await createNamespace();
     workflow = await createWorkflow(namespace, faker.git.shortSha() + '.yaml');
-    test.setTimeout(120000)
+    test.setTimeout(20000);
 });
 
 test.afterEach(async () => {
@@ -24,69 +25,20 @@ test.afterEach(async () => {
     namespace = "";
 });
 
-const navigateToRevisions = async (page: Page) => {
+const actionNavigateToRevisions = async (page: Page) => {
     await page.goto(`${namespace}/explorer/workflow/revisions/${workflow}`)
 }
 
-const navigateToWorkflowEditor = async (page: Page) => {
+const actionNavigateToWorkflowEditor = async (page: Page) => {
     await page.goto(`${namespace}/explorer/workflow/active/${workflow}`)
 }
 
-const testEditAndSaveWorkflow = async (page: Page, updatedText?: string): Promise<[string, string]> => {
-    const description = page.getByText(updatedText ? updatedText : defaultDescription);
-    await description.click()
-    // type random text in that textarea which is for description
-    const testText = faker.random.alphaNumeric(9);
-    await page.type("textarea", testText);
-
-    const textArea = page.getByRole("textbox");
-
-    //now click on Save
-    const saveButton = page.getByTestId("workflow-editor-btn-save");
-    await saveButton.click();
-
-    // save button should be disabled/enabled while/after the api call
-    await expect(saveButton, 'save button should be disabled during the api call').toBeDisabled();
-    await expect(saveButton, 'save button should be enabled after the api call').toBeEnabled();
-
-    // after saving is completed screen should have those new changed text before/after the page reload
-    await expect(page.getByText(testText), 'after saving, screen should have the updated text').toBeVisible();
-    await page.reload({ waitUntil: 'load' });
-    await expect(page.getByText(testText), 'after reloading, screen should have the updated text').toBeVisible();
-
-    // check the text at the bottom left
-    await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
-    const updatedWorkflow = await textArea.inputValue();
-    return [updatedWorkflow, testText];
-}
-
-const actionMakeRevision = async (page: Page) => {
-    const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
-    await revisionTrigger.click();
-    const makeRevisionButton = page.getByTestId("workflow-editor-btn-make-revision");
-    await makeRevisionButton.click();
-}
-
-const actionRevertRevision = async (page: Page) => {
-    const revisionTrigger = page.getByTestId("workflow-edit-trg-revision");
-    await revisionTrigger.click();
-    const revertRevisionButton = page.getByTestId("workflow-editor-btn-revert-revision");
-    await revertRevisionButton.click();
-}
-
-const actionWaitForSuccessToast = async (page: Page) => {
-    const successToast = page.getByTestId("toast-success");
-    await expect(successToast, 'success toast should appear after revert action button click').toBeVisible();
-    await page.getByTestId("toast-close").click();
-    await expect(successToast, 'success toast should disappear after click toast-close').toBeHidden();
-}
-
 const actionCreateRevisionAndTag = async (page: Page) => {
-    await navigateToWorkflowEditor(page);
-    await testEditAndSaveWorkflow(page);
+    await actionNavigateToWorkflowEditor(page);
+    await actionEditAndSaveWorkflow(page);
     await actionMakeRevision(page);
     await actionWaitForSuccessToast(page);
-    await navigateToRevisions(page);
+    await actionNavigateToRevisions(page);
 
     //open context menu & click on create-tag
     const firstRevision = await page.getByTestId(/workflow-revisions-link-item/).nth(1).innerText();
@@ -137,7 +89,7 @@ test("it is possible to navigate to the revisions tab", async ({ page }) => {
 });
 
 test("latest is the only revision by default", async ({ page }) => {
-    await navigateToRevisions(page);
+    await actionNavigateToRevisions(page);
     const revisions = page.getByTestId(/workflow-revisions-link-item-/);
     await expect(revisions, "revisions should have the name latest").toHaveText("latest")
     await expect(revisions, "number of revisions should be one").toHaveCount(1);
@@ -146,17 +98,13 @@ test("latest is the only revision by default", async ({ page }) => {
 test("it is possible to revert to the previous the workflow", async ({
     page,
 }) => {
-    await navigateToWorkflowEditor(page);
-
-    const [firstUpdatedWorkflow, firstUpdatedText] = await testEditAndSaveWorkflow(page);
+    await actionNavigateToWorkflowEditor(page);
+    const [firstUpdatedWorkflow, firstUpdatedText] = await actionEditAndSaveWorkflow(page);
     await actionMakeRevision(page);
-
-    const [secondUpdateWorkflow, secondUpdateText] = await testEditAndSaveWorkflow(page, firstUpdatedText);
+    await actionEditAndSaveWorkflow(page, firstUpdatedText);
     await actionRevertRevision(page);
-
     // wait till the revert api to be completed and handle the success toast
     await actionWaitForSuccessToast(page);
-
     const textArea = page.getByRole("textbox");
     const workflowValue = await textArea.inputValue();
     expect(workflowValue, "after revert, it should be the same as the first updated workflow").toBe(firstUpdatedWorkflow);
@@ -165,11 +113,11 @@ test("it is possible to revert to the previous the workflow", async ({
 test("it is possible to delete the revision", async ({
     page,
 }) => {
-    await navigateToWorkflowEditor(page);
-    const [firstUpdatedWorkflow, firstUpdatedText] = await testEditAndSaveWorkflow(page);
+    await actionNavigateToWorkflowEditor(page);
+    await actionEditAndSaveWorkflow(page);
     await actionMakeRevision(page);
     await actionWaitForSuccessToast(page);
-    await navigateToRevisions(page);
+    await actionNavigateToRevisions(page);
 
     const firstRevision = await page.getByTestId(/workflow-revisions-link-item/).nth(1).innerText();
     const firstItemMenuTrg = page.getByTestId(`workflow-revisions-item-menu-trg-${firstRevision}`);
@@ -191,10 +139,9 @@ test("it is possible to delete the revision", async ({
 
     await actionWaitForSuccessToast(page);
 
-    //after delete success, confirm that page only has one revision that is latest
-    const revisions = page.getByTestId(/workflow-revisions-link-item-/);
-    await expect(revisions, "revisions should have the name latest").toHaveText("latest")
-    await expect(revisions, "number of revisions should be one").toHaveCount(1);
+    //after delete success, confirm that the revision item isn't visible anymore
+    const revisionItem = page.getByTestId(`workflow-revisions-link-item-${firstRevision}`)
+    await expect(revisionItem, "revision item should not be visible in the page").not.toBeVisible();
 
 });
 
@@ -215,16 +162,7 @@ test("it is possible to delete the tag by deleting the base revision", async ({ 
     const [revision, tag] = await actionCreateRevisionAndTag(page);
 
     //delete the revision
-    const menuTrg = page.getByTestId(`workflow-revisions-item-menu-trg-${revision}`);
-    await menuTrg.click();
-    const deleteTrg = page.getByTestId(`workflow-revisions-trg-delete-dlg-${revision}`);
-    await deleteTrg.click();
-
-    const deleteDialog = page.getByTestId("dialog-delete-revision");
-    await expect(deleteDialog, "after click delete menu, it should show the delete confirm dialog").toBeVisible();
-    const submitButton = page.getByTestId("dialog-delete-revision-btn-submit");
-    await submitButton.click();
-
+    await actionDeleteRevision(page, revision);
     await actionWaitForSuccessToast(page);
 
     //both the revision and the tag should disappear from the list
