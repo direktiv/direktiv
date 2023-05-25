@@ -263,6 +263,14 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing mirror manager.")
 	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
+
+	logger, logworker, closeLogger := logengine.NewCachedLogger(50,
+		store.Logs().Append,
+		func(objectID uuid.UUID, objectType string) {
+			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+		},
+		srv.sugar.Errorf,
+	)
 	srv.loggerBeta = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
@@ -273,11 +281,13 @@ func (srv *server) start(ctx context.Context) error {
 				return toTags
 			},
 		},
-		logengine.DataStoreBetterLogger{Store: store.Logs(), LogError: srv.sugar.Errorf},
-		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
-		}, LogError: srv.sugar.Errorf},
+		logger,
 	}
+
+	go func() {
+		defer closeLogger()
+		logworker()
+	}()
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
