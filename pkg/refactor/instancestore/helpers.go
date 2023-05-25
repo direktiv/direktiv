@@ -52,7 +52,8 @@ type Settings struct {
 
 // TODO: alan, move this outside this package?
 type TelemetryInfo struct {
-	Version string // to let us identify and correct outdated versions of this struct
-	TraceID string
-	SpanID  string
+	Version  string // to let us identify and correct outdated versions of this struct
+	TraceID  string
+	SpanID   string
+	CallPath string
 }
