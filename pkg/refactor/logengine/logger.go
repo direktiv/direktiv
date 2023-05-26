@@ -161,4 +161,3 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 		level:          Info,
 	}
 }
-
