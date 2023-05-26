@@ -1,5 +1,5 @@
 import { Page, expect, test } from "@playwright/test";
-import { actionDeleteRevision, actionEditAndSaveWorkflow, actionMakeRevision, actionRevertRevision, actionWaitForSuccessToast } from "../../utils/workflow/actions";
+import { actionDeleteRevision, actionEditAndSaveWorkflow, actionMakeRevision, actionRevertRevision, actionWaitForSuccessToast } from "./utils";
 import {
     createNamespace,
     deleteNamespace,
