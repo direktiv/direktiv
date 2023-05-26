@@ -145,20 +145,22 @@ test("it is possible to delete the revision", async ({
 });
 
 test("it is possible to create and delete tags", async ({ page }) => {
-    //make revision and create a tag for that
-    const [, newTag] = await actionCreateRevisionAndTag(page);
+    // make revision and create a tag for that
+    const [revision, tag] = await actionCreateRevisionAndTag(page);
 
-    //validate all appears as expectation
-    const newRevisionItem = page.getByTestId(`workflow-revisions-link-item-${newTag}`);
-    await expect(newRevisionItem, "new revision item should appear in the revisions list").toBeVisible();
+    // validate all appears as expectation
+    const tagItem = page.getByTestId(`workflow-revisions-link-item-${tag}`);
+    const revisionItem = page.getByTestId(`workflow-revisions-link-item-${revision}`)
+    await expect(revisionItem, "revision item should appear in the revisions list").toBeVisible();
+    await expect(tagItem, "tag item should appear in the revisions list").toBeVisible();
     await page.reload();
-    await expect(newRevisionItem, "after reload, the new revision item should be visible too").toBeVisible();
+    await expect(tagItem, "after reload, the new revision item should still be visible").toBeVisible();
 
-    await actionDeleteRevision(page, newTag);
+    await actionDeleteRevision(page, tag);
     await actionWaitForSuccessToast(page);
 
-    const tagItem = page.getByTestId(`workflow-revisions-link-item-${newTag}`)
-    await expect(tagItem, "tag item should not be visible in the page").not.toBeVisible();
+    await expect(tagItem, "after deleting, tag item should not exist").not.toBeVisible();
+    await expect(revisionItem, "revision item should still exist").toBeVisible();
 });
 
 test("it is possible to delete the tag by deleting the base revision", async ({ page }) => {
