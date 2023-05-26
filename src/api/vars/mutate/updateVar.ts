@@ -1,4 +1,4 @@
-import { VarCreatedSchema, VarCreatedSchemaType } from "../schema";
+import { VarUpdatedSchema, VarUpdatedSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/utils";
@@ -7,17 +7,17 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { varKeys } from "..";
 
-const createVar = apiFactory({
+const updateVar = apiFactory({
   url: ({ namespace, name }: { namespace: string; name: string }) =>
     `/api/namespaces/${namespace}/vars/${name}`,
   method: "PUT",
-  schema: VarCreatedSchema,
+  schema: VarUpdatedSchema,
 });
 
-export const useCreateVar = ({
+export const useUpdateVar = ({
   onSuccess,
 }: {
-  onSuccess?: (data: VarCreatedSchemaType) => void;
+  onSuccess?: (data: VarUpdatedSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -29,7 +29,7 @@ export const useCreateVar = ({
   }
 
   const mutationFn = ({ name, content }: { name: string; content: string }) =>
-    createVar({
+    updateVar({
       apiKey: apiKey ?? undefined,
       payload: content,
       urlParams: {
@@ -47,8 +47,8 @@ export const useCreateVar = ({
         })
       );
       toast({
-        title: "Variable created",
-        description: `Variable ${data.key} was created.`,
+        title: "Variable saved",
+        description: `Variable ${data.key} was saved.`,
         variant: "success",
       });
       onSuccess?.(data);

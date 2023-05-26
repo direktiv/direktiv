@@ -1,210 +1,18 @@
-import { Braces, Pencil, PlusCircle, Trash } from "lucide-react";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { Braces, PlusCircle } from "lucide-react";
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
-import { Trans, useTranslation } from "react-i18next";
-import {
-  VarFormSchema,
-  VarFormSchemaType,
-  VarSchemaType,
-} from "~/api/vars/schema";
-import { useVarContent, useVars } from "~/api/vars/query/get";
+import { Table, TableBody } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import Input from "~/design/Input";
-import { Textarea } from "~/design/TextArea";
-import { useCreateVar } from "~/api/vars/mutate/createVar";
+import Create from "./Create";
+import Delete from "./Delete";
+import Edit from "./Edit";
+import ItemRow from "./ItemRow";
+import { VarSchemaType } from "~/api/vars/schema";
 import { useDeleteVar } from "~/api/vars/mutate/deleteVar";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-// TODO: Componentize this? Then type needs to be more universal
-type ItemRowProps = {
-  item: VarSchemaType;
-  onDelete: (item: VarSchemaType) => void;
-  onEdit?: () => void;
-};
-
-const ItemRow = ({ item, onDelete, onEdit }: ItemRowProps) => (
-  <TableRow>
-    <TableCell>{item.name}</TableCell>
-    {onEdit && (
-      <TableCell className="w-0">
-        <DialogTrigger asChild data-testid="variable-edit" onClick={onEdit}>
-          <Button variant="ghost">
-            <Pencil />
-          </Button>
-        </DialogTrigger>
-      </TableCell>
-    )}
-    <TableCell className="w-0">
-      <DialogTrigger
-        asChild
-        data-testid="variable-delete"
-        onClick={() => onDelete(item)}
-      >
-        <Button variant="ghost">
-          <Trash />
-        </Button>
-      </DialogTrigger>
-    </TableCell>
-  </TableRow>
-);
-
-type DeleteProps = {
-  name: string;
-  onConfirm: () => void;
-};
-
-const Delete = ({ name, onConfirm }: DeleteProps) => {
-  const { t } = useTranslation();
-
-  return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          <Trash /> {t("components.dialog.header.confirm")}
-        </DialogTitle>
-      </DialogHeader>
-      <div className="my-3">
-        <Trans
-          i18nKey="pages.settings.registries.delete.description"
-          values={{ name }}
-        />
-      </div>
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="ghost">{t("components.button.label.cancel")}</Button>
-        </DialogClose>
-        <Button
-          data-testid="registry-delete-confirm"
-          onClick={onConfirm}
-          variant="destructive"
-        >
-          {t("components.button.label.delete")}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  );
-};
-
-const Edit = ({ item }: { item: VarSchemaType }) => {
-  const { t } = useTranslation();
-
-  const content = useVarContent(item.name);
-
-  return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          <Trash />{" "}
-          <Trans
-            i18nKey="pages.settings.variables.edit.title"
-            values={{ name: item.name }}
-          />
-        </DialogTitle>
-      </DialogHeader>
-
-      {content.data && (
-        <>
-          <div>TODO: Implement proper editor here</div>
-          <Textarea value={content.data}></Textarea>
-        </>
-      )}
-
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="ghost">{t("components.button.label.cancel")}</Button>
-        </DialogClose>
-        <Button
-          data-testid="registry-delete-confirm"
-          onClick={() => console.log("save this")}
-          variant="destructive"
-        >
-          {t("components.button.label.save")}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  );
-};
-
-type createProps = { onSuccess: () => void };
-
-const Create = ({ onSuccess }: createProps) => {
-  const { t } = useTranslation();
-
-  const { register, handleSubmit } = useForm<VarFormSchemaType>({
-    resolver: zodResolver(VarFormSchema),
-  });
-
-  const { mutate: createVarMutation } = useCreateVar({
-    onSuccess,
-  });
-
-  const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
-    createVarMutation(data);
-  };
-
-  return (
-    <DialogContent>
-      <form
-        id="create-registry"
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col space-y-5"
-      >
-        <DialogHeader>
-          <DialogTitle>
-            <PlusCircle />
-            {t("pages.settings.variables.create.description")}
-          </DialogTitle>
-        </DialogHeader>
-
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right text-[15px]" htmlFor="name">
-            {t("pages.settings.variables.create.name")}
-          </label>
-          <Input
-            data-testid="new-variable-name"
-            placeholder="https://example.com/registry"
-            {...register("name")}
-          />
-        </fieldset>
-
-        <fieldset className="flex items-start gap-5">
-          <Textarea
-            className="h-96"
-            data-testid="new-workflow-editor"
-            {...register("content")}
-          />
-        </fieldset>
-
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="ghost">
-              {t("components.button.label.cancel")}
-            </Button>
-          </DialogClose>
-          <Button
-            data-testid="registry-create-submit"
-            type="submit"
-            variant="primary"
-          >
-            {t("components.button.label.create")}
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  );
-};
+import { useTranslation } from "react-i18next";
+import { useVars } from "~/api/vars/query/useVars";
 
 const VarsList: FC = () => {
   const { t } = useTranslation();
@@ -277,7 +85,15 @@ const VarsList: FC = () => {
           }}
         />
       )}
-      {editItem && <Edit item={editItem} />}
+      {editItem && (
+        <Edit
+          item={editItem}
+          onSuccess={() => {
+            setCreateItem(false);
+            setDialogOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };

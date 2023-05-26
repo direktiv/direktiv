@@ -10,7 +10,7 @@ export const VarSchema = z.object({
   mimeType: z.string(),
 });
 
-export const VarCreatedSchema = z.object({
+export const VarUpdatedSchema = z.object({
   namespace: z.string(),
   key: z.string(),
   createdAt: z.string(),
@@ -38,7 +38,7 @@ export const VarFormSchema = z.object({
 });
 
 export type VarSchemaType = z.infer<typeof VarSchema>;
-export type VarCreatedSchemaType = z.infer<typeof VarCreatedSchema>;
+export type VarUpdatedSchemaType = z.infer<typeof VarUpdatedSchema>;
 export type VarContentSchemaType = z.infer<typeof VarContentSchema>;
 export type VarFormSchemaType = z.infer<typeof VarFormSchema>;
 export type VarListSchemaType = z.infer<typeof VarListSchema>;

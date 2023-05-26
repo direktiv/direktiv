@@ -184,11 +184,12 @@
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
         "create": {
-          "description": "Add a variable",
+          "title": "Add a variable",
           "name": "Name"
         },
         "edit": {
-          "title": "Edit {{name}}"
+          "title": "Edit {{name}}",
+          "name": "Name"
         }
       },
       "theme": {
