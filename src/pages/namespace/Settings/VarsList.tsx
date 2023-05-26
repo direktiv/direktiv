@@ -23,7 +23,7 @@ import { Card } from "~/design/Card";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { useCreateVar } from "~/api/vars/mutate/createVar";
-// import { useDeleteVar } from "~/api/vars/mutate/deleteVar";
+import { useDeleteVar } from "~/api/vars/mutate/deleteVar";
 import { useVars } from "~/api/vars/query/get";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -57,6 +57,7 @@ type DeleteProps = {
 
 const Delete = ({ name, onConfirm }: DeleteProps) => {
   const { t } = useTranslation();
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -76,7 +77,6 @@ const Delete = ({ name, onConfirm }: DeleteProps) => {
         </DialogClose>
         <Button
           data-testid="registry-delete-confirm"
-          // TODO: Implement mutation
           onClick={onConfirm}
           variant="destructive"
         >
@@ -165,6 +165,12 @@ const VarsList: FC = () => {
   const data = useVars();
   const items = data.data?.variables?.results ?? null;
 
+  const { mutate: deleteVarMutation } = useDeleteVar({
+    onSuccess: () => {
+      setDialogOpen(false);
+    },
+  });
+
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteItem(undefined);
@@ -203,7 +209,7 @@ const VarsList: FC = () => {
       {deleteItem && (
         <Delete
           name={deleteItem.name}
-          onConfirm={() => console.log("Delete for real")}
+          onConfirm={() => deleteVarMutation({ variable: deleteItem })}
         />
       )}
       {createItem && (

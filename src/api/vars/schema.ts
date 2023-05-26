@@ -20,6 +20,8 @@ export const VarCreatedSchema = z.object({
   mimeType: z.string(),
 });
 
+export const VarDeletedSchema = z.null();
+
 export const VarListSchema = z.object({
   namespace: z.string(),
   variables: z.object({
