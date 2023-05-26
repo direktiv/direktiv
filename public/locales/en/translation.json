@@ -176,6 +176,18 @@
           "password": "Password"
         }
       },
+      "variables": {
+        "list": {
+          "title": "Variables"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "description": "Add a variable",
+          "name": "Name"
+        }
+      },
       "theme": {
         "title": "Theme"
       },
