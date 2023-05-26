@@ -112,7 +112,6 @@ test("it is possible to make the revision", async ({
 test("it is possible to revert the revision", async ({
   page,
 }) => {
-  test.setTimeout(20000);
   await actionNavigateToActiveWorkflow(page);
   await testMakeRevision(page);
   await testSaveWorkflow(page);
