@@ -98,8 +98,6 @@ test("it is possible to navigate to the active revision", async ({ page }) => {
 test("it is possible to save the workflow", async ({
   page,
 }) => {
-  // page.getByText() takes long than getByTestId
-  // click on the description so it can have input focus
   await actionNavigateToActiveWorkflow(page);
   await testSaveWorkflow(page);
 });
