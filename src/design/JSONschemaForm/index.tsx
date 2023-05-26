@@ -15,10 +15,11 @@ const FormInput: React.FunctionComponent<WidgetProps> = (props) => {
         id={props.id}
         value={val}
         onChange={(e) => {
-            // props.onChange(e)
+            props.onChange(e.target.value)
             console.log({ e })
             setVal(e.target.value)
         }}
+
     />;
 }
 
@@ -31,7 +32,7 @@ export const JSONschemaForm = () => {
             },
         },
         firstName: {
-            'ui:widget': Input,
+            'ui:widget': FormInput,
             'ui:options': {
                 inputType: 'text'
             },
