@@ -99,7 +99,6 @@ test("it is possible to save the workflow", async ({
   page,
 }) => {
   // page.getByText() takes long than getByTestId
-  test.setTimeout(20000);
   // click on the description so it can have input focus
   await actionNavigateToActiveWorkflow(page);
   await testSaveWorkflow(page);
