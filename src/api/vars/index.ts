@@ -7,4 +7,22 @@ export const varKeys = {
         namespace,
       },
     ] as const,
+  varContent: (
+    namespace: string,
+    {
+      apiKey,
+      name,
+    }: {
+      apiKey?: string;
+      name: string;
+    }
+  ) =>
+    [
+      {
+        scope: "var-content",
+        apiKey,
+        namespace,
+        name,
+      },
+    ] as const,
 };

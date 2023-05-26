@@ -1,4 +1,4 @@
-import { Braces, PlusCircle, Trash } from "lucide-react";
+import { Braces, Pencil, PlusCircle, Trash } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -17,6 +17,7 @@ import {
   VarFormSchemaType,
   VarSchemaType,
 } from "~/api/vars/schema";
+import { useVarContent, useVars } from "~/api/vars/query/get";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -24,22 +25,31 @@ import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { useCreateVar } from "~/api/vars/mutate/createVar";
 import { useDeleteVar } from "~/api/vars/mutate/deleteVar";
-import { useVars } from "~/api/vars/query/get";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // TODO: Componentize this? Then type needs to be more universal
 type ItemRowProps = {
   item: VarSchemaType;
   onDelete: (item: VarSchemaType) => void;
+  onEdit?: () => void;
 };
 
-const ItemRow = ({ item, onDelete }: ItemRowProps) => (
+const ItemRow = ({ item, onDelete, onEdit }: ItemRowProps) => (
   <TableRow>
     <TableCell>{item.name}</TableCell>
+    {onEdit && (
+      <TableCell className="w-0">
+        <DialogTrigger asChild data-testid="variable-edit" onClick={onEdit}>
+          <Button variant="ghost">
+            <Pencil />
+          </Button>
+        </DialogTrigger>
+      </TableCell>
+    )}
     <TableCell className="w-0">
       <DialogTrigger
         asChild
-        data-testid="registry-delete"
+        data-testid="variable-delete"
         onClick={() => onDelete(item)}
       >
         <Button variant="ghost">
@@ -81,6 +91,46 @@ const Delete = ({ name, onConfirm }: DeleteProps) => {
           variant="destructive"
         >
           {t("components.button.label.delete")}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+const Edit = ({ item }: { item: VarSchemaType }) => {
+  const { t } = useTranslation();
+
+  const content = useVarContent(item.name);
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>
+          <Trash />{" "}
+          <Trans
+            i18nKey="pages.settings.variables.edit.title"
+            values={{ name: item.name }}
+          />
+        </DialogTitle>
+      </DialogHeader>
+
+      {content.data && (
+        <>
+          <div>TODO: Implement proper editor here</div>
+          <Textarea value={content.data}></Textarea>
+        </>
+      )}
+
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="ghost">{t("components.button.label.cancel")}</Button>
+        </DialogClose>
+        <Button
+          data-testid="registry-delete-confirm"
+          onClick={() => console.log("save this")}
+          variant="destructive"
+        >
+          {t("components.button.label.save")}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -160,6 +210,7 @@ const VarsList: FC = () => {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState<VarSchemaType>();
+  const [editItem, setEditItem] = useState<VarSchemaType>();
   const [createItem, setCreateItem] = useState(false);
 
   const data = useVars();
@@ -175,6 +226,7 @@ const VarsList: FC = () => {
     if (dialogOpen === false) {
       setDeleteItem(undefined);
       setCreateItem(false);
+      setEditItem(undefined);
     }
   }, [dialogOpen]);
 
@@ -201,7 +253,12 @@ const VarsList: FC = () => {
         <Table>
           <TableBody>
             {items?.map((item, i) => (
-              <ItemRow item={item} key={i} onDelete={setDeleteItem} />
+              <ItemRow
+                item={item}
+                key={i}
+                onDelete={setDeleteItem}
+                onEdit={() => setEditItem(item)}
+              />
             ))}
           </TableBody>
         </Table>
@@ -220,6 +277,7 @@ const VarsList: FC = () => {
           }}
         />
       )}
+      {editItem && <Edit item={editItem} />}
     </Dialog>
   );
 };

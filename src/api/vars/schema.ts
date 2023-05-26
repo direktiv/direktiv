@@ -22,6 +22,8 @@ export const VarCreatedSchema = z.object({
 
 export const VarDeletedSchema = z.null();
 
+export const VarContentSchema = z.string();
+
 export const VarListSchema = z.object({
   namespace: z.string(),
   variables: z.object({
@@ -36,6 +38,7 @@ export const VarFormSchema = z.object({
 });
 
 export type VarSchemaType = z.infer<typeof VarSchema>;
-export type VarListSchemaType = z.infer<typeof VarListSchema>;
-export type VarFormSchemaType = z.infer<typeof VarFormSchema>;
 export type VarCreatedSchemaType = z.infer<typeof VarCreatedSchema>;
+export type VarContentSchemaType = z.infer<typeof VarContentSchema>;
+export type VarFormSchemaType = z.infer<typeof VarFormSchema>;
+export type VarListSchemaType = z.infer<typeof VarListSchema>;

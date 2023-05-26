@@ -186,6 +186,9 @@
         "create": {
           "description": "Add a variable",
           "name": "Name"
+        },
+        "edit": {
+          "title": "Edit {{name}}"
         }
       },
       "theme": {
@@ -224,7 +227,8 @@
       "label": {
         "cancel": "Cancel",
         "create": "Create",
-        "delete": "Delete"
+        "delete": "Delete",
+        "save": "Save"
       }
     },
     "dialog": {
