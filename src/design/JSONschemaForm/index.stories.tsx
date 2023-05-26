@@ -1,41 +1,15 @@
-import Form from "@rjsf/core";
+import type { Meta, StoryObj } from "@storybook/react";
+import { JSONschemaForm } from "../JSONschemaForm";
 
-export default {
-  title: "Components/JSON schema Form",
+const meta = {
+  title: "Components/JSONschemaForm",
+  component: JSONschemaForm,
+} satisfies Meta<typeof JSONschemaForm>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: (args) => <JSONschemaForm {...args} />,
+  tags: ["autodocs"],
 };
-
-// for examples to to
-// https://rjsf-team.github.io/react-jsonschema-form/
-// select one template copy the generated JSONSchemach
-
-export const Default = () => (
-  <Form
-    schema={{
-      title: "A registration form",
-      type: "object",
-      required: ["firstName", "lastName"],
-      properties: {
-        password: {
-          type: "string",
-          title: "Password",
-        },
-        lastName: {
-          type: "string",
-          title: "Last name",
-        },
-        bio: {
-          type: "string",
-          title: "Bio",
-        },
-        firstName: {
-          type: "string",
-          title: "First name",
-        },
-        age: {
-          type: "integer",
-          title: "Age",
-        },
-      },
-    }}
-  />
-);

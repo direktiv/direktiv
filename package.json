@@ -26,6 +26,7 @@
     "@radix-ui/react-toggle": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.5",
     "@rjsf/core": "^4.0.1",
+    "@rjsf/utils": "^5.7.2",
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
     "@tanstack/react-query": "^4.26.0",
     "@tanstack/react-query-devtools": "^4.28.0",
