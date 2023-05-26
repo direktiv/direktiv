@@ -12,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -183,21 +182,9 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 
 	var rev *filestore.Revision
 
-	ref := req.GetRef()
-	id, err := uuid.Parse(ref)
-	if err == nil {
-		rev, err = fStore.ForFile(file).GetRevision(ctx, id)
-		if err != nil {
-			if !errors.Is(err, filestore.ErrNotFound) {
-				return nil, err
-			}
-		}
-	}
-	if rev == nil {
-		rev, err = fStore.ForFile(file).GetRevisionByTag(ctx, ref)
-		if err != nil {
-			return nil, err
-		}
+	rev, err = fStore.ForFile(file).GetRevision(ctx, req.GetRef())
+	if err != nil {
+		return nil, err
 	}
 
 	cached := new(database.CacheData)

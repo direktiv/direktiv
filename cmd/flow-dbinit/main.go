@@ -97,6 +97,10 @@ func RunApplication() {
 			version: semver.MustParse("0.7.3"),
 			logic:   updateGeneration_0_7_3,
 		},
+		{
+			version: semver.MustParse("0.7.5"),
+			logic:   updateGeneration_0_7_5,
+		},
 	}
 
 	for _, upgrader := range upgraders {
@@ -127,6 +131,41 @@ func RunApplication() {
 type generationUpgrader struct {
 	version *semver.Version
 	logic   func(tx *sql.Tx) error
+}
+
+func updateGeneration_0_7_5(db *sql.Tx) error {
+	queries := []string{}
+
+	// Drop links of old filesystem tables.
+	for k, v := range map[string][]string{
+		"annotations": {"annotations_workflows_annotations", "annotations_inodes_annotations"},
+		"instances":   {"instances_workflows_instances", "instances_revisions_instances"},
+		"events":      {"events_workflows_wfevents"},
+		"var_refs":    {"var_refs_workflows_vars"},
+	} {
+		for i := range v {
+			queries = append(queries, fmt.Sprintf("ALTER TABLE %s DROP CONSTRAINT %s;", k, v[i]))
+		}
+	}
+	queries = append(queries, "DROP TABLE log_msgs;")
+
+	// Create filesystem roots.
+	queries = append(queries, "INSERT INTO filesystem_roots(id, created_at, updated_at) SELECT oid, NOW(), NOW() FROM namespaces;")
+	// Create / directories.
+	queries = append(queries, "INSERT INTO filesystem_files(id, path, depth, typ, root_id, created_at, updated_at) SELECT "+
+		"gen_random_uuid (), '/', 0, 'directory', id, NOW(), NOW() FROM filesystem_roots;")
+	// Copy old mirrors into new once.
+	queries = append(queries, "INSERT INTO mirror_configs(namespace_id, url, git_ref, git_commit_hash, public_key, private_key, private_key_passphrase, created_at, updated_at) SELECT "+
+		"namespace_id, url, ref, commit, public_key, private_key, passphrase, NOW(), NOW() FROM mirrors;")
+
+	for i := range queries {
+		_, err := db.Exec(queries[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func updateGeneration_0_7_3(db *sql.Tx) error {

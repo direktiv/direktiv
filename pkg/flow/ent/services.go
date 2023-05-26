@@ -134,14 +134,14 @@ func (s *Services) assignValues(columns []string, values []any) error {
 
 // QueryNamespace queries the "namespace" edge of the Services entity.
 func (s *Services) QueryNamespace() *NamespaceQuery {
-	return (&ServicesClient{config: s.config}).QueryNamespace(s)
+	return NewServicesClient(s.config).QueryNamespace(s)
 }
 
 // Update returns a builder for updating this Services.
 // Note that you need to call Services.Unwrap() before calling this method if this Services
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (s *Services) Update() *ServicesUpdateOne {
-	return (&ServicesClient{config: s.config}).UpdateOne(s)
+	return NewServicesClient(s.config).UpdateOne(s)
 }
 
 // Unwrap unwraps the Services entity that was returned from a transaction after it was closed,
@@ -180,9 +180,3 @@ func (s *Services) String() string {
 
 // ServicesSlice is a parsable slice of Services.
 type ServicesSlice []*Services
-
-func (s ServicesSlice) config(cfg config) {
-	for _i := range s {
-		s[_i].config = cfg
-	}
-}

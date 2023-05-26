@@ -188,49 +188,49 @@ func (n *Namespace) assignValues(columns []string, values []any) error {
 
 // QueryInstances queries the "instances" edge of the Namespace entity.
 func (n *Namespace) QueryInstances() *InstanceQuery {
-	return (&NamespaceClient{config: n.config}).QueryInstances(n)
+	return NewNamespaceClient(n.config).QueryInstances(n)
 }
 
 // QueryLogs queries the "logs" edge of the Namespace entity.
 func (n *Namespace) QueryLogs() *LogMsgQuery {
-	return (&NamespaceClient{config: n.config}).QueryLogs(n)
+	return NewNamespaceClient(n.config).QueryLogs(n)
 }
 
 // QueryVars queries the "vars" edge of the Namespace entity.
 func (n *Namespace) QueryVars() *VarRefQuery {
-	return (&NamespaceClient{config: n.config}).QueryVars(n)
+	return NewNamespaceClient(n.config).QueryVars(n)
 }
 
 // QueryCloudevents queries the "cloudevents" edge of the Namespace entity.
 func (n *Namespace) QueryCloudevents() *CloudEventsQuery {
-	return (&NamespaceClient{config: n.config}).QueryCloudevents(n)
+	return NewNamespaceClient(n.config).QueryCloudevents(n)
 }
 
 // QueryNamespacelisteners queries the "namespacelisteners" edge of the Namespace entity.
 func (n *Namespace) QueryNamespacelisteners() *EventsQuery {
-	return (&NamespaceClient{config: n.config}).QueryNamespacelisteners(n)
+	return NewNamespaceClient(n.config).QueryNamespacelisteners(n)
 }
 
 // QueryAnnotations queries the "annotations" edge of the Namespace entity.
 func (n *Namespace) QueryAnnotations() *AnnotationQuery {
-	return (&NamespaceClient{config: n.config}).QueryAnnotations(n)
+	return NewNamespaceClient(n.config).QueryAnnotations(n)
 }
 
 // QueryCloudeventfilters queries the "cloudeventfilters" edge of the Namespace entity.
 func (n *Namespace) QueryCloudeventfilters() *CloudEventFiltersQuery {
-	return (&NamespaceClient{config: n.config}).QueryCloudeventfilters(n)
+	return NewNamespaceClient(n.config).QueryCloudeventfilters(n)
 }
 
 // QueryServices queries the "services" edge of the Namespace entity.
 func (n *Namespace) QueryServices() *ServicesQuery {
-	return (&NamespaceClient{config: n.config}).QueryServices(n)
+	return NewNamespaceClient(n.config).QueryServices(n)
 }
 
 // Update returns a builder for updating this Namespace.
 // Note that you need to call Namespace.Unwrap() before calling this method if this Namespace
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (n *Namespace) Update() *NamespaceUpdateOne {
-	return (&NamespaceClient{config: n.config}).UpdateOne(n)
+	return NewNamespaceClient(n.config).UpdateOne(n)
 }
 
 // Unwrap unwraps the Namespace entity that was returned from a transaction after it was closed,
@@ -266,9 +266,3 @@ func (n *Namespace) String() string {
 
 // Namespaces is a parsable slice of Namespace.
 type Namespaces []*Namespace
-
-func (n Namespaces) config(cfg config) {
-	for _i := range n {
-		n[_i].config = cfg
-	}
-}

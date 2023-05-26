@@ -26,11 +26,9 @@ import (
 // InstanceQuery is the builder for querying Instance entities.
 type InstanceQuery struct {
 	config
-	limit              *int
-	offset             *int
-	unique             *bool
+	ctx                *QueryContext
 	order              []OrderFunc
-	fields             []string
+	inters             []Interceptor
 	predicates         []predicate.Instance
 	withNamespace      *NamespaceQuery
 	withLogs           *LogMsgQuery
@@ -52,26 +50,26 @@ func (iq *InstanceQuery) Where(ps ...predicate.Instance) *InstanceQuery {
 	return iq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (iq *InstanceQuery) Limit(limit int) *InstanceQuery {
-	iq.limit = &limit
+	iq.ctx.Limit = &limit
 	return iq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (iq *InstanceQuery) Offset(offset int) *InstanceQuery {
-	iq.offset = &offset
+	iq.ctx.Offset = &offset
 	return iq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (iq *InstanceQuery) Unique(unique bool) *InstanceQuery {
-	iq.unique = &unique
+	iq.ctx.Unique = &unique
 	return iq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (iq *InstanceQuery) Order(o ...OrderFunc) *InstanceQuery {
 	iq.order = append(iq.order, o...)
 	return iq
@@ -79,7 +77,7 @@ func (iq *InstanceQuery) Order(o ...OrderFunc) *InstanceQuery {
 
 // QueryNamespace chains the current query on the "namespace" edge.
 func (iq *InstanceQuery) QueryNamespace() *NamespaceQuery {
-	query := &NamespaceQuery{config: iq.config}
+	query := (&NamespaceClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -101,7 +99,7 @@ func (iq *InstanceQuery) QueryNamespace() *NamespaceQuery {
 
 // QueryLogs chains the current query on the "logs" edge.
 func (iq *InstanceQuery) QueryLogs() *LogMsgQuery {
-	query := &LogMsgQuery{config: iq.config}
+	query := (&LogMsgClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -123,7 +121,7 @@ func (iq *InstanceQuery) QueryLogs() *LogMsgQuery {
 
 // QueryVars chains the current query on the "vars" edge.
 func (iq *InstanceQuery) QueryVars() *VarRefQuery {
-	query := &VarRefQuery{config: iq.config}
+	query := (&VarRefClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -145,7 +143,7 @@ func (iq *InstanceQuery) QueryVars() *VarRefQuery {
 
 // QueryRuntime chains the current query on the "runtime" edge.
 func (iq *InstanceQuery) QueryRuntime() *InstanceRuntimeQuery {
-	query := &InstanceRuntimeQuery{config: iq.config}
+	query := (&InstanceRuntimeClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -167,7 +165,7 @@ func (iq *InstanceQuery) QueryRuntime() *InstanceRuntimeQuery {
 
 // QueryChildren chains the current query on the "children" edge.
 func (iq *InstanceQuery) QueryChildren() *InstanceRuntimeQuery {
-	query := &InstanceRuntimeQuery{config: iq.config}
+	query := (&InstanceRuntimeClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -189,7 +187,7 @@ func (iq *InstanceQuery) QueryChildren() *InstanceRuntimeQuery {
 
 // QueryEventlisteners chains the current query on the "eventlisteners" edge.
 func (iq *InstanceQuery) QueryEventlisteners() *EventsQuery {
-	query := &EventsQuery{config: iq.config}
+	query := (&EventsClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -211,7 +209,7 @@ func (iq *InstanceQuery) QueryEventlisteners() *EventsQuery {
 
 // QueryAnnotations chains the current query on the "annotations" edge.
 func (iq *InstanceQuery) QueryAnnotations() *AnnotationQuery {
-	query := &AnnotationQuery{config: iq.config}
+	query := (&AnnotationClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -234,7 +232,7 @@ func (iq *InstanceQuery) QueryAnnotations() *AnnotationQuery {
 // First returns the first Instance entity from the query.
 // Returns a *NotFoundError when no Instance was found.
 func (iq *InstanceQuery) First(ctx context.Context) (*Instance, error) {
-	nodes, err := iq.Limit(1).All(ctx)
+	nodes, err := iq.Limit(1).All(setContextOp(ctx, iq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +255,7 @@ func (iq *InstanceQuery) FirstX(ctx context.Context) *Instance {
 // Returns a *NotFoundError when no Instance ID was found.
 func (iq *InstanceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = iq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = iq.Limit(1).IDs(setContextOp(ctx, iq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -280,7 +278,7 @@ func (iq *InstanceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one Instance entity is found.
 // Returns a *NotFoundError when no Instance entities are found.
 func (iq *InstanceQuery) Only(ctx context.Context) (*Instance, error) {
-	nodes, err := iq.Limit(2).All(ctx)
+	nodes, err := iq.Limit(2).All(setContextOp(ctx, iq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +306,7 @@ func (iq *InstanceQuery) OnlyX(ctx context.Context) *Instance {
 // Returns a *NotFoundError when no entities are found.
 func (iq *InstanceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = iq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = iq.Limit(2).IDs(setContextOp(ctx, iq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -333,10 +331,12 @@ func (iq *InstanceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of Instances.
 func (iq *InstanceQuery) All(ctx context.Context) ([]*Instance, error) {
+	ctx = setContextOp(ctx, iq.ctx, "All")
 	if err := iq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return iq.sqlAll(ctx)
+	qr := querierAll[[]*Instance, *InstanceQuery]()
+	return withInterceptors[[]*Instance](ctx, iq, qr, iq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -349,9 +349,12 @@ func (iq *InstanceQuery) AllX(ctx context.Context) []*Instance {
 }
 
 // IDs executes the query and returns a list of Instance IDs.
-func (iq *InstanceQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := iq.Select(instance.FieldID).Scan(ctx, &ids); err != nil {
+func (iq *InstanceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if iq.ctx.Unique == nil && iq.path != nil {
+		iq.Unique(true)
+	}
+	ctx = setContextOp(ctx, iq.ctx, "IDs")
+	if err = iq.Select(instance.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -368,10 +371,11 @@ func (iq *InstanceQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (iq *InstanceQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, iq.ctx, "Count")
 	if err := iq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return iq.sqlCount(ctx)
+	return withInterceptors[int](ctx, iq, querierCount[*InstanceQuery](), iq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -385,10 +389,15 @@ func (iq *InstanceQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (iq *InstanceQuery) Exist(ctx context.Context) (bool, error) {
-	if err := iq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, iq.ctx, "Exist")
+	switch _, err := iq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return iq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -408,9 +417,9 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 	}
 	return &InstanceQuery{
 		config:             iq.config,
-		limit:              iq.limit,
-		offset:             iq.offset,
+		ctx:                iq.ctx.Clone(),
 		order:              append([]OrderFunc{}, iq.order...),
+		inters:             append([]Interceptor{}, iq.inters...),
 		predicates:         append([]predicate.Instance{}, iq.predicates...),
 		withNamespace:      iq.withNamespace.Clone(),
 		withLogs:           iq.withLogs.Clone(),
@@ -420,16 +429,15 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		withEventlisteners: iq.withEventlisteners.Clone(),
 		withAnnotations:    iq.withAnnotations.Clone(),
 		// clone intermediate query.
-		sql:    iq.sql.Clone(),
-		path:   iq.path,
-		unique: iq.unique,
+		sql:  iq.sql.Clone(),
+		path: iq.path,
 	}
 }
 
 // WithNamespace tells the query-builder to eager-load the nodes that are connected to
 // the "namespace" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithNamespace(opts ...func(*NamespaceQuery)) *InstanceQuery {
-	query := &NamespaceQuery{config: iq.config}
+	query := (&NamespaceClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -440,7 +448,7 @@ func (iq *InstanceQuery) WithNamespace(opts ...func(*NamespaceQuery)) *InstanceQ
 // WithLogs tells the query-builder to eager-load the nodes that are connected to
 // the "logs" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithLogs(opts ...func(*LogMsgQuery)) *InstanceQuery {
-	query := &LogMsgQuery{config: iq.config}
+	query := (&LogMsgClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -451,7 +459,7 @@ func (iq *InstanceQuery) WithLogs(opts ...func(*LogMsgQuery)) *InstanceQuery {
 // WithVars tells the query-builder to eager-load the nodes that are connected to
 // the "vars" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithVars(opts ...func(*VarRefQuery)) *InstanceQuery {
-	query := &VarRefQuery{config: iq.config}
+	query := (&VarRefClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -462,7 +470,7 @@ func (iq *InstanceQuery) WithVars(opts ...func(*VarRefQuery)) *InstanceQuery {
 // WithRuntime tells the query-builder to eager-load the nodes that are connected to
 // the "runtime" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithRuntime(opts ...func(*InstanceRuntimeQuery)) *InstanceQuery {
-	query := &InstanceRuntimeQuery{config: iq.config}
+	query := (&InstanceRuntimeClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -473,7 +481,7 @@ func (iq *InstanceQuery) WithRuntime(opts ...func(*InstanceRuntimeQuery)) *Insta
 // WithChildren tells the query-builder to eager-load the nodes that are connected to
 // the "children" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithChildren(opts ...func(*InstanceRuntimeQuery)) *InstanceQuery {
-	query := &InstanceRuntimeQuery{config: iq.config}
+	query := (&InstanceRuntimeClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -484,7 +492,7 @@ func (iq *InstanceQuery) WithChildren(opts ...func(*InstanceRuntimeQuery)) *Inst
 // WithEventlisteners tells the query-builder to eager-load the nodes that are connected to
 // the "eventlisteners" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *InstanceQuery {
-	query := &EventsQuery{config: iq.config}
+	query := (&EventsClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -495,7 +503,7 @@ func (iq *InstanceQuery) WithEventlisteners(opts ...func(*EventsQuery)) *Instanc
 // WithAnnotations tells the query-builder to eager-load the nodes that are connected to
 // the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *InstanceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *InstanceQuery {
-	query := &AnnotationQuery{config: iq.config}
+	query := (&AnnotationClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -518,16 +526,11 @@ func (iq *InstanceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *Instan
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iq *InstanceQuery) GroupBy(field string, fields ...string) *InstanceGroupBy {
-	grbuild := &InstanceGroupBy{config: iq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return iq.sqlQuery(ctx), nil
-	}
+	iq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &InstanceGroupBy{build: iq}
+	grbuild.flds = &iq.ctx.Fields
 	grbuild.label = instance.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -544,11 +547,11 @@ func (iq *InstanceQuery) GroupBy(field string, fields ...string) *InstanceGroupB
 //		Select(instance.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (iq *InstanceQuery) Select(fields ...string) *InstanceSelect {
-	iq.fields = append(iq.fields, fields...)
-	selbuild := &InstanceSelect{InstanceQuery: iq}
-	selbuild.label = instance.Label
-	selbuild.flds, selbuild.scan = &iq.fields, selbuild.Scan
-	return selbuild
+	iq.ctx.Fields = append(iq.ctx.Fields, fields...)
+	sbuild := &InstanceSelect{InstanceQuery: iq}
+	sbuild.label = instance.Label
+	sbuild.flds, sbuild.scan = &iq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a InstanceSelect configured with the given aggregations.
@@ -557,7 +560,17 @@ func (iq *InstanceQuery) Aggregate(fns ...AggregateFunc) *InstanceSelect {
 }
 
 func (iq *InstanceQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range iq.fields {
+	for _, inter := range iq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, iq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range iq.ctx.Fields {
 		if !instance.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -676,6 +689,9 @@ func (iq *InstanceQuery) loadNamespace(ctx context.Context, query *NamespaceQuer
 			ids = append(ids, fk)
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
 	}
 	query.Where(namespace.IDIn(ids...))
 	neighbors, err := query.All(ctx)
@@ -882,41 +898,22 @@ func (iq *InstanceQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(iq.modifiers) > 0 {
 		_spec.Modifiers = iq.modifiers
 	}
-	_spec.Node.Columns = iq.fields
-	if len(iq.fields) > 0 {
-		_spec.Unique = iq.unique != nil && *iq.unique
+	_spec.Node.Columns = iq.ctx.Fields
+	if len(iq.ctx.Fields) > 0 {
+		_spec.Unique = iq.ctx.Unique != nil && *iq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, iq.driver, _spec)
 }
 
-func (iq *InstanceQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := iq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (iq *InstanceQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   instance.Table,
-			Columns: instance.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: instance.FieldID,
-			},
-		},
-		From:   iq.sql,
-		Unique: true,
-	}
-	if unique := iq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(instance.Table, instance.Columns, sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID))
+	_spec.From = iq.sql
+	if unique := iq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if iq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := iq.fields; len(fields) > 0 {
+	if fields := iq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, instance.FieldID)
 		for i := range fields {
@@ -932,10 +929,10 @@ func (iq *InstanceQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := iq.limit; limit != nil {
+	if limit := iq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := iq.offset; offset != nil {
+	if offset := iq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := iq.order; len(ps) > 0 {
@@ -951,7 +948,7 @@ func (iq *InstanceQuery) querySpec() *sqlgraph.QuerySpec {
 func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(iq.driver.Dialect())
 	t1 := builder.Table(instance.Table)
-	columns := iq.fields
+	columns := iq.ctx.Fields
 	if len(columns) == 0 {
 		columns = instance.Columns
 	}
@@ -960,7 +957,7 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = iq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if iq.unique != nil && *iq.unique {
+	if iq.ctx.Unique != nil && *iq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range iq.modifiers {
@@ -972,12 +969,12 @@ func (iq *InstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range iq.order {
 		p(selector)
 	}
-	if offset := iq.offset; offset != nil {
+	if offset := iq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := iq.limit; limit != nil {
+	if limit := iq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -1017,13 +1014,8 @@ func (iq *InstanceQuery) Modify(modifiers ...func(s *sql.Selector)) *InstanceSel
 
 // InstanceGroupBy is the group-by builder for Instance entities.
 type InstanceGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *InstanceQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -1032,58 +1024,46 @@ func (igb *InstanceGroupBy) Aggregate(fns ...AggregateFunc) *InstanceGroupBy {
 	return igb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (igb *InstanceGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := igb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, igb.build.ctx, "GroupBy")
+	if err := igb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	igb.sql = query
-	return igb.sqlScan(ctx, v)
+	return scanWithInterceptors[*InstanceQuery, *InstanceGroupBy](ctx, igb.build, igb, igb.build.inters, v)
 }
 
-func (igb *InstanceGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range igb.fields {
-		if !instance.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (igb *InstanceGroupBy) sqlScan(ctx context.Context, root *InstanceQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(igb.fns))
+	for _, fn := range igb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := igb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*igb.flds)+len(igb.fns))
+		for _, f := range *igb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*igb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := igb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := igb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (igb *InstanceGroupBy) sqlQuery() *sql.Selector {
-	selector := igb.sql.Select()
-	aggregation := make([]string, 0, len(igb.fns))
-	for _, fn := range igb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(igb.fields)+len(igb.fns))
-		for _, f := range igb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(igb.fields...)...)
-}
-
 // InstanceSelect is the builder for selecting fields of Instance entities.
 type InstanceSelect struct {
 	*InstanceQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -1094,26 +1074,27 @@ func (is *InstanceSelect) Aggregate(fns ...AggregateFunc) *InstanceSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (is *InstanceSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, is.ctx, "Select")
 	if err := is.prepareQuery(ctx); err != nil {
 		return err
 	}
-	is.sql = is.InstanceQuery.sqlQuery(ctx)
-	return is.sqlScan(ctx, v)
+	return scanWithInterceptors[*InstanceQuery, *InstanceSelect](ctx, is.InstanceQuery, is, is.inters, v)
 }
 
-func (is *InstanceSelect) sqlScan(ctx context.Context, v any) error {
+func (is *InstanceSelect) sqlScan(ctx context.Context, root *InstanceQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(is.fns))
 	for _, fn := range is.fns {
-		aggregation = append(aggregation, fn(is.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*is.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		is.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		is.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := is.sql.Query()
+	query, args := selector.Query()
 	if err := is.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

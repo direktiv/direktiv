@@ -13,456 +13,292 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.Events(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.Events(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.Events(sql.FieldLTE(FieldID, id))
 }
 
 // Signature applies equality check predicate on the "signature" field. It's identical to SignatureEQ.
 func Signature(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldSignature, v))
 }
 
 // Count applies equality check predicate on the "count" field. It's identical to CountEQ.
 func Count(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldCount, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldCreatedAt, v))
 }
 
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // WorkflowID applies equality check predicate on the "workflow_id" field. It's identical to WorkflowIDEQ.
 func WorkflowID(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldWorkflowID, v))
 }
 
 // SignatureEQ applies the EQ predicate on the "signature" field.
 func SignatureEQ(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldSignature, v))
 }
 
 // SignatureNEQ applies the NEQ predicate on the "signature" field.
 func SignatureNEQ(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldNEQ(FieldSignature, v))
 }
 
 // SignatureIn applies the In predicate on the "signature" field.
 func SignatureIn(vs ...[]byte) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldSignature), v...))
-	})
+	return predicate.Events(sql.FieldIn(FieldSignature, vs...))
 }
 
 // SignatureNotIn applies the NotIn predicate on the "signature" field.
 func SignatureNotIn(vs ...[]byte) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldSignature), v...))
-	})
+	return predicate.Events(sql.FieldNotIn(FieldSignature, vs...))
 }
 
 // SignatureGT applies the GT predicate on the "signature" field.
 func SignatureGT(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldGT(FieldSignature, v))
 }
 
 // SignatureGTE applies the GTE predicate on the "signature" field.
 func SignatureGTE(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldGTE(FieldSignature, v))
 }
 
 // SignatureLT applies the LT predicate on the "signature" field.
 func SignatureLT(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldLT(FieldSignature, v))
 }
 
 // SignatureLTE applies the LTE predicate on the "signature" field.
 func SignatureLTE(v []byte) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldSignature), v))
-	})
+	return predicate.Events(sql.FieldLTE(FieldSignature, v))
 }
 
 // SignatureIsNil applies the IsNil predicate on the "signature" field.
 func SignatureIsNil() predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldSignature)))
-	})
+	return predicate.Events(sql.FieldIsNull(FieldSignature))
 }
 
 // SignatureNotNil applies the NotNil predicate on the "signature" field.
 func SignatureNotNil() predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldSignature)))
-	})
+	return predicate.Events(sql.FieldNotNull(FieldSignature))
 }
 
 // CountEQ applies the EQ predicate on the "count" field.
 func CountEQ(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldCount, v))
 }
 
 // CountNEQ applies the NEQ predicate on the "count" field.
 func CountNEQ(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldNEQ(FieldCount, v))
 }
 
 // CountIn applies the In predicate on the "count" field.
 func CountIn(vs ...int) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldCount), v...))
-	})
+	return predicate.Events(sql.FieldIn(FieldCount, vs...))
 }
 
 // CountNotIn applies the NotIn predicate on the "count" field.
 func CountNotIn(vs ...int) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldCount), v...))
-	})
+	return predicate.Events(sql.FieldNotIn(FieldCount, vs...))
 }
 
 // CountGT applies the GT predicate on the "count" field.
 func CountGT(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldGT(FieldCount, v))
 }
 
 // CountGTE applies the GTE predicate on the "count" field.
 func CountGTE(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldGTE(FieldCount, v))
 }
 
 // CountLT applies the LT predicate on the "count" field.
 func CountLT(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldLT(FieldCount, v))
 }
 
 // CountLTE applies the LTE predicate on the "count" field.
 func CountLTE(v int) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCount), v))
-	})
+	return predicate.Events(sql.FieldLTE(FieldCount, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldCreatedAt, v))
 }
 
 // CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
 func CreatedAtNEQ(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldNEQ(FieldCreatedAt, v))
 }
 
 // CreatedAtIn applies the In predicate on the "created_at" field.
 func CreatedAtIn(vs ...time.Time) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldCreatedAt), v...))
-	})
+	return predicate.Events(sql.FieldIn(FieldCreatedAt, vs...))
 }
 
 // CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
 func CreatedAtNotIn(vs ...time.Time) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldCreatedAt), v...))
-	})
+	return predicate.Events(sql.FieldNotIn(FieldCreatedAt, vs...))
 }
 
 // CreatedAtGT applies the GT predicate on the "created_at" field.
 func CreatedAtGT(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldGT(FieldCreatedAt, v))
 }
 
 // CreatedAtGTE applies the GTE predicate on the "created_at" field.
 func CreatedAtGTE(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldGTE(FieldCreatedAt, v))
 }
 
 // CreatedAtLT applies the LT predicate on the "created_at" field.
 func CreatedAtLT(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldLT(FieldCreatedAt, v))
 }
 
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
-	})
+	return predicate.Events(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
 func UpdatedAtEQ(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
 func UpdatedAtNEQ(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldNEQ(FieldUpdatedAt, v))
 }
 
 // UpdatedAtIn applies the In predicate on the "updated_at" field.
 func UpdatedAtIn(vs ...time.Time) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldUpdatedAt), v...))
-	})
+	return predicate.Events(sql.FieldIn(FieldUpdatedAt, vs...))
 }
 
 // UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
 func UpdatedAtNotIn(vs ...time.Time) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldUpdatedAt), v...))
-	})
+	return predicate.Events(sql.FieldNotIn(FieldUpdatedAt, vs...))
 }
 
 // UpdatedAtGT applies the GT predicate on the "updated_at" field.
 func UpdatedAtGT(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldGT(FieldUpdatedAt, v))
 }
 
 // UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
 func UpdatedAtGTE(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldGTE(FieldUpdatedAt, v))
 }
 
 // UpdatedAtLT applies the LT predicate on the "updated_at" field.
 func UpdatedAtLT(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldLT(FieldUpdatedAt, v))
 }
 
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
-	})
+	return predicate.Events(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // WorkflowIDEQ applies the EQ predicate on the "workflow_id" field.
 func WorkflowIDEQ(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldEQ(FieldWorkflowID, v))
 }
 
 // WorkflowIDNEQ applies the NEQ predicate on the "workflow_id" field.
 func WorkflowIDNEQ(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldNEQ(FieldWorkflowID, v))
 }
 
 // WorkflowIDIn applies the In predicate on the "workflow_id" field.
 func WorkflowIDIn(vs ...uuid.UUID) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldWorkflowID), v...))
-	})
+	return predicate.Events(sql.FieldIn(FieldWorkflowID, vs...))
 }
 
 // WorkflowIDNotIn applies the NotIn predicate on the "workflow_id" field.
 func WorkflowIDNotIn(vs ...uuid.UUID) predicate.Events {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldWorkflowID), v...))
-	})
+	return predicate.Events(sql.FieldNotIn(FieldWorkflowID, vs...))
 }
 
 // WorkflowIDGT applies the GT predicate on the "workflow_id" field.
 func WorkflowIDGT(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldGT(FieldWorkflowID, v))
 }
 
 // WorkflowIDGTE applies the GTE predicate on the "workflow_id" field.
 func WorkflowIDGTE(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldGTE(FieldWorkflowID, v))
 }
 
 // WorkflowIDLT applies the LT predicate on the "workflow_id" field.
 func WorkflowIDLT(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldLT(FieldWorkflowID, v))
 }
 
 // WorkflowIDLTE applies the LTE predicate on the "workflow_id" field.
 func WorkflowIDLTE(v uuid.UUID) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldWorkflowID), v))
-	})
+	return predicate.Events(sql.FieldLTE(FieldWorkflowID, v))
 }
 
 // WorkflowIDIsNil applies the IsNil predicate on the "workflow_id" field.
 func WorkflowIDIsNil() predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldWorkflowID)))
-	})
+	return predicate.Events(sql.FieldIsNull(FieldWorkflowID))
 }
 
 // WorkflowIDNotNil applies the NotNil predicate on the "workflow_id" field.
 func WorkflowIDNotNil() predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldWorkflowID)))
-	})
+	return predicate.Events(sql.FieldNotNull(FieldWorkflowID))
 }
 
 // HasWfeventswait applies the HasEdge predicate on the "wfeventswait" edge.
@@ -470,7 +306,6 @@ func HasWfeventswait() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(WfeventswaitTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, WfeventswaitTable, WfeventswaitColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -498,7 +333,6 @@ func HasInstance() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InstanceTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -526,7 +360,6 @@ func HasNamespace() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamespaceTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)

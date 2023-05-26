@@ -142,14 +142,14 @@ func (ce *CloudEvents) assignValues(columns []string, values []any) error {
 
 // QueryNamespace queries the "namespace" edge of the CloudEvents entity.
 func (ce *CloudEvents) QueryNamespace() *NamespaceQuery {
-	return (&CloudEventsClient{config: ce.config}).QueryNamespace(ce)
+	return NewCloudEventsClient(ce.config).QueryNamespace(ce)
 }
 
 // Update returns a builder for updating this CloudEvents.
 // Note that you need to call CloudEvents.Unwrap() before calling this method if this CloudEvents
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (ce *CloudEvents) Update() *CloudEventsUpdateOne {
-	return (&CloudEventsClient{config: ce.config}).UpdateOne(ce)
+	return NewCloudEventsClient(ce.config).UpdateOne(ce)
 }
 
 // Unwrap unwraps the CloudEvents entity that was returned from a transaction after it was closed,
@@ -188,9 +188,3 @@ func (ce *CloudEvents) String() string {
 
 // CloudEventsSlice is a parsable slice of CloudEvents.
 type CloudEventsSlice []*CloudEvents
-
-func (ce CloudEventsSlice) config(cfg config) {
-	for _i := range ce {
-		ce[_i].config = cfg
-	}
-}

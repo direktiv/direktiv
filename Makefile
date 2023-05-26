@@ -92,24 +92,16 @@ DOCKER_FILES = $(shell find build/docker/ -type f)
 
 # ENT
 
-.PHONY: ent-flow
-ent-flow: ## Manually regenerates ent database package for flow. 
-	cd build/ent && docker build -t ent .
-	docker run -v `pwd`:/ent ent ./pkg/flow/ent
-
-.PHONY: ent-secrets
-ent-secrets: ## Manually regenerates ent database package for secrets. 
-	cd build/ent && docker build -t ent .
-	docker run -v `pwd`:/ent ent ./pkg/secrets/ent
-
-.PHONY: ent-metrics
-ent-metrics: ## Manually regenerates ent database package for metrics. 
-	cd build/ent && docker build -t ent .
-	docker run -v `pwd`:/ent ent ./pkg/metrics/ent
+.PHONY: ent-%
+ent-%: ## Manually regenerates ent database package.
+	docker run -it --rm \
+    -v `pwd`:/app \
+    -w /app \
+	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/$*/ent/schema
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-ent: ent-flow ent-secrets ent-metrics
+ent: ent-flow ent-metrics
 
 # Not need anymore, commented out for now to not accidentally building those
 # Cleans API client inside of pkg api
@@ -146,13 +138,6 @@ api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to ch
 api-swagger:
 	scripts/api/swagger.sh $(host)
 
-# PROTOC
-
-PROTOBUF_FLOW_SOURCE_FILES := $(shell find ./pkg/flow -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-PROTOBUF_HEALTH_SOURCE_FILES := $(shell find ./pkg/health -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-PROTOBUF_SECRETS_SOURCE_FILES := $(shell find ./pkg/secrets -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-PROTOBUF_FUNCTIONS_SOURCE_FILES := $(shell find ./pkg/functions -type f -name '*.proto' -exec sh -c 'echo "{}"' \;)
-
 # multi-arch build
 .PHONY: cross-prepare
 cross-prepare:
@@ -169,41 +154,15 @@ cross-build:
 	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
-.PHONY: protoc-flow 
-protoc-flow: ## Manually regenerates flow gRPC API.
-protoc-flow: ${PROTOBUF_FLOW_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_FLOW_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
 
-.PHONY: protoc-health
-protoc-health: ## Manually regenerates health gRPC API.
-protoc-health: ${PROTOBUF_HEALTH_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_HEALTH_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
 
-.PHONY: protoc-secrets
-protoc-secrets: ## Manually regenerates secrets gRPC API.
-protoc-secrets: ${PROTOBUF_SECRETS_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_SECRETS_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
-
-.PHONY: protoc-functions
-protoc-functions: ## Manually regenerates functions gRPC API.
-protoc-functions: ${PROTOBUF_FUNCTIONS_SOURCE_FILES}
-	cd build/protoc && docker build -t protoc .
-	for val in ${PROTOBUF_FUNCTIONS_SOURCE_FILES}; do \
-		echo "Generating protobuf file $$val..."; docker run -v `pwd`/pkg:/pkg protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --experimental_allow_proto3_optional $$val; \
-	done
-
-.PHONY: protoc 
+BUF_VERSION:=1.18.0
+.PHONY: protoc
 protoc: ## Manually regenerates Go packages built from protobuf.
-protoc: protoc-flow protoc-health protoc-secrets protoc-functions 
+protoc:
+	docker run -v $$(pwd):/app -w /app bufbuild/buf:$(BUF_VERSION) generate
+
+
 
 # Patterns
 

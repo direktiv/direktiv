@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (ird *InstanceRuntimeDelete) Where(ps ...predicate.InstanceRuntime) *Instan
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (ird *InstanceRuntimeDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(ird.hooks) == 0 {
-		affected, err = ird.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*InstanceRuntimeMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			ird.mutation = mutation
-			affected, err = ird.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(ird.hooks) - 1; i >= 0; i-- {
-			if ird.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ird.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, ird.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, InstanceRuntimeMutation](ctx, ird.sqlExec, ird.mutation, ird.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (ird *InstanceRuntimeDelete) ExecX(ctx context.Context) int {
 }
 
 func (ird *InstanceRuntimeDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: instanceruntime.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: instanceruntime.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(instanceruntime.Table, sqlgraph.NewFieldSpec(instanceruntime.FieldID, field.TypeUUID))
 	if ps := ird.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (ird *InstanceRuntimeDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	ird.mutation.done = true
 	return affected, err
 }
 
 // InstanceRuntimeDeleteOne is the builder for deleting a single InstanceRuntime entity.
 type InstanceRuntimeDeleteOne struct {
 	ird *InstanceRuntimeDelete
+}
+
+// Where appends a list predicates to the InstanceRuntimeDelete builder.
+func (irdo *InstanceRuntimeDeleteOne) Where(ps ...predicate.InstanceRuntime) *InstanceRuntimeDeleteOne {
+	irdo.ird.mutation.Where(ps...)
+	return irdo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (irdo *InstanceRuntimeDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (irdo *InstanceRuntimeDeleteOne) ExecX(ctx context.Context) {
-	irdo.ird.ExecX(ctx)
+	if err := irdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -282,7 +282,8 @@ type entQuery[T, X any] interface {
 func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filteringInfo]func(query Q, v string) (Q, error)) []func(query Q) (Q, error) {
 	var filters []func(query Q) (Q, error)
 
-	for _, f := range p.filter {
+	for idx := range p.filter {
+		f := p.filter[idx]
 		var fn func(query Q, v string) (Q, error)
 
 		for k, x := range filtersInfo {

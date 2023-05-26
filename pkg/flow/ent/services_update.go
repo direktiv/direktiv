@@ -79,41 +79,8 @@ func (su *ServicesUpdate) ClearNamespace() *ServicesUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *ServicesUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
 	su.defaults()
-	if len(su.hooks) == 0 {
-		if err = su.check(); err != nil {
-			return 0, err
-		}
-		affected, err = su.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ServicesMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = su.check(); err != nil {
-				return 0, err
-			}
-			su.mutation = mutation
-			affected, err = su.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(su.hooks) - 1; i >= 0; i-- {
-			if su.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = su.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, su.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, ServicesMutation](ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -176,16 +143,10 @@ func (su *ServicesUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Servi
 }
 
 func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   services.Table,
-			Columns: services.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: services.FieldID,
-			},
-		},
+	if err := su.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(services.Table, services.Columns, sqlgraph.NewFieldSpec(services.FieldID, field.TypeUUID))
 	if ps := su.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -213,10 +174,7 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{services.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -229,10 +187,7 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{services.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -249,6 +204,7 @@ func (su *ServicesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	su.mutation.done = true
 	return n, nil
 }
 
@@ -307,6 +263,12 @@ func (suo *ServicesUpdateOne) ClearNamespace() *ServicesUpdateOne {
 	return suo
 }
 
+// Where appends a list predicates to the ServicesUpdate builder.
+func (suo *ServicesUpdateOne) Where(ps ...predicate.Services) *ServicesUpdateOne {
+	suo.mutation.Where(ps...)
+	return suo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (suo *ServicesUpdateOne) Select(field string, fields ...string) *ServicesUpdateOne {
@@ -316,47 +278,8 @@ func (suo *ServicesUpdateOne) Select(field string, fields ...string) *ServicesUp
 
 // Save executes the query and returns the updated Services entity.
 func (suo *ServicesUpdateOne) Save(ctx context.Context) (*Services, error) {
-	var (
-		err  error
-		node *Services
-	)
 	suo.defaults()
-	if len(suo.hooks) == 0 {
-		if err = suo.check(); err != nil {
-			return nil, err
-		}
-		node, err = suo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ServicesMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = suo.check(); err != nil {
-				return nil, err
-			}
-			suo.mutation = mutation
-			node, err = suo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(suo.hooks) - 1; i >= 0; i-- {
-			if suo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = suo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, suo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Services)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from ServicesMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*Services, ServicesMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -419,16 +342,10 @@ func (suo *ServicesUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *S
 }
 
 func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   services.Table,
-			Columns: services.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: services.FieldID,
-			},
-		},
+	if err := suo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(services.Table, services.Columns, sqlgraph.NewFieldSpec(services.FieldID, field.TypeUUID))
 	id, ok := suo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Services.id" for update`)}
@@ -473,10 +390,7 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 			Columns: []string{services.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -489,10 +403,7 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 			Columns: []string{services.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -512,5 +423,6 @@ func (suo *ServicesUpdateOne) sqlSave(ctx context.Context) (_node *Services, err
 		}
 		return nil, err
 	}
+	suo.mutation.done = true
 	return _node, nil
 }

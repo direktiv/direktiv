@@ -194,41 +194,8 @@ func (eu *EventsUpdate) ClearNamespace() *EventsUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (eu *EventsUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
 	eu.defaults()
-	if len(eu.hooks) == 0 {
-		if err = eu.check(); err != nil {
-			return 0, err
-		}
-		affected, err = eu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*EventsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = eu.check(); err != nil {
-				return 0, err
-			}
-			eu.mutation = mutation
-			affected, err = eu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(eu.hooks) - 1; i >= 0; i-- {
-			if eu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = eu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, eu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, EventsMutation](ctx, eu.sqlSave, eu.mutation, eu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -276,16 +243,10 @@ func (eu *EventsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventsU
 }
 
 func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   events.Table,
-			Columns: events.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: events.FieldID,
-			},
-		},
+	if err := eu.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(events.Table, events.Columns, sqlgraph.NewFieldSpec(events.FieldID, field.TypeUUID))
 	if ps := eu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -338,10 +299,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.WfeventswaitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: eventswait.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -354,10 +312,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.WfeventswaitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: eventswait.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -373,10 +328,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.WfeventswaitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: eventswait.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -392,10 +344,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -408,10 +357,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -427,10 +373,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -443,10 +386,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{events.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -463,6 +403,7 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	eu.mutation.done = true
 	return n, nil
 }
 
@@ -633,6 +574,12 @@ func (euo *EventsUpdateOne) ClearNamespace() *EventsUpdateOne {
 	return euo
 }
 
+// Where appends a list predicates to the EventsUpdate builder.
+func (euo *EventsUpdateOne) Where(ps ...predicate.Events) *EventsUpdateOne {
+	euo.mutation.Where(ps...)
+	return euo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (euo *EventsUpdateOne) Select(field string, fields ...string) *EventsUpdateOne {
@@ -642,47 +589,8 @@ func (euo *EventsUpdateOne) Select(field string, fields ...string) *EventsUpdate
 
 // Save executes the query and returns the updated Events entity.
 func (euo *EventsUpdateOne) Save(ctx context.Context) (*Events, error) {
-	var (
-		err  error
-		node *Events
-	)
 	euo.defaults()
-	if len(euo.hooks) == 0 {
-		if err = euo.check(); err != nil {
-			return nil, err
-		}
-		node, err = euo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*EventsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = euo.check(); err != nil {
-				return nil, err
-			}
-			euo.mutation = mutation
-			node, err = euo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(euo.hooks) - 1; i >= 0; i-- {
-			if euo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = euo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, euo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Events)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from EventsMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*Events, EventsMutation](ctx, euo.sqlSave, euo.mutation, euo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -730,16 +638,10 @@ func (euo *EventsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Eve
 }
 
 func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   events.Table,
-			Columns: events.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: events.FieldID,
-			},
-		},
+	if err := euo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(events.Table, events.Columns, sqlgraph.NewFieldSpec(events.FieldID, field.TypeUUID))
 	id, ok := euo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Events.id" for update`)}
@@ -809,10 +711,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.WfeventswaitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: eventswait.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -825,10 +724,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.WfeventswaitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: eventswait.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -844,10 +740,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.WfeventswaitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: eventswait.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -863,10 +756,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -879,10 +769,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -898,10 +785,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -914,10 +798,7 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Columns: []string{events.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -937,5 +818,6 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 		}
 		return nil, err
 	}
+	euo.mutation.done = true
 	return _node, nil
 }

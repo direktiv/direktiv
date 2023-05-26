@@ -381,7 +381,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	rows, err := db.Query(`select
 	we.oid, signature, count, we.events, workflow_id, v
 	from events we
-	inner join files w
+	inner join filesystem_files w
 		on w.id = workflow_id
 	inner join namespaces n
 		on n.oid = w.root_id,
@@ -1009,7 +1009,7 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
 
 		flow.sugar.Debugf("adding filter cache key: %v\n", key)
-		eventFilterCache.put(key, script)
+		eventFilterCache.put(key, ceventfilter.Jscode)
 	}
 
 	var mapEvent map[string]interface{}
@@ -1096,7 +1096,7 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	// dropped event
 	if len(b) == 0 {
 		flow.logger.Debugf(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace),
-			"dropping event")
+			"dropping event %s", string(cloudevent))
 		return resp, nil
 	}
 

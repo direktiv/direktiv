@@ -112,79 +112,91 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 
 	// create the new filesystem tables.
 	_, err = db.DB().Exec(`
-	 CREATE TABLE IF NOT EXISTS "roots"
+	 CREATE TABLE IF NOT EXISTS "filesystem_roots"
 			(
 				"id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_namespaces_roots"
+				CONSTRAINT "fk_namespaces_filesystem_roots"
 				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 				);
-	 CREATE TABLE IF NOT EXISTS "files"
+	 CREATE TABLE IF NOT EXISTS "filesystem_files"
 			(
 				"id" uuid,
-				"path" text,
-				"depth" integer,
-				"typ" text,
-				"root_id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
+				"path" text NOT NULL,
+				"depth" integer NOT NULL,
+				"typ" text NOT NULL,
+				"root_id" uuid NOT NULL,
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_roots_files"
-				FOREIGN KEY ("root_id") REFERENCES "roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				CONSTRAINT "fk_filesystem_roots_filesystem_files"
+				FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
 				);
-	 CREATE TABLE IF NOT EXISTS "revisions"
+	 CREATE TABLE IF NOT EXISTS "filesystem_revisions"
 			(
 				"id" uuid,
 				"tags" text,
-				"is_current" boolean,
-				"data" bytea,
-				"checksum" text,
-				"file_id" uuid,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
+				"is_current" boolean NOT NULL,
+				"data" bytea NOT NULL,
+				"checksum" text NOT NULL,
+				"file_id" uuid NOT NULL,
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_files_revisions"
-				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				CONSTRAINT "fk_filesystem_files_filesystem_revisions"
+				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 				);
 	 CREATE TABLE IF NOT EXISTS "file_annotations"
 			(
 				"file_id" uuid,
 				"data" text,
-				"created_at" timestamptz,
-				"updated_at" timestamptz,
+				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY ("file_id"),
-				CONSTRAINT "fk_files_file_annotations"
-				FOREIGN KEY ("file_id") REFERENCES "files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+				CONSTRAINT "fk_filesystem_files_file_annotations"
+				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 				);
 	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
 	 		(
-	 		    "id" uuid,
-	 		    "url" text,
-	 		    "git_ref" text,
+	 		    "namespace_id" uuid,
+	 		    "url" text NOT NULL,
+	 		    "git_ref" text NOT NULL,
 	 		    "git_commit_hash" text,
 	 		    "public_key" text,
 	 		    "private_key" text,
 	 		    "private_key_passphrase" text,
-	 		    "created_at" timestamptz,
-	 		    "updated_at" timestamptz,
-	 		    PRIMARY KEY ("id"),
+	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    PRIMARY KEY ("namespace_id"),
 				CONSTRAINT "fk_namespaces_mirror_configs"
-				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	     );
 	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
 	 		(
 	 		    "id" uuid,
-	 		    "config_id" uuid,
-	 		    "status" text,
-				"typ" 	 text,
+	 		    "namespace_id" uuid NOT NULL,
+	 		    "status" text NOT NULL,
+				"typ" 	 text NOT NULL,
 	 		    "ended_at" timestamptz,
-	 		    "created_at" timestamptz,
-	 		    "updated_at" timestamptz,
+	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	 		    PRIMARY KEY ("id"),
-	 		    CONSTRAINT "fk_mirror_configs_mirror_processes"
-				FOREIGN KEY ("config_id") REFERENCES "mirror_configs"("id") ON DELETE CASCADE ON UPDATE CASCADE
+	 		    CONSTRAINT "fk_namespaces_mirror_processes"
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+	 		);
+	 CREATE TABLE IF NOT EXISTS "secrets" 
+	 		(
+	 		    "id" uuid,
+	 		    "namespace_id" uuid NOT NULL,
+	 		    "name" text NOT NULL,
+				"data" 	 text NOT NULL,
+	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	 		    PRIMARY KEY ("id"),
+	 		    CONSTRAINT "fk_namespaces_secrets"
+				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 	 		);
 `)
 	if err != nil {

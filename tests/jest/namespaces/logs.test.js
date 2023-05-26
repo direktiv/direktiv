@@ -46,7 +46,17 @@ describe('Test that basic namespace operations generate expected logs.', () => {
         var logsResponse = await request(common.config.getDirektivHost()).get(`/api/logs?order.field=TIMESTAMP&order.direction=DESC&limit=2`)
         expect(logsResponse.statusCode).toEqual(200)
         expect(logsResponse.body.results).toEqual(expect.arrayContaining([
-            {level: "info", t: expect.anything(), msg: `Deleted namespace '${testNamespace}'.`, tags: expect.anything()}, 
-            {level: "info", t: expect.anything(), msg: `Created namespace '${testNamespace}'.`, tags: expect.anything()}]))
+            {
+                level: "info",
+                t: expect.anything(),
+                msg: `Deleted namespace '${testNamespace}'.`,
+                tags: expect.anything()
+            },
+            {
+                level: "info",
+                t: expect.anything(),
+                msg: `Created namespace '${testNamespace}'.`,
+                tags: expect.anything()
+            }]))
     })
 })

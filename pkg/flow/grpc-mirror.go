@@ -73,7 +73,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		}
 
 		mirConfig, txErr = store.Mirror().CreateConfig(ctx, &mirror.Config{
-			ID:                   ns.ID,
+			NamespaceID:          ns.ID,
 			GitRef:               settings.Ref,
 			URL:                  settings.Url,
 			PublicKey:            settings.PublicKey,
@@ -90,7 +90,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
+	_, err = flow.mirrorManager.StartInitialMirroringProcess(ctx, mirConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
-	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
+	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	_, err = flow.mirrorManager.StartMirroringProcess(ctx, mirConfig)
+	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	if err != nil {
 		return nil, err
 	}
-	mirProcesses, err := store.Mirror().GetProcessesByConfig(ctx, mirConfig.ID)
+	mirProcesses, err := store.Mirror().GetProcessesByNamespaceID(ctx, mirConfig.NamespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -300,11 +300,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	}
 	defer rollback()
 
-	mirConfig, err := store.Mirror().GetConfig(ctx, ns.ID)
-	if err != nil {
-		return nil, err
-	}
-	mirProcess, err := store.Mirror().GetProcess(ctx, mirConfig.ID)
+	mirProcess, err := store.Mirror().GetProcess(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}

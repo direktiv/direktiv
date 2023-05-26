@@ -15,21 +15,24 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -62,17 +65,17 @@ type server struct {
 
 	mirrorManager mirror.Manager
 
-	secrets  *secrets
 	flow     *flow
 	internal *internal
 	events   *events
 	vars     *vars
 	actions  *actions
 
-	metrics  *metrics.Client
-	logger   *internallogger.Logger
-	edb      *entwrapper.Database // TODO: remove
-	database *database.CachedDatabase
+	metrics    *metrics.Client
+	logger     *internallogger.Logger // TODO: remove
+	loggerBeta logengine.BetterLogger
+	edb        *entwrapper.Database // TODO: remove
+	database   *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -127,13 +130,6 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Debug("Initializing secrets.")
-	srv.secrets, err = initSecrets()
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.secrets.Close)
-
 	srv.sugar.Debug("Initializing locks.")
 
 	db := os.Getenv(util.DBConn)
@@ -171,7 +167,7 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Silent,
+				LogLevel: logger.Info,
 			},
 		),
 	})
@@ -265,8 +261,23 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	srv.sugar.Debug("Initializing mirror manager.")
-	store := sql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
-	fStore := psql.NewSQLFileStore(srv.gormDB)
+	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
+	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
+	srv.loggerBeta = logengine.ChainedBetterLogger{
+		logengine.SugarBetterLogger{
+			Sugar: srv.sugar,
+			AddTraceFrom: func(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
+				span := trace.SpanFromContext(ctx)
+				tid := span.SpanContext().TraceID()
+				toTags["trace"] = tid
+				return toTags
+			},
+		},
+		logengine.DataStoreBetterLogger{Store: store.Logs(), LogError: srv.sugar.Errorf},
+		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
+			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+		}, LogError: srv.sugar.Errorf},
+	}
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
@@ -282,7 +293,32 @@ func (srv *server) start(ctx context.Context) error {
 		return nil
 	}
 
-	srv.mirrorManager = mirror.NewDefaultManager(srv.sugar, store.Mirror(), fStore, &mirror.GitSource{}, cc)
+	srv.mirrorManager = mirror.NewDefaultManager(
+		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
+			srv.sugar.Infow(msg, keysAndValues...)
+
+			tags := map[string]string{
+				"recipientType": "mirror",
+				"mirror-id":     mirrorProcessID.String(),
+			}
+			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
+			srv.logger.Infof(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+		},
+		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
+			srv.sugar.Errorw(msg, keysAndValues...)
+
+			tags := map[string]string{
+				"recipientType": "mirror",
+				"mirror-id":     mirrorProcessID.String(),
+			}
+			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
+			srv.logger.Errorf(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+		},
+		store.Mirror(),
+		fStore,
+		&mirror.GitSource{},
+		cc,
+	)
 
 	srv.sugar.Debug("Initializing actions grpc server.")
 
@@ -620,7 +656,7 @@ func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastor
 		return res.WithContext(ctx).Commit().Error
 	}
 
-	return psql.NewSQLFileStore(res), sql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
+	return filestoresql.NewSQLFileStore(res), datastoresql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
 func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {

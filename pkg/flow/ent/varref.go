@@ -167,24 +167,24 @@ func (vr *VarRef) assignValues(columns []string, values []any) error {
 
 // QueryVardata queries the "vardata" edge of the VarRef entity.
 func (vr *VarRef) QueryVardata() *VarDataQuery {
-	return (&VarRefClient{config: vr.config}).QueryVardata(vr)
+	return NewVarRefClient(vr.config).QueryVardata(vr)
 }
 
 // QueryNamespace queries the "namespace" edge of the VarRef entity.
 func (vr *VarRef) QueryNamespace() *NamespaceQuery {
-	return (&VarRefClient{config: vr.config}).QueryNamespace(vr)
+	return NewVarRefClient(vr.config).QueryNamespace(vr)
 }
 
 // QueryInstance queries the "instance" edge of the VarRef entity.
 func (vr *VarRef) QueryInstance() *InstanceQuery {
-	return (&VarRefClient{config: vr.config}).QueryInstance(vr)
+	return NewVarRefClient(vr.config).QueryInstance(vr)
 }
 
 // Update returns a builder for updating this VarRef.
 // Note that you need to call VarRef.Unwrap() before calling this method if this VarRef
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (vr *VarRef) Update() *VarRefUpdateOne {
-	return (&VarRefClient{config: vr.config}).UpdateOne(vr)
+	return NewVarRefClient(vr.config).UpdateOne(vr)
 }
 
 // Unwrap unwraps the VarRef entity that was returned from a transaction after it was closed,
@@ -217,9 +217,3 @@ func (vr *VarRef) String() string {
 
 // VarRefs is a parsable slice of VarRef.
 type VarRefs []*VarRef
-
-func (vr VarRefs) config(cfg config) {
-	for _i := range vr {
-		vr[_i].config = cfg
-	}
-}

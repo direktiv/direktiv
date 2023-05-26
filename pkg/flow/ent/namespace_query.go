@@ -28,11 +28,9 @@ import (
 // NamespaceQuery is the builder for querying Namespace entities.
 type NamespaceQuery struct {
 	config
-	limit                  *int
-	offset                 *int
-	unique                 *bool
+	ctx                    *QueryContext
 	order                  []OrderFunc
-	fields                 []string
+	inters                 []Interceptor
 	predicates             []predicate.Namespace
 	withInstances          *InstanceQuery
 	withLogs               *LogMsgQuery
@@ -54,26 +52,26 @@ func (nq *NamespaceQuery) Where(ps ...predicate.Namespace) *NamespaceQuery {
 	return nq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (nq *NamespaceQuery) Limit(limit int) *NamespaceQuery {
-	nq.limit = &limit
+	nq.ctx.Limit = &limit
 	return nq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (nq *NamespaceQuery) Offset(offset int) *NamespaceQuery {
-	nq.offset = &offset
+	nq.ctx.Offset = &offset
 	return nq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (nq *NamespaceQuery) Unique(unique bool) *NamespaceQuery {
-	nq.unique = &unique
+	nq.ctx.Unique = &unique
 	return nq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (nq *NamespaceQuery) Order(o ...OrderFunc) *NamespaceQuery {
 	nq.order = append(nq.order, o...)
 	return nq
@@ -81,7 +79,7 @@ func (nq *NamespaceQuery) Order(o ...OrderFunc) *NamespaceQuery {
 
 // QueryInstances chains the current query on the "instances" edge.
 func (nq *NamespaceQuery) QueryInstances() *InstanceQuery {
-	query := &InstanceQuery{config: nq.config}
+	query := (&InstanceClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -103,7 +101,7 @@ func (nq *NamespaceQuery) QueryInstances() *InstanceQuery {
 
 // QueryLogs chains the current query on the "logs" edge.
 func (nq *NamespaceQuery) QueryLogs() *LogMsgQuery {
-	query := &LogMsgQuery{config: nq.config}
+	query := (&LogMsgClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -125,7 +123,7 @@ func (nq *NamespaceQuery) QueryLogs() *LogMsgQuery {
 
 // QueryVars chains the current query on the "vars" edge.
 func (nq *NamespaceQuery) QueryVars() *VarRefQuery {
-	query := &VarRefQuery{config: nq.config}
+	query := (&VarRefClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -147,7 +145,7 @@ func (nq *NamespaceQuery) QueryVars() *VarRefQuery {
 
 // QueryCloudevents chains the current query on the "cloudevents" edge.
 func (nq *NamespaceQuery) QueryCloudevents() *CloudEventsQuery {
-	query := &CloudEventsQuery{config: nq.config}
+	query := (&CloudEventsClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -169,7 +167,7 @@ func (nq *NamespaceQuery) QueryCloudevents() *CloudEventsQuery {
 
 // QueryNamespacelisteners chains the current query on the "namespacelisteners" edge.
 func (nq *NamespaceQuery) QueryNamespacelisteners() *EventsQuery {
-	query := &EventsQuery{config: nq.config}
+	query := (&EventsClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -191,7 +189,7 @@ func (nq *NamespaceQuery) QueryNamespacelisteners() *EventsQuery {
 
 // QueryAnnotations chains the current query on the "annotations" edge.
 func (nq *NamespaceQuery) QueryAnnotations() *AnnotationQuery {
-	query := &AnnotationQuery{config: nq.config}
+	query := (&AnnotationClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -213,7 +211,7 @@ func (nq *NamespaceQuery) QueryAnnotations() *AnnotationQuery {
 
 // QueryCloudeventfilters chains the current query on the "cloudeventfilters" edge.
 func (nq *NamespaceQuery) QueryCloudeventfilters() *CloudEventFiltersQuery {
-	query := &CloudEventFiltersQuery{config: nq.config}
+	query := (&CloudEventFiltersClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -235,7 +233,7 @@ func (nq *NamespaceQuery) QueryCloudeventfilters() *CloudEventFiltersQuery {
 
 // QueryServices chains the current query on the "services" edge.
 func (nq *NamespaceQuery) QueryServices() *ServicesQuery {
-	query := &ServicesQuery{config: nq.config}
+	query := (&ServicesClient{config: nq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -258,7 +256,7 @@ func (nq *NamespaceQuery) QueryServices() *ServicesQuery {
 // First returns the first Namespace entity from the query.
 // Returns a *NotFoundError when no Namespace was found.
 func (nq *NamespaceQuery) First(ctx context.Context) (*Namespace, error) {
-	nodes, err := nq.Limit(1).All(ctx)
+	nodes, err := nq.Limit(1).All(setContextOp(ctx, nq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +279,7 @@ func (nq *NamespaceQuery) FirstX(ctx context.Context) *Namespace {
 // Returns a *NotFoundError when no Namespace ID was found.
 func (nq *NamespaceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = nq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = nq.Limit(1).IDs(setContextOp(ctx, nq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -304,7 +302,7 @@ func (nq *NamespaceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one Namespace entity is found.
 // Returns a *NotFoundError when no Namespace entities are found.
 func (nq *NamespaceQuery) Only(ctx context.Context) (*Namespace, error) {
-	nodes, err := nq.Limit(2).All(ctx)
+	nodes, err := nq.Limit(2).All(setContextOp(ctx, nq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +330,7 @@ func (nq *NamespaceQuery) OnlyX(ctx context.Context) *Namespace {
 // Returns a *NotFoundError when no entities are found.
 func (nq *NamespaceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = nq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = nq.Limit(2).IDs(setContextOp(ctx, nq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -357,10 +355,12 @@ func (nq *NamespaceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of Namespaces.
 func (nq *NamespaceQuery) All(ctx context.Context) ([]*Namespace, error) {
+	ctx = setContextOp(ctx, nq.ctx, "All")
 	if err := nq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return nq.sqlAll(ctx)
+	qr := querierAll[[]*Namespace, *NamespaceQuery]()
+	return withInterceptors[[]*Namespace](ctx, nq, qr, nq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -373,9 +373,12 @@ func (nq *NamespaceQuery) AllX(ctx context.Context) []*Namespace {
 }
 
 // IDs executes the query and returns a list of Namespace IDs.
-func (nq *NamespaceQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := nq.Select(namespace.FieldID).Scan(ctx, &ids); err != nil {
+func (nq *NamespaceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if nq.ctx.Unique == nil && nq.path != nil {
+		nq.Unique(true)
+	}
+	ctx = setContextOp(ctx, nq.ctx, "IDs")
+	if err = nq.Select(namespace.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -392,10 +395,11 @@ func (nq *NamespaceQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (nq *NamespaceQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, nq.ctx, "Count")
 	if err := nq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return nq.sqlCount(ctx)
+	return withInterceptors[int](ctx, nq, querierCount[*NamespaceQuery](), nq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -409,10 +413,15 @@ func (nq *NamespaceQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (nq *NamespaceQuery) Exist(ctx context.Context) (bool, error) {
-	if err := nq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, nq.ctx, "Exist")
+	switch _, err := nq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return nq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -432,9 +441,9 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 	}
 	return &NamespaceQuery{
 		config:                 nq.config,
-		limit:                  nq.limit,
-		offset:                 nq.offset,
+		ctx:                    nq.ctx.Clone(),
 		order:                  append([]OrderFunc{}, nq.order...),
+		inters:                 append([]Interceptor{}, nq.inters...),
 		predicates:             append([]predicate.Namespace{}, nq.predicates...),
 		withInstances:          nq.withInstances.Clone(),
 		withLogs:               nq.withLogs.Clone(),
@@ -445,16 +454,15 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		withCloudeventfilters:  nq.withCloudeventfilters.Clone(),
 		withServices:           nq.withServices.Clone(),
 		// clone intermediate query.
-		sql:    nq.sql.Clone(),
-		path:   nq.path,
-		unique: nq.unique,
+		sql:  nq.sql.Clone(),
+		path: nq.path,
 	}
 }
 
 // WithInstances tells the query-builder to eager-load the nodes that are connected to
 // the "instances" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithInstances(opts ...func(*InstanceQuery)) *NamespaceQuery {
-	query := &InstanceQuery{config: nq.config}
+	query := (&InstanceClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -465,7 +473,7 @@ func (nq *NamespaceQuery) WithInstances(opts ...func(*InstanceQuery)) *Namespace
 // WithLogs tells the query-builder to eager-load the nodes that are connected to
 // the "logs" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithLogs(opts ...func(*LogMsgQuery)) *NamespaceQuery {
-	query := &LogMsgQuery{config: nq.config}
+	query := (&LogMsgClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -476,7 +484,7 @@ func (nq *NamespaceQuery) WithLogs(opts ...func(*LogMsgQuery)) *NamespaceQuery {
 // WithVars tells the query-builder to eager-load the nodes that are connected to
 // the "vars" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithVars(opts ...func(*VarRefQuery)) *NamespaceQuery {
-	query := &VarRefQuery{config: nq.config}
+	query := (&VarRefClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -487,7 +495,7 @@ func (nq *NamespaceQuery) WithVars(opts ...func(*VarRefQuery)) *NamespaceQuery {
 // WithCloudevents tells the query-builder to eager-load the nodes that are connected to
 // the "cloudevents" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithCloudevents(opts ...func(*CloudEventsQuery)) *NamespaceQuery {
-	query := &CloudEventsQuery{config: nq.config}
+	query := (&CloudEventsClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -498,7 +506,7 @@ func (nq *NamespaceQuery) WithCloudevents(opts ...func(*CloudEventsQuery)) *Name
 // WithNamespacelisteners tells the query-builder to eager-load the nodes that are connected to
 // the "namespacelisteners" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithNamespacelisteners(opts ...func(*EventsQuery)) *NamespaceQuery {
-	query := &EventsQuery{config: nq.config}
+	query := (&EventsClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -509,7 +517,7 @@ func (nq *NamespaceQuery) WithNamespacelisteners(opts ...func(*EventsQuery)) *Na
 // WithAnnotations tells the query-builder to eager-load the nodes that are connected to
 // the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *NamespaceQuery {
-	query := &AnnotationQuery{config: nq.config}
+	query := (&AnnotationClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -520,7 +528,7 @@ func (nq *NamespaceQuery) WithAnnotations(opts ...func(*AnnotationQuery)) *Names
 // WithCloudeventfilters tells the query-builder to eager-load the nodes that are connected to
 // the "cloudeventfilters" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithCloudeventfilters(opts ...func(*CloudEventFiltersQuery)) *NamespaceQuery {
-	query := &CloudEventFiltersQuery{config: nq.config}
+	query := (&CloudEventFiltersClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -531,7 +539,7 @@ func (nq *NamespaceQuery) WithCloudeventfilters(opts ...func(*CloudEventFiltersQ
 // WithServices tells the query-builder to eager-load the nodes that are connected to
 // the "services" edge. The optional arguments are used to configure the query builder of the edge.
 func (nq *NamespaceQuery) WithServices(opts ...func(*ServicesQuery)) *NamespaceQuery {
-	query := &ServicesQuery{config: nq.config}
+	query := (&ServicesClient{config: nq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -554,16 +562,11 @@ func (nq *NamespaceQuery) WithServices(opts ...func(*ServicesQuery)) *NamespaceQ
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (nq *NamespaceQuery) GroupBy(field string, fields ...string) *NamespaceGroupBy {
-	grbuild := &NamespaceGroupBy{config: nq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := nq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return nq.sqlQuery(ctx), nil
-	}
+	nq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &NamespaceGroupBy{build: nq}
+	grbuild.flds = &nq.ctx.Fields
 	grbuild.label = namespace.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -580,11 +583,11 @@ func (nq *NamespaceQuery) GroupBy(field string, fields ...string) *NamespaceGrou
 //		Select(namespace.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (nq *NamespaceQuery) Select(fields ...string) *NamespaceSelect {
-	nq.fields = append(nq.fields, fields...)
-	selbuild := &NamespaceSelect{NamespaceQuery: nq}
-	selbuild.label = namespace.Label
-	selbuild.flds, selbuild.scan = &nq.fields, selbuild.Scan
-	return selbuild
+	nq.ctx.Fields = append(nq.ctx.Fields, fields...)
+	sbuild := &NamespaceSelect{NamespaceQuery: nq}
+	sbuild.label = namespace.Label
+	sbuild.flds, sbuild.scan = &nq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a NamespaceSelect configured with the given aggregations.
@@ -593,7 +596,17 @@ func (nq *NamespaceQuery) Aggregate(fns ...AggregateFunc) *NamespaceSelect {
 }
 
 func (nq *NamespaceQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range nq.fields {
+	for _, inter := range nq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, nq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range nq.ctx.Fields {
 		if !namespace.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -959,41 +972,22 @@ func (nq *NamespaceQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(nq.modifiers) > 0 {
 		_spec.Modifiers = nq.modifiers
 	}
-	_spec.Node.Columns = nq.fields
-	if len(nq.fields) > 0 {
-		_spec.Unique = nq.unique != nil && *nq.unique
+	_spec.Node.Columns = nq.ctx.Fields
+	if len(nq.ctx.Fields) > 0 {
+		_spec.Unique = nq.ctx.Unique != nil && *nq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, nq.driver, _spec)
 }
 
-func (nq *NamespaceQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := nq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   namespace.Table,
-			Columns: namespace.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: namespace.FieldID,
-			},
-		},
-		From:   nq.sql,
-		Unique: true,
-	}
-	if unique := nq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(namespace.Table, namespace.Columns, sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID))
+	_spec.From = nq.sql
+	if unique := nq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if nq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := nq.fields; len(fields) > 0 {
+	if fields := nq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, namespace.FieldID)
 		for i := range fields {
@@ -1009,10 +1003,10 @@ func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := nq.limit; limit != nil {
+	if limit := nq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := nq.offset; offset != nil {
+	if offset := nq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := nq.order; len(ps) > 0 {
@@ -1028,7 +1022,7 @@ func (nq *NamespaceQuery) querySpec() *sqlgraph.QuerySpec {
 func (nq *NamespaceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(nq.driver.Dialect())
 	t1 := builder.Table(namespace.Table)
-	columns := nq.fields
+	columns := nq.ctx.Fields
 	if len(columns) == 0 {
 		columns = namespace.Columns
 	}
@@ -1037,7 +1031,7 @@ func (nq *NamespaceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = nq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if nq.unique != nil && *nq.unique {
+	if nq.ctx.Unique != nil && *nq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range nq.modifiers {
@@ -1049,12 +1043,12 @@ func (nq *NamespaceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range nq.order {
 		p(selector)
 	}
-	if offset := nq.offset; offset != nil {
+	if offset := nq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := nq.limit; limit != nil {
+	if limit := nq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -1094,13 +1088,8 @@ func (nq *NamespaceQuery) Modify(modifiers ...func(s *sql.Selector)) *NamespaceS
 
 // NamespaceGroupBy is the group-by builder for Namespace entities.
 type NamespaceGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *NamespaceQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -1109,58 +1098,46 @@ func (ngb *NamespaceGroupBy) Aggregate(fns ...AggregateFunc) *NamespaceGroupBy {
 	return ngb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ngb *NamespaceGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := ngb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, ngb.build.ctx, "GroupBy")
+	if err := ngb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ngb.sql = query
-	return ngb.sqlScan(ctx, v)
+	return scanWithInterceptors[*NamespaceQuery, *NamespaceGroupBy](ctx, ngb.build, ngb, ngb.build.inters, v)
 }
 
-func (ngb *NamespaceGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range ngb.fields {
-		if !namespace.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (ngb *NamespaceGroupBy) sqlScan(ctx context.Context, root *NamespaceQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(ngb.fns))
+	for _, fn := range ngb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := ngb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*ngb.flds)+len(ngb.fns))
+		for _, f := range *ngb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*ngb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ngb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := ngb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (ngb *NamespaceGroupBy) sqlQuery() *sql.Selector {
-	selector := ngb.sql.Select()
-	aggregation := make([]string, 0, len(ngb.fns))
-	for _, fn := range ngb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(ngb.fields)+len(ngb.fns))
-		for _, f := range ngb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(ngb.fields...)...)
-}
-
 // NamespaceSelect is the builder for selecting fields of Namespace entities.
 type NamespaceSelect struct {
 	*NamespaceQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -1171,26 +1148,27 @@ func (ns *NamespaceSelect) Aggregate(fns ...AggregateFunc) *NamespaceSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (ns *NamespaceSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, ns.ctx, "Select")
 	if err := ns.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ns.sql = ns.NamespaceQuery.sqlQuery(ctx)
-	return ns.sqlScan(ctx, v)
+	return scanWithInterceptors[*NamespaceQuery, *NamespaceSelect](ctx, ns.NamespaceQuery, ns, ns.inters, v)
 }
 
-func (ns *NamespaceSelect) sqlScan(ctx context.Context, v any) error {
+func (ns *NamespaceSelect) sqlScan(ctx context.Context, root *NamespaceQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(ns.fns))
 	for _, fn := range ns.fns {
-		aggregation = append(aggregation, fn(ns.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*ns.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		ns.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		ns.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := ns.sql.Query()
+	query, args := selector.Query()
 	if err := ns.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

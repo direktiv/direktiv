@@ -117,49 +117,7 @@ func (mc *MetricsCreate) Mutation() *MetricsMutation {
 
 // Save creates the Metrics in the database.
 func (mc *MetricsCreate) Save(ctx context.Context) (*Metrics, error) {
-	var (
-		err  error
-		node *Metrics
-	)
-	if len(mc.hooks) == 0 {
-		if err = mc.check(); err != nil {
-			return nil, err
-		}
-		node, err = mc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*MetricsMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = mc.check(); err != nil {
-				return nil, err
-			}
-			mc.mutation = mutation
-			if node, err = mc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(mc.hooks) - 1; i >= 0; i-- {
-			if mc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = mc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, mc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Metrics)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from MetricsMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*Metrics, MetricsMutation](ctx, mc.sqlSave, mc.mutation, mc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -255,6 +213,9 @@ func (mc *MetricsCreate) check() error {
 }
 
 func (mc *MetricsCreate) sqlSave(ctx context.Context) (*Metrics, error) {
+	if err := mc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := mc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, mc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -264,19 +225,15 @@ func (mc *MetricsCreate) sqlSave(ctx context.Context) (*Metrics, error) {
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
+	mc.mutation.id = &_node.ID
+	mc.mutation.done = true
 	return _node, nil
 }
 
 func (mc *MetricsCreate) createSpec() (*Metrics, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Metrics{config: mc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: metrics.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: metrics.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(metrics.Table, sqlgraph.NewFieldSpec(metrics.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = mc.conflict
 	if value, ok := mc.mutation.Namespace(); ok {

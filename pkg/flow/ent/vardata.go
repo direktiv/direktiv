@@ -131,14 +131,14 @@ func (vd *VarData) assignValues(columns []string, values []any) error {
 
 // QueryVarrefs queries the "varrefs" edge of the VarData entity.
 func (vd *VarData) QueryVarrefs() *VarRefQuery {
-	return (&VarDataClient{config: vd.config}).QueryVarrefs(vd)
+	return NewVarDataClient(vd.config).QueryVarrefs(vd)
 }
 
 // Update returns a builder for updating this VarData.
 // Note that you need to call VarData.Unwrap() before calling this method if this VarData
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (vd *VarData) Update() *VarDataUpdateOne {
-	return (&VarDataClient{config: vd.config}).UpdateOne(vd)
+	return NewVarDataClient(vd.config).UpdateOne(vd)
 }
 
 // Unwrap unwraps the VarData entity that was returned from a transaction after it was closed,
@@ -180,9 +180,3 @@ func (vd *VarData) String() string {
 
 // VarDataSlice is a parsable slice of VarData.
 type VarDataSlice []*VarData
-
-func (vd VarDataSlice) config(cfg config) {
-	for _i := range vd {
-		vd[_i].config = cfg
-	}
-}

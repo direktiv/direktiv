@@ -3,7 +3,7 @@ import request from 'supertest'
 import common from "../common"
 
 const namespaceName = "a"
-const workflowName = "b"
+const workflowName = "b.yaml"
 const simpleWorkflow = `
 states:
 - id: hello
@@ -37,7 +37,7 @@ describe('Test basic directory operations', () => {
 
     it(`should fail to create a workflow because of a missing namespace`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=create-workflow`)
-    
+
         expect(createWorkflowResponse.statusCode).toEqual(404)
         expect(createWorkflowResponse.body).toMatchObject({
             code: 404,
@@ -76,18 +76,14 @@ describe('Test basic directory operations', () => {
         expect(createWorkflowResponse1.body).toEqual({}) // TODO: revisit
         expect(createWorkflowResponse2.body).toMatchObject({
             code: 404,
-            message: `file '/b': not found`,
+            message: `file '/b.yaml': not found`,
         })
     })
 
     it(`should fail to create a workflow at the root of the filesystem`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/?op=create-workflow`)
-    
-        expect(createWorkflowResponse.statusCode).toEqual(409)
-        expect(createWorkflowResponse.body).toMatchObject({
-            code: 409,
-            message: `resource already exists`,
-        })
+
+        expect(createWorkflowResponse.statusCode).toEqual(406)
     })
 
     it(`should fail to create an invalid workflow`, async () => {
@@ -182,7 +178,7 @@ describe('Test basic directory operations', () => {
                 order: [],
                 filter: [],
             },
-            results: [{ name: 'latest' }],
+            results: [{name: 'latest'}],
         })
     })
 
@@ -195,12 +191,11 @@ describe('Test basic directory operations', () => {
             pageInfo: {
                 limit: 0,
                 offset: 0,
-                total: 2,
+                total: 1,
                 order: [],
                 filter: [],
             },
-            results: [{name: 'latest'},
-                {name: expect.stringMatching(common.regex.uuidRegex)}],
+            results: [{name: 'latest'}],
         })
     })
 
@@ -213,13 +208,11 @@ describe('Test basic directory operations', () => {
             pageInfo: {
                 limit: 0,
                 offset: 0,
-                total: 1,
+                total: 0,
                 order: [],
                 filter: [],
             },
-            results: [
-                {name: expect.stringMatching(common.regex.uuidRegex)},
-            ],
+            results: [],
         })
     })
 

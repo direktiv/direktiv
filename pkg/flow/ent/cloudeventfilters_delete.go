@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (cefd *CloudEventFiltersDelete) Where(ps ...predicate.CloudEventFilters) *C
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (cefd *CloudEventFiltersDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(cefd.hooks) == 0 {
-		affected, err = cefd.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*CloudEventFiltersMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			cefd.mutation = mutation
-			affected, err = cefd.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(cefd.hooks) - 1; i >= 0; i-- {
-			if cefd.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = cefd.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, cefd.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, CloudEventFiltersMutation](ctx, cefd.sqlExec, cefd.mutation, cefd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (cefd *CloudEventFiltersDelete) ExecX(ctx context.Context) int {
 }
 
 func (cefd *CloudEventFiltersDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: cloudeventfilters.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: cloudeventfilters.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(cloudeventfilters.Table, sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt))
 	if ps := cefd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (cefd *CloudEventFiltersDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	cefd.mutation.done = true
 	return affected, err
 }
 
 // CloudEventFiltersDeleteOne is the builder for deleting a single CloudEventFilters entity.
 type CloudEventFiltersDeleteOne struct {
 	cefd *CloudEventFiltersDelete
+}
+
+// Where appends a list predicates to the CloudEventFiltersDelete builder.
+func (cefdo *CloudEventFiltersDeleteOne) Where(ps ...predicate.CloudEventFilters) *CloudEventFiltersDeleteOne {
+	cefdo.cefd.mutation.Where(ps...)
+	return cefdo
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (cefdo *CloudEventFiltersDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (cefdo *CloudEventFiltersDeleteOne) ExecX(ctx context.Context) {
-	cefdo.cefd.ExecX(ctx)
+	if err := cefdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

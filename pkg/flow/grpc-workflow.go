@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -45,10 +46,16 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+
+	ref := req.GetRef()
+	if ref == "" {
+		ref = filestore.Latest
+	}
+	revision, err := fStore.ForFile(file).GetRevision(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
+
 	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -101,6 +108,9 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
+	}
+	if filepath.Ext(req.GetPath()) != ".yaml" && filepath.Ext(req.GetPath()) != ".yml" {
+		return nil, status.Error(codes.InvalidArgument, "workflow name should have either .yaml or .yaml extension")
 	}
 
 	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
@@ -193,11 +203,20 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if file.Typ != filestore.FileTypeWorkflow {
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
 	}
-
+	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+	if err != nil {
+		return nil, err
+	}
 	newRevision, err := fStore.ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
+	// delete the previous revision.
+	err = fStore.ForRevision(revision).Delete(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	dataReader, err := fStore.ForRevision(newRevision).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -266,6 +285,10 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
+	dataReader, err = fStore.ForRevision(revision).GetData(ctx)
+	if err != nil {
+		return nil, err
+	}
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		return nil, err
@@ -318,29 +341,55 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if file.Typ != filestore.FileTypeWorkflow {
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
 	}
-	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+
+	// Discarding head is basically reverting to the before latest revision.
+
+	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
+
+	var currentRev *filestore.Revision
+	var beforeLatestRev *filestore.Revision
+	if !revs[0].IsCurrent {
+		beforeLatestRev = revs[0]
+	} else {
+		beforeLatestRev = revs[1]
+	}
+	for _, rev := range revs {
+		if rev.IsCurrent {
+			currentRev = rev
+			continue
+		}
+		if rev.CreatedAt.Compare(beforeLatestRev.CreatedAt) >= 0 {
+			beforeLatestRev = rev
+		}
+	}
+	dataReader, err := fStore.ForRevision(beforeLatestRev).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: yassir, medium priority.
-	//_, err = fStore.ForFile(file).RevertRevision(ctx, "")
-	//if err != nil {
-	//	return nil, err
-	//}
+	newRev, err := fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
+	if err != nil {
+		return nil, err
+	}
+	// delete the old current revision.
+	err = fStore.ForRevision(currentRev).Delete(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dataReader, err = fStore.ForRevision(newRev).GetData(ctx)
+	if err != nil {
+		return nil, err
+	}
 	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		return nil, err
 	}
-
 	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
 	if err != nil {
 		return nil, err
 	}
-
 	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
@@ -354,7 +403,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
+	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(newRev)
 	resp.Revision.Source = data
 
 	return &resp, nil
@@ -425,7 +474,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Data:   "",
+			Data:   map[string]string{},
 		}
 	} else if err != nil {
 		return nil, err

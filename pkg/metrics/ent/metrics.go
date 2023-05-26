@@ -155,7 +155,7 @@ func (m *Metrics) assignValues(columns []string, values []any) error {
 // Note that you need to call Metrics.Unwrap() before calling this method if this Metrics
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (m *Metrics) Update() *MetricsUpdateOne {
-	return (&MetricsClient{config: m.config}).UpdateOne(m)
+	return NewMetricsClient(m.config).UpdateOne(m)
 }
 
 // Unwrap unwraps the Metrics entity that was returned from a transaction after it was closed,
@@ -215,9 +215,3 @@ func (m *Metrics) String() string {
 
 // MetricsSlice is a parsable slice of Metrics.
 type MetricsSlice []*Metrics
-
-func (m MetricsSlice) config(cfg config) {
-	for _i := range m {
-		m[_i].config = cfg
-	}
-}

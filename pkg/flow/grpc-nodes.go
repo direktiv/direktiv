@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -265,6 +266,11 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 	if file.Path == "/" {
 		return nil, status.Error(codes.InvalidArgument, "cannot rename root node")
 	}
+	if file.Typ == filestore.FileTypeWorkflow {
+		if filepath.Ext(req.GetNew()) != ".yaml" && filepath.Ext(req.GetNew()) != ".yml" {
+			return nil, status.Error(codes.InvalidArgument, "workflow name should have either .yaml or .yaml extension")
+		}
+	}
 
 	err = fStore.ForFile(file).SetPath(ctx, req.GetNew())
 	if err != nil {
@@ -310,7 +316,7 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
 			FileID: file.ID,
-			Data:   "",
+			Data:   map[string]string{},
 		}
 	} else if err != nil {
 		return nil, err

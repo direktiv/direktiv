@@ -5,13 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/sql"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/psql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 func TestExecuteMirroringProcess(t *testing.T) {
@@ -19,8 +18,8 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	fs := psql.NewSQLFileStore(db)
-	store := sql.NewSQLStore(db, "some_secret_key_").Mirror()
+	fs := filestoresql.NewSQLFileStore(db)
+	store := datastoresql.NewSQLStore(db, "some_secret_key_").Mirror()
 
 	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -28,7 +27,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	}
 
 	config, err := store.CreateConfig(context.Background(), &mirror.Config{
-		ID: direktivRoot.ID,
+		NamespaceID: direktivRoot.ID,
 	})
 	if err != nil {
 		t.Fatalf("unepxected CreateConfig() error = %v", err)
@@ -42,9 +41,9 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		},
 	}
 
-	manager := mirror.NewDefaultManager(zap.NewNop().Sugar(), store, fs, source, nil)
+	manager := mirror.NewDefaultManager(nil, nil, store, fs, source, nil)
 
-	_, err = manager.StartMirroringProcess(context.Background(), config)
+	_, err = manager.StartInitialMirroringProcess(context.Background(), config)
 	if err != nil {
 		t.Fatalf("unepxected ExecuteMirroringProcess() error = %v", err)
 	}

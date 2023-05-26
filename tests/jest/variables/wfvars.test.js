@@ -5,7 +5,7 @@ import common from "../common"
 
 const namespaceName = "vars"
 
-const workflowName = "wf"
+const workflowName = "wf.yaml"
 
 const simpleWorkflow = `
 states:
@@ -49,7 +49,7 @@ describe('Test workflow variable operations', () => {
 
     it(`should create a workflow`, async () => {
         var createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=create-workflow`)
-        .send(simpleWorkflow)
+            .send(simpleWorkflow)
 
         expect(createWorkflowResponse.statusCode).toEqual(200)
         var buf = Buffer.from(createWorkflowResponse.body.revision.source, 'base64')
@@ -58,8 +58,8 @@ describe('Test workflow variable operations', () => {
 
     it(`should fail invalid name`, async () => {
         var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=set-var&var=hel$$o`)
-        .set('Content-Type', 'application/json')
-        .send(jdata)
+            .set('Content-Type', 'application/json')
+            .send(jdata)
 
         expect(workflowVarResponse.statusCode).toEqual(406)
     })
@@ -67,8 +67,8 @@ describe('Test workflow variable operations', () => {
 
     it(`should set plain text variable`, async () => {
         var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=set-var&var=plain`)
-        .set('Content-Type', 'text/plain')
-        .send(plainText)
+            .set('Content-Type', 'text/plain')
+            .send(plainText)
 
         expect(workflowVarResponse.statusCode).toEqual(200)
         expect(workflowVarResponse.body.key).toEqual("plain")
@@ -79,8 +79,8 @@ describe('Test workflow variable operations', () => {
 
     it(`should set json variable`, async () => {
         var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=set-var&var=json`)
-        .set('Content-Type', 'application/json')
-        .send(jdata)
+            .set('Content-Type', 'application/json')
+            .send(jdata)
 
         expect(workflowVarResponse.statusCode).toEqual(200)
         expect(workflowVarResponse.body.key).toEqual("json")
@@ -92,9 +92,9 @@ describe('Test workflow variable operations', () => {
         var buf = Buffer.from(binData, 'base64')
 
         var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=set-var&var=binary`)
-        .set('Content-Type', 'image/png')
-        .send(buf)
-        
+            .set('Content-Type', 'image/png')
+            .send(buf)
+
         expect(workflowVarResponse.statusCode).toEqual(200)
         expect(workflowVarResponse.body.key).toEqual("binary")
         expect(workflowVarResponse.body.totalSize).toEqual(Buffer.byteLength(buf).toString())
@@ -112,7 +112,7 @@ describe('Test workflow variable operations', () => {
 
     it(`should get json variable`, async () => {
         var workflowVarResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=var&var=json`)
-        
+
         expect(workflowVarResponse.statusCode).toEqual(200)
         expect(workflowVarResponse.body).toEqual(JSON.parse(jsonData))
     })
@@ -141,7 +141,7 @@ describe('Test workflow variable operations', () => {
         expect(workflowVarResponse.body.text).toEqual(plainText)
         expect(workflowVarResponse.body.json).toEqual(JSON.parse(jsonData))
         expect(workflowVarResponse.body.binary).toEqual(binData)
-    
+
     })
 
     it(`should delete one variable`, async () => {
@@ -158,6 +158,6 @@ describe('Test workflow variable operations', () => {
         expect(workflowVarListResponse.body.variables.results.length).toEqual(2)
 
     })
-            
+
 
 })

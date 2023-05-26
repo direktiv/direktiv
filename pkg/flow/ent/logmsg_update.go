@@ -195,34 +195,7 @@ func (lmu *LogMsgUpdate) ClearInstance() *LogMsgUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (lmu *LogMsgUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(lmu.hooks) == 0 {
-		affected, err = lmu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*LogMsgMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			lmu.mutation = mutation
-			affected, err = lmu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(lmu.hooks) - 1; i >= 0; i-- {
-			if lmu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = lmu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, lmu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, LogMsgMutation](ctx, lmu.sqlSave, lmu.mutation, lmu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -254,16 +227,7 @@ func (lmu *LogMsgUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *LogMsg
 }
 
 func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   logmsg.Table,
-			Columns: logmsg.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: logmsg.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(logmsg.Table, logmsg.Columns, sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID))
 	if ps := lmu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -312,10 +276,7 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{logmsg.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -328,10 +289,7 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{logmsg.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -347,10 +305,7 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{logmsg.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -363,10 +318,7 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{logmsg.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -383,6 +335,7 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	lmu.mutation.done = true
 	return n, nil
 }
 
@@ -556,6 +509,12 @@ func (lmuo *LogMsgUpdateOne) ClearInstance() *LogMsgUpdateOne {
 	return lmuo
 }
 
+// Where appends a list predicates to the LogMsgUpdate builder.
+func (lmuo *LogMsgUpdateOne) Where(ps ...predicate.LogMsg) *LogMsgUpdateOne {
+	lmuo.mutation.Where(ps...)
+	return lmuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (lmuo *LogMsgUpdateOne) Select(field string, fields ...string) *LogMsgUpdateOne {
@@ -565,40 +524,7 @@ func (lmuo *LogMsgUpdateOne) Select(field string, fields ...string) *LogMsgUpdat
 
 // Save executes the query and returns the updated LogMsg entity.
 func (lmuo *LogMsgUpdateOne) Save(ctx context.Context) (*LogMsg, error) {
-	var (
-		err  error
-		node *LogMsg
-	)
-	if len(lmuo.hooks) == 0 {
-		node, err = lmuo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*LogMsgMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			lmuo.mutation = mutation
-			node, err = lmuo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(lmuo.hooks) - 1; i >= 0; i-- {
-			if lmuo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = lmuo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, lmuo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*LogMsg)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from LogMsgMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*LogMsg, LogMsgMutation](ctx, lmuo.sqlSave, lmuo.mutation, lmuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -630,16 +556,7 @@ func (lmuo *LogMsgUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Lo
 }
 
 func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   logmsg.Table,
-			Columns: logmsg.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: logmsg.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(logmsg.Table, logmsg.Columns, sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID))
 	id, ok := lmuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "LogMsg.id" for update`)}
@@ -705,10 +622,7 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 			Columns: []string{logmsg.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -721,10 +635,7 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 			Columns: []string{logmsg.NamespaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: namespace.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -740,10 +651,7 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 			Columns: []string{logmsg.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -756,10 +664,7 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 			Columns: []string{logmsg.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -779,5 +684,6 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 		}
 		return nil, err
 	}
+	lmuo.mutation.done = true
 	return _node, nil
 }

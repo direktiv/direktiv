@@ -12,7 +12,7 @@ const readDirResponse = {
     node: common.structs.nodeObject,
     children: {
         pageInfo: common.structs.pageInfoObject,
-         results: expect.anything(),
+        results: expect.anything(),
     },
 }
 
@@ -42,7 +42,7 @@ describe('Test basic directory operations', () => {
 
     it(`should fail to create a non-root directory because of a missing namespace`, async () => {
         var createDirectoryResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${subdirName}?op=create-directory`)
-    
+
         expect(createDirectoryResponse.statusCode).toEqual(404)
         expect(createDirectoryResponse.body).toMatchObject({
             code: 404,

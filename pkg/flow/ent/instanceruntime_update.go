@@ -340,34 +340,7 @@ func (iru *InstanceRuntimeUpdate) ClearCaller() *InstanceRuntimeUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (iru *InstanceRuntimeUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(iru.hooks) == 0 {
-		affected, err = iru.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*InstanceRuntimeMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			iru.mutation = mutation
-			affected, err = iru.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(iru.hooks) - 1; i >= 0; i-- {
-			if iru.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = iru.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, iru.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks[int, InstanceRuntimeMutation](ctx, iru.sqlSave, iru.mutation, iru.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -399,16 +372,7 @@ func (iru *InstanceRuntimeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)
 }
 
 func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   instanceruntime.Table,
-			Columns: instanceruntime.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: instanceruntime.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(instanceruntime.Table, instanceruntime.Columns, sqlgraph.NewFieldSpec(instanceruntime.FieldID, field.TypeUUID))
 	if ps := iru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -507,10 +471,7 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 			Columns: []string{instanceruntime.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -523,10 +484,7 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 			Columns: []string{instanceruntime.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -542,10 +500,7 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 			Columns: []string{instanceruntime.CallerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -558,10 +513,7 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 			Columns: []string{instanceruntime.CallerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -578,6 +530,7 @@ func (iru *InstanceRuntimeUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		return 0, err
 	}
+	iru.mutation.done = true
 	return n, nil
 }
 
@@ -896,6 +849,12 @@ func (iruo *InstanceRuntimeUpdateOne) ClearCaller() *InstanceRuntimeUpdateOne {
 	return iruo
 }
 
+// Where appends a list predicates to the InstanceRuntimeUpdate builder.
+func (iruo *InstanceRuntimeUpdateOne) Where(ps ...predicate.InstanceRuntime) *InstanceRuntimeUpdateOne {
+	iruo.mutation.Where(ps...)
+	return iruo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (iruo *InstanceRuntimeUpdateOne) Select(field string, fields ...string) *InstanceRuntimeUpdateOne {
@@ -905,40 +864,7 @@ func (iruo *InstanceRuntimeUpdateOne) Select(field string, fields ...string) *In
 
 // Save executes the query and returns the updated InstanceRuntime entity.
 func (iruo *InstanceRuntimeUpdateOne) Save(ctx context.Context) (*InstanceRuntime, error) {
-	var (
-		err  error
-		node *InstanceRuntime
-	)
-	if len(iruo.hooks) == 0 {
-		node, err = iruo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*InstanceRuntimeMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			iruo.mutation = mutation
-			node, err = iruo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(iruo.hooks) - 1; i >= 0; i-- {
-			if iruo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = iruo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, iruo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*InstanceRuntime)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from InstanceRuntimeMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks[*InstanceRuntime, InstanceRuntimeMutation](ctx, iruo.sqlSave, iruo.mutation, iruo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -970,16 +896,7 @@ func (iruo *InstanceRuntimeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuil
 }
 
 func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *InstanceRuntime, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   instanceruntime.Table,
-			Columns: instanceruntime.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: instanceruntime.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(instanceruntime.Table, instanceruntime.Columns, sqlgraph.NewFieldSpec(instanceruntime.FieldID, field.TypeUUID))
 	id, ok := iruo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "InstanceRuntime.id" for update`)}
@@ -1095,10 +1012,7 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 			Columns: []string{instanceruntime.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1111,10 +1025,7 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 			Columns: []string{instanceruntime.InstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1130,10 +1041,7 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 			Columns: []string{instanceruntime.CallerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1146,10 +1054,7 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 			Columns: []string{instanceruntime.CallerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: instance.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1169,5 +1074,6 @@ func (iruo *InstanceRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *Insta
 		}
 		return nil, err
 	}
+	iruo.mutation.done = true
 	return _node, nil
 }

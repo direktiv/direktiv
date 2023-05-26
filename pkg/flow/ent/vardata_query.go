@@ -21,11 +21,9 @@ import (
 // VarDataQuery is the builder for querying VarData entities.
 type VarDataQuery struct {
 	config
-	limit       *int
-	offset      *int
-	unique      *bool
+	ctx         *QueryContext
 	order       []OrderFunc
-	fields      []string
+	inters      []Interceptor
 	predicates  []predicate.VarData
 	withVarrefs *VarRefQuery
 	modifiers   []func(*sql.Selector)
@@ -40,26 +38,26 @@ func (vdq *VarDataQuery) Where(ps ...predicate.VarData) *VarDataQuery {
 	return vdq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (vdq *VarDataQuery) Limit(limit int) *VarDataQuery {
-	vdq.limit = &limit
+	vdq.ctx.Limit = &limit
 	return vdq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (vdq *VarDataQuery) Offset(offset int) *VarDataQuery {
-	vdq.offset = &offset
+	vdq.ctx.Offset = &offset
 	return vdq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (vdq *VarDataQuery) Unique(unique bool) *VarDataQuery {
-	vdq.unique = &unique
+	vdq.ctx.Unique = &unique
 	return vdq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (vdq *VarDataQuery) Order(o ...OrderFunc) *VarDataQuery {
 	vdq.order = append(vdq.order, o...)
 	return vdq
@@ -67,7 +65,7 @@ func (vdq *VarDataQuery) Order(o ...OrderFunc) *VarDataQuery {
 
 // QueryVarrefs chains the current query on the "varrefs" edge.
 func (vdq *VarDataQuery) QueryVarrefs() *VarRefQuery {
-	query := &VarRefQuery{config: vdq.config}
+	query := (&VarRefClient{config: vdq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := vdq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -90,7 +88,7 @@ func (vdq *VarDataQuery) QueryVarrefs() *VarRefQuery {
 // First returns the first VarData entity from the query.
 // Returns a *NotFoundError when no VarData was found.
 func (vdq *VarDataQuery) First(ctx context.Context) (*VarData, error) {
-	nodes, err := vdq.Limit(1).All(ctx)
+	nodes, err := vdq.Limit(1).All(setContextOp(ctx, vdq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +111,7 @@ func (vdq *VarDataQuery) FirstX(ctx context.Context) *VarData {
 // Returns a *NotFoundError when no VarData ID was found.
 func (vdq *VarDataQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = vdq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = vdq.Limit(1).IDs(setContextOp(ctx, vdq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -136,7 +134,7 @@ func (vdq *VarDataQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one VarData entity is found.
 // Returns a *NotFoundError when no VarData entities are found.
 func (vdq *VarDataQuery) Only(ctx context.Context) (*VarData, error) {
-	nodes, err := vdq.Limit(2).All(ctx)
+	nodes, err := vdq.Limit(2).All(setContextOp(ctx, vdq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +162,7 @@ func (vdq *VarDataQuery) OnlyX(ctx context.Context) *VarData {
 // Returns a *NotFoundError when no entities are found.
 func (vdq *VarDataQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = vdq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = vdq.Limit(2).IDs(setContextOp(ctx, vdq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -189,10 +187,12 @@ func (vdq *VarDataQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of VarDataSlice.
 func (vdq *VarDataQuery) All(ctx context.Context) ([]*VarData, error) {
+	ctx = setContextOp(ctx, vdq.ctx, "All")
 	if err := vdq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return vdq.sqlAll(ctx)
+	qr := querierAll[[]*VarData, *VarDataQuery]()
+	return withInterceptors[[]*VarData](ctx, vdq, qr, vdq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -205,9 +205,12 @@ func (vdq *VarDataQuery) AllX(ctx context.Context) []*VarData {
 }
 
 // IDs executes the query and returns a list of VarData IDs.
-func (vdq *VarDataQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := vdq.Select(vardata.FieldID).Scan(ctx, &ids); err != nil {
+func (vdq *VarDataQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if vdq.ctx.Unique == nil && vdq.path != nil {
+		vdq.Unique(true)
+	}
+	ctx = setContextOp(ctx, vdq.ctx, "IDs")
+	if err = vdq.Select(vardata.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -224,10 +227,11 @@ func (vdq *VarDataQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (vdq *VarDataQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, vdq.ctx, "Count")
 	if err := vdq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return vdq.sqlCount(ctx)
+	return withInterceptors[int](ctx, vdq, querierCount[*VarDataQuery](), vdq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -241,10 +245,15 @@ func (vdq *VarDataQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (vdq *VarDataQuery) Exist(ctx context.Context) (bool, error) {
-	if err := vdq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, vdq.ctx, "Exist")
+	switch _, err := vdq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return vdq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -264,22 +273,21 @@ func (vdq *VarDataQuery) Clone() *VarDataQuery {
 	}
 	return &VarDataQuery{
 		config:      vdq.config,
-		limit:       vdq.limit,
-		offset:      vdq.offset,
+		ctx:         vdq.ctx.Clone(),
 		order:       append([]OrderFunc{}, vdq.order...),
+		inters:      append([]Interceptor{}, vdq.inters...),
 		predicates:  append([]predicate.VarData{}, vdq.predicates...),
 		withVarrefs: vdq.withVarrefs.Clone(),
 		// clone intermediate query.
-		sql:    vdq.sql.Clone(),
-		path:   vdq.path,
-		unique: vdq.unique,
+		sql:  vdq.sql.Clone(),
+		path: vdq.path,
 	}
 }
 
 // WithVarrefs tells the query-builder to eager-load the nodes that are connected to
 // the "varrefs" edge. The optional arguments are used to configure the query builder of the edge.
 func (vdq *VarDataQuery) WithVarrefs(opts ...func(*VarRefQuery)) *VarDataQuery {
-	query := &VarRefQuery{config: vdq.config}
+	query := (&VarRefClient{config: vdq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -302,16 +310,11 @@ func (vdq *VarDataQuery) WithVarrefs(opts ...func(*VarRefQuery)) *VarDataQuery {
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (vdq *VarDataQuery) GroupBy(field string, fields ...string) *VarDataGroupBy {
-	grbuild := &VarDataGroupBy{config: vdq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := vdq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return vdq.sqlQuery(ctx), nil
-	}
+	vdq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &VarDataGroupBy{build: vdq}
+	grbuild.flds = &vdq.ctx.Fields
 	grbuild.label = vardata.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -328,11 +331,11 @@ func (vdq *VarDataQuery) GroupBy(field string, fields ...string) *VarDataGroupBy
 //		Select(vardata.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (vdq *VarDataQuery) Select(fields ...string) *VarDataSelect {
-	vdq.fields = append(vdq.fields, fields...)
-	selbuild := &VarDataSelect{VarDataQuery: vdq}
-	selbuild.label = vardata.Label
-	selbuild.flds, selbuild.scan = &vdq.fields, selbuild.Scan
-	return selbuild
+	vdq.ctx.Fields = append(vdq.ctx.Fields, fields...)
+	sbuild := &VarDataSelect{VarDataQuery: vdq}
+	sbuild.label = vardata.Label
+	sbuild.flds, sbuild.scan = &vdq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a VarDataSelect configured with the given aggregations.
@@ -341,7 +344,17 @@ func (vdq *VarDataQuery) Aggregate(fns ...AggregateFunc) *VarDataSelect {
 }
 
 func (vdq *VarDataQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range vdq.fields {
+	for _, inter := range vdq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, vdq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range vdq.ctx.Fields {
 		if !vardata.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -432,41 +445,22 @@ func (vdq *VarDataQuery) sqlCount(ctx context.Context) (int, error) {
 	if len(vdq.modifiers) > 0 {
 		_spec.Modifiers = vdq.modifiers
 	}
-	_spec.Node.Columns = vdq.fields
-	if len(vdq.fields) > 0 {
-		_spec.Unique = vdq.unique != nil && *vdq.unique
+	_spec.Node.Columns = vdq.ctx.Fields
+	if len(vdq.ctx.Fields) > 0 {
+		_spec.Unique = vdq.ctx.Unique != nil && *vdq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, vdq.driver, _spec)
 }
 
-func (vdq *VarDataQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := vdq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (vdq *VarDataQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   vardata.Table,
-			Columns: vardata.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: vardata.FieldID,
-			},
-		},
-		From:   vdq.sql,
-		Unique: true,
-	}
-	if unique := vdq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(vardata.Table, vardata.Columns, sqlgraph.NewFieldSpec(vardata.FieldID, field.TypeUUID))
+	_spec.From = vdq.sql
+	if unique := vdq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if vdq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := vdq.fields; len(fields) > 0 {
+	if fields := vdq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, vardata.FieldID)
 		for i := range fields {
@@ -482,10 +476,10 @@ func (vdq *VarDataQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := vdq.limit; limit != nil {
+	if limit := vdq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := vdq.offset; offset != nil {
+	if offset := vdq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := vdq.order; len(ps) > 0 {
@@ -501,7 +495,7 @@ func (vdq *VarDataQuery) querySpec() *sqlgraph.QuerySpec {
 func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(vdq.driver.Dialect())
 	t1 := builder.Table(vardata.Table)
-	columns := vdq.fields
+	columns := vdq.ctx.Fields
 	if len(columns) == 0 {
 		columns = vardata.Columns
 	}
@@ -510,7 +504,7 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = vdq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if vdq.unique != nil && *vdq.unique {
+	if vdq.ctx.Unique != nil && *vdq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, m := range vdq.modifiers {
@@ -522,12 +516,12 @@ func (vdq *VarDataQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range vdq.order {
 		p(selector)
 	}
-	if offset := vdq.offset; offset != nil {
+	if offset := vdq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := vdq.limit; limit != nil {
+	if limit := vdq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -567,13 +561,8 @@ func (vdq *VarDataQuery) Modify(modifiers ...func(s *sql.Selector)) *VarDataSele
 
 // VarDataGroupBy is the group-by builder for VarData entities.
 type VarDataGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *VarDataQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -582,58 +571,46 @@ func (vdgb *VarDataGroupBy) Aggregate(fns ...AggregateFunc) *VarDataGroupBy {
 	return vdgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (vdgb *VarDataGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := vdgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, vdgb.build.ctx, "GroupBy")
+	if err := vdgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	vdgb.sql = query
-	return vdgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*VarDataQuery, *VarDataGroupBy](ctx, vdgb.build, vdgb, vdgb.build.inters, v)
 }
 
-func (vdgb *VarDataGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range vdgb.fields {
-		if !vardata.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (vdgb *VarDataGroupBy) sqlScan(ctx context.Context, root *VarDataQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(vdgb.fns))
+	for _, fn := range vdgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := vdgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*vdgb.flds)+len(vdgb.fns))
+		for _, f := range *vdgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*vdgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := vdgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := vdgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (vdgb *VarDataGroupBy) sqlQuery() *sql.Selector {
-	selector := vdgb.sql.Select()
-	aggregation := make([]string, 0, len(vdgb.fns))
-	for _, fn := range vdgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(vdgb.fields)+len(vdgb.fns))
-		for _, f := range vdgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(vdgb.fields...)...)
-}
-
 // VarDataSelect is the builder for selecting fields of VarData entities.
 type VarDataSelect struct {
 	*VarDataQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -644,26 +621,27 @@ func (vds *VarDataSelect) Aggregate(fns ...AggregateFunc) *VarDataSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (vds *VarDataSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, vds.ctx, "Select")
 	if err := vds.prepareQuery(ctx); err != nil {
 		return err
 	}
-	vds.sql = vds.VarDataQuery.sqlQuery(ctx)
-	return vds.sqlScan(ctx, v)
+	return scanWithInterceptors[*VarDataQuery, *VarDataSelect](ctx, vds.VarDataQuery, vds, vds.inters, v)
 }
 
-func (vds *VarDataSelect) sqlScan(ctx context.Context, v any) error {
+func (vds *VarDataSelect) sqlScan(ctx context.Context, root *VarDataQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(vds.fns))
 	for _, fn := range vds.fns {
-		aggregation = append(aggregation, fn(vds.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*vds.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		vds.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		vds.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := vds.sql.Query()
+	query, args := selector.Query()
 	if err := vds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

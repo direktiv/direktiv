@@ -72,9 +72,9 @@ spec:
       scale-down-delay: "0s"
       max-scale-limit: "10"
     defaults:
-      revision-timeout-seconds: "900"
+      revision-timeout-seconds: "14400"
       max-revision-timeout-seconds: "14400"
-      revision-response-start-timeout-seconds: "900"
+      revision-response-start-timeout-seconds: "14400"
       revision-idle-timeout-seconds: "0"
       revision-cpu-request: "50m"
       revision-memory-request: "100M"
