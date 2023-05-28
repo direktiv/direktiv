@@ -32,6 +32,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -262,9 +263,16 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing mirror manager.")
 	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
-
 	srv.loggerBeta = logengine.ChainedBetterLogger{
-		logengine.SugarBetterLogger{Sugar: srv.sugar},
+		logengine.SugarBetterLogger{
+			Sugar: srv.sugar,
+			AddTraceFrom: func(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
+				span := trace.SpanFromContext(ctx)
+				tid := span.SpanContext().TraceID()
+				toTags["trace"] = tid
+				return toTags
+			},
+		},
 		logengine.DataStoreBetterLogger{Store: store.Logs(), LogError: srv.sugar.Errorf},
 		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))

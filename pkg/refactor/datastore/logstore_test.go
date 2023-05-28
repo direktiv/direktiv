@@ -21,29 +21,28 @@ func Test_Add_Get(t *testing.T) {
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
 
-	addRandomMsgs(t, logstore, "namespace_logs", uuid.New(), "")
-	addRandomMsgs(t, logstore, "workflow_id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "root_instance_id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "")
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "panic")
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "error")
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "info")
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), "debug")
+	addRandomMsgs(t, logstore, "namespace_logs", uuid.New(), logengine.Debug)
+	addRandomMsgs(t, logstore, "workflow_id", uuid.New(), logengine.Debug)
+	addRandomMsgs(t, logstore, "root_instance_id", uuid.New(), logengine.Debug)
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Info)
+	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
 	q := make(map[string]interface{}, 0)
-	q["level"] = "info"
+	q["level"] = logengine.Info
 	got, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
 	foundInfoMsg := false
 	foundErrorMsg := false
-	foundPanicMsg := false
 
 	if len(got) < 1 {
 		t.Error("got no results")
 	}
 	for _, le := range got {
-		if le.Fields["level"] == "debug" {
+		if le.Fields["level"] == logengine.Debug {
 			t.Errorf("query for info level should not contain debug msgs")
 		}
 		if le.Fields["level"] == "info" {
@@ -52,9 +51,6 @@ func Test_Add_Get(t *testing.T) {
 		if le.Fields["level"] == "error" {
 			foundErrorMsg = true
 		}
-		if le.Fields["level"] == "panic" {
-			foundPanicMsg = true
-		}
 	}
 	if !foundInfoMsg {
 		t.Errorf("query for info level should contain info msgs")
@@ -62,12 +58,9 @@ func Test_Add_Get(t *testing.T) {
 	if !foundErrorMsg {
 		t.Errorf("query for info level should contain error msgs")
 	}
-	if !foundPanicMsg {
-		t.Errorf("query for info level should contain panic msgs")
-	}
 }
 
-func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level string) {
+func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level logengine.LogLevel) {
 	t.Helper()
 	want := []string{}
 	for i := 0; i < rand.Intn(20)+1; i++ { //nolint:gosec
@@ -98,14 +91,15 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 		if !ok {
 			t.Errorf("log entry is not found %s", le.Msg)
 		}
-		if level != "" {
-			res, ok := le.Fields["level"]
-			if !ok {
-				t.Error("missing level value")
-			}
-			if res != level {
-				t.Errorf("wanted level %s got %s", level, res)
-			}
+		res, ok := le.Fields["level"]
+		if !ok {
+			t.Error("missing level value")
+		}
+		levels := []string{"debug", "info", "error"}
+		wantLevelValue := levels[level]
+		gotLevelValue := fmt.Sprintf("%v", res)
+		if wantLevelValue != gotLevelValue {
+			t.Errorf("wanted level %s got %s", wantLevelValue, res)
 		}
 	}
 }
