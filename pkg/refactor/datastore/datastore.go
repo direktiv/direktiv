@@ -20,4 +20,6 @@ type Store interface {
 	Logs() logengine.LogStore
 
 	Secrets() core.SecretsStore
+
+	RuntimeVariables() core.RuntimeVariablesStore
 }

@@ -58,3 +58,8 @@ func (s *sqlStore) Secrets() core.SecretsStore {
 		db: s.db,
 	}
 }
+
+func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
+	//TODO implement me
+	panic("implement me")
+}
