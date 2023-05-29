@@ -11,14 +11,19 @@ import (
 )
 
 const (
-	table = "instances_v2"
+	table          = "instances_v2"
+	fieldCreatedAt = "created_at"
+	fieldCalledAs  = "called_as"
+	fieldStatus    = "status"
+	fieldInvoker   = "invoker"
+	desc           = "desc"
 )
 
 var (
 	summaryFields = []string{
 		"id", "namespace_id", "workflow_id", "revision_id", "root_instance_id",
-		"created_at", "updated_at", "ended_at", "deadline", "status", "called_as",
-		"error_code", "invoker",
+		fieldCreatedAt, "updated_at", "ended_at", "deadline", fieldStatus, fieldCalledAs,
+		"error_code", fieldInvoker,
 	}
 )
 
@@ -76,12 +81,97 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	return idata, nil
 }
 
-func (s *sqlInstanceStore) GetNamespaceInstances(ctx context.Context, nsID uuid.UUID) ([]*instancestore.InstanceData, error) {
+func applyGetNamespaceInstancesOrderings(query *gorm.DB, opts *instancestore.GetInstancesListOpts) *gorm.DB {
+	if len(opts.Order) == 0 {
+		query = query.Order(fieldCreatedAt + " " + desc)
+	} else {
+		for _, order := range opts.Order {
+			var s string
+			switch order.Field {
+			case instancestore.FieldCreatedAt:
+				s = fieldCreatedAt
+			default:
+				panic(fmt.Errorf("unexpected order field '%s'", order.Field))
+			}
+
+			if order.Descending {
+				s += " " + desc
+			}
+
+			query = query.Order(s)
+		}
+	}
+
+	return query
+}
+
+func applyGetNamespaceInstancesFilters(query *gorm.DB, opts *instancestore.GetInstancesListOpts) *gorm.DB {
+	for _, filter := range opts.Filter {
+		switch filter.Field {
+		case instancestore.FieldCreatedAt:
+			if filter.Kind == instancestore.FilterKindBefore {
+				query = query.Where(fieldCreatedAt+" < ?", filter.Value)
+			} else if filter.Kind == instancestore.FilterKindAfter {
+				query = query.Where(fieldCreatedAt+" > ?", filter.Value)
+			} else {
+				panic(fmt.Errorf("unexpected filter kind '%s' for use with field '%s'", filter.Kind, filter.Field))
+			}
+
+		case instancestore.FieldCalledAs:
+			if filter.Kind == instancestore.FilterKindPrefix {
+				query = query.Where(fieldCalledAs+" LIKE ?", filter.Value.(string)+"%")
+			} else if filter.Kind == instancestore.FilterKindContains {
+				query = query.Where(fieldCalledAs+" LIKE ?", "%"+filter.Value.(string)+"%")
+			} else {
+				panic(fmt.Errorf("unexpected filter kind '%s' for use with field '%s'", filter.Kind, filter.Field))
+			}
+
+		case instancestore.FieldStatus:
+			if filter.Kind == instancestore.FilterKindMatch {
+				query = query.Where(fieldStatus+" LIKE ?", filter.Value.(string))
+			} else if filter.Kind == instancestore.FilterKindContains {
+				query = query.Where(fieldStatus+" LIKE ?", "%"+filter.Value.(string)+"%")
+			} else {
+				panic(fmt.Errorf("unexpected filter kind '%s' for use with field '%s'", filter.Kind, filter.Field))
+			}
+
+		case instancestore.FieldInvoker:
+			if filter.Kind == instancestore.FilterKindMatch {
+				query = query.Where(fieldInvoker+" LIKE ?", filter.Value.(string))
+			} else if filter.Kind == instancestore.FilterKindContains {
+				query = query.Where(fieldInvoker+" LIKE ?", "%"+filter.Value.(string)+"%")
+			} else {
+				panic(fmt.Errorf("unexpected filter kind '%s' for use with field '%s'", filter.Kind, filter.Field))
+			}
+
+		default:
+			panic(fmt.Errorf("unexpected filter field '%s'", filter.Field))
+		}
+	}
+
+	return query
+}
+
+func (s *sqlInstanceStore) GetNamespaceInstances(ctx context.Context, nsID uuid.UUID, opts *instancestore.GetInstancesListOpts) ([]*instancestore.InstanceData, error) {
 	var list []instancestore.InstanceData
-	res := s.db.WithContext(ctx).Table(table).
+	query := s.db.WithContext(ctx).Table(table).
 		Select(summaryFields).
-		Where("namespace_id", nsID).
-		Find(&list)
+		Where("namespace_id", nsID)
+
+	if opts != nil {
+		if opts.LimitResults != 0 {
+			query = query.Limit(opts.LimitResults)
+		}
+
+		if opts.OffsetResults != 0 {
+			query = query.Offset(opts.OffsetResults)
+		}
+
+		query = applyGetNamespaceInstancesOrderings(query, opts)
+		query = applyGetNamespaceInstancesFilters(query, opts)
+	}
+
+	res := query.Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
 	}

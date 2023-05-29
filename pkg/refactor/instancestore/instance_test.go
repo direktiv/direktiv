@@ -366,7 +366,7 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 		}
 	}
 
-	idatas, err := is.GetNamespaceInstances(context.Background(), nsID)
+	idatas, err := is.GetNamespaceInstances(context.Background(), nsID, nil)
 	if err != nil {
 		t.Errorf("unexpected GetNamespaceInstances() error: %v", err)
 
@@ -456,4 +456,6 @@ type: noop
 			assertInstanceStoreCorrectGetNamespaceInstances(t, instances, tt.args, tt.nsID, tt.ids)
 		})
 	}
+
+	// TODO: alan, test limit, offset, orderings, and filters
 }
