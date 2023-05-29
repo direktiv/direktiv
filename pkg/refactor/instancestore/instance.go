@@ -5,11 +5,35 @@ import (
 	"errors"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound     = errors.New("not found")
+	ErrParallelCron = errors.New("a parallel cron already exists")
+)
+
+type InstanceStatus int
+
+const (
+	InstanceStatusUndefined = iota
+	InstanceStatusPending
+	InstanceStatusComplete
+	InstanceStatusFailed
+	InstanceStatusCrashed
+)
+
+var (
+	instanceStatusStrings = []string{"undefined", util.InstanceStatusPending, util.InstanceStatusComplete, util.InstanceStatusFailed, util.InstanceStatusCrashed}
+)
+
+func (status InstanceStatus) String() string {
+	return instanceStatusStrings[status]
+}
+
+const (
+	InvokerCron = util.CallerCron
 )
 
 type InstanceData struct {
@@ -22,7 +46,7 @@ type InstanceData struct {
 	UpdatedAt      time.Time
 	EndedAt        *time.Time
 	Deadline       *time.Time
-	Status         string // TODO: alan, turn this into an enum so we can do arithmetic comparisons on it
+	Status         InstanceStatus
 	CalledAs       string
 	ErrorCode      string
 	Invoker        string
@@ -75,21 +99,38 @@ type InstanceDataQuery interface {
 	// TODO: alan, implement more fine-grained getters?
 	// - get everything except blobs that could be large AND are almost never read by the engine, only written: (input, output, error_message, metadata)
 	// - what about things that are only sometimes relevent to the engine? (children_info)
+	// - if the rest APIs return blobs separately, they should probably be queried separately as well
 }
 
 type Store interface {
 	// TODO: alan, discuss with Yassir if the namespace ID should be an argument here
+	// ForInstanceID creates an InstanceDataQuery object, from which queries related to a specific instance can be created.
 	ForInstanceID(id uuid.UUID) InstanceDataQuery
-	CreateInstanceData(ctx context.Context, args *CreateInstanceDataArgs) (*InstanceData, error)
-	// TODO: alan, pagination/filtering on this list
-	GetNamespaceInstances(ctx context.Context, nsID uuid.UUID, opts *GetInstancesListOpts) ([]*InstanceData, error)
 
-	// TODO: alan, GetHangingInstances :: query to get a list of all instances where deadline has been exceeded and status is unfinished
-	// TODO: alan, DeleteOldInstances :: query to delete all instances that have terminated and end_at a long time ago
-	// TODO: alan, CheckForParallelCron :: query to try and detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves
+	// CreateInstanceData creates a new row in the database.
+	CreateInstanceData(ctx context.Context, args *CreateInstanceDataArgs) (*InstanceData, error)
+
+	// TODO: alan, pagination/filtering on this list
+	// GetNamespaceInstances returns a list of instances associated with the given namespace ID.
+	GetNamespaceInstances(ctx context.Context, nsID uuid.UUID, opts *GetInstancesListOpts) (*GetNamespaceInstancesResults, error)
+
+	// GetHangingInstances returns a list of all instances where deadline has been exceeded and status is unfinished
+	GetHangingInstances(ctx context.Context) ([]*InstanceData, error)
+
+	// DeleteOldInstances deletes all instances that have terminated and end_at a long time ago
+	DeleteOldInstances(ctx context.Context, before time.Time) error
+
+	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
+	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
+	AssertNoParallelCron(ctx context.Context, wfID uuid.UUID) error
 }
 
 // TODO: alan, discuss all that follows with Yassir to brainstorm nicest way to handle complex queries
+type GetNamespaceInstancesResults struct {
+	Total   int
+	Results []*InstanceData
+}
+
 type Order struct {
 	Field      string
 	Descending bool

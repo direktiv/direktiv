@@ -2,27 +2,32 @@ package instancestoresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 const (
-	table          = "instances_v2"
-	fieldCreatedAt = "created_at"
-	fieldCalledAs  = "called_as"
-	fieldStatus    = "status"
-	fieldInvoker   = "invoker"
-	desc           = "desc"
+	table            = "instances_v2"
+	fieldCreatedAt   = "created_at"
+	fieldEndedAt     = "ended_at"
+	fieldCalledAs    = "called_as"
+	fieldStatus      = "status"
+	fieldInvoker     = "invoker"
+	fieldDeadline    = "deadline"
+	fieldNamespaceID = "namespace_id"
+	fieldWorkflowID  = "workflow_id"
+	desc             = "desc"
 )
 
 var (
 	summaryFields = []string{
-		"id", "namespace_id", "workflow_id", "revision_id", "root_instance_id",
-		fieldCreatedAt, "updated_at", "ended_at", "deadline", fieldStatus, fieldCalledAs,
+		"id", fieldNamespaceID, fieldWorkflowID, "revision_id", "root_instance_id",
+		fieldCreatedAt, "updated_at", fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
 		"error_code", fieldInvoker,
 	}
 )
@@ -53,7 +58,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		WorkflowID:     args.WorkflowID,
 		RevisionID:     args.RevisionID,
 		RootInstanceID: args.RootInstanceID,
-		Status:         util.InstanceStatusPending,
+		Status:         instancestore.InstanceStatusPending,
 		CalledAs:       args.CalledAs,
 		ErrorCode:      "",
 		Invoker:        args.Invoker,
@@ -152,11 +157,11 @@ func applyGetNamespaceInstancesFilters(query *gorm.DB, opts *instancestore.GetIn
 	return query
 }
 
-func (s *sqlInstanceStore) GetNamespaceInstances(ctx context.Context, nsID uuid.UUID, opts *instancestore.GetInstancesListOpts) ([]*instancestore.InstanceData, error) {
+func (s *sqlInstanceStore) GetNamespaceInstances(ctx context.Context, nsID uuid.UUID, opts *instancestore.GetInstancesListOpts) (*instancestore.GetNamespaceInstancesResults, error) {
 	var list []instancestore.InstanceData
 	query := s.db.WithContext(ctx).Table(table).
 		Select(summaryFields).
-		Where("namespace_id", nsID)
+		Where(fieldNamespaceID, nsID)
 
 	if opts != nil {
 		if opts.LimitResults != 0 {
@@ -181,5 +186,59 @@ func (s *sqlInstanceStore) GetNamespaceInstances(ctx context.Context, nsID uuid.
 		idatas = append(idatas, &list[i])
 	}
 
+	return &instancestore.GetNamespaceInstancesResults{
+		Total:   int(res.RowsAffected),
+		Results: idatas,
+	}, nil
+}
+
+func (s *sqlInstanceStore) GetHangingInstances(ctx context.Context) ([]*instancestore.InstanceData, error) {
+	var list []instancestore.InstanceData
+	query := s.db.WithContext(ctx).Table(table).
+		Select(summaryFields).
+		Where(fieldStatus+" < ?", instancestore.InstanceStatusComplete).
+		Where(fieldDeadline+" < ?", time.Now())
+
+	res := query.Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	var idatas []*instancestore.InstanceData
+	for i := range list {
+		idatas = append(idatas, &list[i])
+	}
+
 	return idatas, nil
+}
+
+func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.Time) error {
+	var idata instancestore.InstanceData
+	res := s.db.WithContext(ctx).Table(table).
+		Where(fieldStatus+" >= ?", instancestore.InstanceStatusComplete).
+		Where(fieldEndedAt+" < ?", before).
+		Delete(&idata)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
+func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfID uuid.UUID) error {
+	var idata instancestore.InstanceData
+	res := s.db.WithContext(ctx).Table(table).
+		Where(fieldInvoker+" = ?", instancestore.InvokerCron).
+		Where(fieldWorkflowID+" = ?", wfID).
+		Where(fieldCreatedAt+" > ?", time.Now().Add(time.Second*30)).
+		First(&idata)
+	if res.Error == nil && res.RowsAffected != 0 {
+		return instancestore.ErrParallelCron
+	}
+
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+
+	return res.Error
 }

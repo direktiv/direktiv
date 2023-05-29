@@ -137,7 +137,7 @@ func NewMockGorm() (*gorm.DB, error) {
 	 		    "updated_at" datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 				"ended_at" datetime,
 				"deadline" datetime,
-				"status" text NOT NULL,
+				"status" integer NOT NULL,
 				"called_as" text NOT NULL,
 				"error_code" text NOT NULL,
 				"invoker" text NOT NULL,

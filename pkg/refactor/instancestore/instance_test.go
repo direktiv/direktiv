@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -139,8 +138,8 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 		return
 	}
 
-	if idata.Status != util.InstanceStatusPending {
-		t.Errorf("unexpected idata.Status, got: >%s<, want: >%s<", idata.Status, util.InstanceStatusPending)
+	if idata.Status != instancestore.InstanceStatusPending {
+		t.Errorf("unexpected idata.Status, got: >%s<, want: >%v<", idata.Status, instancestore.InstanceStatusPending)
 
 		return
 	}
@@ -366,24 +365,30 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 		}
 	}
 
-	idatas, err := is.GetNamespaceInstances(context.Background(), nsID, nil)
+	results, err := is.GetNamespaceInstances(context.Background(), nsID, nil)
 	if err != nil {
 		t.Errorf("unexpected GetNamespaceInstances() error: %v", err)
 
 		return
 	}
-	if idatas == nil {
-		idatas = make([]*instancestore.InstanceData, 0)
+	if results.Results == nil {
+		results.Results = make([]*instancestore.InstanceData, 0)
 	}
 
 	// validation
-	if len(idatas) != len(ids) {
-		t.Errorf("unexpected results count, got: %d, want: %d", len(idatas), len(ids))
+	if results.Total < len(results.Results) {
+		t.Errorf("illogical rowsAffected value, got: %d, want: %d", results.Total, len(results.Results))
 
 		return
 	}
 
-	for idx, idata := range idatas {
+	if len(results.Results) != len(ids) {
+		t.Errorf("unexpected results count, got: %d, want: %d", len(results.Results), len(ids))
+
+		return
+	}
+
+	for idx, idata := range results.Results {
 		if idata.ID != ids[idx] {
 			t.Errorf("unexpected idata.ID, got: >%s<, want: >%s<", idata.ID, ids[idx])
 
@@ -457,5 +462,12 @@ type: noop
 		})
 	}
 
+	// TODO: alan, test results.Total
 	// TODO: alan, test limit, offset, orderings, and filters
 }
+
+// TODO: alan, test GetHangingInstances
+
+// TODO: alan, test DeleteOldInstances
+
+// TODO: alan, test AssertNoParallelCron
