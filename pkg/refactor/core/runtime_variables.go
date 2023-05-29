@@ -49,8 +49,6 @@ type RuntimeVariablesStore interface {
 	// if no record found, it returns store.ErrNotFound error.
 	ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (RuntimeVariablesList, error)
 
-	SetInstanceVariable(ctx context.Context, variable *RuntimeVariable, instanceID uuid.UUID) (*RuntimeVariable, error)
-
 	Set(ctx context.Context, variable *RuntimeVariable) (*RuntimeVariable, error)
 
 	SetName(ctx context.Context, id uuid.UUID, name string) (*RuntimeVariable, error)
@@ -58,7 +56,7 @@ type RuntimeVariablesStore interface {
 	// Delete removes the whole entry from store.
 	Delete(ctx context.Context, id uuid.UUID) error
 
-	LoadData(ctx context.Context, variable *RuntimeVariable) error
+	LoadData(ctx context.Context, id uuid.UUID) ([]byte, error)
 }
 
 func (l RuntimeVariablesList) FilterByName(name string) *RuntimeVariable {

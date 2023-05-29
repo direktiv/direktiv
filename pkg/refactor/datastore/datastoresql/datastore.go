@@ -60,6 +60,7 @@ func (s *sqlStore) Secrets() core.SecretsStore {
 }
 
 func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
-	//TODO implement me
-	panic("implement me")
+	return &sqlRuntimeVariablesStore{
+		db: s.db,
+	}
 }

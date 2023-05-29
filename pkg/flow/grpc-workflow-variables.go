@@ -81,12 +81,12 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
-	err = store.RuntimeVariables().LoadData(ctx, item)
+	data, err := store.RuntimeVariables().LoadData(ctx, item.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Data = item.Data
+	resp.Data = data
 
 	return &resp, nil
 }
