@@ -240,7 +240,7 @@ states:
 	}
 }
 
-func assertInstanceDataIsEverything(t *testing.T, idata *instancestore.InstanceData) {
+func assertInstanceDataIsMost(t *testing.T, idata *instancestore.InstanceData) {
 	if idata.Definition == nil {
 		t.Errorf("missing idata.Definition")
 
@@ -261,12 +261,6 @@ func assertInstanceDataIsEverything(t *testing.T, idata *instancestore.InstanceD
 
 	if idata.TelemetryInfo == nil {
 		t.Errorf("missing idata.TelemetryInfo")
-
-		return
-	}
-
-	if idata.Input == nil {
-		t.Errorf("missing idata.Input")
 
 		return
 	}
@@ -323,12 +317,6 @@ func assertInstanceDataIsSummary(t *testing.T, idata *instancestore.InstanceData
 
 	if idata.StateMemory != nil {
 		t.Errorf("unexpected idata.StateMemory")
-
-		return
-	}
-
-	if idata.ErrorMessage != nil {
-		t.Errorf("unexpected idata.ErrorMessage")
 
 		return
 	}

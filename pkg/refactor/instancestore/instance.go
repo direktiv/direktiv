@@ -82,10 +82,23 @@ type CreateInstanceDataArgs struct {
 
 // TODO: alan
 type UpdateInstanceDataArgs struct {
+	EndedAt       *time.Time
+	Deadline      *time.Time
+	Status        *InstanceStatus
+	ErrorCode     *string
+	TelemetryInfo *[]byte
+	RuntimeInfo   *[]byte
+	ChildrenInfo  *[]byte
+	LiveData      *[]byte
+	StateMemory   *[]byte
+	Output        *[]byte
+	ErrorMessage  *[]byte
+	Metadata      *[]byte
+	// TODO: alan, should we consider compressing these binary fields?
 }
 
 type InstanceDataQuery interface {
-	// TODO: alan, implement UpdateInstanceData
+	// UpdateInstanceData updates the instance record. It only applies non-nil arguments.
 	UpdateInstanceData(ctx context.Context, args *UpdateInstanceDataArgs) (*InstanceData, error)
 
 	// TODO: alan, implement more fine-grained setters?
@@ -93,13 +106,20 @@ type InstanceDataQuery interface {
 	// - UpdateInstanceYield
 	// - UpdateInstanceTerminateTerminate
 
-	GetEverything(ctx context.Context) (*InstanceData, error)
+	// GetMost returns almost all fields, excluding only one or two fields that the engine is unlikely to need (input, output & metadata)
+	GetMost(ctx context.Context) (*InstanceData, error)
+
+	// GetSummary returns all fields that should be reasonably small, to avoid potentially loading megabytes of data unnecessarily.
 	GetSummary(ctx context.Context) (*InstanceData, error)
 
-	// TODO: alan, implement more fine-grained getters?
-	// - get everything except blobs that could be large AND are almost never read by the engine, only written: (input, output, error_message, metadata)
-	// - what about things that are only sometimes relevent to the engine? (children_info)
-	// - if the rest APIs return blobs separately, they should probably be queried separately as well
+	// GetSummaryWithInput returns everything GetSummary does, as well as the input field.
+	GetSummaryWithInput(ctx context.Context) (*InstanceData, error)
+
+	// GetSummaryWithOutput returns everything GetSummary does, as well as the output field.
+	GetSummaryWithOutput(ctx context.Context) (*InstanceData, error)
+
+	// GetSummaryWithMetadata returns everything GetSummary does, as well as the metadata field.
+	GetSummaryWithMetadata(ctx context.Context) (*InstanceData, error)
 }
 
 type Store interface {

@@ -12,23 +12,39 @@ import (
 )
 
 const (
-	table            = "instances_v2"
-	fieldCreatedAt   = "created_at"
-	fieldEndedAt     = "ended_at"
-	fieldCalledAs    = "called_as"
-	fieldStatus      = "status"
-	fieldInvoker     = "invoker"
-	fieldDeadline    = "deadline"
-	fieldNamespaceID = "namespace_id"
-	fieldWorkflowID  = "workflow_id"
-	desc             = "desc"
+	table              = "instances_v2"
+	fieldCreatedAt     = "created_at"
+	fieldEndedAt       = "ended_at"
+	fieldCalledAs      = "called_as"
+	fieldStatus        = "status"
+	fieldInvoker       = "invoker"
+	fieldDeadline      = "deadline"
+	fieldNamespaceID   = "namespace_id"
+	fieldWorkflowID    = "workflow_id"
+	fieldErrorCode     = "error_code"
+	fieldErrorMessage  = "error_message"
+	fieldTelemetryInfo = "telemetry_info"
+	fieldRuntimeInfo   = "runtime_info"
+	fieldChildrenInfo  = "children_info"
+	fieldLiveData      = "live_data"
+	fieldStateMemory   = "state_memory"
+	fieldOutput        = "output"
+	fieldMetadata      = "metadata"
+	desc               = "desc"
 )
 
 var (
+	mostFields = []string{
+		"id", fieldNamespaceID, fieldWorkflowID, "revision_id", "root_instance_id",
+		fieldCreatedAt, "updated_at", fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
+		fieldErrorCode, fieldInvoker, "definition", "settings", "descent_info", fieldTelemetryInfo,
+		fieldRuntimeInfo, fieldChildrenInfo /*"input",*/, fieldLiveData, fieldStateMemory, fieldErrorMessage,
+	}
+
 	summaryFields = []string{
 		"id", fieldNamespaceID, fieldWorkflowID, "revision_id", "root_instance_id",
 		fieldCreatedAt, "updated_at", fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
-		"error_code", fieldInvoker,
+		fieldErrorCode, fieldInvoker, fieldErrorMessage,
 	}
 )
 

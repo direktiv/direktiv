@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func assertInstanceStoreCorrectGetEverything(t *testing.T, is instancestore.Store, args *instancestore.CreateInstanceDataArgs) {
+func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, args *instancestore.CreateInstanceDataArgs) {
 	t.Helper()
 
 	assertInstanceStoreCorrectInstanceDataCreation(t, is, args)
@@ -18,7 +18,7 @@ func assertInstanceStoreCorrectGetEverything(t *testing.T, is instancestore.Stor
 		return
 	}
 
-	idata, err := is.ForInstanceID(args.ID).GetEverything(context.Background())
+	idata, err := is.ForInstanceID(args.ID).GetMost(context.Background())
 	if err != nil {
 		t.Errorf("unexpected GetSummary() error: %v", err)
 
@@ -31,10 +31,10 @@ func assertInstanceStoreCorrectGetEverything(t *testing.T, is instancestore.Stor
 	}
 
 	// validation
-	assertInstanceDataIsEverything(t, idata)
+	assertInstanceDataIsMost(t, idata)
 }
 
-func TestInstanceDataQuery_sqlInstanceStore_GetEverything(t *testing.T) {
+func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 	db, err := utils.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -68,7 +68,7 @@ states:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertInstanceStoreCorrectGetEverything(t, instances, tt.args)
+			assertInstanceStoreCorrectGetMost(t, instances, tt.args)
 		})
 	}
 }
@@ -135,3 +135,11 @@ states:
 		})
 	}
 }
+
+// TODO: alan, test UpdateInstanceData
+
+// TODO: alan, test GetSummaryWithInput
+
+// TODO: alan, test GetSummaryWithOutput
+
+// TODO: alan, test GetSummaryWithMetadata
