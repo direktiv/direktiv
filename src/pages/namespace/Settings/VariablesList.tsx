@@ -80,7 +80,6 @@ const VariablesList: FC = () => {
       {createItem && (
         <Create
           onSuccess={() => {
-            setCreateItem(false);
             setDialogOpen(false);
           }}
         />
@@ -89,7 +88,6 @@ const VariablesList: FC = () => {
         <Edit
           item={editItem}
           onSuccess={() => {
-            setCreateItem(false);
             setDialogOpen(false);
           }}
         />
