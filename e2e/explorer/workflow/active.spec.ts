@@ -1,22 +1,21 @@
 import { Page, expect, test } from "@playwright/test";
-import { actionMakeRevision, actionRevertRevision, actionWaitForSuccessToast } from "./utils";
 import {
-  createNamespace,
-  deleteNamespace,
-} from "../../utils/namespace";
+  actionMakeRevision,
+  actionRevertRevision,
+  actionWaitForSuccessToast,
+} from "./utils";
+import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
-import {
-  createWorkflow,
-} from "../../utils/node";
+import { createWorkflow } from "../../utils/node";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
 let workflow = "";
-const defaultDescription = 'A simple \'no-op\' state that returns \'Hello world!\''
+const defaultDescription = "A simple 'no-op' state that returns 'Hello world!'";
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
-  workflow = await createWorkflow(namespace, faker.git.shortSha() + '.yaml');
+  workflow = await createWorkflow(namespace, faker.git.shortSha() + ".yaml");
 });
 
 test.afterEach(async () => {
@@ -25,11 +24,11 @@ test.afterEach(async () => {
 });
 
 const actionNavigateToActiveWorkflow = async (page: Page) => {
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`)
-}
+  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+};
 const testSaveWorkflow = async (page: Page) => {
   const description = page.getByText(defaultDescription);
-  await description.click()
+  await description.click();
   // type random text in that textarea which is for description
   const testText = faker.random.alphaNumeric(9);
   await page.type("textarea", testText);
@@ -39,32 +38,58 @@ const testSaveWorkflow = async (page: Page) => {
   await saveButton.click();
 
   // save button should be disabled/enabled while/after the api call
-  await expect(saveButton, 'save button should be disabled during the api call').toBeDisabled();
-  await expect(saveButton, 'save button should be enabled after the api call').toBeEnabled();
+  await expect(
+    saveButton,
+    "save button should be disabled during the api call"
+  ).toBeDisabled();
+  await expect(
+    saveButton,
+    "save button should be enabled after the api call"
+  ).toBeEnabled();
 
   // after saving is completed screen should have those new changed text before/after the page reload
-  await expect(page.getByText(testText), 'after saving, screen should have the updated text').toBeVisible();
-  await page.reload({ waitUntil: 'load' });
-  await expect(page.getByText(testText), 'after reloading, screen should have the updated text').toBeVisible();
+  await expect(
+    page.getByText(testText),
+    "after saving, screen should have the updated text"
+  ).toBeVisible();
+  await page.reload({ waitUntil: "load" });
+  await expect(
+    page.getByText(testText),
+    "after reloading, screen should have the updated text"
+  ).toBeVisible();
 
   // check the text at the bottom left
-  await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
-}
+  await expect(
+    page.getByTestId("workflow-txt-updated"),
+    "text should be Updated a few seconds"
+  ).toHaveText("Updated a few seconds");
+};
 
 const testMakeRevision = async (page: Page) => {
   await actionMakeRevision(page);
   // check the success toast action button
   const toastAction = page.getByTestId("make-revision-toast-success-action");
-  await expect(toastAction, 'success toast should appear after make-revision button click').toBeVisible();
+  await expect(
+    toastAction,
+    "success toast should appear after make-revision button click"
+  ).toBeVisible();
 
   await toastAction.click();
-  await expect(toastAction, 'success toast should disappear after toast action click').toBeHidden();
-  await expect(page, "page url should have revision param").toHaveURL(/revision=/);
-  const revisionId = page.url().split('revision=')[1];
-  await expect(page.getByText(revisionId), "revisionId should be in the revision list").toBeVisible();
+  await expect(
+    toastAction,
+    "success toast should disappear after toast action click"
+  ).toBeHidden();
+  await expect(page, "page url should have revision param").toHaveURL(
+    /revision=/
+  );
+  const revisionId = page.url().split("revision=")[1];
+  await expect(
+    page.getByText(revisionId),
+    "revisionId should be in the revision list"
+  ).toBeVisible();
   //go back to the workflow editor
-  await page.getByTestId('workflow-tabs-trg-activeRevision').click()
-}
+  await page.getByTestId("workflow-tabs-trg-activeRevision").click();
+};
 
 test("it is possible to navigate to the active revision", async ({ page }) => {
   await page.goto("/");
@@ -89,29 +114,26 @@ test("it is possible to navigate to the active revision", async ({ page }) => {
   ).toHaveText(namespace);
 
   await page.getByTestId(`explorer-item-link-${workflow}`).click();
-  await expect(page.getByTestId('workflow-tabs-trg-activeRevision'), 'screen should have activeRevision tab').toBeVisible();
+  await expect(
+    page.getByTestId("workflow-tabs-trg-activeRevision"),
+    "screen should have activeRevision tab"
+  ).toBeVisible();
   await expect(page, "the workflow is reflected in the url").toHaveURL(
     `${namespace}/explorer/workflow/active/${workflow}`
   );
-})
+});
 
-test("it is possible to save the workflow", async ({
-  page,
-}) => {
+test("it is possible to save the workflow", async ({ page }) => {
   await actionNavigateToActiveWorkflow(page);
   await testSaveWorkflow(page);
 });
 
-test("it is possible to make the revision", async ({
-  page,
-}) => {
+test("it is possible to make the revision", async ({ page }) => {
   await actionNavigateToActiveWorkflow(page);
   await testMakeRevision(page);
 });
 
-test("it is possible to revert the revision", async ({
-  page,
-}) => {
+test("it is possible to revert the revision", async ({ page }) => {
   await actionNavigateToActiveWorkflow(page);
   await testMakeRevision(page);
   await testSaveWorkflow(page);
@@ -119,13 +141,24 @@ test("it is possible to revert the revision", async ({
   await actionWaitForSuccessToast(page);
 
   // check the description is reverted
-  await expect(page.getByText(defaultDescription), "description should be reverted to the default").toBeVisible();
+  await expect(
+    page.getByText(defaultDescription),
+    "description should be reverted to the default"
+  ).toBeVisible();
   // check the bottom left
-  await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
+  await expect(
+    page.getByTestId("workflow-txt-updated"),
+    "text should be Updated a few seconds"
+  ).toHaveText("Updated a few seconds");
 
   //check both after page reload
-  await page.reload({ waitUntil: 'load' });
-  await expect(page.getByText(defaultDescription), "description should be reverted to the default").toBeVisible();
-  await expect(page.getByTestId("workflow-txt-updated"), "text should be Updated a few seconds").toHaveText("Updated a few seconds");
+  await page.reload({ waitUntil: "load" });
+  await expect(
+    page.getByText(defaultDescription),
+    "description should be reverted to the default"
+  ).toBeVisible();
+  await expect(
+    page.getByTestId("workflow-txt-updated"),
+    "text should be Updated a few seconds"
+  ).toHaveText("Updated a few seconds");
 });
-
