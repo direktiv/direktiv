@@ -17,7 +17,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("by default, traffic shaping is not enabled", async ({ page }) => {
+test("by default, traffic shaping is not configured", async ({ page }) => {
   const name = faker.system.commonFileName("yaml");
 
   await createWorkflow({
