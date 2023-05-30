@@ -2,7 +2,7 @@ import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
-const changeContentForRevisions = (revision: number) => `
+const getRevisionContentVariation = (revision: number) => `
 description: minimal workflow
 states:
 - id: revision-${revision}
@@ -14,9 +14,9 @@ export const createWorkflowWithThreeRevisions = async (
   workflowName: string,
   path?: string
 ) => {
-  const contentRevision1 = changeContentForRevisions(1);
-  const contentRevision2 = changeContentForRevisions(2);
-  const contentRevision3 = changeContentForRevisions(3);
+  const contentRevision1 = getRevisionContentVariation(1);
+  const contentRevision2 = getRevisionContentVariation(2);
+  const contentRevision3 = getRevisionContentVariation(3);
 
   const commonUrlParams = {
     baseUrl: process.env.VITE_DEV_API_DOMAIN,
