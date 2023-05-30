@@ -109,7 +109,7 @@ const WorkflowEditor: FC<{
             <Button
               variant="outline"
               disabled={hasUnsavedChanged}
-              data-testid="workflow-edit-trg-revision"
+              data-testid="workflow-editor-btn-revision"
             >
               <GitMerge />
               {t("pages.explorer.workflow.editor.revisionsBtn")}
