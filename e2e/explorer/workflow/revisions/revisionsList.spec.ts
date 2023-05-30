@@ -60,7 +60,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
   await inputName.type(newTag);
   await page.getByTestId("dialog-create-tag-btn-submit").click();
   await actionWaitForSuccessToast(page);
-  return [firstRevision, newTag];
+  return [firstRevision, newTag] as const;
 };
 
 test("it is possible to navigate to the revisions tab", async ({ page }) => {
@@ -195,7 +195,7 @@ test("it is possible to create and delete tags", async ({ page }) => {
     "after reload, the new revision item should still be visible"
   ).toBeVisible();
 
-  await actionDeleteRevision(page, tag ?? "");
+  await actionDeleteRevision(page, tag);
   await actionWaitForSuccessToast(page);
 
   await expect(
@@ -212,7 +212,7 @@ test("it is possible to delete the tag by deleting the base revision", async ({
   const [revision, tag] = await actionCreateRevisionAndTag(page);
 
   // delete the revision
-  await actionDeleteRevision(page, revision ?? "");
+  await actionDeleteRevision(page, revision);
   await actionWaitForSuccessToast(page);
 
   // both the revision and the tag should disappear from the list
