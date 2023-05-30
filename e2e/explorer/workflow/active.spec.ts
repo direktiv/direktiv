@@ -34,7 +34,7 @@ const testSaveWorkflow = async (page: Page) => {
   const testText = faker.random.alphaNumeric(9);
   await page.type("textarea", testText);
 
-  //now click on Save
+  // now click on Save
   const saveButton = page.getByTestId("workflow-editor-btn-save");
   await saveButton.click();
 
@@ -91,7 +91,7 @@ const testMakeRevision = async (page: Page) => {
     page.getByText(revisionId),
     "revisionId should be in the revision list"
   ).toBeVisible();
-  //go back to the workflow editor
+  // go back to the workflow editor
   await page.getByTestId("workflow-tabs-trg-activeRevision").click();
 };
 
@@ -161,7 +161,7 @@ test("it is possible to revert the revision", async ({ page }) => {
     "text should be Updated a few seconds"
   ).toHaveText("Updated a few seconds");
 
-  //check both after page reload
+  // check both after page reload
   await page.reload({ waitUntil: "load" });
 
   await expect(

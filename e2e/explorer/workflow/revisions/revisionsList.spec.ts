@@ -39,7 +39,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
   await actionWaitForSuccessToast(page);
   await actionNavigateToRevisions(page);
 
-  //open context menu & click on create-tag
+  // open context menu & click on create-tag
   const firstRevision = await page
     .getByTestId(/workflow-revisions-link-item/)
     .nth(1)
@@ -54,7 +54,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
   );
   await createTagTrg.click();
 
-  //type name and save & wait for the success toast
+  // type name and save & wait for the success toast
   const inputName = page.getByTestId("dialog-create-tag-input-name");
   const newTag = faker.random.alphaNumeric(9);
   await inputName.type(newTag);
@@ -146,7 +146,7 @@ test("it is possible to delete the revision", async ({ page }) => {
     "after click menu trigger, menu content should appear"
   ).toBeVisible();
 
-  //click on the delete button to show the Delete Dialog
+  // click on the delete button to show the Delete Dialog
   const deleteTrg = page.getByTestId(
     `workflow-revisions-trg-delete-dlg-${firstRevision}`
   );
@@ -162,7 +162,7 @@ test("it is possible to delete the revision", async ({ page }) => {
 
   await actionWaitForSuccessToast(page);
 
-  //after delete success, confirm that the revision item isn't visible anymore
+  // after delete success, confirm that the revision item isn't visible anymore
   const revisionItem = page.getByTestId(
     `workflow-revisions-link-item-${firstRevision}`
   );
@@ -208,14 +208,14 @@ test("it is possible to create and delete tags", async ({ page }) => {
 test("it is possible to delete the tag by deleting the base revision", async ({
   page,
 }) => {
-  //create a revision, and a tag from that revision
+  // create a revision, and a tag from that revision
   const [revision, tag] = await actionCreateRevisionAndTag(page);
 
-  //delete the revision
+  // delete the revision
   await actionDeleteRevision(page, revision ?? "");
   await actionWaitForSuccessToast(page);
 
-  //both the revision and the tag should disappear from the list
+  // both the revision and the tag should disappear from the list
   const revisionItem = page.getByTestId(
     `workflow-revisions-link-item-${revision}`
   );
