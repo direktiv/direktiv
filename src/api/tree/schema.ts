@@ -34,7 +34,7 @@ export const NodeListSchema = z.object({
 });
 
 // the revisions scheme in the revisions list only has a subset of the fields
-const TrimedRevisionSchema = z.object({
+const TrimmedRevisionSchema = z.object({
   name: z.string(),
 });
 
@@ -42,7 +42,7 @@ export const RevisionsListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
   pageInfo: PageinfoSchema,
-  results: z.array(TrimedRevisionSchema),
+  results: z.array(TrimmedRevisionSchema),
 });
 
 export const TagsListSchema = RevisionsListSchema;
@@ -90,7 +90,7 @@ export const fileNameSchema = z
 
 export type NodeListSchemaType = z.infer<typeof NodeListSchema>;
 export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
-export type TrimedRevisionSchemaType = z.infer<typeof TrimedRevisionSchema>;
+export type TrimmedRevisionSchemaType = z.infer<typeof TrimmedRevisionSchema>;
 export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
 export type RouterSchemaType = z.infer<typeof RouterSchema>;

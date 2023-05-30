@@ -19,7 +19,7 @@ import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { Link } from "react-router-dom";
 import Revert from "./Revert";
-import type { TrimedRevisionSchemaType } from "~/api/tree/schema";
+import type { TrimmedRevisionSchemaType } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
 import { useNodeRevisions } from "~/api/tree/query/revisions";
 import { useNodeTags } from "~/api/tree/query/tags";
@@ -40,15 +40,15 @@ const RevisionsList: FC = () => {
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that revision for the dialog
   const [deleteRev, setDeleteRev] = useState<
-    TrimedRevisionSchemaType | undefined
+    TrimmedRevisionSchemaType | undefined
   >();
   const [deleteTag, setDeleteTag] = useState<
-    TrimedRevisionSchemaType | undefined
+    TrimmedRevisionSchemaType | undefined
   >();
   const [createTag, setCreateTag] = useState<
-    TrimedRevisionSchemaType | undefined
+    TrimmedRevisionSchemaType | undefined
   >();
-  const [revert, setRevert] = useState<TrimedRevisionSchemaType | undefined>();
+  const [revert, setRevert] = useState<TrimmedRevisionSchemaType | undefined>();
 
   const { data: router } = useRouter({ path });
 

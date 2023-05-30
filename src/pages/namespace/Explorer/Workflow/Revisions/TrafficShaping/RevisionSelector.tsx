@@ -16,7 +16,7 @@ import {
 } from "../../../../../../design/Popover";
 
 import Button from "../../../../../../design/Button";
-import { TrimedRevisionSchemaType } from "../../../../../../api/tree/schema";
+import { TrimmedRevisionSchemaType } from "../../../../../../api/tree/schema";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
@@ -27,8 +27,8 @@ type ButtonProps = ComponentPropsWithoutRef<typeof Button> & {
 };
 
 type RevisionSelectorProps = ButtonProps & {
-  tags: TrimedRevisionSchemaType[];
-  revisions: TrimedRevisionSchemaType[];
+  tags: TrimmedRevisionSchemaType[];
+  revisions: TrimmedRevisionSchemaType[];
   isLoading?: boolean;
 };
 
