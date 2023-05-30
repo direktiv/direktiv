@@ -8,6 +8,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, args *instancestore.CreateInstanceDataArgs) {
@@ -39,7 +40,8 @@ func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
+	logger, _ := zap.NewDevelopment()
+	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
 
 	var tests []assertInstanceStoreCorrectInstanceDataCreationTest
 
@@ -102,7 +104,8 @@ func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
+	logger, _ := zap.NewDevelopment()
+	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
 
 	var tests []assertInstanceStoreCorrectInstanceDataCreationTest
 

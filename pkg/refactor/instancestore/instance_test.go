@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func checksum(data []byte) string {
@@ -206,7 +207,8 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
+	logger, _ := zap.NewDevelopment()
+	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
 
 	var tests []assertInstanceStoreCorrectInstanceDataCreationTest
 
@@ -360,7 +362,7 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 		return
 	}
 	if results.Results == nil {
-		results.Results = make([]*instancestore.InstanceData, 0)
+		results.Results = make([]instancestore.InstanceData, 0)
 	}
 
 	// validation
@@ -383,7 +385,7 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 			return
 		}
 
-		assertInstanceDataIsSummary(t, idata)
+		assertInstanceDataIsSummary(t, &idata)
 		if t.Failed() {
 			return
 		}
@@ -396,7 +398,8 @@ func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
+	logger, _ := zap.NewDevelopment()
+	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
 
 	var tests []assertInstanceStoreCorrectGetNamespaceInstancesTest
 
