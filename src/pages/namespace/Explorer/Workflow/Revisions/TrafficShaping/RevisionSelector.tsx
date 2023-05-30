@@ -55,6 +55,13 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
     setIsTagSelected(tags.some((t) => t.name === defaultValue));
   }, [defaultValue, tags]);
 
+  const buttonLabel =
+    value !== ""
+      ? revisions
+          .find((rev) => rev.name === value)
+          ?.name.slice(0, isTagSelected ? undefined : 8)
+      : undefined;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -65,13 +72,10 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
           loading={isLoading}
           {...props}
         >
-          {value
-            ? revisions
-                .find((rev) => rev.name === value)
-                ?.name.slice(0, isTagSelected ? undefined : 8)
-            : t(
-                "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.placeholder"
-              )}
+          {buttonLabel ??
+            t(
+              "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.placeholder"
+            )}
           <ChevronDown />
         </Button>
       </PopoverTrigger>
