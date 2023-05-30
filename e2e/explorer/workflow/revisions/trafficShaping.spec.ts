@@ -58,7 +58,7 @@ test("by default, traffic shaping is not enabled", async ({ page }) => {
   );
 });
 
-test("you can't save, traffic shaping with two of the same revisions", async ({
+test("it is not possible to save traffic shaping when the same revision is selected twice", async ({
   page,
 }) => {
   const name = faker.system.commonFileName("yaml");
