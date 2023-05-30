@@ -85,8 +85,10 @@ const testMakeRevision = async (page: Page) => {
   );
   const revisionId = page.url().split("revision=")[1];
 
+  if (!revisionId) throw new Error("revisionId should be present in the url");
+
   await expect(
-    page.getByText(revisionId ?? ""),
+    page.getByText(revisionId),
     "revisionId should be in the revision list"
   ).toBeVisible();
   //go back to the workflow editor
