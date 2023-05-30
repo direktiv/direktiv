@@ -1,24 +1,13 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { GitMerge, MoreVertical, Tag, Trash, Undo } from "lucide-react";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+import { Table, TableBody } from "~/design/Table";
 
-import Badge from "~/design/Badge";
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import CopyButton from "~/design/CopyButton";
 import CreateTag from "./CreateTag";
 import Delete from "./Delete";
-import { Link } from "react-router-dom";
+import { GitMerge } from "lucide-react";
 import Revert from "./Revert";
+import RevisionTableRow from "./Row";
 import type { TrimmedRevisionSchemaType } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
 import { useNodeRevisions } from "~/api/tree/query/revisions";
@@ -77,138 +66,24 @@ const RevisionsList: FC = () => {
           <Table>
             <TableBody>
               {revisions?.results?.map((rev, i) => {
-                const isTag = tags?.results?.some(
-                  (tag) => tag.name === rev.name
-                );
+                const isTag =
+                  tags?.results?.some((tag) => tag.name === rev.name) ?? false;
 
-                const index = router?.routes?.findIndex(
-                  (x) => x.ref === rev.name
-                );
-
-                const isLatest = rev.name === "latest";
-                const Icon = isTag ? Tag : GitMerge;
+                const index =
+                  router?.routes?.findIndex((x) => x.ref === rev.name) ?? -1;
 
                 return (
-                  <TableRow
+                  <RevisionTableRow
+                    isPrimaryTraffic={index === 0}
+                    isSecondaryTraffic={index === 1}
+                    revision={rev}
+                    isTag={isTag}
                     key={i}
-                    className="group"
-                    data-testid={`revisions-list-${rev.name}`}
-                  >
-                    <TableCell className="w-0">
-                      <div className="flex space-x-3">
-                        <Icon aria-hidden="true" className="h-5" />
-                        <Link
-                          to={pages.explorer.createHref({
-                            namespace,
-                            path,
-                            subpage: "workflow-revisions",
-                            revision: rev.name,
-                          })}
-                        >
-                          {rev.name}
-                        </Link>
-                      </div>
-                    </TableCell>
-                    <TableCell className="w-0 justify-start gap-x-3">
-                      {index === 0 && (
-                        <Badge data-testid="traffic-distribution-primary">
-                          {t(
-                            "pages.explorer.tree.workflow.revisions.list.distribution",
-                            {
-                              count: router?.routes?.[0]?.weight,
-                            }
-                          )}
-                        </Badge>
-                      )}
-                      {index === 1 && (
-                        <Badge
-                          data-testid="traffic-distribution-secondary"
-                          variant="outline"
-                        >
-                          {t(
-                            "pages.explorer.tree.workflow.revisions.list.distribution",
-                            {
-                              count: router?.routes?.[1]?.weight,
-                            }
-                          )}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="flex w-auto justify-end gap-x-3">
-                      {!isLatest && (
-                        <CopyButton
-                          value={rev.name}
-                          buttonProps={{
-                            variant: "outline",
-                            className: "hidden group-hover:inline-flex",
-                            size: "sm",
-                          }}
-                        >
-                          {(copied) => (copied ? "copied" : "copy")}
-                        </CopyButton>
-                      )}
-                      {!isLatest && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" icon>
-                              <MoreVertical />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-44">
-                            <DropdownMenuLabel>
-                              {t(
-                                "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
-                              )}
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DialogTrigger
-                              className="w-full"
-                              onClick={() => {
-                                if (isTag) {
-                                  setDeleteTag(rev);
-                                } else {
-                                  setDeleteRev(rev);
-                                }
-                              }}
-                            >
-                              <DropdownMenuItem>
-                                <Trash className="mr-2 h-4 w-4" />
-                                {t(
-                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
-                                )}
-                              </DropdownMenuItem>
-                            </DialogTrigger>
-                            <DialogTrigger
-                              className="w-full"
-                              onClick={() => {
-                                setCreateTag(rev);
-                              }}
-                            >
-                              <DropdownMenuItem>
-                                <Tag className="mr-2 h-4 w-4" />
-                                {t(
-                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
-                                )}
-                              </DropdownMenuItem>
-                            </DialogTrigger>
-                            <DialogTrigger
-                              className="w-full"
-                              onClick={() => {
-                                setRevert(rev);
-                              }}
-                            >
-                              <DropdownMenuItem>
-                                <Undo className="mr-2 h-4 w-4" />
-                                {t(
-                                  "pages.explorer.tree.workflow.revisions.list.contextMenu.revert"
-                                )}
-                              </DropdownMenuItem>
-                            </DialogTrigger>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                    onDeleteRevClicked={setDeleteRev}
+                    onDeleteTagCLicked={setDeleteTag}
+                    onRevertClicked={setRevert}
+                    onCreateTagClicked={setCreateTag}
+                  />
                 );
               })}
             </TableBody>
