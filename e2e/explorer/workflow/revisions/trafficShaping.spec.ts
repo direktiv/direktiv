@@ -163,12 +163,12 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
 
   await expect(
     page.getByTestId("route-a-selector"),
-    "after reloasing, route a selector is prefilled with the previously selected revision"
+    "after reloading, route a selector is prefilled with the previously selected revision"
   ).toHaveText(revisionA.slice(0, 8));
 
   await expect(
     page.getByTestId("route-b-selector"),
-    "after reloasing, route b selector is prefilled with the previously selected revision"
+    "after reloading, route b selector is prefilled with the previously selected revision"
   ).toHaveText(revisionB.slice(0, 8));
 
   await expect(
