@@ -114,14 +114,14 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
     targetPosition: { x: 50, y: 0 },
   });
   const sliderValue = await slider.getAttribute("aria-valuenow");
-  const secondShaping = 100 - parseInt(sliderValue ?? "");
+  const secondWeight = 100 - parseInt(sliderValue ?? "");
   expect(sliderValue).not.toBe("0");
 
   await expect(
     page.getByTestId("traffic-shaping-note"),
     "there is a hint that describes the traffic shaping"
   ).toHaveText(
-    `The traffic will be split between ${firstRevisionName} and ${secondRevisionName} with a ratio of ${sliderValue} to ${secondShaping} %`
+    `The traffic will be split between ${firstRevisionName} and ${secondRevisionName} with a ratio of ${sliderValue} to ${secondWeight} %`
   );
 
   // save
@@ -139,7 +139,7 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
   );
   await expect(
     secondRevisionRow.getByTestId("traffic-distribution-secondary")
-  ).toHaveText(`${secondShaping} % of traffic distribution`);
+  ).toHaveText(`${secondWeight} % of traffic distribution`);
 
   // reload page
   await page.reload();
@@ -156,7 +156,7 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
     "there is a hint that describes the traffic shaping"
   ).toHaveText(
     isInAlphabeticalOrder
-      ? `The traffic will be split between ${firstRevisionName} and ${secondRevisionName} with a ratio of ${sliderValue} to ${secondShaping} %`
-      : `The traffic will be split between ${secondRevisionName} and ${firstRevisionName} with a ratio of ${secondShaping} to ${sliderValue} %`
+      ? `The traffic will be split between ${firstRevisionName} and ${secondRevisionName} with a ratio of ${sliderValue} to ${secondWeight} %`
+      : `The traffic will be split between ${secondRevisionName} and ${firstRevisionName} with a ratio of ${secondWeight} to ${sliderValue} %`
   );
 });
