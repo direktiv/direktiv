@@ -127,23 +127,6 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
   // save
   await page.getByTestId("traffic-shaping-save-btn").click();
 
-  const firstRevisionRow = await page.getByTestId(
-    `revisions-list-${firstRevisionName}`
-  );
-  await expect(
-    firstRevisionRow.getByTestId("traffic-distribution-primary")
-  ).toHaveText(`${sliderValue} % of traffic distribution`);
-
-  const secondRevisionRow = await page.getByTestId(
-    `revisions-list-${secondRevisionName}`
-  );
-  await expect(
-    secondRevisionRow.getByTestId("traffic-distribution-secondary")
-  ).toHaveText(`${secondWeight} % of traffic distribution`);
-
-  // reload page
-  await page.reload();
-
   // TODO: waiting for DIR-576 to get fixed
   // since returned routes are random, we serialize the data in aphabetical order
   // this might lead to swapped routes in the UI after a reload, but this will be
@@ -159,6 +142,24 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
     : firstRevisionName;
   const weightA = isInAlphabeticalOrder ? sliderValue : secondWeight;
   const weightB = isInAlphabeticalOrder ? secondWeight : sliderValue;
+
+  const firstRevisionRow = await page.getByTestId(
+    `revisions-list-${revisionA}`
+  );
+  await expect(
+    firstRevisionRow.getByTestId("traffic-distribution-primary")
+  ).toHaveText(`${weightA} % of traffic distribution`);
+
+  const secondRevisionRow = await page.getByTestId(
+    `revisions-list-${revisionB}`
+  );
+
+  await expect(
+    secondRevisionRow.getByTestId("traffic-distribution-secondary")
+  ).toHaveText(`${weightB} % of traffic distribution`);
+
+  // reload page
+  await page.reload();
 
   await expect(
     page.getByTestId("route-a-selector"),
