@@ -76,8 +76,6 @@ const WorkflowEditor: FC<{
           data-testid="workflow-txt-updated"
           className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8"
         >
-          {/* must use fromNow(true) because otherwise after saving, it sometimes shows Updated in a few seconds */}
-
           {data.revision?.createdAt && (
             <>
               {t("pages.explorer.workflow.updated", {
