@@ -10,9 +10,17 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const createRevision = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
+export const createRevision = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    path,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    path: string;
+  }) =>
+    `${baseUrl ?? ""}/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=save-workflow&ref=latest`,
   method: "POST",

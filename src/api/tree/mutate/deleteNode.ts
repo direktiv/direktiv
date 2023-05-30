@@ -13,6 +13,27 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
+const updateCache = (
+  oldData: NodeListSchemaType | undefined,
+  variables: Parameters<ReturnType<typeof useDeleteNode>["mutate"]>[0]
+) => {
+  if (!oldData) return undefined;
+  const oldChildren = oldData?.children;
+  return {
+    ...oldData,
+    ...(oldChildren
+      ? {
+          children: {
+            ...oldChildren,
+            results: oldChildren?.results.filter(
+              (child) => child.name !== variables.node.name
+            ),
+          },
+        }
+      : {}),
+  };
+};
+
 const deleteNode = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(
@@ -51,23 +72,7 @@ export const useDeleteNode = ({
           apiKey: apiKey ?? undefined,
           path: variables.node.parent,
         }),
-        (oldData) => {
-          if (!oldData) return undefined;
-          const oldChildren = oldData?.children;
-          return {
-            ...oldData,
-            ...(oldChildren
-              ? {
-                  children: {
-                    ...oldChildren,
-                    results: oldChildren?.results.filter(
-                      (child) => child.name !== variables.node.name
-                    ),
-                  },
-                }
-              : {}),
-          };
-        }
+        (oldData) => updateCache(oldData, variables)
       );
       toast({
         title: t("api.tree.mutate.deleteNode.success.title", {

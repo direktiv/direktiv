@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import React from "react";
 import type { RouteObject } from "react-router-dom";
 import SettiongsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";

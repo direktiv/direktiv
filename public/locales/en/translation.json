@@ -72,7 +72,23 @@
         },
         "workflow": {
           "revisions": {
+            "trafficShaping": {
+              "title": "Traffic Shaping",
+              "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
+              "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
+              "hint": "Please select 2 different revisions to configure traffic shaping.",
+              "saveBtn": "Save",
+              "revisionSelector": {
+                "placeholder": "Select Revision...",
+                "searchPlaceholder": "Search Revisions...",
+                "tags": "Tags",
+                "revisions": "Revisions",
+                "notFound": "No Revisions found."
+              }
+            },
             "list": {
+              "title": "Revisions",
+              "distribution": "{{count}} % of traffic distribution",
               "contextMenu": {
                 "title": "Actions",
                 "delete": "Delete",
