@@ -32,6 +32,7 @@ module.exports = {
     node: true,
   },
   ignorePatterns: [
+    "public/",
     "node_modules/",
     "dist/",
     ".eslintrc.js",
