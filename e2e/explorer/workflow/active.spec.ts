@@ -26,6 +26,7 @@ test.afterEach(async () => {
 const actionNavigateToActiveWorkflow = async (page: Page) => {
   await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
 };
+
 const testSaveWorkflow = async (page: Page) => {
   const description = page.getByText(defaultDescription);
   await description.click();
@@ -101,24 +102,29 @@ test("it is possible to navigate to the active revision", async ({ page }) => {
   // at this point, any namespace may be loaded.
   // let's navigate to the test's namespace via breadcrumbs.
   await page.getByTestId("dropdown-trg-namespace").click();
+
   await page
     .getByRole("option", {
       name: namespace,
     })
     .click();
+
   await expect(page, "the namespace is reflected in the url").toHaveURL(
     `/${namespace}/explorer/tree`
   );
+
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "the namespace is reflected in the breadcrumbs"
   ).toHaveText(namespace);
 
   await page.getByTestId(`explorer-item-link-${workflow}`).click();
+
   await expect(
     page.getByTestId("workflow-tabs-trg-activeRevision"),
     "screen should have activeRevision tab"
   ).toBeVisible();
+
   await expect(page, "the workflow is reflected in the url").toHaveURL(
     `${namespace}/explorer/workflow/active/${workflow}`
   );
@@ -146,6 +152,7 @@ test("it is possible to revert the revision", async ({ page }) => {
     page.getByText(defaultDescription),
     "description should be reverted to the default"
   ).toBeVisible();
+
   // check the bottom left
   await expect(
     page.getByTestId("workflow-txt-updated"),
@@ -154,10 +161,12 @@ test("it is possible to revert the revision", async ({ page }) => {
 
   //check both after page reload
   await page.reload({ waitUntil: "load" });
+
   await expect(
     page.getByText(defaultDescription),
     "description should be reverted to the default"
   ).toBeVisible();
+
   await expect(
     page.getByTestId("workflow-txt-updated"),
     "text should be Updated a few seconds"
