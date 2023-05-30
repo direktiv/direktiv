@@ -14,7 +14,7 @@ import { faker } from "@faker-js/faker";
 let namespace = "";
 let workflow = "";
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = await createWorkflow(namespace, faker.git.shortSha() + ".yaml");
 });

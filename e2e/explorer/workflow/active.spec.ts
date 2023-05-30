@@ -13,7 +13,7 @@ let namespace = "";
 let workflow = "";
 const defaultDescription = "A simple 'no-op' state that returns 'Hello world!'";
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = await createWorkflow(namespace, faker.git.shortSha() + ".yaml");
 });
