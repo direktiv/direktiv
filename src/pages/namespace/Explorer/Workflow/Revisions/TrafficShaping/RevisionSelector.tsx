@@ -21,7 +21,10 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 // use props of our button but overwrite some onSelect and defaultValue
-type ButtonProps = ComponentPropsWithoutRef<typeof Button> & {
+type ButtonProps = Omit<
+  ComponentPropsWithoutRef<typeof Button>,
+  "onSelect" | "defaultValue" // remove the native onSelect and defaultValue props
+> & {
   onSelect?: (revision: string) => void;
   defaultValue?: string;
 };
