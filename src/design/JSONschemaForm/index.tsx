@@ -1,18 +1,22 @@
 import {
+  BaseInputTemplateProps,
   RJSFSchema,
+  SubmitButtonProps,
   WidgetProps,
+  getSubmitButtonOptions,
 } from "@rjsf/utils";
 
 import Button from "../Button";
 import Form from "@rjsf/core";
 import Input from "../Input";
 import React from "react";
+import validator from "@rjsf/validator-ajv8";
 
 const FormInput: React.FunctionComponent<WidgetProps> = (props) => {
   const [val, setVal] = React.useState<string>("");
   return (
     <Input
-      className="form-control mb-2 mt-1 w-full"
+      className="mb-2 mt-1 w-full"
       type={props.options.inputType}
       required={props.required}
       id={props.id}
@@ -25,7 +29,33 @@ const FormInput: React.FunctionComponent<WidgetProps> = (props) => {
   );
 };
 
-export const JSONschemaForm = () => {
+function SubmitButton(props: SubmitButtonProps) {
+  const { uiSchema } = props;
+  const { norender } = getSubmitButtonOptions(uiSchema);
+  if (norender) {
+    return null;
+  }
+  return <Button type="submit">Submit</Button>;
+}
+
+function BaseInputTemplate(props: BaseInputTemplateProps) {
+  return (
+    <Input
+      className="mb-2 mt-1 w-full"
+      type={props.options.inputType}
+      required={props.required}
+      id={props.id}
+      onChange={(e) => {
+        props.onChange(e.target.value);
+      }}
+    />
+  );
+}
+
+export interface JSONSchemaFormProps {
+  schema: RJSFSchema;
+}
+export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => {
   const uiSchema = {
     password: {
       "ui:widget": FormInput,
@@ -33,24 +63,7 @@ export const JSONschemaForm = () => {
         inputType: "password",
       },
     },
-    firstName: {
-      "ui:widget": FormInput,
-      "ui:options": {
-        inputType: "text",
-      },
-    },
-    lastName: {
-      "ui:widget": FormInput,
-      "ui:options": {
-        inputType: "text",
-      },
-    },
-    bio: {
-      "ui:widget": FormInput,
-      "ui:options": {
-        inputType: "text",
-      },
-    },
+
     age: {
       "ui:widget": FormInput,
       "ui:options": {
@@ -58,42 +71,18 @@ export const JSONschemaForm = () => {
       },
     },
     "ui:submitButtonOptions": {
-      norender: true,
-    },
-  };
-  const schema: RJSFSchema = {
-    title: "A registration form",
-    type: "object",
-    required: ["firstName", "lastName"],
-    properties: {
-      password: {
-        type: "string",
-        title: "Password",
-      },
-      lastName: {
-        type: "string",
-        title: "Last name",
-      },
-      bio: {
-        type: "string",
-        title: "Bio",
-      },
-      firstName: {
-        type: "string",
-        title: "First name",
-      },
-      age: {
-        type: "integer",
-        title: "Age",
-      },
+      norender: false,
     },
   };
 
   return (
-    // <div className='[&>form>div>fieldset>legend]:text-primary-500'>
-    <Form uiSchema={uiSchema} schema={schema}>
-      <Button type="submit">Submit</Button>
-    </Form>
-    // </div>
+    <Form
+      schema={props.schema}
+      templates={{ BaseInputTemplate, ButtonTemplates: { SubmitButton } }}
+      validator={validator}
+      uiSchema={uiSchema}
+    />
   );
 };
+
+JSONSchemaForm.displayName = "JSONSchemaForm";
