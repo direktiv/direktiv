@@ -151,12 +151,29 @@ test("it is possible to configure traffic shaping", async ({ page }) => {
   const isInAlphabeticalOrder =
     firstRevisionName.localeCompare(secondRevisionName) === -1;
 
+  const revisionA = isInAlphabeticalOrder
+    ? firstRevisionName
+    : secondRevisionName;
+  const revisionB = isInAlphabeticalOrder
+    ? secondRevisionName
+    : firstRevisionName;
+  const weightA = isInAlphabeticalOrder ? sliderValue : secondWeight;
+  const weightB = isInAlphabeticalOrder ? secondWeight : sliderValue;
+
+  await expect(
+    page.getByTestId("route-a-selector"),
+    "after reloasing, route a selector is prefilled with the previously selected revision"
+  ).toHaveText(revisionA.slice(0, 8));
+
+  await expect(
+    page.getByTestId("route-b-selector"),
+    "after reloasing, route b selector is prefilled with the previously selected revision"
+  ).toHaveText(revisionB.slice(0, 8));
+
   await expect(
     page.getByTestId("traffic-shaping-note"),
-    "there is a hint that describes the traffic shaping"
+    "after reloading, there is a hint that describes the traffic shaping"
   ).toHaveText(
-    isInAlphabeticalOrder
-      ? `The traffic will be split between ${firstRevisionName} and ${secondRevisionName} with a ratio of ${sliderValue} to ${secondWeight} %`
-      : `The traffic will be split between ${secondRevisionName} and ${firstRevisionName} with a ratio of ${secondWeight} to ${sliderValue} %`
+    `The traffic will be split between ${revisionA} and ${revisionB} with a ratio of ${weightA} to ${weightB} %`
   );
 });
