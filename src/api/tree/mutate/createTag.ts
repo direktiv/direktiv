@@ -7,6 +7,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const createTag = apiFactory({
   url: ({
@@ -30,6 +31,7 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -69,16 +71,18 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
         })
       );
       toast({
-        title: "Tag created",
-        description: `Tag ${variables.tag} was created`,
+        title: t("api.tree.mutate.createTag.success.title"),
+        description: t("api.tree.mutate.createTag.success.description", {
+          name: variables.tag,
+        }),
         variant: "success",
       });
       onSuccess?.();
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not create tag 😢",
+        title: t("api.tree.mutate.createTag.error.title"),
+        description: t("api.tree.mutate.createTag.error.description"),
         variant: "error",
       });
     },

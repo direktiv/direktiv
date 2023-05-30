@@ -7,6 +7,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const deleteRevision = apiFactory({
   url: ({
@@ -32,6 +33,7 @@ export const useDeleteRevision = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -50,8 +52,10 @@ export const useDeleteRevision = ({
       }),
     onSuccess(_, variables) {
       toast({
-        title: `revision deleted`,
-        description: `revision ${variables.revision} was deleted`,
+        title: t("api.tree.mutate.deleteRevision.success.title"),
+        description: t("api.tree.mutate.deleteRevision.success.description", {
+          name: variables.revision,
+        }),
         variant: "success",
       });
       // deleting a revision, deletes all corresponding tags,
@@ -75,8 +79,8 @@ export const useDeleteRevision = ({
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not delete 😢",
+        title: t("api.tree.mutate.deleteRevision.error.title"),
+        description: t("api.tree.mutate.deleteRevision.error.description"),
         variant: "error",
       });
     },

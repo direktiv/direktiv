@@ -11,6 +11,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const deleteTag = apiFactory({
   url: ({
@@ -36,6 +37,7 @@ export const useDeleteTag = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -54,8 +56,10 @@ export const useDeleteTag = ({
       }),
     onSuccess(_, variables) {
       toast({
-        title: `tag deleted`,
-        description: `tag ${variables.tag} was deleted`,
+        title: t("api.tree.mutate.deleteTag.success.title"),
+        description: t("api.tree.mutate.deleteTag.success.description", {
+          name: variables.tag,
+        }),
         variant: "success",
       });
       // update revisions list cache
@@ -104,8 +108,8 @@ export const useDeleteTag = ({
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not delete 😢",
+        title: t("api.tree.mutate.deleteTag.error.title"),
+        description: t("api.tree.mutate.deleteTag.error.description"),
         variant: "error",
       });
     },

@@ -149,5 +149,133 @@
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel"
     }
+  },
+  "api": {
+    "generic": {
+      "error": "An error occurred"
+    },
+    "tree": {
+      "mutate": {
+        "setRouter": {
+          "success": {
+            "title": "Traffic shaping was updated",
+            "description": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %"
+          },
+          "error": "could set traffic shaping"
+        },
+        "createDirectory": {
+          "success": {
+            "title": "Directory created",
+            "description": "Directory {{directory}} was created in {{path}}"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not create directory 😢"
+          }
+        },
+        "createRevision": {
+          "success": {
+            "title": "Revision created",
+            "description": "Revision {{name}} was created",
+            "action": "Open Revision"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not create revision 😢"
+          }
+        },
+        "createTag": {
+          "success": {
+            "title": "Tag created",
+            "description": "Tag {{name} was created"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not create tag 😢"
+          }
+        },
+        "createWorkflow": {
+          "success": {
+            "title": "Workflow created",
+            "description": "Workflow {{name}} was created in {{path}}"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not create workflow 😢"
+          }
+        },
+        "deleteNode": {
+          "success": {
+            "title": "{{type}} deleted",
+            "description": "{{name}} was deleted"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not delete 😢"
+          }
+        },
+        "deleteRevision": {
+          "success": {
+            "title": "revision deleted",
+            "description": "revision {{name}} was deleted"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not delete 😢"
+          }
+        },
+        "deleteTag": {
+          "success": {
+            "title": "tag deleted",
+            "description": "tag {{name}} was deleted"
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not delete 😢"
+          }
+        },
+        "renameNode": {
+          "success": {
+            "title": "{{type}} renamed",
+            "description": "{{name}} was deleted"
+          },
+          "error": {
+            "undefined": "namespace is undefined",
+            "title": "An error occurred",
+            "description": "could not rename 😢"
+          }
+        },
+        "revertRevision": {
+          "success": {
+            "title": "Restored workflow",
+            "description": "The latest revision was restored"
+          },
+          "error": {
+            "undefined": "namespace is undefined",
+            "title": "An error occurred",
+            "description": "could not revert workflow 😢"
+          }
+        },
+        "updateWorkflow": {
+          "error": {
+            "undefined": "namespace is undefined"
+          }
+        }
+      }
+    },
+    "namespaces": {
+      "mutate": {
+        "createNamespaces": {
+          "success": {
+            "title": "Create a new namespace",
+            "description": "Namespace {{name}} was created successfully."
+          },
+          "error": {
+            "title": "An error occurred",
+            "description": "could not create namespace 😢"
+          }
+        }
+      }
+    }
   }
 }

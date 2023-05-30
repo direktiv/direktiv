@@ -7,6 +7,7 @@ import { namespaceKeys } from "..";
 import { sortByName } from "~/api/tree/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const createNamespace = apiFactory({
   url: ({ name }: { name: string }) => `/api/namespaces/${name}`,
@@ -22,6 +23,7 @@ export const useCreateNamespace = ({
   const apiKey = useApiKey();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: ({ name }: { name: string }) =>
@@ -45,16 +47,21 @@ export const useCreateNamespace = ({
         }
       );
       toast({
-        title: "Namespace created",
-        description: `Namespace ${variables.name} was created successfully.`,
+        title: t("api.namespaces.mutate.createNamespaces.success.title"),
+        description: t(
+          "api.namespaces.mutate.createNamespaces.success.description",
+          { name: variables.name }
+        ),
         variant: "success",
       });
       onSuccess?.(data);
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not create namespace 😢",
+        title: t("api.namespaces.mutate.createNamespaces.error.title"),
+        description: t(
+          "api.namespaces.mutate.createNamespaces.error.description"
+        ),
         variant: "error",
       });
     },

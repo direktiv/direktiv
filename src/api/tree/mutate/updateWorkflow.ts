@@ -6,6 +6,7 @@ import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 const updateWorkflow = apiFactory({
@@ -27,9 +28,10 @@ export const useUpdateWorkflow = ({
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error("namespace is undefined");
+    throw new Error(t("api.tree.mutate.updateWorkflow.error.undefined"));
   }
 
   return useMutation({

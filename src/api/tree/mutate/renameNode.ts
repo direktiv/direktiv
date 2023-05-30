@@ -15,6 +15,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const renameNode = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
@@ -32,9 +33,10 @@ export const useRenameNode = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error("namespace is undefined");
+    throw new Error(t("api.tree.mutate.renameNode.error.undefined"));
   }
 
   return useMutation({
@@ -95,18 +97,20 @@ export const useRenameNode = ({
         }
       );
       toast({
-        title: `${
-          variables.node.type === "workflow" ? "workflow" : "directory"
-        } renamed`,
-        description: `${variables.node.name} was renamed`,
+        title: t("api.tree.mutate.renameNode.success.title", {
+          type: variables.node.type === "workflow" ? "workflow" : "directory",
+        }),
+        description: t("api.tree.mutate.renameNode.success.description", {
+          name: variables.node.name,
+        }),
         variant: "success",
       });
       onSuccess?.();
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not rename 😢",
+        title: t("api.tree.mutate.renameNode.error.title"),
+        description: t("api.tree.mutate.renameNode.error.description"),
         variant: "error",
       });
     },

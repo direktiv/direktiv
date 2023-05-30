@@ -7,6 +7,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const revertRevision = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
@@ -22,9 +23,10 @@ export const useRevertRevision = () => {
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error("namespace is undefined");
+    throw new Error(t("api.tree.mutate.revertRevision.error.undefined"));
   }
 
   return useMutation({
@@ -46,15 +48,15 @@ export const useRevertRevision = () => {
         () => data
       );
       toast({
-        title: "Restored workflow",
-        description: `The latest revision was restored`,
+        title: t("api.tree.mutate.revertRevision.success.title"),
+        description: t("api.tree.mutate.revertRevision.success.description"),
         variant: "success",
       });
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not revert workflow 😢",
+        title: t("api.tree.mutate.revertRevision.error.title"),
+        description: t("api.tree.mutate.revertRevision.error.description"),
         variant: "error",
       });
     },

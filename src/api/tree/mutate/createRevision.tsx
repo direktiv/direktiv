@@ -8,6 +8,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const createRevision = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
@@ -23,6 +24,7 @@ export const useCreateRevision = () => {
   const namespace = useNamespace();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -40,8 +42,10 @@ export const useCreateRevision = () => {
       }),
     onSuccess: (data, variables) => {
       toast({
-        title: "Revision created",
-        description: `Revision ${data.revision.name} was created`,
+        title: t("api.tree.mutate.createRevision.success.title"),
+        description: t("api.tree.mutate.createRevision.success.description", {
+          name: data.revision.name,
+        }),
         variant: "success",
         action: (
           <ToastAction
@@ -57,15 +61,15 @@ export const useCreateRevision = () => {
               );
             }}
           >
-            Open Revision
+            {t("api.tree.mutate.createRevision.success.action")}
           </ToastAction>
         ),
       });
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not create revision 😢",
+        title: t("api.tree.mutate.createRevision.error.title"),
+        description: t("api.tree.mutate.createRevision.error.description"),
         variant: "error",
       });
     },
