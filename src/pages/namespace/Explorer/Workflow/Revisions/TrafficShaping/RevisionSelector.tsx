@@ -20,15 +20,26 @@ import { TrimedRevisionSchemaType } from "../../../../../../api/tree/schema";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
-const RevisionSelector: FC<
-  Omit<ComponentPropsWithoutRef<typeof Button>, "onSelect" | "defaultValue"> & {
-    tags: TrimedRevisionSchemaType[];
-    revisions: TrimedRevisionSchemaType[];
-    isLoading?: boolean;
-    onSelect?: (revision: string) => void;
-    defaultValue?: string;
-  }
-> = ({ tags, revisions, isLoading, onSelect, defaultValue, ...props }) => {
+// use props of our button but overwrite some onSelect and defaultValue
+type ButtonProps = ComponentPropsWithoutRef<typeof Button> & {
+  onSelect?: (revision: string) => void;
+  defaultValue?: string;
+};
+
+type RevisionSelectorProps = ButtonProps & {
+  tags: TrimedRevisionSchemaType[];
+  revisions: TrimedRevisionSchemaType[];
+  isLoading?: boolean;
+};
+
+const RevisionSelector: FC<RevisionSelectorProps> = ({
+  tags,
+  revisions,
+  isLoading,
+  onSelect,
+  defaultValue,
+  ...props
+}) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(defaultValue ?? "");
