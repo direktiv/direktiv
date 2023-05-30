@@ -4,6 +4,7 @@ import {
   removeLeadingSlash,
   removeTrailingSlash,
   sortByName,
+  sortByRef,
   sortFoldersFirst,
 } from "../utils";
 
@@ -57,6 +58,28 @@ describe("sortByName", () =>
 
     const resultSorted = results.sort(sortByName);
     expect(resultSorted.map((x) => x.name)).toStrictEqual([
+      "abc",
+      "e",
+      "f",
+      "fa",
+      "zz",
+      "zZ",
+    ]);
+  }));
+
+describe("sortByRef", () =>
+  test("will sort array by ref", () => {
+    const results = [
+      { ref: "zZ" },
+      { ref: "zz" },
+      { ref: "abc" },
+      { ref: "e" },
+      { ref: "fa" },
+      { ref: "f" },
+    ];
+
+    const resultSorted = results.sort(sortByRef);
+    expect(resultSorted.map((x) => x.ref)).toStrictEqual([
       "abc",
       "e",
       "f",

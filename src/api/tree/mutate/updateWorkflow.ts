@@ -8,9 +8,17 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { z } from "zod";
 
-const updateWorkflow = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path?: string }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
+export const updateWorkflow = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    path,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    path?: string;
+  }) =>
+    `${baseUrl ?? ""}/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=update-workflow`,
   method: "POST",

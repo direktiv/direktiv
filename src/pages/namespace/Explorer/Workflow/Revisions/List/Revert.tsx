@@ -8,7 +8,7 @@ import { ToastAction, useToast } from "~/design/Toast";
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { TrimedRevisionSchemaType } from "~/api/tree/schema";
+import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
 import { Undo } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -22,7 +22,7 @@ const Revert = ({
   close,
 }: {
   path: string;
-  revision: TrimedRevisionSchemaType;
+  revision: TrimmedRevisionSchemaType;
   close: () => void;
 }) => {
   const { t } = useTranslation();
