@@ -149,6 +149,7 @@ const RevisionTableRow: FC<{
                 onClick={() => {
                   onRevertClicked(revision);
                 }}
+                data-testid={`workflow-revisions-trg-revert-dlg-${revision.name}`}
               >
                 <DropdownMenuItem>
                   <Undo className="mr-2 h-4 w-4" />

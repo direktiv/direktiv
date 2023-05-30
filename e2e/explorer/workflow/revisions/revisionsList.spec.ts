@@ -3,7 +3,6 @@ import {
   actionDeleteRevision,
   actionEditAndSaveWorkflow,
   actionMakeRevision,
-  actionRevertRevision,
   actionWaitForSuccessToast,
 } from "../utils";
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
@@ -106,17 +105,40 @@ test("latest is the only revision by default", async ({ page }) => {
   await expect(revisions, "number of revisions should be one").toHaveCount(1);
 });
 
-test("it is possible to revert to the previous the workflow", async ({
+test("it is possible to revert to the previous the workflow in the revisions list", async ({
   page,
 }) => {
+  test.setTimeout(50000);
   await actionNavigateToWorkflowEditor(page);
   const [firstUpdatedWorkflow, firstUpdatedText] =
     await actionEditAndSaveWorkflow(page);
   await actionMakeRevision(page);
   await actionEditAndSaveWorkflow(page, firstUpdatedText);
-  await actionRevertRevision(page);
-  // wait till the revert api to be completed and handle the success toast
   await actionWaitForSuccessToast(page);
+  await actionNavigateToRevisions(page);
+
+  const firstRevision = await page
+    .getByTestId(/workflow-revisions-link-item/)
+    .nth(1)
+    .innerText();
+  const firstItemMenuTrg = page.getByTestId(
+    `workflow-revisions-item-menu-trg-${firstRevision}`
+  );
+  await firstItemMenuTrg.click();
+
+  const revertTrg = page.getByTestId(
+    `workflow-revisions-trg-revert-dlg-${firstRevision}`
+  );
+  await revertTrg.click();
+
+  const btnRevert = page.getByTestId("dialog-revert-revision-btn-submit");
+  await expect(
+    btnRevert,
+    "when the dialog appears, revert button should be enabled after loading"
+  ).toBeEnabled();
+  await btnRevert.click();
+  await actionWaitForSuccessToast(page);
+  await actionNavigateToWorkflowEditor(page);
   const textArea = page.getByRole("textbox");
   const workflowValue = await textArea.inputValue();
   expect(

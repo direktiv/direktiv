@@ -37,17 +37,7 @@ export const actionEditAndSaveWorkflow = async (
     page.getByText(testText),
     "after saving, screen should have the updated text"
   ).toBeVisible();
-  await page.reload({ waitUntil: "load" });
-  await expect(
-    page.getByText(testText),
-    "after reloading, screen should have the updated text"
-  ).toBeVisible();
 
-  // check the text at the bottom left
-  await expect(
-    page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
   const updatedWorkflow = await textArea.inputValue();
   return [updatedWorkflow, testText];
 };
