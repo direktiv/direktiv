@@ -5,10 +5,10 @@ import {
   actionMakeRevision,
   actionRevertRevision,
   actionWaitForSuccessToast,
-} from "./utils";
-import { createNamespace, deleteNamespace } from "../../utils/namespace";
+} from "../utils";
+import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 
-import { createWorkflow } from "../../utils/node";
+import { createWorkflow } from "../../../utils/node";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
