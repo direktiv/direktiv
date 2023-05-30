@@ -95,7 +95,7 @@ const WorkflowEditor: FC<{
               </Button>
             </PopoverTrigger>
             <PopoverContent asChild>
-              <div className="flex">
+              <div className="flex p-4">
                 <div className="grow">{error}</div>
               </div>
             </PopoverContent>
