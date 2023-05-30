@@ -14,8 +14,10 @@ import {
 } from "~/api/vars/schema";
 
 import Button from "~/design/Button";
-import { Textarea } from "~/design/TextArea";
+import Editor from "~/design/Editor";
 import { Trash } from "lucide-react";
+import { useState } from "react";
+import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/vars/mutate/updateVar";
 import { useVarContent } from "~/api/vars/query/useVarContent";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,14 +31,17 @@ type EditProps = {
 
 const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const varContent = useVarContent(item.name);
 
-  const { register, handleSubmit } = useForm<VarFormSchemaType>({
+  const [value, setValue] = useState<string | undefined>(varContent.data);
+
+  const { handleSubmit } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
     values: {
       name: item.name,
-      content: varContent.data ?? "",
+      content: value ?? "",
     },
   });
 
@@ -65,13 +70,16 @@ const Edit = ({ item, onSuccess }: EditProps) => {
           </DialogTitle>
         </DialogHeader>
 
-        <fieldset className="flex items-start gap-5">
-          <Textarea
-            className="h-96"
+        <div className="h-[500px]">
+          <Editor
+            value={varContent.data}
+            onChange={(newData) => {
+              setValue(newData);
+            }}
+            theme={theme ?? undefined}
             data-testid="variable-editor"
-            {...register("content")}
           />
-        </fieldset>
+        </div>
 
         <DialogFooter>
           <DialogClose asChild>

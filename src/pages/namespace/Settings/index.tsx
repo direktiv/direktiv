@@ -8,7 +8,7 @@ import { Card } from "~/design/Card";
 import { FC } from "react";
 import RegistriesList from "./RegistriesList";
 import SecretsList from "./SecretsList";
-import VarsList from "./VarsList";
+import VariablesList from "./VariablesList";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useTranslation } from "react-i18next";
 import { useVersion } from "~/api/version";
@@ -39,7 +39,7 @@ const SettingsPage: FC = () => {
       </section>
 
       <section>
-        <VarsList />
+        <VariablesList />
       </section>
 
       <section>

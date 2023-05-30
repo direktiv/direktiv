@@ -5,16 +5,16 @@ import { Table, TableBody } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import Create from "./Create";
-import Delete from "./Delete";
-import Edit from "./Edit";
+import Create from "./variables/Create";
+import Delete from "./variables/Delete";
+import Edit from "./variables/Edit";
 import ItemRow from "./ItemRow";
 import { VarSchemaType } from "~/api/vars/schema";
 import { useDeleteVar } from "~/api/vars/mutate/deleteVar";
 import { useTranslation } from "react-i18next";
 import { useVars } from "~/api/vars/query/useVars";
 
-const VarsList: FC = () => {
+const VariablesList: FC = () => {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState<VarSchemaType>();
@@ -98,4 +98,4 @@ const VarsList: FC = () => {
   );
 };
 
-export default VarsList;
+export default VariablesList;
