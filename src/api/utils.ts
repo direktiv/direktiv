@@ -23,14 +23,15 @@ const getAuthHeader = (apiKey: string) => ({
  * lose typesafety when some api enpoints have required params
  *
  */
-type ApiParams<TPayload, TUrlParams> = {
+type ApiParams<TPayload, THeaders, TUrlParams> = {
   apiKey?: string;
   payload: TPayload extends undefined ? undefined : TPayload;
+  headers: THeaders extends undefined ? undefined : THeaders;
   urlParams: TUrlParams;
 };
 
 export const apiFactory =
-  <TSchema, TPayload, TUrlParams>({
+  <TSchema, TPayload, THeaders, TUrlParams>({
     // the path to the api endpoint
     url: path,
     // the http method that should be used for the request
@@ -52,11 +53,12 @@ export const apiFactory =
     apiKey,
     payload,
     urlParams,
-  }: ApiParams<TPayload, TUrlParams>) => Promise<TSchema>) =>
-  async ({ apiKey, payload, urlParams }): Promise<TSchema> => {
+  }: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>) =>
+  async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
     const res = await fetch(path(urlParams), {
       method,
       headers: {
+        ...(headers && typeof headers === "object" ? headers : {}),
         ...(apiKey ? getAuthHeader(apiKey) : {}),
       },
       ...(payload
