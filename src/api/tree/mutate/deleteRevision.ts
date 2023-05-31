@@ -79,7 +79,7 @@ export const useDeleteRevision = ({
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.deleteRevision.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.deleteRevision.error.description"),
         variant: "error",
       });

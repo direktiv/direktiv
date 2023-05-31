@@ -39,7 +39,7 @@ export const useUpdateWorkflow = ({
   const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error(t("api.tree.mutate.updateWorkflow.error.undefined"));
+    throw new Error(t("api.generic.undefinedNamespace"));
   }
 
   return useMutation({

@@ -81,7 +81,7 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.createTag.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.createTag.error.description"),
         variant: "error",
       });

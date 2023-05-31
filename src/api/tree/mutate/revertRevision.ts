@@ -26,7 +26,7 @@ export const useRevertRevision = () => {
   const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error(t("api.tree.mutate.revertRevision.error.undefined"));
+    throw new Error(t("api.generic.undefinedNamespace"));
   }
 
   return useMutation({
@@ -55,7 +55,7 @@ export const useRevertRevision = () => {
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.revertRevision.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.revertRevision.error.description"),
         variant: "error",
       });

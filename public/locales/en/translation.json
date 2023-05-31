@@ -168,7 +168,8 @@
   },
   "api": {
     "generic": {
-      "error": "An error occurred"
+      "error": "An error occurred",
+      "undefinedNamespace": "namespace is undefined"
     },
     "tree": {
       "mutate": {
@@ -196,7 +197,6 @@
             "action": "Open Revision"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create revision 😢"
           }
         },
@@ -206,7 +206,6 @@
             "description": "Tag {{name}} was created"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create tag 😢"
           }
         },
@@ -216,7 +215,6 @@
             "description": "Workflow {{name}} was created in {{path}}"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create workflow 😢"
           }
         },
@@ -226,7 +224,6 @@
             "description": "{{name}} was deleted"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not delete 😢"
           }
         },
@@ -236,7 +233,6 @@
             "description": "revision {{name}} was deleted"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not delete 😢"
           }
         },
@@ -246,7 +242,6 @@
             "description": "tag {{name}} was deleted"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not delete 😢"
           }
         },
@@ -256,8 +251,6 @@
             "description": "{{name}} was renamed"
           },
           "error": {
-            "undefined": "namespace is undefined",
-            "title": "An error occurred",
             "description": "could not rename 😢"
           }
         },
@@ -267,14 +260,7 @@
             "description": "The latest revision was restored"
           },
           "error": {
-            "undefined": "namespace is undefined",
-            "title": "An error occurred",
             "description": "could not revert workflow 😢"
-          }
-        },
-        "updateWorkflow": {
-          "error": {
-            "undefined": "namespace is undefined"
           }
         }
       }

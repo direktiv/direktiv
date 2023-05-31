@@ -75,10 +75,10 @@ export const useDeleteTag = ({
             ...oldData,
             ...(oldRevisions
               ? {
-                  results: oldRevisions?.filter(
-                    (child) => child.name !== variables.tag
-                  ),
-                }
+                results: oldRevisions?.filter(
+                  (child) => child.name !== variables.tag
+                ),
+              }
               : {}),
           };
         }
@@ -96,10 +96,10 @@ export const useDeleteTag = ({
             ...oldData,
             ...(oldTags
               ? {
-                  results: oldTags?.filter(
-                    (child) => child.name !== variables.tag
-                  ),
-                }
+                results: oldTags?.filter(
+                  (child) => child.name !== variables.tag
+                ),
+              }
               : {}),
           };
         }
@@ -108,7 +108,7 @@ export const useDeleteTag = ({
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.deleteTag.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.deleteTag.error.description"),
         variant: "error",
       });

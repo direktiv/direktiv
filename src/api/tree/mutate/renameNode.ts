@@ -36,7 +36,7 @@ export const useRenameNode = ({
   const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error(t("api.tree.mutate.renameNode.error.undefined"));
+    throw new Error(t("api.generic.undefinedNamespace"));
   }
 
   return useMutation({
@@ -70,28 +70,28 @@ export const useRenameNode = ({
             ...oldData,
             ...(oldChildren
               ? {
-                  children: {
-                    ...oldChildren,
-                    results: oldChildren?.results.map((child) => {
-                      if (child.path === variables.node.path) {
-                        return {
-                          ...data.node,
-                          // there is a bug in the API where the returned data after
-                          // a rename is wrong. The name and updatedAt are not updated
-                          // and the parent will have a trailing slash, which it does
-                          // not have in the original data from the tree list
-                          name: variables.newName,
-                          parent:
-                            variables.node.parent === "/"
-                              ? "/"
-                              : removeTrailingSlash(variables.node.parent),
-                          updatedAt: new Date().toISOString(),
-                        };
-                      }
-                      return child;
-                    }),
-                  },
-                }
+                children: {
+                  ...oldChildren,
+                  results: oldChildren?.results.map((child) => {
+                    if (child.path === variables.node.path) {
+                      return {
+                        ...data.node,
+                        // there is a bug in the API where the returned data after
+                        // a rename is wrong. The name and updatedAt are not updated
+                        // and the parent will have a trailing slash, which it does
+                        // not have in the original data from the tree list
+                        name: variables.newName,
+                        parent:
+                          variables.node.parent === "/"
+                            ? "/"
+                            : removeTrailingSlash(variables.node.parent),
+                        updatedAt: new Date().toISOString(),
+                      };
+                    }
+                    return child;
+                  }),
+                },
+              }
               : {}),
           };
         }
@@ -109,7 +109,7 @@ export const useRenameNode = ({
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.renameNode.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.renameNode.error.description"),
         variant: "error",
       });

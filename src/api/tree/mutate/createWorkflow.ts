@@ -72,7 +72,7 @@ export const useCreateWorkflow = ({
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.createWorkflow.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.createWorkflow.error.description"),
         variant: "error",
       });

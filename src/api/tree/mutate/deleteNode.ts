@@ -23,13 +23,13 @@ const updateCache = (
     ...oldData,
     ...(oldChildren
       ? {
-          children: {
-            ...oldChildren,
-            results: oldChildren?.results.filter(
-              (child) => child.name !== variables.node.name
-            ),
-          },
-        }
+        children: {
+          ...oldChildren,
+          results: oldChildren?.results.filter(
+            (child) => child.name !== variables.node.name
+          ),
+        },
+      }
       : {}),
   };
 };
@@ -87,7 +87,7 @@ export const useDeleteNode = ({
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.deleteNode.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.deleteNode.error.description"),
         variant: "error",
       });

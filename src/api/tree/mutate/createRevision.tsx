@@ -76,7 +76,7 @@ export const useCreateRevision = () => {
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.createRevision.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.createRevision.error.description"),
         variant: "error",
       });

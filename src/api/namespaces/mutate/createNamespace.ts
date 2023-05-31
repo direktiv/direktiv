@@ -58,7 +58,7 @@ export const useCreateNamespace = ({
     },
     onError: () => {
       toast({
-        title: t("api.namespaces.mutate.createNamespaces.error.title"),
+        title: t("api.generic.error"),
         description: t(
           "api.namespaces.mutate.createNamespaces.error.description"
         ),

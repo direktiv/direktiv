@@ -62,7 +62,7 @@ export const useCreateDirectory = ({
     },
     onError: () => {
       toast({
-        title: t("api.tree.mutate.createDirectory.error.title"),
+        title: t("api.generic.error"),
         description: t("api.tree.mutate.createDirectory.error.description"),
         variant: "error",
       });
