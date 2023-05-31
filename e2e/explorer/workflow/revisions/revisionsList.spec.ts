@@ -7,21 +7,15 @@ import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
-let workflow = "";
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
-  workflow = await createWorkflow(namespace, faker.git.shortSha() + ".yaml");
 });
 
 test.afterEach(async () => {
   await deleteNamespace(namespace);
   namespace = "";
 });
-
-const actionNavigateToRevisions = async (page: Page) => {
-  await page.goto(`${namespace}/explorer/workflow/revisions/${workflow}`);
-};
 
 const actionCreateRevisionAndTag = async (page: Page) => {
   const name = faker.system.commonFileName("yaml");
@@ -50,6 +44,10 @@ const actionCreateRevisionAndTag = async (page: Page) => {
 };
 
 test("it is possible to navigate to the revisions tab", async ({ page }) => {
+  const workflow = await createWorkflow(
+    namespace,
+    faker.git.shortSha() + ".yaml"
+  );
   await page.goto("/");
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -84,7 +82,12 @@ test("it is possible to navigate to the revisions tab", async ({ page }) => {
 });
 
 test("latest is the only revision by default", async ({ page }) => {
-  await actionNavigateToRevisions(page);
+  const workflow = await createWorkflow(
+    namespace,
+    faker.git.shortSha() + ".yaml"
+  );
+  await page.goto(`${namespace}/explorer/workflow/revisions/${workflow}`);
+
   const revisions = page.getByTestId(/workflow-revisions-link-item-/);
   await expect(revisions, "revisions should have the name latest").toHaveText(
     "latest"
