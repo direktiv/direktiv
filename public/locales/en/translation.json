@@ -203,7 +203,7 @@
         "createTag": {
           "success": {
             "title": "Tag created",
-            "description": "Tag {{name} was created"
+            "description": "Tag {{name}} was created"
           },
           "error": {
             "title": "An error occurred",
