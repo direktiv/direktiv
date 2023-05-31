@@ -27,14 +27,12 @@ const (
 	InstanceStatusCrashed
 )
 
-var (
-	instanceStatusStrings = []string{
-		util.InstanceStatusPending,
-		util.InstanceStatusComplete,
-		util.InstanceStatusFailed,
-		util.InstanceStatusCrashed,
-	}
-)
+var instanceStatusStrings = []string{
+	util.InstanceStatusPending,
+	util.InstanceStatusComplete,
+	util.InstanceStatusFailed,
+	util.InstanceStatusCrashed,
+}
 
 func (status InstanceStatus) String() string {
 	return instanceStatusStrings[status-1]

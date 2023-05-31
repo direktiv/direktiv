@@ -30,7 +30,6 @@ func Test_wheres(t *testing.T) {
 	if res != expect {
 		t.Errorf("wheres failed with multiple inputs: expected '%s', but got '%s'", expect, res)
 	}
-
 }
 
 func Test_generateGetInstancesOrderings(t *testing.T) {
@@ -101,7 +100,6 @@ func Test_generateGetInstancesOrderings(t *testing.T) {
 	if !errors.Is(err, instancestore.ErrBadListOpts) {
 		t.Errorf("generateGetInstancesOrderings returned unexpected error: expected error is '%v', but got '%v'", instancestore.ErrBadListOpts, err)
 	}
-
 }
 
 type generateGetInstancesFiltersResults struct {
@@ -219,7 +217,8 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 		},
 		vals: []interface{}{
 			"x", t0, t0, t0, t0, "x%", "%x%", instancestore.InstanceStatusComplete,
-			instancestore.InstanceStatusComplete, "x", "%x%"},
+			instancestore.InstanceStatusComplete, "x", "%x%",
+		},
 	}
 
 	err = expect.compare(clauses, vals)
@@ -237,7 +236,6 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 	}
 
 	// could do more tests here to check returned errors for every case
-
 }
 
 func Test_generateInsertQuery(t *testing.T) {

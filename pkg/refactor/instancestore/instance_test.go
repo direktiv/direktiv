@@ -393,7 +393,6 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 			return
 		}
 	}
-
 }
 
 func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
@@ -630,7 +629,6 @@ type: noop
 
 		return
 	}
-
 }
 
 func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
@@ -722,7 +720,6 @@ type: noop
 
 		return
 	}
-
 }
 
 func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
@@ -778,5 +775,4 @@ type: noop
 
 		return
 	}
-
 }
