@@ -1,16 +1,19 @@
 package flow
 
 import (
+	"bytes"
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/emptypb"
+	"errors"
+	"io"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -61,7 +64,22 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 }
 
 func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, srv grpc.Flow_NamespaceVariableParcelsServer) error {
-	// TODO: need fix here.
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	resp, err := flow.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
+		Namespace: req.GetNamespace(),
+		Key:       req.GetKey(),
+	})
+	if err != nil {
+		return err
+	}
+	err = srv.Send(resp)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -146,7 +164,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 		return nil, err
 	}
 
-	//TODO: Alex, please fix here.
+	// TODO: Alex, please fix here.
 
 	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Set namespace variable '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
@@ -165,7 +183,69 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 }
 
 func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariableParcelsServer) error {
-	// TODO: fix here.
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	ctx := srv.Context()
+
+	req, err := srv.Recv()
+	if err != nil {
+		return err
+	}
+
+	firstReq := req
+
+	totalSize := int(req.GetTotalSize())
+
+	buf := new(bytes.Buffer)
+
+	for {
+		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		if err != nil {
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		}
+
+		req, err = srv.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		} else {
+			if req == nil {
+				break
+			}
+		}
+
+		if int(req.GetTotalSize()) != totalSize {
+			return errors.New("totalSize changed mid stream")
+		}
+	}
+
+	if buf.Len() > totalSize {
+		return errors.New("received more data than expected")
+	}
+
+	firstReq.Data = buf.Bytes()
+	resp, err := flow.SetNamespaceVariable(ctx, firstReq)
+	if err != nil {
+		return err
+	}
+	err = srv.SendAndClose(resp)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

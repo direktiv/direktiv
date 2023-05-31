@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -18,7 +19,7 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, size, hash, mime_type,
+								scope, name, length(data) AS size, hash, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)
@@ -35,7 +36,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName 
 	res := s.db.WithContext(ctx).Raw(fmt.Sprintf(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, size, hash, mime_type, 
+								scope, name, length(data) AS size, hash, mime_type, 
 								created_at, updated_at
 							FROM runtime_variables WHERE "%s" = ?`, fieldName),
 		fieldID).Find(&variables)
@@ -59,17 +60,17 @@ func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namesp
 }
 
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
-	hash := sha256.Sum256(variable.Data)
-	size := len(variable.Data)
+	hash := fmt.Sprintf("%x", sha256.Sum256(variable.Data))
 
 	linkName := "namespace_id"
 	linkValue := variable.NamespaceID
 
-	if variable.WorkflowID.String() != uuid.New().String() {
+	if variable.WorkflowID.String() != (uuid.UUID{}).String() {
 		linkName = "workflow_id"
 		linkValue = variable.WorkflowID
 	}
-	if variable.InstanceID.String() != uuid.New().String() {
+
+	if variable.InstanceID.String() != (uuid.UUID{}).String() {
 		linkName = "instance"
 		linkValue = variable.InstanceID
 	}
@@ -78,12 +79,12 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 		`UPDATE runtime_variables SET
 						%s=?,
 						scope=?, 
-						name=?, 
-						size=?, 
+						name=?,
 						hash=?, 
-						mime_type=?
+						mime_type=?,
+						data=?
 					WHERE id = ?;`, linkName),
-		linkValue, variable.Scope, variable.Name, size, hash, variable.MimeType, variable.ID)
+		linkValue, variable.Scope, variable.Name, hash, variable.MimeType, variable.Data, variable.ID)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -97,9 +98,9 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 
 	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
 							INSERT INTO runtime_variables(
-								id, %s, scope, name, size, hash, mime_type) 
+								id, %s, scope, name, hash, mime_type, data) 
 							VALUES(?, ?, ?, ?, ?, ?, ?);`, linkName),
-		uuid.New(), linkValue, variable.Scope, variable.Name, size, hash, variable.MimeType)
+		variable.ID, linkValue, variable.Scope, variable.Name, hash, variable.MimeType, variable.Data)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -144,7 +145,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, size, hash, mime_type, data,
+								scope, name, length(data) AS size, hash, mime_type, data,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)

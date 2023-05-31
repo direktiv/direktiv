@@ -90,6 +90,33 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+DROP TABLE IF EXISTS "runtime_variables";
+CREATE TABLE IF NOT EXISTS "runtime_variables" (
+    "id" uuid,
+    "namespace_id" uuid,
+    "workflow_id" uuid,
+    "instance_id" uuid,
+
+    "scope" text NOT NULL,
+    "name"  text NOT NULL,
+    "hash"  text NOT NULL,
+    "mime_type"  text NOT NULL,
+    "data"  text NOT NULL,
+
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY ("id"),
+
+    CONSTRAINT "fk_namespaces_runtime_variables"
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT "fk_filesystem_files_runtime_variables"
+    FOREIGN KEY ("workflow_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    -- TODO add instance_id FOREIGN KEY.
+);
+
 
 -- TODO: alex this table schema need have not null modifiers.
 CREATE TABLE IF NOT EXISTS "log_msgs" (
