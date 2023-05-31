@@ -253,7 +253,7 @@
         "renameNode": {
           "success": {
             "title": "{{type}} renamed",
-            "description": "{{name}} was deleted"
+            "description": "{{name}} was renamed"
           },
           "error": {
             "undefined": "namespace is undefined",
