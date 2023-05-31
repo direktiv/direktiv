@@ -53,15 +53,16 @@ export const apiFactory =
     payload,
     urlParams,
   }: ApiParams<TPayload, TUrlParams>) => Promise<TSchema>) =>
-  async ({ apiKey, payload: params, urlParams }): Promise<TSchema> => {
+  async ({ apiKey, payload, urlParams }): Promise<TSchema> => {
     const res = await fetch(path(urlParams), {
       method,
       headers: {
         ...(apiKey ? getAuthHeader(apiKey) : {}),
       },
-      ...(params
+      ...(payload
         ? {
-            body: typeof params === "string" ? params : JSON.stringify(params),
+            body:
+              typeof payload === "string" ? payload : JSON.stringify(payload),
           }
         : {}),
     });
