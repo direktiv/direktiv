@@ -36,6 +36,7 @@ export const useDeleteVar = ({
         namespace: namespace,
         name: variable.name,
       },
+      headers: undefined,
     });
 
   return useMutation({

@@ -36,6 +36,7 @@ export const useUpdateVar = ({
         namespace: namespace,
         name,
       },
+      headers: undefined,
     });
 
   return useMutation({

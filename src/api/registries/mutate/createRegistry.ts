@@ -39,6 +39,7 @@ export const useCreateRegistry = ({
       urlParams: {
         namespace: namespace,
       },
+      headers: undefined,
     });
 
   return useMutation({

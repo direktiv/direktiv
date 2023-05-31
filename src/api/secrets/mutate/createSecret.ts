@@ -59,6 +59,7 @@ export const useCreateSecret = ({
           namespace: namespace,
           name,
         },
+        headers: undefined,
       }),
     onSuccess: (secret) => {
       queryClient.setQueryData<SecretListSchemaType>(
