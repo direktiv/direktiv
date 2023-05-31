@@ -244,27 +244,3 @@ func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, ke
 
 	return db.entAnnotation(annotation), nil
 }
-
-func (db *Database) ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*database.VarRef, error) {
-	return nil, nil
-}
-
-func (db *Database) NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*database.VarRef, error) {
-	return nil, nil
-}
-
-func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*database.VarRef, error) {
-	return nil, nil
-}
-
-func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
-	return nil, nil
-}
-
-func (db *Database) ThreadVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
-	return nil, nil
-}
-
-func (db *Database) VariableData(ctx context.Context, id uuid.UUID, load bool) (*database.VarData, error) {
-	return nil, nil
-}

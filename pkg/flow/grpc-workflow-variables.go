@@ -1,7 +1,10 @@
 package flow
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"io"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -93,7 +96,23 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 }
 
 func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv grpc.Flow_WorkflowVariableParcelsServer) error {
-	// TODO: fix here.
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	resp, err := flow.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
+		Namespace: req.GetNamespace(),
+		Path:      req.GetPath(),
+		Key:       req.GetKey(),
+	})
+	if err != nil {
+		return err
+	}
+	err = srv.Send(resp)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -208,7 +227,69 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 }
 
 func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariableParcelsServer) error {
-	// TODO: fix here.
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	ctx := srv.Context()
+
+	req, err := srv.Recv()
+	if err != nil {
+		return err
+	}
+
+	firstReq := req
+
+	totalSize := int(req.GetTotalSize())
+
+	buf := new(bytes.Buffer)
+
+	for {
+		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		if err != nil {
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		}
+
+		req, err = srv.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		} else {
+			if req == nil {
+				break
+			}
+		}
+
+		if int(req.GetTotalSize()) != totalSize {
+			return errors.New("totalSize changed mid stream")
+		}
+	}
+
+	if buf.Len() > totalSize {
+		return errors.New("received more data than expected")
+	}
+
+	firstReq.Data = buf.Bytes()
+	resp, err := flow.SetWorkflowVariable(ctx, firstReq)
+	if err != nil {
+		return err
+	}
+	err = srv.SendAndClose(resp)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

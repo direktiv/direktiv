@@ -696,10 +696,11 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 	pcached.File = file
 	pcached.Revision = revision
 
-	threadVars, err := engine.database.ThreadVariables(ctx, pcached.Instance.ID)
-	if err != nil {
-		return nil, derrors.NewInternalError(err)
-	}
+	// TODO need change here.
+	//threadVars, err := engine.database.ThreadVariables(ctx, pcached.Instance.ID)
+	//if err != nil {
+	//	return nil, derrors.NewInternalError(err)
+	//}
 
 	if !filepath.IsAbs(args.Path) {
 		dir, _ := filepath.Split(caller.As)
@@ -714,9 +715,10 @@ func (engine *engine) subflowInvoke(ctx context.Context, caller *subflowCaller, 
 		return nil, err
 	}
 
-	for range threadVars {
-		// TODO need change here.
-	}
+	// TODO need change here.
+	//for range threadVars {
+	//
+	//}
 	im.AddAttribute("loop-index", caller.Iterator)
 	traceSubflowInvoke(ctx, args.Path, im.ID().String())
 
