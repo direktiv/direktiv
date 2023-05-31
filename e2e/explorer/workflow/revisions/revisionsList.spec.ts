@@ -160,7 +160,14 @@ test("it is possible to delete the revision", async ({ page }) => {
   );
   await firstItemMenuTrg.click();
 
-  // click on the delete button to show the Delete Dialog
+  await expect(
+    page.getByTestId(
+      `workflow-revisions-item-menu-content-${firstRev.revision.name}`
+    ),
+    "after click menu trigger, menu content should appear"
+  ).toBeVisible();
+
+  // click on the delete button to show the delete dialog
   const deleteTrg = page.getByTestId(
     `workflow-revisions-trg-delete-dlg-${firstRev.revision.name}`
   );
