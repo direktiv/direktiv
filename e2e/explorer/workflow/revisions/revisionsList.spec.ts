@@ -8,6 +8,7 @@ import {
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 
 import { createWorkflow } from "../../../utils/node";
+import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -148,32 +149,22 @@ test("it is possible to revert to the previous the workflow in the revisions lis
 });
 
 test("it is possible to delete the revision", async ({ page }) => {
-  await actionNavigateToWorkflowEditor(page);
-  await actionEditAndSaveWorkflow(page);
-  await actionMakeRevision(page);
-  await actionWaitForSuccessToast(page);
-  await actionNavigateToRevisions(page);
+  const name = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [firstRev],
+  } = await createWorkflowWithThreeRevisions(namespace, name);
+  await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
 
-  const firstRevision = await page
-    .getByTestId(/workflow-revisions-link-item/)
-    .nth(1)
-    .innerText();
   const firstItemMenuTrg = page.getByTestId(
-    `workflow-revisions-item-menu-trg-${firstRevision}`
+    `workflow-revisions-item-menu-trg-${firstRev.revision.name}`
   );
   await firstItemMenuTrg.click();
 
-  await expect(
-    page.getByTestId(`workflow-revisions-item-menu-content-${firstRevision}`),
-    "after click menu trigger, menu content should appear"
-  ).toBeVisible();
-
   // click on the delete button to show the Delete Dialog
   const deleteTrg = page.getByTestId(
-    `workflow-revisions-trg-delete-dlg-${firstRevision}`
+    `workflow-revisions-trg-delete-dlg-${firstRev.revision.name}`
   );
   await deleteTrg.click();
-
   const deleteDialog = page.getByTestId("dialog-delete-revision");
   await expect(
     deleteDialog,
@@ -186,7 +177,7 @@ test("it is possible to delete the revision", async ({ page }) => {
 
   // after delete success, confirm that the revision item isn't visible anymore
   const revisionItem = page.getByTestId(
-    `workflow-revisions-link-item-${firstRevision}`
+    `workflow-revisions-link-item-${firstRev.revision.name}`
   );
   await expect(
     revisionItem,
