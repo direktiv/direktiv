@@ -5,12 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"io"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/google/uuid"

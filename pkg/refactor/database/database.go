@@ -2,13 +2,14 @@ package database
 
 import (
 	_ "embed"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 //go:embed db_schema.sql

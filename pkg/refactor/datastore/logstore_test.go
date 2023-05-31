@@ -3,11 +3,11 @@ package datastore_test
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"math/rand"
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"

@@ -2,12 +2,12 @@ package datastore_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"

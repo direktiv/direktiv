@@ -2,9 +2,9 @@ package instancestore_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
@@ -35,6 +35,7 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 	assertInstanceDataIsMost(t, idata)
 }
 
+//nolint:dupl
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 	db, err := database.NewMockGorm()
 	if err != nil {
@@ -99,6 +100,7 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 	assertInstanceDataIsSummary(t, idata)
 }
 
+//nolint:dupl
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 	db, err := database.NewMockGorm()
 	if err != nil {

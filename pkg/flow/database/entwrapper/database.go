@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
@@ -15,6 +14,7 @@ import (
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
+	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )

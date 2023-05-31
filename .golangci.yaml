@@ -110,3 +110,6 @@ issues:
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:
       - goerr113
+    - text: "ifElseChain: rewrite if-else to switch statement"
+      linters:
+        - gocritic

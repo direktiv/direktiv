@@ -2,10 +2,10 @@ package mirror_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"

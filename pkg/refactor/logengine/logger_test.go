@@ -2,9 +2,9 @@ package logengine_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"

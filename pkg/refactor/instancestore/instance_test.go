@@ -5,10 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
@@ -205,6 +205,7 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 	}
 }
 
+//nolint:dupl
 func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 	db, err := database.NewMockGorm()
 	if err != nil {
@@ -246,6 +247,7 @@ states:
 }
 
 func assertInstanceDataIsMost(t *testing.T, idata *instancestore.InstanceData) {
+	t.Helper()
 	if idata.Definition == nil {
 		t.Errorf("missing idata.Definition")
 
@@ -272,6 +274,7 @@ func assertInstanceDataIsMost(t *testing.T, idata *instancestore.InstanceData) {
 }
 
 func assertInstanceDataIsSummary(t *testing.T, idata *instancestore.InstanceData) {
+	t.Helper()
 	if idata.Definition != nil {
 		t.Errorf("unexpected idata.Definition")
 
