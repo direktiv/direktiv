@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"io"
 	"reflect"
 	"strings"
@@ -12,12 +13,11 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CreateFileWithoutRootDirectory(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -37,7 +37,7 @@ func TestRoot_CreateFileWithoutRootDirectory(t *testing.T) {
 }
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -65,7 +65,7 @@ func TestRoot_CreateFile(t *testing.T) {
 }
 
 func TestRootQuery_IsEmptyDirectory(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -200,7 +200,7 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -264,7 +264,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -314,7 +314,7 @@ func TestRoot_RenamePath(t *testing.T) {
 }
 
 func TestRoot_CalculateChecksumDirectory(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}

@@ -5,12 +5,12 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"testing"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -206,7 +206,7 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 }
 
 func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -396,7 +396,7 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 }
 
 func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -503,7 +503,7 @@ type: noop
 }
 
 func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -632,7 +632,7 @@ type: noop
 }
 
 func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -723,7 +723,7 @@ type: noop
 }
 
 func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}

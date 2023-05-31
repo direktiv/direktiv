@@ -2,11 +2,11 @@ package instancestore_test
 
 import (
 	"context"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -36,7 +36,7 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 }
 
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
@@ -100,7 +100,7 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 }
 
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
