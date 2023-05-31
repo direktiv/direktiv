@@ -10,7 +10,6 @@ import (
 )
 
 func Test_wheres(t *testing.T) {
-
 	res := wheres()
 
 	if res != `` {
@@ -35,7 +34,6 @@ func Test_wheres(t *testing.T) {
 }
 
 func Test_generateGetInstancesOrderings(t *testing.T) {
-
 	res, err := generateGetInstancesOrderings(nil)
 	if err != nil {
 		t.Error(err)
@@ -85,7 +83,7 @@ func Test_generateGetInstancesOrderings(t *testing.T) {
 		t.Errorf("generateGetInstancesOrderings failed with one valid orderings: expected '%s', but got '%s'", expect, res)
 	}
 
-	res, err = generateGetInstancesOrderings(&instancestore.ListOpts{
+	_, err = generateGetInstancesOrderings(&instancestore.ListOpts{
 		Orders: []instancestore.Order{
 			{Field: instancestore.FieldCreatedAt, Descending: false},
 			{Field: instancestore.FieldCreatedAt, Descending: true},
@@ -95,7 +93,7 @@ func Test_generateGetInstancesOrderings(t *testing.T) {
 		t.Errorf("generateGetInstancesOrderings returned unexpected error: expected error is '%v', but got '%v'", instancestore.ErrBadListOpts, err)
 	}
 
-	res, err = generateGetInstancesOrderings(&instancestore.ListOpts{
+	_, err = generateGetInstancesOrderings(&instancestore.ListOpts{
 		Orders: []instancestore.Order{
 			{Field: "STATUS", Descending: false},
 		},
@@ -127,16 +125,23 @@ func (expect *generateGetInstancesFiltersResults) compare(clauses []string, vals
 	}
 
 	for idx := range vals {
-		if vals[idx] != expect.vals[idx] {
-			return fmt.Errorf("expected vals '%v', but got '%v'", expect.vals, vals)
+		if tv, ok := vals[idx].(time.Time); ok {
+			te, _ := expect.vals[idx].(time.Time)
+			if !te.Equal(tv) {
+				return fmt.Errorf("expected vals '%v', but got '%v'", expect.vals, vals)
+			}
+		} else {
+			if vals[idx] != expect.vals[idx] {
+				return fmt.Errorf("expected vals '%v', but got '%v'", expect.vals, vals)
+			}
 		}
+
 	}
 
 	return nil
 }
 
 func Test_generateGetInstancesFilters(t *testing.T) {
-
 	clauses, vals, err := generateGetInstancesFilters(nil)
 	if err != nil {
 		t.Error(err)
@@ -225,7 +230,7 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 		t.Errorf("generateGetInstancesFilters failed with many filters: %v", err)
 	}
 
-	clauses, vals, err = generateGetInstancesFilters(&instancestore.ListOpts{
+	_, _, err = generateGetInstancesFilters(&instancestore.ListOpts{
 		Filters: []instancestore.Filter{
 			{Field: fieldNamespaceID, Kind: instancestore.FilterKindPrefix, Value: "x"},
 		},

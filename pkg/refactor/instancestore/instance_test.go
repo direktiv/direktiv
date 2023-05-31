@@ -388,7 +388,7 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 			return
 		}
 
-		assertInstanceDataIsSummary(t, &idata)
+		assertInstanceDataIsSummary(t, &results.Results[idx])
 		if t.Failed() {
 			return
 		}

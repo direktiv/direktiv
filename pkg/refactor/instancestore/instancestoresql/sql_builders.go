@@ -15,38 +15,40 @@ func wheres(clauses ...string) string {
 	if len(clauses) == 1 {
 		return ` WHERE ` + clauses[0]
 	}
+
 	return ` WHERE (` + strings.Join(clauses, ") AND (") + `)`
 }
 
 func generateGetInstancesOrderings(opts *instancestore.ListOpts) (string, error) {
 	if opts == nil || len(opts.Orders) == 0 {
 		return ` ORDER BY ` + fieldCreatedAt + " " + desc, nil
-	} else {
-		keys := make(map[string]bool)
-		var orderStrings []string
-		for _, order := range opts.Orders {
-			var s string
-			switch order.Field {
-			case instancestore.FieldCreatedAt:
-				s = fieldCreatedAt
-			default:
-				return "", fmt.Errorf("order field '%s': %w", order.Field, instancestore.ErrBadListOpts)
-			}
-
-			if _, exists := keys[order.Field]; exists {
-				return "", fmt.Errorf("duplicate order field '%s': %w", order.Field, instancestore.ErrBadListOpts)
-			}
-
-			keys[order.Field] = true
-
-			if order.Descending {
-				s += " " + desc
-			}
-
-			orderStrings = append(orderStrings, s)
-		}
-		return ` ORDER BY ` + strings.Join(orderStrings, ", "), nil
 	}
+
+	keys := make(map[string]bool)
+	var orderStrings []string
+	for _, order := range opts.Orders {
+		var s string
+		switch order.Field {
+		case instancestore.FieldCreatedAt:
+			s = fieldCreatedAt
+		default:
+			return "", fmt.Errorf("order field '%s': %w", order.Field, instancestore.ErrBadListOpts)
+		}
+
+		if _, exists := keys[order.Field]; exists {
+			return "", fmt.Errorf("duplicate order field '%s': %w", order.Field, instancestore.ErrBadListOpts)
+		}
+
+		keys[order.Field] = true
+
+		if order.Descending {
+			s += " " + desc
+		}
+
+		orderStrings = append(orderStrings, s)
+	}
+
+	return ` ORDER BY ` + strings.Join(orderStrings, ", "), nil
 }
 
 func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []interface{}, error) {
@@ -110,10 +112,10 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 		case instancestore.FieldCalledAs:
 			if filter.Kind == instancestore.FilterKindPrefix {
 				clause = fieldCalledAs + " LIKE ?"
-				val = filter.Value.(string) + "%"
+				val = fmt.Sprintf("%s", filter.Value) + "%"
 			} else if filter.Kind == instancestore.FilterKindContains {
 				clause = fieldCalledAs + " LIKE ?"
-				val = "%" + filter.Value.(string) + "%"
+				val = "%" + fmt.Sprintf("%s", filter.Value) + "%"
 			} else {
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
@@ -132,10 +134,10 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 		case instancestore.FieldInvoker:
 			if filter.Kind == instancestore.FilterKindMatch {
 				clause = fieldInvoker + " = ?"
-				val = filter.Value.(string)
+				val = fmt.Sprintf("%s", filter.Value)
 			} else if filter.Kind == instancestore.FilterKindContains {
 				clause = fieldInvoker + " LIKE ?"
-				val = "%" + filter.Value.(string) + "%"
+				val = "%" + fmt.Sprintf("%s", filter.Value) + "%"
 			} else {
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
@@ -155,6 +157,7 @@ func generateInsertQuery(columns []string) string {
 	into := strings.Join(columns, ", ")
 	valPlaceholders := strings.Repeat("?, ", len(columns)-1) + "?"
 	query := fmt.Sprintf(`INSERT INTO %s(%s) VALUES (%s)`, table, into, valPlaceholders)
+
 	return query
 }
 
