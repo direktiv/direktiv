@@ -26,6 +26,7 @@ const apiEndpointJSONError = "http://localhost/returns-error";
 const apiEndpointWithDynamicSegment = "http://localhost/this-is-dynamic/my-api";
 const apiEndpointEmptyResponse = "http://localhost/empty-response";
 const apiEndpointTextResponse = "http://localhost/text-response";
+const apiEndpointHeaders = "http://localhost/headers";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -61,7 +62,11 @@ const testApi = setupServer(
         body: body,
       })
     );
-  })
+  }),
+  // this api endpoint returns the headers that were sent to it as a response
+  rest.post(apiEndpointHeaders, (req, res, ctx) =>
+    res(ctx.json(Object.fromEntries(req?.headers.entries())))
+  )
 );
 
 beforeAll(() => {
@@ -127,6 +132,12 @@ const apiPost = apiFactory({
   }),
 });
 
+const apiThatReturnsHeader = apiFactory({
+  url: () => apiEndpointHeaders,
+  method: "POST",
+  schema: z.object({}).passthrough(), // allow object with any keys
+});
+
 const getMyWithDynamicSegment = apiFactory({
   url: ({ segment }: { segment: string }) =>
     `http://localhost/${segment}/my-api`,
@@ -145,6 +156,7 @@ describe("processApiResponse", () => {
           getMyApi({
             apiKey: API_KEY,
             payload: undefined,
+            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -166,6 +178,7 @@ describe("processApiResponse", () => {
           getMyApi({
             apiKey: "wrong-api-key",
             payload: undefined,
+            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -191,6 +204,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           emptyResponse({
             payload: undefined,
+            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -211,6 +225,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           textResponse({
             payload: undefined,
+            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -232,6 +247,7 @@ describe("processApiResponse", () => {
           getMyApiWrongSchema({
             apiKey: API_KEY,
             payload: undefined,
+            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -255,7 +271,12 @@ describe("processApiResponse", () => {
       useQuery({
         queryKey: ["getmyapikey", API_KEY],
         queryFn: () =>
-          api404({ apiKey: API_KEY, payload: undefined, urlParams: undefined }),
+          api404({
+            apiKey: API_KEY,
+            payload: undefined,
+            headers: undefined,
+            urlParams: undefined,
+          }),
         onError,
       });
 
@@ -285,6 +306,7 @@ describe("processApiResponse", () => {
           apiJSONError({
             apiKey: API_KEY,
             payload: undefined,
+            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -317,7 +339,8 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyWithDynamicSegment({
             apiKey: API_KEY,
-            payload: null,
+            payload: undefined,
+            headers: undefined,
             urlParams: pathParams,
           }),
       });
@@ -341,6 +364,7 @@ describe("processApiResponse", () => {
           apiPost({
             apiKey: API_KEY,
             payload: params,
+            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -371,6 +395,30 @@ describe("processApiResponse", () => {
 
       expect(resultBoolean.current.isSuccess).toBe(true);
       expect(resultBoolean.current.data?.body).toBe("true");
+    });
+  });
+
+  test("all passed headers will be forwarded to the api", async () => {
+    const useCallWithHeaders = (headers: unknown) =>
+      useMutation({
+        mutationFn: () =>
+          apiThatReturnsHeader({
+            payload: undefined,
+            headers: headers,
+            urlParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(
+      () => useCallWithHeaders({ my: "custom header" }),
+      { wrapper: UseQueryWrapper }
+    );
+
+    result.current.mutate();
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data?.my).toBe("custom header");
     });
   });
 });

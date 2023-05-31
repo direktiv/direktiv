@@ -41,6 +41,7 @@ export const useCreateRevision = () => {
       createRevision({
         apiKey: apiKey ?? undefined,
         payload: undefined,
+        headers: undefined,
         urlParams: {
           namespace: namespace,
           path,
