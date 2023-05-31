@@ -11,18 +11,18 @@ type FactoryParams<TUrlParams, TSchema> = {
 };
 
 /**
- * atm params must alway be defined. I tried to make TS infer the property
+ * atm payload and headers must alway be defined. I tried to make TS infer the property
  * with
  *
- * type ReturnT<TParams> = {
+ * type ReturnT<TPayload> = {
  *   apiKey: string;
- * } & (TParams extends undefined ? object : { params: Partial<TParams> });
+ * } & (TPayload extends undefined ? object : { payload: Partial<TPayload> });
  *
  * but it didn't work. I also tried
  *
- * type ReturnT<TParams> = {
+ * type ReturnT<TPayload> = {
  *   apiKey: string;
- *   params?: TParams;
+ *   payload?: TPayload;
  * };
  *
  * but this would have the downside that params is always optional. And we would
