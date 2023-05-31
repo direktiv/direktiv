@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
 
 func Test_Log(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}

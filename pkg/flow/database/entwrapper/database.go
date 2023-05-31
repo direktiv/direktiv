@@ -12,6 +12,7 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entrt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
+	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -103,94 +104,7 @@ func New(ctx context.Context, sugar *zap.SugaredLogger, addr string) (*Database,
 	}
 
 	// create the new filesystem tables.
-	_, err = db.DB().Exec(`
-	 CREATE TABLE IF NOT EXISTS "filesystem_roots"
-			(
-				"id" uuid,
-				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_namespaces_filesystem_roots"
-				FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "filesystem_files"
-			(
-				"id" uuid,
-				"path" text NOT NULL,
-				"depth" integer NOT NULL,
-				"typ" text NOT NULL,
-				"root_id" uuid NOT NULL,
-				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_filesystem_roots_filesystem_files"
-				FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "filesystem_revisions"
-			(
-				"id" uuid,
-				"tags" text,
-				"is_current" boolean NOT NULL,
-				"data" bytea NOT NULL,
-				"checksum" text NOT NULL,
-				"file_id" uuid NOT NULL,
-				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				PRIMARY KEY ("id"),
-				CONSTRAINT "fk_filesystem_files_filesystem_revisions"
-				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "file_annotations"
-			(
-				"file_id" uuid,
-				"data" text,
-				"created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				"updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				PRIMARY KEY ("file_id"),
-				CONSTRAINT "fk_filesystem_files_file_annotations"
-				FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-				);
-	 CREATE TABLE IF NOT EXISTS "mirror_configs" 
-	 		(
-	 		    "namespace_id" uuid,
-	 		    "url" text NOT NULL,
-	 		    "git_ref" text NOT NULL,
-	 		    "git_commit_hash" text,
-	 		    "public_key" text,
-	 		    "private_key" text,
-	 		    "private_key_passphrase" text,
-	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	 		    PRIMARY KEY ("namespace_id"),
-				CONSTRAINT "fk_namespaces_mirror_configs"
-				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
-	     );
-	 CREATE TABLE IF NOT EXISTS "mirror_processes" 
-	 		(
-	 		    "id" uuid,
-	 		    "namespace_id" uuid NOT NULL,
-	 		    "status" text NOT NULL,
-				"typ" 	 text NOT NULL,
-	 		    "ended_at" timestamptz,
-	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	 		    PRIMARY KEY ("id"),
-	 		    CONSTRAINT "fk_namespaces_mirror_processes"
-				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
-	 		);
-	 CREATE TABLE IF NOT EXISTS "secrets" 
-	 		(
-	 		    "id" uuid,
-	 		    "namespace_id" uuid NOT NULL,
-	 		    "name" text NOT NULL,
-				"data" 	 text NOT NULL,
-	 		    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	 		    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	 		    PRIMARY KEY ("id"),
-	 		    CONSTRAINT "fk_namespaces_secrets"
-				FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
-	 		);
-`)
+	_, err = db.DB().Exec(database2.Schema)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize filesystem tables: %w\n", err)
 	}
