@@ -160,7 +160,7 @@ type UpdateInstanceDataArgs struct {
 
 type InstanceDataQuery interface {
 	// UpdateInstanceData updates the instance record. It only applies non-nil arguments. It returns the updated record.
-	UpdateInstanceData(ctx context.Context, args *UpdateInstanceDataArgs) (*InstanceData, error)
+	UpdateInstanceData(ctx context.Context, args *UpdateInstanceDataArgs) error
 
 	// GetMost returns almost all fields, excluding only one or two fields that the engine is unlikely to need (input, output & metadata)
 	GetMost(ctx context.Context) (*InstanceData, error)
@@ -183,6 +183,8 @@ type Store interface {
 	ForInstanceID(id uuid.UUID) InstanceDataQuery
 
 	// CreateInstanceData creates a new row in the database.
+	// NOTE: the created_at and updated_at fields returned are incorrect. Correcting them would require an additional
+	// 		SQL query, and the performance tradeoff is not worth it.
 	CreateInstanceData(ctx context.Context, args *CreateInstanceDataArgs) (*InstanceData, error)
 
 	// GetNamespaceInstances returns a list of instances associated with the given namespace ID.

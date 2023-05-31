@@ -20,19 +20,19 @@ type instanceDataQuery struct {
 
 var _ instancestore.InstanceDataQuery = &instanceDataQuery{} // Ensures instanceDataQuery struct conforms to instancestore.InstanceDataQuery interface.
 
-func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instancestore.UpdateInstanceDataArgs) (*instancestore.InstanceData, error) {
+func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instancestore.UpdateInstanceDataArgs) error {
 	var vals []interface{}
 	var clauses []string
 	query := fmt.Sprintf("UPDATE %s", table)
 
 	if args.EndedAt != nil {
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldEndedAt))
-		vals = append(vals, *args.EndedAt)
+		vals = append(vals, (*args.EndedAt).UTC())
 	}
 
 	if args.Deadline != nil {
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldDeadline))
-		vals = append(vals, *args.Deadline)
+		vals = append(vals, (*args.Deadline).UTC())
 	}
 
 	if args.Status != nil {
@@ -93,24 +93,26 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 
 	query += fmt.Sprintf(" WHERE %s = ?", fieldID)
 
-	q.logger.Debug("UpdateInstanceData executing SQL query: %s", query)
+	q.logger.Debug(fmt.Sprintf("UpdateInstanceData executing SQL query: %s", query))
+
+	vals = append(vals, q.instanceID)
 
 	res := q.db.WithContext(ctx).Exec(query, vals...)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("instance '%s': %w", q.instanceID, instancestore.ErrNotFound)
+			return fmt.Errorf("instance '%s': %w", q.instanceID, instancestore.ErrNotFound)
 		}
 
-		return nil, res.Error
+		return res.Error
 	}
 
-	return nil, nil
+	return nil
 }
 
 func (q *instanceDataQuery) get(ctx context.Context, columns []string) (*instancestore.InstanceData, error) {
 	query := fmt.Sprintf(`SELECT %s FROM %s WHERE %s = ?`, strings.Join(columns, ", "), table, fieldID)
 
-	q.logger.Debug("get executing SQL query: %s", query)
+	q.logger.Debug(fmt.Sprintf("get executing SQL query: %s", query))
 
 	idata := &instancestore.InstanceData{}
 	res := q.db.WithContext(ctx).Raw(query, q.instanceID).First(idata)

@@ -3,7 +3,6 @@ package instancestoresql
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -48,7 +47,7 @@ var (
 		fieldID, fieldNamespaceID, fieldWorkflowID, fieldRevisionID, fieldRootInstanceID,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
 		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
-		fieldRuntimeInfo, fieldChildrenInfo /*"input",*/, fieldLiveData, fieldStateMemory, fieldErrorMessage,
+		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
@@ -111,11 +110,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		fieldSettings, fieldDescentInfo, fieldTelemetryInfo, fieldRuntimeInfo,
 		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory,
 	}
-	into := strings.Join(columns, ", ")
-	valPlaceholders := strings.Repeat("?, ", len(columns)-1) + "?"
-	query := fmt.Sprintf(`INSERT INTO %s(%s) VALUES (%s)`, table, into, valPlaceholders)
-
-	s.logger.Debug("CreateInstanceData executing SQL query: %s", query)
+	query := generateInsertQuery(columns)
 
 	res := s.db.WithContext(ctx).Exec(query,
 		idata.ID, idata.NamespaceID, idata.WorkflowID, idata.RevisionID, idata.RootInstanceID,
@@ -132,148 +127,13 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	return idata, nil
 }
 
-func generateGetNamespaceInstancesOrderings(opts *instancestore.ListOpts) (string, error) {
-	if len(opts.Orders) == 0 {
-		return " " + fieldCreatedAt + " " + desc, nil
-	} else {
-		var orderStrings []string
-		for _, order := range opts.Orders {
-			var s string
-			switch order.Field {
-			case instancestore.FieldCreatedAt:
-				s = fieldCreatedAt
-			default:
-				return "", fmt.Errorf("order field '%s': %w", order.Field, instancestore.ErrBadListOpts)
-			}
-
-			if order.Descending {
-				s += " " + desc
-			}
-
-			orderStrings = append(orderStrings, s)
-		}
-		return ` ORDER BY ` + strings.Join(orderStrings, ", "), nil
-	}
-}
-
-func generateGetNamespaceInstancesFilters(opts *instancestore.ListOpts) ([]string, []interface{}, error) {
-	var clauses []string
-	var vals []interface{}
-	for idx := range opts.Filters {
-		filter := opts.Filters[idx]
-		var clause string
-		var val interface{}
-		switch filter.Field {
-		case fieldNamespaceID:
-			if filter.Kind == instancestore.FilterKindMatch {
-				clause = fieldNamespaceID + " = ?"
-				val = filter.Value
-			} else {
-				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
-			}
-
-		case instancestore.FieldCreatedAt:
-			if filter.Kind == instancestore.FilterKindBefore {
-				clause = fieldCreatedAt + " < ?"
-				val = filter.Value
-			} else if filter.Kind == instancestore.FilterKindAfter {
-				clause = fieldCreatedAt + " > ?"
-				val = filter.Value
-			} else {
-				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
-			}
-
-		case fieldDeadline:
-			if filter.Kind == instancestore.FilterKindBefore {
-				clause = fieldDeadline + " < ?"
-				val = filter.Value
-			} else if filter.Kind == instancestore.FilterKindAfter {
-				clause = fieldDeadline + " > ?"
-				val = filter.Value
-			} else {
-				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
-			}
-
-		case instancestore.FieldCalledAs:
-			if filter.Kind == instancestore.FilterKindPrefix {
-				clause = fieldCalledAs + " LIKE ?"
-				val = filter.Value.(string) + "%"
-			} else if filter.Kind == instancestore.FilterKindContains {
-				clause = fieldCalledAs + " LIKE ?"
-				val = "%" + filter.Value.(string) + "%"
-			} else {
-				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
-			}
-
-		case instancestore.FieldStatus:
-			if filter.Kind == instancestore.FilterKindMatch {
-				clause = fieldStatus + " = ?"
-				val = filter.Value
-			} else if filter.Kind == "<" {
-				clause = fieldStatus + " < ?"
-				val = filter.Value
-			} else {
-				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
-			}
-
-		case instancestore.FieldInvoker:
-			if filter.Kind == instancestore.FilterKindMatch {
-				clause = fieldInvoker + " LIKE ?"
-				val = filter.Value.(string)
-			} else if filter.Kind == instancestore.FilterKindContains {
-				clause = fieldInvoker + " LIKE ?"
-				val = "%" + filter.Value.(string) + "%"
-			} else {
-				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
-			}
-
-		default:
-			return nil, nil, fmt.Errorf("filter field '%s': %w", filter.Field, instancestore.ErrBadListOpts)
-		}
-
-		clauses = append(clauses, clause)
-		vals = append(vals, val)
-	}
-
-	return clauses, vals, nil
-}
-
-func wheres(clauses ...string) string {
-	if len(clauses) == 0 {
-		return ""
-	}
-	if len(clauses) == 1 {
-		return ` WHERE ` + clauses[0]
-	}
-	return ` WHERE (` + strings.Join(clauses, ") AND (") + `)`
-}
-
-func (s *sqlInstanceStore) generateGetInstancesQuery(ctx context.Context, columns []string, opts *instancestore.ListOpts) ([]instancestore.InstanceData, int, error) {
-
-	clauses, vals, err := generateGetNamespaceInstancesFilters(opts)
+func (s *sqlInstanceStore) performGetInstancesQuery(ctx context.Context, columns []string, opts *instancestore.ListOpts) ([]instancestore.InstanceData, int, error) {
+	countQuery, query, vals, err := generateGetInstancesQueries(columns, opts)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	orderings, err := generateGetNamespaceInstancesOrderings(opts)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	query := fmt.Sprintf(`SELECT %s FROM %s`, strings.Join(columns, ", "), table)
-	query += wheres(clauses...)
-	query += orderings
-
-	if opts.Limit > 0 {
-		query += fmt.Sprintf(` LIMIT %d`, opts.Limit)
-
-		if opts.Offset > 0 {
-			query += fmt.Sprintf(` OFFSET %d`, opts.Offset)
-		}
-	}
-
-	s.logger.Debug("generateGetInstancesQuery executing SQL query: %s", query)
-
+	var count int
 	var idatas []instancestore.InstanceData
 
 	res := s.db.WithContext(ctx).Raw(query, vals...).Find(&idatas)
@@ -281,18 +141,30 @@ func (s *sqlInstanceStore) generateGetInstancesQuery(ctx context.Context, column
 		return nil, 0, res.Error
 	}
 
-	return idatas, int(res.RowsAffected), nil
+	count = len(idatas)
 
+	if opts != nil && opts.Limit != 0 {
+		res = s.db.WithContext(ctx).Raw(countQuery, vals...).First(&count)
+		if res.Error != nil {
+			return nil, 0, res.Error
+		}
+	}
+
+	return idatas, count, nil
 }
 
 func (s *sqlInstanceStore) GetNamespaceInstances(ctx context.Context, nsID uuid.UUID, opts *instancestore.ListOpts) (*instancestore.GetNamespaceInstancesResults, error) {
+	if opts == nil {
+		opts = &instancestore.ListOpts{}
+	}
+
 	opts.Filters = append([]instancestore.Filter{{
 		Field: fieldNamespaceID,
 		Kind:  instancestore.FilterKindMatch,
 		Value: nsID,
 	}}, opts.Filters...)
 
-	idatas, k, err := s.generateGetInstancesQuery(ctx, summaryFields, opts)
+	idatas, k, err := s.performGetInstancesQuery(ctx, summaryFields, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -308,14 +180,14 @@ func (s *sqlInstanceStore) GetHangingInstances(ctx context.Context) ([]instances
 	opts.Filters = append([]instancestore.Filter{{
 		Field: fieldStatus,
 		Kind:  "<",
-		Value: instancestore.InstanceStatusComplete.String(),
+		Value: instancestore.InstanceStatusComplete,
 	}, {
 		Field: fieldDeadline,
 		Kind:  instancestore.FilterKindBefore,
-		Value: time.Now(),
+		Value: time.Now().UTC(),
 	}}, opts.Filters...)
 
-	idatas, _, err := s.generateGetInstancesQuery(ctx, summaryFields, opts)
+	idatas, _, err := s.performGetInstancesQuery(ctx, summaryFields, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -325,11 +197,11 @@ func (s *sqlInstanceStore) GetHangingInstances(ctx context.Context) ([]instances
 
 func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.Time) error {
 	query := fmt.Sprintf(`DELETE FROM %s WHERE %s >= ? AND %s < ?`, table, fieldStatus, fieldEndedAt)
-	s.logger.Debug("DeleteOldInstances executing SQL query: %s", query)
+	s.logger.Debug(fmt.Sprintf("DeleteOldInstances executing SQL query: %s", query))
 
 	res := s.db.WithContext(ctx).Exec(
 		query,
-		instancestore.InstanceStatusComplete, before,
+		instancestore.InstanceStatusComplete, before.UTC(),
 	)
 	if res.Error != nil {
 		return res.Error
@@ -340,12 +212,12 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 
 func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfID uuid.UUID) error {
 	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s > ?`, table, fieldInvoker, fieldWorkflowID, fieldCreatedAt)
-	s.logger.Debug("AssertNoParallelCron executing SQL query: %s", query)
+	s.logger.Debug(fmt.Sprintf("AssertNoParallelCron executing SQL query: %s", query))
 
 	var k int64
 	res := s.db.WithContext(ctx).Raw(
 		query,
-		instancestore.InvokerCron, wfID, time.Now().Add(time.Second*30),
+		instancestore.InvokerCron, wfID, time.Now().UTC().Add(-30*time.Second),
 	).First(&k)
 	if res.Error != nil {
 		return res.Error

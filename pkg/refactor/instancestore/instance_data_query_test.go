@@ -138,11 +138,3 @@ states:
 		})
 	}
 }
-
-// TODO: alan, test UpdateInstanceData
-
-// TODO: alan, test GetSummaryWithInput
-
-// TODO: alan, test GetSummaryWithOutput
-
-// TODO: alan, test GetSummaryWithMetadata
