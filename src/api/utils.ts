@@ -25,8 +25,8 @@ type FactoryParams<TUrlParams, TSchema> = {
  *   payload?: TPayload;
  * };
  *
- * but this would have the downside that params is always optional. And we would
- * lose typesafety when some api enpoints have required params
+ * but this would have the downside that payload is always optional. And we would
+ * lose typesafety when some api enpoints have a required payload
  *
  */
 type ApiParams<TPayload, THeaders, TUrlParams> = {
