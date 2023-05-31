@@ -264,7 +264,7 @@ func (srv *server) start(ctx context.Context) error {
 	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
 	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
 
-	logger, logworker := logengine.NewCachedLogger(50,
+	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		store.Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
@@ -412,6 +412,7 @@ func (srv *server) start(ctx context.Context) error {
 	wg.Wait()
 
 	srv.logger.CloseLogWorkers()
+	closelogworker()
 
 	if err != nil {
 		return err

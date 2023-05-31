@@ -118,10 +118,14 @@ func NewCachedLogger(
 	storeAdd func(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error,
 	pub func(objectID uuid.UUID, objectType string),
 	logError func(template string, args ...interface{}),
-) (BetterLogger, func()) {
+) (BetterLogger, func(), func()) {
 	cls := CachedSQLLogStore{storeAdd: storeAdd, callback: pub, logError: logError, logQueue: make(chan *logMessage, queueSize)}
 
-	return &cls, cls.logWorker
+	return &cls, cls.logWorker, cls.closeLogWorkers
+}
+
+func (cls *CachedSQLLogStore) closeLogWorkers() {
+	close(cls.logQueue)
 }
 
 func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
