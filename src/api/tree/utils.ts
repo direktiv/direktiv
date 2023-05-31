@@ -38,3 +38,6 @@ export const sortFoldersFirst = (
 
 export const sortByName = (a: { name: string }, b: { name: string }): number =>
   a.name.localeCompare(b.name);
+
+export const sortByRef = (a: { ref: string }, b: { ref: string }): number =>
+  a.ref.localeCompare(b.ref);

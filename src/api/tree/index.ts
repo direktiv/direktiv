@@ -42,4 +42,16 @@ export const treeKeys = {
         path: forceLeadingSlash(path ?? ""),
       },
     ] as const,
+  router: (
+    namespace: string,
+    { apiKey, path }: { apiKey?: string; path?: string }
+  ) =>
+    [
+      {
+        scope: "tree-router",
+        apiKey,
+        namespace,
+        path: forceLeadingSlash(path ?? ""),
+      },
+    ] as const,
 };
