@@ -4,6 +4,12 @@ const getAuthHeader = (apiKey: string) => ({
   "direktiv-token": apiKey,
 });
 
+type FactoryParams<TUrlParams, TSchema> = {
+  url: (urlParams: TUrlParams) => string;
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  schema: z.ZodSchema<TSchema>;
+};
+
 /**
  * atm params must alway be defined. I tried to make TS infer the property
  * with
@@ -45,11 +51,7 @@ export const apiFactory =
     // does not scale very well when the complexity of an app grows and leads to
     // even worse user experience).
     schema,
-  }: {
-    url: (urlParams: TUrlParams) => string;
-    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-    schema: z.ZodSchema<TSchema>;
-  }): (({
+  }: FactoryParams<TUrlParams, TSchema>): (({
     apiKey,
     payload,
     urlParams,
