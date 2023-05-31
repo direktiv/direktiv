@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
-import { VarSchemaType } from "~/api/vars/schema";
+import { VarSchemaType } from "~/api/variables/schema";
 
 type ItemRowProps = {
   item: VarSchemaType;

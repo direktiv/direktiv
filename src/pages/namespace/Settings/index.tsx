@@ -8,7 +8,7 @@ import { Card } from "~/design/Card";
 import { FC } from "react";
 import RegistriesList from "./RegistriesList";
 import SecretsList from "./SecretsList";
-import VariablesList from "./VariablesList";
+import VariablesList from "./variables/VariablesList";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useTranslation } from "react-i18next";
 import { useVersion } from "~/api/version";

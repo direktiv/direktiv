@@ -11,15 +11,15 @@ import {
   VarFormSchema,
   VarFormSchemaType,
   VarSchemaType,
-} from "~/api/vars/schema";
+} from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
 import { Trash } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
-import { useUpdateVar } from "~/api/vars/mutate/updateVar";
-import { useVarContent } from "~/api/vars/query/useVarContent";
+import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
+import { useVarContent } from "~/api/variables/query/useVariableContent";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // TODO: This is almost the same as the Create component. Consolidate them into one.

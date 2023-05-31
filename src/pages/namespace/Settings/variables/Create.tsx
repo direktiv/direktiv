@@ -6,14 +6,14 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { VarFormSchema, VarFormSchemaType } from "~/api/vars/schema";
+import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
 import { Textarea } from "~/design/TextArea";
 import { useTranslation } from "react-i18next";
-import { useUpdateVar } from "~/api/vars/mutate/updateVar";
+import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // TODO: This is almost the same as the Edit component. Consolidate them into one.
