@@ -328,7 +328,7 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyWithDynamicSegment({
             apiKey: API_KEY,
-            payload: null,
+            payload: undefined,
             headers: undefined,
             urlParams: pathParams,
           }),
