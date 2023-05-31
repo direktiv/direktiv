@@ -8,5 +8,5 @@ export const addYamlFileExtension = (name: string) => {
   if (yamlExtensions.some((extension) => newName.endsWith(extension))) {
     return newName;
   }
-  return `${newName}.${yamlExtensions[0]}`;
+  return `${newName}${yamlExtensions[0]}`;
 };
