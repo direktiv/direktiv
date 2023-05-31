@@ -1,10 +1,5 @@
 import { Page, expect, test } from "@playwright/test";
-import {
-  actionDeleteRevision,
-  actionEditAndSaveWorkflow,
-  actionMakeRevision,
-  actionWaitForSuccessToast,
-} from "../utils";
+import { actionDeleteRevision, actionWaitForSuccessToast } from "../utils";
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 
 import { createWorkflow } from "../../../utils/node";
@@ -28,29 +23,20 @@ const actionNavigateToRevisions = async (page: Page) => {
   await page.goto(`${namespace}/explorer/workflow/revisions/${workflow}`);
 };
 
-const actionNavigateToWorkflowEditor = async (page: Page) => {
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
-};
-
 const actionCreateRevisionAndTag = async (page: Page) => {
-  await actionNavigateToWorkflowEditor(page);
-  await actionEditAndSaveWorkflow(page);
-  await actionMakeRevision(page);
-  await actionWaitForSuccessToast(page);
-  await actionNavigateToRevisions(page);
+  const name = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [firstRev],
+  } = await createWorkflowWithThreeRevisions(namespace, name);
+  await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
 
-  // open context menu & click on create-tag
-  const firstRevision = await page
-    .getByTestId(/workflow-revisions-link-item/)
-    .nth(1)
-    .innerText();
   const firstItemMenuTrg = page.getByTestId(
-    `workflow-revisions-item-menu-trg-${firstRevision}`
+    `workflow-revisions-item-menu-trg-${firstRev.revision.name}`
   );
   await firstItemMenuTrg.click();
 
   const createTagTrg = page.getByTestId(
-    `workflow-revisions-trg-create-tag-dlg-${firstRevision}`
+    `workflow-revisions-trg-create-tag-dlg-${firstRev.revision.name}`
   );
   await createTagTrg.click();
 
@@ -60,7 +46,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
   await inputName.type(newTag);
   await page.getByTestId("dialog-create-tag-btn-submit").click();
   await actionWaitForSuccessToast(page);
-  return [firstRevision, newTag] as const;
+  return [firstRev.revision.name, newTag] as const;
 };
 
 test("it is possible to navigate to the revisions tab", async ({ page }) => {
@@ -109,26 +95,27 @@ test("latest is the only revision by default", async ({ page }) => {
 test("it is possible to revert to the previous the workflow in the revisions list", async ({
   page,
 }) => {
-  test.setTimeout(50000);
-  await actionNavigateToWorkflowEditor(page);
-  const [firstUpdatedWorkflow, firstUpdatedText] =
-    await actionEditAndSaveWorkflow(page);
-  await actionMakeRevision(page);
-  await actionEditAndSaveWorkflow(page, firstUpdatedText);
-  await actionWaitForSuccessToast(page);
-  await actionNavigateToRevisions(page);
+  const name = faker.system.commonFileName("yaml");
+  const {
+    revisionsPayload: [firstContent],
+    revisionsReponse: [firstRev],
+  } = await createWorkflowWithThreeRevisions(namespace, name);
+  await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
 
-  const firstRevision = await page
-    .getByTestId(/workflow-revisions-link-item/)
-    .nth(1)
-    .innerText();
   const firstItemMenuTrg = page.getByTestId(
-    `workflow-revisions-item-menu-trg-${firstRevision}`
+    `workflow-revisions-item-menu-trg-${firstRev.revision.name}`
   );
   await firstItemMenuTrg.click();
 
+  await expect(
+    page.getByTestId(
+      `workflow-revisions-item-menu-content-${firstRev.revision.name}`
+    ),
+    "after click menu trigger, menu content should appear"
+  ).toBeVisible();
+
   const revertTrg = page.getByTestId(
-    `workflow-revisions-trg-revert-dlg-${firstRevision}`
+    `workflow-revisions-trg-revert-dlg-${firstRev.revision.name}`
   );
   await revertTrg.click();
 
@@ -139,13 +126,13 @@ test("it is possible to revert to the previous the workflow in the revisions lis
   ).toBeEnabled();
   await btnRevert.click();
   await actionWaitForSuccessToast(page);
-  await actionNavigateToWorkflowEditor(page);
+  await page.goto(`${namespace}/explorer/workflow/active/${name}`);
   const textArea = page.getByRole("textbox");
   const workflowValue = await textArea.inputValue();
   expect(
     workflowValue,
     "after revert, it should be the same as the first updated workflow"
-  ).toBe(firstUpdatedWorkflow);
+  ).toBe(firstContent);
 });
 
 test("it is possible to delete the revision", async ({ page }) => {
