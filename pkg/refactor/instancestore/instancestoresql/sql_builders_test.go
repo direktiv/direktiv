@@ -130,12 +130,9 @@ func (expect *generateGetInstancesFiltersResults) compare(clauses []string, vals
 			if !te.Equal(tv) {
 				return fmt.Errorf("expected vals '%v', but got '%v'", expect.vals, vals)
 			}
-		} else {
-			if vals[idx] != expect.vals[idx] {
-				return fmt.Errorf("expected vals '%v', but got '%v'", expect.vals, vals)
-			}
+		} else if vals[idx] != expect.vals[idx] {
+			return fmt.Errorf("expected vals '%v', but got '%v'", expect.vals, vals)
 		}
-
 	}
 
 	return nil
@@ -244,7 +241,6 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 }
 
 func Test_generateInsertQuery(t *testing.T) {
-
 	res := generateInsertQuery([]string{fieldID})
 	expect := `INSERT INTO instances_v2(id) VALUES (?)`
 
@@ -258,7 +254,6 @@ func Test_generateInsertQuery(t *testing.T) {
 	if res != expect {
 		t.Errorf("generateInsertQuery failed with multiple columns: expected '%s', but got '%s'", expect, res)
 	}
-
 }
 
 type generateGetInstancesQueriesResults struct {
@@ -290,7 +285,6 @@ func (expect *generateGetInstancesQueriesResults) compare(countQuery, query stri
 }
 
 func Test_generateGetInstancesQueries(t *testing.T) {
-
 	countQuery, query, vals, err := generateGetInstancesQueries([]string{fieldID}, nil)
 	if err != nil {
 		t.Error(err)
@@ -329,5 +323,4 @@ func Test_generateGetInstancesQueries(t *testing.T) {
 	if err != nil {
 		t.Errorf("generateGetInstancesQueries failed with a complex example: %v", err)
 	}
-
 }
