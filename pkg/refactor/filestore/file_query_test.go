@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CorrectSetPath(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}

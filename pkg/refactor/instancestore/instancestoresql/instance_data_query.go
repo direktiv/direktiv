@@ -27,12 +27,12 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 
 	if args.EndedAt != nil {
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldEndedAt))
-		vals = append(vals, (*args.EndedAt).UTC())
+		vals = append(vals, args.EndedAt.UTC())
 	}
 
 	if args.Deadline != nil {
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldDeadline))
-		vals = append(vals, (*args.Deadline).UTC())
+		vals = append(vals, args.Deadline.UTC())
 	}
 
 	if args.Status != nil {
