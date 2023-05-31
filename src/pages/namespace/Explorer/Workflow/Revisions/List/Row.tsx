@@ -102,10 +102,7 @@ const RevisionTableRow: FC<{
                 <MoreVertical />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-44"
-              data-testid={`workflow-revisions-item-menu-content-${revision.name}`}
-            >
+            <DropdownMenuContent className="w-44">
               <DropdownMenuLabel>
                 {t(
                   "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
