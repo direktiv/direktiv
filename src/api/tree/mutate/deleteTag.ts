@@ -75,10 +75,10 @@ export const useDeleteTag = ({
             ...oldData,
             ...(oldRevisions
               ? {
-                results: oldRevisions?.filter(
-                  (child) => child.name !== variables.tag
-                ),
-              }
+                  results: oldRevisions?.filter(
+                    (child) => child.name !== variables.tag
+                  ),
+                }
               : {}),
           };
         }
@@ -96,10 +96,10 @@ export const useDeleteTag = ({
             ...oldData,
             ...(oldTags
               ? {
-                results: oldTags?.filter(
-                  (child) => child.name !== variables.tag
-                ),
-              }
+                  results: oldTags?.filter(
+                    (child) => child.name !== variables.tag
+                  ),
+                }
               : {}),
           };
         }

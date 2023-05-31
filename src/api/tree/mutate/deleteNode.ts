@@ -23,13 +23,13 @@ const updateCache = (
     ...oldData,
     ...(oldChildren
       ? {
-        children: {
-          ...oldChildren,
-          results: oldChildren?.results.filter(
-            (child) => child.name !== variables.node.name
-          ),
-        },
-      }
+          children: {
+            ...oldChildren,
+            results: oldChildren?.results.filter(
+              (child) => child.name !== variables.node.name
+            ),
+          },
+        }
       : {}),
   };
 };
