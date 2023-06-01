@@ -47,10 +47,11 @@ export const useUpdateVar = ({
 
   return useMutation({
     mutationFn,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries(
-        varKeys.varList(namespace, {
+        varKeys.varContent(namespace, {
           apiKey: apiKey ?? undefined,
+          name: variables.name,
         })
       );
       toast({
