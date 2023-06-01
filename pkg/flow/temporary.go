@@ -5,10 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/util"
 	"io/ioutil"
 	"strconv"
 	"time"
@@ -20,6 +16,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -189,8 +189,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	for idx := range vars {
 		v := vars[idx]
 
-		referenceID := im.cached.Namespace.ID
-
+		var referenceID uuid.UUID
 		switch v.Scope {
 		case "instance":
 			referenceID = im.cached.Instance.ID
