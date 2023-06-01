@@ -189,7 +189,8 @@
         },
         "edit": {
           "title": "Edit {{name}}",
-          "name": "Name"
+          "name": "Name",
+          "mimeType": "Mimetype"
         }
       },
       "theme": {

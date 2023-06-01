@@ -22,7 +22,12 @@ export const VarUpdatedSchema = z.object({
 
 export const VarDeletedSchema = z.null();
 
-export const VarContentSchema = z.string();
+export const VarContentSchema = z.object({
+  body: z.string(),
+  headers: z.object({
+    "content-type": z.string(),
+  }),
+});
 
 export const VarListSchema = z.object({
   namespace: z.string(),
@@ -35,6 +40,7 @@ export const VarListSchema = z.object({
 export const VarFormSchema = z.object({
   name: z.string(),
   content: z.string(),
+  mimeType: z.string(),
 });
 
 export type VarSchemaType = z.infer<typeof VarSchema>;

@@ -1,4 +1,8 @@
-import { VarUpdatedSchema, VarUpdatedSchemaType } from "../schema";
+import {
+  VarFormSchemaType,
+  VarUpdatedSchema,
+  VarUpdatedSchemaType,
+} from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/utils";
@@ -28,7 +32,7 @@ export const useUpdateVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = ({ name, content }: { name: string; content: string }) =>
+  const mutationFn = ({ name, content, mimeType }: VarFormSchemaType) =>
     updateVar({
       apiKey: apiKey ?? undefined,
       payload: content,
@@ -36,7 +40,9 @@ export const useUpdateVar = ({
         namespace: namespace,
         name,
       },
-      headers: undefined,
+      headers: {
+        "content-type": mimeType,
+      },
     });
 
   return useMutation({
