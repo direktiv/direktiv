@@ -48,8 +48,6 @@ describe('Test workflow variable operations', () => {
     })
 
     it(`should fail invalid name`, async () => {
-        // TODO: need to fix here.
-        return
         var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/vars/hel$$o`)
             .set('Content-Type', 'application/json')
             .send(jdata)

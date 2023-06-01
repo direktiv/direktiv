@@ -3,6 +3,7 @@ package datastoresql
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/google/uuid"
@@ -75,6 +76,9 @@ func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namesp
 }
 
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
+	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, variable.Name); !matched {
+		return nil, core.ErrInvalidRuntimeVariableName
+	}
 	linkName := "namespace_id"
 	linkValue := variable.NamespaceID
 
@@ -123,6 +127,9 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 }
 
 func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, name string) (*core.RuntimeVariable, error) {
+	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, name); !matched {
+		return nil, core.ErrInvalidRuntimeVariableName
+	}
 	res := s.db.WithContext(ctx).Exec(
 		`UPDATE runtime_variables SET name=? WHERE id = ?`,
 		name, id)

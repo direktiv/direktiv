@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 // RuntimeVariable are direktiv runtime variables that are hold data, workflows performs getting and setting on these
@@ -55,3 +56,7 @@ type RuntimeVariablesStore interface {
 
 	LoadData(ctx context.Context, id uuid.UUID) ([]byte, error)
 }
+
+const RuntimeVariableNameRegexPattern = `^(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))$`
+
+var ErrInvalidRuntimeVariableName = errors.New("ErrInvalidRuntimeVariableName")
