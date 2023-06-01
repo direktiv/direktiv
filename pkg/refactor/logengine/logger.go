@@ -140,6 +140,7 @@ func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID,
 		level:          Debug,
 	}:
 	default:
+		cls.logError("!! Log-buffer is/was full.")
 	}
 }
 
@@ -155,6 +156,7 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 		level:          Error,
 	}:
 	default:
+		cls.logError("!! Log-buffer is/was full.")
 	}
 }
 
@@ -170,5 +172,6 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 		level:          Info,
 	}:
 	default:
+		cls.logError("!! Log-buffer is/was full.")
 	}
 }
