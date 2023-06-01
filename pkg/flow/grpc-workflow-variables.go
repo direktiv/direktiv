@@ -62,13 +62,9 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 		return nil, err
 	}
 
-	list, err := store.RuntimeVariables().ListByWorkflowID(ctx, file.ID)
+	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetKey())
 	if err != nil {
 		return nil, err
-	}
-	item := list.FilterByName(req.GetKey())
-	if item == nil {
-		return nil, status.Error(codes.NotFound, "variable key is not found")
 	}
 
 	var resp grpc.WorkflowVariableResponse
@@ -311,14 +307,11 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	list, err := store.RuntimeVariables().ListByWorkflowID(ctx, file.ID)
+	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
-	item := list.FilterByName(req.GetKey())
-	if item == nil {
-		return nil, status.Error(codes.NotFound, "variable key is not found")
-	}
+
 	err = store.RuntimeVariables().Delete(ctx, item.ID)
 	if err != nil {
 		return nil, err
@@ -365,14 +358,11 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	if err != nil {
 		return nil, err
 	}
-	list, err := store.RuntimeVariables().ListByWorkflowID(ctx, file.ID)
+	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
-	item := list.FilterByName(req.GetOld())
-	if item == nil {
-		return nil, status.Error(codes.NotFound, "variable key is not found")
-	}
+
 	updated, err := store.RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
 	if err != nil {
 		return nil, err

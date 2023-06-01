@@ -30,13 +30,9 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	}
 	defer rollback()
 
-	list, err := store.RuntimeVariables().ListByNamespaceID(ctx, ns.ID)
+	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
-	}
-	item := list.FilterByName(req.GetKey())
-	if item == nil {
-		return nil, status.Error(codes.NotFound, "variable key is not found")
 	}
 
 	var resp grpc.NamespaceVariableResponse
@@ -262,13 +258,9 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	}
 	defer rollback()
 
-	list, err := store.RuntimeVariables().ListByNamespaceID(ctx, ns.ID)
+	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
-	}
-	item := list.FilterByName(req.GetKey())
-	if item == nil {
-		return nil, status.Error(codes.NotFound, "variable key is not found")
 	}
 	err = store.RuntimeVariables().Delete(ctx, item.ID)
 	if err != nil {
@@ -312,14 +304,11 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	}
 	defer rollback()
 
-	list, err := store.RuntimeVariables().ListByNamespaceID(ctx, ns.ID)
+	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
-	item := list.FilterByName(req.GetOld())
-	if item == nil {
-		return nil, status.Error(codes.NotFound, "variable key is not found")
-	}
+
 	updated, err := store.RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
 	if err != nil {
 		return nil, err

@@ -14,6 +14,22 @@ type sqlRuntimeVariablesStore struct {
 	db *gorm.DB
 }
 
+func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, referenceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
+	variable := &core.RuntimeVariable{}
+	res := s.db.WithContext(ctx).Raw(`
+							SELECT 
+								id, namespace_id, workflow_id, instance_id, 
+								scope, name, length(data) AS size, hash, mime_type,
+								created_at, updated_at
+							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_id=? OR instance_id=?);`,
+		name, referenceID, referenceID, referenceID).First(variable)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return variable, nil
+}
+
 func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.RuntimeVariable, error) {
 	variable := &core.RuntimeVariable{}
 	res := s.db.WithContext(ctx).Raw(`
@@ -30,7 +46,7 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName string, fieldID uuid.UUID) (core.RuntimeVariablesList, error) {
+func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName string, fieldID uuid.UUID) ([]*core.RuntimeVariable, error) {
 	var variables []*core.RuntimeVariable
 
 	res := s.db.WithContext(ctx).Raw(fmt.Sprintf(`
@@ -47,15 +63,15 @@ func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName 
 	return variables, nil
 }
 
-func (s *sqlRuntimeVariablesStore) ListByInstanceID(ctx context.Context, instanceID uuid.UUID) (core.RuntimeVariablesList, error) {
+func (s *sqlRuntimeVariablesStore) ListByInstanceID(ctx context.Context, instanceID uuid.UUID) ([]*core.RuntimeVariable, error) {
 	return s.listByFieldID(ctx, "instance_id", instanceID)
 }
 
-func (s *sqlRuntimeVariablesStore) ListByWorkflowID(ctx context.Context, workflowID uuid.UUID) (core.RuntimeVariablesList, error) {
+func (s *sqlRuntimeVariablesStore) ListByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]*core.RuntimeVariable, error) {
 	return s.listByFieldID(ctx, "workflow_id", workflowID)
 }
 
-func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (core.RuntimeVariablesList, error) {
+func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
 	return s.listByFieldID(ctx, "namespace_id", namespaceID)
 }
 
