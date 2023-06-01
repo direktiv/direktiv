@@ -21,7 +21,6 @@ type RuntimeVariable struct {
 	Name string
 
 	Size     int
-	Hash     string
 	MimeType string
 	Data     []byte
 

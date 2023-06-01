@@ -99,7 +99,6 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
 
     "scope" text NOT NULL,
     "name"  text NOT NULL,
-    "hash"  text NOT NULL,
     "mime_type"  text NOT NULL,
     "data"  bytea NOT NULL,
 

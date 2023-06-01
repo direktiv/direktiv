@@ -41,7 +41,6 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	resp.Key = item.Name
 	resp.CreatedAt = timestamppb.New(item.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(item.UpdatedAt)
-	resp.Checksum = item.Hash
 	resp.TotalSize = int64(item.Size)
 	resp.MimeType = item.MimeType
 
@@ -171,7 +170,6 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	resp.Key = req.GetKey()
 	resp.CreatedAt = timestamppb.New(newVar.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(newVar.UpdatedAt)
-	resp.Checksum = newVar.Hash
 	resp.TotalSize = int64(newVar.Size)
 	resp.MimeType = newVar.MimeType
 
@@ -323,7 +321,6 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 
 	var resp grpc.RenameNamespaceVariableResponse
 
-	resp.Checksum = updated.Hash
 	resp.CreatedAt = timestamppb.New(updated.CreatedAt)
 	resp.Key = updated.Name
 	resp.Namespace = ns.Name

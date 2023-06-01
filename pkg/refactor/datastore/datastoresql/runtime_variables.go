@@ -2,7 +2,6 @@ package datastoresql
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -19,7 +18,7 @@ func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, re
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, hash, mime_type,
+								scope, name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_id=? OR instance_id=?);`,
 		name, referenceID, referenceID, referenceID).First(variable)
@@ -35,7 +34,7 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, hash, mime_type,
+								scope, name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)
@@ -52,7 +51,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName 
 	res := s.db.WithContext(ctx).Raw(fmt.Sprintf(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, hash, mime_type, 
+								scope, name, length(data) AS size, mime_type, 
 								created_at, updated_at
 							FROM runtime_variables WHERE "%s" = ?`, fieldName),
 		fieldID).Find(&variables)
@@ -76,8 +75,6 @@ func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namesp
 }
 
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
-	hash := fmt.Sprintf("%x", sha256.Sum256(variable.Data))
-
 	linkName := "namespace_id"
 	linkValue := variable.NamespaceID
 
@@ -94,13 +91,11 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 	res := s.db.WithContext(ctx).Exec(fmt.Sprintf(
 		`UPDATE runtime_variables SET
 						%s=?,
-						scope=?, 
 						name=?,
-						hash=?, 
 						mime_type=?,
 						data=?
 					WHERE id = ?;`, linkName),
-		linkValue, variable.Scope, variable.Name, hash, variable.MimeType, variable.Data, variable.ID)
+		linkValue, variable.Name, variable.MimeType, variable.Data, variable.ID)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -114,9 +109,9 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 
 	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
 							INSERT INTO runtime_variables(
-								id, %s, scope, name, hash, mime_type, data) 
-							VALUES(?, ?, ?, ?, ?, ?, ?);`, linkName),
-		variable.ID, linkValue, variable.Scope, variable.Name, hash, variable.MimeType, variable.Data)
+								id, %s, scope, name, mime_type, data) 
+							VALUES(?, ?, ?, ?, ?, ?);`, linkName),
+		variable.ID, linkValue, variable.Scope, variable.Name, variable.MimeType, variable.Data)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -161,7 +156,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, hash, mime_type, data,
+								scope, name, length(data) AS size, mime_type, data,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)

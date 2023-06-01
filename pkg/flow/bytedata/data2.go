@@ -127,7 +127,6 @@ func ConvertSecretsToGrpcSecretList(list []*core.Secret) []*grpc.Secret {
 func ConvertRuntimeVariableToGrpcVariable(variable *core.RuntimeVariable) *grpc.Variable {
 	return &grpc.Variable{
 		Name:      variable.Name,
-		Checksum:  variable.Hash,
 		Size:      int64(variable.Size),
 		MimeType:  variable.MimeType,
 		CreatedAt: timestamppb.New(variable.CreatedAt),
