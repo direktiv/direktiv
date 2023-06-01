@@ -1,7 +1,6 @@
 import request from 'supertest'
 
 import common from "../common"
-import {re} from "@babel/core/lib/vendor/import-meta-resolve";
 
 
 const namespaceName = "vars"
