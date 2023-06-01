@@ -130,38 +130,45 @@ func (cls *CachedSQLLogStore) closeLogWorkers() {
 
 func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = ctx
-	cls.logQueue <- &logMessage{
+	select {
+	case cls.logQueue <- &logMessage{
 		time:           time.Now(),
 		recipientID:    recipientID,
 		tags:           tags,
 		msg:            fmt.Sprintf(msg, a...),
 		reciepientType: fmt.Sprintf("%v", tags["sender_type"]),
 		level:          Debug,
+	}:
+	default:
 	}
 }
 
 func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = ctx
-
-	cls.logQueue <- &logMessage{
+	select {
+	case cls.logQueue <- &logMessage{
 		time:           time.Now(),
 		recipientID:    recipientID,
 		tags:           tags,
 		msg:            fmt.Sprintf(msg, a...),
 		reciepientType: fmt.Sprintf("%v", tags["sender_type"]),
 		level:          Error,
+	}:
+	default:
 	}
 }
 
 func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = ctx
-
-	cls.logQueue <- &logMessage{
+	select {
+	case cls.logQueue <- &logMessage{
 		time:           time.Now(),
 		recipientID:    recipientID,
 		tags:           tags,
 		msg:            fmt.Sprintf(msg, a...),
 		reciepientType: fmt.Sprintf("%v", tags["sender_type"]),
 		level:          Info,
+	}:
+	default:
 	}
 }
