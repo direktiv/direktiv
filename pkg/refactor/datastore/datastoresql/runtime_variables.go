@@ -90,12 +90,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 
 	res := s.db.WithContext(ctx).Exec(fmt.Sprintf(
 		`UPDATE runtime_variables SET
-						%s=?,
-						name=?,
 						mime_type=?,
 						data=?
-					WHERE id = ?;`, linkName),
-		linkValue, variable.Name, variable.MimeType, variable.Data, variable.ID)
+					WHERE %s = ? AND name = ?;`, linkName),
+		variable.MimeType, variable.Data, linkValue, variable.Name)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -104,7 +102,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 	if res.RowsAffected == 1 {
-		return s.GetByID(ctx, variable.ID)
+		return s.GetByReferenceAndName(ctx, linkValue, variable.Name)
 	}
 
 	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
