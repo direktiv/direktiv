@@ -18,7 +18,7 @@ func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, re
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, mime_type,
+								name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_id=? OR instance_id=?);`,
 		name, referenceID, referenceID, referenceID).First(variable)
@@ -34,7 +34,7 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, mime_type,
+								name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)
@@ -51,7 +51,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName 
 	res := s.db.WithContext(ctx).Raw(fmt.Sprintf(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, mime_type, 
+								name, length(data) AS size, mime_type, 
 								created_at, updated_at
 							FROM runtime_variables WHERE "%s" = ?`, fieldName),
 		fieldID).Find(&variables)
@@ -108,9 +108,9 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 	newUUID := uuid.New()
 	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
 							INSERT INTO runtime_variables(
-								id, %s, scope, name, mime_type, data) 
-							VALUES(?, ?, ?, ?, ?, ?);`, linkName),
-		newUUID, linkValue, variable.Scope, variable.Name, variable.MimeType, variable.Data)
+								id, %s, name, mime_type, data) 
+							VALUES(?, ?, ?, ?, ?);`, linkName),
+		newUUID, linkValue, variable.Name, variable.MimeType, variable.Data)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -155,7 +155,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_id, instance_id, 
-								scope, name, length(data) AS size, mime_type, data,
+								name, length(data) AS size, mime_type, data,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)

@@ -16,8 +16,6 @@ type RuntimeVariable struct {
 	WorkflowID  uuid.UUID
 	InstanceID  uuid.UUID
 
-	Scope string
-
 	Name string
 
 	Size     int
