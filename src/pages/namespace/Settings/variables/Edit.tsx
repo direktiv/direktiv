@@ -5,13 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import {
@@ -23,6 +16,7 @@ import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
+import MimeTypeSelect from "./MimeTypeSelect";
 import { Trash } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
@@ -33,15 +27,6 @@ type EditProps = {
   item: VarSchemaType;
   onSuccess: () => void;
 };
-
-const mimeTypes = [
-  { label: "JSON", value: "application/json" },
-  { label: "YAML", value: "application/yaml" },
-  { label: "shell", value: "application/x-sh" },
-  { label: "plaintext", value: "text/plain" },
-  { label: "HTML", value: "text/html" },
-  { label: "CSS", value: "text/css" },
-];
 
 const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();
@@ -114,22 +99,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
             >
               {t("pages.settings.variables.edit.mimeType")}
             </label>
-
-            <Select
-              value={mimeType}
-              onValueChange={(newValue) => setMimeType(newValue)}
-            >
-              <SelectTrigger variant="outline">
-                <SelectValue placeholder="Select a mimetype" />
-              </SelectTrigger>
-              <SelectContent>
-                {mimeTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
           </fieldset>
 
           <DialogFooter>
