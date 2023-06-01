@@ -51,6 +51,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<string | undefined>();
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   const { handleSubmit } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
@@ -62,11 +63,12 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   });
 
   useEffect(() => {
-    if (varContent.isFetched) {
+    if (!isInitialized && varContent.isFetched) {
       setBody(varContent.data?.body);
       setMimeType(varContent.data?.headers["content-type"]);
+      setIsInitialized(true);
     }
-  }, [varContent]);
+  }, [varContent, isInitialized]);
 
   const { mutate: updateVarMutation } = useUpdateVar({
     onSuccess,
