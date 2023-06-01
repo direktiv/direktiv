@@ -53,7 +53,7 @@ const testApi = setupServer(
   ),
   rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
-    res(ctx.text("this is a text response"))
+    res(ctx.json({ body: "this is a text response" }))
   ),
   rest.post(apiEndpointPost, async (req, res, ctx) => {
     const body = await req.text();
@@ -105,7 +105,7 @@ const emptyResponse = apiFactory({
 const textResponse = apiFactory({
   url: () => apiEndpointTextResponse,
   method: "GET",
-  schema: z.string(),
+  schema: z.object({ body: z.string() }),
 });
 
 const api404 = apiFactory({
@@ -235,7 +235,9 @@ describe("processApiResponse", () => {
     });
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
-      expect(result.current.data).toBe("this is a text response");
+      expect(result.current.data).toStrictEqual({
+        body: "this is a text response",
+      });
     });
   });
 

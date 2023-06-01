@@ -79,10 +79,15 @@ export const apiFactory =
         parsedResponse = JSON.parse(textResult);
       } catch (e) {
         // We use the text response if its not an empt string
-        if (textResult !== "") parsedResponse = textResult;
+        if (textResult !== "") parsedResponse = { body: textResult };
       }
       try {
-        return schema.parse(parsedResponse);
+        // if response has content, add headers, otherwise return null
+        const headers = Object.fromEntries(res.headers);
+        if (parsedResponse) {
+          return schema.parse({ ...parsedResponse, headers });
+        }
+        return schema.parse(null);
       } catch (error) {
         process.env.NODE_ENV !== "test" && console.error(error);
         return Promise.reject(
