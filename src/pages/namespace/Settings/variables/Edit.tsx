@@ -40,10 +40,13 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
   const { handleSubmit } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
+    // mimeType defaults to text/plain to avoid backend defaulting to
+    // "text/plain, charset=utf-8", which does not fit the options in
+    // MimeTypeSelect
     values: {
       name: item.name,
       content: body ?? "",
-      mimeType: mimeType ?? "",
+      mimeType: mimeType ?? "text/plain",
     },
   });
 

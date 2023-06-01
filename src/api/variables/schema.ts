@@ -38,8 +38,8 @@ export const VarListSchema = z.object({
 });
 
 export const VarFormSchema = z.object({
-  name: z.string(),
-  content: z.string(),
+  name: z.string().nonempty(),
+  content: z.string().nonempty(),
   mimeType: z.string(),
 });
 

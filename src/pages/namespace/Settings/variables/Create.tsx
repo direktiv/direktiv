@@ -9,22 +9,36 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
+import Editor from "~/design/Editor";
 import Input from "~/design/Input";
+import MimeTypeSelect from "./MimeTypeSelect";
 import { PlusCircle } from "lucide-react";
-import { Textarea } from "~/design/TextArea";
+import { useState } from "react";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// TODO: This is almost the same as the Edit component. Consolidate them into one.
 
 type createProps = { onSuccess: () => void };
 
 const Create = ({ onSuccess }: createProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
-  const { register, handleSubmit } = useForm<VarFormSchemaType>({
+  const [name, setName] = useState<string | undefined>();
+  const [body, setBody] = useState<string | undefined>();
+  const [mimeType, setMimeType] = useState<string | undefined>();
+
+  const { handleSubmit } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
+    // mimeType defaults to text/plain to avoid backend defaulting to
+    // "text/plain, charset=utf-8", which does not fit the options in
+    // MimeTypeSelect
+    values: {
+      name: name ?? "",
+      content: body ?? "",
+      mimeType: mimeType ?? "text/plain",
+    },
   });
 
   const { mutate: createVarMutation } = useUpdateVar({
@@ -43,10 +57,12 @@ const Create = ({ onSuccess }: createProps) => {
         className="flex flex-col space-y-5"
       >
         <DialogHeader>
-          <DialogTitle>
-            <PlusCircle />
-            {t("pages.settings.variables.create.title")}
-          </DialogTitle>
+          <DialogHeader>
+            <DialogTitle>
+              <PlusCircle />
+              {t("pages.settings.variables.create.title")}
+            </DialogTitle>
+          </DialogHeader>
         </DialogHeader>
 
         <fieldset className="flex items-center gap-5">
@@ -56,16 +72,29 @@ const Create = ({ onSuccess }: createProps) => {
           <Input
             data-testid="new-variable-name"
             placeholder="variable-name"
-            {...register("name")}
+            onChange={(event) => setName(event.target.value)}
           />
         </fieldset>
 
-        <fieldset className="flex items-start gap-5">
-          <Textarea
-            className="h-96"
+        <div className="h-[500px]">
+          <Editor
+            value={body}
+            onChange={(newData) => {
+              setBody(newData);
+            }}
+            theme={theme ?? undefined}
             data-testid="variable-editor"
-            {...register("content")}
           />
+        </div>
+
+        <fieldset className="flex items-center gap-5">
+          <label
+            className="w-[150px] text-right text-[15px]"
+            htmlFor="template"
+          >
+            {t("pages.settings.variables.edit.mimeType")}
+          </label>
+          <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
         </fieldset>
 
         <DialogFooter>

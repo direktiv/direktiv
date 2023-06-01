@@ -54,6 +54,11 @@ export const useUpdateVar = ({
           name: variables.name,
         })
       );
+      queryClient.invalidateQueries(
+        varKeys.varList(namespace, {
+          apiKey: apiKey ?? undefined,
+        })
+      );
       toast({
         title: "Variable saved",
         description: `Variable ${data.key} was saved.`,
