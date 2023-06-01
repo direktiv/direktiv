@@ -98,7 +98,6 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "workflow_id" uuid,
     "instance_id" uuid,
 
-    "scope" text NOT NULL,
     "name"  text NOT NULL,
     "mime_type"  text NOT NULL,
     "data"  bytea NOT NULL,
