@@ -469,14 +469,6 @@ func (pubsub *Pubsub) NotifyNamespaces() {
 	pubsub.Publish(pubsubNotify("namespaces"))
 }
 
-func (pubsub *Pubsub) SubscribeNamespace(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String())
-}
-
-func (pubsub *Pubsub) NotifyNamespace(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(ns.ID.String()))
-}
-
 func (pubsub *Pubsub) CloseNamespace(ns *database.Namespace) {
 	pubsub.Publish(pubsubDisconnect(ns.ID.String()))
 }
@@ -513,44 +505,6 @@ func (pubsub *Pubsub) NotifyEvents(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
 }
 
-func (pubsub *Pubsub) SubscribeInode(id uuid.UUID) *Subscription {
-	keys := []string{id.String()}
-	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) NotifyInode(ino *database.Inode) {
-	pubsub.Publish(pubsubNotify(ino.ID.String()))
-}
-
-func (pubsub *Pubsub) CloseInode(ino *database.Inode) {
-	pubsub.Publish(pubsubDisconnect(ino.ID.String()))
-}
-
-func (pubsub *Pubsub) inodeAnnotations(ino *database.Inode) string {
-	return fmt.Sprintf("inonotes:%s", ino.ID.String())
-}
-
-func (pubsub *Pubsub) mirror(id uuid.UUID) string {
-	return fmt.Sprintf("mirror:%s", id.String())
-}
-
-func (pubsub *Pubsub) NotifyInodeAnnotations(ino *database.Inode) {
-	pubsub.Publish(pubsubNotify(pubsub.inodeAnnotations(ino)))
-}
-
-func (pubsub *Pubsub) SubscribeMirror(id uuid.UUID) *Subscription {
-	keys := []string{pubsub.mirror(id)}
-	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) NotifyMirror(id uuid.UUID) {
-	pubsub.Publish(pubsubNotify(pubsub.mirror(id)))
-}
-
-func (pubsub *Pubsub) CloseMirror(id uuid.UUID) {
-	pubsub.Publish(pubsubDisconnect(pubsub.mirror(id)))
-}
-
 func (pubsub *Pubsub) workflowVars(id uuid.UUID) string {
 	return fmt.Sprintf("wfvars:%s", id.String())
 }
@@ -564,14 +518,6 @@ func (pubsub *Pubsub) NotifyWorkflowVariables(id uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.workflowVars(id)))
 }
 
-func (pubsub *Pubsub) workflowAnnotations(id uuid.UUID) string {
-	return fmt.Sprintf("wfnotes:%s", id.String())
-}
-
-func (pubsub *Pubsub) NotifyWorkflowAnnotations(id uuid.UUID) {
-	pubsub.Publish(pubsubNotify(pubsub.workflowAnnotations(id)))
-}
-
 func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
 	return fmt.Sprintf("wflogs:%s", wf.String())
 }
@@ -579,23 +525,6 @@ func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
 func (pubsub *Pubsub) SubscribeWorkflowLogs(id uuid.UUID) *Subscription {
 	keys := []string{id.String()}
 	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) SubscribeWorkflow(id uuid.UUID) *Subscription {
-	keys := []string{id.String()}
-	return pubsub.Subscribe(keys...)
-}
-
-func (pubsub *Pubsub) NotifyWorkflow(wf *database.Workflow) {
-	pubsub.Publish(pubsubNotify(wf.ID.String()))
-}
-
-func (pubsub *Pubsub) NotifyWorkflowID(id uuid.UUID) {
-	pubsub.Publish(pubsubNotify(id.String()))
-}
-
-func (pubsub *Pubsub) CloseWorkflow(wf *database.Workflow) {
-	pubsub.Publish(pubsubDisconnect(wf.ID.String()))
 }
 
 func (pubsub *Pubsub) namespaceVars(ns *database.Namespace) string {
@@ -622,28 +551,12 @@ func (pubsub *Pubsub) NotifyNamespaceAnnotations(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceAnnotations(ns)))
 }
 
-func (pubsub *Pubsub) namespaceSecrets(ns *database.Namespace) string {
-	return fmt.Sprintf("secrets:%s", ns.ID.String())
-}
-
-func (pubsub *Pubsub) SubscribeNamespaceSecrets(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceSecrets(ns))
-}
-
-func (pubsub *Pubsub) NotifyNamespaceSecrets(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceSecrets(ns)))
-}
-
 func (pubsub *Pubsub) namespaceRegistries(ns *database.Namespace) string {
 	return fmt.Sprintf("registries:%s", ns.ID.String())
 }
 
 func (pubsub *Pubsub) SubscribeNamespaceRegistries(ns *database.Namespace) *Subscription {
 	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceRegistries(ns))
-}
-
-func (pubsub *Pubsub) NotifyNamespaceRegistries(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceRegistries(ns)))
 }
 
 func (pubsub *Pubsub) instanceLogs(in *uuid.UUID) string {
@@ -680,18 +593,6 @@ func (pubsub *Pubsub) SubscribeInstanceVariables(cached *database.CacheData) *Su
 
 func (pubsub *Pubsub) NotifyInstanceVariables(in *database.Instance) {
 	pubsub.Publish(pubsubNotify(pubsub.instanceVars(in)))
-}
-
-func (pubsub *Pubsub) instanceAnnotations(in *database.Instance) string {
-	return fmt.Sprintf("instnote:%s", in.ID.String())
-}
-
-func (pubsub *Pubsub) SubscribeInstanceAnnotations(cached *database.CacheData) *Subscription {
-	return pubsub.Subscribe(cached.Namespace.ID.String(), pubsub.instanceAnnotations(cached.Instance))
-}
-
-func (pubsub *Pubsub) NotifyInstanceAnnotations(in *database.Instance) {
-	pubsub.Publish(pubsubNotify(pubsub.instanceAnnotations(in)))
 }
 
 func (pubsub *Pubsub) instances(ns *database.Namespace) string {
