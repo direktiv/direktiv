@@ -3,7 +3,13 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/util"
+	"io/ioutil"
 	"strconv"
 	"time"
 
@@ -26,8 +32,83 @@ func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloude
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
 	x := make([]states.Variable, 0)
 
-	for range vars {
-		// TODO: need change here.
+	fStore, store, _, rollback, err := im.engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollback()
+
+	for _, selector := range vars {
+		if selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
+			referenceID := im.cached.Namespace.ID
+			if selector.Scope == util.VarScopeInstance {
+				referenceID = im.cached.Instance.ID
+			}
+			if selector.Scope == util.VarScopeWorkflow {
+				referenceID = im.cached.File.ID
+			}
+
+			item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, referenceID, selector.Key)
+			if errors.Is(err, datastore.ErrNotFound) {
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  []byte{},
+				})
+			} else if err != nil {
+				return nil, derrors.NewInternalError(err)
+			} else {
+				data, err := store.RuntimeVariables().LoadData(ctx, item.ID)
+				if err != nil {
+					return nil, derrors.NewInternalError(err)
+				}
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  data,
+				})
+			}
+
+			continue
+		}
+
+		if selector.Scope == util.VarScopeFileSystem {
+			file, err := fStore.ForRootID(im.cached.Namespace.ID).GetFile(ctx, selector.Key)
+			if errors.Is(err, filestore.ErrNotFound) {
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  []byte{},
+				})
+			} else if err != nil {
+				return nil, err
+			} else {
+				// TODO: alan, maybe need to enhance the GetData function to also return us some information like mime type, checksum, and size
+				if file.Typ != filestore.FileTypeFile {
+					return nil, model.ErrVarNotFile
+				}
+				rc, err := fStore.ForFile(file).GetData(ctx)
+				if err != nil {
+					return nil, err
+				}
+				defer func() { _ = rc.Close() }()
+				data, err := ioutil.ReadAll(rc)
+				if err != nil {
+					return nil, err
+				}
+				err = rc.Close()
+				if err != nil {
+					return nil, err
+				}
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  data,
+				})
+			}
+
+			continue
+		}
 	}
 
 	return x, nil
@@ -99,17 +180,71 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-	tctx, tx, err := im.engine.database.Tx(ctx)
+	_, store, commit, rollback, err := im.engine.flow.beginSqlTx(ctx)
 	if err != nil {
 		return err
 	}
-	defer rollback(tx)
+	defer rollback()
 
-	_ = im.engine.edb.Clients(tctx)
+	for idx := range vars {
+		v := vars[idx]
 
-	// TODO: need fix here.
+		referenceID := im.cached.Namespace.ID
 
-	err = tx.Commit()
+		switch v.Scope {
+		case "instance":
+			referenceID = im.cached.Instance.ID
+		case "workflow":
+			referenceID = im.cached.File.ID
+		case "namespace":
+			referenceID = im.cached.Namespace.ID
+		default:
+			return derrors.NewInternalError(errors.New("invalid scope"))
+		}
+
+		item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, referenceID, v.Key)
+		if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+			return err
+		}
+
+		d := string(v.Data)
+
+		if len(d) == 0 {
+			err = store.RuntimeVariables().Delete(ctx, item.ID)
+			if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+				return err
+			}
+			continue
+		}
+
+		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
+			err = store.RuntimeVariables().Delete(ctx, item.ID)
+			if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+				return err
+			}
+		} else {
+			newVar := &core.RuntimeVariable{
+				Name:     v.Key,
+				MimeType: v.MIMEType,
+				Data:     v.Data,
+			}
+
+			switch v.Scope {
+			case "instance":
+				newVar.InstanceID = referenceID
+			case "workflow":
+				newVar.WorkflowID = referenceID
+			case "namespace":
+				newVar.NamespaceID = referenceID
+			}
+
+			_, err = store.RuntimeVariables().Set(ctx, newVar)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = commit(ctx)
 	if err != nil {
 		return err
 	}

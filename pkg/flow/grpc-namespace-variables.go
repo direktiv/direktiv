@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -143,13 +142,10 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	defer rollback()
 
 	newVar, err := store.RuntimeVariables().Set(ctx, &core.RuntimeVariable{
-		ID:          uuid.New(),
 		NamespaceID: ns.ID,
 		Name:        req.GetKey(),
-		// TODO: check this.
-		Scope:    "namespace",
-		Data:     req.GetData(),
-		MimeType: req.GetMimeType(),
+		Data:        req.GetData(),
+		MimeType:    req.GetMimeType(),
 	})
 	if err != nil {
 		return nil, err

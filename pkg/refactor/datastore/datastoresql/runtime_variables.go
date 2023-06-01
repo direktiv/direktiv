@@ -105,11 +105,12 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 		return s.GetByReferenceAndName(ctx, linkValue, variable.Name)
 	}
 
+	newUUID := uuid.New()
 	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
 							INSERT INTO runtime_variables(
 								id, %s, scope, name, mime_type, data) 
 							VALUES(?, ?, ?, ?, ?, ?);`, linkName),
-		variable.ID, linkValue, variable.Scope, variable.Name, variable.MimeType, variable.Data)
+		newUUID, linkValue, variable.Scope, variable.Name, variable.MimeType, variable.Data)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -118,7 +119,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 		return nil, fmt.Errorf("unexpected gorm insert count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	return s.GetByID(ctx, variable.ID)
+	return s.GetByID(ctx, newUUID)
 }
 
 func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, name string) (*core.RuntimeVariable, error) {

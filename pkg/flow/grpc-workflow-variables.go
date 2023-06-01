@@ -12,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -187,13 +186,10 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	newVar, err := store.RuntimeVariables().Set(ctx, &core.RuntimeVariable{
-		ID:         uuid.New(),
 		WorkflowID: file.ID,
 		Name:       req.GetKey(),
-		// TODO: check this.
-		Scope:    "workflow",
-		Data:     req.GetData(),
-		MimeType: req.GetMimeType(),
+		Data:       req.GetData(),
+		MimeType:   req.GetMimeType(),
 	})
 	if err != nil {
 		return nil, err
