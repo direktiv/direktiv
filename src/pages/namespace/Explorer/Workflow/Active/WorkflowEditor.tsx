@@ -72,7 +72,10 @@ const WorkflowEditor: FC<{
         />
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <div className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8">
+        <div
+          data-testid="workflow-txt-updated"
+          className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8"
+        >
           {data.revision?.createdAt && (
             <>
               {t("pages.explorer.workflow.updated", {
@@ -103,7 +106,11 @@ const WorkflowEditor: FC<{
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" disabled={hasUnsavedChanged}>
+            <Button
+              variant="outline"
+              disabled={hasUnsavedChanged}
+              data-testid="workflow-editor-btn-revision"
+            >
               <GitMerge />
               {t("pages.explorer.workflow.editor.revisionsBtn")}
               <RxChevronDown />
@@ -116,6 +123,7 @@ const WorkflowEditor: FC<{
                   path,
                 });
               }}
+              data-testid="workflow-editor-btn-make-revision"
             >
               <GitBranchPlus className="mr-2 h-4 w-4" />
               {t("pages.explorer.workflow.editor.makeRevision")}
@@ -126,6 +134,7 @@ const WorkflowEditor: FC<{
                   path,
                 });
               }}
+              data-testid="workflow-editor-btn-revert-revision"
             >
               <Undo className="mr-2 h-4 w-4" />
               {t("pages.explorer.workflow.editor.revertToPrevious")}
@@ -142,6 +151,7 @@ const WorkflowEditor: FC<{
           onClick={() => {
             onSave(value);
           }}
+          data-testid="workflow-editor-btn-save"
         >
           <Save />
           {t("pages.explorer.workflow.editor.saveBtn")}

@@ -60,6 +60,7 @@ const Toast = React.forwardRef<
     <ToastPrimitives.Root
       ref={ref}
       className={twMerge(clsx(toastVariants, className))}
+      data-testid={`toast-${variant || "default"}`}
       {...props}
     />
   );
@@ -96,6 +97,7 @@ const ToastClose = React.forwardRef<
       )
     )}
     toast-close=""
+    data-testid="toast-close"
     {...props}
   >
     <X className="h-4 w-4" />

@@ -85,7 +85,10 @@ const CreateTag = ({
           />
         </div>
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <Input {...register("name")} />
+          <Input
+            {...register("name")}
+            data-testid="dialog-create-tag-input-name"
+          />
         </form>
       </div>
       <DialogFooter>
@@ -99,6 +102,7 @@ const CreateTag = ({
           disabled={disableSubmit}
           loading={isLoading}
           form={formId}
+          data-testid="dialog-create-tag-btn-submit"
         >
           {!isLoading && <Tag />}
           {t("pages.explorer.tree.workflow.revisions.tag.createBtn")}

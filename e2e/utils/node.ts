@@ -3,14 +3,14 @@ import { NodeListSchemaType } from "~/api/tree/schema";
 const apiUrl = process.env.VITE_DEV_API_DOMAIN;
 
 export const workflowExamples = {
-  noop: `
-  description: A simple 'no-op' state that returns 'Hello world!'
-  states:
-  - id: helloworld
-    type: noop
-    transform:
-      result: Hello world!
-  `,
+  noop: `\
+description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!
+`,
 };
 
 export const createWorkflow = (namespace: string, name: string) =>
@@ -40,13 +40,10 @@ export const createDirectory = (namespace: string, name: string) =>
     return name;
   });
 
-export const deleteNode = (namespace: string, type: Node, name: string) =>
-  fetch(
-    `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-${type}`,
-    {
-      method: "DELETE",
-    }
-  ).then((response) => {
+export const deleteNode = (namespace: string, name: string) =>
+  fetch(`${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-node`, {
+    method: "DELETE",
+  }).then((response) => {
     if (!response.ok) {
       throw `deleting node failed with code ${response.status}`;
     }

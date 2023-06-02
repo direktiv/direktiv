@@ -57,6 +57,7 @@ const RevisionTableRow: FC<{
               subpage: "workflow-revisions",
               revision: revision.name,
             })}
+            data-testid={`workflow-revisions-link-item-${revision.name}`}
           >
             {revision.name}
           </Link>
@@ -93,12 +94,18 @@ const RevisionTableRow: FC<{
         )}
         {!isLatest && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger
+              data-testid={`workflow-revisions-item-menu-trg-${revision.name}`}
+              asChild
+            >
               <Button variant="ghost" size="sm" icon>
                 <MoreVertical />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-44">
+            <DropdownMenuContent
+              className="w-44"
+              data-testid={`workflow-revisions-item-menu-content-${revision.name}`}
+            >
               <DropdownMenuLabel>
                 {t(
                   "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
@@ -114,6 +121,7 @@ const RevisionTableRow: FC<{
                     onDeleteRevClicked(revision);
                   }
                 }}
+                data-testid={`workflow-revisions-trg-delete-dlg-${revision.name}`}
               >
                 <DropdownMenuItem>
                   <Trash className="mr-2 h-4 w-4" />
@@ -127,6 +135,7 @@ const RevisionTableRow: FC<{
                 onClick={() => {
                   onCreateTagClicked(revision);
                 }}
+                data-testid={`workflow-revisions-trg-create-tag-dlg-${revision.name}`}
               >
                 <DropdownMenuItem>
                   <Tag className="mr-2 h-4 w-4" />
@@ -140,6 +149,7 @@ const RevisionTableRow: FC<{
                 onClick={() => {
                   onRevertClicked(revision);
                 }}
+                data-testid={`workflow-revisions-trg-revert-dlg-${revision.name}`}
               >
                 <DropdownMenuItem>
                   <Undo className="mr-2 h-4 w-4" />
