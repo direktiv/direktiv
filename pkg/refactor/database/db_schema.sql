@@ -90,8 +90,6 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- TODO: remove this drop line
-DROP TABLE IF EXISTS "runtime_variables";
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
     "namespace_id" uuid,
