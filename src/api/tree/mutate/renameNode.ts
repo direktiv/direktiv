@@ -36,7 +36,7 @@ export const useRenameNode = ({
   const { t } = useTranslation();
 
   if (!namespace) {
-    throw new Error(t("api.generic.undefinedNamespace"));
+    throw new Error("namespace is undefined");
   }
 
   return useMutation({

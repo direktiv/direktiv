@@ -168,8 +168,7 @@
   },
   "api": {
     "generic": {
-      "error": "An error occurred",
-      "undefinedNamespace": "namespace is undefined"
+      "error": "An error occurred"
     },
     "tree": {
       "mutate": {
