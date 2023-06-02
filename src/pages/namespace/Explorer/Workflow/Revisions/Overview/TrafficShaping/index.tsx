@@ -1,14 +1,14 @@
 import { FC, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import Button from "../../../../../../design/Button";
-import { Card } from "../../../../../../design/Card";
+import Button from "../../../../../../../design/Button";
+import { Card } from "../../../../../../../design/Card";
 import { Network } from "lucide-react";
 import RevisionSelector from "./RevisionSelector";
-import { Slider } from "../../../../../../design/Slider";
-import { pages } from "../../../../../../util/router/pages";
-import { useNodeRevisions } from "../../../../../../api/tree/query/revisions";
-import { useNodeTags } from "../../../../../../api/tree/query/tags";
+import { Slider } from "../../../../../../../design/Slider";
+import { pages } from "../../../../../../../util/router/pages";
+import { useNodeRevisions } from "../../../../../../../api/tree/query/revisions";
+import { useNodeTags } from "../../../../../../../api/tree/query/tags";
 import { useRouter } from "~/api/tree/query/router";
 import { useSetRouter } from "~/api/tree/mutate/setRouter";
 

@@ -1,10 +1,8 @@
-import List from "./List";
-import TrafficShaping from "./TrafficShaping";
+import RevisionsOverviewPage from "./Overview";
 
 const WorkflowRevisionsPage = () => (
-  <div className="flex flex-col gap-y-4 p-5 ">
-    <TrafficShaping />
-    <List />
+  <div className="flex flex-col gap-y-4 p-5">
+    <RevisionsOverviewPage />
   </div>
 );
 
