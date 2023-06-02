@@ -136,7 +136,7 @@
           "overview": "Overview",
           "settings": "Settings"
         },
-        "headline": "latest",
+        "headline": "Latest",
         "updated": "Updated {{relativeTime}}",
         "actionsBtn": "Actions",
         "editor": {
