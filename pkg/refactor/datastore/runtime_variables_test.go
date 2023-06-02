@@ -56,8 +56,6 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 
 		return
 	}
-
-	return
 }
 
 func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
@@ -82,8 +80,6 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 
 		return
 	}
-
-	return
 }
 
 func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
@@ -110,15 +106,15 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 
 			return
 		}
-		if v == nil {
-			t.Errorf("unexpected Set() nil result")
-
-			return
-		}
 	}
 
 	// Test ListByWorkflowID().
 	vars, err := ds.RuntimeVariables().ListByWorkflowID(context.Background(), file.ID)
+	if err != nil {
+		t.Errorf("unexpected ListByWorkflowID() error: %v", err)
+
+		return
+	}
 
 	if len(vars) != 4 {
 		t.Errorf("unexpected ListByWorkflowID() length, got:%d want:%d", len(vars), 3)
@@ -179,6 +175,4 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 			return
 		}
 	}
-
-	return
 }
