@@ -26,4 +26,6 @@ type Store interface {
 	RuntimeVariables() core.RuntimeVariablesStore
 }
 
+// ErrNotFound is a common error type that should be returned by any store implementation
+// for the error cases when getting a single entry failed due to none existence.
 var ErrNotFound = errors.New("ErrNotFound")
