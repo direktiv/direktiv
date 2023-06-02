@@ -5,6 +5,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const createDirectory = apiFactory({
   url: ({
@@ -31,6 +32,7 @@ export const useCreateDirectory = ({
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -50,16 +52,19 @@ export const useCreateDirectory = ({
       }),
     onSuccess(data, variables) {
       toast({
-        title: "Directory created",
-        description: `Directory ${variables.directory} was created in ${variables.path}`,
+        title: t("api.tree.mutate.createDirectory.success.title"),
+        description: t("api.tree.mutate.createDirectory.success.description", {
+          directory: variables.directory,
+          path: variables.path,
+        }),
         variant: "success",
       });
       onSuccess?.(data);
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not create directory 😢",
+        title: t("api.generic.error"),
+        description: t("api.tree.mutate.createDirectory.error.description"),
         variant: "error",
       });
     },

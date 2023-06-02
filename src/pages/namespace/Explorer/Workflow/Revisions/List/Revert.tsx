@@ -70,7 +70,7 @@ const Revert = ({
       },
       onError: () => {
         toast({
-          title: t("pages.explorer.tree.workflow.revisions.revert.error.title"),
+          title: t("api.generic.error"),
           description: t(
             "pages.explorer.tree.workflow.revisions.revert.error.description"
           ),

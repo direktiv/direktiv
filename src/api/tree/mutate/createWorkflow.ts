@@ -5,6 +5,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 export const createWorkflow = apiFactory({
   url: ({
@@ -33,6 +34,7 @@ export const useCreateWorkflow = ({
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -60,16 +62,19 @@ export const useCreateWorkflow = ({
       }),
     onSuccess(data, variables) {
       toast({
-        title: "Workflow created",
-        description: `Workflow ${variables.name} was created in ${variables.path}`,
+        title: t("api.tree.mutate.createWorkflow.success.title"),
+        description: t("api.tree.mutate.createWorkflow.success.description", {
+          name: variables.name,
+          path: variables.path,
+        }),
         variant: "success",
       });
       onSuccess?.(data);
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not create workflow 😢",
+        title: t("api.generic.error"),
+        description: t("api.tree.mutate.createWorkflow.error.description"),
         variant: "error",
       });
     },
