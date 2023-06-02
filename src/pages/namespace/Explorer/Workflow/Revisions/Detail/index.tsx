@@ -12,7 +12,7 @@ const WorkflowRevisionsPage = () => {
 
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const theme = useTheme();
-  const { data, isSuccess } = useNodeContent({
+  const { data } = useNodeContent({
     path,
     revision: selectedRevision,
   });
