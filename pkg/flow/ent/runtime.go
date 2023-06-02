@@ -16,8 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
-	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
 )
 
@@ -203,34 +201,4 @@ func init() {
 	servicesDescID := servicesFields[0].Descriptor()
 	// services.DefaultID holds the default value on creation for the id field.
 	services.DefaultID = servicesDescID.Default.(func() uuid.UUID)
-	vardataFields := schema.VarData{}.Fields()
-	_ = vardataFields
-	// vardataDescCreatedAt is the schema descriptor for created_at field.
-	vardataDescCreatedAt := vardataFields[1].Descriptor()
-	// vardata.DefaultCreatedAt holds the default value on creation for the created_at field.
-	vardata.DefaultCreatedAt = vardataDescCreatedAt.Default.(func() time.Time)
-	// vardataDescUpdatedAt is the schema descriptor for updated_at field.
-	vardataDescUpdatedAt := vardataFields[2].Descriptor()
-	// vardata.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	vardata.DefaultUpdatedAt = vardataDescUpdatedAt.Default.(func() time.Time)
-	// vardata.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	vardata.UpdateDefaultUpdatedAt = vardataDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// vardataDescMimeType is the schema descriptor for mime_type field.
-	vardataDescMimeType := vardataFields[6].Descriptor()
-	// vardata.DefaultMimeType holds the default value on creation for the mime_type field.
-	vardata.DefaultMimeType = vardataDescMimeType.Default.(string)
-	// vardataDescID is the schema descriptor for id field.
-	vardataDescID := vardataFields[0].Descriptor()
-	// vardata.DefaultID holds the default value on creation for the id field.
-	vardata.DefaultID = vardataDescID.Default.(func() uuid.UUID)
-	varrefFields := schema.VarRef{}.Fields()
-	_ = varrefFields
-	// varrefDescName is the schema descriptor for name field.
-	varrefDescName := varrefFields[1].Descriptor()
-	// varref.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	varref.NameValidator = varrefDescName.Validators[0].(func(string) error)
-	// varrefDescID is the schema descriptor for id field.
-	varrefDescID := varrefFields[0].Descriptor()
-	// varref.DefaultID holds the default value on creation for the id field.
-	varref.DefaultID = varrefDescID.Default.(func() uuid.UUID)
 }

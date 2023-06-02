@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
 )
 
@@ -32,7 +31,6 @@ type InstanceQuery struct {
 	predicates         []predicate.Instance
 	withNamespace      *NamespaceQuery
 	withLogs           *LogMsgQuery
-	withVars           *VarRefQuery
 	withRuntime        *InstanceRuntimeQuery
 	withChildren       *InstanceRuntimeQuery
 	withEventlisteners *EventsQuery
@@ -112,28 +110,6 @@ func (iq *InstanceQuery) QueryLogs() *LogMsgQuery {
 			sqlgraph.From(instance.Table, instance.FieldID, selector),
 			sqlgraph.To(logmsg.Table, logmsg.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, instance.LogsTable, instance.LogsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryVars chains the current query on the "vars" edge.
-func (iq *InstanceQuery) QueryVars() *VarRefQuery {
-	query := (&VarRefClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, selector),
-			sqlgraph.To(varref.Table, varref.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.VarsTable, instance.VarsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -423,7 +399,6 @@ func (iq *InstanceQuery) Clone() *InstanceQuery {
 		predicates:         append([]predicate.Instance{}, iq.predicates...),
 		withNamespace:      iq.withNamespace.Clone(),
 		withLogs:           iq.withLogs.Clone(),
-		withVars:           iq.withVars.Clone(),
 		withRuntime:        iq.withRuntime.Clone(),
 		withChildren:       iq.withChildren.Clone(),
 		withEventlisteners: iq.withEventlisteners.Clone(),
@@ -453,17 +428,6 @@ func (iq *InstanceQuery) WithLogs(opts ...func(*LogMsgQuery)) *InstanceQuery {
 		opt(query)
 	}
 	iq.withLogs = query
-	return iq
-}
-
-// WithVars tells the query-builder to eager-load the nodes that are connected to
-// the "vars" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *InstanceQuery) WithVars(opts ...func(*VarRefQuery)) *InstanceQuery {
-	query := (&VarRefClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withVars = query
 	return iq
 }
 
@@ -590,10 +554,9 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		nodes       = []*Instance{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [6]bool{
 			iq.withNamespace != nil,
 			iq.withLogs != nil,
-			iq.withVars != nil,
 			iq.withRuntime != nil,
 			iq.withChildren != nil,
 			iq.withEventlisteners != nil,
@@ -637,13 +600,6 @@ func (iq *InstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ins
 		if err := iq.loadLogs(ctx, query, nodes,
 			func(n *Instance) { n.Edges.Logs = []*LogMsg{} },
 			func(n *Instance, e *LogMsg) { n.Edges.Logs = append(n.Edges.Logs, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withVars; query != nil {
-		if err := iq.loadVars(ctx, query, nodes,
-			func(n *Instance) { n.Edges.Vars = []*VarRef{} },
-			func(n *Instance, e *VarRef) { n.Edges.Vars = append(n.Edges.Vars, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -735,37 +691,6 @@ func (iq *InstanceQuery) loadLogs(ctx context.Context, query *LogMsgQuery, nodes
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "instance_logs" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (iq *InstanceQuery) loadVars(ctx context.Context, query *VarRefQuery, nodes []*Instance, init func(*Instance), assign func(*Instance, *VarRef)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Instance)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.VarRef(func(s *sql.Selector) {
-		s.Where(sql.InValues(instance.VarsColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.instance_vars
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "instance_vars" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "instance_vars" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

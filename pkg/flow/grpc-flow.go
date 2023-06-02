@@ -10,7 +10,6 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -62,10 +61,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
 			}
 
-			_, err = clients.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
-			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old variables: %w", err))
-			}
+			// TODO: alan: cleanup old instance variables.
 		}
 	}()
 

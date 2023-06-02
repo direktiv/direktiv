@@ -123,3 +123,22 @@ func ConvertSecretsToGrpcSecretList(list []*core.Secret) []*grpc.Secret {
 
 	return result
 }
+
+func ConvertRuntimeVariableToGrpcVariable(variable *core.RuntimeVariable) *grpc.Variable {
+	return &grpc.Variable{
+		Name:      variable.Name,
+		Size:      int64(variable.Size),
+		MimeType:  variable.MimeType,
+		CreatedAt: timestamppb.New(variable.CreatedAt),
+		UpdatedAt: timestamppb.New(variable.UpdatedAt),
+	}
+}
+
+func ConvertRuntimeVariablesToGrpcVariableList(list []*core.RuntimeVariable) []*grpc.Variable {
+	var result []*grpc.Variable
+	for _, f := range list {
+		result = append(result, ConvertRuntimeVariableToGrpcVariable(f))
+	}
+
+	return result
+}

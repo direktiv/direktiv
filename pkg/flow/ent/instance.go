@@ -55,8 +55,6 @@ type InstanceEdges struct {
 	Namespace *Namespace `json:"namespace,omitempty"`
 	// Logs holds the value of the logs edge.
 	Logs []*LogMsg `json:"logs,omitempty"`
-	// Vars holds the value of the vars edge.
-	Vars []*VarRef `json:"vars,omitempty"`
 	// Runtime holds the value of the runtime edge.
 	Runtime *InstanceRuntime `json:"runtime,omitempty"`
 	// Children holds the value of the children edge.
@@ -67,7 +65,7 @@ type InstanceEdges struct {
 	Annotations []*Annotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [6]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -92,19 +90,10 @@ func (e InstanceEdges) LogsOrErr() ([]*LogMsg, error) {
 	return nil, &NotLoadedError{edge: "logs"}
 }
 
-// VarsOrErr returns the Vars value or an error if the edge
-// was not loaded in eager-loading.
-func (e InstanceEdges) VarsOrErr() ([]*VarRef, error) {
-	if e.loadedTypes[2] {
-		return e.Vars, nil
-	}
-	return nil, &NotLoadedError{edge: "vars"}
-}
-
 // RuntimeOrErr returns the Runtime value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		if e.Runtime == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: instanceruntime.Label}
@@ -117,7 +106,7 @@ func (e InstanceEdges) RuntimeOrErr() (*InstanceRuntime, error) {
 // ChildrenOrErr returns the Children value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
@@ -126,7 +115,7 @@ func (e InstanceEdges) ChildrenOrErr() ([]*InstanceRuntime, error) {
 // EventlistenersOrErr returns the Eventlisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.Eventlisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "eventlisteners"}
@@ -135,7 +124,7 @@ func (e InstanceEdges) EventlistenersOrErr() ([]*Events, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e InstanceEdges) AnnotationsOrErr() ([]*Annotation, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -271,11 +260,6 @@ func (i *Instance) QueryNamespace() *NamespaceQuery {
 // QueryLogs queries the "logs" edge of the Instance entity.
 func (i *Instance) QueryLogs() *LogMsgQuery {
 	return NewInstanceClient(i.config).QueryLogs(i)
-}
-
-// QueryVars queries the "vars" edge of the Instance entity.
-func (i *Instance) QueryVars() *VarRefQuery {
-	return NewInstanceClient(i.config).QueryVars(i)
 }
 
 // QueryRuntime queries the "runtime" edge of the Instance entity.

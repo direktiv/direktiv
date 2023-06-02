@@ -21,8 +21,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
-	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -86,8 +84,6 @@ func columnChecker(table string) func(string) error {
 		logmsg.Table:            logmsg.ValidColumn,
 		namespace.Table:         namespace.ValidColumn,
 		services.Table:          services.ValidColumn,
-		vardata.Table:           vardata.ValidColumn,
-		varref.Table:            varref.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

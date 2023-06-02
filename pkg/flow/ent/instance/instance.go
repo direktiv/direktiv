@@ -41,8 +41,6 @@ const (
 	EdgeNamespace = "namespace"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
 	EdgeLogs = "logs"
-	// EdgeVars holds the string denoting the vars edge name in mutations.
-	EdgeVars = "vars"
 	// EdgeRuntime holds the string denoting the runtime edge name in mutations.
 	EdgeRuntime = "runtime"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -67,13 +65,6 @@ const (
 	LogsInverseTable = "log_msgs"
 	// LogsColumn is the table column denoting the logs relation/edge.
 	LogsColumn = "instance_logs"
-	// VarsTable is the table that holds the vars relation/edge.
-	VarsTable = "var_refs"
-	// VarsInverseTable is the table name for the VarRef entity.
-	// It exists in this package in order to avoid circular dependency with the "varref" package.
-	VarsInverseTable = "var_refs"
-	// VarsColumn is the table column denoting the vars relation/edge.
-	VarsColumn = "instance_vars"
 	// RuntimeTable is the table that holds the runtime relation/edge.
 	RuntimeTable = "instance_runtimes"
 	// RuntimeInverseTable is the table name for the InstanceRuntime entity.

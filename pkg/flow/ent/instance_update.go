@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
 )
 
@@ -206,21 +205,6 @@ func (iu *InstanceUpdate) AddLogs(l ...*LogMsg) *InstanceUpdate {
 	return iu.AddLogIDs(ids...)
 }
 
-// AddVarIDs adds the "vars" edge to the VarRef entity by IDs.
-func (iu *InstanceUpdate) AddVarIDs(ids ...uuid.UUID) *InstanceUpdate {
-	iu.mutation.AddVarIDs(ids...)
-	return iu
-}
-
-// AddVars adds the "vars" edges to the VarRef entity.
-func (iu *InstanceUpdate) AddVars(v ...*VarRef) *InstanceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return iu.AddVarIDs(ids...)
-}
-
 // SetRuntimeID sets the "runtime" edge to the InstanceRuntime entity by ID.
 func (iu *InstanceUpdate) SetRuntimeID(id uuid.UUID) *InstanceUpdate {
 	iu.mutation.SetRuntimeID(id)
@@ -307,27 +291,6 @@ func (iu *InstanceUpdate) RemoveLogs(l ...*LogMsg) *InstanceUpdate {
 		ids[i] = l[i].ID
 	}
 	return iu.RemoveLogIDs(ids...)
-}
-
-// ClearVars clears all "vars" edges to the VarRef entity.
-func (iu *InstanceUpdate) ClearVars() *InstanceUpdate {
-	iu.mutation.ClearVars()
-	return iu
-}
-
-// RemoveVarIDs removes the "vars" edge to VarRef entities by IDs.
-func (iu *InstanceUpdate) RemoveVarIDs(ids ...uuid.UUID) *InstanceUpdate {
-	iu.mutation.RemoveVarIDs(ids...)
-	return iu
-}
-
-// RemoveVars removes "vars" edges to VarRef entities.
-func (iu *InstanceUpdate) RemoveVars(v ...*VarRef) *InstanceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return iu.RemoveVarIDs(ids...)
 }
 
 // ClearRuntime clears the "runtime" edge to the InstanceRuntime entity.
@@ -579,51 +542,6 @@ func (iu *InstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iu.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RemovedVarsIDs(); len(nodes) > 0 && !iu.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.VarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -987,21 +905,6 @@ func (iuo *InstanceUpdateOne) AddLogs(l ...*LogMsg) *InstanceUpdateOne {
 	return iuo.AddLogIDs(ids...)
 }
 
-// AddVarIDs adds the "vars" edge to the VarRef entity by IDs.
-func (iuo *InstanceUpdateOne) AddVarIDs(ids ...uuid.UUID) *InstanceUpdateOne {
-	iuo.mutation.AddVarIDs(ids...)
-	return iuo
-}
-
-// AddVars adds the "vars" edges to the VarRef entity.
-func (iuo *InstanceUpdateOne) AddVars(v ...*VarRef) *InstanceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return iuo.AddVarIDs(ids...)
-}
-
 // SetRuntimeID sets the "runtime" edge to the InstanceRuntime entity by ID.
 func (iuo *InstanceUpdateOne) SetRuntimeID(id uuid.UUID) *InstanceUpdateOne {
 	iuo.mutation.SetRuntimeID(id)
@@ -1088,27 +991,6 @@ func (iuo *InstanceUpdateOne) RemoveLogs(l ...*LogMsg) *InstanceUpdateOne {
 		ids[i] = l[i].ID
 	}
 	return iuo.RemoveLogIDs(ids...)
-}
-
-// ClearVars clears all "vars" edges to the VarRef entity.
-func (iuo *InstanceUpdateOne) ClearVars() *InstanceUpdateOne {
-	iuo.mutation.ClearVars()
-	return iuo
-}
-
-// RemoveVarIDs removes the "vars" edge to VarRef entities by IDs.
-func (iuo *InstanceUpdateOne) RemoveVarIDs(ids ...uuid.UUID) *InstanceUpdateOne {
-	iuo.mutation.RemoveVarIDs(ids...)
-	return iuo
-}
-
-// RemoveVars removes "vars" edges to VarRef entities.
-func (iuo *InstanceUpdateOne) RemoveVars(v ...*VarRef) *InstanceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return iuo.RemoveVarIDs(ids...)
 }
 
 // ClearRuntime clears the "runtime" edge to the InstanceRuntime entity.
@@ -1390,51 +1272,6 @@ func (iuo *InstanceUpdateOne) sqlSave(ctx context.Context) (_node *Instance, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iuo.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RemovedVarsIDs(); len(nodes) > 0 && !iuo.mutation.VarsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.VarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
