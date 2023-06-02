@@ -2,10 +2,12 @@ package datastoresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -23,6 +25,9 @@ func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, re
 								created_at, updated_at
 							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_id=? OR instance_id=?);`,
 		name, referenceID, referenceID, referenceID).First(variable)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrNotFound
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -39,6 +44,9 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrNotFound
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -88,7 +96,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 	}
 
 	if variable.InstanceID.String() != (uuid.UUID{}).String() {
-		linkName = "instance"
+		linkName = "instance_id"
 		linkValue = variable.InstanceID
 	}
 
@@ -137,7 +145,7 @@ func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, na
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpedted runtime_variables delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return s.GetByID(ctx, id)
@@ -151,7 +159,7 @@ func (s *sqlRuntimeVariablesStore) Delete(ctx context.Context, id uuid.UUID) err
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpedted runtime_variables delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
@@ -166,6 +174,9 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
 		id).First(variable)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrNotFound
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}

@@ -79,8 +79,6 @@ describe('Test workflow variable operations', () => {
     })
 
     it(`should get variables from workflow getter`, async () => {
-        // TODO: need fix here.
-        return
         var workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=wait&ref=latest`)
 
         expect(workflowVarResponse.statusCode).toEqual(200)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -18,93 +19,46 @@ type sqlMirrorStore struct {
 	configEncryptionKey string
 }
 
-// SetNamespaceVariable sets namespace variable into the database.
+// SetVariable sets runtime variable into the database.
 // nolint
-func (s sqlMirrorStore) SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error {
-	// try to update a variable if exists.
-	res := s.db.WithContext(ctx).Exec(`
-							UPDATE var_data SET size = ?, hash = ?, data = ?, mime_type = ?  WHERE oid = (
-								SELECT var_data_varrefs FROM var_refs WHERE name = ? AND namespace_vars = ?
-							)`, len(data), hash, data, mType, key, namespaceID)
+func (s sqlMirrorStore) SetVariable(ctx context.Context, variable *core.RuntimeVariable) error {
+	linkName := "namespace_id"
+	linkValue := variable.NamespaceID
+
+	if variable.WorkflowID.String() != (uuid.UUID{}).String() {
+		linkName = "workflow_id"
+		linkValue = variable.WorkflowID
+	}
+
+	res := s.db.WithContext(ctx).Exec(fmt.Sprintf(
+		`UPDATE runtime_variables SET
+						mime_type=?,
+						data=?
+					WHERE %s = ? AND name = ?;`, linkName),
+		variable.MimeType, variable.Data, linkValue, variable.Name)
+
 	if res.Error != nil {
 		return res.Error
 	}
-	if res.RowsAffected > 0 {
+	if res.RowsAffected > 1 {
+		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+	if res.RowsAffected == 1 {
 		return nil
 	}
 
-	newID := uuid.New()
+	newUUID := uuid.New()
+	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
+							INSERT INTO runtime_variables(
+								id, %s, name, mime_type, data) 
+							VALUES(?, ?, ?, ?, ?);`, linkName),
+		newUUID, linkValue, variable.Name, variable.MimeType, variable.Data)
 
-	// create var_data entry.
-	res = s.db.WithContext(ctx).Exec(`
-							INSERT INTO var_data(oid, size, hash, data, mime_type, created_at, updated_at) VALUES(?, ?, ?, ?, ?, NOW(), NOW());
-							`,
-		newID, len(data), hash, data, mType,
-	)
 	if res.Error != nil {
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected var_data inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	// create var_refs entry.
-	res = s.db.WithContext(ctx).Exec(`
-							INSERT INTO var_refs(oid, name, behaviour, namespace_vars, var_data_varrefs) VALUES(?, ?, ?, ?, ?);
-							`,
-		uuid.New(), key, "", namespaceID, newID,
-	)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected var_refs inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	return nil
-}
-
-// SetWorkflowVariable sets workflow variable into the database.
-// nolint
-func (s sqlMirrorStore) SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error {
-	// try to update a variable if exists.
-	res := s.db.WithContext(ctx).Exec(`
-							UPDATE var_data SET size = ?, hash = ?, data = ?, mime_type = ?  WHERE oid = (
-								SELECT var_data_varrefs FROM var_refs WHERE name = ? AND workflow_id = ?
-							)`, len(data), hash, data, mType, key, workflowID)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected > 0 {
-		return nil
-	}
-
-	newID := uuid.New()
-
-	// create var_data entry.
-	res = s.db.WithContext(ctx).Exec(`
-							INSERT INTO var_data(oid, size, hash, data, mime_type, created_at, updated_at) VALUES(?, ?, ?, ?, ?, NOW(), NOW());
-							`,
-		newID, len(data), hash, data, mType,
-	)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected var_data inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	// create var_refs entry.
-	res = s.db.WithContext(ctx).Exec(`
-							INSERT INTO var_refs(oid, name, behaviour, workflow_id, var_data_varrefs) VALUES(?, ?, ?, ?, ?);
-							`,
-		uuid.New(), key, "", workflowID, newID,
-	)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected var_refs inserted rows count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected runtime_variables insert count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil

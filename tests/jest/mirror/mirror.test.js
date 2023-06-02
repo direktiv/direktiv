@@ -259,7 +259,6 @@ describe('Test behaviour specific to the root node', () => {
         })
     })
 
-
     it(`should read the /apple node`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/apple`)
         expect(req.statusCode).toEqual(200)
@@ -424,7 +423,6 @@ describe('Test behaviour specific to the root node', () => {
         })
     })
 
-
     it(`should read the workflow variables of '/banana/page-1.yaml'`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-1.yaml?op=vars`)
         expect(req.statusCode).toEqual(200)
@@ -432,19 +430,13 @@ describe('Test behaviour specific to the root node', () => {
             namespace: namespaceName,
             path: `/banana/page-1.yaml`,
             variables: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 1,
-                },
+                pageInfo: null,
                 results: [
                     {
-                        mimeType: "",
+                        mimeType: "text/html; charset=utf-8",
                         name: "page.html",
                         size: "221",
-                        checksum: "34a74d3d189ac23449c5257b49852bd22ba67680f235f8b0753e0a9cdc36e978",
+                        checksum: "",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
@@ -452,7 +444,6 @@ describe('Test behaviour specific to the root node', () => {
             }
         })
     })
-
 
     it(`should read the '/banana/page-2.yaml' workflow node`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/page-2.yaml`)
@@ -489,19 +480,13 @@ describe('Test behaviour specific to the root node', () => {
             namespace: namespaceName,
             path: `/banana/page-2.yaml`,
             variables: {
-                pageInfo: {
-                    order: [],
-                    filter: [],
-                    limit: 0,
-                    offset: 0,
-                    total: 1,
-                },
+                pageInfo: null,
                 results: [
                     {
-                        mimeType: "",
+                        mimeType: "text/html; charset=utf-8",
                         name: "Page.HTML",
                         size: "233",
-                        checksum: "d647f71a599f92f7b524e656aee789ec846cc937d76a28986070c1ffa55b112f",
+                        checksum: "",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
@@ -565,7 +550,6 @@ describe('Test behaviour specific to the root node', () => {
         })
     })
 
-
     it(`should read the '/banana/util/caller.yaml' workflow node`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller.yaml`)
         expect(req.statusCode).toEqual(200)
@@ -593,7 +577,6 @@ describe('Test behaviour specific to the root node', () => {
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
-
 
     it(`should read the '/banana/util/curler.yaml' workflow node`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/curler.yaml`)
@@ -629,81 +612,75 @@ describe('Test behaviour specific to the root node', () => {
         expect(req.body).toMatchObject({
             namespace: namespaceName,
             variables: {
-                pageInfo: {
-                    limit: 0,
-                    offset: 0,
-                    total: 9,
-                    order: [],
-                    filter: [],
-                },
+                pageInfo: null,
                 results: expect.arrayContaining([
                     {
-                        checksum: "a386b3c9b4b4786df5bb6474bab0a62b8476e2f3f9c8a6433aca40152840f6b7",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "text/plain; charset=utf-8",
                         name: "alpha.csv",
                         size: "7", // TODO: this is a string, which is probably a bug
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
                     {
-                        checksum: "38b2babda7c6c19238b4546403c5db1373c05204fdfcc403ee2104176d5eccbf",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
                         name: "alp-ha.json",
                         size: "9",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
                     {
-                        checksum: "38b2babda7c6c19238b4546403c5db1373c05204fdfcc403ee2104176d5eccbf",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
                         name: "alp_ha.json",
                         size: "9",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
                     {
-                        checksum: "a36b1f2c3f84522dd1005145646617d7054c0851e97c72a039c0bdfac9fa07f3",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
                         name: "alpha.json",
                         size: "9",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
                     {
-                        checksum: "38b2babda7c6c19238b4546403c5db1373c05204fdfcc403ee2104176d5eccbf",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
                         name: "alpha_.json",
                         size: "9",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
                     {
-                        checksum: "38b2babda7c6c19238b4546403c5db1373c05204fdfcc403ee2104176d5eccbf",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
                         name: "ALPHA.json",
                         size: "9",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
                     {
-                        checksum: "a36b1f2c3f84522dd1005145646617d7054c0851e97c72a039c0bdfac9fa07f3",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
                         name: "beta.json",
                         size: "9",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                     },
-                    //{
-                    //    checksum: expect.stringMatching(common.regex.hashRegex),
-                    //    mimeType: "",
-                    //    name: "delta",
-                    //    size: expect.stringMatching(/^[0-9]*$/), // This archive changes every time. Presumably because of timestamps in the tar archive.
-                    //    //createdAt: expect.stringMatching(common.regex.timestampRegex),
-                    //    //updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                    //},
                     {
-                        checksum: "457de4239fb1beaad00cbecb6815a9d873a090bf4b1e2cea79c6c9ae48fdedd5",
-                        mimeType: "",
+                        checksum: "",
+                        mimeType: "application/json",
+                        name: "data.json",
+                        size: "9",
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                    },
+                    {
+                        checksum: "",
+                        mimeType: "text/plain; charset=utf-8",
                         name: "gamma.css",
                         size: "103",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -851,5 +828,4 @@ describe('Test behaviour specific to the root node', () => {
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({})
     })
-
 })
