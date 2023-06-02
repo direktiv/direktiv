@@ -72,59 +72,61 @@
         },
         "workflow": {
           "revisions": {
-            "trafficShaping": {
-              "title": "Traffic Shaping",
-              "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
-              "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
-              "hint": "Please select 2 different revisions to configure traffic shaping.",
-              "saveBtn": "Save",
-              "revisionSelector": {
-                "placeholder": "Select Revision...",
-                "searchPlaceholder": "Search Revisions...",
-                "tags": "Tags",
-                "revisions": "Revisions",
-                "notFound": "No Revisions found."
-              }
-            },
-            "list": {
-              "title": "Revisions",
-              "distribution": "{{count}} % of traffic distribution",
-              "copy": "copy",
-              "copied": "copied",
-              "contextMenu": {
-                "title": "Actions",
-                "delete": "Delete",
-                "tag": "Create Tag",
-                "revert": "Revert to Revision"
+            "overview": {
+              "trafficShaping": {
+                "title": "Traffic Shaping",
+                "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
+                "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
+                "hint": "Please select 2 different revisions to configure traffic shaping.",
+                "saveBtn": "Save",
+                "revisionSelector": {
+                  "placeholder": "Select Revision...",
+                  "searchPlaceholder": "Search Revisions...",
+                  "tags": "Tags",
+                  "revisions": "Revisions",
+                  "notFound": "No Revisions found."
+                }
               },
-              "delete": {
-                "titleTag": "Delete Tag",
-                "titleRevision": "Delete Revision",
-                "description": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
-                "revisionNote": "Please note that this will also delete all corresponding tags as well.",
-                "cancelBtn": "Cancel",
-                "deleteBtn": "Delete"
-              },
-              "tag": {
-                "titleTag": "Create a Tag",
-                "description": "You are about to create a tag based on <b>{{name}}</b>.",
-                "tagAlreadyExist": "This tag already exists.",
-                "cancelBtn": "Cancel",
-                "createBtn": "Create Tag"
-              },
-              "revert": {
-                "title": "Revert to Revision",
-                "description": "Are you sure you want to revert to <b>{{name}}</b>?",
-                "cancelBtn": "Cancel",
-                "revertBtn": "Revert",
-                "error": {
-                  "title": "Error",
-                  "description": "Something went wrong reverting this workflow."
+              "list": {
+                "title": "Revisions",
+                "distribution": "{{count}} % of traffic distribution",
+                "copy": "copy",
+                "copied": "copied",
+                "contextMenu": {
+                  "title": "Actions",
+                  "delete": "Delete",
+                  "tag": "Create Tag",
+                  "revert": "Revert to Revision"
                 },
-                "success": {
-                  "title": "Successfully reverted",
-                  "description": "Your workflow was reverted to {{name}}.",
-                  "action": "Open workflow"
+                "delete": {
+                  "titleTag": "Delete Tag",
+                  "titleRevision": "Delete Revision",
+                  "description": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
+                  "revisionNote": "Please note that this will also delete all corresponding tags as well.",
+                  "cancelBtn": "Cancel",
+                  "deleteBtn": "Delete"
+                },
+                "tag": {
+                  "titleTag": "Create a Tag",
+                  "description": "You are about to create a tag based on <b>{{name}}</b>.",
+                  "tagAlreadyExist": "This tag already exists.",
+                  "cancelBtn": "Cancel",
+                  "createBtn": "Create Tag"
+                },
+                "revert": {
+                  "title": "Revert to Revision",
+                  "description": "Are you sure you want to revert to <b>{{name}}</b>?",
+                  "cancelBtn": "Cancel",
+                  "revertBtn": "Revert",
+                  "error": {
+                    "title": "Error",
+                    "description": "Something went wrong reverting this workflow."
+                  },
+                  "success": {
+                    "title": "Successfully reverted",
+                    "description": "Your workflow was reverted to {{name}}.",
+                    "action": "Open workflow"
+                  }
                 }
               }
             }

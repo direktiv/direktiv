@@ -77,7 +77,7 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
         >
           {buttonLabel ??
             t(
-              "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.placeholder"
+              "pages.explorer.tree.workflow.revisions.overview.trafficShaping.revisionSelector.placeholder"
             )}
           <ChevronDown />
         </Button>
@@ -87,13 +87,13 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
           <CommandList className="max-h-[378px]">
             <CommandInput
               placeholder={t(
-                "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.searchPlaceholder"
+                "pages.explorer.tree.workflow.revisions.overview.trafficShaping.revisionSelector.searchPlaceholder"
               )}
             />
             <CommandStaticItem className="text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
               <Tags className="mr-2 h-auto w-4" />
               {t(
-                "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.tags"
+                "pages.explorer.tree.workflow.revisions.overview.trafficShaping.revisionSelector.tags"
               )}
             </CommandStaticItem>
             <CommandGroup>
@@ -122,7 +122,7 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
             <CommandStaticItem className="text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
               <GitMerge className="mr-2 h-auto w-4" />
               {t(
-                "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.revisions"
+                "pages.explorer.tree.workflow.revisions.overview.trafficShaping.revisionSelector.revisions"
               )}
             </CommandStaticItem>
             <CommandGroup>
@@ -150,7 +150,7 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
             </CommandGroup>
             <CommandEmpty>
               {t(
-                "pages.explorer.tree.workflow.revisions.trafficShaping.revisionSelector.notFound"
+                "pages.explorer.tree.workflow.revisions.overview.trafficShaping.revisionSelector.notFound"
               )}
             </CommandEmpty>
           </CommandList>

@@ -59,7 +59,7 @@ const RevisionsList: FC = () => {
     <>
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
         <GitMerge className="h-5" />
-        {t("pages.explorer.tree.workflow.revisions.list.title")}
+        {t("pages.explorer.tree.workflow.revisions.overview.list.title")}
       </h3>
       <Card>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

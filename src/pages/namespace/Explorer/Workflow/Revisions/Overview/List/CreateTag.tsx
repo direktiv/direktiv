@@ -43,7 +43,7 @@ const CreateTag = ({
           .string()
           .refine((name) => !unallowedNames.some((n) => n === name), {
             message: t(
-              "pages.explorer.tree.workflow.revisions.list.tag.tagAlreadyExist"
+              "pages.explorer.tree.workflow.revisions.overview.list.tag.tagAlreadyExist"
             ),
           }),
       })
@@ -70,7 +70,9 @@ const CreateTag = ({
       <DialogHeader>
         <DialogTitle>
           <Tag />{" "}
-          {t("pages.explorer.tree.workflow.revisions.list.tag.titleTag")}
+          {t(
+            "pages.explorer.tree.workflow.revisions.overview.list.tag.titleTag"
+          )}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3 flex flex-col gap-y-5">
@@ -81,7 +83,7 @@ const CreateTag = ({
         )}
         <div>
           <Trans
-            i18nKey="pages.explorer.tree.workflow.revisions.list.tag.description"
+            i18nKey="pages.explorer.tree.workflow.revisions.overview.list.tag.description"
             values={{ name: revision.name }}
           />
         </div>
@@ -95,7 +97,9 @@ const CreateTag = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.workflow.revisions.list.tag.cancelBtn")}
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.list.tag.cancelBtn"
+            )}
           </Button>
         </DialogClose>
         <Button
@@ -106,7 +110,9 @@ const CreateTag = ({
           data-testid="dialog-create-tag-btn-submit"
         >
           {!isLoading && <Tag />}
-          {t("pages.explorer.tree.workflow.revisions.list.tag.createBtn")}
+          {t(
+            "pages.explorer.tree.workflow.revisions.overview.list.tag.createBtn"
+          )}
         </Button>
       </DialogFooter>
     </>

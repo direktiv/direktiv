@@ -44,23 +44,25 @@ const Delete = ({
         <DialogTitle>
           <Trash />
           {isTag
-            ? t("pages.explorer.tree.workflow.revisions.list.delete.titleTag")
+            ? t(
+                "pages.explorer.tree.workflow.revisions.overview.list.delete.titleTag"
+              )
             : t(
-                "pages.explorer.tree.workflow.revisions.list.delete.titleRevision"
+                "pages.explorer.tree.workflow.revisions.overview.list.delete.titleRevision"
               )}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3 flex flex-col gap-y-5">
         <div>
           <Trans
-            i18nKey="pages.explorer.tree.workflow.revisions.list.delete.description"
+            i18nKey="pages.explorer.tree.workflow.revisions.overview.list.delete.description"
             values={{ name: revision.name }}
           />
         </div>
         {!isTag && (
           <div>
             {t(
-              "pages.explorer.tree.workflow.revisions.list.delete.revisionNote"
+              "pages.explorer.tree.workflow.revisions.overview.list.delete.revisionNote"
             )}
           </div>
         )}
@@ -68,7 +70,9 @@ const Delete = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.workflow.revisions.list.delete.cancelBtn")}
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.list.delete.cancelBtn"
+            )}
           </Button>
         </DialogClose>
         <Button
@@ -90,7 +94,9 @@ const Delete = ({
           data-testid="dialog-delete-revision-btn-submit"
         >
           {!isLoading && <Trash />}
-          {t("pages.explorer.tree.workflow.revisions.list.delete.deleteBtn")}
+          {t(
+            "pages.explorer.tree.workflow.revisions.overview.list.delete.deleteBtn"
+          )}
         </Button>
       </DialogFooter>
     </>
