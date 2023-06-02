@@ -89,7 +89,11 @@ const RevisionTableRow: FC<{
               size: "sm",
             }}
           >
-            {(copied) => (copied ? "copied" : "copy")}
+            {(copied) =>
+              copied
+                ? t("pages.explorer.tree.workflow.revisions.list.copied")
+                : t("pages.explorer.tree.workflow.revisions.list.copy")
+            }
           </CopyButton>
         )}
         {!isLatest && (

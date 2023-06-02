@@ -89,6 +89,8 @@
             "list": {
               "title": "Revisions",
               "distribution": "{{count}} % of traffic distribution",
+              "copy": "copy",
+              "copied": "copied",
               "contextMenu": {
                 "title": "Actions",
                 "delete": "Delete",
