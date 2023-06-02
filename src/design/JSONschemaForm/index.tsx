@@ -5,6 +5,14 @@ import {
   WidgetProps,
   getSubmitButtonOptions,
 } from "@rjsf/utils";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../Select";
 
 import Button from "../Button";
 import Form from "@rjsf/core";
@@ -29,13 +37,35 @@ const FormInput: React.FunctionComponent<WidgetProps> = (props) => {
   );
 };
 
+const FormSelect: React.FunctionComponent<WidgetProps> = (props) => {
+  return (
+    <div className="my-4">
+      <Select onValueChange={props.onChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select function type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {props.options.enumOptions?.map((op: any) => {
+              return <SelectItem value={op.value}>{op.label}</SelectItem>;
+            })}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
 function SubmitButton(props: SubmitButtonProps) {
   const { uiSchema } = props;
   const { norender } = getSubmitButtonOptions(uiSchema);
   if (norender) {
     return null;
   }
-  return <Button type="submit">Submit</Button>;
+  return (
+    <Button type="submit" className="float-right mt-4">
+      Submit
+    </Button>
+  );
 }
 
 function BaseInputTemplate(props: BaseInputTemplateProps) {
@@ -63,12 +93,14 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => {
         inputType: "password",
       },
     },
-
     age: {
       "ui:widget": FormInput,
       "ui:options": {
         inputType: "number",
       },
+    },
+    type: {
+      "ui:widget": FormSelect,
     },
     "ui:submitButtonOptions": {
       norender: false,
@@ -77,7 +109,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => {
 
   return (
     <Form
-      schema={props.schema}
+      schema={props.schema!}
       templates={{ BaseInputTemplate, ButtonTemplates: { SubmitButton } }}
       validator={validator}
       uiSchema={uiSchema}

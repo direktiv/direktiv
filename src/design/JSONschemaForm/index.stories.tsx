@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { JSONSchemaForm } from "../JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
+import {
+  FunctionSchema,
+  FunctionSchemaNamespace,
+  FunctionSchemaReusable,
+  StateSchemaDelay,
+} from "./jsonSchema";
 const meta = {
   title: "Components/JSONSchemaForm",
   component: JSONSchemaForm,
@@ -36,8 +42,27 @@ const defSchema: RJSFSchema = {
     },
   },
 };
-export const Default = () =>
-  <JSONSchemaForm schema={defSchema} />
 
-// export const StateSchemaNoopForm =
-//   <JSONSchemaForm schema={StateSchemaNoop} />
+export const Default: Story = {
+  render: ({ ...args }) => <JSONSchemaForm {...args} />,
+  args: {
+    schema: defSchema,
+  },
+  tags: ["autodocs"],
+};
+
+export const FunctionSchemaNamespaceForm = () => (
+  <JSONSchemaForm schema={FunctionSchemaNamespace} />
+);
+
+export const FunctionSchemaReusableForm = () => (
+  <JSONSchemaForm schema={FunctionSchemaReusable as RJSFSchema} />
+);
+
+export const FunctionSchemaSubflowForm = () => (
+  <JSONSchemaForm schema={FunctionSchema as RJSFSchema} />
+);
+
+export const StateSchemaDelayForm = () => (
+  <JSONSchemaForm schema={StateSchemaDelay as unknown as RJSFSchema} />
+);

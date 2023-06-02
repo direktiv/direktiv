@@ -1,5 +1,7 @@
 // COMMON
 
+import { RJSFSchema } from "@rjsf/utils";
+
 const CommonSchemaDefinitionConsumeEvent = {
   type: "object",
   title: "Event Definition",
@@ -775,7 +777,7 @@ export const FunctionSchemaGlobal = {
   },
 };
 
-export const FunctionSchemaNamespace = {
+export const FunctionSchemaNamespace: RJSFSchema = {
   type: "object",
   required: ["id", "service"],
   properties: {
@@ -852,9 +854,9 @@ export const FunctionSchemaSubflow = {
 //  Automatically injects global and namespace service list as enums from arguments
 //  Also creates ui-schemas which sets placeholder and whether or not field is readonly (if no services exist)
 export function GenerateFunctionSchemaWithEnum(
-  namespaceServices,
-  globalServices,
-  nodes
+  namespaceServices: any,
+  globalServices: any,
+  nodes: any
 ) {
   const nsFuncSchema = FunctionSchemaNamespace;
   const globalFuncSchema = FunctionSchemaGlobal;
@@ -1025,7 +1027,34 @@ export const FunctionSchema = {
 };
 
 // Map to all Schemas
-export const SchemaMap = {
+type StateSchemaKey =
+  | "stateSchemaNoop"
+  | "stateSchemaAction"
+  | "stateSchemaSwitch"
+  | "stateSchemaConsumeEvent"
+  | "stateSchemaDelay"
+  | "stateSchemaError"
+  | "stateSchemaEventsAnd"
+  | "stateSchemaEventXor"
+  | "stateSchemaForeach"
+  | "stateSchemaParallel"
+  | "stateSchemaGenerateEvent"
+  | "stateSchemaGetter"
+  | "stateSchemaSetter"
+  | "stateSchemaValidate";
+
+type FunctionSchemaKey =
+  | "functionSchemaGlobal"
+  | "functionSchemaNamespace"
+  | "functionSchemaReusable"
+  | "functionSchemaSubflow"
+  | "functionSchema";
+
+type SpecialSchemaKey = "specialSchemaError" | "specialStartBlock";
+
+type TSchemaMapKey = StateSchemaKey | FunctionSchemaKey | SpecialSchemaKey;
+
+export const SchemaMap: { [key in TSchemaMapKey]: any } = {
   // States
   stateSchemaNoop: StateSchemaNoop,
   stateSchemaAction: StateSchemaAction,
@@ -1054,7 +1083,7 @@ export const SchemaMap = {
   specialStartBlock: SpecialSchemaStart,
 };
 
-function functionListToActionEnum(functionList) {
+function functionListToActionEnum(functionList: any) {
   const availableFunctions = [];
   for (let i = 0; i < functionList.length; i++) {
     const f = functionList[i];
@@ -1064,29 +1093,29 @@ function functionListToActionEnum(functionList) {
   return availableFunctions;
 }
 
-export function getSchemaDefault(schemaKey) {
+export function getSchemaDefault(schemaKey: TSchemaMapKey) {
   return SchemaMap[schemaKey];
 }
 export const getSchemaCallbackMap = {
-  stateSchemaAction: (schemaKey, functionList) => {
+  stateSchemaAction: (schemaKey: TSchemaMapKey, functionList: any) => {
     const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.action.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
-  stateSchemaForeach: (schemaKey, functionList) => {
+  stateSchemaForeach: (schemaKey: TSchemaMapKey, functionList: any) => {
     const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.action.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
-  stateSchemaParallel: (schemaKey, functionList) => {
+  stateSchemaParallel: (schemaKey: TSchemaMapKey, functionList: any) => {
     const selectedSchema = SchemaMap[schemaKey];
     selectedSchema.properties.actions.items.properties.function.enum =
       functionListToActionEnum(functionList);
     return selectedSchema;
   },
-  Default: (schemaKey) => {
+  Default: (schemaKey: any) => {
     return getSchemaDefault(schemaKey);
   },
 };
