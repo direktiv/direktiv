@@ -36,7 +36,7 @@ export const useRevertRevision = () => {
         payload: undefined,
         headers: undefined,
         urlParams: {
-          namespace: namespace,
+          namespace,
           path,
         },
       }),

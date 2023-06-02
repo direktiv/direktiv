@@ -52,7 +52,7 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
         payload: { tag },
         headers: undefined,
         urlParams: {
-          namespace: namespace,
+          namespace,
           path,
           ref,
         },

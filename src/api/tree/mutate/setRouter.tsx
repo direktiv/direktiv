@@ -48,7 +48,7 @@ export const useSetRouter = () => {
         },
         headers: undefined,
         urlParams: {
-          namespace: namespace,
+          namespace,
           path,
         },
       }),

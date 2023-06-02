@@ -55,7 +55,7 @@ export const useRenameNode = ({
         headers: undefined,
         urlParams: {
           path: node.path,
-          namespace: namespace,
+          namespace,
         },
       }),
     onSuccess(data, variables) {

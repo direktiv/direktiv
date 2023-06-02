@@ -53,7 +53,7 @@ export const useUpdateWorkflow = ({
         payload: fileContent,
         headers: undefined,
         urlParams: {
-          namespace: namespace,
+          namespace,
           path,
         },
       }),

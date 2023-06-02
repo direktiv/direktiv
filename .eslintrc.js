@@ -74,6 +74,11 @@ module.exports = {
     // nested ternary operators are hard to read and should be avoided
     "no-nested-ternary": "error",
 
+    // this rule will enforce the object shorthand syntax and prefers { something }
+    // over { something: something }
+    // this is more about consitencey than right or wrong
+    "object-shorthand": "error",
+
     // prefer arrow functions over function declarations, this is more for consistency
     // than for right or wrong. Also VSCode can automatically convert them when using
     // comman + .

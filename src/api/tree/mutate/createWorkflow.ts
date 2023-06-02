@@ -55,7 +55,7 @@ export const useCreateWorkflow = ({
         payload: fileContent,
         headers: undefined,
         urlParams: {
-          namespace: namespace,
+          namespace,
           path,
           name,
         },

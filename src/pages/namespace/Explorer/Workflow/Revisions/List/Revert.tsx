@@ -53,7 +53,7 @@ const Revert = ({
                 navigate(
                   pages.explorer.createHref({
                     namespace,
-                    path: path,
+                    path,
                     subpage: "workflow",
                   })
                 );

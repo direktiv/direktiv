@@ -46,7 +46,7 @@ export const useCreateDirectory = ({
         headers: undefined,
         urlParams: {
           directory,
-          namespace: namespace,
+          namespace,
           path,
         },
       }),

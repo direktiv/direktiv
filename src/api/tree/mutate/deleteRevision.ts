@@ -47,7 +47,7 @@ export const useDeleteRevision = ({
         headers: undefined,
         urlParams: {
           path,
-          namespace: namespace,
+          namespace,
           revision,
         },
       }),

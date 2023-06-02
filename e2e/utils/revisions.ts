@@ -31,7 +31,7 @@ export const createWorkflowWithThreeRevisions = async (
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: path,
+      path,
       name: workflowName,
     },
   });

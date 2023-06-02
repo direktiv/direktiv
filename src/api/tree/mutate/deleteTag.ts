@@ -51,7 +51,7 @@ export const useDeleteTag = ({
         headers: undefined,
         urlParams: {
           path,
-          namespace: namespace,
+          namespace,
           tag,
         },
       }),
