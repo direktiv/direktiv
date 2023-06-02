@@ -95,8 +95,8 @@ CREATE TABLE IF NOT EXISTS "log_entries" (
     "id" uuid NOT NULL,
     "timestamp" timestamptz NOT NULL,
     "log_level" integer NOT NULL,
-    "primary_key" text NOT NULL,
-    "secondary_key" text,
+    "sender" text NOT NULL,
+    "callpath" text,
     "log_entry" jsonb NOT NULL,
     PRIMARY KEY ("id")
 );

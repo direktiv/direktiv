@@ -18,15 +18,15 @@ type sqlLogStore struct {
 	db *gorm.DB
 }
 
-func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, primaryKey string, keysAndValues map[string]interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, sender string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
 	keysAndValues["msg"] = msg
 	cols = append(cols, "id", "timestamp", "log_level")
 	vals = append(vals, uuid.New(), timestamp, level)
-	cols = append(cols, "primary_key")
-	vals = append(vals, primaryKey)
+	cols = append(cols, "sender")
+	vals = append(vals, sender)
 	b, err := json.Marshal(keysAndValues)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	vals = append(vals, b)
 	secondaryKey, ok := keysAndValues["log_instance_call_path"]
 	if ok {
-		cols = append(cols, "secondary_key")
+		cols = append(cols, "callpath")
 		vals = append(vals, secondaryKey)
 	}
 
@@ -61,12 +61,12 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey string, keysAndValues map[string]interface{}) ([]*logengine.LogEntry, error) {
-	query := fmt.Sprintf("SELECT timestamp, log_level, primary_key, secondary_key, log_entry FROM log_entries WHERE primary_key='%v' ", primaryKey)
+func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, sender string, keysAndValues map[string]interface{}) ([]*logengine.LogEntry, error) {
+	query := fmt.Sprintf("SELECT timestamp, log_level, sender, callpath, log_entry FROM log_entries WHERE sender='%v' ", sender)
 
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
-		query += fmt.Sprintf("AND secondary_key like '%s%%' ", prefix)
+		query += fmt.Sprintf("AND callpath like '%s%%' ", prefix)
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
@@ -109,9 +109,9 @@ func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey st
 }
 
 type gormLogMsg struct {
-	Timestamp    time.Time
-	LogLevel     int
-	PrimaryKey   string
-	SecondaryKey string
-	LogEntry     []byte
+	Timestamp time.Time
+	LogLevel  int
+	Sender    string
+	Callpath  string
+	LogEntry  []byte
 }

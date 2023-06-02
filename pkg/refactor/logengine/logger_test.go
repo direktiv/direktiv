@@ -26,7 +26,7 @@ func Test_Log(t *testing.T) {
 	tags["workflow"] = "someWfName"
 	ds.Errorf(context.Background(), id, tags, "test %s", "msg")
 	keysNValues := make(map[string]interface{})
-	got, err := ds.Store.Get(context.Background(), -1, -1, "someNsName/someWfName", keysNValues)
+	got, err := ds.Store.Get(context.Background(), -1, -1, id.String(), keysNValues)
 	if err != nil {
 		t.Error(err)
 	}
