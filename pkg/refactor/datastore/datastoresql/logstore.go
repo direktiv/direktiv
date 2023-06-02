@@ -12,49 +12,36 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	ns  = "namespace"
-	wf  = "workflow"
-	srv = "server"
-	ins = "instance"
-	mir = "mirror"
-)
-
 var _ logengine.LogStore = &sqlLogStore{} // Ensures SQLLogStore struct conforms to logengine.LogStore interface.
 
 type sqlLogStore struct {
 	db *gorm.DB
 }
 
-func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, keysAndValues map[string]interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, primaryKey string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "oid", "t", "level", "msg")
-	vals = append(vals, uuid.New(), timestamp, level, msg)
-	databaseCols := []string{
-		"instance_logs",
-		"log_instance_call_path",
-		"root_instance_id",
-		"workflow_id",
-		"namespace_logs",
-		"mirror_activity_id",
-	}
-	for _, k := range databaseCols {
-		if v, ok := keysAndValues[k]; ok {
-			cols = append(cols, k)
-			vals = append(vals, v)
-		}
-	}
+	keysAndValues["msg"] = msg
+	cols = append(cols, "oid", "t", "level")
+	vals = append(vals, uuid.New(), timestamp, level)
+	cols = append(cols, "key")
+	vals = append(vals, primaryKey)
 	if len(keysAndValues) > 0 {
 		b, err := json.Marshal(keysAndValues)
 		if err != nil {
 			return err
 		}
-		cols = append(cols, "tags")
+		cols = append(cols, "entry")
 		vals = append(vals, b)
 	}
-	q := "INSERT INTO log_msgs ("
+	secondaryKey, ok := keysAndValues["log_instance_call_path"]
+	if ok {
+		cols = append(cols, "secondary_key")
+		vals = append(vals, secondaryKey)
+	}
+
+	q := "INSERT INTO log_msgs_v2 ("
 	qTail := "VALUES ("
 	for i := range vals {
 		q += fmt.Sprintf(cols[i])
@@ -76,36 +63,26 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
-	wEq := []string{}
-	if keysAndValues["sender_type"] == srv {
-		wEq = append(wEq, "workflow_id IS NULL")
-		wEq = append(wEq, "namespace_logs IS NULL")
-		wEq = append(wEq, "instance_logs IS NULL")
-	}
-	databaseCols := []string{
-		"instance_logs",
-		"root_instance_id",
-		"workflow_id",
-		"namespace_logs",
-		"mirror_activity_id",
-	}
-	for _, k := range databaseCols {
-		if v, ok := keysAndValues[k]; ok {
-			wEq = append(wEq, fmt.Sprintf("%s = '%s'", k, v))
-		}
+func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey string, keysAndValues map[string]interface{}) ([]*logengine.LogEntry, error) {
+	query := fmt.Sprintf("SELECT t, level, key, secondary_key, entry FROM log_msgs_v2 WHERE key='%v' ", primaryKey)
+
+	prefix, ok := keysAndValues["log_instance_call_path"]
+	if ok {
+		query += fmt.Sprintf("AND secondary_key like '%s%%' ", prefix)
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		wEq = append(wEq, fmt.Sprintf("level >= '%v' ", level))
+		query += fmt.Sprintf("AND level>='%v' ", level)
 	}
-	prefix, ok := keysAndValues["log_instance_call_path"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
+	query += "ORDER BY t ASC "
+
+	if limit > 0 {
+		query += fmt.Sprintf(" LIMIT %d ", limit)
 	}
-
-	query := composeQuery(limit, offset, wEq)
-
+	if offset > 0 {
+		query += fmt.Sprintf(" OFFSET %d ", offset)
+	}
+	query += ";"
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
 	if tx.Error != nil {
@@ -114,16 +91,18 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		err := json.Unmarshal(e.Tags, &m)
+		err := json.Unmarshal(e.Entry, &m)
 		if err != nil {
 			return nil, err
 		}
 
 		levels := []string{"debug", "info", "error"}
 		m["level"] = levels[e.Level]
+		msg := fmt.Sprintf("%v", m["msg"])
+		delete(m, "msg")
 		convertedList = append(convertedList, &logengine.LogEntry{
 			T:      e.T,
-			Msg:    e.Msg,
+			Msg:    msg,
 			Fields: m,
 		})
 	}
@@ -131,36 +110,10 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	return convertedList, nil
 }
 
-func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
-	FROM log_msgs `
-	q += "WHERE "
-	for i, e := range wEq {
-		q += e
-		if i+1 < len(wEq) {
-			q += " AND "
-		}
-	}
-	q += " ORDER BY t ASC"
-	if limit > 0 {
-		q += fmt.Sprintf(" LIMIT %d ", limit)
-	}
-	if offset > 0 {
-		q += fmt.Sprintf(" OFFSET %d ", offset)
-	}
-
-	return q + ";"
-}
-
 type gormLogMsg struct {
-	T                   time.Time
-	Msg                 string
-	Level               int
-	Tags                []byte
-	WorkflowID          string
-	MirrorActivityID    string
-	InstanceLogs        string
-	NamespaceLogs       string
-	RootInstanceID      string
-	LogInstanceCallPath string
+	T            time.Time
+	Level        int
+	Key          string
+	SecondaryKey string
+	Entry        []byte
 }

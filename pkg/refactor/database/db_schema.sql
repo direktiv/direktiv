@@ -91,19 +91,13 @@ CREATE TABLE IF NOT EXISTS "secrets" (
 );
 
 
--- TODO: alex this table schema need have not null modifiers.
-CREATE TABLE IF NOT EXISTS "log_msgs" (
-    "oid" uuid,
-    "t" timestamptz,
-    "msg" text,
-    "level" integer,
-    "root_instance_id" uuid,
-    "log_instance_call_path" text,
-    "tags" jsonb,
-    "workflow_id" uuid,
-    "mirror_activity_id" uuid,
-    "instance_logs" text,
-    "namespace_logs" text,
+CREATE TABLE IF NOT EXISTS "log_msgs_v2" (
+    "oid" uuid NOT NULL,
+    "t" timestamptz NOT NULL,
+    "level" integer NOT NULL,
+    "key" text NOT NULL,
+    "secondary_key" text,
+    "entry" jsonb NOT NULL,
     PRIMARY KEY ("oid")
 );
 

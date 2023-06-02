@@ -22,10 +22,11 @@ func Test_Log(t *testing.T) {
 	tags := make(map[string]interface{})
 	id := uuid.New()
 	tags["workflow_id"] = id
+	tags["namespace"] = "someNsName"
+	tags["workflow"] = "someWfName"
 	ds.Errorf(context.Background(), id, tags, "test %s", "msg")
 	keysNValues := make(map[string]interface{})
-	keysNValues["workflow_id"] = id
-	got, err := ds.Store.Get(context.Background(), keysNValues, -1, -1)
+	got, err := ds.Store.Get(context.Background(), -1, -1, "someNsName/someWfName", keysNValues)
 	if err != nil {
 		t.Error(err)
 	}

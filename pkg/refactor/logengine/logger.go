@@ -91,30 +91,48 @@ type DataStoreBetterLogger struct {
 }
 
 func (s DataStoreBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
 	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Debug, fmt.Sprintf(msg, a...), tags)
+	_ = recipientID
+	err := s.Store.Append(context.Background(), time.Now(), Debug, fmt.Sprintf(msg, a...), constructKey(tags), tags)
 	if err != nil {
 		s.LogError("writing better-logs to the database", "error", err)
 	}
 }
 
 func (s DataStoreBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
 	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Info, fmt.Sprintf(msg, a...), tags)
+	_ = recipientID
+	err := s.Store.Append(context.Background(), time.Now(), Info, fmt.Sprintf(msg, a...), constructKey(tags), tags)
 	if err != nil {
 		s.LogError("writing better-logs to the database", "error", err)
 	}
 }
 
 func (s DataStoreBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
 	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Error, fmt.Sprintf(msg, a...), tags)
+	_ = recipientID
+	err := s.Store.Append(context.Background(), time.Now(), Error, fmt.Sprintf(msg, a...), constructKey(tags), tags)
 	if err != nil {
 		s.LogError("writing better-logs to the database", "error", err)
 	}
+}
+
+func constructKey(tags map[string]interface{}) string {
+	key := "server"
+	if v, ok := tags["namespace"]; ok {
+		key = fmt.Sprintf("%v", v)
+	}
+	if v, ok := tags["workflow"]; ok {
+		key += fmt.Sprintf("/%v", v)
+	}
+	if v, ok := tags["instance"]; ok {
+		key += fmt.Sprintf("%v", v)
+	}
+	if v, ok := tags["mirror"]; ok {
+		key += fmt.Sprintf("%v", v)
+	}
+
+	return key
 }
 
 // NotifierBetterLogger is a pseudo action logger that doesn't log any information, instead it calls a callback

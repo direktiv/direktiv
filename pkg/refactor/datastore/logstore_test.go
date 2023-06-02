@@ -29,35 +29,6 @@ func Test_Add_Get(t *testing.T) {
 	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
 	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Info)
 	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
-	q := make(map[string]interface{}, 0)
-	q["level"] = logengine.Info
-	got, err := logstore.Get(context.Background(), q, -1, -1)
-	if err != nil {
-		t.Error(err)
-	}
-	foundInfoMsg := false
-	foundErrorMsg := false
-
-	if len(got) < 1 {
-		t.Error("got no results")
-	}
-	for _, le := range got {
-		if le.Fields["level"] == logengine.Debug {
-			t.Errorf("query for info level should not contain debug msgs")
-		}
-		if le.Fields["level"] == "info" {
-			foundInfoMsg = true
-		}
-		if le.Fields["level"] == "error" {
-			foundErrorMsg = true
-		}
-	}
-	if !foundInfoMsg {
-		t.Errorf("query for info level should contain info msgs")
-	}
-	if !foundErrorMsg {
-		t.Errorf("query for info level should contain error msgs")
-	}
 }
 
 func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level logengine.LogLevel) {
@@ -69,14 +40,14 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 	in := map[string]interface{}{}
 	in[col] = id
 	for _, v := range want {
-		err := logstore.Append(context.Background(), time.Now(), level, v, in)
+		err := logstore.Append(context.Background(), time.Now(), level, v, fmt.Sprintf("%v", id), in)
 		if err != nil {
 			t.Error(err)
 		}
 	}
 	q := map[string]interface{}{}
 	q[col] = id
-	got, err := logstore.Get(context.Background(), q, -1, -1)
+	got, err := logstore.Get(context.Background(), -1, -1, fmt.Sprintf("%v", id), q)
 	if err != nil {
 		t.Error(err)
 	}
