@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     CONSTRAINT "fk_filesystem_files_runtime_variables"
     FOREIGN KEY ("workflow_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 
-    -- TODO add instance_id FOREIGN KEY.
+    -- TODO: alan, please add instance_id FOREIGN KEY.
 );
 
 

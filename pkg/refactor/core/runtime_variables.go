@@ -40,28 +40,25 @@ type RuntimeVariablesStore interface {
 	GetByReferenceAndName(ctx context.Context, referenceID uuid.UUID, name string) (*RuntimeVariable, error)
 
 	// ListByInstanceID gets all runtime variable entries from store that are linked to specific instance id
-	// if no record found, it returns datastore.ErrNotFound error.
 	ListByInstanceID(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
 
 	// ListByWorkflowID gets all runtime variable entries from store that are linked to specific workflow id
-	// if no record found, it returns datastore.ErrNotFound error.
 	ListByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]*RuntimeVariable, error)
 
 	// ListByNamespaceID gets all runtime variable entries from store that are linked to specific namespace id
-	// if no record found, it returns datastore.ErrNotFound error.
 	ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)
 
 	// Set tries to update runtime variable data and mimetype fields or insert a new one if no matching variable to
 	// update. Param variable should have one reference field set and name field set.
 	Set(ctx context.Context, variable *RuntimeVariable) (*RuntimeVariable, error)
 
-	// SetName updates a variable name.
+	// SetName updates a variable name. if no record found it returns datastore.ErrNotFound error.
 	SetName(ctx context.Context, id uuid.UUID, name string) (*RuntimeVariable, error)
 
-	// Delete removes the whole entry from store.
+	// Delete removes the whole entry from store. if no record found it returns datastore.ErrNotFound error.
 	Delete(ctx context.Context, id uuid.UUID) error
 
-	// LoadData reads data field of a variable.
+	// LoadData reads data field of a variable. if no record found it returns datastore.ErrNotFound error.
 	LoadData(ctx context.Context, id uuid.UUID) ([]byte, error)
 }
 

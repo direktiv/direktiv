@@ -144,8 +144,11 @@ func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, na
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted runtime_variables delete count, got: %d, want: %d", res.RowsAffected, 1)
+	if res.RowsAffected == 0 {
+		return nil, datastore.ErrNotFound
+	}
+	if res.RowsAffected > 1 {
+		return nil, fmt.Errorf("unexpedted runtime_variables update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return s.GetByID(ctx, id)
@@ -158,7 +161,10 @@ func (s *sqlRuntimeVariablesStore) Delete(ctx context.Context, id uuid.UUID) err
 	if res.Error != nil {
 		return res.Error
 	}
-	if res.RowsAffected != 1 {
+	if res.RowsAffected == 0 {
+		return datastore.ErrNotFound
+	}
+	if res.RowsAffected > 1 {
 		return fmt.Errorf("unexpedted runtime_variables delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
