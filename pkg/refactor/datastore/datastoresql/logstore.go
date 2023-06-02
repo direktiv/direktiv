@@ -23,25 +23,23 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
 	keysAndValues["msg"] = msg
-	cols = append(cols, "oid", "t", "level")
+	cols = append(cols, "id", "timestamp", "log_level")
 	vals = append(vals, uuid.New(), timestamp, level)
-	cols = append(cols, "key")
+	cols = append(cols, "primary_key")
 	vals = append(vals, primaryKey)
-	if len(keysAndValues) > 0 {
-		b, err := json.Marshal(keysAndValues)
-		if err != nil {
-			return err
-		}
-		cols = append(cols, "entry")
-		vals = append(vals, b)
+	b, err := json.Marshal(keysAndValues)
+	if err != nil {
+		return err
 	}
+	cols = append(cols, "log_entry")
+	vals = append(vals, b)
 	secondaryKey, ok := keysAndValues["log_instance_call_path"]
 	if ok {
 		cols = append(cols, "secondary_key")
 		vals = append(vals, secondaryKey)
 	}
 
-	q := "INSERT INTO log_msgs_v2 ("
+	q := "INSERT INTO log_entries ("
 	qTail := "VALUES ("
 	for i := range vals {
 		q += fmt.Sprintf(cols[i])
@@ -64,7 +62,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 }
 
 func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey string, keysAndValues map[string]interface{}) ([]*logengine.LogEntry, error) {
-	query := fmt.Sprintf("SELECT t, level, key, secondary_key, entry FROM log_msgs_v2 WHERE key='%v' ", primaryKey)
+	query := fmt.Sprintf("SELECT timestamp, log_level, primary_key, secondary_key, log_entry FROM log_entries WHERE primary_key='%v' ", primaryKey)
 
 	prefix, ok := keysAndValues["log_instance_call_path"]
 	if ok {
@@ -72,9 +70,9 @@ func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey st
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		query += fmt.Sprintf("AND level>='%v' ", level)
+		query += fmt.Sprintf("AND log_level>='%v' ", level)
 	}
-	query += "ORDER BY t ASC "
+	query += "ORDER BY timestamp ASC "
 
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d ", limit)
@@ -91,17 +89,17 @@ func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey st
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		err := json.Unmarshal(e.Entry, &m)
+		err := json.Unmarshal(e.LogEntry, &m)
 		if err != nil {
 			return nil, err
 		}
 
 		levels := []string{"debug", "info", "error"}
-		m["level"] = levels[e.Level]
+		m["level"] = levels[e.LogLevel]
 		msg := fmt.Sprintf("%v", m["msg"])
 		delete(m, "msg")
 		convertedList = append(convertedList, &logengine.LogEntry{
-			T:      e.T,
+			T:      e.Timestamp,
 			Msg:    msg,
 			Fields: m,
 		})
@@ -111,9 +109,9 @@ func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, primaryKey st
 }
 
 type gormLogMsg struct {
-	T            time.Time
-	Level        int
-	Key          string
+	Timestamp    time.Time
+	LogLevel     int
+	PrimaryKey   string
 	SecondaryKey string
-	Entry        []byte
+	LogEntry     []byte
 }

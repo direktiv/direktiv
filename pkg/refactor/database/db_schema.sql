@@ -91,14 +91,14 @@ CREATE TABLE IF NOT EXISTS "secrets" (
 );
 
 
-CREATE TABLE IF NOT EXISTS "log_msgs_v2" (
-    "oid" uuid NOT NULL,
-    "t" timestamptz NOT NULL,
-    "level" integer NOT NULL,
-    "key" text NOT NULL,
+CREATE TABLE IF NOT EXISTS "log_entries" (
+    "id" uuid NOT NULL,
+    "timestamp" timestamptz NOT NULL,
+    "log_level" integer NOT NULL,
+    "primary_key" text NOT NULL,
     "secondary_key" text,
-    "entry" jsonb NOT NULL,
-    PRIMARY KEY ("oid")
+    "log_entry" jsonb NOT NULL,
+    PRIMARY KEY ("id")
 );
 
 
