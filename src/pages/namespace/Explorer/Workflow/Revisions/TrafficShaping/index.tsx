@@ -73,7 +73,7 @@ const TrafficShaping: FC = () => {
   return (
     <>
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <Network />
+        <Network className="h-5" />
         {t("pages.explorer.tree.workflow.revisions.trafficShaping.title")}
       </h3>
       <Card
