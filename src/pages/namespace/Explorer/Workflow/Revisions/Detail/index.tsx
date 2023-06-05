@@ -1,24 +1,27 @@
 import { ArrowLeft, GitMerge, Tag, Undo } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
+import Revert from "../Overview/List/Revert";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useNodeTags } from "~/api/tree/query/tags";
+import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
 const WorkflowRevisionsPage = () => {
   const namespace = useNamespace();
-
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { revision: selectedRevision, path } = pages.explorer.useParams();
   const theme = useTheme();
+  const { revision: selectedRevision, path } = pages.explorer.useParams();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { data } = useNodeContent({
     path,
     revision: selectedRevision,
@@ -30,9 +33,7 @@ const WorkflowRevisionsPage = () => {
 
   const Icon = isTag ? Tag : GitMerge;
 
-  if (!namespace) return null;
-  if (!selectedRevision) return null;
-  if (!workflowData) return null;
+  if (!path || !namespace || !selectedRevision || !workflowData) return null;
 
   const backLink = pages.explorer.createHref({
     namespace,
@@ -75,12 +76,25 @@ const WorkflowRevisionsPage = () => {
           <ArrowLeft />
           {t("pages.explorer.tree.workflow.revisions.overview.detail.backBtn")}
         </Button>
-        <Button variant="outline">
-          <Undo />
-          {t(
-            "pages.explorer.tree.workflow.revisions.overview.detail.revertBtn"
-          )}
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Undo />
+              {t(
+                "pages.explorer.tree.workflow.revisions.overview.detail.revertBtn"
+              )}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <Revert
+              path={path}
+              revision={{ name: selectedRevision }}
+              close={() => {
+                setDialogOpen(false);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
       <Card className="grow p-4">
         <Editor
