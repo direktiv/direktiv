@@ -38,7 +38,7 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 	res := q.db.WithContext(ctx).Raw(`
 						SELECT path 
 						FROM filesystem_files 
-						WHERE root_id = ?;
+						WHERE root_id = ?
 						`, q.rootID).Find(&allPaths)
 	if res.Error != nil {
 		return res.Error

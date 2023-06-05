@@ -63,7 +63,7 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
-					FROM filesystem_roots;
+					FROM filesystem_roots
 					`).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error

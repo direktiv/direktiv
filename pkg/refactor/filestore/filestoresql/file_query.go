@@ -102,7 +102,7 @@ func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filesto
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_revisions
-					WHERE id=?;
+					WHERE id=?
 					`, id).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -186,7 +186,7 @@ func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_revisions
-					WHERE file_id=? AND is_current=true;
+					WHERE file_id=? AND is_current=true
 					`, q.file.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error

@@ -35,7 +35,7 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_revisions 
-					WHERE id=?;
+					WHERE id=?
 					`, q.rev.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -50,7 +50,7 @@ func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags
 	res := q.db.WithContext(ctx).Exec(`
 					UPDATE filesystem_revisions 
 					SET tags=? 
-					WHERE id=?;
+					WHERE id=?
 					`, tags, q.rev.ID)
 	if res.Error != nil {
 		return res.Error
@@ -67,7 +67,7 @@ func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, er
 	res := q.db.WithContext(ctx).Exec(`
 				UPDATE filesystem_revisions 
 				SET is_current=false
-				WHERE is_current=true AND file_id=?;
+				WHERE is_current=true AND file_id=?
 				`, q.rev.FileID)
 	if res.Error != nil {
 		return nil, res.Error
