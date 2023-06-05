@@ -1,15 +1,19 @@
+import { ArrowLeft, Undo } from "lucide-react";
+
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
-import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 
 const WorkflowRevisionsPage = () => {
   const namespace = useNamespace();
 
+  const navigate = useNavigate();
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const theme = useTheme();
   const { data } = useNodeContent({
@@ -32,8 +36,7 @@ const WorkflowRevisionsPage = () => {
   return (
     <div className="flex grow flex-col space-y-4">
       <div className="flex gap-x-4">
-        <Link to={backLink}>go back</Link>
-        <h3 className="group flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+        <h3 className="group flex grow items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
           {selectedRevision}
           <CopyButton
             value={selectedRevision}
@@ -46,6 +49,20 @@ const WorkflowRevisionsPage = () => {
             {(copied) => (copied ? "copied" : "copy")}
           </CopyButton>
         </h3>
+        {/* TODO: change to a Link as soon out Button component support asChild prop (DIR-597) */}
+        <Button
+          variant="outline"
+          onClick={() => {
+            navigate(backLink);
+          }}
+        >
+          <ArrowLeft />
+          Go Back Revisions List
+        </Button>
+        <Button variant="outline">
+          <Undo />
+          Revert to this revision
+        </Button>
       </div>
       <Card className="grow p-4">
         <Editor
