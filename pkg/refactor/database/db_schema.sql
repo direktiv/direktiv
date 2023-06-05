@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     PRIMARY KEY ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "event_subscribers" (
+CREATE TABLE IF NOT EXISTS "event_listeners" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
