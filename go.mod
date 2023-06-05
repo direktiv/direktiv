@@ -27,6 +27,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.15.1
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
@@ -53,7 +54,7 @@ require (
 	gorm.io/driver/postgres v1.5.0
 	gorm.io/gorm v1.25.1
 	k8s.io/api v0.27.1
-	k8s.io/apimachinery v0.27.1
+	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.1
 	knative.dev/pkg v0.0.0-20230420071539-300df436f953
 	knative.dev/serving v0.37.0
@@ -126,7 +127,6 @@ require (
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
@@ -164,7 +164,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230426210814-b0c0aaee3cc0 // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
 	knative.dev/networking v0.0.0-20230419144338-e5d04e805e50 // indirect
 	modernc.org/libc v1.22.5 // indirect
