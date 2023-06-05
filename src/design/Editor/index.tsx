@@ -103,6 +103,7 @@ const Editor: FC<
           beforeMount={beforeMount}
           onMount={onMount}
           options={{
+            // options reference: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html
             scrollBeyondLastLine: false,
             cursorBlinking: "smooth",
             wordWrap: true,
