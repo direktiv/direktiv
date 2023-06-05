@@ -1,3 +1,5 @@
+import "./style.css";
+
 import { FC, useRef } from "react";
 
 import AutoSizer from "react-virtualized-auto-sizer";

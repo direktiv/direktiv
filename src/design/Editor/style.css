@@ -1,0 +1,4 @@
+.monaco-editor-overlaymessage {
+  /* remove "Cannot edit in read-only editor" tooltip */
+  display: none !important;
+}
