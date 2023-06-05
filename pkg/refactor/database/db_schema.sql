@@ -164,3 +164,36 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     CONSTRAINT "fk_namespaces_instances"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "events_history" (
+    "id" uuid,
+    "cloudevent" jsonb NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("id"),
+);
+
+CREATE TABLE IF NOT EXISTS "event_subscribers" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted" boolean NOT NULL DEFAULT 0,
+    "received_events" jsonb NOT NULL,
+    "events_lifespan" integer NOT NULL DEFAULT 0,
+    "needs_all"  boolean NOT NULL,
+    "workflow_id" uuid,
+    "instance_id" uuid,
+    "step" int,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "event_filters" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "name" text NOT NULL,
+    "jscode" text NOT NULL,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+);
