@@ -1,4 +1,4 @@
-import "./style.css";
+import "./styles.css";
 
 import { FC, useRef } from "react";
 
