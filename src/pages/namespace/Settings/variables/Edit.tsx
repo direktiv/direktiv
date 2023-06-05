@@ -5,6 +5,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import MimeTypeSelect, {
+  MimeTypeSchema,
+  MimeTypeType,
+  mimeTypeToLanguageDict,
+} from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import {
@@ -16,7 +21,6 @@ import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
-import MimeTypeSelect from "./MimeTypeSelect";
 import { Trash } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
@@ -28,6 +32,11 @@ type EditProps = {
   onSuccess: () => void;
 };
 
+// mimeType defaults to text/plain to avoid backend defaulting to
+// "text/plain, charset=utf-8", which does not fit the options in
+// MimeTypeSelect
+const defaultMimeType: MimeTypeType = "text/plain";
+
 const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -35,28 +44,40 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const varContent = useVarContent(item.name);
 
   const [body, setBody] = useState<string | undefined>();
-  const [mimeType, setMimeType] = useState<string | undefined>();
+  const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [editorLanguage, setEditorLanguage] = useState<string>("");
 
   const { handleSubmit } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
-    // mimeType defaults to text/plain to avoid backend defaulting to
-    // "text/plain, charset=utf-8", which does not fit the options in
-    // MimeTypeSelect
     values: {
       name: item.name,
       content: body ?? "",
-      mimeType: mimeType ?? "text/plain",
+      mimeType: mimeType,
     },
   });
 
   useEffect(() => {
     if (!isInitialized && varContent.isFetched) {
       setBody(varContent.data?.body);
-      setMimeType(varContent.data?.headers["content-type"]);
+
+      const contentType = varContent.data?.headers["content-type"];
+
+      const safeParsedContentType = MimeTypeSchema.safeParse(contentType);
+      if (!safeParsedContentType.success) {
+        return console.error(
+          `Unexpected content-type, defaulting to ${defaultMimeType}`
+        );
+      }
+      setMimeType(safeParsedContentType.data);
+
       setIsInitialized(true);
     }
   }, [varContent, isInitialized]);
+
+  useEffect(() => {
+    setEditorLanguage(mimeTypeToLanguageDict[mimeType]);
+  }, [mimeType]);
 
   const { mutate: updateVarMutation } = useUpdateVar({
     onSuccess,
@@ -92,6 +113,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               }}
               theme={theme ?? undefined}
               data-testid="variable-editor"
+              language={editorLanguage}
             />
           </div>
 
