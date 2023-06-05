@@ -16,16 +16,6 @@ type Event struct {
 	Round      int       // this value MUST be increased if the event is passed back into the queue.
 }
 
-// acts as a staging area for all not yet processed cloud-events.
-type StagingEventsQueue interface {
-	// adds at least one and optionally multiple events to the queue.
-	Append(ctx context.Context, event *Event, more ...*Event) []error
-	// gets & removes all events from the queue.
-	PopAll(ctx context.Context) ([]*Event, error)
-	// gets & removes the first events from the queue.
-	PopFirst(ctx context.Context, amount int) ([]*Event, error)
-}
-
 // Persists events.
 type EventHistoryStore interface {
 	// adds at least one and optionally multiple events to the storage.
@@ -40,17 +30,17 @@ type EventHistoryStore interface {
 	DeleteOld(ctx context.Context, sinceWhen time.Time) error
 }
 
-// represents a subscription for one or multiple events with specific types.
-type EventSubscriber struct {
+// represents a listener for one or multiple events with specific types.
+type EventListener struct {
 	CreatedAt                   time.Time
 	UpdatedAt                   time.Time
 	Deleted                     bool        // set true to remove the subscription.
-	NamespaceID                 uuid.UUID   // the namespace to which the Subscriber belongs.
-	ListeningForEventTypes      []string    // the types of the event the Subscriber is waiting for to be triggered.
+	NamespaceID                 uuid.UUID   // the namespace to which the listener belongs.
+	ListeningForEventTypes      []string    // the types of the event the listener is waiting for to be triggered.
 	ReceivedEventsForAndTrigger []*Event    // events already received for the EventsAnd trigger.
 	LifespanOfReceivedEvents    int         // set 0 to omit the value.
 	NeedsAllEventTypes          bool        // set true for EventsAnd.
-	Trigger                     TriggerInfo // hold the information to decide what to do if the Subscriber has satisfied.
+	Trigger                     TriggerInfo // hold the information to decide what to do if the listener has satisfied.
 }
 
 type TriggerInfo struct {
@@ -59,18 +49,18 @@ type TriggerInfo struct {
 	Step       int       // optional fill for instance-waiting trigger.
 }
 
-type EventSubscriberStore interface {
-	// adds a EventSubscriber to the storage.
-	Append(ctx context.Context, subscriber *EventSubscriber) error
-	// updates the EventSubscribers.
-	Update(ctx context.Context, subscriber *EventSubscriber, more ...*EventSubscriber) (error, []error)
-	GetByID(ctx context.Context, id uuid.UUID) (*EventSubscriber, error)
-	GetAll(ctx context.Context) ([]*EventSubscriber, error)
-	// return all EventSubscribers for a given namespace.
-	Get(ctx context.Context, namespace uuid.UUID) ([]*EventSubscriber, error)
-	// returns all EventSubscribers for a given namespace that have a subscription for the given eventtype.
-	GetByTopic(ctx context.Context, namespace uuid.UUID, eventType string) ([]*EventSubscriber, error)
-	// deletes EventSubscribers that have the deleted flag set.
+type EventListenerStore interface {
+	// adds a EventListener to the storage.
+	Append(ctx context.Context, listener *EventListener) error
+	// updates the Eventlisteners.
+	Update(ctx context.Context, listener *EventListener, more ...*EventListener) (error, []error)
+	GetByID(ctx context.Context, id uuid.UUID) (*EventListener, error)
+	GetAll(ctx context.Context) ([]*EventListener, error)
+	// return all Eventlisteners for a given namespace.
+	Get(ctx context.Context, namespace uuid.UUID) ([]*EventListener, error)
+	// returns all Eventlisteners for a given namespace that have a subscription for the given eventtype.
+	GetByTopic(ctx context.Context, namespace uuid.UUID, eventType string) ([]*EventListener, error)
+	// deletes Eventlisteners that have the deleted flag set.
 	Delete(ctx context.Context) error
 	// deletes the entries associated with the given instance ID.
 	DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error
