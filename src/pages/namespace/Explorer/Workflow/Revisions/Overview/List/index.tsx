@@ -6,7 +6,7 @@ import { Card } from "~/design/Card";
 import CreateTag from "./CreateTag";
 import Delete from "./Delete";
 import { GitMerge } from "lucide-react";
-import Revert from "./Revert";
+import Revert from "../../components/Revert";
 import RevisionTableRow from "./Row";
 import type { TrimmedRevisionSchemaType } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";

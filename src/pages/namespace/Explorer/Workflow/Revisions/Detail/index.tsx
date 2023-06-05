@@ -5,7 +5,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
-import Revert from "../Overview/List/Revert";
+import Revert from "../components/Revert";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
