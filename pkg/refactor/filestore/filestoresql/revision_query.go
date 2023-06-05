@@ -32,7 +32,11 @@ func (q *RevisionQuery) Delete(ctx context.Context) error {
 
 func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").Where("id", q.rev.ID).First(rev)
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_revisions 
+					WHERE id=?;
+					`, q.rev.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -43,9 +47,11 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 }
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) error {
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("id", q.rev.ID).
-		Update("tags", tags)
+	res := q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_revisions 
+					SET tags=? 
+					WHERE id=?;
+					`, tags, q.rev.ID)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -58,10 +64,11 @@ func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags
 
 func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, error) {
 	// set current revisions 'is_current' flag to false.
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("file_id", q.rev.FileID).
-		Where("is_current", true).
-		Update("is_current", false)
+	res := q.db.WithContext(ctx).Exec(`
+				UPDATE filesystem_revisions 
+				SET is_current=false
+				WHERE is_current=true AND file_id=?;
+				`, q.rev.FileID)
 	if res.Error != nil {
 		return nil, res.Error
 	}
