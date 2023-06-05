@@ -48,7 +48,11 @@ const WorkflowRevisionsPage = () => {
         </h3>
       </div>
       <Card className="grow p-4">
-        <Editor value={workflowData} theme={theme ?? undefined} />
+        <Editor
+          value={workflowData}
+          theme={theme ?? undefined}
+          options={{ readOnly: true }}
+        />
       </Card>
     </div>
   );
