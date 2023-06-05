@@ -9,10 +9,12 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
+import { useTranslation } from "react-i18next";
 
 const WorkflowRevisionsPage = () => {
   const namespace = useNamespace();
 
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const theme = useTheme();
@@ -46,7 +48,15 @@ const WorkflowRevisionsPage = () => {
               size: "sm",
             }}
           >
-            {(copied) => (copied ? "copied" : "copy")}
+            {(copied) =>
+              copied
+                ? t(
+                    "pages.explorer.tree.workflow.revisions.overview.detail.copied"
+                  )
+                : t(
+                    "pages.explorer.tree.workflow.revisions.overview.detail.copy"
+                  )
+            }
           </CopyButton>
         </h3>
         {/* TODO: change to a Link as soon out Button component support asChild prop (DIR-597) */}
@@ -57,11 +67,13 @@ const WorkflowRevisionsPage = () => {
           }}
         >
           <ArrowLeft />
-          Go Back Revisions List
+          {t("pages.explorer.tree.workflow.revisions.overview.detail.backBtn")}
         </Button>
         <Button variant="outline">
           <Undo />
-          Revert to this revision
+          {t(
+            "pages.explorer.tree.workflow.revisions.overview.detail.revertBtn"
+          )}
         </Button>
       </div>
       <Card className="grow p-4">
