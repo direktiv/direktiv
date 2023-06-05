@@ -1,12 +1,13 @@
+import {
+  ArraySchemaSample,
+  CustomArraySample,
+  FunctionSchema,
+  SimpleSample,
+} from "./jsonSchema";
 import type { Meta, StoryObj } from "@storybook/react";
 import { JSONSchemaForm } from "../JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
-import {
-  FunctionSchema,
-  FunctionSchemaNamespace,
-  FunctionSchemaReusable,
-  StateSchemaDelay,
-} from "./jsonSchema";
+
 const meta = {
   title: "Components/JSONSchemaForm",
   component: JSONSchemaForm,
@@ -51,18 +52,18 @@ export const Default: Story = {
   tags: ["autodocs"],
 };
 
-export const FunctionSchemaNamespaceForm = () => (
-  <JSONSchemaForm schema={FunctionSchemaNamespace} />
+export const ArraySchemaSampleForm = () => (
+  <JSONSchemaForm schema={ArraySchemaSample} />
 );
 
-export const FunctionSchemaReusableForm = () => (
-  <JSONSchemaForm schema={FunctionSchemaReusable as RJSFSchema} />
+export const CustomArraySampleForm = () => (
+  <JSONSchemaForm schema={CustomArraySample} />
 );
 
-export const FunctionSchemaSubflowForm = () => (
-  <JSONSchemaForm schema={FunctionSchema as RJSFSchema} />
+export const SampleFormWithFileInput = () => (
+  <JSONSchemaForm schema={SimpleSample} />
 );
 
-export const StateSchemaDelayForm = () => (
-  <JSONSchemaForm schema={StateSchemaDelay as unknown as RJSFSchema} />
+export const FunctionSchemaForm = () => (
+  <JSONSchemaForm schema={FunctionSchema as unknown as RJSFSchema} />
 );

@@ -1,0 +1,12 @@
+.array-item {
+  margin-bottom: 40px;
+}
+.array-item .col-xs-9 {
+  width: 75%;
+}
+.array-item .col-xs-3 {
+  width: 25%;
+}
+.col-xs-3.array-item-toolbox {
+  float: right;
+}
