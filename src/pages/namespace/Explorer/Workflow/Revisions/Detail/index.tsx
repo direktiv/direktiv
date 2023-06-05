@@ -30,7 +30,7 @@ const WorkflowRevisionsPage = () => {
   });
 
   return (
-    <div className="relative flex grow flex-col space-y-4 p-5">
+    <div className="flex grow flex-col space-y-4">
       <div className="flex gap-x-4">
         <Link to={backLink}>go back</Link>
         <h3 className="group flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
@@ -47,7 +47,7 @@ const WorkflowRevisionsPage = () => {
           </CopyButton>
         </h3>
       </div>
-      <Card className="h-96 grow p-4">
+      <Card className="grow p-4">
         <Editor value={workflowData} theme={theme ?? undefined} />
       </Card>
     </div>
