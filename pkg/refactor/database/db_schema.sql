@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     "cloudevent" jsonb NOT NULL,
     "namespace_id" uuid NOT NULL,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("id"),
+    PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "event_subscribers" (
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS "event_subscribers" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "event_filters" (
+CREATE TABLE IF NOT EXISTS "events_filters" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
     "name" text NOT NULL,
