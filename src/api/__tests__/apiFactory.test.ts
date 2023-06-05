@@ -27,6 +27,8 @@ const apiEndpointWithDynamicSegment = "http://localhost/this-is-dynamic/my-api";
 const apiEndpointEmptyResponse = "http://localhost/empty-response";
 const apiEndpointTextResponse = "http://localhost/text-response";
 const apiEndpointHeaders = "http://localhost/headers";
+const apiEndpointTextResponseWithHeaders = "http://localhost/text-and-headers";
+const apiEndpointJSONResponseWithHeaders = "http://localhost/json-and-headers";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -53,7 +55,22 @@ const testApi = setupServer(
   ),
   rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
-    res(ctx.json({ body: "this is a text response" }))
+    res(ctx.body("this is a text response"))
+  ),
+  rest.get(apiEndpointTextResponseWithHeaders, (_req, res, ctx) =>
+    res(
+      ctx.set("custom-header", "mock-value"),
+      ctx.body("this is a text response with headers")
+    )
+  ),
+  rest.get(apiEndpointJSONResponseWithHeaders, (_req, res, ctx) =>
+    res(
+      ctx.set("custom-header", "mock-value"),
+      ctx.json({
+        "some-key": "some data",
+        "another-key": "some other data",
+      })
+    )
   ),
   rest.post(apiEndpointPost, async (req, res, ctx) => {
     const body = await req.text();
@@ -106,6 +123,29 @@ const textResponse = apiFactory({
   url: () => apiEndpointTextResponse,
   method: "GET",
   schema: z.object({ body: z.string() }),
+});
+
+const textResponseWithHeaders = apiFactory({
+  url: () => apiEndpointTextResponseWithHeaders,
+  method: "GET",
+  schema: z.object({
+    body: z.string(),
+    headers: z.object({
+      "custom-header": z.string(),
+    }),
+  }),
+});
+
+const jsonResponseWithHeaders = apiFactory({
+  url: () => apiEndpointJSONResponseWithHeaders,
+  method: "GET",
+  schema: z.object({
+    "some-key": z.string(),
+    "another-key": z.string(),
+    headers: z.object({
+      "custom-header": z.string(),
+    }),
+  }),
 });
 
 const api404 = apiFactory({
@@ -237,6 +277,59 @@ describe("processApiResponse", () => {
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.data).toStrictEqual({
         body: "this is a text response",
+      });
+    });
+  });
+
+  test("api response is plain text with headers", async () => {
+    const useCall = () =>
+      useQuery({
+        queryKey: ["textResponseWithHeaders"],
+        queryFn: () =>
+          textResponseWithHeaders({
+            payload: undefined,
+            headers: undefined,
+            urlParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCall(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toStrictEqual({
+        body: "this is a text response with headers",
+        headers: {
+          "custom-header": "mock-value",
+        },
+      });
+    });
+  });
+
+  test("api response is json with headers", async () => {
+    const useCall = () =>
+      useQuery({
+        queryKey: ["jsonResponseWithHeaders"],
+        queryFn: () =>
+          jsonResponseWithHeaders({
+            payload: undefined,
+            headers: undefined,
+            urlParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCall(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toStrictEqual({
+        headers: {
+          "custom-header": "mock-value",
+        },
+        "some-key": "some data",
+        "another-key": "some other data",
       });
     });
   });
