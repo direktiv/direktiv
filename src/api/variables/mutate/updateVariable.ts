@@ -18,6 +18,8 @@ const updateVar = apiFactory({
   schema: VarUpdatedSchema,
 });
 
+// This mutation has two use cases: creating a variable and updating
+// a variable. Both use the same endpoint and verb in the backend API.
 export const useUpdateVar = ({
   onSuccess,
 }: {
@@ -48,6 +50,11 @@ export const useUpdateVar = ({
   return useMutation({
     mutationFn,
     onSuccess: (data, variables) => {
+      // Two cache invalidations are needed due to the current API,
+      // which uses the same endpoint for creating and editing.
+      // varContent needs a refresh after editing, varList needs a
+      // refresh after creating (the variable's content is not
+      // included in the list)
       queryClient.invalidateQueries(
         varKeys.varContent(namespace, {
           apiKey: apiKey ?? undefined,

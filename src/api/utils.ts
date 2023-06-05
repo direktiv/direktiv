@@ -82,7 +82,11 @@ export const apiFactory =
         if (textResult !== "") parsedResponse = { body: textResult };
       }
       try {
-        // if response has content, add headers, otherwise return null
+        // If response has content, add headers, otherwise return null.
+        // Note: merging headers and response like this is not optimal, but
+        // acceptable as an interim solution. In the long run, API should be
+        // updated to return all relevant data in the JSON payload, so
+        // consuming HTTP headers this way will no longer be needed.
         const headers = Object.fromEntries(res.headers);
         if (parsedResponse) {
           return schema.parse({ ...parsedResponse, headers });
