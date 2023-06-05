@@ -1,4 +1,4 @@
-import { ArrowLeft, Undo } from "lucide-react";
+import { ArrowLeft, GitMerge, Tag, Undo } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -8,6 +8,7 @@ import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
+import { useNodeTags } from "~/api/tree/query/tags";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -22,8 +23,12 @@ const WorkflowRevisionsPage = () => {
     path,
     revision: selectedRevision,
   });
-
+  const { data: tags } = useNodeTags({ path });
   const workflowData = data?.revision?.source && atob(data?.revision?.source);
+  const isTag =
+    tags?.results?.some((tag) => tag.name === selectedRevision) ?? false;
+
+  const Icon = isTag ? Tag : GitMerge;
 
   if (!namespace) return null;
   if (!selectedRevision) return null;
@@ -39,6 +44,7 @@ const WorkflowRevisionsPage = () => {
     <div className="flex grow flex-col space-y-4">
       <div className="flex gap-x-4">
         <h3 className="group flex grow items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Icon aria-hidden="true" className="h-5" />
           {selectedRevision}
           <CopyButton
             value={selectedRevision}
