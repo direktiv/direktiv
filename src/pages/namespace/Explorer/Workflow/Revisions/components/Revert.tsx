@@ -113,7 +113,6 @@ const Revert = ({
               updateWorkflow({ path, fileContent: workflowData });
             }
           }}
-          variant="destructive"
           loading={isLoading}
           data-testid="dialog-revert-revision-btn-submit"
         >
