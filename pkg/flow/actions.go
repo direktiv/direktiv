@@ -25,7 +25,7 @@ type actions struct {
 	grpc.UnimplementedActionsServer
 
 	conn   *libgrpc.ClientConn
-	client igrpc.FunctionsServiceClient
+	client igrpc.FunctionsClient
 }
 
 func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
@@ -38,7 +38,7 @@ func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
 		return nil, err
 	}
 
-	actions.client = igrpc.NewFunctionsServiceClient(actions.conn)
+	actions.client = igrpc.NewFunctionsClient(actions.conn)
 
 	actions.listener, err = net.Listen("tcp", ":4444")
 	if err != nil {

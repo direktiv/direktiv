@@ -21,7 +21,7 @@ const (
 	watcherTimeout = 60 * time.Minute
 )
 
-func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchFunctionsRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
+func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchFunctionsRequest, out igrpc.Functions_WatchFunctionsServer) error {
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		return fmt.Errorf("could not create fetch client: %w", err)
@@ -43,7 +43,7 @@ func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchFunctionsReque
 	}
 }
 
-func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels string, out igrpc.FunctionsService_WatchFunctionsServer) (bool, error) {
+func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels string, out igrpc.Functions_WatchFunctionsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
 
 	watch, err := cs.ServingV1().Services(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
@@ -88,7 +88,7 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 	}
 }
 
-func (is *functionsServer) WatchRevisions(in *igrpc.FunctionsWatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
+func (is *functionsServer) WatchRevisions(in *igrpc.FunctionsWatchRevisionsRequest, out igrpc.Functions_WatchRevisionsServer) error {
 	var revisionFilter string
 
 	if in.GetServiceName() == "" {
@@ -124,7 +124,7 @@ func (is *functionsServer) WatchRevisions(in *igrpc.FunctionsWatchRevisionsReque
 	}
 }
 
-func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.FunctionsService_WatchRevisionsServer) (bool, error) {
+func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels string, revisionFilter string, out igrpc.Functions_WatchRevisionsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
 
 	watch, err := cs.ServingV1().Revisions(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
@@ -210,7 +210,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 	}
 }
 
-func (is *functionsServer) WatchPods(in *igrpc.FunctionsWatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
+func (is *functionsServer) WatchPods(in *igrpc.FunctionsWatchPodsRequest, out igrpc.Functions_WatchPodsServer) error {
 	if in.GetServiceName() == "" {
 		return fmt.Errorf("service name can not be nil")
 	}
@@ -243,7 +243,7 @@ func (is *functionsServer) WatchPods(in *igrpc.FunctionsWatchPodsRequest, out ig
 	}
 }
 
-func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, out igrpc.FunctionsService_WatchPodsServer) (bool, error) {
+func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, out igrpc.Functions_WatchPodsServer) (bool, error) {
 	timeout := int64(watcherTimeout.Seconds())
 
 	watch, err := cs.CoreV1().Pods(functionsConfig.Namespace).Watch(context.Background(), metav1.ListOptions{
@@ -292,7 +292,7 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 	}
 }
 
-func (is *functionsServer) WatchLogs(in *igrpc.FunctionsWatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
+func (is *functionsServer) WatchLogs(in *igrpc.FunctionsWatchLogsRequest, out igrpc.Functions_WatchLogsServer) error {
 	if in.GetPodName() == "" {
 		return fmt.Errorf("pod name can not be nil")
 	}

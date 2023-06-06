@@ -73,7 +73,7 @@ type functionWorkflow struct {
 	Timeout       int
 }
 
-func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClient,
+func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsClient,
 	serviceName string,
 ) bool {
 	// search annotations
@@ -93,7 +93,7 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClien
 	return true
 }
 
-func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
+func reconstructScopedKnativeFunction(client igrpc.FunctionsClient,
 	serviceName string,
 ) error {
 	cr := igrpc.FunctionsReconstructFunctionRequest{
@@ -104,7 +104,7 @@ func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
 	return err
 }
 
-func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar *functionRequest) bool {
+func (engine *engine) isKnativeFunction(client igrpc.FunctionsClient, ar *functionRequest) bool {
 	// search annotations
 	a := make(map[string]string)
 	a[functions.ServiceHeaderName] = functions.SanitizeLabel(ar.Container.ID)
@@ -130,7 +130,7 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar 
 	return false
 }
 
-func createKnativeFunction(client igrpc.FunctionsServiceClient,
+func createKnativeFunction(client igrpc.FunctionsClient,
 	ir *functionRequest,
 ) error {
 	sz := int32(ir.Container.Size)
