@@ -85,7 +85,10 @@ const RevisionTableRow: FC<{
           </Badge>
         )}
       </TableCell>
-      <TableCell className="flex w-auto justify-end gap-x-3">
+      <TableCell
+        className="flex w-auto justify-end gap-x-3"
+        data-testid={`workflow-revisions-item-last-row-${revision.name}`}
+      >
         {!isLatest && (
           <CopyButton
             value={revision.name}
