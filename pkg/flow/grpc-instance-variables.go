@@ -12,7 +12,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
+
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -24,8 +25,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) getInstanceVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.InstanceVariable(ctx, cached.Instance.ID, key)
+func (srv *server) getInstanceVariable(ctx context.Context, instID uuid.UUID, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.InstanceVariable(ctx, instID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,8 +39,8 @@ func (srv *server) getInstanceVariable(ctx context.Context, cached *database.Cac
 	return vref, vdata, nil
 }
 
-func (srv *server) getThreadVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.ThreadVariable(ctx, cached.Instance.ID, key)
+func (srv *server) getThreadVariable(ctx context.Context, instID uuid.UUID, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.ThreadVariable(ctx, instID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,51 +53,62 @@ func (srv *server) getThreadVariable(ctx context.Context, cached *database.Cache
 	return vref, vdata, nil
 }
 
-func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, instance, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
-	id, err := uuid.Parse(instance)
+func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, instanceID, key string, load bool) (*database.CacheData, *enginerefactor.Instance, *database.VarRef, *database.VarData, error) {
+
+	id, err := uuid.Parse(instanceID)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	cached := new(database.CacheData)
-
-	err = srv.database.Instance(ctx, cached, id)
+	ns, err := srv.edb.NamespaceByName(ctx, namespace)
 	if err != nil {
-		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "Failed to resolve instance %s", instance)
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	fStore, _, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	tx, err := srv.flow.beginSqlTx(ctx)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
+	idata, err := tx.InstanceStore().ForInstanceID(id).GetSummary(ctx)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	cached.File = file
-	cached.Revision = revision
+	instance, err := enginerefactor.ParseInstanceData(idata)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	file, revision, err := tx.FileStore().GetRevision(ctx, idata.RevisionID)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	cached := &database.CacheData{
+		Namespace: ns,
+		File:      file,
+		Revision:  revision,
+	}
 
 	if cached.Namespace.Name != namespace {
-		return nil, nil, nil, os.ErrNotExist
+		return nil, nil, nil, nil, os.ErrNotExist
 	}
 
-	vref, vdata, err := srv.getInstanceVariable(ctx, cached, key, load)
+	vref, vdata, err := srv.getInstanceVariable(ctx, idata.ID, key, load)
 	if err != nil {
 		srv.logger.Errorf(ctx, srv.ID, srv.flow.GetAttributes(), "Failed to resolve variable")
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	return cached, vref, vdata, nil
+	return cached, instance, vref, vdata, nil
 }
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +116,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	var resp grpc.InstanceVariableResponse
 
 	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
+	resp.Instance = instance.Instance.ID.String()
 	resp.Key = vref.Name
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -131,28 +143,18 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		return err
 	}
 
-	cached := new(database.CacheData)
+	tx, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
-	err = internal.database.Instance(ctx, cached, instID)
+	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummary(ctx)
 	if err != nil {
 		return err
 	}
 
-	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback()
-
-	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
-	if err != nil {
-		return err
-	}
-
-	cached.File = file
-	cached.Revision = revision
-
-	vref, vdata, err := internal.getInstanceVariable(ctx, cached, req.GetKey(), true)
+	vref, vdata, err := internal.getInstanceVariable(ctx, idata.ID, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
@@ -227,28 +229,18 @@ func (internal *internal) ThreadVariableParcels(req *grpc.VariableInternalReques
 		return err
 	}
 
-	cached := new(database.CacheData)
+	tx, err := internal.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
-	err = internal.database.Instance(ctx, cached, instID)
+	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummary(ctx)
 	if err != nil {
 		return err
 	}
 
-	fStore, _, _, rollback, err := internal.flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback()
-
-	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
-	if err != nil {
-		return err
-	}
-
-	cached.File = file
-	cached.Revision = revision
-
-	vref, vdata, err := internal.getThreadVariable(ctx, cached, req.GetKey(), true)
+	vref, vdata, err := internal.getThreadVariable(ctx, idata.ID, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
@@ -311,7 +303,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 
 	ctx := srv.Context()
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return err
 	}
@@ -322,7 +314,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		resp := new(grpc.InstanceVariableResponse)
 
 		resp.Namespace = cached.Namespace.Name
-		resp.Instance = cached.Instance.ID.String()
+		resp.Instance = instance.Instance.ID.String()
 		resp.Key = vref.Name
 		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -358,14 +350,14 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	clients := flow.edb.Clients(ctx)
 
-	query := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(cached.Instance.ID)))
+	query := clients.VarRef.Query().Where(entvar.InstanceID(instance.Instance.ID))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -373,8 +365,8 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	}
 
 	resp := new(grpc.InstanceVariablesResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
+	resp.Namespace = instance.TelemetryInfo.NamespaceName
+	resp.Instance = instance.Instance.ID.String()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -409,19 +401,19 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 	phash := ""
 	nhash := ""
 
-	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstanceVariables(cached)
+	sub := flow.pubsub.SubscribeInstanceVariables(instance.Instance.ID)
 	defer flow.cleanup(sub.Close)
 
 resend:
 
 	clients := flow.edb.Clients(ctx)
 
-	query := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(cached.Instance.ID)))
+	query := clients.VarRef.Query().Where(entvar.InstanceID(instance.Instance.ID))
 
 	results, pi, err := paginate[*ent.VarRefQuery, *ent.VarRef](ctx, req.Pagination, query, variablesOrderings, variablesFilters)
 	if err != nil {
@@ -429,8 +421,8 @@ resend:
 	}
 
 	resp := new(grpc.InstanceVariablesResponse)
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
+	resp.Namespace = instance.TelemetryInfo.NamespaceName
+	resp.Instance = instance.Instance.ID.String()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = pi
 
@@ -483,7 +475,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 
 	key := req.GetKey()
 
-	cached, err := flow.getInstance(tctx, req.GetNamespace(), req.GetInstance())
+	instance, err := flow.getInstance(tctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance '%s'.", req.GetInstance())
 		return nil, err
@@ -492,9 +484,9 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), instance: instance}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Could not create / change instance variable.")
+		flow.logger.Errorf(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Could not create / change instance variable.")
 		return nil, err
 	}
 
@@ -504,16 +496,16 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Created instance variable '%s'.", key)
+		flow.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Created instance variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Updated instance variable '%s'.", key)
+		flow.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Updated instance variable '%s'.", key)
 	}
-	flow.pubsub.NotifyInstanceVariables(cached.Instance)
+	flow.pubsub.NotifyInstanceVariables(instance.Instance.ID)
 
 	var resp grpc.SetInstanceVariableResponse
 
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
+	resp.Namespace = instance.TelemetryInfo.NamespaceName
+	resp.Instance = instance.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -535,7 +527,6 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 
 	mimeType := req.GetMimeType()
-	instance := req.GetInstance()
 	key := req.GetKey()
 
 	totalSize := int(req.GetTotalSize())
@@ -587,7 +578,7 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	}
 	defer rollback(tx)
 
-	cached, err := internal.getInstance(tctx, instance)
+	instance, err := internal.getInstance(tctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -595,29 +586,29 @@ func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, true)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), instance: instance}, key, buf.Bytes(), mimeType, true)
 	if err != nil {
-		internal.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Could not create / change thread variable")
+		internal.logger.Errorf(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Could not create / change thread variable")
 		return err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		internal.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Could not create / change thread variable '%s'.", key)
+		internal.logger.Errorf(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Could not create / change thread variable '%s'.", key)
 		return err
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Created thread variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Created thread variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Updated thread variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Updated thread variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyInstanceVariables(cached.Instance) // what do we do about this for thread variables?
+	internal.pubsub.NotifyInstanceVariables(instance.Instance.ID) // what do we do about this for thread variables?
 
 	var resp grpc.SetVariableInternalResponse
 
-	resp.Instance = cached.Instance.ID.String()
+	resp.Instance = instance.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -644,7 +635,6 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	mimeType := req.GetMimeType()
-	instance := req.GetInstance()
 	key := req.GetKey()
 
 	totalSize := int(req.GetTotalSize())
@@ -696,7 +686,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 	defer rollback(tx)
 
-	cached, err := internal.getInstance(tctx, instance)
+	instance, err := internal.getInstance(tctx, req.GetInstance())
 	if err != nil {
 		internal.logger.Errorf(ctx, internal.ID, internal.flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
 		return err
@@ -705,9 +695,9 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), cached: cached}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entInstanceVarQuerier{clients: internal.edb.Clients(tctx), instance: instance}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
-		internal.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Could not create or update instance variable '%s'.", key)
+		internal.logger.Errorf(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Could not create or update instance variable '%s'.", key)
 		return err
 	}
 
@@ -717,16 +707,16 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Created instance variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Created instance variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Updated instance variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Updated instance variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyInstanceVariables(cached.Instance)
+	internal.pubsub.NotifyInstanceVariables(instance.Instance.ID)
 
 	var resp grpc.SetVariableInternalResponse
 
-	resp.Instance = cached.Instance.ID.String()
+	resp.Instance = instance.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -754,7 +744,6 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 
 	mimeType := req.GetMimeType()
 	namespace := req.GetNamespace()
-	instance := req.GetInstance()
 	key := req.GetKey()
 
 	totalSize := int(req.GetTotalSize())
@@ -806,7 +795,7 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 	defer rollback(tx)
 
-	cached, err := flow.getInstance(tctx, namespace, instance)
+	instance, err := flow.getInstance(tctx, namespace, req.GetInstance())
 	if err != nil {
 		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
 		return err
@@ -815,9 +804,9 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	var vdata *ent.VarData
 	var newVar bool
 
-	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), cached: cached}, key, req.GetData(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entInstanceVarQuerier{clients: flow.edb.Clients(tctx), instance: instance}, key, req.GetData(), mimeType, false)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Could not create / change instance variable '%s'.", key)
+		flow.logger.Errorf(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Could not create / change instance variable '%s'.", key)
 		return err
 	}
 
@@ -827,17 +816,17 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	}
 
 	if newVar {
-		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Created instance variable '%s'.", key)
+		flow.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Created instance variable '%s'.", key)
 	} else {
-		flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Updated instance variable '%s'.", key)
+		flow.logger.Infof(ctx, instance.Instance.ID, instance.GetAttributes(recipient.Instance), "Updated instance variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyInstanceVariables(cached.Instance)
+	flow.pubsub.NotifyInstanceVariables(instance.Instance.ID)
 
 	var resp grpc.SetInstanceVariableResponse
 
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
+	resp.Namespace = instance.TelemetryInfo.NamespaceName
+	resp.Instance = instance.Instance.ID.String()
 	resp.Key = key
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -862,7 +851,7 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 	}
 	defer rollback(tx)
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(tctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), false)
+	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(tctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -871,14 +860,14 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 
 	err = clients.VarRef.DeleteOneID(vref.ID).Exec(ctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Failed to delete instance variable ID '%s'.", vref.Name)
+		flow.logger.Errorf(ctx, instance.Instance.ID, cached.GetAttributes(recipient.Instance), "Failed to delete instance variable ID '%s'.", vref.Name)
 		return nil, err
 	}
 
 	if vdata.RefCount == 0 {
 		err = clients.VarData.DeleteOneID(vdata.ID).Exec(ctx)
 		if err != nil {
-			flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Failed to delete instance variable data '%s'.", vref.Name)
+			flow.logger.Errorf(ctx, instance.Instance.ID, cached.GetAttributes(recipient.Instance), "Failed to delete instance variable data '%s'.", vref.Name)
 			return nil, err
 		}
 	}
@@ -888,8 +877,8 @@ func (flow *flow) DeleteInstanceVariable(ctx context.Context, req *grpc.DeleteIn
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Deleted instance variable '%s'.", vref.Name)
-	flow.pubsub.NotifyInstanceVariables(cached.Instance)
+	flow.logger.Infof(ctx, instance.Instance.ID, cached.GetAttributes(recipient.Instance), "Deleted instance variable '%s'.", vref.Name)
+	flow.pubsub.NotifyInstanceVariables(instance.Instance.ID)
 
 	// Broadcast Event
 	broadcastInput := broadcastVariableInput{
@@ -917,7 +906,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 	}
 	defer rollback(tx)
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(tctx, req.GetNamespace(), req.GetInstance(), req.GetOld(), false)
+	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(tctx, req.GetNamespace(), req.GetInstance(), req.GetOld(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -926,7 +915,7 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 
 	x, err := clients.VarRef.UpdateOneID(vref.ID).SetName(req.GetNew()).Save(tctx)
 	if err != nil {
-		flow.logger.Errorf(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Failed to store new instance variable name")
+		flow.logger.Errorf(ctx, instance.Instance.ID, cached.GetAttributes(recipient.Instance), "Failed to store new instance variable name")
 		return nil, err
 	}
 
@@ -937,8 +926,8 @@ func (flow *flow) RenameInstanceVariable(ctx context.Context, req *grpc.RenameIn
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, cached.Instance.ID, cached.GetAttributes(recipient.Instance), "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyInstanceVariables(cached.Instance)
+	flow.logger.Infof(ctx, instance.Instance.ID, cached.GetAttributes(recipient.Instance), "Renamed instance variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	flow.pubsub.NotifyInstanceVariables(instance.Instance.ID)
 
 	var resp grpc.RenameInstanceVariableResponse
 

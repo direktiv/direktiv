@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -28,7 +27,6 @@ type VarRefQuery struct {
 	predicates    []predicate.VarRef
 	withVardata   *VarDataQuery
 	withNamespace *NamespaceQuery
-	withInstance  *InstanceQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -104,28 +102,6 @@ func (vrq *VarRefQuery) QueryNamespace() *NamespaceQuery {
 			sqlgraph.From(varref.Table, varref.FieldID, selector),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, varref.NamespaceTable, varref.NamespaceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(vrq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryInstance chains the current query on the "instance" edge.
-func (vrq *VarRefQuery) QueryInstance() *InstanceQuery {
-	query := (&InstanceClient{config: vrq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := vrq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := vrq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(varref.Table, varref.FieldID, selector),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, varref.InstanceTable, varref.InstanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(vrq.driver.Dialect(), step)
 		return fromU, nil
@@ -327,7 +303,6 @@ func (vrq *VarRefQuery) Clone() *VarRefQuery {
 		predicates:    append([]predicate.VarRef{}, vrq.predicates...),
 		withVardata:   vrq.withVardata.Clone(),
 		withNamespace: vrq.withNamespace.Clone(),
-		withInstance:  vrq.withInstance.Clone(),
 		// clone intermediate query.
 		sql:  vrq.sql.Clone(),
 		path: vrq.path,
@@ -353,17 +328,6 @@ func (vrq *VarRefQuery) WithNamespace(opts ...func(*NamespaceQuery)) *VarRefQuer
 		opt(query)
 	}
 	vrq.withNamespace = query
-	return vrq
-}
-
-// WithInstance tells the query-builder to eager-load the nodes that are connected to
-// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (vrq *VarRefQuery) WithInstance(opts ...func(*InstanceQuery)) *VarRefQuery {
-	query := (&InstanceClient{config: vrq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	vrq.withInstance = query
 	return vrq
 }
 
@@ -446,13 +410,12 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 		nodes       = []*VarRef{}
 		withFKs     = vrq.withFKs
 		_spec       = vrq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			vrq.withVardata != nil,
 			vrq.withNamespace != nil,
-			vrq.withInstance != nil,
 		}
 	)
-	if vrq.withVardata != nil || vrq.withNamespace != nil || vrq.withInstance != nil {
+	if vrq.withVardata != nil || vrq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -488,12 +451,6 @@ func (vrq *VarRefQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*VarR
 	if query := vrq.withNamespace; query != nil {
 		if err := vrq.loadNamespace(ctx, query, nodes, nil,
 			func(n *VarRef, e *Namespace) { n.Edges.Namespace = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := vrq.withInstance; query != nil {
-		if err := vrq.loadInstance(ctx, query, nodes, nil,
-			func(n *VarRef, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -557,38 +514,6 @@ func (vrq *VarRefQuery) loadNamespace(ctx context.Context, query *NamespaceQuery
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "namespace_vars" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (vrq *VarRefQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*VarRef, init func(*VarRef), assign func(*VarRef, *Instance)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*VarRef)
-	for i := range nodes {
-		if nodes[i].instance_vars == nil {
-			continue
-		}
-		fk := *nodes[i].instance_vars
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(instance.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "instance_vars" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

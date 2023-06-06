@@ -8,7 +8,7 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 )
 
 func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]*states.ChildInfo, error) {
@@ -80,7 +80,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		return
 	}
 
-	if im.cached.Instance.Status != util.InstanceStatusPending {
+	if im.instance.Instance.Status != instancestore.InstanceStatusPending {
 		return
 	}
 

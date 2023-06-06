@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -62,21 +61,6 @@ func (nu *NamespaceUpdate) SetNillableConfig(s *string) *NamespaceUpdate {
 func (nu *NamespaceUpdate) SetName(s string) *NamespaceUpdate {
 	nu.mutation.SetName(s)
 	return nu
-}
-
-// AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
-func (nu *NamespaceUpdate) AddInstanceIDs(ids ...uuid.UUID) *NamespaceUpdate {
-	nu.mutation.AddInstanceIDs(ids...)
-	return nu
-}
-
-// AddInstances adds the "instances" edges to the Instance entity.
-func (nu *NamespaceUpdate) AddInstances(i ...*Instance) *NamespaceUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return nu.AddInstanceIDs(ids...)
 }
 
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
@@ -187,27 +171,6 @@ func (nu *NamespaceUpdate) AddServices(s ...*Services) *NamespaceUpdate {
 // Mutation returns the NamespaceMutation object of the builder.
 func (nu *NamespaceUpdate) Mutation() *NamespaceMutation {
 	return nu.mutation
-}
-
-// ClearInstances clears all "instances" edges to the Instance entity.
-func (nu *NamespaceUpdate) ClearInstances() *NamespaceUpdate {
-	nu.mutation.ClearInstances()
-	return nu
-}
-
-// RemoveInstanceIDs removes the "instances" edge to Instance entities by IDs.
-func (nu *NamespaceUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *NamespaceUpdate {
-	nu.mutation.RemoveInstanceIDs(ids...)
-	return nu
-}
-
-// RemoveInstances removes "instances" edges to Instance entities.
-func (nu *NamespaceUpdate) RemoveInstances(i ...*Instance) *NamespaceUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return nu.RemoveInstanceIDs(ids...)
 }
 
 // ClearLogs clears all "logs" edges to the LogMsg entity.
@@ -429,51 +392,6 @@ func (nu *NamespaceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := nu.mutation.Name(); ok {
 		_spec.SetField(namespace.FieldName, field.TypeString, value)
-	}
-	if nu.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.InstancesTable,
-			Columns: []string{namespace.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !nu.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.InstancesTable,
-			Columns: []string{namespace.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.InstancesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.InstancesTable,
-			Columns: []string{namespace.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if nu.mutation.LogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -838,21 +756,6 @@ func (nuo *NamespaceUpdateOne) SetName(s string) *NamespaceUpdateOne {
 	return nuo
 }
 
-// AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
-func (nuo *NamespaceUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
-	nuo.mutation.AddInstanceIDs(ids...)
-	return nuo
-}
-
-// AddInstances adds the "instances" edges to the Instance entity.
-func (nuo *NamespaceUpdateOne) AddInstances(i ...*Instance) *NamespaceUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return nuo.AddInstanceIDs(ids...)
-}
-
 // AddLogIDs adds the "logs" edge to the LogMsg entity by IDs.
 func (nuo *NamespaceUpdateOne) AddLogIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
 	nuo.mutation.AddLogIDs(ids...)
@@ -961,27 +864,6 @@ func (nuo *NamespaceUpdateOne) AddServices(s ...*Services) *NamespaceUpdateOne {
 // Mutation returns the NamespaceMutation object of the builder.
 func (nuo *NamespaceUpdateOne) Mutation() *NamespaceMutation {
 	return nuo.mutation
-}
-
-// ClearInstances clears all "instances" edges to the Instance entity.
-func (nuo *NamespaceUpdateOne) ClearInstances() *NamespaceUpdateOne {
-	nuo.mutation.ClearInstances()
-	return nuo
-}
-
-// RemoveInstanceIDs removes the "instances" edge to Instance entities by IDs.
-func (nuo *NamespaceUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *NamespaceUpdateOne {
-	nuo.mutation.RemoveInstanceIDs(ids...)
-	return nuo
-}
-
-// RemoveInstances removes "instances" edges to Instance entities.
-func (nuo *NamespaceUpdateOne) RemoveInstances(i ...*Instance) *NamespaceUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return nuo.RemoveInstanceIDs(ids...)
 }
 
 // ClearLogs clears all "logs" edges to the LogMsg entity.
@@ -1233,51 +1115,6 @@ func (nuo *NamespaceUpdateOne) sqlSave(ctx context.Context) (_node *Namespace, e
 	}
 	if value, ok := nuo.mutation.Name(); ok {
 		_spec.SetField(namespace.FieldName, field.TypeString, value)
-	}
-	if nuo.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.InstancesTable,
-			Columns: []string{namespace.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !nuo.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.InstancesTable,
-			Columns: []string{namespace.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.InstancesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.InstancesTable,
-			Columns: []string{namespace.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if nuo.mutation.LogsCleared() {
 		edge := &sqlgraph.EdgeSpec{

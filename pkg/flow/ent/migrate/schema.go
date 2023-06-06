@@ -18,7 +18,7 @@ var (
 		{Name: "hash", Type: field.TypeString},
 		{Name: "data", Type: field.TypeBytes},
 		{Name: "mime_type", Type: field.TypeString},
-		{Name: "instance_annotations", Type: field.TypeUUID, Nullable: true},
+		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_annotations", Type: field.TypeUUID, Nullable: true},
 	}
 	// AnnotationsTable holds the schema information for the "annotations" table.
@@ -27,12 +27,6 @@ var (
 		Columns:    AnnotationsColumns,
 		PrimaryKey: []*schema.Column{AnnotationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "annotations_instances_annotations",
-				Columns:    []*schema.Column{AnnotationsColumns[8]},
-				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
 			{
 				Symbol:     "annotations_namespaces_annotations",
 				Columns:    []*schema.Column{AnnotationsColumns[9]},
@@ -110,7 +104,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "instance_eventlisteners", Type: field.TypeUUID, Nullable: true},
+		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_namespacelisteners", Type: field.TypeUUID},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -119,12 +113,6 @@ var (
 		Columns:    EventsColumns,
 		PrimaryKey: []*schema.Column{EventsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "events_instances_eventlisteners",
-				Columns:    []*schema.Column{EventsColumns[8]},
-				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
 			{
 				Symbol:     "events_namespaces_namespacelisteners",
 				Columns:    []*schema.Column{EventsColumns[9]},
@@ -153,77 +141,6 @@ var (
 			},
 		},
 	}
-	// InstancesColumns holds the columns for the "instances" table.
-	InstancesColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "end_at", Type: field.TypeTime, Nullable: true},
-		{Name: "status", Type: field.TypeString},
-		{Name: "as", Type: field.TypeString},
-		{Name: "error_code", Type: field.TypeString, Nullable: true},
-		{Name: "error_message", Type: field.TypeString, Nullable: true},
-		{Name: "invoker", Type: field.TypeString, Nullable: true},
-		{Name: "invoker_state", Type: field.TypeString, Nullable: true},
-		{Name: "callpath", Type: field.TypeString, Nullable: true},
-		{Name: "workflow_id", Type: field.TypeUUID},
-		{Name: "revision_id", Type: field.TypeUUID},
-		{Name: "namespace_instances", Type: field.TypeUUID},
-	}
-	// InstancesTable holds the schema information for the "instances" table.
-	InstancesTable = &schema.Table{
-		Name:       "instances",
-		Columns:    InstancesColumns,
-		PrimaryKey: []*schema.Column{InstancesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "instances_namespaces_instances",
-				Columns:    []*schema.Column{InstancesColumns[13]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// InstanceRuntimesColumns holds the columns for the "instance_runtimes" table.
-	InstanceRuntimesColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "input", Type: field.TypeBytes},
-		{Name: "data", Type: field.TypeString},
-		{Name: "controller", Type: field.TypeString, Nullable: true},
-		{Name: "memory", Type: field.TypeString, Nullable: true},
-		{Name: "flow", Type: field.TypeJSON, Nullable: true},
-		{Name: "output", Type: field.TypeString, Nullable: true},
-		{Name: "state_begin_time", Type: field.TypeTime, Nullable: true},
-		{Name: "deadline", Type: field.TypeTime, Nullable: true},
-		{Name: "attempts", Type: field.TypeInt, Nullable: true},
-		{Name: "caller_data", Type: field.TypeString, Nullable: true},
-		{Name: "instance_context", Type: field.TypeString, Nullable: true},
-		{Name: "state_context", Type: field.TypeString, Nullable: true},
-		{Name: "metadata", Type: field.TypeString, Nullable: true},
-		{Name: "log_to_events", Type: field.TypeString, Nullable: true},
-		{Name: "instance_runtime", Type: field.TypeUUID, Unique: true, Nullable: true},
-		{Name: "instance_children", Type: field.TypeUUID, Nullable: true},
-	}
-	// InstanceRuntimesTable holds the schema information for the "instance_runtimes" table.
-	InstanceRuntimesTable = &schema.Table{
-		Name:       "instance_runtimes",
-		Columns:    InstanceRuntimesColumns,
-		PrimaryKey: []*schema.Column{InstanceRuntimesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "instance_runtimes_instances_runtime",
-				Columns:    []*schema.Column{InstanceRuntimesColumns[15]},
-				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "instance_runtimes_instances_children",
-				Columns:    []*schema.Column{InstanceRuntimesColumns[16]},
-				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// LogMsgsColumns holds the columns for the "log_msgs" table.
 	LogMsgsColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -235,7 +152,7 @@ var (
 		{Name: "tags", Type: field.TypeJSON, Nullable: true},
 		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "mirror_activity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "instance_logs", Type: field.TypeUUID, Nullable: true},
+		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_logs", Type: field.TypeUUID, Nullable: true},
 	}
 	// LogMsgsTable holds the schema information for the "log_msgs" table.
@@ -244,12 +161,6 @@ var (
 		Columns:    LogMsgsColumns,
 		PrimaryKey: []*schema.Column{LogMsgsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "log_msgs_instances_logs",
-				Columns:    []*schema.Column{LogMsgsColumns[9]},
-				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
 			{
 				Symbol:     "log_msgs_namespaces_logs",
 				Columns:    []*schema.Column{LogMsgsColumns[10]},
@@ -325,7 +236,7 @@ var (
 		{Name: "name", Type: field.TypeString, Nullable: true},
 		{Name: "behaviour", Type: field.TypeString, Nullable: true},
 		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "instance_vars", Type: field.TypeUUID, Nullable: true},
+		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "namespace_vars", Type: field.TypeUUID, Nullable: true},
 		{Name: "var_data_varrefs", Type: field.TypeUUID},
 	}
@@ -335,12 +246,6 @@ var (
 		Columns:    VarRefsColumns,
 		PrimaryKey: []*schema.Column{VarRefsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "var_refs_instances_vars",
-				Columns:    []*schema.Column{VarRefsColumns[4]},
-				RefColumns: []*schema.Column{InstancesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
 			{
 				Symbol:     "var_refs_namespaces_vars",
 				Columns:    []*schema.Column{VarRefsColumns[5]},
@@ -362,8 +267,6 @@ var (
 		CloudEventsTable,
 		EventsTable,
 		EventsWaitsTable,
-		InstancesTable,
-		InstanceRuntimesTable,
 		LogMsgsTable,
 		NamespacesTable,
 		ServicesTable,
@@ -373,20 +276,13 @@ var (
 )
 
 func init() {
-	AnnotationsTable.ForeignKeys[0].RefTable = InstancesTable
-	AnnotationsTable.ForeignKeys[1].RefTable = NamespacesTable
+	AnnotationsTable.ForeignKeys[0].RefTable = NamespacesTable
 	CloudEventFiltersTable.ForeignKeys[0].RefTable = NamespacesTable
 	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
-	EventsTable.ForeignKeys[0].RefTable = InstancesTable
-	EventsTable.ForeignKeys[1].RefTable = NamespacesTable
+	EventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
-	InstancesTable.ForeignKeys[0].RefTable = NamespacesTable
-	InstanceRuntimesTable.ForeignKeys[0].RefTable = InstancesTable
-	InstanceRuntimesTable.ForeignKeys[1].RefTable = InstancesTable
-	LogMsgsTable.ForeignKeys[0].RefTable = InstancesTable
-	LogMsgsTable.ForeignKeys[1].RefTable = NamespacesTable
+	LogMsgsTable.ForeignKeys[0].RefTable = NamespacesTable
 	ServicesTable.ForeignKeys[0].RefTable = NamespacesTable
-	VarRefsTable.ForeignKeys[0].RefTable = InstancesTable
-	VarRefsTable.ForeignKeys[1].RefTable = NamespacesTable
-	VarRefsTable.ForeignKeys[2].RefTable = VarDataTable
+	VarRefsTable.ForeignKeys[0].RefTable = NamespacesTable
+	VarRefsTable.ForeignKeys[1].RefTable = VarDataTable
 }

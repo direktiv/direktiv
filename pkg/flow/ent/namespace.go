@@ -32,8 +32,6 @@ type Namespace struct {
 
 // NamespaceEdges holds the relations/edges for other nodes in the graph.
 type NamespaceEdges struct {
-	// Instances holds the value of the instances edge.
-	Instances []*Instance `json:"instances,omitempty"`
 	// Logs holds the value of the logs edge.
 	Logs []*LogMsg `json:"logs,omitempty"`
 	// Vars holds the value of the vars edge.
@@ -50,22 +48,13 @@ type NamespaceEdges struct {
 	Services []*Services `json:"services,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
-}
-
-// InstancesOrErr returns the Instances value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) InstancesOrErr() ([]*Instance, error) {
-	if e.loadedTypes[0] {
-		return e.Instances, nil
-	}
-	return nil, &NotLoadedError{edge: "instances"}
+	loadedTypes [7]bool
 }
 
 // LogsOrErr returns the Logs value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) LogsOrErr() ([]*LogMsg, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Logs, nil
 	}
 	return nil, &NotLoadedError{edge: "logs"}
@@ -74,7 +63,7 @@ func (e NamespaceEdges) LogsOrErr() ([]*LogMsg, error) {
 // VarsOrErr returns the Vars value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) VarsOrErr() ([]*VarRef, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Vars, nil
 	}
 	return nil, &NotLoadedError{edge: "vars"}
@@ -83,7 +72,7 @@ func (e NamespaceEdges) VarsOrErr() ([]*VarRef, error) {
 // CloudeventsOrErr returns the Cloudevents value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Cloudevents, nil
 	}
 	return nil, &NotLoadedError{edge: "cloudevents"}
@@ -92,7 +81,7 @@ func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
 // NamespacelistenersOrErr returns the Namespacelisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Namespacelisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "namespacelisteners"}
@@ -101,7 +90,7 @@ func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) AnnotationsOrErr() ([]*Annotation, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -110,7 +99,7 @@ func (e NamespaceEdges) AnnotationsOrErr() ([]*Annotation, error) {
 // CloudeventfiltersOrErr returns the Cloudeventfilters value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.Cloudeventfilters, nil
 	}
 	return nil, &NotLoadedError{edge: "cloudeventfilters"}
@@ -119,7 +108,7 @@ func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
 // ServicesOrErr returns the Services value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) ServicesOrErr() ([]*Services, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.Services, nil
 	}
 	return nil, &NotLoadedError{edge: "services"}
@@ -184,11 +173,6 @@ func (n *Namespace) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryInstances queries the "instances" edge of the Namespace entity.
-func (n *Namespace) QueryInstances() *InstanceQuery {
-	return NewNamespaceClient(n.config).QueryInstances(n)
 }
 
 // QueryLogs queries the "logs" edge of the Namespace entity.

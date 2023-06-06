@@ -69,6 +69,11 @@ func WorkflowID(v uuid.UUID) predicate.VarRef {
 	return predicate.VarRef(sql.FieldEQ(FieldWorkflowID, v))
 }
 
+// InstanceID applies equality check predicate on the "instance_id" field. It's identical to InstanceIDEQ.
+func InstanceID(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldEQ(FieldInstanceID, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.VarRef {
 	return predicate.VarRef(sql.FieldEQ(FieldName, v))
@@ -269,6 +274,56 @@ func WorkflowIDNotNil() predicate.VarRef {
 	return predicate.VarRef(sql.FieldNotNull(FieldWorkflowID))
 }
 
+// InstanceIDEQ applies the EQ predicate on the "instance_id" field.
+func InstanceIDEQ(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldEQ(FieldInstanceID, v))
+}
+
+// InstanceIDNEQ applies the NEQ predicate on the "instance_id" field.
+func InstanceIDNEQ(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldNEQ(FieldInstanceID, v))
+}
+
+// InstanceIDIn applies the In predicate on the "instance_id" field.
+func InstanceIDIn(vs ...uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldIn(FieldInstanceID, vs...))
+}
+
+// InstanceIDNotIn applies the NotIn predicate on the "instance_id" field.
+func InstanceIDNotIn(vs ...uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldNotIn(FieldInstanceID, vs...))
+}
+
+// InstanceIDGT applies the GT predicate on the "instance_id" field.
+func InstanceIDGT(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldGT(FieldInstanceID, v))
+}
+
+// InstanceIDGTE applies the GTE predicate on the "instance_id" field.
+func InstanceIDGTE(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldGTE(FieldInstanceID, v))
+}
+
+// InstanceIDLT applies the LT predicate on the "instance_id" field.
+func InstanceIDLT(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldLT(FieldInstanceID, v))
+}
+
+// InstanceIDLTE applies the LTE predicate on the "instance_id" field.
+func InstanceIDLTE(v uuid.UUID) predicate.VarRef {
+	return predicate.VarRef(sql.FieldLTE(FieldInstanceID, v))
+}
+
+// InstanceIDIsNil applies the IsNil predicate on the "instance_id" field.
+func InstanceIDIsNil() predicate.VarRef {
+	return predicate.VarRef(sql.FieldIsNull(FieldInstanceID))
+}
+
+// InstanceIDNotNil applies the NotNil predicate on the "instance_id" field.
+func InstanceIDNotNil() predicate.VarRef {
+	return predicate.VarRef(sql.FieldNotNull(FieldInstanceID))
+}
+
 // HasVardata applies the HasEdge predicate on the "vardata" edge.
 func HasVardata() predicate.VarRef {
 	return predicate.VarRef(func(s *sql.Selector) {
@@ -314,33 +369,6 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.VarRef {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NamespaceInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasInstance applies the HasEdge predicate on the "instance" edge.
-func HasInstance() predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
-func HasInstanceWith(preds ...predicate.Instance) predicate.VarRef {
-	return predicate.VarRef(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InstanceInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

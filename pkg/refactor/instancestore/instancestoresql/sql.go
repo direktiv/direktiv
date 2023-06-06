@@ -97,7 +97,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		RuntimeInfo:    []byte(`{}`),
 		ChildrenInfo:   []byte(`{}`),
 		Input:          args.Input,
-		LiveData:       []byte(`{}`),
+		LiveData:       args.LiveData,
 		StateMemory:    []byte(``),
 		Output:         nil,
 		ErrorMessage:   nil,

@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
 )
@@ -93,6 +92,20 @@ func (ec *EventsCreate) SetNillableWorkflowID(u *uuid.UUID) *EventsCreate {
 	return ec
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (ec *EventsCreate) SetInstanceID(u uuid.UUID) *EventsCreate {
+	ec.mutation.SetInstanceID(u)
+	return ec
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (ec *EventsCreate) SetNillableInstanceID(u *uuid.UUID) *EventsCreate {
+	if u != nil {
+		ec.SetInstanceID(*u)
+	}
+	return ec
+}
+
 // SetID sets the "id" field.
 func (ec *EventsCreate) SetID(u uuid.UUID) *EventsCreate {
 	ec.mutation.SetID(u)
@@ -120,25 +133,6 @@ func (ec *EventsCreate) AddWfeventswait(e ...*EventsWait) *EventsCreate {
 		ids[i] = e[i].ID
 	}
 	return ec.AddWfeventswaitIDs(ids...)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (ec *EventsCreate) SetInstanceID(id uuid.UUID) *EventsCreate {
-	ec.mutation.SetInstanceID(id)
-	return ec
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (ec *EventsCreate) SetNillableInstanceID(id *uuid.UUID) *EventsCreate {
-	if id != nil {
-		ec = ec.SetInstanceID(*id)
-	}
-	return ec
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (ec *EventsCreate) SetInstance(i *Instance) *EventsCreate {
-	return ec.SetInstanceID(i.ID)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
@@ -285,6 +279,10 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 		_spec.SetField(events.FieldWorkflowID, field.TypeUUID, value)
 		_node.WorkflowID = value
 	}
+	if value, ok := ec.mutation.InstanceID(); ok {
+		_spec.SetField(events.FieldInstanceID, field.TypeUUID, value)
+		_node.InstanceID = value
+	}
 	if nodes := ec.mutation.WfeventswaitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -299,23 +297,6 @@ func (ec *EventsCreate) createSpec() (*Events, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ec.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.InstanceTable,
-			Columns: []string{events.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.instance_eventlisteners = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ec.mutation.NamespaceIDs(); len(nodes) > 0 {
@@ -477,6 +458,24 @@ func (u *EventsUpsert) ClearWorkflowID() *EventsUpsert {
 	return u
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (u *EventsUpsert) SetInstanceID(v uuid.UUID) *EventsUpsert {
+	u.Set(events.FieldInstanceID, v)
+	return u
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *EventsUpsert) UpdateInstanceID() *EventsUpsert {
+	u.SetExcluded(events.FieldInstanceID)
+	return u
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *EventsUpsert) ClearInstanceID() *EventsUpsert {
+	u.SetNull(events.FieldInstanceID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -630,6 +629,27 @@ func (u *EventsUpsertOne) UpdateWorkflowID() *EventsUpsertOne {
 func (u *EventsUpsertOne) ClearWorkflowID() *EventsUpsertOne {
 	return u.Update(func(s *EventsUpsert) {
 		s.ClearWorkflowID()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *EventsUpsertOne) SetInstanceID(v uuid.UUID) *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *EventsUpsertOne) UpdateInstanceID() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *EventsUpsertOne) ClearInstanceID() *EventsUpsertOne {
+	return u.Update(func(s *EventsUpsert) {
+		s.ClearInstanceID()
 	})
 }
 
@@ -949,6 +969,27 @@ func (u *EventsUpsertBulk) UpdateWorkflowID() *EventsUpsertBulk {
 func (u *EventsUpsertBulk) ClearWorkflowID() *EventsUpsertBulk {
 	return u.Update(func(s *EventsUpsert) {
 		s.ClearWorkflowID()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *EventsUpsertBulk) SetInstanceID(v uuid.UUID) *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *EventsUpsertBulk) UpdateInstanceID() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *EventsUpsertBulk) ClearInstanceID() *EventsUpsertBulk {
+	return u.Update(func(s *EventsUpsert) {
+		s.ClearInstanceID()
 	})
 }
 

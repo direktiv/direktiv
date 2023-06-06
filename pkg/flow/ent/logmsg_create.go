@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
@@ -114,6 +113,20 @@ func (lmc *LogMsgCreate) SetNillableMirrorActivityID(u *uuid.UUID) *LogMsgCreate
 	return lmc
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (lmc *LogMsgCreate) SetInstanceID(u uuid.UUID) *LogMsgCreate {
+	lmc.mutation.SetInstanceID(u)
+	return lmc
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (lmc *LogMsgCreate) SetNillableInstanceID(u *uuid.UUID) *LogMsgCreate {
+	if u != nil {
+		lmc.SetInstanceID(*u)
+	}
+	return lmc
+}
+
 // SetID sets the "id" field.
 func (lmc *LogMsgCreate) SetID(u uuid.UUID) *LogMsgCreate {
 	lmc.mutation.SetID(u)
@@ -145,25 +158,6 @@ func (lmc *LogMsgCreate) SetNillableNamespaceID(id *uuid.UUID) *LogMsgCreate {
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (lmc *LogMsgCreate) SetNamespace(n *Namespace) *LogMsgCreate {
 	return lmc.SetNamespaceID(n.ID)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (lmc *LogMsgCreate) SetInstanceID(id uuid.UUID) *LogMsgCreate {
-	lmc.mutation.SetInstanceID(id)
-	return lmc
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (lmc *LogMsgCreate) SetNillableInstanceID(id *uuid.UUID) *LogMsgCreate {
-	if id != nil {
-		lmc = lmc.SetInstanceID(*id)
-	}
-	return lmc
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (lmc *LogMsgCreate) SetInstance(i *Instance) *LogMsgCreate {
-	return lmc.SetInstanceID(i.ID)
 }
 
 // Mutation returns the LogMsgMutation object of the builder.
@@ -304,6 +298,10 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 		_spec.SetField(logmsg.FieldMirrorActivityID, field.TypeUUID, value)
 		_node.MirrorActivityID = value
 	}
+	if value, ok := lmc.mutation.InstanceID(); ok {
+		_spec.SetField(logmsg.FieldInstanceID, field.TypeUUID, value)
+		_node.InstanceID = value
+	}
 	if nodes := lmc.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -319,23 +317,6 @@ func (lmc *LogMsgCreate) createSpec() (*LogMsg, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_logs = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := lmc.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.InstanceTable,
-			Columns: []string{logmsg.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.instance_logs = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -501,6 +482,24 @@ func (u *LogMsgUpsert) UpdateMirrorActivityID() *LogMsgUpsert {
 // ClearMirrorActivityID clears the value of the "mirror_activity_id" field.
 func (u *LogMsgUpsert) ClearMirrorActivityID() *LogMsgUpsert {
 	u.SetNull(logmsg.FieldMirrorActivityID)
+	return u
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *LogMsgUpsert) SetInstanceID(v uuid.UUID) *LogMsgUpsert {
+	u.Set(logmsg.FieldInstanceID, v)
+	return u
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *LogMsgUpsert) UpdateInstanceID() *LogMsgUpsert {
+	u.SetExcluded(logmsg.FieldInstanceID)
+	return u
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *LogMsgUpsert) ClearInstanceID() *LogMsgUpsert {
+	u.SetNull(logmsg.FieldInstanceID)
 	return u
 }
 
@@ -682,6 +681,27 @@ func (u *LogMsgUpsertOne) UpdateMirrorActivityID() *LogMsgUpsertOne {
 func (u *LogMsgUpsertOne) ClearMirrorActivityID() *LogMsgUpsertOne {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.ClearMirrorActivityID()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *LogMsgUpsertOne) SetInstanceID(v uuid.UUID) *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *LogMsgUpsertOne) UpdateInstanceID() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *LogMsgUpsertOne) ClearInstanceID() *LogMsgUpsertOne {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearInstanceID()
 	})
 }
 
@@ -1026,6 +1046,27 @@ func (u *LogMsgUpsertBulk) UpdateMirrorActivityID() *LogMsgUpsertBulk {
 func (u *LogMsgUpsertBulk) ClearMirrorActivityID() *LogMsgUpsertBulk {
 	return u.Update(func(s *LogMsgUpsert) {
 		s.ClearMirrorActivityID()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *LogMsgUpsertBulk) SetInstanceID(v uuid.UUID) *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *LogMsgUpsertBulk) UpdateInstanceID() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *LogMsgUpsertBulk) ClearInstanceID() *LogMsgUpsertBulk {
+	return u.Update(func(s *LogMsgUpsert) {
+		s.ClearInstanceID()
 	})
 }
 

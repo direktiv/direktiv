@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
@@ -36,10 +35,11 @@ type LogMsg struct {
 	WorkflowID uuid.UUID `json:"workflow_id,omitempty"`
 	// MirrorActivityID holds the value of the "mirror_activity_id" field.
 	MirrorActivityID uuid.UUID `json:"mirror_activity_id,omitempty"`
+	// InstanceID holds the value of the "instance_id" field.
+	InstanceID uuid.UUID `json:"instance_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LogMsgQuery when eager-loading is set.
 	Edges          LogMsgEdges `json:"edges"`
-	instance_logs  *uuid.UUID
 	namespace_logs *uuid.UUID
 }
 
@@ -47,11 +47,9 @@ type LogMsg struct {
 type LogMsgEdges struct {
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Instance holds the value of the instance edge.
-	Instance *Instance `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -67,19 +65,6 @@ func (e LogMsgEdges) NamespaceOrErr() (*Namespace, error) {
 	return nil, &NotLoadedError{edge: "namespace"}
 }
 
-// InstanceOrErr returns the Instance value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e LogMsgEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[1] {
-		if e.Instance == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: instance.Label}
-		}
-		return e.Instance, nil
-	}
-	return nil, &NotLoadedError{edge: "instance"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*LogMsg) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -91,11 +76,9 @@ func (*LogMsg) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case logmsg.FieldT:
 			values[i] = new(sql.NullTime)
-		case logmsg.FieldID, logmsg.FieldWorkflowID, logmsg.FieldMirrorActivityID:
+		case logmsg.FieldID, logmsg.FieldWorkflowID, logmsg.FieldMirrorActivityID, logmsg.FieldInstanceID:
 			values[i] = new(uuid.UUID)
-		case logmsg.ForeignKeys[0]: // instance_logs
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case logmsg.ForeignKeys[1]: // namespace_logs
+		case logmsg.ForeignKeys[0]: // namespace_logs
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type LogMsg", columns[i])
@@ -168,14 +151,13 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				lm.MirrorActivityID = *value
 			}
-		case logmsg.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field instance_logs", values[i])
-			} else if value.Valid {
-				lm.instance_logs = new(uuid.UUID)
-				*lm.instance_logs = *value.S.(*uuid.UUID)
+		case logmsg.FieldInstanceID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_id", values[i])
+			} else if value != nil {
+				lm.InstanceID = *value
 			}
-		case logmsg.ForeignKeys[1]:
+		case logmsg.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_logs", values[i])
 			} else if value.Valid {
@@ -190,11 +172,6 @@ func (lm *LogMsg) assignValues(columns []string, values []any) error {
 // QueryNamespace queries the "namespace" edge of the LogMsg entity.
 func (lm *LogMsg) QueryNamespace() *NamespaceQuery {
 	return NewLogMsgClient(lm.config).QueryNamespace(lm)
-}
-
-// QueryInstance queries the "instance" edge of the LogMsg entity.
-func (lm *LogMsg) QueryInstance() *InstanceQuery {
-	return NewLogMsgClient(lm.config).QueryInstance(lm)
 }
 
 // Update returns a builder for updating this LogMsg.
@@ -243,6 +220,9 @@ func (lm *LogMsg) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("mirror_activity_id=")
 	builder.WriteString(fmt.Sprintf("%v", lm.MirrorActivityID))
+	builder.WriteString(", ")
+	builder.WriteString("instance_id=")
+	builder.WriteString(fmt.Sprintf("%v", lm.InstanceID))
 	builder.WriteByte(')')
 	return builder.String()
 }

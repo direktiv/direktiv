@@ -11,7 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -105,18 +105,18 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 	return nil
 }
 
-func (events *events) deleteInstanceEventListeners(ctx context.Context, cached *database.CacheData) error {
+func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
 	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.
 		Delete().
-		Where(entev.HasInstanceWith(entinst.ID(cached.Instance.ID))).
+		Where(entev.InstanceID(im.instance.Instance.ID)).
 		Exec(ctx)
 	if err != nil {
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
+	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
 }
@@ -180,7 +180,7 @@ func (events *events) updateInstanceEventListener(ctx context.Context, id uuid.U
 }
 
 // called from workflow instances to create event listeners.
-func (events *events) addInstanceEventListener(ctx context.Context, cached *database.CacheData, sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {
+func (events *events) addInstanceEventListener(ctx context.Context, im *instanceMemory, sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {
 	var ev []map[string]interface{}
 	for i, e := range sevents {
 		em := make(map[string]interface{})
@@ -206,9 +206,9 @@ func (events *events) addInstanceEventListener(ctx context.Context, cached *data
 	clients := events.edb.Clients(ctx)
 
 	_, err := clients.Events.Create().
-		SetNamespaceID(cached.Namespace.ID).
-		SetWorkflowID(cached.File.ID).
-		SetInstanceID(cached.Instance.ID).
+		SetNamespaceID(im.instance.Instance.NamespaceID).
+		SetWorkflowID(im.instance.Instance.WorkflowID).
+		SetInstanceID(im.instance.Instance.ID).
 		SetEvents(ev).
 		SetCorrelations([]string{}).
 		SetSignature(signature).
@@ -218,7 +218,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, cached *data
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(cached.Namespace.ID)
+	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
 }

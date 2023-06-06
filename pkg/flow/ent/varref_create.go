@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
@@ -68,6 +67,20 @@ func (vrc *VarRefCreate) SetNillableWorkflowID(u *uuid.UUID) *VarRefCreate {
 	return vrc
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (vrc *VarRefCreate) SetInstanceID(u uuid.UUID) *VarRefCreate {
+	vrc.mutation.SetInstanceID(u)
+	return vrc
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (vrc *VarRefCreate) SetNillableInstanceID(u *uuid.UUID) *VarRefCreate {
+	if u != nil {
+		vrc.SetInstanceID(*u)
+	}
+	return vrc
+}
+
 // SetID sets the "id" field.
 func (vrc *VarRefCreate) SetID(u uuid.UUID) *VarRefCreate {
 	vrc.mutation.SetID(u)
@@ -110,25 +123,6 @@ func (vrc *VarRefCreate) SetNillableNamespaceID(id *uuid.UUID) *VarRefCreate {
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (vrc *VarRefCreate) SetNamespace(n *Namespace) *VarRefCreate {
 	return vrc.SetNamespaceID(n.ID)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (vrc *VarRefCreate) SetInstanceID(id uuid.UUID) *VarRefCreate {
-	vrc.mutation.SetInstanceID(id)
-	return vrc
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (vrc *VarRefCreate) SetNillableInstanceID(id *uuid.UUID) *VarRefCreate {
-	if id != nil {
-		vrc = vrc.SetInstanceID(*id)
-	}
-	return vrc
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (vrc *VarRefCreate) SetInstance(i *Instance) *VarRefCreate {
-	return vrc.SetInstanceID(i.ID)
 }
 
 // Mutation returns the VarRefMutation object of the builder.
@@ -230,6 +224,10 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 		_spec.SetField(varref.FieldWorkflowID, field.TypeUUID, value)
 		_node.WorkflowID = value
 	}
+	if value, ok := vrc.mutation.InstanceID(); ok {
+		_spec.SetField(varref.FieldInstanceID, field.TypeUUID, value)
+		_node.InstanceID = value
+	}
 	if nodes := vrc.mutation.VardataIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -262,23 +260,6 @@ func (vrc *VarRefCreate) createSpec() (*VarRef, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_vars = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := vrc.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.InstanceTable,
-			Columns: []string{varref.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.instance_vars = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -384,6 +365,24 @@ func (u *VarRefUpsert) UpdateWorkflowID() *VarRefUpsert {
 // ClearWorkflowID clears the value of the "workflow_id" field.
 func (u *VarRefUpsert) ClearWorkflowID() *VarRefUpsert {
 	u.SetNull(varref.FieldWorkflowID)
+	return u
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *VarRefUpsert) SetInstanceID(v uuid.UUID) *VarRefUpsert {
+	u.Set(varref.FieldInstanceID, v)
+	return u
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *VarRefUpsert) UpdateInstanceID() *VarRefUpsert {
+	u.SetExcluded(varref.FieldInstanceID)
+	return u
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *VarRefUpsert) ClearInstanceID() *VarRefUpsert {
+	u.SetNull(varref.FieldInstanceID)
 	return u
 }
 
@@ -495,6 +494,27 @@ func (u *VarRefUpsertOne) UpdateWorkflowID() *VarRefUpsertOne {
 func (u *VarRefUpsertOne) ClearWorkflowID() *VarRefUpsertOne {
 	return u.Update(func(s *VarRefUpsert) {
 		s.ClearWorkflowID()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *VarRefUpsertOne) SetInstanceID(v uuid.UUID) *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *VarRefUpsertOne) UpdateInstanceID() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *VarRefUpsertOne) ClearInstanceID() *VarRefUpsertOne {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearInstanceID()
 	})
 }
 
@@ -769,6 +789,27 @@ func (u *VarRefUpsertBulk) UpdateWorkflowID() *VarRefUpsertBulk {
 func (u *VarRefUpsertBulk) ClearWorkflowID() *VarRefUpsertBulk {
 	return u.Update(func(s *VarRefUpsert) {
 		s.ClearWorkflowID()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *VarRefUpsertBulk) SetInstanceID(v uuid.UUID) *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *VarRefUpsertBulk) UpdateInstanceID() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *VarRefUpsertBulk) ClearInstanceID() *VarRefUpsertBulk {
+	return u.Update(func(s *VarRefUpsert) {
+		s.ClearInstanceID()
 	})
 }
 

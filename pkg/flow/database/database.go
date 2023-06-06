@@ -22,8 +22,6 @@ type Database interface {
 
 	Namespace(ctx context.Context, id uuid.UUID) (*Namespace, error)
 	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
-	Instance(ctx context.Context, id uuid.UUID) (*Instance, error)
-	InstanceRuntime(ctx context.Context, id uuid.UUID) (*InstanceRuntime, error)
 	NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*Annotation, error)
 	ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*VarRef, error)
 	NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*VarRef, error)
@@ -35,12 +33,9 @@ type Database interface {
 
 type CacheData struct {
 	Namespace *Namespace
-	// Inodes    []*Inode
-	// Workflow  *Workflow
-	Ref      *Ref
-	Revision *filestore.Revision
-	Instance *Instance
-	File     *filestore.File
+	Ref       *Ref
+	Revision  *filestore.Revision
+	File      *filestore.File
 }
 
 func (cached *CacheData) Dir() string {
@@ -66,12 +61,6 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]string {
 	tags := make(map[string]string)
 	tags["recipientType"] = string(recipientType)
-	if cached.Instance != nil {
-		tags["instance-id"] = cached.Instance.ID.String()
-		tags["invoker"] = cached.Instance.Invoker
-		tags["callpath"] = cached.Instance.CallPath
-		tags["workflow"] = GetWorkflow(cached.Instance.As)
-	}
 
 	if cached.File != nil {
 		tags["workflow-id"] = cached.File.ID.String()

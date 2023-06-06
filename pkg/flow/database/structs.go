@@ -130,43 +130,6 @@ type Route struct {
 	Ref    *Ref      `json:"ref,omitempty"`
 }
 
-type Instance struct {
-	ID           uuid.UUID `json:"id"`
-	CreatedAt    time.Time `json:"created_at,omitempty"`
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	EndAt        time.Time `json:"end_at,omitempty"`
-	Status       string    `json:"status,omitempty"`
-	As           string    `json:"as,omitempty"`
-	ErrorCode    string    `json:"errorCode,omitempty"`
-	ErrorMessage string    `json:"errorMessage,omitempty"`
-	Invoker      string    `json:"invoker,omitempty"`
-	Namespace    uuid.UUID `json:"namespace,omitempty"`
-	Workflow     uuid.UUID `json:"workflow,omitempty"`
-	Revision     uuid.UUID `json:"revision,omitempty"`
-	Runtime      uuid.UUID `json:"runtime,omitempty"`
-	CallPath     string    `json:"callpath,omitempty"`
-	InvokerState string    `json:"invokerState,omitempty"`
-}
-
-type InstanceRuntime struct {
-	ID              uuid.UUID `json:"id"`
-	Input           []byte    `json:"input,omitempty"`
-	Data            string    `json:"data,omitempty"`
-	Controller      string    `json:"controller,omitempty"`
-	Memory          string    `json:"memory,omitempty"`
-	Flow            []string  `json:"flow,omitempty"`
-	Output          string    `json:"output,omitempty"`
-	StateBeginTime  time.Time `json:"stateBeginTime,omitempty"`
-	Deadline        time.Time `json:"deadline,omitempty"`
-	Attempts        int       `json:"attempts,omitempty"`
-	CallerData      string    `json:"caller_data,omitempty"`
-	InstanceContext string    `json:"instanceContext,omitempty"`
-	StateContext    string    `json:"stateContext,omitempty"`
-	Metadata        string    `json:"metadata,omitempty"`
-	Caller          uuid.UUID `json:"caller,omitempty"`
-	LogToEvents     string    `json:"logToEvents,omitempty"`
-}
-
 type Annotation struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name,omitempty"`

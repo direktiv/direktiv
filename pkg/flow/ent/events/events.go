@@ -27,10 +27,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldWorkflowID holds the string denoting the workflow_id field in the database.
 	FieldWorkflowID = "workflow_id"
+	// FieldInstanceID holds the string denoting the instance_id field in the database.
+	FieldInstanceID = "instance_id"
 	// EdgeWfeventswait holds the string denoting the wfeventswait edge name in mutations.
 	EdgeWfeventswait = "wfeventswait"
-	// EdgeInstance holds the string denoting the instance edge name in mutations.
-	EdgeInstance = "instance"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
 	// Table holds the table name of the events in the database.
@@ -42,13 +42,6 @@ const (
 	WfeventswaitInverseTable = "events_waits"
 	// WfeventswaitColumn is the table column denoting the wfeventswait relation/edge.
 	WfeventswaitColumn = "events_wfeventswait"
-	// InstanceTable is the table that holds the instance relation/edge.
-	InstanceTable = "events"
-	// InstanceInverseTable is the table name for the Instance entity.
-	// It exists in this package in order to avoid circular dependency with the "instance" package.
-	InstanceInverseTable = "instances"
-	// InstanceColumn is the table column denoting the instance relation/edge.
-	InstanceColumn = "instance_eventlisteners"
 	// NamespaceTable is the table that holds the namespace relation/edge.
 	NamespaceTable = "events"
 	// NamespaceInverseTable is the table name for the Namespace entity.
@@ -68,12 +61,12 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldWorkflowID,
+	FieldInstanceID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"instance_eventlisteners",
 	"namespace_namespacelisteners",
 }
 

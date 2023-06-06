@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -252,13 +251,13 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	}
 
 	var txErr error
-	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		var root *filestore.Root
-		root, txErr = fStore.CreateRoot(ctx, x.ID)
+		root, txErr = tx.FileStore().CreateRoot(ctx, x.ID)
 		if txErr != nil {
 			return txErr
 		}
-		_, _, txErr = fStore.ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
+		_, _, txErr = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
 		if txErr != nil {
 			return txErr
 		}
@@ -297,8 +296,8 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	var isEmpty bool
 	var txErr error
-	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		isEmpty, txErr = fStore.ForRootID(ns.ID).IsEmptyDirectory(ctx, "/")
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		isEmpty, txErr = tx.FileStore().ForRootID(ns.ID).IsEmptyDirectory(ctx, "/")
 		return txErr
 	})
 	if err != nil {

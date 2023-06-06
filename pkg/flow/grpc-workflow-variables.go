@@ -12,7 +12,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	"github.com/google/uuid"
+
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -20,6 +21,7 @@ import (
 	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/grpc/codes"
@@ -28,8 +30,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) getWorkflowVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.WorkflowVariable(ctx, cached.File.ID, key)
+func (srv *server) getWorkflowVariable(ctx context.Context, instance *enginerefactor.Instance, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.WorkflowVariable(ctx, instance.Instance.WorkflowID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,13 +50,13 @@ func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *
 		return
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	f, err = fStore.ForRootID(ns.ID).GetFile(ctx, path)
+	f, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
 		return
 	}
@@ -119,12 +121,12 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 
 	ctx := srv.Context()
 
-	cached, err := internal.getInstance(ctx, req.GetInstance())
+	instance, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	vref, vdata, err := internal.getWorkflowVariable(ctx, cached, req.GetKey(), true)
+	vref, vdata, err := internal.getWorkflowVariable(ctx, instance, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
@@ -361,31 +363,31 @@ type varQuerier interface {
 
 type entNamespaceVarQuerier struct {
 	clients *entwrapper.EntClients
-	cached  *database.CacheData
+	ns      *database.Namespace
 }
 
 func (x *entNamespaceVarQuerier) QueryVars() *ent.VarRefQuery {
-	return x.clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(x.cached.Namespace.ID)))
+	return x.clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(x.ns.ID)))
 }
 
 type entWorkflowVarQuerier struct {
 	clients *entwrapper.EntClients
-	// cached  *database.CacheData
-	ns *database.Namespace
-	f  *filestore.File
+	ns      *database.Namespace
+	wfID    uuid.UUID
+	path    string
 }
 
 func (x *entWorkflowVarQuerier) QueryVars() *ent.VarRefQuery {
-	return x.clients.VarRef.Query().Where(entvar.WorkflowID(x.f.ID))
+	return x.clients.VarRef.Query().Where(entvar.WorkflowID(x.wfID))
 }
 
 type entInstanceVarQuerier struct {
-	clients *entwrapper.EntClients
-	cached  *database.CacheData
+	clients  *entwrapper.EntClients
+	instance *enginerefactor.Instance
 }
 
 func (x *entInstanceVarQuerier) QueryVars() *ent.VarRefQuery {
-	return x.clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
+	return x.clients.VarRef.Query().Where(entvar.InstanceID(x.instance.Instance.ID))
 }
 
 func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, data []byte, vMimeType string, thread bool) (*ent.VarData, bool, error) {
@@ -408,7 +410,7 @@ func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, dat
 	clients := flow.edb.Clients(ctx)
 
 	var ns *database.Namespace
-	var f *filestore.File
+	var wfID uuid.UUID
 
 	if err != nil {
 		if !derrors.IsNotFound(err) {
@@ -434,15 +436,15 @@ func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, dat
 
 		switch v := q.(type) {
 		case *entNamespaceVarQuerier:
-			ns = v.cached.Namespace
-			query = query.SetNamespaceID(v.cached.Namespace.ID)
+			ns = v.ns
+			query = query.SetNamespaceID(v.ns.ID)
 		case *entWorkflowVarQuerier:
 			ns = v.ns
-			f = v.f
-			query = query.SetWorkflowID(f.ID)
+			wfID = v.wfID
+			query = query.SetWorkflowID(wfID)
 		case *entInstanceVarQuerier:
-			ns = v.cached.Namespace
-			query = query.SetInstanceID(v.cached.Instance.ID)
+			ns = &database.Namespace{ID: v.instance.Instance.NamespaceID, Name: v.instance.TelemetryInfo.NamespaceName}
+			query = query.SetInstanceID(v.instance.Instance.ID)
 			if thread {
 				query = query.SetBehaviour("thread")
 			}
@@ -483,16 +485,16 @@ func (flow *flow) SetVariable(ctx context.Context, q varQuerier, key string, dat
 	switch v := q.(type) {
 	case *entNamespaceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeNamespace
-		ns = v.cached.Namespace
+		ns = v.ns
 	case *entWorkflowVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeWorkflow
 		ns = v.ns
-		f = v.f
-		broadcastInput.WorkflowPath = f.Path
+		wfID = v.wfID
+		broadcastInput.WorkflowPath = v.path
 	case *entInstanceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeInstance
-		ns = v.cached.Namespace
-		broadcastInput.InstanceID = v.cached.Instance.ID.String()
+		ns = &database.Namespace{ID: v.instance.Instance.NamespaceID, Name: v.instance.TelemetryInfo.NamespaceName}
+		broadcastInput.InstanceID = v.instance.Instance.ID.String()
 	}
 
 	if newVar {
@@ -546,7 +548,6 @@ func (flow *flow) DeleteVariable(ctx context.Context, q varQuerier, key string, 
 
 	// Broadcast Event
 	var ns *database.Namespace
-	var f *filestore.File
 
 	broadcastInput := broadcastVariableInput{
 		Key:       key,
@@ -555,16 +556,15 @@ func (flow *flow) DeleteVariable(ctx context.Context, q varQuerier, key string, 
 	switch v := q.(type) {
 	case *entNamespaceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeNamespace
-		ns = v.cached.Namespace
+		ns = v.ns
 	case *entWorkflowVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeWorkflow
 		ns = v.ns
-		f = v.f
-		broadcastInput.WorkflowPath = f.Path
+		broadcastInput.WorkflowPath = v.path
 	case *entInstanceVarQuerier:
 		broadcastInput.Scope = BroadcastEventScopeInstance
-		broadcastInput.InstanceID = v.cached.Instance.ID.String()
-		ns = v.cached.Namespace
+		broadcastInput.InstanceID = v.instance.Instance.ID.String()
+		ns = &database.Namespace{ID: v.instance.Instance.NamespaceID, Name: v.instance.TelemetryInfo.NamespaceName}
 	}
 
 	err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, broadcastInput.Scope, broadcastInput, ns)
@@ -591,7 +591,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, f: file}, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, wfID: file.ID, path: file.Path}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -633,7 +633,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 		return err
 	}
 
-	cached, err := internal.getInstance(ctx, req.GetInstance())
+	instance, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -693,7 +693,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: internal.edb.Clients(tctx), ns: cached.Namespace, f: cached.File}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: internal.edb.Clients(tctx), ns: &database.Namespace{ID: instance.Instance.NamespaceID, Name: instance.TelemetryInfo.NamespaceName}, wfID: instance.Instance.WorkflowID, path: instance.Instance.CalledAs}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -704,12 +704,12 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.File.ID, cached.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.WorkflowID, instance.GetAttributes(recipient.Workflow), "Created workflow variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.File.ID, cached.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.WorkflowID, instance.GetAttributes(recipient.Workflow), "Updated workflow variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyWorkflowVariables(cached.File.ID)
+	internal.pubsub.NotifyWorkflowVariables(instance.Instance.WorkflowID)
 
 	var resp grpc.SetVariableInternalResponse
 
@@ -801,7 +801,7 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, f: file}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entWorkflowVarQuerier{clients: flow.edb.Clients(tctx), ns: ns, wfID: file.ID, path: file.Path}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}

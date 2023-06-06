@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
@@ -25,10 +24,11 @@ type VarRef struct {
 	Behaviour string `json:"behaviour,omitempty"`
 	// WorkflowID holds the value of the "workflow_id" field.
 	WorkflowID uuid.UUID `json:"workflow_id,omitempty"`
+	// InstanceID holds the value of the "instance_id" field.
+	InstanceID uuid.UUID `json:"instance_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the VarRefQuery when eager-loading is set.
 	Edges            VarRefEdges `json:"edges"`
-	instance_vars    *uuid.UUID
 	namespace_vars   *uuid.UUID
 	var_data_varrefs *uuid.UUID
 }
@@ -39,11 +39,9 @@ type VarRefEdges struct {
 	Vardata *VarData `json:"vardata,omitempty"`
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Instance holds the value of the instance edge.
-	Instance *Instance `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // VardataOrErr returns the Vardata value or an error if the edge
@@ -72,19 +70,6 @@ func (e VarRefEdges) NamespaceOrErr() (*Namespace, error) {
 	return nil, &NotLoadedError{edge: "namespace"}
 }
 
-// InstanceOrErr returns the Instance value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e VarRefEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[2] {
-		if e.Instance == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: instance.Label}
-		}
-		return e.Instance, nil
-	}
-	return nil, &NotLoadedError{edge: "instance"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*VarRef) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -92,13 +77,11 @@ func (*VarRef) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case varref.FieldName, varref.FieldBehaviour:
 			values[i] = new(sql.NullString)
-		case varref.FieldID, varref.FieldWorkflowID:
+		case varref.FieldID, varref.FieldWorkflowID, varref.FieldInstanceID:
 			values[i] = new(uuid.UUID)
-		case varref.ForeignKeys[0]: // instance_vars
+		case varref.ForeignKeys[0]: // namespace_vars
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case varref.ForeignKeys[1]: // namespace_vars
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case varref.ForeignKeys[2]: // var_data_varrefs
+		case varref.ForeignKeys[1]: // var_data_varrefs
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type VarRef", columns[i])
@@ -139,21 +122,20 @@ func (vr *VarRef) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				vr.WorkflowID = *value
 			}
-		case varref.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field instance_vars", values[i])
-			} else if value.Valid {
-				vr.instance_vars = new(uuid.UUID)
-				*vr.instance_vars = *value.S.(*uuid.UUID)
+		case varref.FieldInstanceID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_id", values[i])
+			} else if value != nil {
+				vr.InstanceID = *value
 			}
-		case varref.ForeignKeys[1]:
+		case varref.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_vars", values[i])
 			} else if value.Valid {
 				vr.namespace_vars = new(uuid.UUID)
 				*vr.namespace_vars = *value.S.(*uuid.UUID)
 			}
-		case varref.ForeignKeys[2]:
+		case varref.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field var_data_varrefs", values[i])
 			} else if value.Valid {
@@ -173,11 +155,6 @@ func (vr *VarRef) QueryVardata() *VarDataQuery {
 // QueryNamespace queries the "namespace" edge of the VarRef entity.
 func (vr *VarRef) QueryNamespace() *NamespaceQuery {
 	return NewVarRefClient(vr.config).QueryNamespace(vr)
-}
-
-// QueryInstance queries the "instance" edge of the VarRef entity.
-func (vr *VarRef) QueryInstance() *InstanceQuery {
-	return NewVarRefClient(vr.config).QueryInstance(vr)
 }
 
 // Update returns a builder for updating this VarRef.
@@ -211,6 +188,9 @@ func (vr *VarRef) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("workflow_id=")
 	builder.WriteString(fmt.Sprintf("%v", vr.WorkflowID))
+	builder.WriteString(", ")
+	builder.WriteString("instance_id=")
+	builder.WriteString(fmt.Sprintf("%v", vr.InstanceID))
 	builder.WriteByte(')')
 	return builder.String()
 }

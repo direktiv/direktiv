@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
@@ -109,6 +108,26 @@ func (eu *EventsUpdate) ClearWorkflowID() *EventsUpdate {
 	return eu
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (eu *EventsUpdate) SetInstanceID(u uuid.UUID) *EventsUpdate {
+	eu.mutation.SetInstanceID(u)
+	return eu
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (eu *EventsUpdate) SetNillableInstanceID(u *uuid.UUID) *EventsUpdate {
+	if u != nil {
+		eu.SetInstanceID(*u)
+	}
+	return eu
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (eu *EventsUpdate) ClearInstanceID() *EventsUpdate {
+	eu.mutation.ClearInstanceID()
+	return eu
+}
+
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
 func (eu *EventsUpdate) AddWfeventswaitIDs(ids ...uuid.UUID) *EventsUpdate {
 	eu.mutation.AddWfeventswaitIDs(ids...)
@@ -122,25 +141,6 @@ func (eu *EventsUpdate) AddWfeventswait(e ...*EventsWait) *EventsUpdate {
 		ids[i] = e[i].ID
 	}
 	return eu.AddWfeventswaitIDs(ids...)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (eu *EventsUpdate) SetInstanceID(id uuid.UUID) *EventsUpdate {
-	eu.mutation.SetInstanceID(id)
-	return eu
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (eu *EventsUpdate) SetNillableInstanceID(id *uuid.UUID) *EventsUpdate {
-	if id != nil {
-		eu = eu.SetInstanceID(*id)
-	}
-	return eu
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (eu *EventsUpdate) SetInstance(i *Instance) *EventsUpdate {
-	return eu.SetInstanceID(i.ID)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
@@ -178,12 +178,6 @@ func (eu *EventsUpdate) RemoveWfeventswait(e ...*EventsWait) *EventsUpdate {
 		ids[i] = e[i].ID
 	}
 	return eu.RemoveWfeventswaitIDs(ids...)
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (eu *EventsUpdate) ClearInstance() *EventsUpdate {
-	eu.mutation.ClearInstance()
-	return eu
 }
 
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
@@ -291,6 +285,12 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if eu.mutation.WorkflowIDCleared() {
 		_spec.ClearField(events.FieldWorkflowID, field.TypeUUID)
 	}
+	if value, ok := eu.mutation.InstanceID(); ok {
+		_spec.SetField(events.FieldInstanceID, field.TypeUUID, value)
+	}
+	if eu.mutation.InstanceIDCleared() {
+		_spec.ClearField(events.FieldInstanceID, field.TypeUUID)
+	}
 	if eu.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -329,35 +329,6 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if eu.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.InstanceTable,
-			Columns: []string{events.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.InstanceTable,
-			Columns: []string{events.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -491,6 +462,26 @@ func (euo *EventsUpdateOne) ClearWorkflowID() *EventsUpdateOne {
 	return euo
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (euo *EventsUpdateOne) SetInstanceID(u uuid.UUID) *EventsUpdateOne {
+	euo.mutation.SetInstanceID(u)
+	return euo
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (euo *EventsUpdateOne) SetNillableInstanceID(u *uuid.UUID) *EventsUpdateOne {
+	if u != nil {
+		euo.SetInstanceID(*u)
+	}
+	return euo
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (euo *EventsUpdateOne) ClearInstanceID() *EventsUpdateOne {
+	euo.mutation.ClearInstanceID()
+	return euo
+}
+
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by IDs.
 func (euo *EventsUpdateOne) AddWfeventswaitIDs(ids ...uuid.UUID) *EventsUpdateOne {
 	euo.mutation.AddWfeventswaitIDs(ids...)
@@ -504,25 +495,6 @@ func (euo *EventsUpdateOne) AddWfeventswait(e ...*EventsWait) *EventsUpdateOne {
 		ids[i] = e[i].ID
 	}
 	return euo.AddWfeventswaitIDs(ids...)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (euo *EventsUpdateOne) SetInstanceID(id uuid.UUID) *EventsUpdateOne {
-	euo.mutation.SetInstanceID(id)
-	return euo
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (euo *EventsUpdateOne) SetNillableInstanceID(id *uuid.UUID) *EventsUpdateOne {
-	if id != nil {
-		euo = euo.SetInstanceID(*id)
-	}
-	return euo
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (euo *EventsUpdateOne) SetInstance(i *Instance) *EventsUpdateOne {
-	return euo.SetInstanceID(i.ID)
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
@@ -560,12 +532,6 @@ func (euo *EventsUpdateOne) RemoveWfeventswait(e ...*EventsWait) *EventsUpdateOn
 		ids[i] = e[i].ID
 	}
 	return euo.RemoveWfeventswaitIDs(ids...)
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (euo *EventsUpdateOne) ClearInstance() *EventsUpdateOne {
-	euo.mutation.ClearInstance()
-	return euo
 }
 
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
@@ -703,6 +669,12 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 	if euo.mutation.WorkflowIDCleared() {
 		_spec.ClearField(events.FieldWorkflowID, field.TypeUUID)
 	}
+	if value, ok := euo.mutation.InstanceID(); ok {
+		_spec.SetField(events.FieldInstanceID, field.TypeUUID, value)
+	}
+	if euo.mutation.InstanceIDCleared() {
+		_spec.ClearField(events.FieldInstanceID, field.TypeUUID)
+	}
 	if euo.mutation.WfeventswaitCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -741,35 +713,6 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventswait.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if euo.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.InstanceTable,
-			Columns: []string{events.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   events.InstanceTable,
-			Columns: []string{events.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

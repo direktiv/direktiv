@@ -17,8 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -42,8 +40,6 @@ const (
 	TypeCloudEvents       = "CloudEvents"
 	TypeEvents            = "Events"
 	TypeEventsWait        = "EventsWait"
-	TypeInstance          = "Instance"
-	TypeInstanceRuntime   = "InstanceRuntime"
 	TypeLogMsg            = "LogMsg"
 	TypeNamespace         = "Namespace"
 	TypeServices          = "Services"
@@ -65,11 +61,10 @@ type AnnotationMutation struct {
 	hash             *string
 	data             *[]byte
 	mime_type        *string
+	instance_id      *uuid.UUID
 	clearedFields    map[string]struct{}
 	namespace        *uuid.UUID
 	clearednamespace bool
-	instance         *uuid.UUID
-	clearedinstance  bool
 	done             bool
 	oldValue         func(context.Context) (*Annotation, error)
 	predicates       []predicate.Annotation
@@ -451,6 +446,55 @@ func (m *AnnotationMutation) ResetMimeType() {
 	m.mime_type = nil
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (m *AnnotationMutation) SetInstanceID(u uuid.UUID) {
+	m.instance_id = &u
+}
+
+// InstanceID returns the value of the "instance_id" field in the mutation.
+func (m *AnnotationMutation) InstanceID() (r uuid.UUID, exists bool) {
+	v := m.instance_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceID returns the old "instance_id" field's value of the Annotation entity.
+// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AnnotationMutation) OldInstanceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInstanceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInstanceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceID: %w", err)
+	}
+	return oldValue.InstanceID, nil
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (m *AnnotationMutation) ClearInstanceID() {
+	m.instance_id = nil
+	m.clearedFields[annotation.FieldInstanceID] = struct{}{}
+}
+
+// InstanceIDCleared returns if the "instance_id" field was cleared in this mutation.
+func (m *AnnotationMutation) InstanceIDCleared() bool {
+	_, ok := m.clearedFields[annotation.FieldInstanceID]
+	return ok
+}
+
+// ResetInstanceID resets all changes to the "instance_id" field.
+func (m *AnnotationMutation) ResetInstanceID() {
+	m.instance_id = nil
+	delete(m.clearedFields, annotation.FieldInstanceID)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *AnnotationMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -490,45 +534,6 @@ func (m *AnnotationMutation) ResetNamespace() {
 	m.clearednamespace = false
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by id.
-func (m *AnnotationMutation) SetInstanceID(id uuid.UUID) {
-	m.instance = &id
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (m *AnnotationMutation) ClearInstance() {
-	m.clearedinstance = true
-}
-
-// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
-func (m *AnnotationMutation) InstanceCleared() bool {
-	return m.clearedinstance
-}
-
-// InstanceID returns the "instance" edge ID in the mutation.
-func (m *AnnotationMutation) InstanceID() (id uuid.UUID, exists bool) {
-	if m.instance != nil {
-		return *m.instance, true
-	}
-	return
-}
-
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InstanceID instead. It exists only for internal usage by the builders.
-func (m *AnnotationMutation) InstanceIDs() (ids []uuid.UUID) {
-	if id := m.instance; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInstance resets all changes to the "instance" edge.
-func (m *AnnotationMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
-}
-
 // Where appends a list predicates to the AnnotationMutation builder.
 func (m *AnnotationMutation) Where(ps ...predicate.Annotation) {
 	m.predicates = append(m.predicates, ps...)
@@ -563,7 +568,7 @@ func (m *AnnotationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AnnotationMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, annotation.FieldName)
 	}
@@ -584,6 +589,9 @@ func (m *AnnotationMutation) Fields() []string {
 	}
 	if m.mime_type != nil {
 		fields = append(fields, annotation.FieldMimeType)
+	}
+	if m.instance_id != nil {
+		fields = append(fields, annotation.FieldInstanceID)
 	}
 	return fields
 }
@@ -607,6 +615,8 @@ func (m *AnnotationMutation) Field(name string) (ent.Value, bool) {
 		return m.Data()
 	case annotation.FieldMimeType:
 		return m.MimeType()
+	case annotation.FieldInstanceID:
+		return m.InstanceID()
 	}
 	return nil, false
 }
@@ -630,6 +640,8 @@ func (m *AnnotationMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldData(ctx)
 	case annotation.FieldMimeType:
 		return m.OldMimeType(ctx)
+	case annotation.FieldInstanceID:
+		return m.OldInstanceID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Annotation field %s", name)
 }
@@ -688,6 +700,13 @@ func (m *AnnotationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMimeType(v)
 		return nil
+	case annotation.FieldInstanceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Annotation field %s", name)
 }
@@ -732,7 +751,11 @@ func (m *AnnotationMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AnnotationMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(annotation.FieldInstanceID) {
+		fields = append(fields, annotation.FieldInstanceID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -745,6 +768,11 @@ func (m *AnnotationMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AnnotationMutation) ClearField(name string) error {
+	switch name {
+	case annotation.FieldInstanceID:
+		m.ClearInstanceID()
+		return nil
+	}
 	return fmt.Errorf("unknown Annotation nullable field %s", name)
 }
 
@@ -773,18 +801,18 @@ func (m *AnnotationMutation) ResetField(name string) error {
 	case annotation.FieldMimeType:
 		m.ResetMimeType()
 		return nil
+	case annotation.FieldInstanceID:
+		m.ResetInstanceID()
+		return nil
 	}
 	return fmt.Errorf("unknown Annotation field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AnnotationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.namespace != nil {
 		edges = append(edges, annotation.EdgeNamespace)
-	}
-	if m.instance != nil {
-		edges = append(edges, annotation.EdgeInstance)
 	}
 	return edges
 }
@@ -797,17 +825,13 @@ func (m *AnnotationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.namespace; id != nil {
 			return []ent.Value{*id}
 		}
-	case annotation.EdgeInstance:
-		if id := m.instance; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AnnotationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -819,12 +843,9 @@ func (m *AnnotationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AnnotationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearednamespace {
 		edges = append(edges, annotation.EdgeNamespace)
-	}
-	if m.clearedinstance {
-		edges = append(edges, annotation.EdgeInstance)
 	}
 	return edges
 }
@@ -835,8 +856,6 @@ func (m *AnnotationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case annotation.EdgeNamespace:
 		return m.clearednamespace
-	case annotation.EdgeInstance:
-		return m.clearedinstance
 	}
 	return false
 }
@@ -848,9 +867,6 @@ func (m *AnnotationMutation) ClearEdge(name string) error {
 	case annotation.EdgeNamespace:
 		m.ClearNamespace()
 		return nil
-	case annotation.EdgeInstance:
-		m.ClearInstance()
-		return nil
 	}
 	return fmt.Errorf("unknown Annotation unique edge %s", name)
 }
@@ -861,9 +877,6 @@ func (m *AnnotationMutation) ResetEdge(name string) error {
 	switch name {
 	case annotation.EdgeNamespace:
 		m.ResetNamespace()
-		return nil
-	case annotation.EdgeInstance:
-		m.ResetInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown Annotation edge %s", name)
@@ -1947,12 +1960,11 @@ type EventsMutation struct {
 	created_at          *time.Time
 	updated_at          *time.Time
 	workflow_id         *uuid.UUID
+	instance_id         *uuid.UUID
 	clearedFields       map[string]struct{}
 	wfeventswait        map[uuid.UUID]struct{}
 	removedwfeventswait map[uuid.UUID]struct{}
 	clearedwfeventswait bool
-	instance            *uuid.UUID
-	clearedinstance     bool
 	namespace           *uuid.UUID
 	clearednamespace    bool
 	done                bool
@@ -2392,6 +2404,55 @@ func (m *EventsMutation) ResetWorkflowID() {
 	delete(m.clearedFields, events.FieldWorkflowID)
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (m *EventsMutation) SetInstanceID(u uuid.UUID) {
+	m.instance_id = &u
+}
+
+// InstanceID returns the value of the "instance_id" field in the mutation.
+func (m *EventsMutation) InstanceID() (r uuid.UUID, exists bool) {
+	v := m.instance_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceID returns the old "instance_id" field's value of the Events entity.
+// If the Events object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventsMutation) OldInstanceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInstanceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInstanceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceID: %w", err)
+	}
+	return oldValue.InstanceID, nil
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (m *EventsMutation) ClearInstanceID() {
+	m.instance_id = nil
+	m.clearedFields[events.FieldInstanceID] = struct{}{}
+}
+
+// InstanceIDCleared returns if the "instance_id" field was cleared in this mutation.
+func (m *EventsMutation) InstanceIDCleared() bool {
+	_, ok := m.clearedFields[events.FieldInstanceID]
+	return ok
+}
+
+// ResetInstanceID resets all changes to the "instance_id" field.
+func (m *EventsMutation) ResetInstanceID() {
+	m.instance_id = nil
+	delete(m.clearedFields, events.FieldInstanceID)
+}
+
 // AddWfeventswaitIDs adds the "wfeventswait" edge to the EventsWait entity by ids.
 func (m *EventsMutation) AddWfeventswaitIDs(ids ...uuid.UUID) {
 	if m.wfeventswait == nil {
@@ -2444,45 +2505,6 @@ func (m *EventsMutation) ResetWfeventswait() {
 	m.wfeventswait = nil
 	m.clearedwfeventswait = false
 	m.removedwfeventswait = nil
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by id.
-func (m *EventsMutation) SetInstanceID(id uuid.UUID) {
-	m.instance = &id
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (m *EventsMutation) ClearInstance() {
-	m.clearedinstance = true
-}
-
-// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
-func (m *EventsMutation) InstanceCleared() bool {
-	return m.clearedinstance
-}
-
-// InstanceID returns the "instance" edge ID in the mutation.
-func (m *EventsMutation) InstanceID() (id uuid.UUID, exists bool) {
-	if m.instance != nil {
-		return *m.instance, true
-	}
-	return
-}
-
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InstanceID instead. It exists only for internal usage by the builders.
-func (m *EventsMutation) InstanceIDs() (ids []uuid.UUID) {
-	if id := m.instance; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInstance resets all changes to the "instance" edge.
-func (m *EventsMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
 }
 
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
@@ -2558,7 +2580,7 @@ func (m *EventsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EventsMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.events != nil {
 		fields = append(fields, events.FieldEvents)
 	}
@@ -2579,6 +2601,9 @@ func (m *EventsMutation) Fields() []string {
 	}
 	if m.workflow_id != nil {
 		fields = append(fields, events.FieldWorkflowID)
+	}
+	if m.instance_id != nil {
+		fields = append(fields, events.FieldInstanceID)
 	}
 	return fields
 }
@@ -2602,6 +2627,8 @@ func (m *EventsMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case events.FieldWorkflowID:
 		return m.WorkflowID()
+	case events.FieldInstanceID:
+		return m.InstanceID()
 	}
 	return nil, false
 }
@@ -2625,6 +2652,8 @@ func (m *EventsMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldUpdatedAt(ctx)
 	case events.FieldWorkflowID:
 		return m.OldWorkflowID(ctx)
+	case events.FieldInstanceID:
+		return m.OldInstanceID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Events field %s", name)
 }
@@ -2683,6 +2712,13 @@ func (m *EventsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWorkflowID(v)
 		return nil
+	case events.FieldInstanceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Events field %s", name)
 }
@@ -2734,6 +2770,9 @@ func (m *EventsMutation) ClearedFields() []string {
 	if m.FieldCleared(events.FieldWorkflowID) {
 		fields = append(fields, events.FieldWorkflowID)
 	}
+	if m.FieldCleared(events.FieldInstanceID) {
+		fields = append(fields, events.FieldInstanceID)
+	}
 	return fields
 }
 
@@ -2753,6 +2792,9 @@ func (m *EventsMutation) ClearField(name string) error {
 		return nil
 	case events.FieldWorkflowID:
 		m.ClearWorkflowID()
+		return nil
+	case events.FieldInstanceID:
+		m.ClearInstanceID()
 		return nil
 	}
 	return fmt.Errorf("unknown Events nullable field %s", name)
@@ -2783,18 +2825,18 @@ func (m *EventsMutation) ResetField(name string) error {
 	case events.FieldWorkflowID:
 		m.ResetWorkflowID()
 		return nil
+	case events.FieldInstanceID:
+		m.ResetInstanceID()
+		return nil
 	}
 	return fmt.Errorf("unknown Events field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EventsMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.wfeventswait != nil {
 		edges = append(edges, events.EdgeWfeventswait)
-	}
-	if m.instance != nil {
-		edges = append(edges, events.EdgeInstance)
 	}
 	if m.namespace != nil {
 		edges = append(edges, events.EdgeNamespace)
@@ -2812,10 +2854,6 @@ func (m *EventsMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case events.EdgeInstance:
-		if id := m.instance; id != nil {
-			return []ent.Value{*id}
-		}
 	case events.EdgeNamespace:
 		if id := m.namespace; id != nil {
 			return []ent.Value{*id}
@@ -2826,7 +2864,7 @@ func (m *EventsMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EventsMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.removedwfeventswait != nil {
 		edges = append(edges, events.EdgeWfeventswait)
 	}
@@ -2849,12 +2887,9 @@ func (m *EventsMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EventsMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedwfeventswait {
 		edges = append(edges, events.EdgeWfeventswait)
-	}
-	if m.clearedinstance {
-		edges = append(edges, events.EdgeInstance)
 	}
 	if m.clearednamespace {
 		edges = append(edges, events.EdgeNamespace)
@@ -2868,8 +2903,6 @@ func (m *EventsMutation) EdgeCleared(name string) bool {
 	switch name {
 	case events.EdgeWfeventswait:
 		return m.clearedwfeventswait
-	case events.EdgeInstance:
-		return m.clearedinstance
 	case events.EdgeNamespace:
 		return m.clearednamespace
 	}
@@ -2880,9 +2913,6 @@ func (m *EventsMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *EventsMutation) ClearEdge(name string) error {
 	switch name {
-	case events.EdgeInstance:
-		m.ClearInstance()
-		return nil
 	case events.EdgeNamespace:
 		m.ClearNamespace()
 		return nil
@@ -2896,9 +2926,6 @@ func (m *EventsMutation) ResetEdge(name string) error {
 	switch name {
 	case events.EdgeWfeventswait:
 		m.ResetWfeventswait()
-		return nil
-	case events.EdgeInstance:
-		m.ResetInstance()
 		return nil
 	case events.EdgeNamespace:
 		m.ResetNamespace()
@@ -3306,3037 +3333,6 @@ func (m *EventsWaitMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown EventsWait edge %s", name)
 }
 
-// InstanceMutation represents an operation that mutates the Instance nodes in the graph.
-type InstanceMutation struct {
-	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	created_at            *time.Time
-	updated_at            *time.Time
-	end_at                *time.Time
-	status                *string
-	as                    *string
-	errorCode             *string
-	errorMessage          *string
-	invoker               *string
-	invokerState          *string
-	callpath              *string
-	workflow_id           *uuid.UUID
-	revision_id           *uuid.UUID
-	clearedFields         map[string]struct{}
-	namespace             *uuid.UUID
-	clearednamespace      bool
-	logs                  map[uuid.UUID]struct{}
-	removedlogs           map[uuid.UUID]struct{}
-	clearedlogs           bool
-	vars                  map[uuid.UUID]struct{}
-	removedvars           map[uuid.UUID]struct{}
-	clearedvars           bool
-	runtime               *uuid.UUID
-	clearedruntime        bool
-	children              map[uuid.UUID]struct{}
-	removedchildren       map[uuid.UUID]struct{}
-	clearedchildren       bool
-	eventlisteners        map[uuid.UUID]struct{}
-	removedeventlisteners map[uuid.UUID]struct{}
-	clearedeventlisteners bool
-	annotations           map[uuid.UUID]struct{}
-	removedannotations    map[uuid.UUID]struct{}
-	clearedannotations    bool
-	done                  bool
-	oldValue              func(context.Context) (*Instance, error)
-	predicates            []predicate.Instance
-}
-
-var _ ent.Mutation = (*InstanceMutation)(nil)
-
-// instanceOption allows management of the mutation configuration using functional options.
-type instanceOption func(*InstanceMutation)
-
-// newInstanceMutation creates new mutation for the Instance entity.
-func newInstanceMutation(c config, op Op, opts ...instanceOption) *InstanceMutation {
-	m := &InstanceMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeInstance,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withInstanceID sets the ID field of the mutation.
-func withInstanceID(id uuid.UUID) instanceOption {
-	return func(m *InstanceMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Instance
-		)
-		m.oldValue = func(ctx context.Context) (*Instance, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Instance.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withInstance sets the old Instance of the mutation.
-func withInstance(node *Instance) instanceOption {
-	return func(m *InstanceMutation) {
-		m.oldValue = func(context.Context) (*Instance, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m InstanceMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m InstanceMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Instance entities.
-func (m *InstanceMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *InstanceMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *InstanceMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Instance.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *InstanceMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *InstanceMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *InstanceMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *InstanceMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *InstanceMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *InstanceMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetEndAt sets the "end_at" field.
-func (m *InstanceMutation) SetEndAt(t time.Time) {
-	m.end_at = &t
-}
-
-// EndAt returns the value of the "end_at" field in the mutation.
-func (m *InstanceMutation) EndAt() (r time.Time, exists bool) {
-	v := m.end_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEndAt returns the old "end_at" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEndAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEndAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEndAt: %w", err)
-	}
-	return oldValue.EndAt, nil
-}
-
-// ClearEndAt clears the value of the "end_at" field.
-func (m *InstanceMutation) ClearEndAt() {
-	m.end_at = nil
-	m.clearedFields[instance.FieldEndAt] = struct{}{}
-}
-
-// EndAtCleared returns if the "end_at" field was cleared in this mutation.
-func (m *InstanceMutation) EndAtCleared() bool {
-	_, ok := m.clearedFields[instance.FieldEndAt]
-	return ok
-}
-
-// ResetEndAt resets all changes to the "end_at" field.
-func (m *InstanceMutation) ResetEndAt() {
-	m.end_at = nil
-	delete(m.clearedFields, instance.FieldEndAt)
-}
-
-// SetStatus sets the "status" field.
-func (m *InstanceMutation) SetStatus(s string) {
-	m.status = &s
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *InstanceMutation) Status() (r string, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldStatus(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *InstanceMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetAs sets the "as" field.
-func (m *InstanceMutation) SetAs(s string) {
-	m.as = &s
-}
-
-// As returns the value of the "as" field in the mutation.
-func (m *InstanceMutation) As() (r string, exists bool) {
-	v := m.as
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAs returns the old "as" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldAs(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAs is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAs requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAs: %w", err)
-	}
-	return oldValue.As, nil
-}
-
-// ResetAs resets all changes to the "as" field.
-func (m *InstanceMutation) ResetAs() {
-	m.as = nil
-}
-
-// SetErrorCode sets the "errorCode" field.
-func (m *InstanceMutation) SetErrorCode(s string) {
-	m.errorCode = &s
-}
-
-// ErrorCode returns the value of the "errorCode" field in the mutation.
-func (m *InstanceMutation) ErrorCode() (r string, exists bool) {
-	v := m.errorCode
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldErrorCode returns the old "errorCode" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldErrorCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldErrorCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldErrorCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldErrorCode: %w", err)
-	}
-	return oldValue.ErrorCode, nil
-}
-
-// ClearErrorCode clears the value of the "errorCode" field.
-func (m *InstanceMutation) ClearErrorCode() {
-	m.errorCode = nil
-	m.clearedFields[instance.FieldErrorCode] = struct{}{}
-}
-
-// ErrorCodeCleared returns if the "errorCode" field was cleared in this mutation.
-func (m *InstanceMutation) ErrorCodeCleared() bool {
-	_, ok := m.clearedFields[instance.FieldErrorCode]
-	return ok
-}
-
-// ResetErrorCode resets all changes to the "errorCode" field.
-func (m *InstanceMutation) ResetErrorCode() {
-	m.errorCode = nil
-	delete(m.clearedFields, instance.FieldErrorCode)
-}
-
-// SetErrorMessage sets the "errorMessage" field.
-func (m *InstanceMutation) SetErrorMessage(s string) {
-	m.errorMessage = &s
-}
-
-// ErrorMessage returns the value of the "errorMessage" field in the mutation.
-func (m *InstanceMutation) ErrorMessage() (r string, exists bool) {
-	v := m.errorMessage
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldErrorMessage returns the old "errorMessage" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldErrorMessage(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldErrorMessage is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldErrorMessage requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldErrorMessage: %w", err)
-	}
-	return oldValue.ErrorMessage, nil
-}
-
-// ClearErrorMessage clears the value of the "errorMessage" field.
-func (m *InstanceMutation) ClearErrorMessage() {
-	m.errorMessage = nil
-	m.clearedFields[instance.FieldErrorMessage] = struct{}{}
-}
-
-// ErrorMessageCleared returns if the "errorMessage" field was cleared in this mutation.
-func (m *InstanceMutation) ErrorMessageCleared() bool {
-	_, ok := m.clearedFields[instance.FieldErrorMessage]
-	return ok
-}
-
-// ResetErrorMessage resets all changes to the "errorMessage" field.
-func (m *InstanceMutation) ResetErrorMessage() {
-	m.errorMessage = nil
-	delete(m.clearedFields, instance.FieldErrorMessage)
-}
-
-// SetInvoker sets the "invoker" field.
-func (m *InstanceMutation) SetInvoker(s string) {
-	m.invoker = &s
-}
-
-// Invoker returns the value of the "invoker" field in the mutation.
-func (m *InstanceMutation) Invoker() (r string, exists bool) {
-	v := m.invoker
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInvoker returns the old "invoker" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldInvoker(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInvoker is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInvoker requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInvoker: %w", err)
-	}
-	return oldValue.Invoker, nil
-}
-
-// ClearInvoker clears the value of the "invoker" field.
-func (m *InstanceMutation) ClearInvoker() {
-	m.invoker = nil
-	m.clearedFields[instance.FieldInvoker] = struct{}{}
-}
-
-// InvokerCleared returns if the "invoker" field was cleared in this mutation.
-func (m *InstanceMutation) InvokerCleared() bool {
-	_, ok := m.clearedFields[instance.FieldInvoker]
-	return ok
-}
-
-// ResetInvoker resets all changes to the "invoker" field.
-func (m *InstanceMutation) ResetInvoker() {
-	m.invoker = nil
-	delete(m.clearedFields, instance.FieldInvoker)
-}
-
-// SetInvokerState sets the "invokerState" field.
-func (m *InstanceMutation) SetInvokerState(s string) {
-	m.invokerState = &s
-}
-
-// InvokerState returns the value of the "invokerState" field in the mutation.
-func (m *InstanceMutation) InvokerState() (r string, exists bool) {
-	v := m.invokerState
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInvokerState returns the old "invokerState" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldInvokerState(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInvokerState is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInvokerState requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInvokerState: %w", err)
-	}
-	return oldValue.InvokerState, nil
-}
-
-// ClearInvokerState clears the value of the "invokerState" field.
-func (m *InstanceMutation) ClearInvokerState() {
-	m.invokerState = nil
-	m.clearedFields[instance.FieldInvokerState] = struct{}{}
-}
-
-// InvokerStateCleared returns if the "invokerState" field was cleared in this mutation.
-func (m *InstanceMutation) InvokerStateCleared() bool {
-	_, ok := m.clearedFields[instance.FieldInvokerState]
-	return ok
-}
-
-// ResetInvokerState resets all changes to the "invokerState" field.
-func (m *InstanceMutation) ResetInvokerState() {
-	m.invokerState = nil
-	delete(m.clearedFields, instance.FieldInvokerState)
-}
-
-// SetCallpath sets the "callpath" field.
-func (m *InstanceMutation) SetCallpath(s string) {
-	m.callpath = &s
-}
-
-// Callpath returns the value of the "callpath" field in the mutation.
-func (m *InstanceMutation) Callpath() (r string, exists bool) {
-	v := m.callpath
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCallpath returns the old "callpath" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldCallpath(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCallpath is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCallpath requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCallpath: %w", err)
-	}
-	return oldValue.Callpath, nil
-}
-
-// ClearCallpath clears the value of the "callpath" field.
-func (m *InstanceMutation) ClearCallpath() {
-	m.callpath = nil
-	m.clearedFields[instance.FieldCallpath] = struct{}{}
-}
-
-// CallpathCleared returns if the "callpath" field was cleared in this mutation.
-func (m *InstanceMutation) CallpathCleared() bool {
-	_, ok := m.clearedFields[instance.FieldCallpath]
-	return ok
-}
-
-// ResetCallpath resets all changes to the "callpath" field.
-func (m *InstanceMutation) ResetCallpath() {
-	m.callpath = nil
-	delete(m.clearedFields, instance.FieldCallpath)
-}
-
-// SetWorkflowID sets the "workflow_id" field.
-func (m *InstanceMutation) SetWorkflowID(u uuid.UUID) {
-	m.workflow_id = &u
-}
-
-// WorkflowID returns the value of the "workflow_id" field in the mutation.
-func (m *InstanceMutation) WorkflowID() (r uuid.UUID, exists bool) {
-	v := m.workflow_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWorkflowID returns the old "workflow_id" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldWorkflowID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWorkflowID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWorkflowID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWorkflowID: %w", err)
-	}
-	return oldValue.WorkflowID, nil
-}
-
-// ResetWorkflowID resets all changes to the "workflow_id" field.
-func (m *InstanceMutation) ResetWorkflowID() {
-	m.workflow_id = nil
-}
-
-// SetRevisionID sets the "revision_id" field.
-func (m *InstanceMutation) SetRevisionID(u uuid.UUID) {
-	m.revision_id = &u
-}
-
-// RevisionID returns the value of the "revision_id" field in the mutation.
-func (m *InstanceMutation) RevisionID() (r uuid.UUID, exists bool) {
-	v := m.revision_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRevisionID returns the old "revision_id" field's value of the Instance entity.
-// If the Instance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMutation) OldRevisionID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRevisionID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRevisionID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRevisionID: %w", err)
-	}
-	return oldValue.RevisionID, nil
-}
-
-// ResetRevisionID resets all changes to the "revision_id" field.
-func (m *InstanceMutation) ResetRevisionID() {
-	m.revision_id = nil
-}
-
-// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
-func (m *InstanceMutation) SetNamespaceID(id uuid.UUID) {
-	m.namespace = &id
-}
-
-// ClearNamespace clears the "namespace" edge to the Namespace entity.
-func (m *InstanceMutation) ClearNamespace() {
-	m.clearednamespace = true
-}
-
-// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
-func (m *InstanceMutation) NamespaceCleared() bool {
-	return m.clearednamespace
-}
-
-// NamespaceID returns the "namespace" edge ID in the mutation.
-func (m *InstanceMutation) NamespaceID() (id uuid.UUID, exists bool) {
-	if m.namespace != nil {
-		return *m.namespace, true
-	}
-	return
-}
-
-// NamespaceIDs returns the "namespace" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NamespaceID instead. It exists only for internal usage by the builders.
-func (m *InstanceMutation) NamespaceIDs() (ids []uuid.UUID) {
-	if id := m.namespace; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetNamespace resets all changes to the "namespace" edge.
-func (m *InstanceMutation) ResetNamespace() {
-	m.namespace = nil
-	m.clearednamespace = false
-}
-
-// AddLogIDs adds the "logs" edge to the LogMsg entity by ids.
-func (m *InstanceMutation) AddLogIDs(ids ...uuid.UUID) {
-	if m.logs == nil {
-		m.logs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.logs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearLogs clears the "logs" edge to the LogMsg entity.
-func (m *InstanceMutation) ClearLogs() {
-	m.clearedlogs = true
-}
-
-// LogsCleared reports if the "logs" edge to the LogMsg entity was cleared.
-func (m *InstanceMutation) LogsCleared() bool {
-	return m.clearedlogs
-}
-
-// RemoveLogIDs removes the "logs" edge to the LogMsg entity by IDs.
-func (m *InstanceMutation) RemoveLogIDs(ids ...uuid.UUID) {
-	if m.removedlogs == nil {
-		m.removedlogs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.logs, ids[i])
-		m.removedlogs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedLogs returns the removed IDs of the "logs" edge to the LogMsg entity.
-func (m *InstanceMutation) RemovedLogsIDs() (ids []uuid.UUID) {
-	for id := range m.removedlogs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// LogsIDs returns the "logs" edge IDs in the mutation.
-func (m *InstanceMutation) LogsIDs() (ids []uuid.UUID) {
-	for id := range m.logs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetLogs resets all changes to the "logs" edge.
-func (m *InstanceMutation) ResetLogs() {
-	m.logs = nil
-	m.clearedlogs = false
-	m.removedlogs = nil
-}
-
-// AddVarIDs adds the "vars" edge to the VarRef entity by ids.
-func (m *InstanceMutation) AddVarIDs(ids ...uuid.UUID) {
-	if m.vars == nil {
-		m.vars = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.vars[ids[i]] = struct{}{}
-	}
-}
-
-// ClearVars clears the "vars" edge to the VarRef entity.
-func (m *InstanceMutation) ClearVars() {
-	m.clearedvars = true
-}
-
-// VarsCleared reports if the "vars" edge to the VarRef entity was cleared.
-func (m *InstanceMutation) VarsCleared() bool {
-	return m.clearedvars
-}
-
-// RemoveVarIDs removes the "vars" edge to the VarRef entity by IDs.
-func (m *InstanceMutation) RemoveVarIDs(ids ...uuid.UUID) {
-	if m.removedvars == nil {
-		m.removedvars = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.vars, ids[i])
-		m.removedvars[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedVars returns the removed IDs of the "vars" edge to the VarRef entity.
-func (m *InstanceMutation) RemovedVarsIDs() (ids []uuid.UUID) {
-	for id := range m.removedvars {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// VarsIDs returns the "vars" edge IDs in the mutation.
-func (m *InstanceMutation) VarsIDs() (ids []uuid.UUID) {
-	for id := range m.vars {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetVars resets all changes to the "vars" edge.
-func (m *InstanceMutation) ResetVars() {
-	m.vars = nil
-	m.clearedvars = false
-	m.removedvars = nil
-}
-
-// SetRuntimeID sets the "runtime" edge to the InstanceRuntime entity by id.
-func (m *InstanceMutation) SetRuntimeID(id uuid.UUID) {
-	m.runtime = &id
-}
-
-// ClearRuntime clears the "runtime" edge to the InstanceRuntime entity.
-func (m *InstanceMutation) ClearRuntime() {
-	m.clearedruntime = true
-}
-
-// RuntimeCleared reports if the "runtime" edge to the InstanceRuntime entity was cleared.
-func (m *InstanceMutation) RuntimeCleared() bool {
-	return m.clearedruntime
-}
-
-// RuntimeID returns the "runtime" edge ID in the mutation.
-func (m *InstanceMutation) RuntimeID() (id uuid.UUID, exists bool) {
-	if m.runtime != nil {
-		return *m.runtime, true
-	}
-	return
-}
-
-// RuntimeIDs returns the "runtime" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// RuntimeID instead. It exists only for internal usage by the builders.
-func (m *InstanceMutation) RuntimeIDs() (ids []uuid.UUID) {
-	if id := m.runtime; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetRuntime resets all changes to the "runtime" edge.
-func (m *InstanceMutation) ResetRuntime() {
-	m.runtime = nil
-	m.clearedruntime = false
-}
-
-// AddChildIDs adds the "children" edge to the InstanceRuntime entity by ids.
-func (m *InstanceMutation) AddChildIDs(ids ...uuid.UUID) {
-	if m.children == nil {
-		m.children = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.children[ids[i]] = struct{}{}
-	}
-}
-
-// ClearChildren clears the "children" edge to the InstanceRuntime entity.
-func (m *InstanceMutation) ClearChildren() {
-	m.clearedchildren = true
-}
-
-// ChildrenCleared reports if the "children" edge to the InstanceRuntime entity was cleared.
-func (m *InstanceMutation) ChildrenCleared() bool {
-	return m.clearedchildren
-}
-
-// RemoveChildIDs removes the "children" edge to the InstanceRuntime entity by IDs.
-func (m *InstanceMutation) RemoveChildIDs(ids ...uuid.UUID) {
-	if m.removedchildren == nil {
-		m.removedchildren = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.children, ids[i])
-		m.removedchildren[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedChildren returns the removed IDs of the "children" edge to the InstanceRuntime entity.
-func (m *InstanceMutation) RemovedChildrenIDs() (ids []uuid.UUID) {
-	for id := range m.removedchildren {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ChildrenIDs returns the "children" edge IDs in the mutation.
-func (m *InstanceMutation) ChildrenIDs() (ids []uuid.UUID) {
-	for id := range m.children {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetChildren resets all changes to the "children" edge.
-func (m *InstanceMutation) ResetChildren() {
-	m.children = nil
-	m.clearedchildren = false
-	m.removedchildren = nil
-}
-
-// AddEventlistenerIDs adds the "eventlisteners" edge to the Events entity by ids.
-func (m *InstanceMutation) AddEventlistenerIDs(ids ...uuid.UUID) {
-	if m.eventlisteners == nil {
-		m.eventlisteners = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.eventlisteners[ids[i]] = struct{}{}
-	}
-}
-
-// ClearEventlisteners clears the "eventlisteners" edge to the Events entity.
-func (m *InstanceMutation) ClearEventlisteners() {
-	m.clearedeventlisteners = true
-}
-
-// EventlistenersCleared reports if the "eventlisteners" edge to the Events entity was cleared.
-func (m *InstanceMutation) EventlistenersCleared() bool {
-	return m.clearedeventlisteners
-}
-
-// RemoveEventlistenerIDs removes the "eventlisteners" edge to the Events entity by IDs.
-func (m *InstanceMutation) RemoveEventlistenerIDs(ids ...uuid.UUID) {
-	if m.removedeventlisteners == nil {
-		m.removedeventlisteners = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.eventlisteners, ids[i])
-		m.removedeventlisteners[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedEventlisteners returns the removed IDs of the "eventlisteners" edge to the Events entity.
-func (m *InstanceMutation) RemovedEventlistenersIDs() (ids []uuid.UUID) {
-	for id := range m.removedeventlisteners {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// EventlistenersIDs returns the "eventlisteners" edge IDs in the mutation.
-func (m *InstanceMutation) EventlistenersIDs() (ids []uuid.UUID) {
-	for id := range m.eventlisteners {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetEventlisteners resets all changes to the "eventlisteners" edge.
-func (m *InstanceMutation) ResetEventlisteners() {
-	m.eventlisteners = nil
-	m.clearedeventlisteners = false
-	m.removedeventlisteners = nil
-}
-
-// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by ids.
-func (m *InstanceMutation) AddAnnotationIDs(ids ...uuid.UUID) {
-	if m.annotations == nil {
-		m.annotations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.annotations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAnnotations clears the "annotations" edge to the Annotation entity.
-func (m *InstanceMutation) ClearAnnotations() {
-	m.clearedannotations = true
-}
-
-// AnnotationsCleared reports if the "annotations" edge to the Annotation entity was cleared.
-func (m *InstanceMutation) AnnotationsCleared() bool {
-	return m.clearedannotations
-}
-
-// RemoveAnnotationIDs removes the "annotations" edge to the Annotation entity by IDs.
-func (m *InstanceMutation) RemoveAnnotationIDs(ids ...uuid.UUID) {
-	if m.removedannotations == nil {
-		m.removedannotations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.annotations, ids[i])
-		m.removedannotations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAnnotations returns the removed IDs of the "annotations" edge to the Annotation entity.
-func (m *InstanceMutation) RemovedAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedannotations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AnnotationsIDs returns the "annotations" edge IDs in the mutation.
-func (m *InstanceMutation) AnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.annotations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAnnotations resets all changes to the "annotations" edge.
-func (m *InstanceMutation) ResetAnnotations() {
-	m.annotations = nil
-	m.clearedannotations = false
-	m.removedannotations = nil
-}
-
-// Where appends a list predicates to the InstanceMutation builder.
-func (m *InstanceMutation) Where(ps ...predicate.Instance) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the InstanceMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *InstanceMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Instance, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *InstanceMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *InstanceMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Instance).
-func (m *InstanceMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *InstanceMutation) Fields() []string {
-	fields := make([]string, 0, 12)
-	if m.created_at != nil {
-		fields = append(fields, instance.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, instance.FieldUpdatedAt)
-	}
-	if m.end_at != nil {
-		fields = append(fields, instance.FieldEndAt)
-	}
-	if m.status != nil {
-		fields = append(fields, instance.FieldStatus)
-	}
-	if m.as != nil {
-		fields = append(fields, instance.FieldAs)
-	}
-	if m.errorCode != nil {
-		fields = append(fields, instance.FieldErrorCode)
-	}
-	if m.errorMessage != nil {
-		fields = append(fields, instance.FieldErrorMessage)
-	}
-	if m.invoker != nil {
-		fields = append(fields, instance.FieldInvoker)
-	}
-	if m.invokerState != nil {
-		fields = append(fields, instance.FieldInvokerState)
-	}
-	if m.callpath != nil {
-		fields = append(fields, instance.FieldCallpath)
-	}
-	if m.workflow_id != nil {
-		fields = append(fields, instance.FieldWorkflowID)
-	}
-	if m.revision_id != nil {
-		fields = append(fields, instance.FieldRevisionID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *InstanceMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case instance.FieldCreatedAt:
-		return m.CreatedAt()
-	case instance.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case instance.FieldEndAt:
-		return m.EndAt()
-	case instance.FieldStatus:
-		return m.Status()
-	case instance.FieldAs:
-		return m.As()
-	case instance.FieldErrorCode:
-		return m.ErrorCode()
-	case instance.FieldErrorMessage:
-		return m.ErrorMessage()
-	case instance.FieldInvoker:
-		return m.Invoker()
-	case instance.FieldInvokerState:
-		return m.InvokerState()
-	case instance.FieldCallpath:
-		return m.Callpath()
-	case instance.FieldWorkflowID:
-		return m.WorkflowID()
-	case instance.FieldRevisionID:
-		return m.RevisionID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *InstanceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case instance.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case instance.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case instance.FieldEndAt:
-		return m.OldEndAt(ctx)
-	case instance.FieldStatus:
-		return m.OldStatus(ctx)
-	case instance.FieldAs:
-		return m.OldAs(ctx)
-	case instance.FieldErrorCode:
-		return m.OldErrorCode(ctx)
-	case instance.FieldErrorMessage:
-		return m.OldErrorMessage(ctx)
-	case instance.FieldInvoker:
-		return m.OldInvoker(ctx)
-	case instance.FieldInvokerState:
-		return m.OldInvokerState(ctx)
-	case instance.FieldCallpath:
-		return m.OldCallpath(ctx)
-	case instance.FieldWorkflowID:
-		return m.OldWorkflowID(ctx)
-	case instance.FieldRevisionID:
-		return m.OldRevisionID(ctx)
-	}
-	return nil, fmt.Errorf("unknown Instance field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *InstanceMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case instance.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case instance.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case instance.FieldEndAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEndAt(v)
-		return nil
-	case instance.FieldStatus:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case instance.FieldAs:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAs(v)
-		return nil
-	case instance.FieldErrorCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetErrorCode(v)
-		return nil
-	case instance.FieldErrorMessage:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetErrorMessage(v)
-		return nil
-	case instance.FieldInvoker:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetInvoker(v)
-		return nil
-	case instance.FieldInvokerState:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetInvokerState(v)
-		return nil
-	case instance.FieldCallpath:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCallpath(v)
-		return nil
-	case instance.FieldWorkflowID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWorkflowID(v)
-		return nil
-	case instance.FieldRevisionID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRevisionID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Instance field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *InstanceMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *InstanceMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *InstanceMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Instance numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *InstanceMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(instance.FieldEndAt) {
-		fields = append(fields, instance.FieldEndAt)
-	}
-	if m.FieldCleared(instance.FieldErrorCode) {
-		fields = append(fields, instance.FieldErrorCode)
-	}
-	if m.FieldCleared(instance.FieldErrorMessage) {
-		fields = append(fields, instance.FieldErrorMessage)
-	}
-	if m.FieldCleared(instance.FieldInvoker) {
-		fields = append(fields, instance.FieldInvoker)
-	}
-	if m.FieldCleared(instance.FieldInvokerState) {
-		fields = append(fields, instance.FieldInvokerState)
-	}
-	if m.FieldCleared(instance.FieldCallpath) {
-		fields = append(fields, instance.FieldCallpath)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *InstanceMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *InstanceMutation) ClearField(name string) error {
-	switch name {
-	case instance.FieldEndAt:
-		m.ClearEndAt()
-		return nil
-	case instance.FieldErrorCode:
-		m.ClearErrorCode()
-		return nil
-	case instance.FieldErrorMessage:
-		m.ClearErrorMessage()
-		return nil
-	case instance.FieldInvoker:
-		m.ClearInvoker()
-		return nil
-	case instance.FieldInvokerState:
-		m.ClearInvokerState()
-		return nil
-	case instance.FieldCallpath:
-		m.ClearCallpath()
-		return nil
-	}
-	return fmt.Errorf("unknown Instance nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *InstanceMutation) ResetField(name string) error {
-	switch name {
-	case instance.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case instance.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case instance.FieldEndAt:
-		m.ResetEndAt()
-		return nil
-	case instance.FieldStatus:
-		m.ResetStatus()
-		return nil
-	case instance.FieldAs:
-		m.ResetAs()
-		return nil
-	case instance.FieldErrorCode:
-		m.ResetErrorCode()
-		return nil
-	case instance.FieldErrorMessage:
-		m.ResetErrorMessage()
-		return nil
-	case instance.FieldInvoker:
-		m.ResetInvoker()
-		return nil
-	case instance.FieldInvokerState:
-		m.ResetInvokerState()
-		return nil
-	case instance.FieldCallpath:
-		m.ResetCallpath()
-		return nil
-	case instance.FieldWorkflowID:
-		m.ResetWorkflowID()
-		return nil
-	case instance.FieldRevisionID:
-		m.ResetRevisionID()
-		return nil
-	}
-	return fmt.Errorf("unknown Instance field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *InstanceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
-	if m.namespace != nil {
-		edges = append(edges, instance.EdgeNamespace)
-	}
-	if m.logs != nil {
-		edges = append(edges, instance.EdgeLogs)
-	}
-	if m.vars != nil {
-		edges = append(edges, instance.EdgeVars)
-	}
-	if m.runtime != nil {
-		edges = append(edges, instance.EdgeRuntime)
-	}
-	if m.children != nil {
-		edges = append(edges, instance.EdgeChildren)
-	}
-	if m.eventlisteners != nil {
-		edges = append(edges, instance.EdgeEventlisteners)
-	}
-	if m.annotations != nil {
-		edges = append(edges, instance.EdgeAnnotations)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case instance.EdgeNamespace:
-		if id := m.namespace; id != nil {
-			return []ent.Value{*id}
-		}
-	case instance.EdgeLogs:
-		ids := make([]ent.Value, 0, len(m.logs))
-		for id := range m.logs {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeVars:
-		ids := make([]ent.Value, 0, len(m.vars))
-		for id := range m.vars {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeRuntime:
-		if id := m.runtime; id != nil {
-			return []ent.Value{*id}
-		}
-	case instance.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.children))
-		for id := range m.children {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeEventlisteners:
-		ids := make([]ent.Value, 0, len(m.eventlisteners))
-		for id := range m.eventlisteners {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeAnnotations:
-		ids := make([]ent.Value, 0, len(m.annotations))
-		for id := range m.annotations {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *InstanceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
-	if m.removedlogs != nil {
-		edges = append(edges, instance.EdgeLogs)
-	}
-	if m.removedvars != nil {
-		edges = append(edges, instance.EdgeVars)
-	}
-	if m.removedchildren != nil {
-		edges = append(edges, instance.EdgeChildren)
-	}
-	if m.removedeventlisteners != nil {
-		edges = append(edges, instance.EdgeEventlisteners)
-	}
-	if m.removedannotations != nil {
-		edges = append(edges, instance.EdgeAnnotations)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case instance.EdgeLogs:
-		ids := make([]ent.Value, 0, len(m.removedlogs))
-		for id := range m.removedlogs {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeVars:
-		ids := make([]ent.Value, 0, len(m.removedvars))
-		for id := range m.removedvars {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.removedchildren))
-		for id := range m.removedchildren {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeEventlisteners:
-		ids := make([]ent.Value, 0, len(m.removedeventlisteners))
-		for id := range m.removedeventlisteners {
-			ids = append(ids, id)
-		}
-		return ids
-	case instance.EdgeAnnotations:
-		ids := make([]ent.Value, 0, len(m.removedannotations))
-		for id := range m.removedannotations {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *InstanceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
-	if m.clearednamespace {
-		edges = append(edges, instance.EdgeNamespace)
-	}
-	if m.clearedlogs {
-		edges = append(edges, instance.EdgeLogs)
-	}
-	if m.clearedvars {
-		edges = append(edges, instance.EdgeVars)
-	}
-	if m.clearedruntime {
-		edges = append(edges, instance.EdgeRuntime)
-	}
-	if m.clearedchildren {
-		edges = append(edges, instance.EdgeChildren)
-	}
-	if m.clearedeventlisteners {
-		edges = append(edges, instance.EdgeEventlisteners)
-	}
-	if m.clearedannotations {
-		edges = append(edges, instance.EdgeAnnotations)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *InstanceMutation) EdgeCleared(name string) bool {
-	switch name {
-	case instance.EdgeNamespace:
-		return m.clearednamespace
-	case instance.EdgeLogs:
-		return m.clearedlogs
-	case instance.EdgeVars:
-		return m.clearedvars
-	case instance.EdgeRuntime:
-		return m.clearedruntime
-	case instance.EdgeChildren:
-		return m.clearedchildren
-	case instance.EdgeEventlisteners:
-		return m.clearedeventlisteners
-	case instance.EdgeAnnotations:
-		return m.clearedannotations
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *InstanceMutation) ClearEdge(name string) error {
-	switch name {
-	case instance.EdgeNamespace:
-		m.ClearNamespace()
-		return nil
-	case instance.EdgeRuntime:
-		m.ClearRuntime()
-		return nil
-	}
-	return fmt.Errorf("unknown Instance unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *InstanceMutation) ResetEdge(name string) error {
-	switch name {
-	case instance.EdgeNamespace:
-		m.ResetNamespace()
-		return nil
-	case instance.EdgeLogs:
-		m.ResetLogs()
-		return nil
-	case instance.EdgeVars:
-		m.ResetVars()
-		return nil
-	case instance.EdgeRuntime:
-		m.ResetRuntime()
-		return nil
-	case instance.EdgeChildren:
-		m.ResetChildren()
-		return nil
-	case instance.EdgeEventlisteners:
-		m.ResetEventlisteners()
-		return nil
-	case instance.EdgeAnnotations:
-		m.ResetAnnotations()
-		return nil
-	}
-	return fmt.Errorf("unknown Instance edge %s", name)
-}
-
-// InstanceRuntimeMutation represents an operation that mutates the InstanceRuntime nodes in the graph.
-type InstanceRuntimeMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	input           *[]byte
-	data            *string
-	controller      *string
-	memory          *string
-	flow            *[]string
-	appendflow      []string
-	output          *string
-	stateBeginTime  *time.Time
-	deadline        *time.Time
-	attempts        *int
-	addattempts     *int
-	caller_data     *string
-	instanceContext *string
-	stateContext    *string
-	metadata        *string
-	logToEvents     *string
-	clearedFields   map[string]struct{}
-	instance        *uuid.UUID
-	clearedinstance bool
-	caller          *uuid.UUID
-	clearedcaller   bool
-	done            bool
-	oldValue        func(context.Context) (*InstanceRuntime, error)
-	predicates      []predicate.InstanceRuntime
-}
-
-var _ ent.Mutation = (*InstanceRuntimeMutation)(nil)
-
-// instanceruntimeOption allows management of the mutation configuration using functional options.
-type instanceruntimeOption func(*InstanceRuntimeMutation)
-
-// newInstanceRuntimeMutation creates new mutation for the InstanceRuntime entity.
-func newInstanceRuntimeMutation(c config, op Op, opts ...instanceruntimeOption) *InstanceRuntimeMutation {
-	m := &InstanceRuntimeMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeInstanceRuntime,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withInstanceRuntimeID sets the ID field of the mutation.
-func withInstanceRuntimeID(id uuid.UUID) instanceruntimeOption {
-	return func(m *InstanceRuntimeMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *InstanceRuntime
-		)
-		m.oldValue = func(ctx context.Context) (*InstanceRuntime, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().InstanceRuntime.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withInstanceRuntime sets the old InstanceRuntime of the mutation.
-func withInstanceRuntime(node *InstanceRuntime) instanceruntimeOption {
-	return func(m *InstanceRuntimeMutation) {
-		m.oldValue = func(context.Context) (*InstanceRuntime, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m InstanceRuntimeMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m InstanceRuntimeMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of InstanceRuntime entities.
-func (m *InstanceRuntimeMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *InstanceRuntimeMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *InstanceRuntimeMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().InstanceRuntime.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetInput sets the "input" field.
-func (m *InstanceRuntimeMutation) SetInput(b []byte) {
-	m.input = &b
-}
-
-// Input returns the value of the "input" field in the mutation.
-func (m *InstanceRuntimeMutation) Input() (r []byte, exists bool) {
-	v := m.input
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInput returns the old "input" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldInput(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInput is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInput requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInput: %w", err)
-	}
-	return oldValue.Input, nil
-}
-
-// ResetInput resets all changes to the "input" field.
-func (m *InstanceRuntimeMutation) ResetInput() {
-	m.input = nil
-}
-
-// SetData sets the "data" field.
-func (m *InstanceRuntimeMutation) SetData(s string) {
-	m.data = &s
-}
-
-// Data returns the value of the "data" field in the mutation.
-func (m *InstanceRuntimeMutation) Data() (r string, exists bool) {
-	v := m.data
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldData returns the old "data" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldData(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldData is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldData requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldData: %w", err)
-	}
-	return oldValue.Data, nil
-}
-
-// ResetData resets all changes to the "data" field.
-func (m *InstanceRuntimeMutation) ResetData() {
-	m.data = nil
-}
-
-// SetController sets the "controller" field.
-func (m *InstanceRuntimeMutation) SetController(s string) {
-	m.controller = &s
-}
-
-// Controller returns the value of the "controller" field in the mutation.
-func (m *InstanceRuntimeMutation) Controller() (r string, exists bool) {
-	v := m.controller
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldController returns the old "controller" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldController(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldController is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldController requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldController: %w", err)
-	}
-	return oldValue.Controller, nil
-}
-
-// ClearController clears the value of the "controller" field.
-func (m *InstanceRuntimeMutation) ClearController() {
-	m.controller = nil
-	m.clearedFields[instanceruntime.FieldController] = struct{}{}
-}
-
-// ControllerCleared returns if the "controller" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) ControllerCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldController]
-	return ok
-}
-
-// ResetController resets all changes to the "controller" field.
-func (m *InstanceRuntimeMutation) ResetController() {
-	m.controller = nil
-	delete(m.clearedFields, instanceruntime.FieldController)
-}
-
-// SetMemory sets the "memory" field.
-func (m *InstanceRuntimeMutation) SetMemory(s string) {
-	m.memory = &s
-}
-
-// Memory returns the value of the "memory" field in the mutation.
-func (m *InstanceRuntimeMutation) Memory() (r string, exists bool) {
-	v := m.memory
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMemory returns the old "memory" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldMemory(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMemory is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMemory requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMemory: %w", err)
-	}
-	return oldValue.Memory, nil
-}
-
-// ClearMemory clears the value of the "memory" field.
-func (m *InstanceRuntimeMutation) ClearMemory() {
-	m.memory = nil
-	m.clearedFields[instanceruntime.FieldMemory] = struct{}{}
-}
-
-// MemoryCleared returns if the "memory" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) MemoryCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldMemory]
-	return ok
-}
-
-// ResetMemory resets all changes to the "memory" field.
-func (m *InstanceRuntimeMutation) ResetMemory() {
-	m.memory = nil
-	delete(m.clearedFields, instanceruntime.FieldMemory)
-}
-
-// SetFlow sets the "flow" field.
-func (m *InstanceRuntimeMutation) SetFlow(s []string) {
-	m.flow = &s
-	m.appendflow = nil
-}
-
-// Flow returns the value of the "flow" field in the mutation.
-func (m *InstanceRuntimeMutation) Flow() (r []string, exists bool) {
-	v := m.flow
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFlow returns the old "flow" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldFlow(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFlow is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFlow requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFlow: %w", err)
-	}
-	return oldValue.Flow, nil
-}
-
-// AppendFlow adds s to the "flow" field.
-func (m *InstanceRuntimeMutation) AppendFlow(s []string) {
-	m.appendflow = append(m.appendflow, s...)
-}
-
-// AppendedFlow returns the list of values that were appended to the "flow" field in this mutation.
-func (m *InstanceRuntimeMutation) AppendedFlow() ([]string, bool) {
-	if len(m.appendflow) == 0 {
-		return nil, false
-	}
-	return m.appendflow, true
-}
-
-// ClearFlow clears the value of the "flow" field.
-func (m *InstanceRuntimeMutation) ClearFlow() {
-	m.flow = nil
-	m.appendflow = nil
-	m.clearedFields[instanceruntime.FieldFlow] = struct{}{}
-}
-
-// FlowCleared returns if the "flow" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) FlowCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldFlow]
-	return ok
-}
-
-// ResetFlow resets all changes to the "flow" field.
-func (m *InstanceRuntimeMutation) ResetFlow() {
-	m.flow = nil
-	m.appendflow = nil
-	delete(m.clearedFields, instanceruntime.FieldFlow)
-}
-
-// SetOutput sets the "output" field.
-func (m *InstanceRuntimeMutation) SetOutput(s string) {
-	m.output = &s
-}
-
-// Output returns the value of the "output" field in the mutation.
-func (m *InstanceRuntimeMutation) Output() (r string, exists bool) {
-	v := m.output
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOutput returns the old "output" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldOutput(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOutput is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOutput requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOutput: %w", err)
-	}
-	return oldValue.Output, nil
-}
-
-// ClearOutput clears the value of the "output" field.
-func (m *InstanceRuntimeMutation) ClearOutput() {
-	m.output = nil
-	m.clearedFields[instanceruntime.FieldOutput] = struct{}{}
-}
-
-// OutputCleared returns if the "output" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) OutputCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldOutput]
-	return ok
-}
-
-// ResetOutput resets all changes to the "output" field.
-func (m *InstanceRuntimeMutation) ResetOutput() {
-	m.output = nil
-	delete(m.clearedFields, instanceruntime.FieldOutput)
-}
-
-// SetStateBeginTime sets the "stateBeginTime" field.
-func (m *InstanceRuntimeMutation) SetStateBeginTime(t time.Time) {
-	m.stateBeginTime = &t
-}
-
-// StateBeginTime returns the value of the "stateBeginTime" field in the mutation.
-func (m *InstanceRuntimeMutation) StateBeginTime() (r time.Time, exists bool) {
-	v := m.stateBeginTime
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStateBeginTime returns the old "stateBeginTime" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldStateBeginTime(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStateBeginTime is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStateBeginTime requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStateBeginTime: %w", err)
-	}
-	return oldValue.StateBeginTime, nil
-}
-
-// ClearStateBeginTime clears the value of the "stateBeginTime" field.
-func (m *InstanceRuntimeMutation) ClearStateBeginTime() {
-	m.stateBeginTime = nil
-	m.clearedFields[instanceruntime.FieldStateBeginTime] = struct{}{}
-}
-
-// StateBeginTimeCleared returns if the "stateBeginTime" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) StateBeginTimeCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldStateBeginTime]
-	return ok
-}
-
-// ResetStateBeginTime resets all changes to the "stateBeginTime" field.
-func (m *InstanceRuntimeMutation) ResetStateBeginTime() {
-	m.stateBeginTime = nil
-	delete(m.clearedFields, instanceruntime.FieldStateBeginTime)
-}
-
-// SetDeadline sets the "deadline" field.
-func (m *InstanceRuntimeMutation) SetDeadline(t time.Time) {
-	m.deadline = &t
-}
-
-// Deadline returns the value of the "deadline" field in the mutation.
-func (m *InstanceRuntimeMutation) Deadline() (r time.Time, exists bool) {
-	v := m.deadline
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDeadline returns the old "deadline" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldDeadline(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDeadline is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDeadline requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDeadline: %w", err)
-	}
-	return oldValue.Deadline, nil
-}
-
-// ClearDeadline clears the value of the "deadline" field.
-func (m *InstanceRuntimeMutation) ClearDeadline() {
-	m.deadline = nil
-	m.clearedFields[instanceruntime.FieldDeadline] = struct{}{}
-}
-
-// DeadlineCleared returns if the "deadline" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) DeadlineCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldDeadline]
-	return ok
-}
-
-// ResetDeadline resets all changes to the "deadline" field.
-func (m *InstanceRuntimeMutation) ResetDeadline() {
-	m.deadline = nil
-	delete(m.clearedFields, instanceruntime.FieldDeadline)
-}
-
-// SetAttempts sets the "attempts" field.
-func (m *InstanceRuntimeMutation) SetAttempts(i int) {
-	m.attempts = &i
-	m.addattempts = nil
-}
-
-// Attempts returns the value of the "attempts" field in the mutation.
-func (m *InstanceRuntimeMutation) Attempts() (r int, exists bool) {
-	v := m.attempts
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAttempts returns the old "attempts" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldAttempts(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAttempts is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAttempts requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAttempts: %w", err)
-	}
-	return oldValue.Attempts, nil
-}
-
-// AddAttempts adds i to the "attempts" field.
-func (m *InstanceRuntimeMutation) AddAttempts(i int) {
-	if m.addattempts != nil {
-		*m.addattempts += i
-	} else {
-		m.addattempts = &i
-	}
-}
-
-// AddedAttempts returns the value that was added to the "attempts" field in this mutation.
-func (m *InstanceRuntimeMutation) AddedAttempts() (r int, exists bool) {
-	v := m.addattempts
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearAttempts clears the value of the "attempts" field.
-func (m *InstanceRuntimeMutation) ClearAttempts() {
-	m.attempts = nil
-	m.addattempts = nil
-	m.clearedFields[instanceruntime.FieldAttempts] = struct{}{}
-}
-
-// AttemptsCleared returns if the "attempts" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) AttemptsCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldAttempts]
-	return ok
-}
-
-// ResetAttempts resets all changes to the "attempts" field.
-func (m *InstanceRuntimeMutation) ResetAttempts() {
-	m.attempts = nil
-	m.addattempts = nil
-	delete(m.clearedFields, instanceruntime.FieldAttempts)
-}
-
-// SetCallerData sets the "caller_data" field.
-func (m *InstanceRuntimeMutation) SetCallerData(s string) {
-	m.caller_data = &s
-}
-
-// CallerData returns the value of the "caller_data" field in the mutation.
-func (m *InstanceRuntimeMutation) CallerData() (r string, exists bool) {
-	v := m.caller_data
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCallerData returns the old "caller_data" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldCallerData(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCallerData is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCallerData requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCallerData: %w", err)
-	}
-	return oldValue.CallerData, nil
-}
-
-// ClearCallerData clears the value of the "caller_data" field.
-func (m *InstanceRuntimeMutation) ClearCallerData() {
-	m.caller_data = nil
-	m.clearedFields[instanceruntime.FieldCallerData] = struct{}{}
-}
-
-// CallerDataCleared returns if the "caller_data" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) CallerDataCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldCallerData]
-	return ok
-}
-
-// ResetCallerData resets all changes to the "caller_data" field.
-func (m *InstanceRuntimeMutation) ResetCallerData() {
-	m.caller_data = nil
-	delete(m.clearedFields, instanceruntime.FieldCallerData)
-}
-
-// SetInstanceContext sets the "instanceContext" field.
-func (m *InstanceRuntimeMutation) SetInstanceContext(s string) {
-	m.instanceContext = &s
-}
-
-// InstanceContext returns the value of the "instanceContext" field in the mutation.
-func (m *InstanceRuntimeMutation) InstanceContext() (r string, exists bool) {
-	v := m.instanceContext
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInstanceContext returns the old "instanceContext" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldInstanceContext(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInstanceContext is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInstanceContext requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInstanceContext: %w", err)
-	}
-	return oldValue.InstanceContext, nil
-}
-
-// ClearInstanceContext clears the value of the "instanceContext" field.
-func (m *InstanceRuntimeMutation) ClearInstanceContext() {
-	m.instanceContext = nil
-	m.clearedFields[instanceruntime.FieldInstanceContext] = struct{}{}
-}
-
-// InstanceContextCleared returns if the "instanceContext" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) InstanceContextCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldInstanceContext]
-	return ok
-}
-
-// ResetInstanceContext resets all changes to the "instanceContext" field.
-func (m *InstanceRuntimeMutation) ResetInstanceContext() {
-	m.instanceContext = nil
-	delete(m.clearedFields, instanceruntime.FieldInstanceContext)
-}
-
-// SetStateContext sets the "stateContext" field.
-func (m *InstanceRuntimeMutation) SetStateContext(s string) {
-	m.stateContext = &s
-}
-
-// StateContext returns the value of the "stateContext" field in the mutation.
-func (m *InstanceRuntimeMutation) StateContext() (r string, exists bool) {
-	v := m.stateContext
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStateContext returns the old "stateContext" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldStateContext(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStateContext is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStateContext requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStateContext: %w", err)
-	}
-	return oldValue.StateContext, nil
-}
-
-// ClearStateContext clears the value of the "stateContext" field.
-func (m *InstanceRuntimeMutation) ClearStateContext() {
-	m.stateContext = nil
-	m.clearedFields[instanceruntime.FieldStateContext] = struct{}{}
-}
-
-// StateContextCleared returns if the "stateContext" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) StateContextCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldStateContext]
-	return ok
-}
-
-// ResetStateContext resets all changes to the "stateContext" field.
-func (m *InstanceRuntimeMutation) ResetStateContext() {
-	m.stateContext = nil
-	delete(m.clearedFields, instanceruntime.FieldStateContext)
-}
-
-// SetMetadata sets the "metadata" field.
-func (m *InstanceRuntimeMutation) SetMetadata(s string) {
-	m.metadata = &s
-}
-
-// Metadata returns the value of the "metadata" field in the mutation.
-func (m *InstanceRuntimeMutation) Metadata() (r string, exists bool) {
-	v := m.metadata
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMetadata returns the old "metadata" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldMetadata(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMetadata requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
-	}
-	return oldValue.Metadata, nil
-}
-
-// ClearMetadata clears the value of the "metadata" field.
-func (m *InstanceRuntimeMutation) ClearMetadata() {
-	m.metadata = nil
-	m.clearedFields[instanceruntime.FieldMetadata] = struct{}{}
-}
-
-// MetadataCleared returns if the "metadata" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) MetadataCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldMetadata]
-	return ok
-}
-
-// ResetMetadata resets all changes to the "metadata" field.
-func (m *InstanceRuntimeMutation) ResetMetadata() {
-	m.metadata = nil
-	delete(m.clearedFields, instanceruntime.FieldMetadata)
-}
-
-// SetLogToEvents sets the "logToEvents" field.
-func (m *InstanceRuntimeMutation) SetLogToEvents(s string) {
-	m.logToEvents = &s
-}
-
-// LogToEvents returns the value of the "logToEvents" field in the mutation.
-func (m *InstanceRuntimeMutation) LogToEvents() (r string, exists bool) {
-	v := m.logToEvents
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLogToEvents returns the old "logToEvents" field's value of the InstanceRuntime entity.
-// If the InstanceRuntime object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceRuntimeMutation) OldLogToEvents(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLogToEvents is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLogToEvents requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLogToEvents: %w", err)
-	}
-	return oldValue.LogToEvents, nil
-}
-
-// ClearLogToEvents clears the value of the "logToEvents" field.
-func (m *InstanceRuntimeMutation) ClearLogToEvents() {
-	m.logToEvents = nil
-	m.clearedFields[instanceruntime.FieldLogToEvents] = struct{}{}
-}
-
-// LogToEventsCleared returns if the "logToEvents" field was cleared in this mutation.
-func (m *InstanceRuntimeMutation) LogToEventsCleared() bool {
-	_, ok := m.clearedFields[instanceruntime.FieldLogToEvents]
-	return ok
-}
-
-// ResetLogToEvents resets all changes to the "logToEvents" field.
-func (m *InstanceRuntimeMutation) ResetLogToEvents() {
-	m.logToEvents = nil
-	delete(m.clearedFields, instanceruntime.FieldLogToEvents)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by id.
-func (m *InstanceRuntimeMutation) SetInstanceID(id uuid.UUID) {
-	m.instance = &id
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (m *InstanceRuntimeMutation) ClearInstance() {
-	m.clearedinstance = true
-}
-
-// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
-func (m *InstanceRuntimeMutation) InstanceCleared() bool {
-	return m.clearedinstance
-}
-
-// InstanceID returns the "instance" edge ID in the mutation.
-func (m *InstanceRuntimeMutation) InstanceID() (id uuid.UUID, exists bool) {
-	if m.instance != nil {
-		return *m.instance, true
-	}
-	return
-}
-
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InstanceID instead. It exists only for internal usage by the builders.
-func (m *InstanceRuntimeMutation) InstanceIDs() (ids []uuid.UUID) {
-	if id := m.instance; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInstance resets all changes to the "instance" edge.
-func (m *InstanceRuntimeMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
-}
-
-// SetCallerID sets the "caller" edge to the Instance entity by id.
-func (m *InstanceRuntimeMutation) SetCallerID(id uuid.UUID) {
-	m.caller = &id
-}
-
-// ClearCaller clears the "caller" edge to the Instance entity.
-func (m *InstanceRuntimeMutation) ClearCaller() {
-	m.clearedcaller = true
-}
-
-// CallerCleared reports if the "caller" edge to the Instance entity was cleared.
-func (m *InstanceRuntimeMutation) CallerCleared() bool {
-	return m.clearedcaller
-}
-
-// CallerID returns the "caller" edge ID in the mutation.
-func (m *InstanceRuntimeMutation) CallerID() (id uuid.UUID, exists bool) {
-	if m.caller != nil {
-		return *m.caller, true
-	}
-	return
-}
-
-// CallerIDs returns the "caller" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CallerID instead. It exists only for internal usage by the builders.
-func (m *InstanceRuntimeMutation) CallerIDs() (ids []uuid.UUID) {
-	if id := m.caller; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCaller resets all changes to the "caller" edge.
-func (m *InstanceRuntimeMutation) ResetCaller() {
-	m.caller = nil
-	m.clearedcaller = false
-}
-
-// Where appends a list predicates to the InstanceRuntimeMutation builder.
-func (m *InstanceRuntimeMutation) Where(ps ...predicate.InstanceRuntime) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the InstanceRuntimeMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *InstanceRuntimeMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.InstanceRuntime, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *InstanceRuntimeMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *InstanceRuntimeMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (InstanceRuntime).
-func (m *InstanceRuntimeMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *InstanceRuntimeMutation) Fields() []string {
-	fields := make([]string, 0, 14)
-	if m.input != nil {
-		fields = append(fields, instanceruntime.FieldInput)
-	}
-	if m.data != nil {
-		fields = append(fields, instanceruntime.FieldData)
-	}
-	if m.controller != nil {
-		fields = append(fields, instanceruntime.FieldController)
-	}
-	if m.memory != nil {
-		fields = append(fields, instanceruntime.FieldMemory)
-	}
-	if m.flow != nil {
-		fields = append(fields, instanceruntime.FieldFlow)
-	}
-	if m.output != nil {
-		fields = append(fields, instanceruntime.FieldOutput)
-	}
-	if m.stateBeginTime != nil {
-		fields = append(fields, instanceruntime.FieldStateBeginTime)
-	}
-	if m.deadline != nil {
-		fields = append(fields, instanceruntime.FieldDeadline)
-	}
-	if m.attempts != nil {
-		fields = append(fields, instanceruntime.FieldAttempts)
-	}
-	if m.caller_data != nil {
-		fields = append(fields, instanceruntime.FieldCallerData)
-	}
-	if m.instanceContext != nil {
-		fields = append(fields, instanceruntime.FieldInstanceContext)
-	}
-	if m.stateContext != nil {
-		fields = append(fields, instanceruntime.FieldStateContext)
-	}
-	if m.metadata != nil {
-		fields = append(fields, instanceruntime.FieldMetadata)
-	}
-	if m.logToEvents != nil {
-		fields = append(fields, instanceruntime.FieldLogToEvents)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *InstanceRuntimeMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case instanceruntime.FieldInput:
-		return m.Input()
-	case instanceruntime.FieldData:
-		return m.Data()
-	case instanceruntime.FieldController:
-		return m.Controller()
-	case instanceruntime.FieldMemory:
-		return m.Memory()
-	case instanceruntime.FieldFlow:
-		return m.Flow()
-	case instanceruntime.FieldOutput:
-		return m.Output()
-	case instanceruntime.FieldStateBeginTime:
-		return m.StateBeginTime()
-	case instanceruntime.FieldDeadline:
-		return m.Deadline()
-	case instanceruntime.FieldAttempts:
-		return m.Attempts()
-	case instanceruntime.FieldCallerData:
-		return m.CallerData()
-	case instanceruntime.FieldInstanceContext:
-		return m.InstanceContext()
-	case instanceruntime.FieldStateContext:
-		return m.StateContext()
-	case instanceruntime.FieldMetadata:
-		return m.Metadata()
-	case instanceruntime.FieldLogToEvents:
-		return m.LogToEvents()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *InstanceRuntimeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case instanceruntime.FieldInput:
-		return m.OldInput(ctx)
-	case instanceruntime.FieldData:
-		return m.OldData(ctx)
-	case instanceruntime.FieldController:
-		return m.OldController(ctx)
-	case instanceruntime.FieldMemory:
-		return m.OldMemory(ctx)
-	case instanceruntime.FieldFlow:
-		return m.OldFlow(ctx)
-	case instanceruntime.FieldOutput:
-		return m.OldOutput(ctx)
-	case instanceruntime.FieldStateBeginTime:
-		return m.OldStateBeginTime(ctx)
-	case instanceruntime.FieldDeadline:
-		return m.OldDeadline(ctx)
-	case instanceruntime.FieldAttempts:
-		return m.OldAttempts(ctx)
-	case instanceruntime.FieldCallerData:
-		return m.OldCallerData(ctx)
-	case instanceruntime.FieldInstanceContext:
-		return m.OldInstanceContext(ctx)
-	case instanceruntime.FieldStateContext:
-		return m.OldStateContext(ctx)
-	case instanceruntime.FieldMetadata:
-		return m.OldMetadata(ctx)
-	case instanceruntime.FieldLogToEvents:
-		return m.OldLogToEvents(ctx)
-	}
-	return nil, fmt.Errorf("unknown InstanceRuntime field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *InstanceRuntimeMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case instanceruntime.FieldInput:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetInput(v)
-		return nil
-	case instanceruntime.FieldData:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetData(v)
-		return nil
-	case instanceruntime.FieldController:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetController(v)
-		return nil
-	case instanceruntime.FieldMemory:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMemory(v)
-		return nil
-	case instanceruntime.FieldFlow:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFlow(v)
-		return nil
-	case instanceruntime.FieldOutput:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOutput(v)
-		return nil
-	case instanceruntime.FieldStateBeginTime:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStateBeginTime(v)
-		return nil
-	case instanceruntime.FieldDeadline:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDeadline(v)
-		return nil
-	case instanceruntime.FieldAttempts:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAttempts(v)
-		return nil
-	case instanceruntime.FieldCallerData:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCallerData(v)
-		return nil
-	case instanceruntime.FieldInstanceContext:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetInstanceContext(v)
-		return nil
-	case instanceruntime.FieldStateContext:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStateContext(v)
-		return nil
-	case instanceruntime.FieldMetadata:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMetadata(v)
-		return nil
-	case instanceruntime.FieldLogToEvents:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLogToEvents(v)
-		return nil
-	}
-	return fmt.Errorf("unknown InstanceRuntime field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *InstanceRuntimeMutation) AddedFields() []string {
-	var fields []string
-	if m.addattempts != nil {
-		fields = append(fields, instanceruntime.FieldAttempts)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *InstanceRuntimeMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case instanceruntime.FieldAttempts:
-		return m.AddedAttempts()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *InstanceRuntimeMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case instanceruntime.FieldAttempts:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddAttempts(v)
-		return nil
-	}
-	return fmt.Errorf("unknown InstanceRuntime numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *InstanceRuntimeMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(instanceruntime.FieldController) {
-		fields = append(fields, instanceruntime.FieldController)
-	}
-	if m.FieldCleared(instanceruntime.FieldMemory) {
-		fields = append(fields, instanceruntime.FieldMemory)
-	}
-	if m.FieldCleared(instanceruntime.FieldFlow) {
-		fields = append(fields, instanceruntime.FieldFlow)
-	}
-	if m.FieldCleared(instanceruntime.FieldOutput) {
-		fields = append(fields, instanceruntime.FieldOutput)
-	}
-	if m.FieldCleared(instanceruntime.FieldStateBeginTime) {
-		fields = append(fields, instanceruntime.FieldStateBeginTime)
-	}
-	if m.FieldCleared(instanceruntime.FieldDeadline) {
-		fields = append(fields, instanceruntime.FieldDeadline)
-	}
-	if m.FieldCleared(instanceruntime.FieldAttempts) {
-		fields = append(fields, instanceruntime.FieldAttempts)
-	}
-	if m.FieldCleared(instanceruntime.FieldCallerData) {
-		fields = append(fields, instanceruntime.FieldCallerData)
-	}
-	if m.FieldCleared(instanceruntime.FieldInstanceContext) {
-		fields = append(fields, instanceruntime.FieldInstanceContext)
-	}
-	if m.FieldCleared(instanceruntime.FieldStateContext) {
-		fields = append(fields, instanceruntime.FieldStateContext)
-	}
-	if m.FieldCleared(instanceruntime.FieldMetadata) {
-		fields = append(fields, instanceruntime.FieldMetadata)
-	}
-	if m.FieldCleared(instanceruntime.FieldLogToEvents) {
-		fields = append(fields, instanceruntime.FieldLogToEvents)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *InstanceRuntimeMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *InstanceRuntimeMutation) ClearField(name string) error {
-	switch name {
-	case instanceruntime.FieldController:
-		m.ClearController()
-		return nil
-	case instanceruntime.FieldMemory:
-		m.ClearMemory()
-		return nil
-	case instanceruntime.FieldFlow:
-		m.ClearFlow()
-		return nil
-	case instanceruntime.FieldOutput:
-		m.ClearOutput()
-		return nil
-	case instanceruntime.FieldStateBeginTime:
-		m.ClearStateBeginTime()
-		return nil
-	case instanceruntime.FieldDeadline:
-		m.ClearDeadline()
-		return nil
-	case instanceruntime.FieldAttempts:
-		m.ClearAttempts()
-		return nil
-	case instanceruntime.FieldCallerData:
-		m.ClearCallerData()
-		return nil
-	case instanceruntime.FieldInstanceContext:
-		m.ClearInstanceContext()
-		return nil
-	case instanceruntime.FieldStateContext:
-		m.ClearStateContext()
-		return nil
-	case instanceruntime.FieldMetadata:
-		m.ClearMetadata()
-		return nil
-	case instanceruntime.FieldLogToEvents:
-		m.ClearLogToEvents()
-		return nil
-	}
-	return fmt.Errorf("unknown InstanceRuntime nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *InstanceRuntimeMutation) ResetField(name string) error {
-	switch name {
-	case instanceruntime.FieldInput:
-		m.ResetInput()
-		return nil
-	case instanceruntime.FieldData:
-		m.ResetData()
-		return nil
-	case instanceruntime.FieldController:
-		m.ResetController()
-		return nil
-	case instanceruntime.FieldMemory:
-		m.ResetMemory()
-		return nil
-	case instanceruntime.FieldFlow:
-		m.ResetFlow()
-		return nil
-	case instanceruntime.FieldOutput:
-		m.ResetOutput()
-		return nil
-	case instanceruntime.FieldStateBeginTime:
-		m.ResetStateBeginTime()
-		return nil
-	case instanceruntime.FieldDeadline:
-		m.ResetDeadline()
-		return nil
-	case instanceruntime.FieldAttempts:
-		m.ResetAttempts()
-		return nil
-	case instanceruntime.FieldCallerData:
-		m.ResetCallerData()
-		return nil
-	case instanceruntime.FieldInstanceContext:
-		m.ResetInstanceContext()
-		return nil
-	case instanceruntime.FieldStateContext:
-		m.ResetStateContext()
-		return nil
-	case instanceruntime.FieldMetadata:
-		m.ResetMetadata()
-		return nil
-	case instanceruntime.FieldLogToEvents:
-		m.ResetLogToEvents()
-		return nil
-	}
-	return fmt.Errorf("unknown InstanceRuntime field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *InstanceRuntimeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.instance != nil {
-		edges = append(edges, instanceruntime.EdgeInstance)
-	}
-	if m.caller != nil {
-		edges = append(edges, instanceruntime.EdgeCaller)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *InstanceRuntimeMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case instanceruntime.EdgeInstance:
-		if id := m.instance; id != nil {
-			return []ent.Value{*id}
-		}
-	case instanceruntime.EdgeCaller:
-		if id := m.caller; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *InstanceRuntimeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *InstanceRuntimeMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *InstanceRuntimeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedinstance {
-		edges = append(edges, instanceruntime.EdgeInstance)
-	}
-	if m.clearedcaller {
-		edges = append(edges, instanceruntime.EdgeCaller)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *InstanceRuntimeMutation) EdgeCleared(name string) bool {
-	switch name {
-	case instanceruntime.EdgeInstance:
-		return m.clearedinstance
-	case instanceruntime.EdgeCaller:
-		return m.clearedcaller
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *InstanceRuntimeMutation) ClearEdge(name string) error {
-	switch name {
-	case instanceruntime.EdgeInstance:
-		m.ClearInstance()
-		return nil
-	case instanceruntime.EdgeCaller:
-		m.ClearCaller()
-		return nil
-	}
-	return fmt.Errorf("unknown InstanceRuntime unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *InstanceRuntimeMutation) ResetEdge(name string) error {
-	switch name {
-	case instanceruntime.EdgeInstance:
-		m.ResetInstance()
-		return nil
-	case instanceruntime.EdgeCaller:
-		m.ResetCaller()
-		return nil
-	}
-	return fmt.Errorf("unknown InstanceRuntime edge %s", name)
-}
-
 // LogMsgMutation represents an operation that mutates the LogMsg nodes in the graph.
 type LogMsgMutation struct {
 	config
@@ -6351,11 +3347,10 @@ type LogMsgMutation struct {
 	tags                *map[string]string
 	workflow_id         *uuid.UUID
 	mirror_activity_id  *uuid.UUID
+	instance_id         *uuid.UUID
 	clearedFields       map[string]struct{}
 	namespace           *uuid.UUID
 	clearednamespace    bool
-	instance            *uuid.UUID
-	clearedinstance     bool
 	done                bool
 	oldValue            func(context.Context) (*LogMsg, error)
 	predicates          []predicate.LogMsg
@@ -6792,6 +3787,55 @@ func (m *LogMsgMutation) ResetMirrorActivityID() {
 	delete(m.clearedFields, logmsg.FieldMirrorActivityID)
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (m *LogMsgMutation) SetInstanceID(u uuid.UUID) {
+	m.instance_id = &u
+}
+
+// InstanceID returns the value of the "instance_id" field in the mutation.
+func (m *LogMsgMutation) InstanceID() (r uuid.UUID, exists bool) {
+	v := m.instance_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceID returns the old "instance_id" field's value of the LogMsg entity.
+// If the LogMsg object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LogMsgMutation) OldInstanceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInstanceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInstanceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceID: %w", err)
+	}
+	return oldValue.InstanceID, nil
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (m *LogMsgMutation) ClearInstanceID() {
+	m.instance_id = nil
+	m.clearedFields[logmsg.FieldInstanceID] = struct{}{}
+}
+
+// InstanceIDCleared returns if the "instance_id" field was cleared in this mutation.
+func (m *LogMsgMutation) InstanceIDCleared() bool {
+	_, ok := m.clearedFields[logmsg.FieldInstanceID]
+	return ok
+}
+
+// ResetInstanceID resets all changes to the "instance_id" field.
+func (m *LogMsgMutation) ResetInstanceID() {
+	m.instance_id = nil
+	delete(m.clearedFields, logmsg.FieldInstanceID)
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
 func (m *LogMsgMutation) SetNamespaceID(id uuid.UUID) {
 	m.namespace = &id
@@ -6831,45 +3875,6 @@ func (m *LogMsgMutation) ResetNamespace() {
 	m.clearednamespace = false
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by id.
-func (m *LogMsgMutation) SetInstanceID(id uuid.UUID) {
-	m.instance = &id
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (m *LogMsgMutation) ClearInstance() {
-	m.clearedinstance = true
-}
-
-// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
-func (m *LogMsgMutation) InstanceCleared() bool {
-	return m.clearedinstance
-}
-
-// InstanceID returns the "instance" edge ID in the mutation.
-func (m *LogMsgMutation) InstanceID() (id uuid.UUID, exists bool) {
-	if m.instance != nil {
-		return *m.instance, true
-	}
-	return
-}
-
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InstanceID instead. It exists only for internal usage by the builders.
-func (m *LogMsgMutation) InstanceIDs() (ids []uuid.UUID) {
-	if id := m.instance; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInstance resets all changes to the "instance" edge.
-func (m *LogMsgMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
-}
-
 // Where appends a list predicates to the LogMsgMutation builder.
 func (m *LogMsgMutation) Where(ps ...predicate.LogMsg) {
 	m.predicates = append(m.predicates, ps...)
@@ -6904,7 +3909,7 @@ func (m *LogMsgMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LogMsgMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.t != nil {
 		fields = append(fields, logmsg.FieldT)
 	}
@@ -6928,6 +3933,9 @@ func (m *LogMsgMutation) Fields() []string {
 	}
 	if m.mirror_activity_id != nil {
 		fields = append(fields, logmsg.FieldMirrorActivityID)
+	}
+	if m.instance_id != nil {
+		fields = append(fields, logmsg.FieldInstanceID)
 	}
 	return fields
 }
@@ -6953,6 +3961,8 @@ func (m *LogMsgMutation) Field(name string) (ent.Value, bool) {
 		return m.WorkflowID()
 	case logmsg.FieldMirrorActivityID:
 		return m.MirrorActivityID()
+	case logmsg.FieldInstanceID:
+		return m.InstanceID()
 	}
 	return nil, false
 }
@@ -6978,6 +3988,8 @@ func (m *LogMsgMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldWorkflowID(ctx)
 	case logmsg.FieldMirrorActivityID:
 		return m.OldMirrorActivityID(ctx)
+	case logmsg.FieldInstanceID:
+		return m.OldInstanceID(ctx)
 	}
 	return nil, fmt.Errorf("unknown LogMsg field %s", name)
 }
@@ -7043,6 +4055,13 @@ func (m *LogMsgMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMirrorActivityID(v)
 		return nil
+	case logmsg.FieldInstanceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
 }
@@ -7082,6 +4101,9 @@ func (m *LogMsgMutation) ClearedFields() []string {
 	if m.FieldCleared(logmsg.FieldMirrorActivityID) {
 		fields = append(fields, logmsg.FieldMirrorActivityID)
 	}
+	if m.FieldCleared(logmsg.FieldInstanceID) {
+		fields = append(fields, logmsg.FieldInstanceID)
+	}
 	return fields
 }
 
@@ -7104,6 +4126,9 @@ func (m *LogMsgMutation) ClearField(name string) error {
 		return nil
 	case logmsg.FieldMirrorActivityID:
 		m.ClearMirrorActivityID()
+		return nil
+	case logmsg.FieldInstanceID:
+		m.ClearInstanceID()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg nullable field %s", name)
@@ -7137,18 +4162,18 @@ func (m *LogMsgMutation) ResetField(name string) error {
 	case logmsg.FieldMirrorActivityID:
 		m.ResetMirrorActivityID()
 		return nil
+	case logmsg.FieldInstanceID:
+		m.ResetInstanceID()
+		return nil
 	}
 	return fmt.Errorf("unknown LogMsg field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LogMsgMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.namespace != nil {
 		edges = append(edges, logmsg.EdgeNamespace)
-	}
-	if m.instance != nil {
-		edges = append(edges, logmsg.EdgeInstance)
 	}
 	return edges
 }
@@ -7161,17 +4186,13 @@ func (m *LogMsgMutation) AddedIDs(name string) []ent.Value {
 		if id := m.namespace; id != nil {
 			return []ent.Value{*id}
 		}
-	case logmsg.EdgeInstance:
-		if id := m.instance; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LogMsgMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -7183,12 +4204,9 @@ func (m *LogMsgMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LogMsgMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearednamespace {
 		edges = append(edges, logmsg.EdgeNamespace)
-	}
-	if m.clearedinstance {
-		edges = append(edges, logmsg.EdgeInstance)
 	}
 	return edges
 }
@@ -7199,8 +4217,6 @@ func (m *LogMsgMutation) EdgeCleared(name string) bool {
 	switch name {
 	case logmsg.EdgeNamespace:
 		return m.clearednamespace
-	case logmsg.EdgeInstance:
-		return m.clearedinstance
 	}
 	return false
 }
@@ -7212,9 +4228,6 @@ func (m *LogMsgMutation) ClearEdge(name string) error {
 	case logmsg.EdgeNamespace:
 		m.ClearNamespace()
 		return nil
-	case logmsg.EdgeInstance:
-		m.ClearInstance()
-		return nil
 	}
 	return fmt.Errorf("unknown LogMsg unique edge %s", name)
 }
@@ -7225,9 +4238,6 @@ func (m *LogMsgMutation) ResetEdge(name string) error {
 	switch name {
 	case logmsg.EdgeNamespace:
 		m.ResetNamespace()
-		return nil
-	case logmsg.EdgeInstance:
-		m.ResetInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown LogMsg edge %s", name)
@@ -7244,9 +4254,6 @@ type NamespaceMutation struct {
 	_config                   *string
 	name                      *string
 	clearedFields             map[string]struct{}
-	instances                 map[uuid.UUID]struct{}
-	removedinstances          map[uuid.UUID]struct{}
-	clearedinstances          bool
 	logs                      map[uuid.UUID]struct{}
 	removedlogs               map[uuid.UUID]struct{}
 	clearedlogs               bool
@@ -7519,60 +4526,6 @@ func (m *NamespaceMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *NamespaceMutation) ResetName() {
 	m.name = nil
-}
-
-// AddInstanceIDs adds the "instances" edge to the Instance entity by ids.
-func (m *NamespaceMutation) AddInstanceIDs(ids ...uuid.UUID) {
-	if m.instances == nil {
-		m.instances = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.instances[ids[i]] = struct{}{}
-	}
-}
-
-// ClearInstances clears the "instances" edge to the Instance entity.
-func (m *NamespaceMutation) ClearInstances() {
-	m.clearedinstances = true
-}
-
-// InstancesCleared reports if the "instances" edge to the Instance entity was cleared.
-func (m *NamespaceMutation) InstancesCleared() bool {
-	return m.clearedinstances
-}
-
-// RemoveInstanceIDs removes the "instances" edge to the Instance entity by IDs.
-func (m *NamespaceMutation) RemoveInstanceIDs(ids ...uuid.UUID) {
-	if m.removedinstances == nil {
-		m.removedinstances = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.instances, ids[i])
-		m.removedinstances[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedInstances returns the removed IDs of the "instances" edge to the Instance entity.
-func (m *NamespaceMutation) RemovedInstancesIDs() (ids []uuid.UUID) {
-	for id := range m.removedinstances {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// InstancesIDs returns the "instances" edge IDs in the mutation.
-func (m *NamespaceMutation) InstancesIDs() (ids []uuid.UUID) {
-	for id := range m.instances {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetInstances resets all changes to the "instances" edge.
-func (m *NamespaceMutation) ResetInstances() {
-	m.instances = nil
-	m.clearedinstances = false
-	m.removedinstances = nil
 }
 
 // AddLogIDs adds the "logs" edge to the LogMsg entity by ids.
@@ -8137,10 +5090,7 @@ func (m *NamespaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NamespaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.instances != nil {
-		edges = append(edges, namespace.EdgeInstances)
-	}
+	edges := make([]string, 0, 7)
 	if m.logs != nil {
 		edges = append(edges, namespace.EdgeLogs)
 	}
@@ -8169,12 +5119,6 @@ func (m *NamespaceMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case namespace.EdgeInstances:
-		ids := make([]ent.Value, 0, len(m.instances))
-		for id := range m.instances {
-			ids = append(ids, id)
-		}
-		return ids
 	case namespace.EdgeLogs:
 		ids := make([]ent.Value, 0, len(m.logs))
 		for id := range m.logs {
@@ -8223,10 +5167,7 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NamespaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.removedinstances != nil {
-		edges = append(edges, namespace.EdgeInstances)
-	}
+	edges := make([]string, 0, 7)
 	if m.removedlogs != nil {
 		edges = append(edges, namespace.EdgeLogs)
 	}
@@ -8255,12 +5196,6 @@ func (m *NamespaceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case namespace.EdgeInstances:
-		ids := make([]ent.Value, 0, len(m.removedinstances))
-		for id := range m.removedinstances {
-			ids = append(ids, id)
-		}
-		return ids
 	case namespace.EdgeLogs:
 		ids := make([]ent.Value, 0, len(m.removedlogs))
 		for id := range m.removedlogs {
@@ -8309,10 +5244,7 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NamespaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.clearedinstances {
-		edges = append(edges, namespace.EdgeInstances)
-	}
+	edges := make([]string, 0, 7)
 	if m.clearedlogs {
 		edges = append(edges, namespace.EdgeLogs)
 	}
@@ -8341,8 +5273,6 @@ func (m *NamespaceMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *NamespaceMutation) EdgeCleared(name string) bool {
 	switch name {
-	case namespace.EdgeInstances:
-		return m.clearedinstances
 	case namespace.EdgeLogs:
 		return m.clearedlogs
 	case namespace.EdgeVars:
@@ -8373,9 +5303,6 @@ func (m *NamespaceMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NamespaceMutation) ResetEdge(name string) error {
 	switch name {
-	case namespace.EdgeInstances:
-		m.ResetInstances()
-		return nil
 	case namespace.EdgeLogs:
 		m.ResetLogs()
 		return nil
@@ -9756,13 +6683,12 @@ type VarRefMutation struct {
 	name             *string
 	behaviour        *string
 	workflow_id      *uuid.UUID
+	instance_id      *uuid.UUID
 	clearedFields    map[string]struct{}
 	vardata          *uuid.UUID
 	clearedvardata   bool
 	namespace        *uuid.UUID
 	clearednamespace bool
-	instance         *uuid.UUID
-	clearedinstance  bool
 	done             bool
 	oldValue         func(context.Context) (*VarRef, error)
 	predicates       []predicate.VarRef
@@ -10019,6 +6945,55 @@ func (m *VarRefMutation) ResetWorkflowID() {
 	delete(m.clearedFields, varref.FieldWorkflowID)
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (m *VarRefMutation) SetInstanceID(u uuid.UUID) {
+	m.instance_id = &u
+}
+
+// InstanceID returns the value of the "instance_id" field in the mutation.
+func (m *VarRefMutation) InstanceID() (r uuid.UUID, exists bool) {
+	v := m.instance_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceID returns the old "instance_id" field's value of the VarRef entity.
+// If the VarRef object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VarRefMutation) OldInstanceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInstanceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInstanceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceID: %w", err)
+	}
+	return oldValue.InstanceID, nil
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (m *VarRefMutation) ClearInstanceID() {
+	m.instance_id = nil
+	m.clearedFields[varref.FieldInstanceID] = struct{}{}
+}
+
+// InstanceIDCleared returns if the "instance_id" field was cleared in this mutation.
+func (m *VarRefMutation) InstanceIDCleared() bool {
+	_, ok := m.clearedFields[varref.FieldInstanceID]
+	return ok
+}
+
+// ResetInstanceID resets all changes to the "instance_id" field.
+func (m *VarRefMutation) ResetInstanceID() {
+	m.instance_id = nil
+	delete(m.clearedFields, varref.FieldInstanceID)
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by id.
 func (m *VarRefMutation) SetVardataID(id uuid.UUID) {
 	m.vardata = &id
@@ -10097,45 +7072,6 @@ func (m *VarRefMutation) ResetNamespace() {
 	m.clearednamespace = false
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by id.
-func (m *VarRefMutation) SetInstanceID(id uuid.UUID) {
-	m.instance = &id
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (m *VarRefMutation) ClearInstance() {
-	m.clearedinstance = true
-}
-
-// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
-func (m *VarRefMutation) InstanceCleared() bool {
-	return m.clearedinstance
-}
-
-// InstanceID returns the "instance" edge ID in the mutation.
-func (m *VarRefMutation) InstanceID() (id uuid.UUID, exists bool) {
-	if m.instance != nil {
-		return *m.instance, true
-	}
-	return
-}
-
-// InstanceIDs returns the "instance" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InstanceID instead. It exists only for internal usage by the builders.
-func (m *VarRefMutation) InstanceIDs() (ids []uuid.UUID) {
-	if id := m.instance; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetInstance resets all changes to the "instance" edge.
-func (m *VarRefMutation) ResetInstance() {
-	m.instance = nil
-	m.clearedinstance = false
-}
-
 // Where appends a list predicates to the VarRefMutation builder.
 func (m *VarRefMutation) Where(ps ...predicate.VarRef) {
 	m.predicates = append(m.predicates, ps...)
@@ -10170,7 +7106,7 @@ func (m *VarRefMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VarRefMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, varref.FieldName)
 	}
@@ -10179,6 +7115,9 @@ func (m *VarRefMutation) Fields() []string {
 	}
 	if m.workflow_id != nil {
 		fields = append(fields, varref.FieldWorkflowID)
+	}
+	if m.instance_id != nil {
+		fields = append(fields, varref.FieldInstanceID)
 	}
 	return fields
 }
@@ -10194,6 +7133,8 @@ func (m *VarRefMutation) Field(name string) (ent.Value, bool) {
 		return m.Behaviour()
 	case varref.FieldWorkflowID:
 		return m.WorkflowID()
+	case varref.FieldInstanceID:
+		return m.InstanceID()
 	}
 	return nil, false
 }
@@ -10209,6 +7150,8 @@ func (m *VarRefMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldBehaviour(ctx)
 	case varref.FieldWorkflowID:
 		return m.OldWorkflowID(ctx)
+	case varref.FieldInstanceID:
+		return m.OldInstanceID(ctx)
 	}
 	return nil, fmt.Errorf("unknown VarRef field %s", name)
 }
@@ -10238,6 +7181,13 @@ func (m *VarRefMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWorkflowID(v)
+		return nil
+	case varref.FieldInstanceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef field %s", name)
@@ -10278,6 +7228,9 @@ func (m *VarRefMutation) ClearedFields() []string {
 	if m.FieldCleared(varref.FieldWorkflowID) {
 		fields = append(fields, varref.FieldWorkflowID)
 	}
+	if m.FieldCleared(varref.FieldInstanceID) {
+		fields = append(fields, varref.FieldInstanceID)
+	}
 	return fields
 }
 
@@ -10301,6 +7254,9 @@ func (m *VarRefMutation) ClearField(name string) error {
 	case varref.FieldWorkflowID:
 		m.ClearWorkflowID()
 		return nil
+	case varref.FieldInstanceID:
+		m.ClearInstanceID()
+		return nil
 	}
 	return fmt.Errorf("unknown VarRef nullable field %s", name)
 }
@@ -10318,21 +7274,21 @@ func (m *VarRefMutation) ResetField(name string) error {
 	case varref.FieldWorkflowID:
 		m.ResetWorkflowID()
 		return nil
+	case varref.FieldInstanceID:
+		m.ResetInstanceID()
+		return nil
 	}
 	return fmt.Errorf("unknown VarRef field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *VarRefMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.vardata != nil {
 		edges = append(edges, varref.EdgeVardata)
 	}
 	if m.namespace != nil {
 		edges = append(edges, varref.EdgeNamespace)
-	}
-	if m.instance != nil {
-		edges = append(edges, varref.EdgeInstance)
 	}
 	return edges
 }
@@ -10349,17 +7305,13 @@ func (m *VarRefMutation) AddedIDs(name string) []ent.Value {
 		if id := m.namespace; id != nil {
 			return []ent.Value{*id}
 		}
-	case varref.EdgeInstance:
-		if id := m.instance; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *VarRefMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -10371,15 +7323,12 @@ func (m *VarRefMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *VarRefMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedvardata {
 		edges = append(edges, varref.EdgeVardata)
 	}
 	if m.clearednamespace {
 		edges = append(edges, varref.EdgeNamespace)
-	}
-	if m.clearedinstance {
-		edges = append(edges, varref.EdgeInstance)
 	}
 	return edges
 }
@@ -10392,8 +7341,6 @@ func (m *VarRefMutation) EdgeCleared(name string) bool {
 		return m.clearedvardata
 	case varref.EdgeNamespace:
 		return m.clearednamespace
-	case varref.EdgeInstance:
-		return m.clearedinstance
 	}
 	return false
 }
@@ -10408,9 +7355,6 @@ func (m *VarRefMutation) ClearEdge(name string) error {
 	case varref.EdgeNamespace:
 		m.ClearNamespace()
 		return nil
-	case varref.EdgeInstance:
-		m.ClearInstance()
-		return nil
 	}
 	return fmt.Errorf("unknown VarRef unique edge %s", name)
 }
@@ -10424,9 +7368,6 @@ func (m *VarRefMutation) ResetEdge(name string) error {
 		return nil
 	case varref.EdgeNamespace:
 		m.ResetNamespace()
-		return nil
-	case varref.EdgeInstance:
-		m.ResetInstance()
 		return nil
 	}
 	return fmt.Errorf("unknown VarRef edge %s", name)

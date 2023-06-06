@@ -17,14 +17,15 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) getNamespaceVariable(ctx context.Context, cached *database.CacheData, key string, load bool) (*database.VarRef, *database.VarData, error) {
-	vref, err := srv.database.NamespaceVariable(ctx, cached.Namespace.ID, key)
+func (srv *server) getNamespaceVariable(ctx context.Context, nsID uuid.UUID, key string, load bool) (*database.VarRef, *database.VarData, error) {
+	vref, err := srv.database.NamespaceVariable(ctx, nsID, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,16 +39,18 @@ func (srv *server) getNamespaceVariable(ctx context.Context, cached *database.Ca
 }
 
 func (srv *server) traverseToNamespaceVariable(ctx context.Context, namespace, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
-	cached := new(database.CacheData)
-
-	err := srv.database.NamespaceByName(ctx, cached, namespace)
+	ns, err := srv.edb.NamespaceByName(ctx, namespace)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	vref, vdata, err := srv.getNamespaceVariable(ctx, cached, key, load)
+	vref, vdata, err := srv.getNamespaceVariable(ctx, ns.ID, key, load)
 	if err != nil {
 		return nil, nil, nil, err
+	}
+
+	cached := &database.CacheData{
+		Namespace: ns,
 	}
 
 	return cached, vref, vdata, nil
@@ -85,12 +88,12 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 
 	ctx := srv.Context()
 
-	cached, err := internal.getInstance(ctx, req.GetInstance())
+	instance, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	vref, vdata, err := internal.getNamespaceVariable(ctx, cached, req.GetKey(), true)
+	vref, vdata, err := internal.getNamespaceVariable(ctx, instance.Instance.NamespaceID, req.GetKey(), true)
 	if err != nil && !derrors.IsNotFound(err) {
 		return err
 	}
@@ -360,7 +363,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	key := req.GetKey()
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(tctx, &entNamespaceVarQuerier{cached: cached, clients: flow.edb.Clients(tctx)}, key, req.GetData(), req.GetMimeType(), false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entNamespaceVarQuerier{ns: cached.Namespace, clients: flow.edb.Clients(tctx)}, key, req.GetData(), req.GetMimeType(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +379,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace.ID)
 
 	var resp grpc.SetNamespaceVariableResponse
 
@@ -401,7 +404,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 		return err
 	}
 
-	cached, err := internal.getInstance(ctx, req.GetInstance())
+	instance, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
 		return err
 	}
@@ -461,7 +464,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = internal.flow.SetVariable(tctx, &entNamespaceVarQuerier{cached: cached, clients: internal.edb.Clients(tctx)}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = internal.flow.SetVariable(tctx, &entNamespaceVarQuerier{ns: &database.Namespace{ID: instance.Instance.NamespaceID, Name: instance.TelemetryInfo.NamespaceName}, clients: internal.edb.Clients(tctx)}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -472,12 +475,12 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 	}
 
 	if newVar {
-		internal.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Created namespace variable '%s'.", key)
 	} else {
-		internal.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
+		internal.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
 	}
 
-	internal.pubsub.NotifyNamespaceVariables(cached.Namespace)
+	internal.pubsub.NotifyNamespaceVariables(instance.Instance.NamespaceID)
 
 	var resp grpc.SetVariableInternalResponse
 
@@ -569,7 +572,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	var vdata *ent.VarData
 
 	var newVar bool
-	vdata, newVar, err = flow.SetVariable(tctx, &entNamespaceVarQuerier{cached: cached, clients: flow.edb.Clients(tctx)}, key, buf.Bytes(), mimeType, false)
+	vdata, newVar, err = flow.SetVariable(tctx, &entNamespaceVarQuerier{ns: cached.Namespace, clients: flow.edb.Clients(tctx)}, key, buf.Bytes(), mimeType, false)
 	if err != nil {
 		return err
 	}
@@ -585,7 +588,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 		flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace variable '%s'.", key)
 	}
 
-	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace.ID)
 
 	var resp grpc.SetNamespaceVariableResponse
 
@@ -639,7 +642,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	}
 
 	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
-	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace.ID)
 
 	// Broadcast Event
 	broadcastInput := broadcastVariableInput{
@@ -687,7 +690,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	}
 
 	flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
+	flow.pubsub.NotifyNamespaceVariables(cached.Namespace.ID)
 
 	var resp grpc.RenameNamespaceVariableResponse
 

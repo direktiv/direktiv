@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
@@ -92,6 +91,26 @@ func (vru *VarRefUpdate) ClearWorkflowID() *VarRefUpdate {
 	return vru
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (vru *VarRefUpdate) SetInstanceID(u uuid.UUID) *VarRefUpdate {
+	vru.mutation.SetInstanceID(u)
+	return vru
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (vru *VarRefUpdate) SetNillableInstanceID(u *uuid.UUID) *VarRefUpdate {
+	if u != nil {
+		vru.SetInstanceID(*u)
+	}
+	return vru
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (vru *VarRefUpdate) ClearInstanceID() *VarRefUpdate {
+	vru.mutation.ClearInstanceID()
+	return vru
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vru *VarRefUpdate) SetVardataID(id uuid.UUID) *VarRefUpdate {
 	vru.mutation.SetVardataID(id)
@@ -122,25 +141,6 @@ func (vru *VarRefUpdate) SetNamespace(n *Namespace) *VarRefUpdate {
 	return vru.SetNamespaceID(n.ID)
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (vru *VarRefUpdate) SetInstanceID(id uuid.UUID) *VarRefUpdate {
-	vru.mutation.SetInstanceID(id)
-	return vru
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (vru *VarRefUpdate) SetNillableInstanceID(id *uuid.UUID) *VarRefUpdate {
-	if id != nil {
-		vru = vru.SetInstanceID(*id)
-	}
-	return vru
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (vru *VarRefUpdate) SetInstance(i *Instance) *VarRefUpdate {
-	return vru.SetInstanceID(i.ID)
-}
-
 // Mutation returns the VarRefMutation object of the builder.
 func (vru *VarRefUpdate) Mutation() *VarRefMutation {
 	return vru.mutation
@@ -155,12 +155,6 @@ func (vru *VarRefUpdate) ClearVardata() *VarRefUpdate {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (vru *VarRefUpdate) ClearNamespace() *VarRefUpdate {
 	vru.mutation.ClearNamespace()
-	return vru
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (vru *VarRefUpdate) ClearInstance() *VarRefUpdate {
-	vru.mutation.ClearInstance()
 	return vru
 }
 
@@ -240,6 +234,12 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if vru.mutation.WorkflowIDCleared() {
 		_spec.ClearField(varref.FieldWorkflowID, field.TypeUUID)
 	}
+	if value, ok := vru.mutation.InstanceID(); ok {
+		_spec.SetField(varref.FieldInstanceID, field.TypeUUID, value)
+	}
+	if vru.mutation.InstanceIDCleared() {
+		_spec.ClearField(varref.FieldInstanceID, field.TypeUUID)
+	}
 	if vru.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -291,35 +291,6 @@ func (vru *VarRefUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if vru.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.InstanceTable,
-			Columns: []string{varref.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := vru.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.InstanceTable,
-			Columns: []string{varref.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -409,6 +380,26 @@ func (vruo *VarRefUpdateOne) ClearWorkflowID() *VarRefUpdateOne {
 	return vruo
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (vruo *VarRefUpdateOne) SetInstanceID(u uuid.UUID) *VarRefUpdateOne {
+	vruo.mutation.SetInstanceID(u)
+	return vruo
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (vruo *VarRefUpdateOne) SetNillableInstanceID(u *uuid.UUID) *VarRefUpdateOne {
+	if u != nil {
+		vruo.SetInstanceID(*u)
+	}
+	return vruo
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (vruo *VarRefUpdateOne) ClearInstanceID() *VarRefUpdateOne {
+	vruo.mutation.ClearInstanceID()
+	return vruo
+}
+
 // SetVardataID sets the "vardata" edge to the VarData entity by ID.
 func (vruo *VarRefUpdateOne) SetVardataID(id uuid.UUID) *VarRefUpdateOne {
 	vruo.mutation.SetVardataID(id)
@@ -439,25 +430,6 @@ func (vruo *VarRefUpdateOne) SetNamespace(n *Namespace) *VarRefUpdateOne {
 	return vruo.SetNamespaceID(n.ID)
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (vruo *VarRefUpdateOne) SetInstanceID(id uuid.UUID) *VarRefUpdateOne {
-	vruo.mutation.SetInstanceID(id)
-	return vruo
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (vruo *VarRefUpdateOne) SetNillableInstanceID(id *uuid.UUID) *VarRefUpdateOne {
-	if id != nil {
-		vruo = vruo.SetInstanceID(*id)
-	}
-	return vruo
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (vruo *VarRefUpdateOne) SetInstance(i *Instance) *VarRefUpdateOne {
-	return vruo.SetInstanceID(i.ID)
-}
-
 // Mutation returns the VarRefMutation object of the builder.
 func (vruo *VarRefUpdateOne) Mutation() *VarRefMutation {
 	return vruo.mutation
@@ -472,12 +444,6 @@ func (vruo *VarRefUpdateOne) ClearVardata() *VarRefUpdateOne {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (vruo *VarRefUpdateOne) ClearNamespace() *VarRefUpdateOne {
 	vruo.mutation.ClearNamespace()
-	return vruo
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (vruo *VarRefUpdateOne) ClearInstance() *VarRefUpdateOne {
-	vruo.mutation.ClearInstance()
 	return vruo
 }
 
@@ -587,6 +553,12 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 	if vruo.mutation.WorkflowIDCleared() {
 		_spec.ClearField(varref.FieldWorkflowID, field.TypeUUID)
 	}
+	if value, ok := vruo.mutation.InstanceID(); ok {
+		_spec.SetField(varref.FieldInstanceID, field.TypeUUID, value)
+	}
+	if vruo.mutation.InstanceIDCleared() {
+		_spec.ClearField(varref.FieldInstanceID, field.TypeUUID)
+	}
 	if vruo.mutation.VardataCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -638,35 +610,6 @@ func (vruo *VarRefUpdateOne) sqlSave(ctx context.Context) (_node *VarRef, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if vruo.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.InstanceTable,
-			Columns: []string{varref.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := vruo.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   varref.InstanceTable,
-			Columns: []string{varref.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

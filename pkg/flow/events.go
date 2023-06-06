@@ -21,7 +21,6 @@ import (
 	enteventsfilter "github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entevents "github.com/direktiv/direktiv/pkg/flow/ent/events"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -347,19 +346,19 @@ func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, 
 				return
 			}
 
-			fStore, _, _, rollback, err := events.flow.beginSqlTx(ctx)
+			tx, err := events.flow.beginSqlTx(ctx)
 			if err != nil {
 				events.engine.sugar.Error(err)
 				return
 			}
-			defer rollback()
+			defer tx.Rollback()
 
-			file, err := fStore.GetFile(ctx, id)
+			file, err := tx.FileStore().GetFile(ctx, id)
 			if err != nil {
 				events.engine.sugar.Error(err)
 				return
 			}
-			rollback()
+			tx.Rollback()
 
 			err = events.deleteEventListeners(ctx, file.RootID, id)
 			if err != nil {
@@ -449,10 +448,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	}
 
 	clients := flow.edb.Clients(ctx)
-	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID))).WithInstance(func(q *ent.InstanceQuery) {
-		q.Select(entinst.FieldID)
-	})
-
+	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
 	if err != nil {
 		return nil, err
@@ -470,23 +466,23 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	m := make(map[string]string)
 
 	for idx, result := range results {
-		if result.Edges.Instance != nil {
-			resp.Results[idx].Instance = result.Edges.Instance.ID.String()
+		if result.InstanceID.String() != uuid.Nil.String() {
+			resp.Results[idx].Instance = result.InstanceID.String()
 		} else {
 			wfID := result.WorkflowID
 			path, exists := m[wfID.String()]
 			if !exists {
-				fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+				tx, err := flow.beginSqlTx(ctx)
 				if err != nil {
 					return nil, err
 				}
-				defer rollback()
+				defer tx.Rollback()
 
-				file, err := fStore.GetFile(ctx, wfID)
+				file, err := tx.FileStore().GetFile(ctx, wfID)
 				if err != nil {
 					return nil, err
 				}
-				rollback()
+				tx.Rollback()
 
 				path = file.Path
 				m[wfID.String()] = path
@@ -554,9 +550,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 
 resend:
 
-	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID))).WithInstance(func(q *ent.InstanceQuery) {
-		q.Select(entinst.FieldID)
-	})
+	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
 	if err != nil {
@@ -575,23 +569,23 @@ resend:
 	m := make(map[string]string)
 
 	for idx, result := range results {
-		if result.Edges.Instance != nil {
-			resp.Results[idx].Instance = result.Edges.Instance.ID.String()
+		if result.InstanceID.String() != uuid.Nil.String() {
+			resp.Results[idx].Instance = result.InstanceID.String()
 		} else {
 			wfID := result.WorkflowID
 			path, exists := m[wfID.String()]
 			if !exists {
-				fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+				tx, err := flow.beginSqlTx(ctx)
 				if err != nil {
 					return err
 				}
-				defer rollback()
+				defer tx.Rollback()
 
-				file, err := fStore.GetFile(ctx, wfID)
+				file, err := tx.FileStore().GetFile(ctx, wfID)
 				if err != nil {
 					return err
 				}
-				rollback()
+				tx.Rollback()
 
 				path = file.Path
 				m[wfID.String()] = path
@@ -944,7 +938,7 @@ type eventsWaiterSignature struct {
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
 	signature, err := json.Marshal(&eventsWaiterSignature{
-		InstanceID: im.cached.Instance.ID.String(),
+		InstanceID: im.instance.Instance.ID.String(),
 		Step:       im.Step(),
 	})
 	if err != nil {
@@ -972,7 +966,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		transformedEvents = append(transformedEvents, ev)
 	}
 
-	err = events.addInstanceEventListener(ctx, im.cached, transformedEvents, signature, all)
+	err = events.addInstanceEventListener(ctx, im, transformedEvents, signature, all)
 	if err != nil {
 		return err
 	}
