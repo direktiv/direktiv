@@ -82,7 +82,7 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClien
 
 	engine.sugar.Debugf("knative function search: %v", a)
 
-	_, err := client.GetFunction(context.Background(), &igrpc.GetFunctionRequest{
+	_, err := client.GetFunction(context.Background(), &igrpc.FunctionsGetFunctionRequest{
 		ServiceName: &serviceName,
 	})
 	if err != nil {
@@ -96,7 +96,7 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsServiceClien
 func reconstructScopedKnativeFunction(client igrpc.FunctionsServiceClient,
 	serviceName string,
 ) error {
-	cr := igrpc.ReconstructFunctionRequest{
+	cr := igrpc.FunctionsReconstructFunctionRequest{
 		Name: &serviceName,
 	}
 
@@ -113,7 +113,7 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsServiceClient, ar 
 
 	engine.sugar.Debugf("knative function search: %v", a)
 
-	l, err := client.ListFunctions(context.Background(), &igrpc.ListFunctionsRequest{
+	l, err := client.ListFunctions(context.Background(), &igrpc.FunctionsListFunctionsRequest{
 		Annotations: a,
 	})
 	if err != nil {
@@ -136,8 +136,8 @@ func createKnativeFunction(client igrpc.FunctionsServiceClient,
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
 
-	cr := igrpc.CreateFunctionRequest{
-		Info: &igrpc.BaseInfo{
+	cr := igrpc.FunctionsCreateFunctionRequest{
+		Info: &igrpc.FunctionsBaseInfo{
 			Name:          &ir.Container.ID,
 			Namespace:     &ir.Workflow.NamespaceID,
 			Workflow:      &ir.Workflow.WorkflowID,

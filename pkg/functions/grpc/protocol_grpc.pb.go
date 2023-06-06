@@ -44,24 +44,24 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FunctionsServiceClient interface {
-	StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error)
-	DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ListFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*ListFunctionsResponse, error)
-	GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error)
-	DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
-	WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error)
-	WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error)
-	WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error)
-	ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error)
-	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
-	CancelWorfklow(ctx context.Context, in *CancelWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StoreRegistry(ctx context.Context, in *FunctionsStoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetRegistries(ctx context.Context, in *FunctionsGetRegistriesRequest, opts ...grpc.CallOption) (*FunctionsGetRegistriesResponse, error)
+	DeleteRegistry(ctx context.Context, in *FunctionsDeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ReconstructFunction(ctx context.Context, in *FunctionsReconstructFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateFunction(ctx context.Context, in *FunctionsUpdateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateFunction(ctx context.Context, in *FunctionsCreateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteFunctions(ctx context.Context, in *FunctionsListFunctionsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListFunctions(ctx context.Context, in *FunctionsListFunctionsRequest, opts ...grpc.CallOption) (*FunctionsListFunctionsResponse, error)
+	GetFunction(ctx context.Context, in *FunctionsGetFunctionRequest, opts ...grpc.CallOption) (*FunctionsGetFunctionResponse, error)
+	DeleteFunction(ctx context.Context, in *FunctionsGetFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteRevision(ctx context.Context, in *FunctionsDeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	WatchFunctions(ctx context.Context, in *FunctionsWatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error)
+	WatchPods(ctx context.Context, in *FunctionsWatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error)
+	WatchRevisions(ctx context.Context, in *FunctionsWatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error)
+	WatchLogs(ctx context.Context, in *FunctionsWatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error)
+	ListPods(ctx context.Context, in *FunctionsListPodsRequest, opts ...grpc.CallOption) (*FunctionsListPodsResponse, error)
+	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*FunctionsBuildResponse, error)
+	CancelWorfklow(ctx context.Context, in *FunctionsCancelWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type functionsServiceClient struct {
@@ -72,7 +72,7 @@ func NewFunctionsServiceClient(cc grpc.ClientConnInterface) FunctionsServiceClie
 	return &functionsServiceClient{cc}
 }
 
-func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *FunctionsStoreRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_StoreRegistry_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -81,8 +81,8 @@ func (c *functionsServiceClient) StoreRegistry(ctx context.Context, in *StoreReg
 	return out, nil
 }
 
-func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegistriesRequest, opts ...grpc.CallOption) (*GetRegistriesResponse, error) {
-	out := new(GetRegistriesResponse)
+func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *FunctionsGetRegistriesRequest, opts ...grpc.CallOption) (*FunctionsGetRegistriesResponse, error) {
+	out := new(FunctionsGetRegistriesResponse)
 	err := c.cc.Invoke(ctx, FunctionsService_GetRegistries_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (c *functionsServiceClient) GetRegistries(ctx context.Context, in *GetRegis
 	return out, nil
 }
 
-func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *FunctionsDeleteRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_DeleteRegistry_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -99,7 +99,7 @@ func (c *functionsServiceClient) DeleteRegistry(ctx context.Context, in *DeleteR
 	return out, nil
 }
 
-func (c *functionsServiceClient) ReconstructFunction(ctx context.Context, in *ReconstructFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) ReconstructFunction(ctx context.Context, in *FunctionsReconstructFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_ReconstructFunction_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -108,7 +108,7 @@ func (c *functionsServiceClient) ReconstructFunction(ctx context.Context, in *Re
 	return out, nil
 }
 
-func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *UpdateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *FunctionsUpdateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_UpdateFunction_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -117,7 +117,7 @@ func (c *functionsServiceClient) UpdateFunction(ctx context.Context, in *UpdateF
 	return out, nil
 }
 
-func (c *functionsServiceClient) CreateFunction(ctx context.Context, in *CreateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) CreateFunction(ctx context.Context, in *FunctionsCreateFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_CreateFunction_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -126,7 +126,7 @@ func (c *functionsServiceClient) CreateFunction(ctx context.Context, in *CreateF
 	return out, nil
 }
 
-func (c *functionsServiceClient) DeleteFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteFunctions(ctx context.Context, in *FunctionsListFunctionsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_DeleteFunctions_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -135,8 +135,8 @@ func (c *functionsServiceClient) DeleteFunctions(ctx context.Context, in *ListFu
 	return out, nil
 }
 
-func (c *functionsServiceClient) ListFunctions(ctx context.Context, in *ListFunctionsRequest, opts ...grpc.CallOption) (*ListFunctionsResponse, error) {
-	out := new(ListFunctionsResponse)
+func (c *functionsServiceClient) ListFunctions(ctx context.Context, in *FunctionsListFunctionsRequest, opts ...grpc.CallOption) (*FunctionsListFunctionsResponse, error) {
+	out := new(FunctionsListFunctionsResponse)
 	err := c.cc.Invoke(ctx, FunctionsService_ListFunctions_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -144,8 +144,8 @@ func (c *functionsServiceClient) ListFunctions(ctx context.Context, in *ListFunc
 	return out, nil
 }
 
-func (c *functionsServiceClient) GetFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*GetFunctionResponse, error) {
-	out := new(GetFunctionResponse)
+func (c *functionsServiceClient) GetFunction(ctx context.Context, in *FunctionsGetFunctionRequest, opts ...grpc.CallOption) (*FunctionsGetFunctionResponse, error) {
+	out := new(FunctionsGetFunctionResponse)
 	err := c.cc.Invoke(ctx, FunctionsService_GetFunction_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (c *functionsServiceClient) GetFunction(ctx context.Context, in *GetFunctio
 	return out, nil
 }
 
-func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *FunctionsGetFunctionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_DeleteFunction_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -162,7 +162,7 @@ func (c *functionsServiceClient) DeleteFunction(ctx context.Context, in *GetFunc
 	return out, nil
 }
 
-func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *DeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *FunctionsDeleteRevisionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_DeleteRevision_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -171,7 +171,7 @@ func (c *functionsServiceClient) DeleteRevision(ctx context.Context, in *DeleteR
 	return out, nil
 }
 
-func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *WatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error) {
+func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *FunctionsWatchFunctionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchFunctionsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[0], FunctionsService_WatchFunctions_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (c *functionsServiceClient) WatchFunctions(ctx context.Context, in *WatchFu
 }
 
 type FunctionsService_WatchFunctionsClient interface {
-	Recv() (*WatchFunctionsResponse, error)
+	Recv() (*FunctionsWatchFunctionsResponse, error)
 	grpc.ClientStream
 }
 
@@ -195,15 +195,15 @@ type functionsServiceWatchFunctionsClient struct {
 	grpc.ClientStream
 }
 
-func (x *functionsServiceWatchFunctionsClient) Recv() (*WatchFunctionsResponse, error) {
-	m := new(WatchFunctionsResponse)
+func (x *functionsServiceWatchFunctionsClient) Recv() (*FunctionsWatchFunctionsResponse, error) {
+	m := new(FunctionsWatchFunctionsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *functionsServiceClient) WatchPods(ctx context.Context, in *WatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error) {
+func (c *functionsServiceClient) WatchPods(ctx context.Context, in *FunctionsWatchPodsRequest, opts ...grpc.CallOption) (FunctionsService_WatchPodsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[1], FunctionsService_WatchPods_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func (c *functionsServiceClient) WatchPods(ctx context.Context, in *WatchPodsReq
 }
 
 type FunctionsService_WatchPodsClient interface {
-	Recv() (*WatchPodsResponse, error)
+	Recv() (*FunctionsWatchPodsResponse, error)
 	grpc.ClientStream
 }
 
@@ -227,15 +227,15 @@ type functionsServiceWatchPodsClient struct {
 	grpc.ClientStream
 }
 
-func (x *functionsServiceWatchPodsClient) Recv() (*WatchPodsResponse, error) {
-	m := new(WatchPodsResponse)
+func (x *functionsServiceWatchPodsClient) Recv() (*FunctionsWatchPodsResponse, error) {
+	m := new(FunctionsWatchPodsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *functionsServiceClient) WatchRevisions(ctx context.Context, in *WatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error) {
+func (c *functionsServiceClient) WatchRevisions(ctx context.Context, in *FunctionsWatchRevisionsRequest, opts ...grpc.CallOption) (FunctionsService_WatchRevisionsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[2], FunctionsService_WatchRevisions_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (c *functionsServiceClient) WatchRevisions(ctx context.Context, in *WatchRe
 }
 
 type FunctionsService_WatchRevisionsClient interface {
-	Recv() (*WatchRevisionsResponse, error)
+	Recv() (*FunctionsWatchRevisionsResponse, error)
 	grpc.ClientStream
 }
 
@@ -259,15 +259,15 @@ type functionsServiceWatchRevisionsClient struct {
 	grpc.ClientStream
 }
 
-func (x *functionsServiceWatchRevisionsClient) Recv() (*WatchRevisionsResponse, error) {
-	m := new(WatchRevisionsResponse)
+func (x *functionsServiceWatchRevisionsClient) Recv() (*FunctionsWatchRevisionsResponse, error) {
+	m := new(FunctionsWatchRevisionsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *functionsServiceClient) WatchLogs(ctx context.Context, in *WatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error) {
+func (c *functionsServiceClient) WatchLogs(ctx context.Context, in *FunctionsWatchLogsRequest, opts ...grpc.CallOption) (FunctionsService_WatchLogsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &FunctionsService_ServiceDesc.Streams[3], FunctionsService_WatchLogs_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -283,7 +283,7 @@ func (c *functionsServiceClient) WatchLogs(ctx context.Context, in *WatchLogsReq
 }
 
 type FunctionsService_WatchLogsClient interface {
-	Recv() (*WatchLogsResponse, error)
+	Recv() (*FunctionsWatchLogsResponse, error)
 	grpc.ClientStream
 }
 
@@ -291,16 +291,16 @@ type functionsServiceWatchLogsClient struct {
 	grpc.ClientStream
 }
 
-func (x *functionsServiceWatchLogsClient) Recv() (*WatchLogsResponse, error) {
-	m := new(WatchLogsResponse)
+func (x *functionsServiceWatchLogsClient) Recv() (*FunctionsWatchLogsResponse, error) {
+	m := new(FunctionsWatchLogsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsRequest, opts ...grpc.CallOption) (*ListPodsResponse, error) {
-	out := new(ListPodsResponse)
+func (c *functionsServiceClient) ListPods(ctx context.Context, in *FunctionsListPodsRequest, opts ...grpc.CallOption) (*FunctionsListPodsResponse, error) {
+	out := new(FunctionsListPodsResponse)
 	err := c.cc.Invoke(ctx, FunctionsService_ListPods_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -308,8 +308,8 @@ func (c *functionsServiceClient) ListPods(ctx context.Context, in *ListPodsReque
 	return out, nil
 }
 
-func (c *functionsServiceClient) Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
-	out := new(BuildResponse)
+func (c *functionsServiceClient) Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*FunctionsBuildResponse, error) {
+	out := new(FunctionsBuildResponse)
 	err := c.cc.Invoke(ctx, FunctionsService_Build_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -317,7 +317,7 @@ func (c *functionsServiceClient) Build(ctx context.Context, in *emptypb.Empty, o
 	return out, nil
 }
 
-func (c *functionsServiceClient) CancelWorfklow(ctx context.Context, in *CancelWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *functionsServiceClient) CancelWorfklow(ctx context.Context, in *FunctionsCancelWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FunctionsService_CancelWorfklow_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -330,24 +330,24 @@ func (c *functionsServiceClient) CancelWorfklow(ctx context.Context, in *CancelW
 // All implementations must embed UnimplementedFunctionsServiceServer
 // for forward compatibility
 type FunctionsServiceServer interface {
-	StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error)
-	GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error)
-	DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error)
-	ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*emptypb.Empty, error)
-	UpdateFunction(context.Context, *UpdateFunctionRequest) (*emptypb.Empty, error)
-	CreateFunction(context.Context, *CreateFunctionRequest) (*emptypb.Empty, error)
-	DeleteFunctions(context.Context, *ListFunctionsRequest) (*emptypb.Empty, error)
-	ListFunctions(context.Context, *ListFunctionsRequest) (*ListFunctionsResponse, error)
-	GetFunction(context.Context, *GetFunctionRequest) (*GetFunctionResponse, error)
-	DeleteFunction(context.Context, *GetFunctionRequest) (*emptypb.Empty, error)
-	DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error)
-	WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error
-	WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error
-	WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error
-	WatchLogs(*WatchLogsRequest, FunctionsService_WatchLogsServer) error
-	ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error)
-	Build(context.Context, *emptypb.Empty) (*BuildResponse, error)
-	CancelWorfklow(context.Context, *CancelWorkflowRequest) (*emptypb.Empty, error)
+	StoreRegistry(context.Context, *FunctionsStoreRegistryRequest) (*emptypb.Empty, error)
+	GetRegistries(context.Context, *FunctionsGetRegistriesRequest) (*FunctionsGetRegistriesResponse, error)
+	DeleteRegistry(context.Context, *FunctionsDeleteRegistryRequest) (*emptypb.Empty, error)
+	ReconstructFunction(context.Context, *FunctionsReconstructFunctionRequest) (*emptypb.Empty, error)
+	UpdateFunction(context.Context, *FunctionsUpdateFunctionRequest) (*emptypb.Empty, error)
+	CreateFunction(context.Context, *FunctionsCreateFunctionRequest) (*emptypb.Empty, error)
+	DeleteFunctions(context.Context, *FunctionsListFunctionsRequest) (*emptypb.Empty, error)
+	ListFunctions(context.Context, *FunctionsListFunctionsRequest) (*FunctionsListFunctionsResponse, error)
+	GetFunction(context.Context, *FunctionsGetFunctionRequest) (*FunctionsGetFunctionResponse, error)
+	DeleteFunction(context.Context, *FunctionsGetFunctionRequest) (*emptypb.Empty, error)
+	DeleteRevision(context.Context, *FunctionsDeleteRevisionRequest) (*emptypb.Empty, error)
+	WatchFunctions(*FunctionsWatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error
+	WatchPods(*FunctionsWatchPodsRequest, FunctionsService_WatchPodsServer) error
+	WatchRevisions(*FunctionsWatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error
+	WatchLogs(*FunctionsWatchLogsRequest, FunctionsService_WatchLogsServer) error
+	ListPods(context.Context, *FunctionsListPodsRequest) (*FunctionsListPodsResponse, error)
+	Build(context.Context, *emptypb.Empty) (*FunctionsBuildResponse, error)
+	CancelWorfklow(context.Context, *FunctionsCancelWorkflowRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedFunctionsServiceServer()
 }
 
@@ -355,58 +355,58 @@ type FunctionsServiceServer interface {
 type UnimplementedFunctionsServiceServer struct {
 }
 
-func (UnimplementedFunctionsServiceServer) StoreRegistry(context.Context, *StoreRegistryRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) StoreRegistry(context.Context, *FunctionsStoreRegistryRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRegistry not implemented")
 }
-func (UnimplementedFunctionsServiceServer) GetRegistries(context.Context, *GetRegistriesRequest) (*GetRegistriesResponse, error) {
+func (UnimplementedFunctionsServiceServer) GetRegistries(context.Context, *FunctionsGetRegistriesRequest) (*FunctionsGetRegistriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
 }
-func (UnimplementedFunctionsServiceServer) DeleteRegistry(context.Context, *DeleteRegistryRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteRegistry(context.Context, *FunctionsDeleteRegistryRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
 }
-func (UnimplementedFunctionsServiceServer) ReconstructFunction(context.Context, *ReconstructFunctionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) ReconstructFunction(context.Context, *FunctionsReconstructFunctionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReconstructFunction not implemented")
 }
-func (UnimplementedFunctionsServiceServer) UpdateFunction(context.Context, *UpdateFunctionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) UpdateFunction(context.Context, *FunctionsUpdateFunctionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFunction not implemented")
 }
-func (UnimplementedFunctionsServiceServer) CreateFunction(context.Context, *CreateFunctionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) CreateFunction(context.Context, *FunctionsCreateFunctionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFunction not implemented")
 }
-func (UnimplementedFunctionsServiceServer) DeleteFunctions(context.Context, *ListFunctionsRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteFunctions(context.Context, *FunctionsListFunctionsRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFunctions not implemented")
 }
-func (UnimplementedFunctionsServiceServer) ListFunctions(context.Context, *ListFunctionsRequest) (*ListFunctionsResponse, error) {
+func (UnimplementedFunctionsServiceServer) ListFunctions(context.Context, *FunctionsListFunctionsRequest) (*FunctionsListFunctionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListFunctions not implemented")
 }
-func (UnimplementedFunctionsServiceServer) GetFunction(context.Context, *GetFunctionRequest) (*GetFunctionResponse, error) {
+func (UnimplementedFunctionsServiceServer) GetFunction(context.Context, *FunctionsGetFunctionRequest) (*FunctionsGetFunctionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFunction not implemented")
 }
-func (UnimplementedFunctionsServiceServer) DeleteFunction(context.Context, *GetFunctionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteFunction(context.Context, *FunctionsGetFunctionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFunction not implemented")
 }
-func (UnimplementedFunctionsServiceServer) DeleteRevision(context.Context, *DeleteRevisionRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) DeleteRevision(context.Context, *FunctionsDeleteRevisionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRevision not implemented")
 }
-func (UnimplementedFunctionsServiceServer) WatchFunctions(*WatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error {
+func (UnimplementedFunctionsServiceServer) WatchFunctions(*FunctionsWatchFunctionsRequest, FunctionsService_WatchFunctionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchFunctions not implemented")
 }
-func (UnimplementedFunctionsServiceServer) WatchPods(*WatchPodsRequest, FunctionsService_WatchPodsServer) error {
+func (UnimplementedFunctionsServiceServer) WatchPods(*FunctionsWatchPodsRequest, FunctionsService_WatchPodsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchPods not implemented")
 }
-func (UnimplementedFunctionsServiceServer) WatchRevisions(*WatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error {
+func (UnimplementedFunctionsServiceServer) WatchRevisions(*FunctionsWatchRevisionsRequest, FunctionsService_WatchRevisionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchRevisions not implemented")
 }
-func (UnimplementedFunctionsServiceServer) WatchLogs(*WatchLogsRequest, FunctionsService_WatchLogsServer) error {
+func (UnimplementedFunctionsServiceServer) WatchLogs(*FunctionsWatchLogsRequest, FunctionsService_WatchLogsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchLogs not implemented")
 }
-func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *ListPodsRequest) (*ListPodsResponse, error) {
+func (UnimplementedFunctionsServiceServer) ListPods(context.Context, *FunctionsListPodsRequest) (*FunctionsListPodsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPods not implemented")
 }
-func (UnimplementedFunctionsServiceServer) Build(context.Context, *emptypb.Empty) (*BuildResponse, error) {
+func (UnimplementedFunctionsServiceServer) Build(context.Context, *emptypb.Empty) (*FunctionsBuildResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
 }
-func (UnimplementedFunctionsServiceServer) CancelWorfklow(context.Context, *CancelWorkflowRequest) (*emptypb.Empty, error) {
+func (UnimplementedFunctionsServiceServer) CancelWorfklow(context.Context, *FunctionsCancelWorkflowRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelWorfklow not implemented")
 }
 func (UnimplementedFunctionsServiceServer) mustEmbedUnimplementedFunctionsServiceServer() {}
@@ -423,7 +423,7 @@ func RegisterFunctionsServiceServer(s grpc.ServiceRegistrar, srv FunctionsServic
 }
 
 func _FunctionsService_StoreRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreRegistryRequest)
+	in := new(FunctionsStoreRegistryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -435,13 +435,13 @@ func _FunctionsService_StoreRegistry_Handler(srv interface{}, ctx context.Contex
 		FullMethod: FunctionsService_StoreRegistry_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).StoreRegistry(ctx, req.(*StoreRegistryRequest))
+		return srv.(FunctionsServiceServer).StoreRegistry(ctx, req.(*FunctionsStoreRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRegistriesRequest)
+	in := new(FunctionsGetRegistriesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -453,13 +453,13 @@ func _FunctionsService_GetRegistries_Handler(srv interface{}, ctx context.Contex
 		FullMethod: FunctionsService_GetRegistries_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).GetRegistries(ctx, req.(*GetRegistriesRequest))
+		return srv.(FunctionsServiceServer).GetRegistries(ctx, req.(*FunctionsGetRegistriesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_DeleteRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRegistryRequest)
+	in := new(FunctionsDeleteRegistryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -471,13 +471,13 @@ func _FunctionsService_DeleteRegistry_Handler(srv interface{}, ctx context.Conte
 		FullMethod: FunctionsService_DeleteRegistry_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, req.(*DeleteRegistryRequest))
+		return srv.(FunctionsServiceServer).DeleteRegistry(ctx, req.(*FunctionsDeleteRegistryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_ReconstructFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReconstructFunctionRequest)
+	in := new(FunctionsReconstructFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -489,13 +489,13 @@ func _FunctionsService_ReconstructFunction_Handler(srv interface{}, ctx context.
 		FullMethod: FunctionsService_ReconstructFunction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).ReconstructFunction(ctx, req.(*ReconstructFunctionRequest))
+		return srv.(FunctionsServiceServer).ReconstructFunction(ctx, req.(*FunctionsReconstructFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_UpdateFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFunctionRequest)
+	in := new(FunctionsUpdateFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -507,13 +507,13 @@ func _FunctionsService_UpdateFunction_Handler(srv interface{}, ctx context.Conte
 		FullMethod: FunctionsService_UpdateFunction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).UpdateFunction(ctx, req.(*UpdateFunctionRequest))
+		return srv.(FunctionsServiceServer).UpdateFunction(ctx, req.(*FunctionsUpdateFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_CreateFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateFunctionRequest)
+	in := new(FunctionsCreateFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -525,13 +525,13 @@ func _FunctionsService_CreateFunction_Handler(srv interface{}, ctx context.Conte
 		FullMethod: FunctionsService_CreateFunction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).CreateFunction(ctx, req.(*CreateFunctionRequest))
+		return srv.(FunctionsServiceServer).CreateFunction(ctx, req.(*FunctionsCreateFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_DeleteFunctions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListFunctionsRequest)
+	in := new(FunctionsListFunctionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -543,13 +543,13 @@ func _FunctionsService_DeleteFunctions_Handler(srv interface{}, ctx context.Cont
 		FullMethod: FunctionsService_DeleteFunctions_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).DeleteFunctions(ctx, req.(*ListFunctionsRequest))
+		return srv.(FunctionsServiceServer).DeleteFunctions(ctx, req.(*FunctionsListFunctionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_ListFunctions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListFunctionsRequest)
+	in := new(FunctionsListFunctionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -561,13 +561,13 @@ func _FunctionsService_ListFunctions_Handler(srv interface{}, ctx context.Contex
 		FullMethod: FunctionsService_ListFunctions_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).ListFunctions(ctx, req.(*ListFunctionsRequest))
+		return srv.(FunctionsServiceServer).ListFunctions(ctx, req.(*FunctionsListFunctionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_GetFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetFunctionRequest)
+	in := new(FunctionsGetFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -579,13 +579,13 @@ func _FunctionsService_GetFunction_Handler(srv interface{}, ctx context.Context,
 		FullMethod: FunctionsService_GetFunction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).GetFunction(ctx, req.(*GetFunctionRequest))
+		return srv.(FunctionsServiceServer).GetFunction(ctx, req.(*FunctionsGetFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_DeleteFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetFunctionRequest)
+	in := new(FunctionsGetFunctionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -597,13 +597,13 @@ func _FunctionsService_DeleteFunction_Handler(srv interface{}, ctx context.Conte
 		FullMethod: FunctionsService_DeleteFunction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).DeleteFunction(ctx, req.(*GetFunctionRequest))
+		return srv.(FunctionsServiceServer).DeleteFunction(ctx, req.(*FunctionsGetFunctionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_DeleteRevision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRevisionRequest)
+	in := new(FunctionsDeleteRevisionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -615,13 +615,13 @@ func _FunctionsService_DeleteRevision_Handler(srv interface{}, ctx context.Conte
 		FullMethod: FunctionsService_DeleteRevision_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).DeleteRevision(ctx, req.(*DeleteRevisionRequest))
+		return srv.(FunctionsServiceServer).DeleteRevision(ctx, req.(*FunctionsDeleteRevisionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FunctionsService_WatchFunctions_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WatchFunctionsRequest)
+	m := new(FunctionsWatchFunctionsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -629,7 +629,7 @@ func _FunctionsService_WatchFunctions_Handler(srv interface{}, stream grpc.Serve
 }
 
 type FunctionsService_WatchFunctionsServer interface {
-	Send(*WatchFunctionsResponse) error
+	Send(*FunctionsWatchFunctionsResponse) error
 	grpc.ServerStream
 }
 
@@ -637,12 +637,12 @@ type functionsServiceWatchFunctionsServer struct {
 	grpc.ServerStream
 }
 
-func (x *functionsServiceWatchFunctionsServer) Send(m *WatchFunctionsResponse) error {
+func (x *functionsServiceWatchFunctionsServer) Send(m *FunctionsWatchFunctionsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
 func _FunctionsService_WatchPods_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WatchPodsRequest)
+	m := new(FunctionsWatchPodsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -650,7 +650,7 @@ func _FunctionsService_WatchPods_Handler(srv interface{}, stream grpc.ServerStre
 }
 
 type FunctionsService_WatchPodsServer interface {
-	Send(*WatchPodsResponse) error
+	Send(*FunctionsWatchPodsResponse) error
 	grpc.ServerStream
 }
 
@@ -658,12 +658,12 @@ type functionsServiceWatchPodsServer struct {
 	grpc.ServerStream
 }
 
-func (x *functionsServiceWatchPodsServer) Send(m *WatchPodsResponse) error {
+func (x *functionsServiceWatchPodsServer) Send(m *FunctionsWatchPodsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
 func _FunctionsService_WatchRevisions_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WatchRevisionsRequest)
+	m := new(FunctionsWatchRevisionsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -671,7 +671,7 @@ func _FunctionsService_WatchRevisions_Handler(srv interface{}, stream grpc.Serve
 }
 
 type FunctionsService_WatchRevisionsServer interface {
-	Send(*WatchRevisionsResponse) error
+	Send(*FunctionsWatchRevisionsResponse) error
 	grpc.ServerStream
 }
 
@@ -679,12 +679,12 @@ type functionsServiceWatchRevisionsServer struct {
 	grpc.ServerStream
 }
 
-func (x *functionsServiceWatchRevisionsServer) Send(m *WatchRevisionsResponse) error {
+func (x *functionsServiceWatchRevisionsServer) Send(m *FunctionsWatchRevisionsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
 func _FunctionsService_WatchLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WatchLogsRequest)
+	m := new(FunctionsWatchLogsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -692,7 +692,7 @@ func _FunctionsService_WatchLogs_Handler(srv interface{}, stream grpc.ServerStre
 }
 
 type FunctionsService_WatchLogsServer interface {
-	Send(*WatchLogsResponse) error
+	Send(*FunctionsWatchLogsResponse) error
 	grpc.ServerStream
 }
 
@@ -700,12 +700,12 @@ type functionsServiceWatchLogsServer struct {
 	grpc.ServerStream
 }
 
-func (x *functionsServiceWatchLogsServer) Send(m *WatchLogsResponse) error {
+func (x *functionsServiceWatchLogsServer) Send(m *FunctionsWatchLogsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
 func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListPodsRequest)
+	in := new(FunctionsListPodsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -717,7 +717,7 @@ func _FunctionsService_ListPods_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: FunctionsService_ListPods_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).ListPods(ctx, req.(*ListPodsRequest))
+		return srv.(FunctionsServiceServer).ListPods(ctx, req.(*FunctionsListPodsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -741,7 +741,7 @@ func _FunctionsService_Build_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _FunctionsService_CancelWorfklow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelWorkflowRequest)
+	in := new(FunctionsCancelWorkflowRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -753,7 +753,7 @@ func _FunctionsService_CancelWorfklow_Handler(srv interface{}, ctx context.Conte
 		FullMethod: FunctionsService_CancelWorfklow_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FunctionsServiceServer).CancelWorfklow(ctx, req.(*CancelWorkflowRequest))
+		return srv.(FunctionsServiceServer).CancelWorfklow(ctx, req.(*FunctionsCancelWorkflowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -29,25 +29,25 @@ import "pkg/functions/grpc/cancel-workflow.proto";
 
 service FunctionsService {
 
-	rpc StoreRegistry (StoreRegistryRequest) returns (google.protobuf.Empty) {}
-  rpc GetRegistries (GetRegistriesRequest) returns (GetRegistriesResponse) {}
-  rpc DeleteRegistry (DeleteRegistryRequest) returns (google.protobuf.Empty) {}
+	rpc StoreRegistry (FunctionsStoreRegistryRequest) returns (google.protobuf.Empty) {}
+  rpc GetRegistries (FunctionsGetRegistriesRequest) returns (FunctionsGetRegistriesResponse) {}
+  rpc DeleteRegistry (FunctionsDeleteRegistryRequest) returns (google.protobuf.Empty) {}
 
-  rpc ReconstructFunction(ReconstructFunctionRequest) returns (google.protobuf.Empty)  {}
-  rpc UpdateFunction(UpdateFunctionRequest) returns (google.protobuf.Empty)  {}
-  rpc CreateFunction(CreateFunctionRequest) returns (google.protobuf.Empty)  {}
-  rpc DeleteFunctions(ListFunctionsRequest) returns (google.protobuf.Empty)  {}
-  rpc ListFunctions(ListFunctionsRequest) returns (ListFunctionsResponse)  {}
-  rpc GetFunction(GetFunctionRequest) returns (GetFunctionResponse)  {}
-  rpc DeleteFunction(GetFunctionRequest) returns (google.protobuf.Empty)  {}
-  rpc DeleteRevision(DeleteRevisionRequest) returns (google.protobuf.Empty)  {}
-  rpc WatchFunctions(WatchFunctionsRequest) returns (stream WatchFunctionsResponse)  {}
-  rpc WatchPods(WatchPodsRequest) returns (stream WatchPodsResponse)  {}
-  rpc WatchRevisions(WatchRevisionsRequest) returns (stream WatchRevisionsResponse)  {}
-  rpc WatchLogs(WatchLogsRequest) returns (stream WatchLogsResponse)  {}
-  rpc ListPods(ListPodsRequest) returns (ListPodsResponse)  {}
-  rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
+  rpc ReconstructFunction(FunctionsReconstructFunctionRequest) returns (google.protobuf.Empty)  {}
+  rpc UpdateFunction(FunctionsUpdateFunctionRequest) returns (google.protobuf.Empty)  {}
+  rpc CreateFunction(FunctionsCreateFunctionRequest) returns (google.protobuf.Empty)  {}
+  rpc DeleteFunctions(FunctionsListFunctionsRequest) returns (google.protobuf.Empty)  {}
+  rpc ListFunctions(FunctionsListFunctionsRequest) returns (FunctionsListFunctionsResponse)  {}
+  rpc GetFunction(FunctionsGetFunctionRequest) returns (FunctionsGetFunctionResponse)  {}
+  rpc DeleteFunction(FunctionsGetFunctionRequest) returns (google.protobuf.Empty)  {}
+  rpc DeleteRevision(FunctionsDeleteRevisionRequest) returns (google.protobuf.Empty)  {}
+  rpc WatchFunctions(FunctionsWatchFunctionsRequest) returns (stream FunctionsWatchFunctionsResponse)  {}
+  rpc WatchPods(FunctionsWatchPodsRequest) returns (stream FunctionsWatchPodsResponse)  {}
+  rpc WatchRevisions(FunctionsWatchRevisionsRequest) returns (stream FunctionsWatchRevisionsResponse)  {}
+  rpc WatchLogs(FunctionsWatchLogsRequest) returns (stream FunctionsWatchLogsResponse)  {}
+  rpc ListPods(FunctionsListPodsRequest) returns (FunctionsListPodsResponse)  {}
+  rpc Build(google.protobuf.Empty) returns (FunctionsBuildResponse) {}
 
 
-  rpc CancelWorfklow(CancelWorkflowRequest) returns (google.protobuf.Empty) {}
+  rpc CancelWorfklow(FunctionsCancelWorkflowRequest) returns (google.protobuf.Empty) {}
 }

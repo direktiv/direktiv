@@ -832,7 +832,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if ar.Container.Type == model.ReusableContainerFunctionType {
 		scale := int32(ar.Container.Scale)
 		size := int32(ar.Container.Size)
-		svn, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		svn, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &ar.Container.ID,
 			Namespace:     &ar.Workflow.NamespaceID,
 			Workflow:      &ar.Workflow.WorkflowID,
