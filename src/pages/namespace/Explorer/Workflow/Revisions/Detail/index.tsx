@@ -75,6 +75,7 @@ const WorkflowRevisionsPage = () => {
           onClick={() => {
             navigate(backLink);
           }}
+          data-testid="revisions-detail-back-link"
         >
           <ArrowLeft />
           {t("pages.explorer.tree.workflow.revisions.overview.detail.backBtn")}
