@@ -40,7 +40,6 @@ func (Instance) Fields() []ent.Field {
 func (Instance) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("namespace", Namespace.Type).Ref("instances").Required().Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("runtime", InstanceRuntime.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}).Unique().Required(),
 		edge.To("children", InstanceRuntime.Type),
 		edge.To("eventlisteners", Events.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),

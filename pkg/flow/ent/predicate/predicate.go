@@ -27,9 +27,6 @@ type Instance func(*sql.Selector)
 // InstanceRuntime is the predicate function for instanceruntime builders.
 type InstanceRuntime func(*sql.Selector)
 
-// LogMsg is the predicate function for logmsg builders.
-type LogMsg func(*sql.Selector)
-
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)
 

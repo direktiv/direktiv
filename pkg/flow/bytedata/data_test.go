@@ -4,17 +4,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	"github.com/google/uuid"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 )
 
 func TestConvertLogMsgForOutput(t *testing.T) {
-	input := make([]*ent.LogMsg, 0)
-	input = append(input, &ent.LogMsg{
-		ID:    uuid.New(),
-		T:     time.Now(),
-		Msg:   "test",
-		Level: "info",
+	input := make([]*logengine.LogEntry, 0)
+	field := make(map[string]interface{})
+	field["level"] = "info"
+	input = append(input, &logengine.LogEntry{
+		T:      time.Now(),
+		Msg:    "test",
+		Fields: field,
 	})
 	resp, err := ConvertLogMsgForOutput(input)
 	if err != nil {

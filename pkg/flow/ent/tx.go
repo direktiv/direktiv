@@ -28,8 +28,6 @@ type Tx struct {
 	Instance *InstanceClient
 	// InstanceRuntime is the client for interacting with the InstanceRuntime builders.
 	InstanceRuntime *InstanceRuntimeClient
-	// LogMsg is the client for interacting with the LogMsg builders.
-	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 	// Services is the client for interacting with the Services builders.
@@ -172,7 +170,6 @@ func (tx *Tx) init() {
 	tx.EventsWait = NewEventsWaitClient(tx.config)
 	tx.Instance = NewInstanceClient(tx.config)
 	tx.InstanceRuntime = NewInstanceRuntimeClient(tx.config)
-	tx.LogMsg = NewLogMsgClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)
 	tx.Services = NewServicesClient(tx.config)
 }

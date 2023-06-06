@@ -31,7 +31,6 @@ type EntClients struct {
 	CloudEvents       *ent.CloudEventsClient
 	CloudEventFilters *ent.CloudEventFiltersClient
 	Instance          *ent.InstanceClient
-	LogMsg            *ent.LogMsgClient
 	InstanceRuntime   *ent.InstanceRuntimeClient
 }
 
@@ -51,7 +50,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 			CloudEvents:       db.Client.CloudEvents,
 			CloudEventFilters: db.Client.CloudEventFilters,
 			Instance:          db.Client.Instance,
-			LogMsg:            db.Client.LogMsg,
 			InstanceRuntime:   db.Client.InstanceRuntime,
 		}
 	}
@@ -65,7 +63,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 		CloudEvents:       x.CloudEvents,
 		CloudEventFilters: x.CloudEventFilters,
 		Instance:          x.Instance,
-		LogMsg:            x.LogMsg,
 		InstanceRuntime:   x.InstanceRuntime,
 	}
 }

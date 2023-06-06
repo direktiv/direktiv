@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 )
@@ -81,7 +80,6 @@ func columnChecker(table string) func(string) error {
 		eventswait.Table:        eventswait.ValidColumn,
 		instance.Table:          instance.ValidColumn,
 		instanceruntime.Table:   instanceruntime.ValidColumn,
-		logmsg.Table:            logmsg.ValidColumn,
 		namespace.Table:         namespace.ValidColumn,
 		services.Table:          services.ValidColumn,
 	}
