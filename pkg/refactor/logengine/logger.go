@@ -68,18 +68,21 @@ type ChainedBetterLogger []BetterLogger
 
 func (loggers ChainedBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	for i := range loggers {
+		appenInstanceInheritanceInfo(tags)
 		loggers[i].Debugf(ctx, recipientID, tags, msg, a...)
 	}
 }
 
 func (loggers ChainedBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	for i := range loggers {
+		appenInstanceInheritanceInfo(tags)
 		loggers[i].Infof(ctx, recipientID, tags, msg, a...)
 	}
 }
 
 func (loggers ChainedBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	for i := range loggers {
+		appenInstanceInheritanceInfo(tags)
 		loggers[i].Errorf(ctx, recipientID, tags, msg, a...)
 	}
 }
@@ -106,18 +109,7 @@ func (cls *CachedSQLLogStore) logWorker() {
 		if !more {
 			return
 		}
-		if v, ok := l.tags["callpath"]; ok {
-			if l.tags["callpath"] == "/" {
-				l.tags["root-instance-id"] = l.tags["instance-id"]
-			}
-			l.tags["callpath"] = internallogger.AppendInstanceID(v, l.tags["instance-id"])
-			res, err := internallogger.GetRootinstanceID(v)
-			if err != nil {
-				l.tags["root-instance-id"] = l.tags["instance-id"]
-			} else {
-				l.tags["root-instance-id"] = res
-			}
-		}
+
 		attributes := make(map[string]string)
 		attributes["recipientType"] = "sender_type"
 		attributes["root-instance-id"] = "root_instance_id"
@@ -200,4 +192,40 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 	default:
 		cls.logError("!! Log-buffer is/was full.")
 	}
+}
+
+// constructing the callpath and setting the root-instance-id
+// function assumes the callpath misses the creators id at the end.
+// WHY: currently we expect the callpath to miss the uuid of the instance where the logmsg originated (instance-id in the tags) from.
+// The reason for this was: the id for the instance was set only after instance was inserted into the database by ent.
+// TODO: It would be better to have the uuid of the instance to be already in the callpath.
+// Example for current callpath structure:
+// the log message was created by instance-id: "75d8b87a"
+// the parent of "75d8b87a" was instance-id: "1dd92e"
+// the parent of "1dd92e" was instance-id: "124279"
+// the callpath for this example would be: "/124279/1dd92e/"
+// the final callpath after applying the function should look be: "/124279/1dd92e/75d8b87a"
+// other example the log message was created by instance-id: "75d8b87a"
+// "75d8b87b" has no parent instance, therefor is the root-instance
+// for this case we expect the callpath to be "/"
+// the final callpath after applying the function should look be: "/75d8b87b"
+//
+// to make querying the logs more connivent and efficient we append the missing
+// instance-id before to the callpath tag of the log-entry
+// and add the root-instance-id tag fro the constructed final callpath.
+func appenInstanceInheritanceInfo(tags map[string]string) map[string]string {
+	if v, ok := tags["callpath"]; ok {
+		if tags["callpath"] == "/" {
+			tags["root-instance-id"] = tags["instance-id"]
+		}
+		tags["callpath"] = internallogger.AppendInstanceID(v, tags["instance-id"])
+		res, err := internallogger.GetRootinstanceID(v)
+		if err != nil {
+			tags["root-instance-id"] = tags["instance-id"]
+		} else {
+			tags["root-instance-id"] = res
+		}
+	}
+
+	return tags
 }
