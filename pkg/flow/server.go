@@ -263,7 +263,11 @@ func (srv *server) start(ctx context.Context) error {
 	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		store.Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+			re, ok := recipient.Convert(objectType)
+			if !ok {
+				panic("invalid recipient type")
+			}
+			srv.pubsub.NotifyLogs(objectID, re)
 		},
 		srv.sugar.Errorf,
 	)

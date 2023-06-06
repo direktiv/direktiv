@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -105,6 +106,27 @@ func (cls *CachedSQLLogStore) logWorker() {
 		if !more {
 			return
 		}
+		if v, ok := l.tags["callpath"]; ok {
+			if l.tags["callpath"] == "/" {
+				l.tags["root-instance-id"] = l.tags["instance-id"]
+			}
+			l.tags["callpath"] = internallogger.AppendInstanceID(v, l.tags["instance-id"])
+			res, err := internallogger.GetRootinstanceID(v)
+			if err != nil {
+				l.tags["root-instance-id"] = l.tags["instance-id"]
+			} else {
+				l.tags["root-instance-id"] = res
+			}
+		}
+		attributes := make(map[string]string)
+		attributes["recipientType"] = "sender_type"
+		attributes["root-instance-id"] = "root_instance_id"
+		attributes["callpath"] = "log_instance_call_path"
+		for k, v := range attributes {
+			if e, ok := l.tags[k]; ok {
+				l.tags[v] = e
+			}
+		}
 		convertedTags := make(map[string]interface{})
 		for k, v := range l.tags {
 			convertedTags[k] = v
@@ -140,7 +162,7 @@ func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID,
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["sender_type"]),
+		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
 		level:         Debug,
 	}:
 	default:
@@ -156,7 +178,7 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["sender_type"]),
+		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
 		level:         Error,
 	}:
 	default:
@@ -172,7 +194,7 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["sender_type"]),
+		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
 		level:         Info,
 	}:
 	default:

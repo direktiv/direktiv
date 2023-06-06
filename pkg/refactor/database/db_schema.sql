@@ -116,19 +116,16 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
 );
 
 
--- TODO: alex this table schema need have not null modifiers.
-CREATE TABLE IF NOT EXISTS "log_msgs" (
+CREATE TABLE IF NOT EXISTS "log_entries" (
     "oid" uuid,
-    "t" timestamptz,
-    "msg" text,
+    "t" timestamptz text NOT NULL,
+    "msg" text NOT NULL,
     "level" integer,
     "root_instance_id" uuid,
+    "sender" uuid,
+    "sender_type" text,
     "log_instance_call_path" text,
     "tags" jsonb,
-    "workflow_id" uuid,
-    "mirror_activity_id" uuid,
-    "instance_logs" text,
-    "namespace_logs" text,
     PRIMARY KEY ("oid")
 );
 

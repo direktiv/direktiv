@@ -12,14 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	ns  = "namespace"
-	wf  = "workflow"
-	srv = "server"
-	ins = "instance"
-	mir = "mirror"
-)
-
 var _ logengine.LogStore = &sqlLogStore{} // Ensures SQLLogStore struct conforms to logengine.LogStore interface.
 
 type sqlLogStore struct {
@@ -33,12 +25,10 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols = append(cols, "oid", "t", "level", "msg")
 	vals = append(vals, uuid.New(), timestamp, level, msg)
 	databaseCols := []string{
-		"instance_logs",
+		"sender",
 		"log_instance_call_path",
 		"root_instance_id",
-		"workflow_id",
-		"namespace_logs",
-		"mirror_activity_id",
+		"sender_type",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -54,7 +44,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 		cols = append(cols, "tags")
 		vals = append(vals, b)
 	}
-	q := "INSERT INTO log_msgs ("
+	q := "INSERT INTO log_entries ("
 	qTail := "VALUES ("
 	for i := range vals {
 		q += fmt.Sprintf(cols[i])
@@ -78,17 +68,11 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
-	if keysAndValues["sender_type"] == srv {
-		wEq = append(wEq, "workflow_id IS NULL")
-		wEq = append(wEq, "namespace_logs IS NULL")
-		wEq = append(wEq, "instance_logs IS NULL")
-	}
+
 	databaseCols := []string{
-		"instance_logs",
+		"sender",
+		"sender_type",
 		"root_instance_id",
-		"workflow_id",
-		"namespace_logs",
-		"mirror_activity_id",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -132,8 +116,8 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
-	FROM log_msgs `
+	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, sender, sender_type, tags
+	FROM log_entries `
 	q += "WHERE "
 	for i, e := range wEq {
 		q += e
