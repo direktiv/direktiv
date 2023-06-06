@@ -80,9 +80,12 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 //nolint:ireturn
 func (s *sqlFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
-	res := s.db.WithContext(ctx).Table("filesystem_files").
-		Where("id", id).
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_files
+					WHERE id=?`, id).
 		First(file)
+
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("file '%s': %w", id, filestore.ErrNotFound)
@@ -98,9 +101,12 @@ func (s *sqlFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.Fi
 func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
 	rev := &filestore.Revision{}
-	res := s.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("id", id).
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_revisions
+					WHERE id=?`, id).
 		First(rev)
+
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, nil, fmt.Errorf("revision '%s': %w", id, filestore.ErrNotFound)
@@ -110,9 +116,12 @@ func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestor
 	}
 
 	file := &filestore.File{}
-	res = s.db.WithContext(ctx).Table("filesystem_files").
-		Where("id", rev.FileID).
+	res = s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_files
+					WHERE id=?`, rev.FileID).
 		First(file)
+
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, nil, fmt.Errorf("file '%s': %w", rev.FileID, filestore.ErrNotFound)
