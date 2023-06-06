@@ -60,7 +60,7 @@ export const createWorkflowWithThreeRevisions = async (
     headers: undefined,
     urlParams: commonUrlParams,
   });
-  const thridRevision = await createRevision({
+  const thirdRevision = await createRevision({
     payload: undefined,
     headers: undefined,
     urlParams: commonUrlParams,
@@ -73,6 +73,6 @@ export const createWorkflowWithThreeRevisions = async (
       contentRevision2,
       contentRevision3,
     ] as const,
-    revisionsReponse: [firstRevision, secondRevision, thridRevision] as const,
+    revisionsReponse: [firstRevision, secondRevision, thirdRevision] as const,
   };
 };
