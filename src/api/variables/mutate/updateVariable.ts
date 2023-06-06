@@ -73,5 +73,12 @@ export const useUpdateVar = ({
       });
       onSuccess?.(data);
     },
+    onError: () => {
+      toast({
+        title: "An error occurred",
+        description: "Could not save variable 😢",
+        variant: "error",
+      });
+    },
   });
 };

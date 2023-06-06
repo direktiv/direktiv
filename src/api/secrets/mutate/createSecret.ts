@@ -78,7 +78,7 @@ export const useCreateSecret = ({
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not create secret 😢",
+        description: "Could not create secret 😢",
         variant: "error",
       });
     },

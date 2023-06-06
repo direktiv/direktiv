@@ -71,8 +71,8 @@ export const useDeleteSecret = ({
         (oldData) => updateCache(oldData, deletedItem)
       );
       toast({
-        title: "secret deleted",
-        description: `tag ${variables.secret.name} was deleted`,
+        title: "Secret deleted",
+        description: `Secret ${variables.secret.name} was deleted`,
         variant: "success",
       });
       onSuccess?.();
@@ -80,7 +80,7 @@ export const useDeleteSecret = ({
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not delete 😢",
+        description: "Could not delete secret 😢",
         variant: "error",
       });
     },

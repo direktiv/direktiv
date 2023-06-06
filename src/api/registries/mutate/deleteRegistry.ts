@@ -70,8 +70,8 @@ export const useDeleteRegistry = ({
         (oldData) => updateCache(oldData, deletedItem)
       );
       toast({
-        title: "secret deleted",
-        description: `tag ${variables.registry.name} was deleted`,
+        title: "Registry deleted",
+        description: `Registry ${variables.registry.name} was deleted`,
         variant: "success",
       });
       onSuccess?.();
@@ -79,7 +79,7 @@ export const useDeleteRegistry = ({
     onError: () => {
       toast({
         title: "An error occurred",
-        description: "could not delete 😢",
+        description: "Could not delete registry 😢",
         variant: "error",
       });
     },

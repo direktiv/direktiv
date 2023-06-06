@@ -54,5 +54,12 @@ export const useDeleteVar = ({
       });
       onSuccess?.();
     },
+    onError: () => {
+      toast({
+        title: "An error occurred",
+        description: "Could not delete variable 😢",
+        variant: "error",
+      });
+    },
   });
 };

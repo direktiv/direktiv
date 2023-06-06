@@ -51,11 +51,18 @@ export const useCreateRegistry = ({
         })
       );
       toast({
-        title: "Secret created",
-        description: `Secret ${variables.url} was created.`,
+        title: "Registry created",
+        description: `Registry ${variables.url} was created.`,
         variant: "success",
       });
       onSuccess?.(null);
+    },
+    onError: () => {
+      toast({
+        title: "An error occurred",
+        description: "Could not create registry 😢",
+        variant: "error",
+      });
     },
   });
 };
