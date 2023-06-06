@@ -22,7 +22,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "oid", "t", "level", "msg")
+	cols = append(cols, "oid", "timestamp", "level", "message")
 	vals = append(vals, uuid.New(), timestamp, level, msg)
 	databaseCols := []string{
 		"sender",
@@ -106,8 +106,8 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 		levels := []string{"debug", "info", "error"}
 		m["level"] = levels[e.Level]
 		convertedList = append(convertedList, &logengine.LogEntry{
-			T:      e.T,
-			Msg:    e.Msg,
+			T:      e.Timestamp,
+			Msg:    e.Message,
 			Fields: m,
 		})
 	}
@@ -116,7 +116,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, sender, sender_type, tags
+	q := `SELECT timestamp, message, level, root_instance_id, log_instance_call_path, sender, sender_type, tags
 	FROM log_entries `
 	q += "WHERE "
 	for i, e := range wEq {
@@ -125,7 +125,7 @@ func composeQuery(limit, offset int, wEq []string) string {
 			q += " AND "
 		}
 	}
-	q += " ORDER BY t ASC"
+	q += " ORDER BY timestamp ASC"
 	if limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
@@ -137,14 +137,12 @@ func composeQuery(limit, offset int, wEq []string) string {
 }
 
 type gormLogMsg struct {
-	T                   time.Time
-	Msg                 string
+	Timestamp           time.Time
+	Message             string
 	Level               int
 	Tags                []byte
-	WorkflowID          string
-	MirrorActivityID    string
-	InstanceLogs        string
-	NamespaceLogs       string
+	Sender              uuid.UUID
+	SenderType          string
 	RootInstanceID      string
 	LogInstanceCallPath string
 }
