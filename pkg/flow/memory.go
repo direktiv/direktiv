@@ -290,7 +290,7 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 
 	im.lock = conn
 
-	if !im.instance.Instance.EndedAt.IsZero() {
+	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
 		engine.InstanceUnlock(im)
 		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
 	}
