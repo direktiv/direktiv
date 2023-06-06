@@ -44,7 +44,10 @@ const WorkflowRevisionsPage = () => {
   return (
     <div className="flex grow flex-col space-y-4">
       <div className="flex gap-x-4">
-        <h3 className="group flex grow items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+        <h3
+          className="group flex grow items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10"
+          data-testid="revisions-detail-title"
+        >
           <Icon aria-hidden="true" className="h-5" />
           {selectedRevision}
           <CopyButton
@@ -96,7 +99,7 @@ const WorkflowRevisionsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <Card className="grow p-4">
+      <Card className="grow p-4" data-testid="revisions-detail-editor">
         <Editor
           value={workflowData}
           theme={theme ?? undefined}
