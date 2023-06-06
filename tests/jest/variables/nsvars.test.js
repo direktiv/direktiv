@@ -96,7 +96,6 @@ describe('Test workflow variable operations', () => {
         var workflowVarResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/vars`)
 
         expect(workflowVarResponse.statusCode).toEqual(200)
-        expect(workflowVarResponse.body.variables.pageInfo.total).toEqual(3)
         expect(workflowVarResponse.body.variables.results.length).toEqual(3)
     })
 
@@ -154,7 +153,6 @@ describe('Test workflow variable operations', () => {
         var workflowVarListResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/vars`)
 
         expect(workflowVarListResponse.statusCode).toEqual(200)
-        expect(workflowVarListResponse.body.variables.pageInfo.total).toEqual(2)
         expect(workflowVarListResponse.body.variables.results.length).toEqual(2)
     })
 

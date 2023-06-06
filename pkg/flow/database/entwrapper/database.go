@@ -12,8 +12,6 @@ import (
 	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entrt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
-	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -32,8 +30,6 @@ type EntClients struct {
 	Events            *ent.EventsClient
 	CloudEvents       *ent.CloudEventsClient
 	CloudEventFilters *ent.CloudEventFiltersClient
-	VarRef            *ent.VarRefClient
-	VarData           *ent.VarDataClient
 	Instance          *ent.InstanceClient
 	LogMsg            *ent.LogMsgClient
 	InstanceRuntime   *ent.InstanceRuntimeClient
@@ -54,8 +50,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 			Events:            db.Client.Events,
 			CloudEvents:       db.Client.CloudEvents,
 			CloudEventFilters: db.Client.CloudEventFilters,
-			VarRef:            db.Client.VarRef,
-			VarData:           db.Client.VarData,
 			Instance:          db.Client.Instance,
 			LogMsg:            db.Client.LogMsg,
 			InstanceRuntime:   db.Client.InstanceRuntime,
@@ -70,8 +64,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 		Events:            x.Events,
 		CloudEvents:       x.CloudEvents,
 		CloudEventFilters: x.CloudEventFilters,
-		VarRef:            x.VarRef,
-		VarData:           x.VarData,
 		Instance:          x.Instance,
 		LogMsg:            x.LogMsg,
 		InstanceRuntime:   x.InstanceRuntime,
@@ -251,113 +243,4 @@ func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, ke
 	}
 
 	return db.entAnnotation(annotation), nil
-}
-
-func (db *Database) ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*database.VarRef, error) {
-	clients := db.clients(ctx)
-
-	varrefs, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourEQ("thread")).WithVardata(func(q *ent.VarDataQuery) {
-		q.Select(entvardata.FieldID)
-	}).All(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve instance thread variables: %v", parent(), err)
-		return nil, err
-	}
-
-	x := make([]*database.VarRef, 0)
-
-	for _, y := range varrefs {
-		x = append(x, db.entVarRef(y))
-	}
-
-	return x, nil
-}
-
-func (db *Database) NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(ctx)
-
-	varref, err := clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(nsID)), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
-		q.Select(entvardata.FieldID)
-	}).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve namespace variable: %v", parent(), err)
-		return nil, err
-	}
-
-	return db.entVarRef(varref), nil
-}
-
-func (db *Database) WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(ctx)
-
-	varref, err := clients.VarRef.Query().Where(entvar.WorkflowID(wfID), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
-		q.Select(entvardata.FieldID)
-	}).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve workflow variable: %v", parent(), err)
-		return nil, err
-	}
-
-	return db.entVarRef(varref), nil
-}
-
-func (db *Database) InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(ctx)
-
-	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourIsNil(), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
-		q.Select(entvardata.FieldID)
-	}).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve instance variable: %v", parent(), err)
-		return nil, err
-	}
-
-	return db.entVarRef(varref), nil
-}
-
-func (db *Database) ThreadVariableRef(ctx context.Context, instID uuid.UUID, key string) (*database.VarRef, error) {
-	clients := db.clients(ctx)
-
-	varref, err := clients.VarRef.Query().Where(entvar.HasInstanceWith(entinst.ID(instID)), entvar.BehaviourEQ("thread"), entvar.NameEQ(key)).WithVardata(func(q *ent.VarDataQuery) {
-		q.Select(entvardata.FieldID)
-	}).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve thread variable: %v", parent(), err)
-		return nil, err
-	}
-
-	return db.entVarRef(varref), nil
-}
-
-func (db *Database) VariableData(ctx context.Context, id uuid.UUID, load bool) (*database.VarData, error) {
-	var err error
-	var vardata *ent.VarData
-
-	clients := db.clients(ctx)
-
-	if load {
-		vardata, err = clients.VarData.Get(ctx, id)
-		if err != nil {
-			db.Sugar.Debugf("%s failed to resolve variable data: %v", parent(), err)
-			return nil, err
-		}
-	} else {
-		vardata, err = clients.VarData.Query().Where(entvardata.ID(id)).Select(entvardata.FieldID, entvardata.FieldCreatedAt, entvardata.FieldUpdatedAt, entvardata.FieldSize, entvardata.FieldHash, entvardata.FieldMimeType).Only(ctx)
-		if err != nil {
-			db.Sugar.Debugf("%s failed to resolve variable data: %v", parent(), err)
-			return nil, err
-		}
-	}
-
-	x := db.entVarData(vardata)
-
-	k, err := clients.VarRef.Query().Where(entvar.HasVardataWith(entvardata.ID(vardata.ID))).Count(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to count variable references: %v", parent(), err)
-		return nil, err
-	}
-
-	x.RefCount = k
-
-	return x, err
 }

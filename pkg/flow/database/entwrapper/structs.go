@@ -106,32 +106,3 @@ func (db *Database) entAnnotation(annotation *ent.Annotation) *database.Annotati
 		MimeType:  annotation.MimeType,
 	}
 }
-
-func (db *Database) entVarRef(vref *ent.VarRef) *database.VarRef {
-	if vref == nil {
-		return nil
-	}
-
-	return &database.VarRef{
-		ID:        vref.ID,
-		Name:      vref.Name,
-		Behaviour: vref.Behaviour,
-		VarData:   vref.Edges.Vardata.ID,
-	}
-}
-
-func (db *Database) entVarData(v *ent.VarData) *database.VarData {
-	if v == nil {
-		return nil
-	}
-
-	return &database.VarData{
-		ID:        v.ID,
-		CreatedAt: v.CreatedAt,
-		UpdatedAt: v.UpdatedAt,
-		Size:      v.Size,
-		Hash:      v.Hash,
-		Data:      v.Data,
-		MimeType:  v.MimeType,
-	}
-}

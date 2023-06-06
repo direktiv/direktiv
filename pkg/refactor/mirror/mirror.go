@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -84,10 +85,7 @@ type Store interface {
 	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
 
 	// TODO: this need to be refactored.
-	SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error
-
-	// TODO: this need to be refactored.
-	SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error
+	SetVariable(ctx context.Context, variable *core.RuntimeVariable) error
 }
 
 // Manager launches and terminates mirroring processes.

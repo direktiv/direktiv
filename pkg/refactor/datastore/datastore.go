@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"errors"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
@@ -20,4 +22,10 @@ type Store interface {
 	Logs() logengine.LogStore
 
 	Secrets() core.SecretsStore
+
+	RuntimeVariables() core.RuntimeVariablesStore
 }
+
+// ErrNotFound is a common error type that should be returned by any store implementation
+// for the error cases when getting a single entry failed due to none existence.
+var ErrNotFound = errors.New("ErrNotFound")

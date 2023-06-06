@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	"github.com/google/uuid"
 )
 
@@ -204,21 +203,6 @@ func (ic *InstanceCreate) AddLogs(l ...*LogMsg) *InstanceCreate {
 		ids[i] = l[i].ID
 	}
 	return ic.AddLogIDs(ids...)
-}
-
-// AddVarIDs adds the "vars" edge to the VarRef entity by IDs.
-func (ic *InstanceCreate) AddVarIDs(ids ...uuid.UUID) *InstanceCreate {
-	ic.mutation.AddVarIDs(ids...)
-	return ic
-}
-
-// AddVars adds the "vars" edges to the VarRef entity.
-func (ic *InstanceCreate) AddVars(v ...*VarRef) *InstanceCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return ic.AddVarIDs(ids...)
 }
 
 // SetRuntimeID sets the "runtime" edge to the InstanceRuntime entity by ID.
@@ -462,22 +446,6 @@ func (ic *InstanceCreate) createSpec() (*Instance, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(logmsg.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.VarsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   instance.VarsTable,
-			Columns: []string{instance.VarsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(varref.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
