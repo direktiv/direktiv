@@ -114,3 +114,33 @@ test("it is possible to revert a revision within the details page", async ({
     "it displays the workflow content in the editor"
   ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
 });
+
+test('it does not show the revisions actions button on the revision details of the "latest" revision', async ({
+  page,
+}) => {
+  const workflow = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [, secondRevision],
+  } = await createWorkflowWithThreeRevisions(namespace, workflow);
+
+  await page.goto(
+    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevision.revision.name}`
+  );
+
+  await expect(
+    page.getByTestId("revisions-detail-revert-btn"),
+    "revisions actions button is visible on the non-latest revision"
+  ).toBeVisible();
+
+  await page.goto(
+    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=latest`,
+    {
+      waitUntil: "networkidle", // wait for all data loaded since the button is not visible on the first render
+    }
+  );
+
+  await expect(
+    page.getByTestId("revisions-detail-revert-btn"),
+    "revisions actions button is not visible"
+  ).not.toBeVisible();
+});

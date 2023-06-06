@@ -33,6 +33,8 @@ const WorkflowRevisionsPage = () => {
 
   const Icon = isTag ? Tag : GitMerge;
 
+  const isLatest = selectedRevision === "latest";
+
   if (!path || !namespace || !selectedRevision || !workflowData) return null;
 
   const backLink = pages.explorer.createHref({
@@ -82,12 +84,17 @@ const WorkflowRevisionsPage = () => {
         </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" data-testid="revisions-detail-revert-btn">
-              <Undo />
-              {t(
-                "pages.explorer.tree.workflow.revisions.overview.detail.revertBtn"
-              )}
-            </Button>
+            {!isLatest && (
+              <Button
+                variant="outline"
+                data-testid="revisions-detail-revert-btn"
+              >
+                <Undo />
+                {t(
+                  "pages.explorer.tree.workflow.revisions.overview.detail.revertBtn"
+                )}
+              </Button>
+            )}
           </DialogTrigger>
           <DialogContent>
             <Revert
