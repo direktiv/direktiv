@@ -67,13 +67,12 @@ test("it is possible to navigate from the revision list to the details and back"
 
   await expect(
     page.getByTestId("revisions-detail-title"),
-    "it navigated to the revisions detail and shows the title"
+    "it navigated to the revision details and shows the title"
   ).toContainText(secondRevisionName);
 
   // go back to list page
   await page.getByTestId(`revisions-detail-back-link`).click();
 
-  // find the link in the list again to make sure we are back on the list page
   await expect(
     page.getByTestId(`workflow-revisions-link-item-${secondRevisionName}`),
     "it navigated back to the revisions list and finds the link again"
@@ -94,16 +93,15 @@ test("it is possible to revert a revision within the details page", async ({
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
   await expect(
     page.getByTestId("workflow-editor"),
-    "it displays the workflow content in the editor"
+    "it displays the latest workflow content in the editor"
   ).toContainText(atob(latestRevisions?.revision?.source).replace(/\n/g, ""));
 
   // open the details page of the second revision
   await page.goto(
     `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`
   );
-  // open revert dialog
+  // open and submit revert dialog
   await page.getByTestId(`revisions-detail-revert-btn`).click();
-  // submit revert dialog
   await page.getByTestId(`dialog-revert-revision-btn-submit`).click();
 
   // click the toast button to open the editor
@@ -111,11 +109,11 @@ test("it is possible to revert a revision within the details page", async ({
 
   await expect(
     page.getByTestId("workflow-editor"),
-    "it displays the workflow content in the editor"
+    "it displays the reverted   workflow content in the editor"
   ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
 });
 
-test('it does not show the revisions actions button on the revision details of the "latest" revision', async ({
+test('it does not show the actions button on the revision details of the "latest" revision', async ({
   page,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
@@ -135,7 +133,10 @@ test('it does not show the revisions actions button on the revision details of t
   await page.goto(
     `/${namespace}/explorer/workflow/revisions/${workflow}?revision=latest`,
     {
-      waitUntil: "networkidle", // wait for all data loaded since the button is not visible on the first render
+      // wait for all data to be loaded before checking for something to be
+      // not visible because in a very early render process the button would
+      // not be rendered yet and this test would accidentally pass
+      waitUntil: "networkidle",
     }
   );
 
