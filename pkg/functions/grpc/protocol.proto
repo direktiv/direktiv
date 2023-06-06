@@ -27,7 +27,7 @@ import "pkg/functions/grpc/build.proto";
 
 import "pkg/functions/grpc/cancel-workflow.proto";
 
-service FunctionsService {
+service Functions {
 
 	rpc StoreRegistry (FunctionsStoreRegistryRequest) returns (google.protobuf.Empty) {}
   rpc GetRegistries (FunctionsGetRegistriesRequest) returns (FunctionsGetRegistriesResponse) {}
