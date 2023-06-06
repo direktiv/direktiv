@@ -27,7 +27,9 @@ type InstanceRuntimeInfo struct {
 
 func (info *InstanceRuntimeInfo) MarshalJSON() ([]byte, error) {
 	if info == nil {
-		return []byte(`{}`), nil
+		return json.Marshal(&instanceRuntimeInfoV1{
+			Version: instanceRuntimeInfoVersion1,
+		})
 	}
 
 	return json.Marshal(&instanceRuntimeInfoV1{
@@ -40,15 +42,15 @@ func (info *InstanceRuntimeInfo) MarshalJSON() ([]byte, error) {
 }
 
 type instanceRuntimeInfoV1 struct {
-	Version        string `json:"version"`
-	Controller     string
-	Flow           []string
-	StateBeginTime time.Time
-	Attempts       int
+	Version        string    `json:"version"`
+	Controller     string    `json:"controller"`
+	Flow           []string  `json:"flow"`
+	StateBeginTime time.Time `json:"state_begin_time"`
+	Attempts       int       `json:"attempts"`
 }
 
 func LoadInstanceRuntimeInfo(data []byte) (*InstanceRuntimeInfo, error) {
-	m := make(map[string]string)
+	m := make(map[string]interface{})
 
 	err := json.Unmarshal(data, &m)
 	if err != nil {

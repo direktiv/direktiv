@@ -25,7 +25,9 @@ type InstanceSettings struct {
 
 func (info *InstanceSettings) MarshalJSON() ([]byte, error) {
 	if info == nil {
-		return []byte(`{}`), nil
+		return json.Marshal(&instanceSettingsV1{
+			Version: instanceSettingsVersion1,
+		})
 	}
 
 	return json.Marshal(&instanceSettingsV1{
@@ -36,13 +38,13 @@ func (info *InstanceSettings) MarshalJSON() ([]byte, error) {
 }
 
 type instanceSettingsV1 struct {
-	Version         string
-	LogToEvents     string
-	NamespaceConfig []byte
+	Version         string `json:"version"`
+	LogToEvents     string `json:"log_to_events"`
+	NamespaceConfig []byte `json:"namespace_config"`
 }
 
 func LoadInstanceSettings(data []byte) (*InstanceSettings, error) {
-	m := make(map[string]string)
+	m := make(map[string]interface{})
 
 	err := json.Unmarshal(data, &m)
 	if err != nil {

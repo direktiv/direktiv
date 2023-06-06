@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	sqldriver "database/sql/driver"
+
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -36,6 +38,21 @@ var instanceStatusStrings = []string{
 
 func (status InstanceStatus) String() string {
 	return instanceStatusStrings[status-1]
+}
+
+func (status *InstanceStatus) Scan(src any) error {
+	k, ok := src.(int64)
+	if !ok {
+		return errors.New("unknown instance status type")
+	}
+
+	*status = InstanceStatus(k)
+
+	return nil
+}
+
+func (status InstanceStatus) Valuer() (sqldriver.Value, error) {
+	return int64(status), nil
 }
 
 func InstanceStatusFromString(s string) (InstanceStatus, error) {
@@ -139,6 +156,8 @@ type CreateInstanceDataArgs struct {
 	TelemetryInfo  []byte
 	Settings       []byte
 	DescentInfo    []byte
+	RuntimeInfo    []byte
+	ChildrenInfo   []byte
 }
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.

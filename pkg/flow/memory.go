@@ -48,7 +48,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		panic(err)
 	}
 
-	if string(data) != `{}` {
+	if string(data) == `{}` {
 		return nil
 	}
 
@@ -243,6 +243,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	im := new(instanceMemory)
 	im.engine = engine
 	im.instance = instance
+	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
 
 	defer func() {
 		e := im.flushUpdates(ctx)

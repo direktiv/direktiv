@@ -12,10 +12,12 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -403,17 +405,21 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
+	span := trace.SpanFromContext(ctx)
+
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  file.Path,
 		Input:     nil,
 		Invoker:   instancestore.InvokerCron,
+		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
+			TraceID: span.SpanContext().TraceID().String(),
+			SpanID:  span.SpanContext().SpanID().String(),
+			// TODO: alan, CallPath: ,
+			NamespaceName: ns.Name,
+		},
 	}
-
-	// TODO: alan
-	// args.CallerData = util.CallerCron
-	// Telemetry
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {

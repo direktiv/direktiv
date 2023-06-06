@@ -27,7 +27,9 @@ type InstanceTelemetryInfo struct {
 
 func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 	if info == nil {
-		return []byte(`{}`), nil
+		return json.Marshal(&instanceTelemetryInfoV1{
+			Version: telemetryInfoVersion1,
+		})
 	}
 
 	return json.Marshal(&instanceTelemetryInfoV1{
@@ -42,15 +44,15 @@ func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 
 type instanceTelemetryInfoV1 struct {
 	Version  string `json:"version"`
-	TraceID  string
-	SpanID   string
-	CallPath string
+	TraceID  string `json:"trace_id"`
+	SpanID   string `json:"span_id"`
+	CallPath string `json:"call_path"`
 
 	NamespaceName string
 }
 
 func LoadInstanceTelemetryInfo(data []byte) (*InstanceTelemetryInfo, error) {
-	m := make(map[string]string)
+	m := make(map[string]interface{})
 
 	err := json.Unmarshal(data, &m)
 	if err != nil {

@@ -31,6 +31,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -63,39 +64,7 @@ type newInstanceArgs struct {
 	Invoker       string
 	DescentInfo   *enginerefactor.InstanceDescentInfo
 	TelemetryInfo *enginerefactor.InstanceTelemetryInfo
-
-	// CallerData  string
-	// CallPath    string
-	// CallerState string
 }
-
-/*
-type newInstanceArgs struct {
-	Namespace   string
-	Path        string
-	Ref         string
-	Input       []byte
-	Caller      string
-	CallerData  string
-	CallPath    string
-	CallerState string
-	Iterator    string
-}
-*/
-
-// type subflowCaller struct {
-// *enginerefactor.ParentInfo
-// ParentInstance *enginerefactor.Instance
-// InstanceID uuid.UUID
-// State       string
-// Step        int
-// Depth       int
-// As          string
-// CallPath    string
-// CallerState string
-// Iterator    string
-// DescentInfo *enginerefactor.InstanceDescentInfo
-// }
 
 const (
 	apiCaller = "api"
@@ -199,6 +168,18 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	liveData := marshalInstanceInputData(args.Input)
 
+	ri := &enginerefactor.InstanceRuntimeInfo{}
+	riData, err := ri.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
+
+	ci := &enginerefactor.InstanceChildrenInfo{}
+	ciData, err := ci.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
+
 	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
@@ -219,6 +200,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		TelemetryInfo:  telemetryInfo,
 		Settings:       settingsData,
 		DescentInfo:    descentInfo,
+		RuntimeInfo:    riData,
+		ChildrenInfo:   ciData,
 	})
 	if err != nil {
 		return nil, err
@@ -231,26 +214,27 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	im := new(instanceMemory)
 	im.engine = engine
 	im.instance = instance
+	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
 
-	err = json.Unmarshal([]byte(im.instance.Instance.LiveData), &im.data)
+	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	err = json.Unmarshal([]byte(im.instance.Instance.StateMemory), &im.memory)
+	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	ctx, err = traceFullAddWorkflowInstance(ctx, im)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to traceFullAddWorkflowInstance: %w", err)
 	}
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
@@ -267,7 +251,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 			Caller:       args.Invoker,
 		}, im.instance)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to broadcast instance: %w", err)
 	}
 	return im, nil
 }
@@ -632,6 +616,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
+
 	status := instancestore.InstanceStatusComplete
 	if im.ErrorCode() != "" {
 		status = instancestore.InstanceStatusFailed
@@ -647,12 +632,12 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
 
-	// engine.pubsub.NotifyInstance(im.instance.Instance)
-
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.CalledAs))
 	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.CalledAs))
 
-	engine.pubsub.NotifyInstances(im.Namespace())
+	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
+	defer engine.pubsub.NotifyInstances(im.Namespace())
+
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
 		WorkflowPath: GetInodePath(im.instance.Instance.CalledAs),
 		InstanceID:   im.instance.Instance.ID.String(),
@@ -671,6 +656,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Descent: append(instance.DescentInfo.Descent, *pi),
 	}
 
+	span := trace.SpanFromContext(ctx)
+
 	args := &newInstanceArgs{
 		ID: uuid.New(),
 		Namespace: &database.Namespace{
@@ -682,11 +669,13 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Input:       input,
 		Invoker:     fmt.Sprintf("instance:%v", pi.ID),
 		DescentInfo: di,
+		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
+			TraceID: span.SpanContext().TraceID().String(),
+			SpanID:  span.SpanContext().SpanID().String(),
+			// TODO: alan, CallPath: ,
+			NamespaceName: instance.TelemetryInfo.NamespaceName,
+		},
 	}
-
-	// TODO: alan
-	// Telemetry
-	//   CallPath
 
 	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
@@ -1084,16 +1073,21 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 		return
 	}
 
+	span := trace.SpanFromContext(ctx)
+
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  file.Path,
 		Input:     input,
 		Invoker:   "cloudevent",
+		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
+			TraceID: span.SpanContext().TraceID().String(),
+			SpanID:  span.SpanContext().SpanID().String(),
+			// TODO: alan, CallPath: ,
+			NamespaceName: ns.Name,
+		},
 	}
-
-	// TODO: alan
-	// args.CallerData
 
 	im, err := engine.NewInstance(ctx, args)
 	if err != nil {

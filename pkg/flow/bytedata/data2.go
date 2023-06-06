@@ -5,6 +5,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -141,4 +142,17 @@ func ConvertRuntimeVariablesToGrpcVariableList(list []*core.RuntimeVariable) []*
 	}
 
 	return result
+}
+
+func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Instance {
+	return &grpc.Instance{
+		CreatedAt:    timestamppb.New(instance.Instance.CreatedAt),
+		UpdatedAt:    timestamppb.New(instance.Instance.UpdatedAt),
+		Id:           instance.Instance.ID.String(),
+		As:           instance.Instance.CalledAs,
+		Status:       instance.Instance.Status.String(),
+		ErrorCode:    instance.Instance.ErrorCode,
+		ErrorMessage: string(instance.Instance.ErrorMessage),
+		Invoker:      instance.Instance.Invoker,
+	}
 }

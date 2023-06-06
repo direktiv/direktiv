@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
@@ -493,15 +494,21 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		calledAs += ":" + req.GetRef()
 	}
 
+	span := trace.SpanFromContext(ctx)
+
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  calledAs,
 		Input:     req.GetInput(),
 		Invoker:   apiCaller,
+		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
+			TraceID: span.SpanContext().TraceID().String(),
+			SpanID:  span.SpanContext().SpanID().String(),
+			// TODO: alan, CallPath: ,
+			NamespaceName: ns.Name,
+		},
 	}
-
-	// TODO: alan, telemetry info
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
@@ -581,19 +588,25 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 		calledAs += ":" + req.GetRef()
 	}
 
+	span := trace.SpanFromContext(ctx)
+
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  calledAs,
 		Input:     req.GetInput(),
 		Invoker:   apiCaller,
+		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
+			TraceID: span.SpanContext().TraceID().String(),
+			SpanID:  span.SpanContext().SpanID().String(),
+			// TODO: alan, CallPath: ,
+			NamespaceName: ns.Name,
+		},
 	}
-
-	// TODO: alan, telemetry info
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create a instance")
+		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create instance: %v", err)
 		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return err
 	}
@@ -607,38 +620,36 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 resend:
 
-	if instance == nil {
-		instance, err = flow.getInstance(ctx, req.GetNamespace(), im.instance.Instance.ID.String())
-		if err != nil {
-			return err
-		}
-	}
-
-	resp := new(grpc.AwaitWorkflowResponse)
-
-	err = bytedata.ConvertDataForOutput(instance, &resp.Instance)
+	instance, err = flow.getInstance(ctx, req.GetNamespace(), im.instance.Instance.ID.String())
 	if err != nil {
+		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return err
 	}
 
+	resp := new(grpc.AwaitWorkflowResponse)
+	resp.Namespace = req.GetNamespace()
+	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
+	resp.InvokedBy = instance.Instance.Invoker // TODO: is this accurate?
+	resp.Flow = instance.RuntimeInfo.Flow
+	resp.Data = instance.Instance.Output
 	rwf := new(grpc.InstanceWorkflow)
-	// TODO: alan
 	// rwf.Name = cached.File.Name()
 	// rwf.Parent = cached.Dir()
-	// rwf.Path = cached.File.Path
-	resp.Namespace = req.GetNamespace()
+	rwf.Path = instance.Instance.CalledAs
 	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 
 	if instance.Instance.Status == instancestore.InstanceStatusComplete {
 		tx, err := flow.beginSqlTx(ctx)
 		if err != nil {
+			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 			return err
 		}
 		defer tx.Rollback()
 
 		idata, err := tx.InstanceStore().ForInstanceID(instance.Instance.ID).GetSummaryWithOutput(ctx)
 		if err != nil {
+			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 			return err
 		}
 
@@ -651,6 +662,7 @@ resend:
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
+			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 			return err
 		}
 	}

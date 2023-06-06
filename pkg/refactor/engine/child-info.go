@@ -17,12 +17,12 @@ var (
 
 // ChildInfo is part of the ChildrenInfo structure. It represents useful information about a single child action.
 type ChildInfo struct {
-	ID          string
-	Async       bool
-	Complete    bool
-	Type        string
-	Attempts    int
-	ServiceName string
+	ID          string `json:"id"`
+	Async       bool   `json:"async"`
+	Complete    bool   `json:"complete"`
+	Type        string `json:"type"`
+	Attempts    int    `json:"attempts"`
+	ServiceName string `json:"service_name"`
 }
 
 // ChildrenInfo keeps some useful information about all direct child actions of this instance.
@@ -33,7 +33,9 @@ type InstanceChildrenInfo struct {
 
 func (info *InstanceChildrenInfo) MarshalJSON() ([]byte, error) {
 	if info == nil {
-		return []byte(`{}`), nil
+		return json.Marshal(&InstanceChildInfoV1{
+			Version: instanceChildInfoVersion1,
+		})
 	}
 
 	return json.Marshal(&InstanceChildInfoV1{
@@ -43,12 +45,12 @@ func (info *InstanceChildrenInfo) MarshalJSON() ([]byte, error) {
 }
 
 type InstanceChildInfoV1 struct {
-	Version  string
-	Children []ChildInfo
+	Version  string      `json:"version"`
+	Children []ChildInfo `json:"children"`
 }
 
 func LoadInstanceChildInfo(data []byte) (*InstanceChildrenInfo, error) {
-	m := make(map[string]string)
+	m := make(map[string]interface{})
 
 	err := json.Unmarshal(data, &m)
 	if err != nil {
