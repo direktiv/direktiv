@@ -260,7 +260,6 @@ test('the context menu is not shown in the list for the "latest" revision', asyn
 
   await page.goto(`/${namespace}/explorer/workflow/revisions/${workflow}`);
 
-  // the last row of the second revision has a button to show the context menu
   await expect(
     page
       .getByTestId(
@@ -269,15 +268,15 @@ test('the context menu is not shown in the list for the "latest" revision', asyn
       .getByTestId(
         `workflow-revisions-item-menu-trg-${secondRevision.revision.name}`
       ),
-    "revisions actions button is visible on the non-latest revision"
+    "the last row of the second revision has a button to show the context menu"
   ).toBeVisible();
 
-  // the last row of the "latest" revision has no content at all
   expect(
     await page
       .getByTestId(
         `workflow-revisions-item-last-row-${secondRevision.revision.name}`
       )
-      .innerText()
+      .innerText(),
+    'the last row of the "latest" revision has no content at all'
   ).toBe("");
 });
