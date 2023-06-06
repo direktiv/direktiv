@@ -20,19 +20,16 @@ const WorkflowRevisionsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const { revision: selectedRevision, path } = pages.explorer.useParams();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { data } = useNodeContent({
-    path,
-    revision: selectedRevision,
-  });
+
+  const { revision: selectedRevision, path } = pages.explorer.useParams();
+  const { data } = useNodeContent({ path, revision: selectedRevision });
   const { data: tags } = useNodeTags({ path });
+
   const workflowData = data?.revision?.source && atob(data?.revision?.source);
   const isTag =
     tags?.results?.some((tag) => tag.name === selectedRevision) ?? false;
-
   const Icon = isTag ? Tag : GitMerge;
-
   const isLatest = selectedRevision === "latest";
 
   if (!path || !namespace || !selectedRevision || !workflowData) return null;
