@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
+import Errors from "./Errors";
 import { Trash } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
@@ -48,7 +49,10 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [editorLanguage, setEditorLanguage] = useState<string>("");
 
-  const { handleSubmit } = useForm<VarFormSchemaType>({
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
     values: {
       name: item.name,
@@ -104,6 +108,8 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               />
             </DialogTitle>
           </DialogHeader>
+
+          <Errors errors={errors} />
 
           <div className="h-[500px]">
             <Editor

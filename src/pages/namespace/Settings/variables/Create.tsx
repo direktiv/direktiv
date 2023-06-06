@@ -10,6 +10,7 @@ import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
+import Errors from "./Errors";
 import Input from "~/design/Input";
 import MimeTypeSelect from "./MimeTypeSelect";
 import { PlusCircle } from "lucide-react";
@@ -29,7 +30,10 @@ const Create = ({ onSuccess }: createProps) => {
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<string | undefined>();
 
-  const { handleSubmit } = useForm<VarFormSchemaType>({
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
     // mimeType defaults to text/plain to avoid backend defaulting to
     // "text/plain, charset=utf-8", which does not fit the options in
@@ -64,6 +68,8 @@ const Create = ({ onSuccess }: createProps) => {
             </DialogTitle>
           </DialogHeader>
         </DialogHeader>
+
+        <Errors errors={errors} />
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right text-[15px]" htmlFor="name">
