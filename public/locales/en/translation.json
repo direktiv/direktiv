@@ -237,6 +237,9 @@
       "header": {
         "confirm": "Confirmation required"
       }
+    },
+    "formErrors": {
+      "fieldInvalid": "this field is invalid"
     }
   },
   "api": {

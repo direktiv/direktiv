@@ -10,7 +10,7 @@ import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
-import Errors from "./Errors";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import MimeTypeSelect from "./MimeTypeSelect";
 import { PlusCircle } from "lucide-react";
@@ -69,7 +69,7 @@ const Create = ({ onSuccess }: createProps) => {
           </DialogHeader>
         </DialogHeader>
 
-        <Errors errors={errors} />
+        <FormErrors errors={errors} />
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right text-[15px]" htmlFor="name">

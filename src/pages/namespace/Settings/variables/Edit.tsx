@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import Editor from "~/design/Editor";
-import Errors from "./Errors";
+import FormErrors from "~/componentsNext/FormErrors";
 import { Trash } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
@@ -109,7 +109,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
             </DialogTitle>
           </DialogHeader>
 
-          <Errors errors={errors} />
+          <FormErrors errors={errors} />
 
           <div className="h-[500px]">
             <Editor
