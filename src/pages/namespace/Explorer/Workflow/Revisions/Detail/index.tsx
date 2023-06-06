@@ -82,7 +82,7 @@ const WorkflowRevisionsPage = () => {
         </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" data-testid="revisions-detail-revert-btn">
               <Undo />
               {t(
                 "pages.explorer.tree.workflow.revisions.overview.detail.revertBtn"

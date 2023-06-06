@@ -79,3 +79,38 @@ test("it is possible to navigate from the revision list to the details and back"
     "it navigated back to the revisions list and finds the link again"
   ).toBeVisible();
 });
+
+test("it is possible to revert a revision within the details page", async ({
+  page,
+}) => {
+  const workflow = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [, secondRevision, latestRevisions],
+  } = await createWorkflowWithThreeRevisions(namespace, workflow);
+
+  const secondRevisionName = secondRevision.revision.name;
+
+  // check the content of the latest revision
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  await expect(
+    page.getByTestId("workflow-editor"),
+    "it displays the workflow content in the editor"
+  ).toContainText(atob(latestRevisions?.revision?.source).replace(/\n/g, ""));
+
+  // open the details page of the second revision
+  await page.goto(
+    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`
+  );
+  // open revert dialog
+  await page.getByTestId(`revisions-detail-revert-btn`).click();
+  // submit revert dialog
+  await page.getByTestId(`dialog-revert-revision-btn-submit`).click();
+
+  // click the toast button to open the editor
+  await page.getByTestId("workflow-revert-revision-toast-action").click();
+
+  await expect(
+    page.getByTestId("workflow-editor"),
+    "it displays the workflow content in the editor"
+  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+});

@@ -73,7 +73,7 @@ const WorkflowEditor: FC<{
         <Tag className="h-5" />
         {t("pages.explorer.workflow.headline")}
       </h3>
-      <Card className="grow p-4">
+      <Card className="grow p-4" data-testid="workflow-editor">
         <Editor
           value={workflowData}
           onChange={(newData) => {
