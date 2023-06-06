@@ -54,9 +54,11 @@ func (s *sqlFileAnnotationsStore) Set(ctx context.Context, annotations *core.Fil
 		return err
 	}
 
-	res := s.db.WithContext(ctx).Table("file_annotations").
-		Where("file_id", annotations.FileID).
-		Update("data", data)
+	res := s.db.WithContext(ctx).Exec(`
+					UPDATE file_annotations
+					SET data=?
+					WHERE file_id=?`, data, annotations.FileID)
+
 	if res.Error != nil {
 		return res.Error
 	}
