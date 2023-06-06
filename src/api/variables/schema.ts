@@ -1,4 +1,3 @@
-import { PageinfoSchema } from "../schema";
 import { z } from "zod";
 
 export const VarSchema = z.object({
@@ -32,7 +31,6 @@ export const VarContentSchema = z.object({
 export const VarListSchema = z.object({
   namespace: z.string(),
   variables: z.object({
-    pageInfo: PageinfoSchema,
     results: z.array(VarSchema),
   }),
 });
