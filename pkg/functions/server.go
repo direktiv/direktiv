@@ -43,7 +43,7 @@ const (
 )
 
 type functionsServer struct {
-	igrpc.UnimplementedFunctionsServiceServer
+	igrpc.UnimplementedFunctionsServer
 	db *ent.Client
 
 	reusableCacheLock  sync.Mutex
@@ -89,7 +89,7 @@ func StartServer(echan chan error) {
 
 	err = util.GrpcStart(&grpcServer, "functions",
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
-			igrpc.RegisterFunctionsServiceServer(srv, &fServer)
+			igrpc.RegisterFunctionsServer(srv, &fServer)
 			reflection.Register(srv)
 		})
 	if err != nil {

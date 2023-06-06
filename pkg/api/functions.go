@@ -50,7 +50,7 @@ import (
 type functionHandler struct {
 	srv    *Server
 	logger *zap.SugaredLogger
-	client grpcfunc.FunctionsServiceClient
+	client grpcfunc.FunctionsClient
 }
 
 func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
@@ -68,7 +68,7 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 	fh := &functionHandler{
 		srv:    srv,
 		logger: logger,
-		client: grpcfunc.NewFunctionsServiceClient(conn),
+		client: grpcfunc.NewFunctionsClient(conn),
 	}
 
 	fh.initRoutes(router)
