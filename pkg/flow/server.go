@@ -17,7 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -71,11 +70,10 @@ type server struct {
 	vars     *vars
 	actions  *actions
 
-	metrics    *metrics.Client
-	logger     *internallogger.Logger // TODO: remove
-	loggerBeta logengine.BetterLogger
-	edb        *entwrapper.Database // TODO: remove
-	database   *database.CachedDatabase
+	metrics  *metrics.Client
+	logger   logengine.BetterLogger
+	edb      *entwrapper.Database // TODO: remove
+	database *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -106,7 +104,6 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 		return nil, err
 	}
 
-	srv.logger = internallogger.InitLogger()
 	srv.initJQ()
 
 	return srv, nil
@@ -199,7 +196,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-	srv.logger.StartLogWorkers(1, srv.edb, srv.pubsub, srv.sugar)
 
 	srv.sugar.Debug("Initializing timers.")
 
@@ -271,13 +267,13 @@ func (srv *server) start(ctx context.Context) error {
 		},
 		srv.sugar.Errorf,
 	)
-	srv.loggerBeta = logengine.ChainedBetterLogger{
+	srv.logger = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
-			AddTraceFrom: func(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
+			AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
 				span := trace.SpanFromContext(ctx)
 				tid := span.SpanContext().TraceID()
-				toTags["trace"] = tid
+				toTags["trace"] = tid.String()
 				return toTags
 			},
 		},
@@ -411,7 +407,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	wg.Wait()
 
-	srv.logger.CloseLogWorkers()
 	closelogworker()
 
 	if err != nil {

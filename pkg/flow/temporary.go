@@ -137,7 +137,7 @@ func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x 
 	case log.Error:
 		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Panic:
-		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 
