@@ -155,11 +155,18 @@ cross-build:
 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
 
+.PHONY: clean-grpc
+clean-grpc: ## Clean all generated grpc files.
+clean-grpc:
+	rm -rf pkg/*.pb.go
+	rm -rf pkg/*/*.pb.go
+	rm -rf pkg/*/*/*.pb.go
+
 
 BUF_VERSION:=1.18.0
-.PHONY: protoc
-protoc: ## Manually regenerates Go packages built from protobuf.
-protoc:
+.PHONY: build-grpc
+build-grpc: ## Manually regenerates Go packages built from protobuf.
+build-grpc: clean-grpc
 	docker run -v $$(pwd):/app -w /app bufbuild/buf:$(BUF_VERSION) generate
 
 
