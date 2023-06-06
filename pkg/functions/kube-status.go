@@ -21,7 +21,7 @@ const (
 	watcherTimeout = 60 * time.Minute
 )
 
-func (is *functionsServer) WatchFunctions(in *igrpc.WatchFunctionsRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
+func (is *functionsServer) WatchFunctions(in *igrpc.FunctionsWatchFunctionsRequest, out igrpc.FunctionsService_WatchFunctionsServer) error {
 	cs, err := fetchServiceAPI()
 	if err != nil {
 		return fmt.Errorf("could not create fetch client: %w", err)
@@ -63,7 +63,7 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 			}
 
 			status, conds := statusFromCondition(s.Status.Conditions)
-			resp := igrpc.WatchFunctionsResponse{
+			resp := igrpc.FunctionsWatchFunctionsResponse{
 				Event: (*string)(&event.Type),
 				Function: &igrpc.FunctionsInfo{
 					Info:        serviceBaseInfo(s),
@@ -88,7 +88,7 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 	}
 }
 
-func (is *functionsServer) WatchRevisions(in *igrpc.WatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
+func (is *functionsServer) WatchRevisions(in *igrpc.FunctionsWatchRevisionsRequest, out igrpc.FunctionsService_WatchRevisionsServer) error {
 	var revisionFilter string
 
 	if in.GetServiceName() == "" {
@@ -145,7 +145,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 			} else if revisionFilter != "" && rev.Name != revisionFilter {
 				continue // skip
 			}
-			info := &igrpc.Revision{}
+			info := &igrpc.FunctionsRevision{}
 
 			// size and scale
 			var sz, scale int32
@@ -190,7 +190,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 			t := rev.CreationTimestamp.Unix()
 			info.Created = &t
 
-			resp := igrpc.WatchRevisionsResponse{
+			resp := igrpc.FunctionsWatchRevisionsResponse{
 				Event:    (*string)(&event.Type),
 				Revision: info,
 			}
@@ -210,7 +210,7 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 	}
 }
 
-func (is *functionsServer) WatchPods(in *igrpc.WatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
+func (is *functionsServer) WatchPods(in *igrpc.FunctionsWatchPodsRequest, out igrpc.FunctionsService_WatchPodsServer) error {
 	if in.GetServiceName() == "" {
 		return fmt.Errorf("service name can not be nil")
 	}
@@ -265,14 +265,14 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 			svc := p.Labels[ServiceKnativeHeaderName]
 			srev := p.Labels[ServiceKnativeHeaderRevision]
 
-			pod := igrpc.PodsInfo{
+			pod := igrpc.FunctionsPodsInfo{
 				Name:            &p.Name,
 				Status:          (*string)(&p.Status.Phase),
 				ServiceName:     &svc,
 				ServiceRevision: &srev,
 			}
 
-			resp := igrpc.WatchPodsResponse{
+			resp := igrpc.FunctionsWatchPodsResponse{
 				Event: (*string)(&event.Type),
 				Pod:   &pod,
 			}
@@ -292,7 +292,7 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 	}
 }
 
-func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
+func (is *functionsServer) WatchLogs(in *igrpc.FunctionsWatchLogsRequest, out igrpc.FunctionsService_WatchLogsServer) error {
 	if in.GetPodName() == "" {
 		return fmt.Errorf("pod name can not be nil")
 	}
@@ -338,7 +338,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.WatchLogsRequest, out igrpc.Funct
 			return err
 		}
 		message := string(buf[:numBytes])
-		resp := igrpc.WatchLogsResponse{
+		resp := igrpc.FunctionsWatchLogsResponse{
 			Data: &message,
 		}
 

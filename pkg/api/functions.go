@@ -767,7 +767,7 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.DeleteRegistryRequest{
+	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.FunctionsDeleteRegistryRequest{
 		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 	})
@@ -795,7 +795,7 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	resp, err := h.client.StoreRegistry(r.Context(), &grpc.StoreRegistryRequest{
+	resp, err := h.client.StoreRegistry(r.Context(), &grpc.FunctionsStoreRegistryRequest{
 		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 		Data:      []byte(d["data"]),
@@ -845,8 +845,8 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var resp *grpc.GetRegistriesResponse
-	resp, err = h.client.GetRegistries(r.Context(), &grpc.GetRegistriesRequest{
+	var resp *grpc.FunctionsGetRegistriesResponse
+	resp, err = h.client.GetRegistries(r.Context(), &grpc.FunctionsGetRegistriesRequest{
 		Namespace: &nsResp.Namespace.Name,
 	})
 
@@ -982,7 +982,7 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 func (h *functionHandler) listServicesSSE(
 	annotations map[string]string, w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := grpcfunc.WatchFunctionsRequest{
+	grpcReq := grpcfunc.FunctionsWatchFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -1025,7 +1025,7 @@ func (h *functionHandler) listServicesSSE(
 func (h *functionHandler) listServices(
 	annotations map[string]string, w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := grpcfunc.ListFunctionsRequest{
+	grpcReq := grpcfunc.FunctionsListFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -1083,7 +1083,7 @@ func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.
 func (h *functionHandler) deleteService(annotations map[string]string,
 	w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := grpcfunc.ListFunctionsRequest{
+	grpcReq := grpcfunc.FunctionsListFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -1101,16 +1101,16 @@ type getFunctionResponse struct {
 }
 
 type getFunctionResponseRevision struct {
-	Name       string            `json:"name,omitempty"`
-	Image      string            `json:"image,omitempty"`
-	Cmd        string            `json:"cmd,omitempty"`
-	Size       int32             `json:"size,omitempty"`
-	MinScale   int32             `json:"minScale,omitempty"`
-	Generation int64             `json:"generation,omitempty"`
-	Created    int64             `json:"created,omitempty"`
-	Status     string            `json:"status,omitempty"`
-	Conditions []*grpc.Condition `json:"conditions,omitempty"`
-	Revision   string            `json:"revision,omitempty"`
+	Name       string                     `json:"name,omitempty"`
+	Image      string                     `json:"image,omitempty"`
+	Cmd        string                     `json:"cmd,omitempty"`
+	Size       int32                      `json:"size,omitempty"`
+	MinScale   int32                      `json:"minScale,omitempty"`
+	Generation int64                      `json:"generation,omitempty"`
+	Created    int64                      `json:"created,omitempty"`
+	Status     string                     `json:"status,omitempty"`
+	Conditions []*grpc.FunctionsCondition `json:"conditions,omitempty"`
+	Revision   string                     `json:"revision,omitempty"`
 }
 
 func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -1119,7 +1119,7 @@ func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Req
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1177,7 +1177,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 */
 
 func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.Request) {
-	grpcReq := new(grpc.GetFunctionRequest)
+	grpcReq := new(grpc.FunctionsGetFunctionRequest)
 	grpcReq.ServiceName = &svn
 
 	resp, err := h.client.GetFunction(r.Context(), grpcReq)
@@ -1257,8 +1257,8 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
-	grpcReq := new(grpcfunc.CreateFunctionRequest)
-	grpcReq.Info = &grpc.BaseInfo{
+	grpcReq := new(grpcfunc.FunctionsCreateFunctionRequest)
+	grpcReq.Info = &grpc.FunctionsBaseInfo{
 		Name:          &cr.Name,
 		Namespace:     &cr.NamespaceOID,
 		Workflow:      &cr.Workflow,
@@ -1308,7 +1308,7 @@ func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.
 		return
 	}
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1323,13 +1323,13 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 		return
 	}
 
-	grpcReq := new(grpcfunc.UpdateFunctionRequest)
+	grpcReq := new(grpcfunc.FunctionsUpdateFunctionRequest)
 	grpcReq.ServiceName = &svc
 
 	nsOID := ns.GetOid()
 	nsName := ns.GetName()
 
-	grpcReq.Info = &grpc.BaseInfo{
+	grpcReq.Info = &grpc.FunctionsBaseInfo{
 		Image:         obj.Image,
 		Cmd:           obj.Cmd,
 		Size:          obj.Size,
@@ -1350,7 +1350,7 @@ func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, 
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1362,7 +1362,7 @@ func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, 
 func (h *functionHandler) deleteRevision(rev string,
 	w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := &grpcfunc.DeleteRevisionRequest{
+	grpcReq := &grpcfunc.FunctionsDeleteRevisionRequest{
 		Revision: &rev,
 	}
 
@@ -1376,7 +1376,7 @@ func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1427,7 +1427,7 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1474,7 +1474,7 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 		rev = fmt.Sprintf("%s-%s", svc, rev)
 	}
 
-	grpcReq := &grpc.WatchRevisionsRequest{
+	grpcReq := &grpc.FunctionsWatchRevisionsRequest{
 		ServiceName:  &svc,
 		RevisionName: &rev,
 		// Scope:        &scope,
@@ -1519,7 +1519,7 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
 	sn := mux.Vars(r)["pod"]
-	grpcReq := new(grpc.WatchLogsRequest)
+	grpcReq := new(grpc.FunctionsWatchLogsRequest)
 	grpcReq.PodName = &sn
 
 	client, err := h.client.WatchLogs(r.Context(), grpcReq)
@@ -1576,7 +1576,7 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 
 	annotations := make(map[string]string)
 
-	svn, _, _ = functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ = functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &ns,
 		Name:          &svn,
 	})
@@ -1632,7 +1632,7 @@ func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Re
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.BaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1679,7 +1679,7 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 func (h *functionHandler) listPodsSSE(svc, rev string,
 	w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := &grpc.WatchPodsRequest{
+	grpcReq := &grpc.FunctionsWatchPodsRequest{
 		ServiceName:  &svc,
 		RevisionName: &rev,
 	}
@@ -1722,7 +1722,7 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 func (h *functionHandler) listPods(annotations map[string]string,
 	w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := grpc.ListPodsRequest{
+	grpcReq := grpc.FunctionsListPodsRequest{
 		Annotations: annotations,
 	}
 

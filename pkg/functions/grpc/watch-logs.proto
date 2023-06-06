@@ -5,10 +5,10 @@ package direktiv_functions;
 option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 
-message WatchLogsRequest {
+message FunctionsWatchLogsRequest {
 	optional string PodName = 1;
 }
 
-message WatchLogsResponse {
+message FunctionsWatchLogsResponse {
 	optional string data = 1;
 }

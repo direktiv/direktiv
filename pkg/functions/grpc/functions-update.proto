@@ -6,8 +6,8 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message UpdateFunctionRequest {
-	optional BaseInfo info = 1;
+message FunctionsUpdateFunctionRequest {
+	optional FunctionsBaseInfo info = 1;
 	optional string ServiceName = 2;
 	optional int64 TrafficPercent = 3; // deprecated
 }

@@ -325,7 +325,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	// delete all knative services
 	annotations := make(map[string]string)
 	annotations[functions.ServiceHeaderNamespaceName] = req.Name
-	lfr := igrpc.ListFunctionsRequest{
+	lfr := igrpc.FunctionsListFunctionsRequest{
 		Annotations: annotations,
 	}
 	_, err = flow.actions.client.DeleteFunctions(ctx, &lfr)
