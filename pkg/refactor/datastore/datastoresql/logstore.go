@@ -18,27 +18,32 @@ type sqlLogStore struct {
 	db *gorm.DB
 }
 
-func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, sender string, keysAndValues map[string]interface{}) error {
+func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, keysAndValues map[string]interface{}) error {
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	keysAndValues["msg"] = msg
-	cols = append(cols, "id", "timestamp", "log_level")
-	vals = append(vals, uuid.New(), timestamp, level)
-	cols = append(cols, "sender")
-	vals = append(vals, sender)
-	b, err := json.Marshal(keysAndValues)
-	if err != nil {
-		return err
+	cols = append(cols, "oid", "t", "level", "msg")
+	vals = append(vals, uuid.New(), timestamp, level, msg)
+	databaseCols := []string{
+		"sender",
+		"log_instance_call_path",
+		"root_instance_id",
+		"sender_type",
 	}
-	cols = append(cols, "log_entry")
-	vals = append(vals, b)
-	secondaryKey, ok := keysAndValues["log_instance_call_path"]
-	if ok {
-		cols = append(cols, "callpath")
-		vals = append(vals, secondaryKey)
+	for _, k := range databaseCols {
+		if v, ok := keysAndValues[k]; ok {
+			cols = append(cols, k)
+			vals = append(vals, v)
+		}
 	}
-
+	if len(keysAndValues) > 0 {
+		b, err := json.Marshal(keysAndValues)
+		if err != nil {
+			return err
+		}
+		cols = append(cols, "tags")
+		vals = append(vals, b)
+	}
 	q := "INSERT INTO log_entries ("
 	qTail := "VALUES ("
 	for i := range vals {
@@ -61,26 +66,30 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, sender string, keysAndValues map[string]interface{}) ([]*logengine.LogEntry, error) {
-	query := fmt.Sprintf("SELECT timestamp, log_level, sender, callpath, log_entry FROM log_entries WHERE sender='%v' ", sender)
+func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
+	wEq := []string{}
 
-	prefix, ok := keysAndValues["log_instance_call_path"]
-	if ok {
-		query += fmt.Sprintf("AND callpath like '%s%%' ", prefix)
+	databaseCols := []string{
+		"sender",
+		"sender_type",
+		"root_instance_id",
+	}
+	for _, k := range databaseCols {
+		if v, ok := keysAndValues[k]; ok {
+			wEq = append(wEq, fmt.Sprintf("%s = '%s'", k, v))
+		}
 	}
 	level, ok := keysAndValues["level"]
 	if ok {
-		query += fmt.Sprintf("AND log_level>='%v' ", level)
+		wEq = append(wEq, fmt.Sprintf("level >= '%v' ", level))
 	}
-	query += "ORDER BY timestamp ASC "
+	prefix, ok := keysAndValues["log_instance_call_path"]
+	if ok {
+		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
+	}
 
-	if limit > 0 {
-		query += fmt.Sprintf(" LIMIT %d ", limit)
-	}
-	if offset > 0 {
-		query += fmt.Sprintf(" OFFSET %d ", offset)
-	}
-	query += ";"
+	query := composeQuery(limit, offset, wEq)
+
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
 	if tx.Error != nil {
@@ -89,18 +98,16 @@ func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, sender string
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		err := json.Unmarshal(e.LogEntry, &m)
+		err := json.Unmarshal(e.Tags, &m)
 		if err != nil {
 			return nil, err
 		}
 
 		levels := []string{"debug", "info", "error"}
-		m["level"] = levels[e.LogLevel]
-		msg := fmt.Sprintf("%v", m["msg"])
-		delete(m, "msg")
+		m["level"] = levels[e.Level]
 		convertedList = append(convertedList, &logengine.LogEntry{
-			T:      e.Timestamp,
-			Msg:    msg,
+			T:      e.T,
+			Msg:    e.Msg,
 			Fields: m,
 		})
 	}
@@ -108,10 +115,36 @@ func (sl *sqlLogStore) Get(ctx context.Context, limit, offset int, sender string
 	return convertedList, nil
 }
 
+func composeQuery(limit, offset int, wEq []string) string {
+	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, sender, sender_type, tags
+	FROM log_entries `
+	q += "WHERE "
+	for i, e := range wEq {
+		q += e
+		if i+1 < len(wEq) {
+			q += " AND "
+		}
+	}
+	q += " ORDER BY t ASC"
+	if limit > 0 {
+		q += fmt.Sprintf(" LIMIT %d ", limit)
+	}
+	if offset > 0 {
+		q += fmt.Sprintf(" OFFSET %d ", offset)
+	}
+
+	return q + ";"
+}
+
 type gormLogMsg struct {
-	Timestamp time.Time
-	LogLevel  int
-	Sender    string
-	Callpath  string
-	LogEntry  []byte
+	T                   time.Time
+	Msg                 string
+	Level               int
+	Tags                []byte
+	WorkflowID          string
+	MirrorActivityID    string
+	InstanceLogs        string
+	NamespaceLogs       string
+	RootInstanceID      string
+	LogInstanceCallPath string
 }

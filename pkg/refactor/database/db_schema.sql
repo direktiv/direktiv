@@ -90,15 +90,43 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS "runtime_variables" (
+    "id" uuid,
+    "namespace_id" uuid,
+    "workflow_id" uuid,
+    "instance_id" uuid,
+
+    "name"  text NOT NULL,
+    "mime_type"  text NOT NULL,
+    "data"  bytea NOT NULL,
+
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY ("id"),
+    UNIQUE(namespace_id, workflow_id, instance_id, name),
+
+    CONSTRAINT "fk_namespaces_runtime_variables"
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT "fk_filesystem_files_runtime_variables"
+    FOREIGN KEY ("workflow_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    -- TODO: alan, please add instance_id FOREIGN KEY.
+);
+
 
 CREATE TABLE IF NOT EXISTS "log_entries" (
-    "id" uuid NOT NULL,
-    "timestamp" timestamptz NOT NULL,
-    "log_level" integer NOT NULL,
-    "sender" text NOT NULL,
-    "callpath" text,
-    "log_entry" jsonb NOT NULL,
-    PRIMARY KEY ("id")
+    "oid" uuid,
+    "t" timestamptz text NOT NULL,
+    "msg" text NOT NULL,
+    "level" integer,
+    "root_instance_id" uuid,
+    "sender" uuid,
+    "sender_type" text,
+    "log_instance_call_path" text,
+    "tags" jsonb,
+    PRIMARY KEY ("oid")
 );
 
 

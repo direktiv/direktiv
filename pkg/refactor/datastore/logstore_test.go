@@ -20,15 +20,19 @@ func Test_Add_Get(t *testing.T) {
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
+	id := uuid.New()
+	addRandomMsgs(t, logstore, "sender", id, logengine.Info)
+	q := make(map[string]interface{}, 0)
+	q["level"] = logengine.Info
+	q["sender"] = id
+	got, err := logstore.Get(context.Background(), q, -1, -1)
+	if err != nil {
+		t.Error(err)
+	}
 
-	addRandomMsgs(t, logstore, "namespace_logs", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "workflow_id", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "root_instance_id", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Info)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
+	if len(got) < 1 {
+		t.Error("got no results")
+	}
 }
 
 func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level logengine.LogLevel) {
@@ -40,14 +44,14 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 	in := map[string]interface{}{}
 	in[col] = id
 	for _, v := range want {
-		err := logstore.Append(context.Background(), time.Now(), level, v, fmt.Sprintf("%v", id), in)
+		err := logstore.Append(context.Background(), time.Now(), level, v, in)
 		if err != nil {
 			t.Error(err)
 		}
 	}
 	q := map[string]interface{}{}
 	q[col] = id
-	got, err := logstore.Get(context.Background(), -1, -1, fmt.Sprintf("%v", id), q)
+	got, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
