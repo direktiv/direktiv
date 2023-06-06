@@ -118,14 +118,13 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
 
 CREATE TABLE IF NOT EXISTS "log_entries" (
     "oid" uuid,
-    "t" timestamptz text NOT NULL,
-    "msg" text NOT NULL,
+    "timestamp" timestamptz NOT NULL,
     "level" integer,
     "root_instance_id" uuid,
     "sender" uuid,
     "sender_type" text,
     "log_instance_call_path" text,
-    "tags" jsonb,
+    "entry" jsonb NOT NULL,
     PRIMARY KEY ("oid")
 );
 
