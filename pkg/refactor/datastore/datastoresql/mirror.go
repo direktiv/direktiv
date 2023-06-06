@@ -131,8 +131,10 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 
 func (s sqlMirrorStore) GetConfig(ctx context.Context, namespaceID uuid.UUID) (*mirror.Config, error) {
 	config := &mirror.Config{}
-	res := s.db.WithContext(ctx).Table("mirror_configs").
-		Where("namespace_id", namespaceID).
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM mirror_configs
+					WHERE namespace_id=?`, namespaceID).
 		First(config)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -176,9 +178,12 @@ func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Proce
 
 func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.Process, error) {
 	process := &mirror.Process{}
-	res := s.db.WithContext(ctx).Table("mirror_processes").
-		Where("id", id).
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM mirror_processes
+					WHERE id=?`, id).
 		First(process)
+
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, mirror.ErrNotFound
 	}
@@ -192,9 +197,12 @@ func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.P
 func (s sqlMirrorStore) GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*mirror.Process, error) {
 	var process []*mirror.Process
 
-	res := s.db.WithContext(ctx).Table("mirror_processes").
-		Where("namespace_id", namespaceID).
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM mirror_processes
+					WHERE namespace_id=?`, namespaceID).
 		Find(&process)
+
 	if res.Error != nil {
 		return nil, res.Error
 	}

@@ -25,7 +25,7 @@ type actions struct {
 	grpc.UnimplementedActionsServer
 
 	conn   *libgrpc.ClientConn
-	client igrpc.FunctionsServiceClient
+	client igrpc.FunctionsClient
 }
 
 func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
@@ -38,7 +38,7 @@ func initActionsServer(ctx context.Context, srv *server) (*actions, error) {
 		return nil, err
 	}
 
-	actions.client = igrpc.NewFunctionsServiceClient(actions.conn)
+	actions.client = igrpc.NewFunctionsClient(actions.conn)
 
 	actions.listener, err = net.Listen("tcp", ":4444")
 	if err != nil {
@@ -79,7 +79,7 @@ func (actions *actions) SetNamespaceRegistry(ctx context.Context, req *grpc.SetN
 		return nil, err
 	}
 
-	_, err = actions.client.StoreRegistry(ctx, &igrpc.StoreRegistryRequest{
+	_, err = actions.client.StoreRegistry(ctx, &igrpc.FunctionsStoreRegistryRequest{
 		Namespace: &cached.Namespace.Name,
 		Data:      req.GetData(),
 	})
@@ -104,7 +104,7 @@ func (actions *actions) DeleteNamespaceRegistry(ctx context.Context, req *grpc.D
 
 	name := req.GetRegistry()
 
-	_, err = actions.client.DeleteRegistry(ctx, &igrpc.DeleteRegistryRequest{
+	_, err = actions.client.DeleteRegistry(ctx, &igrpc.FunctionsDeleteRegistryRequest{
 		Namespace: &cached.Namespace.Name,
 		Name:      &name,
 	})
@@ -212,7 +212,7 @@ func (actions *actions) NamespaceRegistries(ctx context.Context, req *grpc.Names
 		return nil, err
 	}
 
-	response, err := actions.client.GetRegistries(ctx, &igrpc.GetRegistriesRequest{
+	response, err := actions.client.GetRegistries(ctx, &igrpc.FunctionsGetRegistriesRequest{
 		Namespace: &cached.Namespace.Name,
 	})
 	if err != nil {
@@ -269,7 +269,7 @@ func (actions *actions) NamespaceRegistriesStream(req *grpc.NamespaceRegistriesR
 resend:
 
 	namespace := cached.Namespace.ID.String()
-	response, err := actions.client.GetRegistries(ctx, &igrpc.GetRegistriesRequest{
+	response, err := actions.client.GetRegistries(ctx, &igrpc.FunctionsGetRegistriesRequest{
 		Namespace: &namespace,
 	})
 	if err != nil {
@@ -318,7 +318,7 @@ resend:
 func (actions *actions) CancelWorkflowInstance(svn, actionID string) error {
 	actions.sugar.Debugf("Handling gRPC request: %s", this())
 
-	req := &igrpc.CancelWorkflowRequest{
+	req := &igrpc.FunctionsCancelWorkflowRequest{
 		ServiceName: &svn,
 		ActionID:    &actionID,
 	}

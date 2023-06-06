@@ -43,7 +43,7 @@ const (
 )
 
 type functionsServer struct {
-	igrpc.UnimplementedFunctionsServiceServer
+	igrpc.UnimplementedFunctionsServer
 	db *ent.Client
 
 	reusableCacheLock  sync.Mutex
@@ -89,7 +89,7 @@ func StartServer(echan chan error) {
 
 	err = util.GrpcStart(&grpcServer, "functions",
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
-			igrpc.RegisterFunctionsServiceServer(srv, &fServer)
+			igrpc.RegisterFunctionsServer(srv, &fServer)
 			reflection.Register(srv)
 		})
 	if err != nil {
@@ -179,8 +179,8 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 		size := int32(tuple.FunctionDefinition.Size)
 		minscale := int32(0)
 
-		in := &igrpc.CreateFunctionRequest{
-			Info: &igrpc.BaseInfo{
+		in := &igrpc.FunctionsCreateFunctionRequest{
+			Info: &igrpc.FunctionsBaseInfo{
 				Name:          &tuple.FunctionDefinition.ID,
 				Namespace:     &tuple.NamespaceID,
 				Workflow:      &tuple.WorkflowID,
@@ -289,7 +289,7 @@ func (fServer *functionsServer) reusableFree(k string) {
 	for i := range x.names {
 		name := x.names[i]
 
-		in := &igrpc.GetFunctionRequest{
+		in := &igrpc.FunctionsGetFunctionRequest{
 			ServiceName: &name,
 		}
 
@@ -344,7 +344,7 @@ func (fServer *functionsServer) orphansGC() {
 				}
 				logger.Debugf("Reusable orphans garbage collector deleting detected orphan function: %s", item.Name)
 
-				_, err := fServer.DeleteFunction(ctx, &igrpc.GetFunctionRequest{
+				_, err := fServer.DeleteFunction(ctx, &igrpc.FunctionsGetFunctionRequest{
 					ServiceName: &item.Name,
 				})
 				if err != nil {
@@ -356,8 +356,8 @@ func (fServer *functionsServer) orphansGC() {
 	}
 }
 
-func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.BuildResponse, error) {
-	var resp igrpc.BuildResponse
+func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.FunctionsBuildResponse, error) {
+	var resp igrpc.FunctionsBuildResponse
 	resp.Build = version.Version
 	return &resp, nil
 }

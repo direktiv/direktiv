@@ -6,11 +6,11 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message ListFunctionsResponse {
+message FunctionsListFunctionsResponse {
 	optional FunctionsConfig config = 1;
 	repeated FunctionsInfo functions = 2;
 }
 
-message ListFunctionsRequest {
+message FunctionsListFunctionsRequest {
 	map<string, string> annotations = 1;
 }
