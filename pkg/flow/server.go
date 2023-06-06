@@ -262,6 +262,13 @@ func (srv *server) start(ctx context.Context) error {
 		res: srv.gormDB,
 	}
 
+	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
+		noTx.DataStore().Logs().Append,
+		func(objectID uuid.UUID, objectType string) {
+			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+		},
+		srv.sugar.Errorf,
+	)
 	srv.loggerBeta = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
@@ -272,11 +279,12 @@ func (srv *server) start(ctx context.Context) error {
 				return toTags
 			},
 		},
-		logengine.DataStoreBetterLogger{Store: noTx.DataStore().Logs(), LogError: srv.sugar.Errorf},
-		logengine.NotifierBetterLogger{Callback: func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
-		}, LogError: srv.sugar.Errorf},
+		logger,
 	}
+
+	go func() {
+		logworker()
+	}()
 
 	cc := func(ctx context.Context, file *filestore.File) error {
 		_, router, err := getRouter(ctx, noTx, file)
@@ -402,6 +410,7 @@ func (srv *server) start(ctx context.Context) error {
 	wg.Wait()
 
 	srv.logger.CloseLogWorkers()
+	closelogworker()
 
 	if err != nil {
 		return err

@@ -61,7 +61,10 @@ func (s *sqlFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore
 //nolint:ireturn
 func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	var list []filestore.Root
-	res := s.db.WithContext(ctx).Table("filesystem_roots").Find(&list)
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_roots
+					`).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
 	}

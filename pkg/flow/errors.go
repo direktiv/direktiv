@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -38,6 +39,11 @@ var (
 func translateError(err error) error {
 	if derrors.IsNotFound(err) || errors.Is(err, filestore.ErrNotFound) {
 		err = status.Error(codes.NotFound, strings.TrimPrefix(err.Error(), "ent: "))
+		return err
+	}
+
+	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
+		err = status.Error(codes.InvalidArgument, "invalid runtime variable name")
 		return err
 	}
 

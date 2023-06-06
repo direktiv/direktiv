@@ -23,8 +23,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
-	"github.com/direktiv/direktiv/pkg/flow/ent/vardata"
-	"github.com/direktiv/direktiv/pkg/flow/ent/varref"
 
 	stdsql "database/sql"
 )
@@ -50,10 +48,6 @@ type Client struct {
 	Namespace *NamespaceClient
 	// Services is the client for interacting with the Services builders.
 	Services *ServicesClient
-	// VarData is the client for interacting with the VarData builders.
-	VarData *VarDataClient
-	// VarRef is the client for interacting with the VarRef builders.
-	VarRef *VarRefClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -75,8 +69,6 @@ func (c *Client) init() {
 	c.LogMsg = NewLogMsgClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 	c.Services = NewServicesClient(c.config)
-	c.VarData = NewVarDataClient(c.config)
-	c.VarRef = NewVarRefClient(c.config)
 }
 
 type (
@@ -167,8 +159,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 		Services:          NewServicesClient(cfg),
-		VarData:           NewVarDataClient(cfg),
-		VarRef:            NewVarRefClient(cfg),
 	}, nil
 }
 
@@ -196,8 +186,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 		Services:          NewServicesClient(cfg),
-		VarData:           NewVarDataClient(cfg),
-		VarRef:            NewVarRefClient(cfg),
 	}, nil
 }
 
@@ -228,7 +216,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
-		c.LogMsg, c.Namespace, c.Services, c.VarData, c.VarRef,
+		c.LogMsg, c.Namespace, c.Services,
 	} {
 		n.Use(hooks...)
 	}
@@ -239,7 +227,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
-		c.LogMsg, c.Namespace, c.Services, c.VarData, c.VarRef,
+		c.LogMsg, c.Namespace, c.Services,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -264,10 +252,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Namespace.mutate(ctx, m)
 	case *ServicesMutation:
 		return c.Services.mutate(ctx, m)
-	case *VarDataMutation:
-		return c.VarData.mutate(ctx, m)
-	case *VarRefMutation:
-		return c.VarRef.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -1202,22 +1186,6 @@ func (c *NamespaceClient) QueryLogs(n *Namespace) *LogMsgQuery {
 	return query
 }
 
-// QueryVars queries the vars edge of a Namespace.
-func (c *NamespaceClient) QueryVars(n *Namespace) *VarRefQuery {
-	query := (&VarRefClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(varref.Table, varref.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.VarsTable, namespace.VarsColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryCloudevents queries the cloudevents edge of a Namespace.
 func (c *NamespaceClient) QueryCloudevents(n *Namespace) *CloudEventsQuery {
 	query := (&CloudEventsClient{config: c.config}).Query()
@@ -1457,299 +1425,15 @@ func (c *ServicesClient) mutate(ctx context.Context, m *ServicesMutation) (Value
 	}
 }
 
-// VarDataClient is a client for the VarData schema.
-type VarDataClient struct {
-	config
-}
-
-// NewVarDataClient returns a client for the VarData from the given config.
-func NewVarDataClient(c config) *VarDataClient {
-	return &VarDataClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `vardata.Hooks(f(g(h())))`.
-func (c *VarDataClient) Use(hooks ...Hook) {
-	c.hooks.VarData = append(c.hooks.VarData, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `vardata.Intercept(f(g(h())))`.
-func (c *VarDataClient) Intercept(interceptors ...Interceptor) {
-	c.inters.VarData = append(c.inters.VarData, interceptors...)
-}
-
-// Create returns a builder for creating a VarData entity.
-func (c *VarDataClient) Create() *VarDataCreate {
-	mutation := newVarDataMutation(c.config, OpCreate)
-	return &VarDataCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of VarData entities.
-func (c *VarDataClient) CreateBulk(builders ...*VarDataCreate) *VarDataCreateBulk {
-	return &VarDataCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for VarData.
-func (c *VarDataClient) Update() *VarDataUpdate {
-	mutation := newVarDataMutation(c.config, OpUpdate)
-	return &VarDataUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *VarDataClient) UpdateOne(vd *VarData) *VarDataUpdateOne {
-	mutation := newVarDataMutation(c.config, OpUpdateOne, withVarData(vd))
-	return &VarDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *VarDataClient) UpdateOneID(id uuid.UUID) *VarDataUpdateOne {
-	mutation := newVarDataMutation(c.config, OpUpdateOne, withVarDataID(id))
-	return &VarDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for VarData.
-func (c *VarDataClient) Delete() *VarDataDelete {
-	mutation := newVarDataMutation(c.config, OpDelete)
-	return &VarDataDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *VarDataClient) DeleteOne(vd *VarData) *VarDataDeleteOne {
-	return c.DeleteOneID(vd.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *VarDataClient) DeleteOneID(id uuid.UUID) *VarDataDeleteOne {
-	builder := c.Delete().Where(vardata.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &VarDataDeleteOne{builder}
-}
-
-// Query returns a query builder for VarData.
-func (c *VarDataClient) Query() *VarDataQuery {
-	return &VarDataQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeVarData},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a VarData entity by its id.
-func (c *VarDataClient) Get(ctx context.Context, id uuid.UUID) (*VarData, error) {
-	return c.Query().Where(vardata.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *VarDataClient) GetX(ctx context.Context, id uuid.UUID) *VarData {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryVarrefs queries the varrefs edge of a VarData.
-func (c *VarDataClient) QueryVarrefs(vd *VarData) *VarRefQuery {
-	query := (&VarRefClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := vd.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(vardata.Table, vardata.FieldID, id),
-			sqlgraph.To(varref.Table, varref.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, vardata.VarrefsTable, vardata.VarrefsColumn),
-		)
-		fromV = sqlgraph.Neighbors(vd.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *VarDataClient) Hooks() []Hook {
-	return c.hooks.VarData
-}
-
-// Interceptors returns the client interceptors.
-func (c *VarDataClient) Interceptors() []Interceptor {
-	return c.inters.VarData
-}
-
-func (c *VarDataClient) mutate(ctx context.Context, m *VarDataMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&VarDataCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&VarDataUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&VarDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&VarDataDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown VarData mutation op: %q", m.Op())
-	}
-}
-
-// VarRefClient is a client for the VarRef schema.
-type VarRefClient struct {
-	config
-}
-
-// NewVarRefClient returns a client for the VarRef from the given config.
-func NewVarRefClient(c config) *VarRefClient {
-	return &VarRefClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `varref.Hooks(f(g(h())))`.
-func (c *VarRefClient) Use(hooks ...Hook) {
-	c.hooks.VarRef = append(c.hooks.VarRef, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `varref.Intercept(f(g(h())))`.
-func (c *VarRefClient) Intercept(interceptors ...Interceptor) {
-	c.inters.VarRef = append(c.inters.VarRef, interceptors...)
-}
-
-// Create returns a builder for creating a VarRef entity.
-func (c *VarRefClient) Create() *VarRefCreate {
-	mutation := newVarRefMutation(c.config, OpCreate)
-	return &VarRefCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of VarRef entities.
-func (c *VarRefClient) CreateBulk(builders ...*VarRefCreate) *VarRefCreateBulk {
-	return &VarRefCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for VarRef.
-func (c *VarRefClient) Update() *VarRefUpdate {
-	mutation := newVarRefMutation(c.config, OpUpdate)
-	return &VarRefUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *VarRefClient) UpdateOne(vr *VarRef) *VarRefUpdateOne {
-	mutation := newVarRefMutation(c.config, OpUpdateOne, withVarRef(vr))
-	return &VarRefUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *VarRefClient) UpdateOneID(id uuid.UUID) *VarRefUpdateOne {
-	mutation := newVarRefMutation(c.config, OpUpdateOne, withVarRefID(id))
-	return &VarRefUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for VarRef.
-func (c *VarRefClient) Delete() *VarRefDelete {
-	mutation := newVarRefMutation(c.config, OpDelete)
-	return &VarRefDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *VarRefClient) DeleteOne(vr *VarRef) *VarRefDeleteOne {
-	return c.DeleteOneID(vr.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *VarRefClient) DeleteOneID(id uuid.UUID) *VarRefDeleteOne {
-	builder := c.Delete().Where(varref.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &VarRefDeleteOne{builder}
-}
-
-// Query returns a query builder for VarRef.
-func (c *VarRefClient) Query() *VarRefQuery {
-	return &VarRefQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeVarRef},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a VarRef entity by its id.
-func (c *VarRefClient) Get(ctx context.Context, id uuid.UUID) (*VarRef, error) {
-	return c.Query().Where(varref.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *VarRefClient) GetX(ctx context.Context, id uuid.UUID) *VarRef {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryVardata queries the vardata edge of a VarRef.
-func (c *VarRefClient) QueryVardata(vr *VarRef) *VarDataQuery {
-	query := (&VarDataClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := vr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(varref.Table, varref.FieldID, id),
-			sqlgraph.To(vardata.Table, vardata.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, varref.VardataTable, varref.VardataColumn),
-		)
-		fromV = sqlgraph.Neighbors(vr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNamespace queries the namespace edge of a VarRef.
-func (c *VarRefClient) QueryNamespace(vr *VarRef) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := vr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(varref.Table, varref.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, varref.NamespaceTable, varref.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(vr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *VarRefClient) Hooks() []Hook {
-	return c.hooks.VarRef
-}
-
-// Interceptors returns the client interceptors.
-func (c *VarRefClient) Interceptors() []Interceptor {
-	return c.inters.VarRef
-}
-
-func (c *VarRefClient) mutate(ctx context.Context, m *VarRefMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&VarRefCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&VarRefUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&VarRefUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&VarRefDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown VarRef mutation op: %q", m.Op())
-	}
-}
-
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
-		Namespace, Services, VarData, VarRef []ent.Hook
+		Namespace, Services []ent.Hook
 	}
 	inters struct {
 		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
-		Namespace, Services, VarData, VarRef []ent.Interceptor
+		Namespace, Services []ent.Interceptor
 	}
 )
 

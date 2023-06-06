@@ -30,10 +30,6 @@ type Tx struct {
 	Namespace *NamespaceClient
 	// Services is the client for interacting with the Services builders.
 	Services *ServicesClient
-	// VarData is the client for interacting with the VarData builders.
-	VarData *VarDataClient
-	// VarRef is the client for interacting with the VarRef builders.
-	VarRef *VarRefClient
 
 	// lazily loaded.
 	client     *Client
@@ -173,8 +169,6 @@ func (tx *Tx) init() {
 	tx.LogMsg = NewLogMsgClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)
 	tx.Services = NewServicesClient(tx.config)
-	tx.VarData = NewVarDataClient(tx.config)
-	tx.VarRef = NewVarRefClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

@@ -23,8 +23,6 @@ const (
 	FieldName = "name"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
 	EdgeLogs = "logs"
-	// EdgeVars holds the string denoting the vars edge name in mutations.
-	EdgeVars = "vars"
 	// EdgeCloudevents holds the string denoting the cloudevents edge name in mutations.
 	EdgeCloudevents = "cloudevents"
 	// EdgeNamespacelisteners holds the string denoting the namespacelisteners edge name in mutations.
@@ -46,13 +44,6 @@ const (
 	LogsInverseTable = "log_msgs"
 	// LogsColumn is the table column denoting the logs relation/edge.
 	LogsColumn = "namespace_logs"
-	// VarsTable is the table that holds the vars relation/edge.
-	VarsTable = "var_refs"
-	// VarsInverseTable is the table name for the VarRef entity.
-	// It exists in this package in order to avoid circular dependency with the "varref" package.
-	VarsInverseTable = "var_refs"
-	// VarsColumn is the table column denoting the vars relation/edge.
-	VarsColumn = "namespace_vars"
 	// CloudeventsTable is the table that holds the cloudevents relation/edge.
 	CloudeventsTable = "cloud_events"
 	// CloudeventsInverseTable is the table name for the CloudEvents entity.

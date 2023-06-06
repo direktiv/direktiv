@@ -58,3 +58,9 @@ func (s *sqlStore) Secrets() core.SecretsStore {
 		db: s.db,
 	}
 }
+
+func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
+	return &sqlRuntimeVariablesStore{
+		db: s.db,
+	}
+}

@@ -23,12 +23,6 @@ type Database interface {
 	Namespace(ctx context.Context, id uuid.UUID) (*Namespace, error)
 	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
 	NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*Annotation, error)
-	ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*VarRef, error)
-	NamespaceVariableRef(ctx context.Context, nsID uuid.UUID, key string) (*VarRef, error)
-	WorkflowVariableRef(ctx context.Context, wfID uuid.UUID, key string) (*VarRef, error)
-	InstanceVariableRef(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error)
-	ThreadVariableRef(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error)
-	VariableData(ctx context.Context, id uuid.UUID, load bool) (*VarData, error)
 }
 
 type CacheData struct {

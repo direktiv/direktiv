@@ -10,16 +10,15 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 
-	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	entvar "github.com/direktiv/direktiv/pkg/flow/ent/varref"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -35,66 +34,54 @@ func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloude
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
 	x := make([]states.Variable, 0)
 
-	clients := im.engine.edb.Clients(ctx)
+	tx, err := im.engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
 
 	for _, selector := range vars {
-		var err error
-		var ref *ent.VarRef
+		if selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
+			referenceID := im.instance.Instance.NamespaceID
+			if selector.Scope == util.VarScopeInstance {
+				referenceID = im.instance.Instance.ID
+			}
+			if selector.Scope == util.VarScopeWorkflow {
+				referenceID = im.instance.Instance.WorkflowID
+			}
 
-		scope := selector.Scope
-		key := selector.Key
+			item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID, selector.Key)
+			if errors.Is(err, datastore.ErrNotFound) {
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  []byte{},
+				})
+			} else if err != nil {
+				return nil, derrors.NewInternalError(err)
+			} else {
+				data, err := tx.DataStore().RuntimeVariables().LoadData(ctx, item.ID)
+				if err != nil {
+					return nil, derrors.NewInternalError(err)
+				}
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  data,
+				})
+			}
 
-		switch scope {
-		case util.VarScopeInstance:
-			ref, err = clients.VarRef.Query().Where(entvar.InstanceID(im.instance.Instance.ID)).Where(entvar.NameEQ(key), entvar.BehaviourIsNil()).WithVardata().Only(ctx)
-
-		case util.VarScopeThread:
-			ref, err = clients.VarRef.Query().Where(entvar.InstanceID(im.instance.Instance.ID)).Where(entvar.NameEQ(key), entvar.BehaviourEQ("thread")).WithVardata().Only(ctx)
-
-		case util.VarScopeWorkflow:
-
-			// // NOTE: this hack seems to be necessary for some reason...
-			// wf, err = im.engine.db.Workflow.Get(ctx, wf.ID)
-			// if err != nil {
-			// 	return nil, derrors.NewInternalError(err)
-			// }
-
-			ref, err = clients.VarRef.Query().Where(entvar.WorkflowID(im.instance.Instance.WorkflowID)).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
-
-		case util.VarScopeNamespace:
-
-			// // NOTE: this hack seems to be necessary for some reason...
-			// ns, err = im.engine.db.Namespace.Get(ctx, ns.ID)
-			// if err != nil {
-			// 	return nil, derrors.NewInternalError(err)
-			// }
-
-			ref, err = clients.VarRef.Query().Where(entvar.HasNamespaceWith(entns.ID(im.instance.Instance.NamespaceID))).Where(entvar.NameEQ(key)).WithVardata().Only(ctx)
-
-		case util.VarScopeFileSystem:
-			break
-		default:
-			return nil, derrors.NewInternalError(errors.New("invalid scope"))
+			continue
 		}
 
-		var data []byte
-
-		if err != nil {
-			if !derrors.IsNotFound(err) {
-				return nil, derrors.NewInternalError(err)
-			}
-
-			data = make([]byte, 0)
-		} else if ref == nil && scope == util.VarScopeFileSystem {
-			tx, err := im.engine.flow.beginSqlTx(ctx)
-			if err != nil {
-				return nil, err
-			}
-			defer tx.Rollback()
-
-			file, err := tx.FileStore().ForRootID(im.instance.Instance.NamespaceID).GetFile(ctx, key)
+		if selector.Scope == util.VarScopeFileSystem {
+			file, err := tx.FileStore().ForRootID(im.instance.Instance.NamespaceID).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
-				data = make([]byte, 0)
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  []byte{},
+				})
 			} else if err != nil {
 				return nil, err
 			} else {
@@ -107,7 +94,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 					return nil, err
 				}
 				defer func() { _ = rc.Close() }()
-				data, err = ioutil.ReadAll(rc)
+				data, err := ioutil.ReadAll(rc)
 				if err != nil {
 					return nil, err
 				}
@@ -115,28 +102,15 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 				if err != nil {
 					return nil, err
 				}
+				x = append(x, states.Variable{
+					Scope: selector.Scope,
+					Key:   selector.Key,
+					Data:  data,
+				})
 			}
 
-			tx.Rollback()
-		} else if ref == nil {
-			data = make([]byte, 0)
-		} else {
-			if ref.Edges.Vardata == nil {
-				err = &derrors.NotFoundError{
-					Label: "variable data not found",
-				}
-
-				return nil, err
-			}
-
-			data = ref.Edges.Vardata.Data
+			continue
 		}
-
-		x = append(x, states.Variable{
-			Scope: scope,
-			Key:   key,
-			Data:  data,
-		})
 	}
 
 	return x, nil
@@ -208,89 +182,70 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 }
 
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-	tctx, tx, err := im.engine.database.Tx(ctx)
+	tx, err := im.engine.flow.beginSqlTx(ctx)
 	if err != nil {
 		return err
 	}
-	defer rollback(tx)
-
-	clients := im.engine.edb.Clients(tctx)
+	defer tx.Rollback()
 
 	for idx := range vars {
 		v := vars[idx]
 
-		var q varQuerier
-
-		var thread bool
-
+		var referenceID uuid.UUID
 		switch v.Scope {
-		case "":
-
-			fallthrough
-
 		case "instance":
-
-			q = &entInstanceVarQuerier{
-				clients:  clients,
-				instance: im.instance,
-			}
-
-		case "thread":
-
-			q = &entInstanceVarQuerier{
-				clients:  clients,
-				instance: im.instance,
-			}
-
-			thread = true
-
+			referenceID = im.instance.Instance.ID
 		case "workflow":
-
-			q = &entWorkflowVarQuerier{
-				clients: clients,
-				ns:      im.Namespace(),
-				wfID:    im.instance.Instance.WorkflowID,
-				path:    im.instance.Instance.CalledAs,
-			}
-
+			referenceID = im.instance.Instance.WorkflowID
 		case "namespace":
-
-			q = &entNamespaceVarQuerier{
-				clients: clients,
-				ns:      im.Namespace(),
-			}
-
+			referenceID = im.instance.Instance.NamespaceID
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
 
-		// if statements have to be same order
+		item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID, v.Key)
+		if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+			return err
+		}
 
 		d := string(v.Data)
 
 		if len(d) == 0 {
-			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil && !ent.IsNotFound(err) {
+			err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
+			if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 				return err
 			}
 			continue
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			_, _, err = im.engine.flow.DeleteVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
-			if err != nil && !ent.IsNotFound(err) {
+			err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
+			if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 				return err
 			}
-			continue
 		} else {
-			_, _, err = im.engine.flow.SetVariable(tctx, q, v.Key, v.Data, v.MIMEType, thread)
+			newVar := &core.RuntimeVariable{
+				Name:     v.Key,
+				MimeType: v.MIMEType,
+				Data:     v.Data,
+			}
+
+			switch v.Scope {
+			case "instance":
+				newVar.InstanceID = referenceID
+			case "workflow":
+				newVar.WorkflowID = referenceID
+			case "namespace":
+				newVar.NamespaceID = referenceID
+			}
+
+			_, err = tx.DataStore().RuntimeVariables().Set(ctx, newVar)
 			if err != nil {
 				return err
 			}
 		}
 	}
-
-	err = tx.Commit()
+	err = tx.Commit(ctx)
 	if err != nil {
 		return err
 	}

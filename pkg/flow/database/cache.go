@@ -143,33 +143,3 @@ func (db *CachedDatabase) NamespaceAnnotation(ctx context.Context, inodeID uuid.
 	// NOTE: not bothering to cache this right now
 	return db.source.NamespaceAnnotation(ctx, inodeID, key)
 }
-
-func (db *CachedDatabase) ThreadVariables(ctx context.Context, instID uuid.UUID) ([]*VarRef, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.ThreadVariables(ctx, instID)
-}
-
-func (db *CachedDatabase) NamespaceVariable(ctx context.Context, nsID uuid.UUID, key string) (*VarRef, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.NamespaceVariableRef(ctx, nsID, key)
-}
-
-func (db *CachedDatabase) WorkflowVariable(ctx context.Context, wfID uuid.UUID, key string) (*VarRef, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.WorkflowVariableRef(ctx, wfID, key)
-}
-
-func (db *CachedDatabase) InstanceVariable(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.InstanceVariableRef(ctx, instID, key)
-}
-
-func (db *CachedDatabase) ThreadVariable(ctx context.Context, instID uuid.UUID, key string) (*VarRef, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.ThreadVariableRef(ctx, instID, key)
-}
-
-func (db *CachedDatabase) VariableData(ctx context.Context, id uuid.UUID, load bool) (*VarData, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.VariableData(ctx, id, load)
-}

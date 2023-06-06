@@ -29,9 +29,3 @@ type Namespace func(*sql.Selector)
 
 // Services is the predicate function for services builders.
 type Services func(*sql.Selector)
-
-// VarData is the predicate function for vardata builders.
-type VarData func(*sql.Selector)
-
-// VarRef is the predicate function for varref builders.
-type VarRef func(*sql.Selector)

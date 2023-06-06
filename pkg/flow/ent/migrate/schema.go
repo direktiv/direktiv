@@ -214,52 +214,6 @@ var (
 			},
 		},
 	}
-	// VarDataColumns holds the columns for the "var_data" table.
-	VarDataColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "size", Type: field.TypeInt},
-		{Name: "hash", Type: field.TypeString},
-		{Name: "data", Type: field.TypeBytes},
-		{Name: "mime_type", Type: field.TypeString, Default: "application/json"},
-	}
-	// VarDataTable holds the schema information for the "var_data" table.
-	VarDataTable = &schema.Table{
-		Name:       "var_data",
-		Columns:    VarDataColumns,
-		PrimaryKey: []*schema.Column{VarDataColumns[0]},
-	}
-	// VarRefsColumns holds the columns for the "var_refs" table.
-	VarRefsColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString, Nullable: true},
-		{Name: "behaviour", Type: field.TypeString, Nullable: true},
-		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "namespace_vars", Type: field.TypeUUID, Nullable: true},
-		{Name: "var_data_varrefs", Type: field.TypeUUID},
-	}
-	// VarRefsTable holds the schema information for the "var_refs" table.
-	VarRefsTable = &schema.Table{
-		Name:       "var_refs",
-		Columns:    VarRefsColumns,
-		PrimaryKey: []*schema.Column{VarRefsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "var_refs_namespaces_vars",
-				Columns:    []*schema.Column{VarRefsColumns[5]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "var_refs_var_data_varrefs",
-				Columns:    []*schema.Column{VarRefsColumns[6]},
-				RefColumns: []*schema.Column{VarDataColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AnnotationsTable,
@@ -270,8 +224,6 @@ var (
 		LogMsgsTable,
 		NamespacesTable,
 		ServicesTable,
-		VarDataTable,
-		VarRefsTable,
 	}
 )
 
@@ -283,6 +235,4 @@ func init() {
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 	LogMsgsTable.ForeignKeys[0].RefTable = NamespacesTable
 	ServicesTable.ForeignKeys[0].RefTable = NamespacesTable
-	VarRefsTable.ForeignKeys[0].RefTable = NamespacesTable
-	VarRefsTable.ForeignKeys[1].RefTable = VarDataTable
 }

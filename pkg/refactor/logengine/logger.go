@@ -83,75 +83,95 @@ func (loggers ChainedBetterLogger) Errorf(ctx context.Context, recipientID uuid.
 	}
 }
 
-// DataStoreBetterLogger records log information into the datastore so that UI frontend page can show log data about
-// different objects.
-type DataStoreBetterLogger struct {
-	Store    LogStore
-	LogError func(template string, args ...interface{})
+type CachedSQLLogStore struct {
+	logQueue chan *logMessage
+	storeAdd func(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error
+	callback func(objectID uuid.UUID, objectType string)
+	logError func(template string, args ...interface{})
 }
 
-func (s DataStoreBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
-	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Debug, fmt.Sprintf(msg, a...), tags)
-	if err != nil {
-		s.LogError("writing better-logs to the database", "error", err)
+type logMessage struct {
+	recipientID    uuid.UUID
+	reciepientType string
+	time           time.Time
+	tags           map[string]interface{}
+	msg            string
+	level          LogLevel
+}
+
+func (cls *CachedSQLLogStore) logWorker() {
+	for {
+		l, more := <-cls.logQueue
+		if !more {
+			return
+		}
+		err := cls.storeAdd(context.Background(), l.time, l.level, l.msg, l.tags)
+		if err != nil {
+			cls.logError("cachedSQLLogStore error storing logs, %v", err)
+		}
+		cls.callback(l.recipientID, l.reciepientType)
 	}
 }
 
-func (s DataStoreBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
+func NewCachedLogger(
+	queueSize int,
+	storeAdd func(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error,
+	pub func(objectID uuid.UUID, objectType string),
+	logError func(template string, args ...interface{}),
+) (BetterLogger, func(), func()) {
+	cls := CachedSQLLogStore{storeAdd: storeAdd, callback: pub, logError: logError, logQueue: make(chan *logMessage, queueSize)}
+
+	return &cls, cls.logWorker, cls.closeLogWorkers
+}
+
+func (cls *CachedSQLLogStore) closeLogWorkers() {
+	close(cls.logQueue)
+}
+
+func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Info, fmt.Sprintf(msg, a...), tags)
-	if err != nil {
-		s.LogError("writing better-logs to the database", "error", err)
+	select {
+	case cls.logQueue <- &logMessage{
+		time:           time.Now(),
+		recipientID:    recipientID,
+		tags:           tags,
+		msg:            fmt.Sprintf(msg, a...),
+		reciepientType: fmt.Sprintf("%v", tags["sender_type"]),
+		level:          Debug,
+	}:
+	default:
+		cls.logError("!! Log-buffer is/was full.")
 	}
 }
 
-func (s DataStoreBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	tags["sender"] = recipientID
+func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = ctx
-	err := s.Store.Append(context.Background(), time.Now(), Error, fmt.Sprintf(msg, a...), tags)
-	if err != nil {
-		s.LogError("writing better-logs to the database", "error", err)
+	select {
+	case cls.logQueue <- &logMessage{
+		time:           time.Now(),
+		recipientID:    recipientID,
+		tags:           tags,
+		msg:            fmt.Sprintf(msg, a...),
+		reciepientType: fmt.Sprintf("%v", tags["sender_type"]),
+		level:          Error,
+	}:
+	default:
+		cls.logError("!! Log-buffer is/was full.")
 	}
 }
 
-// NotifierBetterLogger is a pseudo action logger that doesn't log any information, instead it calls a callback
-// that reporting the object that was logged.
-type NotifierBetterLogger struct {
-	Callback func(objectID uuid.UUID, objectType string)
-	LogError func(template string, args ...interface{})
-}
-
-func (n NotifierBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	_ = msg
-	_ = a
+func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
 	_ = ctx
-	n.log(recipientID, tags)
-}
-
-func (n NotifierBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	_ = msg
-	_ = a
-	_ = ctx
-	n.log(recipientID, tags)
-}
-
-func (n NotifierBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]interface{}, msg string, a ...interface{}) {
-	_ = msg
-	_ = a
-	_ = ctx
-	n.log(recipientID, tags)
-}
-
-func (n NotifierBetterLogger) log(recipientID uuid.UUID, tags map[string]interface{}) {
-	senderType, ok := tags["sender_type"]
-	if !ok {
-		n.LogError("cannot find sender type in better-logs tags", "tags", tags)
-
-		return
+	select {
+	case cls.logQueue <- &logMessage{
+		time:           time.Now(),
+		recipientID:    recipientID,
+		tags:           tags,
+		msg:            fmt.Sprintf(msg, a...),
+		reciepientType: fmt.Sprintf("%v", tags["sender_type"]),
+		level:          Info,
+	}:
+	default:
+		cls.logError("!! Log-buffer is/was full.")
 	}
-
-	n.Callback(recipientID, fmt.Sprintf("%s", senderType))
 }
