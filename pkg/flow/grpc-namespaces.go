@@ -328,7 +328,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	lfr := igrpc.FunctionsListFunctionsRequest{
 		Annotations: annotations,
 	}
-	_, err = flow.actions.client.DeleteFunctions(ctx, &lfr)
+	_, err = flow.functionsClient.DeleteFunctions(ctx, &lfr)
 
 	// delete filter cache
 	deleteCacheNamespaceSync(ns.Name)

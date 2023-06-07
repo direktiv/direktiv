@@ -41,42 +41,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/functions/grpc"
 	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"github.com/heroku/docker-registry-client/registry"
-	"go.uber.org/zap"
 )
 
-type functionHandler struct {
-	srv    *Server
-	logger *zap.SugaredLogger
-	client grpcfunc.FunctionsClient
-}
+type functionHandler = flowHandler
 
-func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
-	router *mux.Router, addr string,
-) (*functionHandler, error) {
-	funcAddr := fmt.Sprintf("%s:5555", addr)
-	logger.Infof("connecting to functions %s", funcAddr)
-
-	conn, err := util.GetEndpointTLS(funcAddr)
-	if err != nil {
-		logger.Errorf("can not connect to direktiv function: %v", err)
-		return nil, err
-	}
-
-	fh := &functionHandler{
-		srv:    srv,
-		logger: logger,
-		client: grpcfunc.NewFunctionsClient(conn),
-	}
-
-	fh.initRoutes(router)
-
-	return fh, err
-}
-
-func (h *functionHandler) initRoutes(r *mux.Router) {
+func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
 	// swagger:operation GET /api/logs/{pod} podLogs
 	// ---
 	// description: |
@@ -751,7 +722,7 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 	h.logger.Debugf("Handling request: %s", this())
 
 	// Get and Validate namespace exists
-	nsResp, err := h.srv.FlowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+	nsResp, err := h.client.Namespace(r.Context(), &igrpc.NamespaceRequest{
 		Name: mux.Vars(r)["ns"],
 	})
 	if err != nil {
@@ -767,7 +738,7 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.FunctionsDeleteRegistryRequest{
+	resp, err := h.functionsClient.DeleteRegistry(r.Context(), &grpc.FunctionsDeleteRegistryRequest{
 		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 	})
@@ -779,7 +750,7 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	h.logger.Debugf("Handling request: %s", this())
 
 	// Get and Validate namespace exists
-	nsResp, err := h.srv.FlowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+	nsResp, err := h.client.Namespace(r.Context(), &igrpc.NamespaceRequest{
 		Name: mux.Vars(r)["ns"],
 	})
 	if err != nil {
@@ -795,7 +766,7 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	resp, err := h.client.StoreRegistry(r.Context(), &grpc.FunctionsStoreRegistryRequest{
+	resp, err := h.functionsClient.StoreRegistry(r.Context(), &grpc.FunctionsStoreRegistryRequest{
 		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 		Data:      []byte(d["data"]),
@@ -837,7 +808,7 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 	h.logger.Debugf("Handling request: %s", this())
 
 	// Get and Validate namespace exists
-	nsResp, err := h.srv.FlowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+	nsResp, err := h.client.Namespace(r.Context(), &igrpc.NamespaceRequest{
 		Name: mux.Vars(r)["ns"],
 	})
 	if err != nil {
@@ -846,7 +817,7 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var resp *grpc.FunctionsGetRegistriesResponse
-	resp, err = h.client.GetRegistries(r.Context(), &grpc.FunctionsGetRegistriesRequest{
+	resp, err = h.functionsClient.GetRegistries(r.Context(), &grpc.FunctionsGetRegistriesRequest{
 		Namespace: &nsResp.Namespace.Name,
 	})
 
@@ -858,7 +829,7 @@ func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.R
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+	resp, err := h.client.Namespace(ctx, &igrpc.NamespaceRequest{
 		Name: mux.Vars(r)["ns"],
 	})
 	if err != nil {
@@ -877,7 +848,7 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+	resp, err := h.client.Namespace(ctx, &igrpc.NamespaceRequest{
 		Name: mux.Vars(r)["ns"],
 	})
 	if err != nil {
@@ -897,7 +868,7 @@ func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Re
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -917,7 +888,7 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -955,7 +926,7 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 
 	vers := r.URL.Query().Get("version")
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -986,7 +957,7 @@ func (h *functionHandler) listServicesSSE(
 		Annotations: annotations,
 	}
 
-	client, err := h.client.WatchFunctions(r.Context(), &grpcReq)
+	client, err := h.functionsClient.WatchFunctions(r.Context(), &grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1029,7 +1000,7 @@ func (h *functionHandler) listServices(
 		Annotations: annotations,
 	}
 
-	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
+	resp, err := h.functionsClient.ListFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1052,7 +1023,7 @@ func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      path,
 	})
@@ -1087,7 +1058,7 @@ func (h *functionHandler) deleteService(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	resp, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
+	resp, err := h.functionsClient.DeleteFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1135,7 +1106,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	client, err := h.client.WatchFunctions(r.Context(), grpcReq)
+	functionsClient, err := h.functionsClient.WatchFunctions(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1144,7 +1115,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 
 	defer func() {
 
-		_ = client.CloseSend()
+		_ = functionsClient.CloseSend()
 
 		for {
 			_, more := <-ch
@@ -1160,7 +1131,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		defer close(ch)
 
 		for {
-			x, err := client.Recv()
+			x, err := functionsClient.Recv()
 			if err != nil {
 				ch <- err
 				return
@@ -1180,7 +1151,7 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 	grpcReq := new(grpc.FunctionsGetFunctionRequest)
 	grpcReq.ServiceName = &svn
 
-	resp, err := h.client.GetFunction(r.Context(), grpcReq)
+	resp, err := h.functionsClient.GetFunction(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, resp, err)
 		return
@@ -1235,7 +1206,7 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 	nsName := mux.Vars(r)["ns"]
 
 	// fetch namespace uuid
-	resp, err := h.srv.FlowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+	resp, err := h.client.Namespace(ctx, &igrpc.NamespaceRequest{
 		Name: nsName,
 	})
 	if err != nil {
@@ -1272,7 +1243,7 @@ func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *htt
 	}
 
 	// returns an empty body
-	resp, err := h.client.CreateFunction(r.Context(), grpcReq)
+	resp, err := h.functionsClient.CreateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1300,7 +1271,7 @@ func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	resp, err := h.srv.FlowClient.Namespace(r.Context(), &igrpc.NamespaceRequest{
+	resp, err := h.client.Namespace(r.Context(), &igrpc.NamespaceRequest{
 		Name: nsName,
 	})
 	if err != nil {
@@ -1340,7 +1311,7 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 	}
 
 	// returns an empty body
-	resp, err := h.client.UpdateFunction(r.Context(), grpcReq)
+	resp, err := h.functionsClient.UpdateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1366,7 +1337,7 @@ func (h *functionHandler) deleteRevision(rev string,
 		Revision: &rev,
 	}
 
-	resp, err := h.client.DeleteRevision(r.Context(), grpcReq)
+	resp, err := h.functionsClient.DeleteRevision(r.Context(), grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1397,7 +1368,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 
 	vers := r.URL.Query().Get("version")
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -1447,7 +1418,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 	ctx := r.Context()
 	vers := r.URL.Query().Get("version")
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -1480,7 +1451,7 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 		// Scope:        &scope,
 	}
 
-	client, err := h.client.WatchRevisions(r.Context(), grpcReq)
+	client, err := h.functionsClient.WatchRevisions(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1522,7 +1493,7 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 	grpcReq := new(grpc.FunctionsWatchLogsRequest)
 	grpcReq.PodName = &sn
 
-	client, err := h.client.WatchLogs(r.Context(), grpcReq)
+	client, err := h.functionsClient.WatchLogs(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1563,7 +1534,7 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Namespace(ctx, &igrpc.NamespaceRequest{
+	resp, err := h.client.Namespace(ctx, &igrpc.NamespaceRequest{
 		Name: mux.Vars(r)["ns"],
 	})
 	if err != nil {
@@ -1592,7 +1563,7 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -1647,7 +1618,7 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 
 	ctx := r.Context()
 
-	resp, err := h.srv.FlowClient.Workflow(ctx, &igrpc.WorkflowRequest{
+	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
 		Namespace: mux.Vars(r)["ns"],
 		Path:      mux.Vars(r)["path"],
 	})
@@ -1684,7 +1655,7 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 		RevisionName: &rev,
 	}
 
-	client, err := h.client.WatchPods(r.Context(), grpcReq)
+	client, err := h.functionsClient.WatchPods(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1726,6 +1697,6 @@ func (h *functionHandler) listPods(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	resp, err := h.client.ListPods(r.Context(), &grpcReq)
+	resp, err := h.functionsClient.ListPods(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }

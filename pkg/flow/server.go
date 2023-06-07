@@ -18,6 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -64,11 +65,11 @@ type server struct {
 
 	mirrorManager mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
-	vars     *vars
-	actions  *actions
+	flow            *flow
+	internal        *internal
+	events          *events
+	vars            *vars
+	functionsClient igrpc.FunctionsClient
 
 	metrics  *metrics.Client
 	logger   logengine.BetterLogger
@@ -325,12 +326,13 @@ func (srv *server) start(ctx context.Context) error {
 		cc,
 	)
 
-	srv.sugar.Debug("Initializing actions grpc server.")
-
-	srv.actions, err = initActionsServer(cctx, srv)
+	srv.sugar.Debug("Initializing functions grpc client.")
+	functionsClientConn, err := util.GetEndpointTLS(srv.conf.FunctionsService + ":5555")
 	if err != nil {
+		srv.sugar.Error("initializing functions grpc client", "error", err)
 		return err
 	}
+	srv.functionsClient = igrpc.NewFunctionsClient(functionsClientConn)
 
 	if srv.conf.Eventing {
 		srv.sugar.Debug("Initializing knative eventing receiver.")
@@ -379,20 +381,6 @@ func (srv *server) start(ctx context.Context) error {
 		defer wg.Done()
 		defer cancel()
 		e := srv.flow.Run()
-		if e != nil {
-			srv.sugar.Error(err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		defer cancel()
-		e := srv.actions.Run()
 		if e != nil {
 			srv.sugar.Error(err)
 			lock.Lock()
