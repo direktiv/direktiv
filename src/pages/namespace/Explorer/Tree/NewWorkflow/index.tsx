@@ -19,7 +19,6 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import Input from "~/design/Input";
-import React from "react";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "./utils";
 import { fileNameSchema } from "~/api/tree/schema";
@@ -27,6 +26,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import workflowTemplates from "./templates";
@@ -54,7 +54,7 @@ const NewWorkflow = ({
   const navigate = useNavigate();
 
   const theme = useTheme();
-  const [workflowData, setWorkflowData] = React.useState<string | undefined>(
+  const [workflowData, setWorkflowData] = useState<string>(
     defaultWorkflowTemplate.data
   );
   const {
@@ -172,8 +172,10 @@ const NewWorkflow = ({
               <Editor
                 value={workflowData}
                 onChange={(newData) => {
-                  setWorkflowData(newData);
-                  setValue("fileContent", newData || "");
+                  if (newData) {
+                    setWorkflowData(newData);
+                    setValue("fileContent", newData);
+                  }
                 }}
                 theme={theme ?? undefined}
               />
