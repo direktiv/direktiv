@@ -103,11 +103,11 @@ export const ControlledDialogWithForm = () => {
         <div className="my-3">
           <form id={formId} onSubmit={() => setOpenDialog(false)}>
             <fieldset className="flex items-center gap-5">
-              <label className="w-[90px] text-right" htmlFor="name">
+              <label className="w-[90px] text-right text-[14px]" htmlFor="name">
                 Name
               </label>
               <input
-                className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
+                className="inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[14px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
                 id="name"
                 placeholder="just submit this"
               />

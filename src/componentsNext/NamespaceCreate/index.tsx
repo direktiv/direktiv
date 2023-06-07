@@ -86,7 +86,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         )}
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right" htmlFor="name">
+            <label className="w-[90px] text-right text-[14px]" htmlFor="name">
               {t("components.namespaceCreate.namespaceLabel")}
             </label>
             <Input
