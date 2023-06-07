@@ -269,9 +269,8 @@ export const AsChild = () => (
     <Button asChild>
       <a>An a tag that looks like a button</a>
     </Button>
-    <a href="">dede</a>
     <Button asChild variant="primary">
-      <a>a div that looks like a button</a>
+      <div>a div that looks like a button</div>
     </Button>
   </div>
 );
