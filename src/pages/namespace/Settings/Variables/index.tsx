@@ -8,6 +8,7 @@ import { Card } from "~/design/Card";
 import Create from "./Create";
 import Delete from "./Delete";
 import Edit from "./Edit";
+import EmptyList from "../compopnents/EmptyList";
 import ItemRow from "../compopnents/ItemRow";
 import { VarSchemaType } from "~/api/variables/schema";
 import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
@@ -58,18 +59,22 @@ const VariablesList: FC = () => {
       </div>
 
       <Card>
-        <Table>
-          <TableBody>
-            {items?.map((item, i) => (
-              <ItemRow
-                item={item}
-                key={i}
-                onDelete={setDeleteItem}
-                onEdit={() => setEditItem(item)}
-              />
-            ))}
-          </TableBody>
-        </Table>
+        {items?.length ? (
+          <Table>
+            <TableBody>
+              {items?.map((item, i) => (
+                <ItemRow
+                  item={item}
+                  key={i}
+                  onDelete={setDeleteItem}
+                  onEdit={() => setEditItem(item)}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <EmptyList>{t("pages.settings.variables.list.empty")}</EmptyList>
+        )}
       </Card>
       {deleteItem && (
         <Delete

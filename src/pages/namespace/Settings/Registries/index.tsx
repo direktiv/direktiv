@@ -7,6 +7,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Create from "./Create";
 import Delete from "./Delete";
+import EmptyList from "../compopnents/EmptyList";
 import ItemRow from "../compopnents/ItemRow";
 import { RegistrySchemaType } from "~/api/registries/schema";
 import { useDeleteRegistry } from "~/api/registries/mutate/deleteRegistry";
@@ -56,13 +57,17 @@ const RegistriesList: FC = () => {
       </div>
 
       <Card>
-        <Table>
-          <TableBody>
-            {registries.data?.registries.map((item, i) => (
-              <ItemRow key={i} item={item} onDelete={setDeleteRegistry} />
-            ))}
-          </TableBody>
-        </Table>
+        {registries.data?.registries.length ? (
+          <Table>
+            <TableBody>
+              {registries.data?.registries.map((item, i) => (
+                <ItemRow key={i} item={item} onDelete={setDeleteRegistry} />
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <EmptyList>{t("pages.settings.registries.list.empty")}</EmptyList>
+        )}
         {deleteRegistry && (
           <Delete
             name={deleteRegistry.name}

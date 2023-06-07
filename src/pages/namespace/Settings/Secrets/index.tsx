@@ -7,6 +7,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Create from "./Create";
 import Delete from "./Delete";
+import EmptyList from "../compopnents/EmptyList";
 import ItemRow from "../compopnents/ItemRow";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
@@ -56,13 +57,17 @@ const SecretsList: FC = () => {
       </div>
 
       <Card>
-        <Table>
-          <TableBody>
-            {secrets.data?.secrets.results.map((item, i) => (
-              <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
-            ))}
-          </TableBody>
-        </Table>
+        {secrets.data?.secrets.results.length ? (
+          <Table>
+            <TableBody>
+              {secrets.data?.secrets.results.map((item, i) => (
+                <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <EmptyList>{t("pages.settings.secrets.list.empty")}</EmptyList>
+        )}
         {deleteSecret && (
           <Delete
             name={deleteSecret.name}

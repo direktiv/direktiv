@@ -152,7 +152,8 @@
     "settings": {
       "secrets": {
         "list": {
-          "title": "Secrets"
+          "title": "Secrets",
+          "empty": "No secrets exist yet"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -164,7 +165,8 @@
       },
       "registries": {
         "list": {
-          "title": "Container Registries"
+          "title": "Container Registries",
+          "empty": "No registries exist yet"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -178,7 +180,8 @@
       },
       "variables": {
         "list": {
-          "title": "Variables"
+          "title": "Variables",
+          "empty": "No variables exist yet"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
