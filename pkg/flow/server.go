@@ -330,6 +330,14 @@ func (srv *server) start(ctx context.Context) error {
 		cc,
 	)
 
+	srv.sugar.Debug("Initializing functions grpc client.")
+	functionsClientConn, err := util.GetEndpointTLS(srv.conf.FunctionsService + ":5555")
+	if err != nil {
+		srv.sugar.Error("initializing functions grpc client", "error", err)
+		return err
+	}
+	srv.functionsClient = igrpc.NewFunctionsClient(functionsClientConn)
+
 	if srv.conf.Eventing {
 		srv.sugar.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
