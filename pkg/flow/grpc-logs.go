@@ -59,10 +59,10 @@ func addFiltersToQuery(query map[string]interface{}, filters ...*grpc.PageFilter
 				query["workflow"] = values[0]
 			}
 			if len(values) > 1 && values[1] != "" {
-				query["state"] = values[1]
+				query["state-id"] = values[1]
 			}
 			if len(values) > 2 && values[2] != "" {
-				query["iterator"] = values[2]
+				query["loop-index"] = values[2]
 			}
 		}
 	}
@@ -289,7 +289,6 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	if err != nil {
 		return nil, err
 	}
-	le = filterMatchByWfStateIterator(qu, le)
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Path = f.Path
@@ -337,12 +336,11 @@ resend:
 	if err != nil {
 		return err
 	}
-	leFiltered := filterMatchByWfStateIterator(qu, le)
 
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Path = f.Path
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return err
 	}
@@ -399,8 +397,13 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 
-	// TODO: Add special magic iterator query
-	leFiltered := filterMatchByWfStateIterator(qu, le)
+	leFiltered := filterLogs(le, qu)
+	if _, ok := qu["loop-index"]; ok && len(leFiltered) > 0 {
+		// special magic iterator stuff
+		call := fmt.Sprintf("%v", leFiltered[0].Fields["callpath"])
+		childs := getAllChilds(call, le)
+		leFiltered = append(leFiltered, childs...)
+	}
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
@@ -453,8 +456,14 @@ resend:
 		return err
 	}
 
-	// TODO: Add special magic iterator query
-	leFiltered := filterMatchByWfStateIterator(qu, le)
+	flow.sugar.Error(qu)
+	leFiltered := filterLogs(le, qu)
+	if _, ok := qu["loop-index"]; ok && len(leFiltered) > 0 {
+		// special magic iterator stuff
+		call := fmt.Sprintf("%v", leFiltered[0].Fields["callpath"])
+		childs := getAllChilds(call, le)
+		leFiltered = append(leFiltered, childs...)
+	}
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Instance = cached.Instance.ID.String()
@@ -484,114 +493,44 @@ resend:
 	goto resend
 }
 
-// filters the input using the extracted values from the queryValue string.
-// queryValue should be formatted like <workflow>::<state-id>::<loop-index>
-// <state-id> and <indexId> is optional
-// examples for queryValue:
-// myworkflow or myworkflow:: or myworkflow::::
-// myworkflow::getter or myworkflow::getter::
-// myworkflow::getter::1
-// ::getter::
-// this method has two behaviors
-// 1. if loop-index is left empty:
-// when a logmsg from the input array has a matching pair of logtag values
-// with the extracted values it will be added to the results
-// 2: When the loop-index is provided:
-// the result will contain all logmsg marked with the given
-// loop-index starting the first match of the provided workflow and state-id
-// additionally, all logmsgs from nested loops and childs will be added to the results.
-func filterMatchByWfStateIterator(qu map[string]interface{}, input []*logengine.LogEntry) []*logengine.LogEntry {
-	_, ok1 := qu["state-id"]
-	_, ok2 := qu["workflow"]
-	_, ok3 := qu["loop-index"]
-	if !ok1 && !ok2 && !ok3 {
-		return input
+func filterLogs(logs []*logengine.LogEntry, keysAndValues map[string]interface{}) []*logengine.LogEntry {
+	databaseCols := []string{
+		"sender",
+		"log_instance_call_path",
+		"sender_type",
+		"level",
+		"root_instance_id",
 	}
-	state := fmt.Sprintf("%v", qu["state"])
-	workflow := fmt.Sprintf("%v", qu["workflow"])
-	iterator := fmt.Sprintf("%v", qu["iterator"])
-	if state == "" && workflow == "" && iterator == "" {
-		return input
-	}
-	// state, workflow, iterator string
-	matchWf := make([]*logengine.LogEntry, 0)
-	matchState := make([]*logengine.LogEntry, 0)
-	matchIterator := make([]*logengine.LogEntry, 0)
-	for _, v := range input {
-		if v.Fields["workflow"] == workflow {
-			matchWf = append(matchWf, v)
-		}
-		if v.Fields["state-id"] == state &&
-			workflow != "" && v.Fields["workflow"] == workflow {
-			matchState = append(matchState, v)
-		}
-		if v.Fields["state-id"] == state &&
-			workflow == "" {
-			matchState = append(matchState, v)
-		}
-		if v.Fields["state-id"] != "" && v.Fields["state-id"] == state &&
-			v.Fields["workflow"] == workflow &&
-			v.Fields["loop-index"] == iterator {
-			matchIterator = append(matchIterator, v)
-		}
-		if v.Fields["state-id"] == "" && v.Fields["workflow"] == workflow &&
-			v.Fields["loop-index"] == iterator {
-			matchIterator = append(matchIterator, v)
-		}
-	}
-	if !ok1 && !ok3 {
-		return matchWf
-	}
-	if !ok2 && !ok3 {
-		return matchState
-	}
-	if ok3 {
-		if len(matchIterator) == 0 {
-			return make([]*logengine.LogEntry, 0)
-		}
 
-		callpath := internallogger.AppendInstanceID(fmt.Sprintf("%v", matchIterator[0].Fields["callpath"]), fmt.Sprintf("%v", matchIterator[0].Fields["instance-id"]))
-		childs := getAllChilds(callpath, input)
-		originInstance := filterByInstanceId(fmt.Sprintf("%v", matchIterator[0].Fields["instance-id"]), input)
-		subtree := append(originInstance, childs...)
-		res := filterByIterrator(iterator, subtree)
-		if nestedLoopHead := getNestedLoopHead(childs); nestedLoopHead != "" {
-			nestedLoop := filterByInstanceId(nestedLoopHead, subtree)
-			if len(nestedLoop) == 0 {
-				return res
+	for k := range keysAndValues { // the logstorer filters using db-cols
+		for _, v2 := range databaseCols {
+			if v2 == k {
+				delete(keysAndValues, k)
 			}
-			callpath := internallogger.AppendInstanceID(fmt.Sprintf("%v", nestedLoop[0].Fields["callpath"]), fmt.Sprintf("%v", nestedLoop[0].Fields["instance-id"]))
-			nestedLoopChilds := getAllChilds(callpath, subtree)
-			nestedLoopSubtree := append(nestedLoop, nestedLoopChilds...)
-			res = append(res, nestedLoopChilds...)
-			res = append(res, nestedLoopSubtree...)
-			res = removeDuplicate(res)
 		}
-		return res
 	}
-	return matchState
+	filteredLogs := make([]*logengine.LogEntry, 0)
+
+	for _, l := range logs {
+		if shouldAdd(keysAndValues, l.Fields) {
+			filteredLogs = append(filteredLogs, l)
+		}
+	}
+	return filteredLogs
 }
 
-func filterByIterrator(iterator string, in []*logengine.LogEntry) []*logengine.LogEntry {
-	res := make([]*logengine.LogEntry, 0)
-	if iterator == "" {
-		return res
-	}
-	for _, v := range in {
-		if v.Fields["loop-index"] == iterator {
-			res = append(res, v)
+// returns true if all key values pairs are present in the fields and the values match.
+// returns always true if keyAndValues is empty.
+func shouldAdd(keysAndValues map[string]interface{}, fields map[string]interface{}) bool {
+	match := true
+	for k, e := range keysAndValues {
+		t, ok := fields[k]
+		if ok {
+			match = match && e == t
 		}
 	}
-	return res
-}
 
-func getNestedLoopHead(in []*logengine.LogEntry) string {
-	for _, v := range in {
-		if v.Fields["state-type"] == "foreach" {
-			return fmt.Sprintf("%v", v.Fields["instance-id"])
-		}
-	}
-	return ""
+	return match
 }
 
 func getAllChilds(callpath string, in []*logengine.LogEntry) []*logengine.LogEntry {
@@ -604,25 +543,15 @@ func getAllChilds(callpath string, in []*logengine.LogEntry) []*logengine.LogEnt
 	return res
 }
 
-func filterByInstanceId(instanceId string, in []*logengine.LogEntry) []*logengine.LogEntry {
-	res := make([]*logengine.LogEntry, 0)
-	for _, v := range in {
-		if strings.HasPrefix(fmt.Sprintf("%v", v.Fields["instance-id"]), instanceId) {
-			res = append(res, v)
-		}
-	}
-	return res
-}
-
 // https://stackoverflow.com/questions/66643946/how-to-remove-duplicates-strings-or-int-from-slice-in-go
-func removeDuplicate(in []*logengine.LogEntry) []*logengine.LogEntry {
-	allKeys := make(map[*logengine.LogEntry]bool)
-	list := []*logengine.LogEntry{}
-	for _, item := range in {
-		if _, value := allKeys[item]; !value {
-			allKeys[item] = true
-			list = append(list, item)
-		}
-	}
-	return list
-}
+// func removeDuplicate(in []*logengine.LogEntry) []*logengine.LogEntry {
+// 	allKeys := make(map[*logengine.LogEntry]bool)
+// 	list := []*logengine.LogEntry{}
+// 	for _, item := range in {
+// 		if _, value := allKeys[item]; !value {
+// 			allKeys[item] = true
+// 			list = append(list, item)
+// 		}
+// 	}
+// 	return list
+// }
