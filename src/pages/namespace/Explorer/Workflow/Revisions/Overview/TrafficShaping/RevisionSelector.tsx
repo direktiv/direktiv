@@ -23,7 +23,9 @@ import { useTranslation } from "react-i18next";
 // use props of our button but overwrite some onSelect and defaultValue
 type ButtonProps = Omit<
   ComponentPropsWithoutRef<typeof Button>,
-  "onSelect" | "defaultValue" // remove the native onSelect and defaultValue props
+  // remove the native onSelect and defaultValue props,
+  // asChild also must be unset to allow a dynamic loading prop (asChild does not support loading prop)
+  "onSelect" | "defaultValue" | "asChild"
 > & {
   onSelect?: (revision: string) => void;
   defaultValue?: string;
