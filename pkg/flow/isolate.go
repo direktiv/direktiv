@@ -73,7 +73,7 @@ type functionWorkflow struct {
 	Timeout       int
 }
 
-func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsClient,
+func (engine *engine) isScopedKnativeFunction(functionsClient igrpc.FunctionsClient,
 	serviceName string,
 ) bool {
 	// search annotations
@@ -82,7 +82,7 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsClient,
 
 	engine.sugar.Debugf("knative function search: %v", a)
 
-	_, err := client.GetFunction(context.Background(), &igrpc.FunctionsGetFunctionRequest{
+	_, err := functionsClient.GetFunction(context.Background(), &igrpc.FunctionsGetFunctionRequest{
 		ServiceName: &serviceName,
 	})
 	if err != nil {
@@ -93,18 +93,18 @@ func (engine *engine) isScopedKnativeFunction(client igrpc.FunctionsClient,
 	return true
 }
 
-func reconstructScopedKnativeFunction(client igrpc.FunctionsClient,
+func reconstructScopedKnativeFunction(functionsClient igrpc.FunctionsClient,
 	serviceName string,
 ) error {
 	cr := igrpc.FunctionsReconstructFunctionRequest{
 		Name: &serviceName,
 	}
 
-	_, err := client.ReconstructFunction(context.Background(), &cr)
+	_, err := functionsClient.ReconstructFunction(context.Background(), &cr)
 	return err
 }
 
-func (engine *engine) isKnativeFunction(client igrpc.FunctionsClient, ar *functionRequest) bool {
+func (engine *engine) isKnativeFunction(functionsClient igrpc.FunctionsClient, ar *functionRequest) bool {
 	// search annotations
 	a := make(map[string]string)
 	a[functions.ServiceHeaderName] = functions.SanitizeLabel(ar.Container.ID)
@@ -113,7 +113,7 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsClient, ar *functi
 
 	engine.sugar.Debugf("knative function search: %v", a)
 
-	l, err := client.ListFunctions(context.Background(), &igrpc.FunctionsListFunctionsRequest{
+	l, err := functionsClient.ListFunctions(context.Background(), &igrpc.FunctionsListFunctionsRequest{
 		Annotations: a,
 	})
 	if err != nil {
@@ -130,7 +130,7 @@ func (engine *engine) isKnativeFunction(client igrpc.FunctionsClient, ar *functi
 	return false
 }
 
-func createKnativeFunction(client igrpc.FunctionsClient,
+func createKnativeFunction(functionsClient igrpc.FunctionsClient,
 	ir *functionRequest,
 ) error {
 	sz := int32(ir.Container.Size)
@@ -151,7 +151,7 @@ func createKnativeFunction(client igrpc.FunctionsClient,
 		},
 	}
 
-	_, err := client.CreateFunction(context.Background(), &cr)
+	_, err := functionsClient.CreateFunction(context.Background(), &cr)
 
 	return err
 }

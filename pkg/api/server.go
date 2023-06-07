@@ -123,7 +123,7 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 		m["flow"] = flowResp.GetBuild()
 	}
 
-	funcsResp, _ := s.functionHandler.client.Build(ctx, &emptypb.Empty{})
+	funcsResp, _ := s.functionHandler.functionsClient.Build(ctx, &emptypb.Empty{})
 	if flowResp != nil {
 		m["functions"] = funcsResp.GetBuild()
 	}

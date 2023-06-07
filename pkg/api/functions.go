@@ -48,9 +48,9 @@ import (
 )
 
 type functionHandler struct {
-	srv    *Server
-	logger *zap.SugaredLogger
-	client grpcfunc.FunctionsClient
+	srv             *Server
+	logger          *zap.SugaredLogger
+	functionsClient grpcfunc.FunctionsClient
 }
 
 func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
@@ -66,9 +66,9 @@ func newFunctionHandler(srv *Server, logger *zap.SugaredLogger,
 	}
 
 	fh := &functionHandler{
-		srv:    srv,
-		logger: logger,
-		client: grpcfunc.NewFunctionsClient(conn),
+		srv:             srv,
+		logger:          logger,
+		functionsClient: grpcfunc.NewFunctionsClient(conn),
 	}
 
 	fh.initRoutes(router)
@@ -767,7 +767,7 @@ func (h *functionHandler) deleteRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	resp, err := h.client.DeleteRegistry(r.Context(), &grpc.FunctionsDeleteRegistryRequest{
+	resp, err := h.functionsClient.DeleteRegistry(r.Context(), &grpc.FunctionsDeleteRegistryRequest{
 		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 	})
@@ -795,7 +795,7 @@ func (h *functionHandler) createRegistry(w http.ResponseWriter, r *http.Request)
 	}
 	reg := d["reg"]
 
-	resp, err := h.client.StoreRegistry(r.Context(), &grpc.FunctionsStoreRegistryRequest{
+	resp, err := h.functionsClient.StoreRegistry(r.Context(), &grpc.FunctionsStoreRegistryRequest{
 		Namespace: &nsResp.Namespace.Name,
 		Name:      &reg,
 		Data:      []byte(d["data"]),
@@ -846,7 +846,7 @@ func (h *functionHandler) getRegistries(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var resp *grpc.FunctionsGetRegistriesResponse
-	resp, err = h.client.GetRegistries(r.Context(), &grpc.FunctionsGetRegistriesRequest{
+	resp, err = h.functionsClient.GetRegistries(r.Context(), &grpc.FunctionsGetRegistriesRequest{
 		Namespace: &nsResp.Namespace.Name,
 	})
 
@@ -986,7 +986,7 @@ func (h *functionHandler) listServicesSSE(
 		Annotations: annotations,
 	}
 
-	client, err := h.client.WatchFunctions(r.Context(), &grpcReq)
+	client, err := h.functionsClient.WatchFunctions(r.Context(), &grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1029,7 +1029,7 @@ func (h *functionHandler) listServices(
 		Annotations: annotations,
 	}
 
-	resp, err := h.client.ListFunctions(r.Context(), &grpcReq)
+	resp, err := h.functionsClient.ListFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1087,7 +1087,7 @@ func (h *functionHandler) deleteService(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	resp, err := h.client.DeleteFunctions(r.Context(), &grpcReq)
+	resp, err := h.functionsClient.DeleteFunctions(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1135,7 +1135,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	client, err := h.client.WatchFunctions(r.Context(), grpcReq)
+	functionsClient, err := h.functionsClient.WatchFunctions(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1144,7 +1144,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 
 	defer func() {
 
-		_ = client.CloseSend()
+		_ = functionsClient.CloseSend()
 
 		for {
 			_, more := <-ch
@@ -1160,7 +1160,7 @@ func (h *functionHandler) getServiceSSE(annotations map[string]string,
 		defer close(ch)
 
 		for {
-			x, err := client.Recv()
+			x, err := functionsClient.Recv()
 			if err != nil {
 				ch <- err
 				return
@@ -1180,7 +1180,7 @@ func (h *functionHandler) getService(svn string, w http.ResponseWriter, r *http.
 	grpcReq := new(grpc.FunctionsGetFunctionRequest)
 	grpcReq.ServiceName = &svn
 
-	resp, err := h.client.GetFunction(r.Context(), grpcReq)
+	resp, err := h.functionsClient.GetFunction(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, resp, err)
 		return
@@ -1272,7 +1272,7 @@ func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *htt
 	}
 
 	// returns an empty body
-	resp, err := h.client.CreateFunction(r.Context(), grpcReq)
+	resp, err := h.functionsClient.CreateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1340,7 +1340,7 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 	}
 
 	// returns an empty body
-	resp, err := h.client.UpdateFunction(r.Context(), grpcReq)
+	resp, err := h.functionsClient.UpdateFunction(r.Context(), grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1366,7 +1366,7 @@ func (h *functionHandler) deleteRevision(rev string,
 		Revision: &rev,
 	}
 
-	resp, err := h.client.DeleteRevision(r.Context(), grpcReq)
+	resp, err := h.functionsClient.DeleteRevision(r.Context(), grpcReq)
 	respond(w, resp, err)
 }
 
@@ -1480,7 +1480,7 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 		// Scope:        &scope,
 	}
 
-	client, err := h.client.WatchRevisions(r.Context(), grpcReq)
+	client, err := h.functionsClient.WatchRevisions(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1522,7 +1522,7 @@ func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 	grpcReq := new(grpc.FunctionsWatchLogsRequest)
 	grpcReq.PodName = &sn
 
-	client, err := h.client.WatchLogs(r.Context(), grpcReq)
+	client, err := h.functionsClient.WatchLogs(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1684,7 +1684,7 @@ func (h *functionHandler) listPodsSSE(svc, rev string,
 		RevisionName: &rev,
 	}
 
-	client, err := h.client.WatchPods(r.Context(), grpcReq)
+	client, err := h.functionsClient.WatchPods(r.Context(), grpcReq)
 	if err != nil {
 		respond(w, nil, err)
 		return
@@ -1726,6 +1726,6 @@ func (h *functionHandler) listPods(annotations map[string]string,
 		Annotations: annotations,
 	}
 
-	resp, err := h.client.ListPods(r.Context(), &grpcReq)
+	resp, err := h.functionsClient.ListPods(r.Context(), &grpcReq)
 	respond(w, resp, err)
 }
