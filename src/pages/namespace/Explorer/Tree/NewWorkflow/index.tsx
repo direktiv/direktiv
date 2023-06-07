@@ -16,7 +16,10 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import Input from "~/design/Input";
+import React from "react";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "./utils";
 import { fileNameSchema } from "~/api/tree/schema";
@@ -24,6 +27,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import workflowTemplates from "./templates";
 import { z } from "zod";
@@ -48,6 +52,11 @@ const NewWorkflow = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const [workflowData, setWorkflowData] = React.useState<string | undefined>(
+    defaultWorkflowTemplate.data
+  );
   const {
     register,
     handleSubmit,
@@ -121,6 +130,7 @@ const NewWorkflow = ({
             <Input
               data-testid="new-workflow-name"
               id="name"
+              className="w-fit"
               placeholder={t("pages.explorer.tree.newWorkflow.namePlaceholder")}
               {...register("name")}
             />
@@ -137,7 +147,10 @@ const NewWorkflow = ({
                 const matchingWf = workflowTemplates.find(
                   (t) => t.name === value
                 );
-                if (matchingWf) setValue("fileContent", matchingWf.data);
+                if (matchingWf) {
+                  setValue("fileContent", matchingWf.data);
+                  setWorkflowData(matchingWf.data);
+                }
               }}
             >
               <SelectTrigger id="template" variant="outline">
@@ -156,11 +169,17 @@ const NewWorkflow = ({
             </Select>
           </fieldset>
           <fieldset className="flex items-start gap-5">
-            <Textarea
-              className="h-96"
-              data-testid="new-workflow-editor"
-              {...register("fileContent")}
-            />
+            <Textarea className="hidden" {...register("fileContent")} />
+            <Card className="h-96 w-full p-4">
+              <Editor
+                value={workflowData}
+                onChange={(newData) => {
+                  setWorkflowData(newData);
+                  setValue("fileContent", newData || "");
+                }}
+                theme={theme ?? undefined}
+              />
+            </Card>
           </fieldset>
         </form>
       </div>

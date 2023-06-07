@@ -8,7 +8,6 @@ import {
   checkIfNodeExists,
   createDirectory,
   createWorkflow,
-  workflowExamples,
 } from "../utils/node";
 import { expect, test } from "@playwright/test";
 
@@ -166,13 +165,12 @@ test("it is possible to create a workflow", async ({ page }) => {
     "a testing namespace is loaded in the explorer"
   ).toHaveText(namespace);
 
-  const filename = "awesome-workflow.yaml";
+  const filename = "awesomeworkflow.yaml";
 
   // create workflow
   await page.getByTestId("dropdown-trg-new").click();
   await page.getByTestId("new-workflow").click();
   await page.getByTestId("new-workflow-name").fill(filename);
-  await page.getByTestId("new-workflow-editor").fill(workflowExamples.noop);
   await page.getByTestId("new-workflow-submit").click();
 
   // assert it has created and navigated to workflow
@@ -234,7 +232,6 @@ test("it is possible to create a workflow without providing the .yaml file exten
   await page.getByTestId("dropdown-trg-new").click();
   await page.getByTestId("new-workflow").click();
   await page.getByTestId("new-workflow-name").fill(filenameWithoutExtension);
-  await page.getByTestId("new-workflow-editor").fill(workflowExamples.noop);
   await page.getByTestId("new-workflow-submit").click();
 
   // assert it has created and navigated to workflow
