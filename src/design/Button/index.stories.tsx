@@ -267,22 +267,11 @@ export const Block = () => <Button block>Block Element Button</Button>;
 export const AsChild = () => (
   <div className="flex flex-wrap gap-5">
     <Button asChild>
-      <a href="#">A Tag Goes to #</a>
+      <a>An a tag that looks like a button</a>
     </Button>
+    <a href="">dede</a>
     <Button asChild variant="primary">
-      <a href="#">A Tag Goes to #</a>
-    </Button>
-    <Button asChild variant="destructive">
-      <a href="#">A Tag Goes to #</a>
-    </Button>
-    <Button asChild variant="outline">
-      <a href="#">A Tag Goes to #</a>
-    </Button>
-    <Button asChild variant="ghost">
-      <a href="#">A Tag Goes to #</a>
-    </Button>
-    <Button asChild variant="link">
-      <a href="#">A Tag Goes to #</a>
+      <a>a div that looks like a button</a>
     </Button>
   </div>
 );
