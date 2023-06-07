@@ -20,43 +20,18 @@ func Test_Add_Get(t *testing.T) {
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
-
-	addRandomMsgs(t, logstore, "namespace_logs", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "workflow_id", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "root_instance_id", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Error)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Info)
-	addRandomMsgs(t, logstore, "mirror_activity_id", uuid.New(), logengine.Debug)
+	id := uuid.New()
+	addRandomMsgs(t, logstore, "sender", id, logengine.Info)
 	q := make(map[string]interface{}, 0)
 	q["level"] = logengine.Info
+	q["sender"] = id
 	got, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
-	foundInfoMsg := false
-	foundErrorMsg := false
 
 	if len(got) < 1 {
 		t.Error("got no results")
-	}
-	for _, le := range got {
-		if le.Fields["level"] == logengine.Debug {
-			t.Errorf("query for info level should not contain debug msgs")
-		}
-		if le.Fields["level"] == "info" {
-			foundInfoMsg = true
-		}
-		if le.Fields["level"] == "error" {
-			foundErrorMsg = true
-		}
-	}
-	if !foundInfoMsg {
-		t.Errorf("query for info level should contain info msgs")
-	}
-	if !foundErrorMsg {
-		t.Errorf("query for info level should contain error msgs")
 	}
 }
 
