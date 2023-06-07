@@ -1,10 +1,11 @@
 package functions
 
 import (
-	"gopkg.in/yaml.v2"
 	"io"
-	v1 "k8s.io/api/core/v1"
 	"os"
+
+	"gopkg.in/yaml.v2"
+	v1 "k8s.io/api/core/v1"
 	kyaml "sigs.k8s.io/yaml"
 )
 
