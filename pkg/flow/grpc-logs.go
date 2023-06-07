@@ -501,9 +501,9 @@ resend:
 // loop-index starting the first match of the provided workflow and state-id
 // additionally, all logmsgs from nested loops and childs will be added to the results.
 func filterMatchByWfStateIterator(qu map[string]interface{}, input []*logengine.LogEntry) []*logengine.LogEntry {
-	_, ok1 := qu["state"]
+	_, ok1 := qu["state-id"]
 	_, ok2 := qu["workflow"]
-	_, ok3 := qu["iterator"]
+	_, ok3 := qu["loop-index"]
 	if !ok1 && !ok2 && !ok3 {
 		return input
 	}
@@ -539,13 +539,13 @@ func filterMatchByWfStateIterator(qu map[string]interface{}, input []*logengine.
 			matchIterator = append(matchIterator, v)
 		}
 	}
-	if state == "" && iterator == "" {
+	if !ok1 && !ok3 {
 		return matchWf
 	}
-	if workflow == "" && iterator == "" {
+	if !ok2 && !ok3 {
 		return matchState
 	}
-	if iterator != "" {
+	if ok3 {
 		if len(matchIterator) == 0 {
 			return make([]*logengine.LogEntry, 0)
 		}
