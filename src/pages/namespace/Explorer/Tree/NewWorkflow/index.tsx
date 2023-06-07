@@ -111,7 +111,6 @@ const NewWorkflow = ({
           {t("pages.explorer.tree.newWorkflow.title")}
         </DialogTitle>
       </DialogHeader>
-
       <div className="my-3">
         {!!errors.name && (
           <Alert variant="error" className="mb-5">
@@ -121,23 +120,22 @@ const NewWorkflow = ({
         <form
           id={formId}
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col space-y-5"
+          className="flex flex-col gap-y-5"
         >
           <fieldset className="flex items-center gap-5">
-            <label className="w-[150px] text-right text-[15px]" htmlFor="name">
+            <label className="w-[100px] text-right text-[15px]" htmlFor="name">
               {t("pages.explorer.tree.newWorkflow.nameLabel")}
             </label>
             <Input
               data-testid="new-workflow-name"
               id="name"
-              className="w-fit"
               placeholder={t("pages.explorer.tree.newWorkflow.namePlaceholder")}
               {...register("name")}
             />
           </fieldset>
           <fieldset className="flex items-center gap-5">
             <label
-              className="w-[150px] text-right text-[15px]"
+              className="w-[100px] text-right text-[15px]"
               htmlFor="template"
             >
               {t("pages.explorer.tree.newWorkflow.templateLabel")}
@@ -153,7 +151,7 @@ const NewWorkflow = ({
                 }
               }}
             >
-              <SelectTrigger id="template" variant="outline">
+              <SelectTrigger id="template" variant="outline" block>
                 <SelectValue
                   placeholder={defaultWorkflowTemplate.name}
                   defaultValue={defaultWorkflowTemplate.data}
