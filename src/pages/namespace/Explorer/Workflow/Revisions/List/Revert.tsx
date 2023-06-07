@@ -53,11 +53,12 @@ const Revert = ({
                 navigate(
                   pages.explorer.createHref({
                     namespace,
-                    path: path,
+                    path,
                     subpage: "workflow",
                   })
                 );
               }}
+              data-testid="workflow-revert-revision-toast-action"
             >
               {t(
                 "pages.explorer.tree.workflow.revisions.revert.success.action"
@@ -70,7 +71,7 @@ const Revert = ({
       },
       onError: () => {
         toast({
-          title: t("pages.explorer.tree.workflow.revisions.revert.error.title"),
+          title: t("api.generic.error"),
           description: t(
             "pages.explorer.tree.workflow.revisions.revert.error.description"
           ),
@@ -110,6 +111,7 @@ const Revert = ({
           }}
           variant="destructive"
           loading={isLoading}
+          data-testid="dialog-revert-revision-btn-submit"
         >
           {!isLoading && <Undo />}
           {t("pages.explorer.tree.workflow.revisions.revert.revertBtn")}

@@ -76,7 +76,7 @@ const testApi = setupServer(
     const body = await req.text();
     return res(
       ctx.json({
-        body: body,
+        body,
       })
     );
   }),
@@ -499,7 +499,7 @@ describe("processApiResponse", () => {
         mutationFn: () =>
           apiThatReturnsHeader({
             payload: undefined,
-            headers: headers,
+            headers,
             urlParams: undefined,
           }),
       });

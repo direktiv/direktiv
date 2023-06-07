@@ -11,6 +11,7 @@ import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const updateCache = (
   oldData: NodeListSchemaType | undefined,
@@ -49,6 +50,7 @@ export const useDeleteNode = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -62,7 +64,7 @@ export const useDeleteNode = ({
         headers: undefined,
         urlParams: {
           path: node.path,
-          namespace: namespace,
+          namespace,
         },
       }),
     onSuccess(_, variables) {
@@ -74,18 +76,20 @@ export const useDeleteNode = ({
         (oldData) => updateCache(oldData, variables)
       );
       toast({
-        title: `${
-          variables.node.type === "workflow" ? "workflow" : "directory"
-        } deleted`,
-        description: `${variables.node.name} was deleted`,
+        title: t("api.tree.mutate.deleteNode.success.title", {
+          type: variables.node.type === "workflow" ? "workflow" : "directory",
+        }),
+        description: t("api.tree.mutate.deleteNode.success.description", {
+          name: variables.node.name,
+        }),
         variant: "success",
       });
       onSuccess?.();
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "could not delete 😢",
+        title: t("api.generic.error"),
+        description: t("api.tree.mutate.deleteNode.error.description"),
         variant: "error",
       });
     },
