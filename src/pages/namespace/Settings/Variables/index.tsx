@@ -8,7 +8,7 @@ import { Card } from "~/design/Card";
 import Create from "./Create";
 import Delete from "./Delete";
 import Edit from "./Edit";
-import ItemRow from "../ItemRow";
+import ItemRow from "../compopnents/ItemRow";
 import { VarSchemaType } from "~/api/variables/schema";
 import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
 import { useTranslation } from "react-i18next";

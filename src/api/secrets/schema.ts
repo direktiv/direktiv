@@ -18,6 +18,12 @@ export const SecretListSchema = z.object({
 
 export const SecretDeletedSchema = z.null();
 
+export const SecretFormSchema = z.object({
+  name: z.string(),
+  value: z.string(),
+});
+
 export type SecretSchemaType = z.infer<typeof SecretSchema>;
 export type SecretCreatedSchemaType = z.infer<typeof SecretCreatedSchema>;
 export type SecretListSchemaType = z.infer<typeof SecretListSchema>;
+export type SecretFormSchemaType = z.infer<typeof SecretFormSchema>;

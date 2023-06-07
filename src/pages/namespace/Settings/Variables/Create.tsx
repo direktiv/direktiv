@@ -20,9 +20,9 @@ import { useTranslation } from "react-i18next";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type createProps = { onSuccess: () => void };
+type CreateProps = { onSuccess: () => void };
 
-const Create = ({ onSuccess }: createProps) => {
+const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
