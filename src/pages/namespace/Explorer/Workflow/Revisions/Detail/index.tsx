@@ -5,10 +5,10 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
+import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useNodeTags } from "~/api/tree/query/tags";
 import { useState } from "react";
@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next";
 const WorkflowRevisionsPage = () => {
   const namespace = useNamespace();
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -33,12 +32,6 @@ const WorkflowRevisionsPage = () => {
   const isLatest = selectedRevision === "latest";
 
   if (!path || !namespace || !selectedRevision || !workflowData) return null;
-
-  const backLink = pages.explorer.createHref({
-    namespace,
-    path,
-    subpage: "workflow-revisions",
-  });
 
   return (
     <div className="flex grow flex-col space-y-4">
@@ -68,16 +61,21 @@ const WorkflowRevisionsPage = () => {
             }
           </CopyButton>
         </h3>
-        {/* TODO: change to a Link as soon out Button component support asChild prop (DIR-597) */}
-        <Button
-          variant="outline"
-          onClick={() => {
-            navigate(backLink);
-          }}
-          data-testid="revisions-detail-back-link"
-        >
-          <ArrowLeft />
-          {t("pages.explorer.tree.workflow.revisions.overview.detail.backBtn")}
+
+        <Button asChild variant="outline">
+          <Link
+            data-testid="revisions-detail-back-link"
+            to={pages.explorer.createHref({
+              namespace,
+              path,
+              subpage: "workflow-revisions",
+            })}
+          >
+            <ArrowLeft />
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.detail.backBtn"
+            )}
+          </Link>
         </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
