@@ -19,8 +19,9 @@ const fetchRouter = async ({
   queryKey: [{ apiKey, namespace, path }],
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["router"]>>) =>
   getRouter({
-    apiKey: apiKey,
+    apiKey,
     payload: undefined,
+    headers: undefined,
     urlParams: {
       namespace,
       path,

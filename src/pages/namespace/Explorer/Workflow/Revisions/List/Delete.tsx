@@ -40,7 +40,7 @@ const Delete = ({
 
   return (
     <>
-      <DialogHeader>
+      <DialogHeader data-testid="dialog-delete-revision">
         <DialogTitle>
           <Trash />
           {isTag
@@ -83,6 +83,7 @@ const Delete = ({
           }}
           variant="destructive"
           loading={isLoading}
+          data-testid="dialog-delete-revision-btn-submit"
         >
           {!isLoading && <Trash />}
           {t("pages.explorer.tree.workflow.revisions.delete.deleteBtn")}

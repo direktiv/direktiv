@@ -18,8 +18,9 @@ const fetchRevisions = async ({
   queryKey: [{ apiKey, namespace, path }],
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["tagsList"]>>) =>
   getTags({
-    apiKey: apiKey,
+    apiKey,
     payload: undefined,
+    headers: undefined,
     urlParams: {
       namespace,
       path,

@@ -18,6 +18,7 @@ import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
+import { addYamlFileExtension } from "./utils";
 import { fileNameSchema } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -85,7 +86,7 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createWorkflow({ path, name, fileContent });
+    createWorkflow({ path, name: addYamlFileExtension(name), fileContent });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

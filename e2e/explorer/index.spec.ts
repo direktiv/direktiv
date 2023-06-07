@@ -219,6 +219,54 @@ test("it is possible to create a workflow", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("it is possible to create a workflow without providing the .yaml file extension", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/explorer/tree`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a testing namespace is loaded in the explorer"
+  ).toHaveText(namespace);
+
+  const filenameWithoutExtension = "awesome-workflow";
+
+  // create workflow
+  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByTestId("new-workflow").click();
+  await page.getByTestId("new-workflow-name").fill(filenameWithoutExtension);
+  await page.getByTestId("new-workflow-editor").fill(workflowExamples.noop);
+  await page.getByTestId("new-workflow-submit").click();
+
+  // assert it has created and navigated to workflow
+  await expect(
+    page,
+    "it creates the workflow and loads the active revision page"
+  ).toHaveURL(
+    `${namespace}/explorer/workflow/active/${filenameWithoutExtension}.yaml`
+  );
+
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "breadcrumbs reflect the correct namespace"
+  ).toHaveText(namespace);
+
+  await expect(
+    page.getByTestId("breadcrumb-segment"),
+    "breadcrumbs reflect the file name"
+  ).toHaveText(`${filenameWithoutExtension}.yaml`);
+
+  await expect(
+    page.getByTestId("workflow-header"),
+    "the page heading contains the file name"
+  ).toHaveText(`${filenameWithoutExtension}.yaml`);
+
+  const nodeCreated = await checkIfNodeExists(
+    namespace,
+    `${filenameWithoutExtension}.yaml`
+  );
+  await expect(nodeCreated).toBeTruthy();
+});
+
 test(`it is possible to delete a worfklow`, async ({ page }) => {
   const name = "workflow.yaml";
   await createWorkflow(namespace, name);

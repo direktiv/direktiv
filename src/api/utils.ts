@@ -4,33 +4,40 @@ const getAuthHeader = (apiKey: string) => ({
   "direktiv-token": apiKey,
 });
 
+type FactoryParams<TUrlParams, TSchema> = {
+  url: (urlParams: TUrlParams) => string;
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  schema: z.ZodSchema<TSchema>;
+};
+
 /**
- * atm params must alway be defined. I tried to make TS infer the property
+ * atm payload and headers must alway be defined. I tried to make TS infer the property
  * with
  *
- * type ReturnT<TParams> = {
+ * type ReturnT<TPayload> = {
  *   apiKey: string;
- * } & (TParams extends undefined ? object : { params: Partial<TParams> });
+ * } & (TPayload extends undefined ? object : { payload: Partial<TPayload> });
  *
  * but it didn't work. I also tried
  *
- * type ReturnT<TParams> = {
+ * type ReturnT<TPayload> = {
  *   apiKey: string;
- *   params?: TParams;
+ *   payload?: TPayload;
  * };
  *
- * but this would have the downside that params is always optional. And we would
- * lose typesafety when some api enpoints have required params
+ * but this would have the downside that payload is always optional. And we would
+ * lose typesafety when some api enpoints have a required payload
  *
  */
-type ApiParams<TPayload, TUrlParams> = {
+type ApiParams<TPayload, THeaders, TUrlParams> = {
   apiKey?: string;
   payload: TPayload extends undefined ? undefined : TPayload;
+  headers: THeaders extends undefined ? undefined : THeaders;
   urlParams: TUrlParams;
 };
 
 export const apiFactory =
-  <TSchema, TPayload, TUrlParams>({
+  <TSchema, TPayload, THeaders, TUrlParams>({
     // the path to the api endpoint
     url: path,
     // the http method that should be used for the request
@@ -38,30 +45,28 @@ export const apiFactory =
     // the zod schema that the response should be parsed against. This will give
     // us not only the typesafety of the response, it also validates the response
     // at runtime. Runtime validation is important to catch unexpected responses
-    // fromt the api very early in the application lifecycle and give us confidence
+    // from the api very early in the application lifecycle and give us confidence
     // about the Typescript types. It comes with the downside that the app is more
     // likely to show errors to the user instead of trying to handle them (which
     // does not scale very well when the complexity of an app grows and leads to
     // even worse user experience).
     schema,
-  }: {
-    url: (urlParams: TUrlParams) => string;
-    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-    schema: z.ZodSchema<TSchema>;
-  }): (({
+  }: FactoryParams<TUrlParams, TSchema>): (({
     apiKey,
     payload,
     urlParams,
-  }: ApiParams<TPayload, TUrlParams>) => Promise<TSchema>) =>
-  async ({ apiKey, payload: params, urlParams }): Promise<TSchema> => {
+  }: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>) =>
+  async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
     const res = await fetch(path(urlParams), {
       method,
       headers: {
+        ...(headers && typeof headers === "object" ? headers : {}),
         ...(apiKey ? getAuthHeader(apiKey) : {}),
       },
-      ...(params
+      ...(payload
         ? {
-            body: typeof params === "string" ? params : JSON.stringify(params),
+            body:
+              typeof payload === "string" ? payload : JSON.stringify(payload),
           }
         : {}),
     });

@@ -63,7 +63,7 @@ function RevisionTab(props) {
     if (searchParams.get("revtab") === null) {
       setSearchParams({
         tab: searchParams.get("tab"),
-        revision: revision,
+        revision,
         revtab: 0,
       });
     }
@@ -384,7 +384,7 @@ export function TabbedButtons(props) {
           setTabBtn(i);
           setSearchParams({
             tab: searchParams.get("tab"),
-            revision: revision,
+            revision,
             revtab: i,
           });
         }}

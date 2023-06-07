@@ -264,3 +264,13 @@ export const CircleButton = () => (
 );
 
 export const Block = () => <Button block>Block Element Button</Button>;
+export const AsChild = () => (
+  <div className="flex flex-wrap gap-5">
+    <Button asChild>
+      <a>An a tag that looks like a button</a>
+    </Button>
+    <Button asChild variant="primary">
+      <div>a div that looks like a button</div>
+    </Button>
+  </div>
+);
