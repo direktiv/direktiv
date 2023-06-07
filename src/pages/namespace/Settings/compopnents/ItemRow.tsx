@@ -3,15 +3,18 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
-import { VarSchemaType } from "~/api/variables/schema";
 
-type ItemRowProps = {
-  item: VarSchemaType;
-  onDelete: (item: VarSchemaType) => void;
+type ItemRowProps<ItemType> = {
+  item: ItemType;
+  onDelete: (item: ItemType) => void;
   onEdit?: () => void;
 };
 
-const ItemRow = ({ item, onDelete, onEdit }: ItemRowProps) => (
+const ItemRow = <ItemType,>({
+  item,
+  onDelete,
+  onEdit,
+}: ItemRowProps<ItemType & { name: string }>) => (
   <TableRow>
     <TableCell>{item.name}</TableCell>
     {onEdit && (

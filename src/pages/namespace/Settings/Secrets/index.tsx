@@ -1,12 +1,13 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { PlusCircle, SquareAsterisk, Trash } from "lucide-react";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+import { PlusCircle, SquareAsterisk } from "lucide-react";
+import { Table, TableBody } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Create from "./Create";
 import Delete from "./Delete";
+import ItemRow from "../compopnents/ItemRow";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
 import { useSecrets } from "~/api/secrets/query/get";
@@ -57,21 +58,8 @@ const SecretsList: FC = () => {
       <Card>
         <Table>
           <TableBody>
-            {secrets.data?.secrets.results.map((secret, i) => (
-              <TableRow key={i}>
-                <TableCell>{secret.name}</TableCell>
-                <TableCell className="w-0">
-                  <DialogTrigger
-                    asChild
-                    data-testid="secret-delete"
-                    onClick={() => setDeleteSecret(secret)}
-                  >
-                    <Button variant="ghost">
-                      <Trash />
-                    </Button>
-                  </DialogTrigger>
-                </TableCell>
-              </TableRow>
+            {secrets.data?.secrets.results.map((item, i) => (
+              <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
             ))}
           </TableBody>
         </Table>
