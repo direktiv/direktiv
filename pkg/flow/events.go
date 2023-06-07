@@ -436,7 +436,28 @@ var eventListenersOrderings = []*orderingInfo{
 	},
 }
 
-var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
+var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){
+	{
+		field: "CREATED",
+		ftype: "BEFORE",
+	}: func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error) {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(entevents.CreatedAtGTE(t)), nil
+	},
+	{
+		field: "CREATED",
+		ftype: "AFTER",
+	}: func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error) {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(entevents.CreatedAtLTE(t)), nil
+	},
+}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -763,7 +784,6 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	}
 
 	clients := flow.edb.Clients(ctx)
-
 	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
@@ -785,6 +805,23 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		e.Source = x.Event.Source()
 		e.Type = x.Event.Type()
 		e.Cloudevent = []byte(x.Event.String())
+	}
+
+	for _, e := range req.Pagination.Filter {
+		f := e.Field
+		t := e.Type
+		v := e.Val
+		events := make([]*grpc.Event, 0)
+
+		if t == "MATCH" && f == "TYPE" {
+			for _, ev := range resp.Events.Results {
+				if ev.Type == v {
+					events = append(events, ev)
+				}
+			}
+			resp.Events.Results = events
+			resp.Events.PageInfo.Total = int32(len(events))
+		}
 	}
 
 	return resp, nil
@@ -832,6 +869,23 @@ resend:
 		e.Source = x.Event.Source()
 		e.Type = x.Event.Type()
 		e.Cloudevent = []byte(x.Event.String())
+	}
+
+	for _, e := range req.Pagination.Filter {
+		f := e.Field
+		t := e.Type
+		v := e.Val
+		events := make([]*grpc.Event, 0)
+
+		if t == "MATCH" && f == "TYPE" {
+			for _, ev := range resp.Events.Results {
+				if ev.Type == v {
+					events = append(events, ev)
+				}
+			}
+			resp.Events.Results = events
+			resp.Events.PageInfo.Total = int32(len(events))
+		}
 	}
 
 	nhash = bytedata.Checksum(resp)
