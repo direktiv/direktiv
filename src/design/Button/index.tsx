@@ -5,15 +5,24 @@ import { Slot } from "@radix-ui/react-slot";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
+// asChild only works with exactly one child, so when asChild is true, we can not have a loading property
+type AsChildOrLoading =
+  | {
+      loading?: boolean;
+      asChild?: never;
+    }
+  | {
+      loading?: never;
+      asChild: true;
+    };
+
 export type ButtonProps = {
   variant?: "destructive" | "outline" | "primary" | "ghost" | "link";
   size?: "sm" | "lg";
-  loading?: boolean;
   circle?: boolean;
   block?: boolean;
   icon?: boolean;
-  asChild?: boolean;
-};
+} & AsChildOrLoading;
 
 const Button = React.forwardRef<
   HTMLButtonElement,
@@ -89,7 +98,7 @@ const Button = React.forwardRef<
         ref={ref}
         {...props}
       >
-        {loading && !asChild ? (
+        {loading ? (
           <>
             <Loader2 className="animate-spin" />
             {children}
