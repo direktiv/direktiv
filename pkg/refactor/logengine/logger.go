@@ -213,7 +213,7 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 // to make querying the logs more connivent and efficient we append the missing
 // instance-id before to the callpath tag of the log-entry
 // and add the root-instance-id tag fro the constructed final callpath.
-func appenInstanceInheritanceInfo(tags map[string]string) map[string]string {
+func appenInstanceInheritanceInfo(tags map[string]string) {
 	if v, ok := tags["callpath"]; ok {
 		if tags["callpath"] == "/" {
 			tags["root-instance-id"] = tags["instance-id"]
@@ -226,6 +226,4 @@ func appenInstanceInheritanceInfo(tags map[string]string) map[string]string {
 			tags["root-instance-id"] = res
 		}
 	}
-
-	return tags
 }

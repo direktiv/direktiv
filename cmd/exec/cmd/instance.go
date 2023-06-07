@@ -110,6 +110,7 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 						prefix = buildPrefix(edge.Tags)
 					}
 					prefix = printFormated(edge.Level) + prefix
+					//nolint:gosmopolitan
 					cmd.Printf("%v: %s %s\n", edge.T.In(time.Local).Format("02 Jan 06 15:04 MST"), prefix, edge.Msg)
 				}
 			}
