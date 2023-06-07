@@ -8,7 +8,6 @@ const Drawer = DrawerPrimitive.Root;
 
 const DrawerTrigger = DrawerPrimitive.Trigger;
 
-/* eslint-disable-next-line */
 interface DrawerPortalProps extends DrawerPrimitive.DialogPortalProps {
   position: "top" | "bottom" | "left" | "right";
 }
