@@ -274,10 +274,10 @@ func (srv *server) start(ctx context.Context) error {
 	srv.loggerBeta = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
-			AddTraceFrom: func(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
+			AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
 				span := trace.SpanFromContext(ctx)
 				tid := span.SpanContext().TraceID()
-				toTags["trace"] = tid
+				toTags["trace"] = tid.String()
 				return toTags
 			},
 		},
