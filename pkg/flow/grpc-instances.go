@@ -103,12 +103,13 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 
 	tx.Rollback()
 
-	var resp grpc.InstanceInputResponse
-
-	err = bytedata.ConvertDataForOutput(idata, &resp.Instance)
+	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
 		return nil, err
 	}
+
+	var resp grpc.InstanceInputResponse
+	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 
 	m := make(map[string]interface{})
 	err = json.Unmarshal(idata.Input, &m)
@@ -150,12 +151,13 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	tx.Rollback()
 
-	var resp grpc.InstanceOutputResponse
-
-	err = bytedata.ConvertDataForOutput(idata, &resp.Instance)
+	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
 		return nil, err
 	}
+
+	var resp grpc.InstanceOutputResponse
+	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 
 	m := make(map[string]interface{})
 	err = json.Unmarshal([]byte(idata.Output), &m)
@@ -197,13 +199,13 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	tx.Rollback()
 
-	var resp grpc.InstanceMetadataResponse
-
-	err = bytedata.ConvertDataForOutput(idata, &resp.Instance)
+	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
 		return nil, err
 	}
 
+	var resp grpc.InstanceMetadataResponse
+	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 	resp.Data = []byte(idata.Metadata)
 	resp.Namespace = ns.Name
 
@@ -371,12 +373,7 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	}
 
 	var resp grpc.InstanceResponse
-
-	err = bytedata.ConvertDataForOutput(idata, &resp.Instance)
-	if err != nil {
-		return nil, err
-	}
-
+	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 	resp.Flow = instance.RuntimeInfo.Flow
 	// TODO: alan
 	// if rt.Caller != uuid.Nil {
@@ -442,12 +439,7 @@ resend:
 	}
 
 	resp := new(grpc.InstanceResponse)
-
-	err = bytedata.ConvertDataForOutput(instance, &resp.Instance)
-	if err != nil {
-		return err
-	}
-
+	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 	resp.Flow = instance.RuntimeInfo.Flow
 	// TODO: alan
 	// resp.InvokedBy = rt.Caller.String()
@@ -496,11 +488,16 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 
 	span := trace.SpanFromContext(ctx)
 
+	input := req.GetInput()
+	if input == nil {
+		input = make([]byte, 0)
+	}
+
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  calledAs,
-		Input:     req.GetInput(),
+		Input:     input,
 		Invoker:   apiCaller,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
 			TraceID: span.SpanContext().TraceID().String(),
@@ -590,11 +587,16 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	span := trace.SpanFromContext(ctx)
 
+	input := req.GetInput()
+	if input == nil {
+		input = make([]byte, 0)
+	}
+
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  calledAs,
-		Input:     req.GetInput(),
+		Input:     input,
 		Invoker:   apiCaller,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
 			TraceID: span.SpanContext().TraceID().String(),
