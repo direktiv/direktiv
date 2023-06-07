@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -65,11 +66,11 @@ type server struct {
 
 	mirrorManager mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
-	vars     *vars
-	actions  *actions
+	flow            *flow
+	internal        *internal
+	events          *events
+	vars            *vars
+	functionsClient igrpc.FunctionsClient
 
 	metrics    *metrics.Client
 	logger     *internallogger.Logger // TODO: remove
@@ -329,13 +330,6 @@ func (srv *server) start(ctx context.Context) error {
 		cc,
 	)
 
-	srv.sugar.Debug("Initializing actions grpc server.")
-
-	srv.actions, err = initActionsServer(cctx, srv)
-	if err != nil {
-		return err
-	}
-
 	if srv.conf.Eventing {
 		srv.sugar.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
@@ -383,20 +377,6 @@ func (srv *server) start(ctx context.Context) error {
 		defer wg.Done()
 		defer cancel()
 		e := srv.flow.Run()
-		if e != nil {
-			srv.sugar.Error(err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		defer cancel()
-		e := srv.actions.Run()
 		if e != nil {
 			srv.sugar.Error(err)
 			lock.Lock()
