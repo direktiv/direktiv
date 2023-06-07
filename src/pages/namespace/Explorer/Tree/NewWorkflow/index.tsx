@@ -123,7 +123,7 @@ const NewWorkflow = ({
           className="flex flex-col gap-y-5"
         >
           <fieldset className="flex items-center gap-5">
-            <label className="w-[100px] text-right text-[15px]" htmlFor="name">
+            <label className="w-[100px] text-right" htmlFor="name">
               {t("pages.explorer.tree.newWorkflow.nameLabel")}
             </label>
             <Input
@@ -134,10 +134,7 @@ const NewWorkflow = ({
             />
           </fieldset>
           <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[100px] text-right text-[15px]"
-              htmlFor="template"
-            >
+            <label className="w-[100px] text-right" htmlFor="template">
               {t("pages.explorer.tree.newWorkflow.templateLabel")}
             </label>
             <Select

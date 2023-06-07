@@ -88,7 +88,7 @@ const NewDirectory = ({
         )}
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[15px]" htmlFor="name">
+            <label className="w-[90px] text-right" htmlFor="name">
               {t("pages.explorer.tree.newDirectory.nameLabel")}
             </label>
             <Input
