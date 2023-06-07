@@ -436,28 +436,7 @@ var eventListenersOrderings = []*orderingInfo{
 	},
 }
 
-var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){
-	{
-		field: "CREATED",
-		ftype: "BEFORE",
-	}: func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error) {
-		t, err := time.Parse(time.RFC3339, v)
-		if err != nil {
-			return nil, err
-		}
-		return query.Where(entevents.CreatedAtGTE(t)), nil
-	},
-	{
-		field: "CREATED",
-		ftype: "AFTER",
-	}: func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error) {
-		t, err := time.Parse(time.RFC3339, v)
-		if err != nil {
-			return nil, err
-		}
-		return query.Where(entevents.CreatedAtLTE(t)), nil
-	},
-}
+var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -771,7 +750,28 @@ var cloudeventsOrderings = []*orderingInfo{
 	},
 }
 
-var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){}
+var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){
+	{
+		field: "CREATED",
+		ftype: "BEFORE",
+	}: func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error) {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(cevents.CreatedLTE(t)), nil
+	},
+	{
+		field: "CREATED",
+		ftype: "AFTER",
+	}: func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error) {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(cevents.CreatedGTE(t)), nil
+	},
+}
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
