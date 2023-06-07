@@ -9,6 +9,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
@@ -82,16 +83,18 @@ const Create = ({ onSuccess }: CreateProps) => {
           />
         </fieldset>
 
-        <div className="h-[500px]">
-          <Editor
-            value={body}
-            onChange={(newData) => {
-              setBody(newData);
-            }}
-            theme={theme ?? undefined}
-            data-testid="variable-editor"
-          />
-        </div>
+        <Card className="grow p-4 pl-0">
+          <div className="h-[500px]">
+            <Editor
+              value={body}
+              onChange={(newData) => {
+                setBody(newData);
+              }}
+              theme={theme ?? undefined}
+              data-testid="variable-editor"
+            />
+          </div>
+        </Card>
 
         <fieldset className="flex items-center gap-5">
           <label

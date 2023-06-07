@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import { Trash } from "lucide-react";
@@ -111,17 +112,19 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
           <FormErrors errors={errors} />
 
-          <div className="h-[500px]">
-            <Editor
-              value={body}
-              onChange={(newData) => {
-                setBody(newData);
-              }}
-              theme={theme ?? undefined}
-              data-testid="variable-editor"
-              language={editorLanguage}
-            />
-          </div>
+          <Card className="grow p-4 pl-0">
+            <div className="h-[500px]">
+              <Editor
+                value={body}
+                onChange={(newData) => {
+                  setBody(newData);
+                }}
+                theme={theme ?? undefined}
+                data-testid="variable-editor"
+                language={editorLanguage}
+              />
+            </div>
+          </Card>
 
           <fieldset className="flex items-center gap-5">
             <label
@@ -142,7 +145,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
             <Button
               type="submit"
               data-testid="var-edit-submit"
-              variant="destructive"
+              variant="primary"
             >
               {t("components.button.label.save")}
             </Button>
