@@ -7570,21 +7570,12 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "pkg/flow/grpc/protocol.proto",
 }
 
-const (
-	Actions_SetNamespaceRegistry_FullMethodName      = "/direktiv_flow.Actions/SetNamespaceRegistry"
-	Actions_DeleteNamespaceRegistry_FullMethodName   = "/direktiv_flow.Actions/DeleteNamespaceRegistry"
-	Actions_NamespaceRegistries_FullMethodName       = "/direktiv_flow.Actions/NamespaceRegistries"
-	Actions_NamespaceRegistriesStream_FullMethodName = "/direktiv_flow.Actions/NamespaceRegistriesStream"
-)
+const ()
 
 // ActionsClient is the client API for Actions service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ActionsClient interface {
-	SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	NamespaceRegistries(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (*NamespaceRegistriesResponse, error)
-	NamespaceRegistriesStream(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (Actions_NamespaceRegistriesStreamClient, error)
 }
 
 type actionsClient struct {
@@ -7595,73 +7586,10 @@ func NewActionsClient(cc grpc.ClientConnInterface) ActionsClient {
 	return &actionsClient{cc}
 }
 
-func (c *actionsClient) SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Actions_SetNamespaceRegistry_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *actionsClient) DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Actions_DeleteNamespaceRegistry_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *actionsClient) NamespaceRegistries(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (*NamespaceRegistriesResponse, error) {
-	out := new(NamespaceRegistriesResponse)
-	err := c.cc.Invoke(ctx, Actions_NamespaceRegistries_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *actionsClient) NamespaceRegistriesStream(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (Actions_NamespaceRegistriesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Actions_ServiceDesc.Streams[0], Actions_NamespaceRegistriesStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &actionsNamespaceRegistriesStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Actions_NamespaceRegistriesStreamClient interface {
-	Recv() (*NamespaceRegistriesResponse, error)
-	grpc.ClientStream
-}
-
-type actionsNamespaceRegistriesStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *actionsNamespaceRegistriesStreamClient) Recv() (*NamespaceRegistriesResponse, error) {
-	m := new(NamespaceRegistriesResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // ActionsServer is the server API for Actions service.
 // All implementations must embed UnimplementedActionsServer
 // for forward compatibility
 type ActionsServer interface {
-	SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*emptypb.Empty, error)
-	DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*emptypb.Empty, error)
-	NamespaceRegistries(context.Context, *NamespaceRegistriesRequest) (*NamespaceRegistriesResponse, error)
-	NamespaceRegistriesStream(*NamespaceRegistriesRequest, Actions_NamespaceRegistriesStreamServer) error
 	mustEmbedUnimplementedActionsServer()
 }
 
@@ -7669,18 +7597,6 @@ type ActionsServer interface {
 type UnimplementedActionsServer struct {
 }
 
-func (UnimplementedActionsServer) SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceRegistry not implemented")
-}
-func (UnimplementedActionsServer) DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespaceRegistry not implemented")
-}
-func (UnimplementedActionsServer) NamespaceRegistries(context.Context, *NamespaceRegistriesRequest) (*NamespaceRegistriesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NamespaceRegistries not implemented")
-}
-func (UnimplementedActionsServer) NamespaceRegistriesStream(*NamespaceRegistriesRequest, Actions_NamespaceRegistriesStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method NamespaceRegistriesStream not implemented")
-}
 func (UnimplementedActionsServer) mustEmbedUnimplementedActionsServer() {}
 
 // UnsafeActionsServer may be embedded to opt out of forward compatibility for this service.
@@ -7694,109 +7610,15 @@ func RegisterActionsServer(s grpc.ServiceRegistrar, srv ActionsServer) {
 	s.RegisterService(&Actions_ServiceDesc, srv)
 }
 
-func _Actions_SetNamespaceRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetNamespaceRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActionsServer).SetNamespaceRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Actions_SetNamespaceRegistry_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionsServer).SetNamespaceRegistry(ctx, req.(*SetNamespaceRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Actions_DeleteNamespaceRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteNamespaceRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActionsServer).DeleteNamespaceRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Actions_DeleteNamespaceRegistry_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionsServer).DeleteNamespaceRegistry(ctx, req.(*DeleteNamespaceRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Actions_NamespaceRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceRegistriesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActionsServer).NamespaceRegistries(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Actions_NamespaceRegistries_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionsServer).NamespaceRegistries(ctx, req.(*NamespaceRegistriesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Actions_NamespaceRegistriesStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NamespaceRegistriesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ActionsServer).NamespaceRegistriesStream(m, &actionsNamespaceRegistriesStreamServer{stream})
-}
-
-type Actions_NamespaceRegistriesStreamServer interface {
-	Send(*NamespaceRegistriesResponse) error
-	grpc.ServerStream
-}
-
-type actionsNamespaceRegistriesStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *actionsNamespaceRegistriesStreamServer) Send(m *NamespaceRegistriesResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
 // Actions_ServiceDesc is the grpc.ServiceDesc for Actions service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Actions_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "direktiv_flow.Actions",
 	HandlerType: (*ActionsServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "SetNamespaceRegistry",
-			Handler:    _Actions_SetNamespaceRegistry_Handler,
-		},
-		{
-			MethodName: "DeleteNamespaceRegistry",
-			Handler:    _Actions_DeleteNamespaceRegistry_Handler,
-		},
-		{
-			MethodName: "NamespaceRegistries",
-			Handler:    _Actions_NamespaceRegistries_Handler,
-		},
-	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "NamespaceRegistriesStream",
-			Handler:       _Actions_NamespaceRegistriesStream_Handler,
-			ServerStreams: true,
-		},
-	},
-	Metadata: "pkg/flow/grpc/protocol.proto",
+	Methods:     []grpc.MethodDesc{},
+	Streams:     []grpc.StreamDesc{},
+	Metadata:    "pkg/flow/grpc/protocol.proto",
 }
 
 const (

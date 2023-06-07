@@ -245,10 +245,6 @@ service Internal {
 }
 
 service Actions {
-	rpc SetNamespaceRegistry (SetNamespaceRegistryRequest) returns (google.protobuf.Empty) {}
-	rpc DeleteNamespaceRegistry (DeleteNamespaceRegistryRequest) returns (google.protobuf.Empty) {}
-	rpc NamespaceRegistries (NamespaceRegistriesRequest) returns (NamespaceRegistriesResponse) {}
-	rpc NamespaceRegistriesStream (NamespaceRegistriesRequest) returns (stream NamespaceRegistriesResponse) {}
 }
 
 service Eventing {

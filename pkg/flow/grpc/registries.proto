@@ -14,24 +14,3 @@ message Registries {
 	PageInfo pageInfo = 2;
 	repeated Registry results = 4;
 }
-
-message NamespaceRegistriesRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-}
-
-message NamespaceRegistriesResponse {
-	string namespace = 1;
-	Registries registries = 2;
-}
-
-message DeleteNamespaceRegistryRequest {
-	string namespace = 1; 
-	string registry = 2;
-}
-
-message SetNamespaceRegistryRequest {
-	string namespace = 1; 
-	string registry = 2;
-	bytes data = 3;
-}
