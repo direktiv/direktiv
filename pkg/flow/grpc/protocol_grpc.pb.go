@@ -7570,57 +7570,6 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "pkg/flow/grpc/protocol.proto",
 }
 
-const ()
-
-// ActionsClient is the client API for Actions service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ActionsClient interface {
-}
-
-type actionsClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewActionsClient(cc grpc.ClientConnInterface) ActionsClient {
-	return &actionsClient{cc}
-}
-
-// ActionsServer is the server API for Actions service.
-// All implementations must embed UnimplementedActionsServer
-// for forward compatibility
-type ActionsServer interface {
-	mustEmbedUnimplementedActionsServer()
-}
-
-// UnimplementedActionsServer must be embedded to have forward compatible implementations.
-type UnimplementedActionsServer struct {
-}
-
-func (UnimplementedActionsServer) mustEmbedUnimplementedActionsServer() {}
-
-// UnsafeActionsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ActionsServer will
-// result in compilation errors.
-type UnsafeActionsServer interface {
-	mustEmbedUnimplementedActionsServer()
-}
-
-func RegisterActionsServer(s grpc.ServiceRegistrar, srv ActionsServer) {
-	s.RegisterService(&Actions_ServiceDesc, srv)
-}
-
-// Actions_ServiceDesc is the grpc.ServiceDesc for Actions service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Actions_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "direktiv_flow.Actions",
-	HandlerType: (*ActionsServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "pkg/flow/grpc/protocol.proto",
-}
-
 const (
 	Eventing_RequestEvents_FullMethodName = "/direktiv_flow.Eventing/RequestEvents"
 )

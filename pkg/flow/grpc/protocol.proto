@@ -244,9 +244,6 @@ service Internal {
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 }
 
-service Actions {
-}
-
 service Eventing {
 	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
 }
