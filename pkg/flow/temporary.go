@@ -245,6 +245,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			}
 		}
 	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		return err

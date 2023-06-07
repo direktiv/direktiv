@@ -37,7 +37,7 @@ type instanceMemory struct {
 
 func (im *instanceMemory) Namespace() *database.Namespace {
 	return &database.Namespace{
-		ID:   im.instance.Instance.ID,
+		ID:   im.instance.Instance.NamespaceID,
 		Name: im.instance.TelemetryInfo.NamespaceName,
 	}
 }
