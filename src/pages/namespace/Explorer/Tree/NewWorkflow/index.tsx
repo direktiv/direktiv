@@ -16,6 +16,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "./utils";
@@ -24,6 +26,8 @@ import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import workflowTemplates from "./templates";
 import { z } from "zod";
@@ -48,6 +52,11 @@ const NewWorkflow = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const [workflowData, setWorkflowData] = useState<string>(
+    defaultWorkflowTemplate.data
+  );
   const {
     register,
     handleSubmit,
@@ -102,7 +111,6 @@ const NewWorkflow = ({
           {t("pages.explorer.tree.newWorkflow.title")}
         </DialogTitle>
       </DialogHeader>
-
       <div className="my-3">
         {!!errors.name && (
           <Alert variant="error" className="mb-5">
@@ -112,10 +120,10 @@ const NewWorkflow = ({
         <form
           id={formId}
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col space-y-5"
+          className="flex flex-col gap-y-5"
         >
           <fieldset className="flex items-center gap-5">
-            <label className="w-[150px] text-right text-[15px]" htmlFor="name">
+            <label className="w-[100px] text-right text-[14px]" htmlFor="name">
               {t("pages.explorer.tree.newWorkflow.nameLabel")}
             </label>
             <Input
@@ -127,7 +135,7 @@ const NewWorkflow = ({
           </fieldset>
           <fieldset className="flex items-center gap-5">
             <label
-              className="w-[150px] text-right text-[15px]"
+              className="w-[100px] text-right text-[14px]"
               htmlFor="template"
             >
               {t("pages.explorer.tree.newWorkflow.templateLabel")}
@@ -137,10 +145,13 @@ const NewWorkflow = ({
                 const matchingWf = workflowTemplates.find(
                   (t) => t.name === value
                 );
-                if (matchingWf) setValue("fileContent", matchingWf.data);
+                if (matchingWf) {
+                  setValue("fileContent", matchingWf.data);
+                  setWorkflowData(matchingWf.data);
+                }
               }}
             >
-              <SelectTrigger id="template" variant="outline">
+              <SelectTrigger id="template" variant="outline" block>
                 <SelectValue
                   placeholder={defaultWorkflowTemplate.name}
                   defaultValue={defaultWorkflowTemplate.data}
@@ -156,11 +167,19 @@ const NewWorkflow = ({
             </Select>
           </fieldset>
           <fieldset className="flex items-start gap-5">
-            <Textarea
-              className="h-96"
-              data-testid="new-workflow-editor"
-              {...register("fileContent")}
-            />
+            <Textarea className="hidden" {...register("fileContent")} />
+            <Card className="h-96 w-full p-4" noShadow>
+              <Editor
+                value={workflowData}
+                onChange={(newData) => {
+                  if (newData) {
+                    setWorkflowData(newData);
+                    setValue("fileContent", newData);
+                  }
+                }}
+                theme={theme ?? undefined}
+              />
+            </Card>
           </fieldset>
         </form>
       </div>
