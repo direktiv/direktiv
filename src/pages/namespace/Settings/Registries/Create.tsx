@@ -12,6 +12,7 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
 import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
@@ -31,7 +32,11 @@ const Create = ({ onSuccess }: CreateProps) => {
     createRegistryMutation(data);
   };
 
-  const { register, handleSubmit } = useForm<RegistryFormSchemaType>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegistryFormSchemaType>({
     resolver: zodResolver(RegistryFormSchema),
   });
 
@@ -48,6 +53,8 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.registries.create.description")}
           </DialogTitle>
         </DialogHeader>
+
+        <FormErrors errors={errors} />
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right text-[15px]" htmlFor="name">

@@ -8,8 +8,8 @@ export const RegistrySchema = z.object({
 
 export const RegistryFormSchema = z.object({
   url: z.string().url(),
-  user: z.string(),
-  password: z.string(),
+  user: z.string().nonempty(),
+  password: z.string().nonempty(),
 });
 
 // this is the format required when POSTing a new registry

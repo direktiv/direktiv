@@ -9,6 +9,7 @@ import { SecretFormSchema, SecretFormSchemaType } from "~/api/secrets/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
 import { Textarea } from "~/design/TextArea";
@@ -32,7 +33,11 @@ const Create = ({ onSuccess }: CreateProps) => {
     });
   };
 
-  const { register, handleSubmit } = useForm<SecretFormSchemaType>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SecretFormSchemaType>({
     resolver: zodResolver(SecretFormSchema),
   });
 
@@ -48,6 +53,8 @@ const Create = ({ onSuccess }: CreateProps) => {
             <PlusCircle /> {t("pages.settings.secrets.create.description")}
           </DialogTitle>
         </DialogHeader>
+
+        <FormErrors errors={errors} />
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right text-[15px]" htmlFor="name">
