@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/gorilla/mux"
@@ -16,10 +15,9 @@ var logger *zap.SugaredLogger
 
 // Server struct for API server.
 type Server struct {
-	logger     *zap.SugaredLogger
-	router     *mux.Router
-	srv        *http.Server
-	FlowClient grpc.FlowClient
+	logger *zap.SugaredLogger
+	router *mux.Router
+	srv    *http.Server
 
 	config *util.Config
 
@@ -96,16 +94,6 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
-	s.FlowClient = s.flowHandler.client
-
-	s.functionHandler, err = newFunctionHandler(s, logger,
-		r.PathPrefix("/functions").Subrouter(), s.config.FunctionsService)
-	if err != nil {
-		logger.Error("can not get functions handler: %v", err)
-		s.telend()
-		return nil, err
-	}
-
 	logger.Debug("adding options routes")
 	s.prepareHelperRoutes()
 
@@ -118,7 +106,7 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]string)
 	m["api"] = version.Version
 
-	flowResp, _ := s.FlowClient.Build(ctx, &emptypb.Empty{})
+	flowResp, _ := s.flowHandler.client.Build(ctx, &emptypb.Empty{})
 	if flowResp != nil {
 		m["flow"] = flowResp.GetBuild()
 	}
