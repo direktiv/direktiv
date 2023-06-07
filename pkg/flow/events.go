@@ -773,6 +773,8 @@ var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v 
 	},
 }
 
+const match = "MATCH"
+
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
@@ -813,7 +815,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		v := e.Val
 		events := make([]*grpc.Event, 0)
 
-		if t == "MATCH" && f == "TYPE" {
+		if t == match && f == "TYPE" {
 			for _, ev := range resp.Events.Results {
 				if ev.Type == v {
 					events = append(events, ev)
