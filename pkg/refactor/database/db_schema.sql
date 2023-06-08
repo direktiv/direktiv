@@ -182,7 +182,6 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
     "topic_compound" text NOT NULL,
-    "needs_all"  boolean NOT NULL,
     "trigger_info" bytea NOT NULL,
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
