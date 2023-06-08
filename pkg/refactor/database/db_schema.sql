@@ -163,9 +163,12 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 
 CREATE TABLE IF NOT EXISTS "events_history" (
     "id" uuid,
-    "cloudevent" jsonb NOT NULL,
+    "type" text NOT NULL,
+    "source" text NOT NULL,
+    "cloudevent" bytea NOT NULL,
     "namespace_id" uuid NOT NULL,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamptz NOT NULL,
     PRIMARY KEY ("id")
 );
 
@@ -175,12 +178,12 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" boolean NOT NULL DEFAULT 0,
-    "received_events" jsonb NOT NULL,
+    "received_events" bytea,
+    "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
+    "topic_compound" text NOT NULL,
     "needs_all"  boolean NOT NULL,
-    "workflow_id" uuid,
-    "instance_id" uuid,
-    "step" int,
+    "trigger_info" bytea NOT NULL,
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
