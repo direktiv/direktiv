@@ -29,6 +29,7 @@ import (
 // - tags["callpath"] has a "special" structure "/uuid/uuid/".
 // - tags["instance-id"] is present and is a uuid when tags["recipientType"] is instance.
 // - tags["loop-index"] is present when the log-message originated inside a loop execution in a workflow.
+// - tags["state-type"] is present when tags["loop-index"] is present.
 //
 // Also BetterLogger will extract from the passed context ctx the trace-id and add it to the tags.
 type BetterLogger interface {
