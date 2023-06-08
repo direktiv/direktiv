@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
@@ -138,6 +137,26 @@ func (lmu *LogMsgUpdate) ClearMirrorActivityID() *LogMsgUpdate {
 	return lmu
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (lmu *LogMsgUpdate) SetInstanceID(u uuid.UUID) *LogMsgUpdate {
+	lmu.mutation.SetInstanceID(u)
+	return lmu
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (lmu *LogMsgUpdate) SetNillableInstanceID(u *uuid.UUID) *LogMsgUpdate {
+	if u != nil {
+		lmu.SetInstanceID(*u)
+	}
+	return lmu
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (lmu *LogMsgUpdate) ClearInstanceID() *LogMsgUpdate {
+	lmu.mutation.ClearInstanceID()
+	return lmu
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (lmu *LogMsgUpdate) SetNamespaceID(id uuid.UUID) *LogMsgUpdate {
 	lmu.mutation.SetNamespaceID(id)
@@ -157,25 +176,6 @@ func (lmu *LogMsgUpdate) SetNamespace(n *Namespace) *LogMsgUpdate {
 	return lmu.SetNamespaceID(n.ID)
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (lmu *LogMsgUpdate) SetInstanceID(id uuid.UUID) *LogMsgUpdate {
-	lmu.mutation.SetInstanceID(id)
-	return lmu
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (lmu *LogMsgUpdate) SetNillableInstanceID(id *uuid.UUID) *LogMsgUpdate {
-	if id != nil {
-		lmu = lmu.SetInstanceID(*id)
-	}
-	return lmu
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (lmu *LogMsgUpdate) SetInstance(i *Instance) *LogMsgUpdate {
-	return lmu.SetInstanceID(i.ID)
-}
-
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmu *LogMsgUpdate) Mutation() *LogMsgMutation {
 	return lmu.mutation
@@ -184,12 +184,6 @@ func (lmu *LogMsgUpdate) Mutation() *LogMsgMutation {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (lmu *LogMsgUpdate) ClearNamespace() *LogMsgUpdate {
 	lmu.mutation.ClearNamespace()
-	return lmu
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (lmu *LogMsgUpdate) ClearInstance() *LogMsgUpdate {
-	lmu.mutation.ClearInstance()
 	return lmu
 }
 
@@ -268,6 +262,12 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if lmu.mutation.MirrorActivityIDCleared() {
 		_spec.ClearField(logmsg.FieldMirrorActivityID, field.TypeUUID)
 	}
+	if value, ok := lmu.mutation.InstanceID(); ok {
+		_spec.SetField(logmsg.FieldInstanceID, field.TypeUUID, value)
+	}
+	if lmu.mutation.InstanceIDCleared() {
+		_spec.ClearField(logmsg.FieldInstanceID, field.TypeUUID)
+	}
 	if lmu.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -290,35 +290,6 @@ func (lmu *LogMsgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if lmu.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.InstanceTable,
-			Columns: []string{logmsg.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := lmu.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.InstanceTable,
-			Columns: []string{logmsg.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -454,6 +425,26 @@ func (lmuo *LogMsgUpdateOne) ClearMirrorActivityID() *LogMsgUpdateOne {
 	return lmuo
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (lmuo *LogMsgUpdateOne) SetInstanceID(u uuid.UUID) *LogMsgUpdateOne {
+	lmuo.mutation.SetInstanceID(u)
+	return lmuo
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (lmuo *LogMsgUpdateOne) SetNillableInstanceID(u *uuid.UUID) *LogMsgUpdateOne {
+	if u != nil {
+		lmuo.SetInstanceID(*u)
+	}
+	return lmuo
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (lmuo *LogMsgUpdateOne) ClearInstanceID() *LogMsgUpdateOne {
+	lmuo.mutation.ClearInstanceID()
+	return lmuo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (lmuo *LogMsgUpdateOne) SetNamespaceID(id uuid.UUID) *LogMsgUpdateOne {
 	lmuo.mutation.SetNamespaceID(id)
@@ -473,25 +464,6 @@ func (lmuo *LogMsgUpdateOne) SetNamespace(n *Namespace) *LogMsgUpdateOne {
 	return lmuo.SetNamespaceID(n.ID)
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (lmuo *LogMsgUpdateOne) SetInstanceID(id uuid.UUID) *LogMsgUpdateOne {
-	lmuo.mutation.SetInstanceID(id)
-	return lmuo
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (lmuo *LogMsgUpdateOne) SetNillableInstanceID(id *uuid.UUID) *LogMsgUpdateOne {
-	if id != nil {
-		lmuo = lmuo.SetInstanceID(*id)
-	}
-	return lmuo
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (lmuo *LogMsgUpdateOne) SetInstance(i *Instance) *LogMsgUpdateOne {
-	return lmuo.SetInstanceID(i.ID)
-}
-
 // Mutation returns the LogMsgMutation object of the builder.
 func (lmuo *LogMsgUpdateOne) Mutation() *LogMsgMutation {
 	return lmuo.mutation
@@ -500,12 +472,6 @@ func (lmuo *LogMsgUpdateOne) Mutation() *LogMsgMutation {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (lmuo *LogMsgUpdateOne) ClearNamespace() *LogMsgUpdateOne {
 	lmuo.mutation.ClearNamespace()
-	return lmuo
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (lmuo *LogMsgUpdateOne) ClearInstance() *LogMsgUpdateOne {
-	lmuo.mutation.ClearInstance()
 	return lmuo
 }
 
@@ -614,6 +580,12 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 	if lmuo.mutation.MirrorActivityIDCleared() {
 		_spec.ClearField(logmsg.FieldMirrorActivityID, field.TypeUUID)
 	}
+	if value, ok := lmuo.mutation.InstanceID(); ok {
+		_spec.SetField(logmsg.FieldInstanceID, field.TypeUUID, value)
+	}
+	if lmuo.mutation.InstanceIDCleared() {
+		_spec.ClearField(logmsg.FieldInstanceID, field.TypeUUID)
+	}
 	if lmuo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -636,35 +608,6 @@ func (lmuo *LogMsgUpdateOne) sqlSave(ctx context.Context) (_node *LogMsg, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if lmuo.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.InstanceTable,
-			Columns: []string{logmsg.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := lmuo.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   logmsg.InstanceTable,
-			Columns: []string{logmsg.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

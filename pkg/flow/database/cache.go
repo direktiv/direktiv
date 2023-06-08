@@ -139,47 +139,6 @@ func (db *CachedDatabase) InvalidateNamespace(ctx context.Context, cached *Cache
 	db.invalidateCachedNamespace(ctx, cached.Namespace.ID, recursive)
 }
 
-func (db *CachedDatabase) Instance(ctx context.Context, cached *CacheData, id uuid.UUID) error {
-	var err error
-
-	cacheHit := true
-
-	inst := db.lookupInstanceByID(ctx, id)
-
-	if inst == nil {
-		cacheHit = false
-		inst, err = db.source.Instance(ctx, id)
-		if err != nil {
-			return err
-		}
-	}
-
-	cached.Instance = inst
-
-	if !cacheHit {
-		db.storeInstanceInCache(ctx, inst)
-	}
-
-	if cached.Namespace == nil {
-		err = db.Namespace(ctx, cached, cached.Instance.Namespace)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (db *CachedDatabase) FlushInstance(ctx context.Context, inst *Instance) error {
-	db.storeInstanceInCache(ctx, inst)
-	return nil
-}
-
-func (db *CachedDatabase) InstanceRuntime(ctx context.Context, id uuid.UUID) (*InstanceRuntime, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.InstanceRuntime(ctx, id)
-}
-
 func (db *CachedDatabase) NamespaceAnnotation(ctx context.Context, inodeID uuid.UUID, key string) (*Annotation, error) {
 	// NOTE: not bothering to cache this right now
 	return db.source.NamespaceAnnotation(ctx, inodeID, key)

@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
 )
@@ -34,10 +33,11 @@ type Events struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// WorkflowID holds the value of the "workflow_id" field.
 	WorkflowID uuid.UUID `json:"workflow_id,omitempty"`
+	// InstanceID holds the value of the "instance_id" field.
+	InstanceID uuid.UUID `json:"instance_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventsQuery when eager-loading is set.
 	Edges                        EventsEdges `json:"edges"`
-	instance_eventlisteners      *uuid.UUID
 	namespace_namespacelisteners *uuid.UUID
 }
 
@@ -45,13 +45,11 @@ type Events struct {
 type EventsEdges struct {
 	// Wfeventswait holds the value of the wfeventswait edge.
 	Wfeventswait []*EventsWait `json:"wfeventswait,omitempty"`
-	// Instance holds the value of the instance edge.
-	Instance *Instance `json:"instance,omitempty"`
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // WfeventswaitOrErr returns the Wfeventswait value or an error if the edge
@@ -63,23 +61,10 @@ func (e EventsEdges) WfeventswaitOrErr() ([]*EventsWait, error) {
 	return nil, &NotLoadedError{edge: "wfeventswait"}
 }
 
-// InstanceOrErr returns the Instance value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e EventsEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[1] {
-		if e.Instance == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: instance.Label}
-		}
-		return e.Instance, nil
-	}
-	return nil, &NotLoadedError{edge: "instance"}
-}
-
 // NamespaceOrErr returns the Namespace value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e EventsEdges) NamespaceOrErr() (*Namespace, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Namespace == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: namespace.Label}
@@ -100,11 +85,9 @@ func (*Events) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case events.FieldCreatedAt, events.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case events.FieldID, events.FieldWorkflowID:
+		case events.FieldID, events.FieldWorkflowID, events.FieldInstanceID:
 			values[i] = new(uuid.UUID)
-		case events.ForeignKeys[0]: // instance_eventlisteners
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case events.ForeignKeys[1]: // namespace_namespacelisteners
+		case events.ForeignKeys[0]: // namespace_namespacelisteners
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Events", columns[i])
@@ -173,14 +156,13 @@ func (e *Events) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				e.WorkflowID = *value
 			}
-		case events.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field instance_eventlisteners", values[i])
-			} else if value.Valid {
-				e.instance_eventlisteners = new(uuid.UUID)
-				*e.instance_eventlisteners = *value.S.(*uuid.UUID)
+		case events.FieldInstanceID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_id", values[i])
+			} else if value != nil {
+				e.InstanceID = *value
 			}
-		case events.ForeignKeys[1]:
+		case events.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_namespacelisteners", values[i])
 			} else if value.Valid {
@@ -195,11 +177,6 @@ func (e *Events) assignValues(columns []string, values []any) error {
 // QueryWfeventswait queries the "wfeventswait" edge of the Events entity.
 func (e *Events) QueryWfeventswait() *EventsWaitQuery {
 	return NewEventsClient(e.config).QueryWfeventswait(e)
-}
-
-// QueryInstance queries the "instance" edge of the Events entity.
-func (e *Events) QueryInstance() *InstanceQuery {
-	return NewEventsClient(e.config).QueryInstance(e)
 }
 
 // QueryNamespace queries the "namespace" edge of the Events entity.
@@ -250,6 +227,9 @@ func (e *Events) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("workflow_id=")
 	builder.WriteString(fmt.Sprintf("%v", e.WorkflowID))
+	builder.WriteString(", ")
+	builder.WriteString("instance_id=")
+	builder.WriteString(fmt.Sprintf("%v", e.InstanceID))
 	builder.WriteByte(')')
 	return builder.String()
 }

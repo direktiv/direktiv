@@ -12,25 +12,26 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func getRouter(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
+func getRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
 	router := &routerData{
 		Enabled: true,
 		Routes:  make(map[string]int),
 	}
 
-	annotations, err := store.Get(ctx, file.ID)
+	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
 	if err != nil {
 		if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 			t := time.Now()
@@ -114,14 +115,14 @@ func (r *routerData) Marshal() string {
 	return string(data)
 }
 
-func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, file *filestore.File) (*muxStart, error, error) {
-	_, router, err := getRouter(ctx, fStore, store, file)
+func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*muxStart, error, error) {
+	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if len(router.Routes) == 0 {
-		rev, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+		rev, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -145,7 +146,7 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 	var ms *muxStart
 
 	for ref := range router.Routes {
-		rev, err := fStore.ForFile(file).GetRevision(ctx, ref)
+		rev, err := tx.FileStore().ForFile(file).GetRevision(ctx, ref)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -174,16 +175,16 @@ func (srv *server) validateRouter(ctx context.Context, fStore filestore.FileStor
 	return ms, nil, nil
 }
 
-func (engine *engine) getAmbiguousFile(ctx context.Context, fStore filestore.FileStore, ns *database.Namespace, path string) (*filestore.File, error) {
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, path)
+func (engine *engine) getAmbiguousFile(ctx context.Context, tx *sqlTx, ns *database.Namespace, path string) (*filestore.File, error) {
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
 			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
 				var err2 error
-				file, err2 = fStore.ForRootID(ns.ID).GetFile(ctx, path+".yaml")
+				file, err2 = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path+".yaml")
 				if err2 != nil {
 					if errors.Is(err2, filestore.ErrNotFound) {
-						file, err2 = fStore.ForRootID(ns.ID).GetFile(ctx, path+".yml")
+						file, err2 = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path+".yml")
 						if err2 != nil {
 							if !errors.Is(err2, filestore.ErrNotFound) {
 								err = err2
@@ -205,50 +206,52 @@ func (engine *engine) getAmbiguousFile(ctx context.Context, fStore filestore.Fil
 	return file, nil
 }
 
-func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*database.CacheData, error) {
+func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, *filestore.Revision, error) {
 	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
-
-	ns, err := engine.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return nil, err
-	}
-	fStore, store, _, rollback, err := engine.flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
-	file, err := engine.getAmbiguousFile(ctx, fStore, ns, path)
-	if err != nil {
-		return nil, err
+	uriElems := strings.SplitN(calledAs, ":", 2)
+	path := uriElems[0]
+	ref := ""
+	if len(uriElems) > 1 {
+		ref = uriElems[1]
 	}
 
-	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	defer tx.Rollback()
+
+	file, err := engine.getAmbiguousFile(ctx, tx, ns, path)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	_, router, err := getRouter(ctx, tx, file)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	if !router.Enabled {
-		return nil, errors.New("cannot execute disabled workflow")
+		return nil, nil, errors.New("cannot execute disabled workflow")
 	}
 
 	var rev *filestore.Revision
 
 	if ref == filestore.Latest {
-		rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+		rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	} else if ref != "" {
-		rev, err = fStore.ForFile(file).GetRevision(ctx, ref)
+		rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, ref)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	} else {
 		if len(router.Routes) == 0 {
-			rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+			rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 		} else {
 			totalWeights := 0
@@ -258,21 +261,21 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			for k, v := range router.Routes {
 				id, err := uuid.Parse(k)
 				if err == nil {
-					rev, err = fStore.ForFile(file).GetRevision(ctx, id.String())
+					rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, id.String())
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
 						allWeights = append(allWeights, v)
 					}
 				} else if k == filestore.Latest {
-					rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+					rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
 						allWeights = append(allWeights, v)
 					}
 				} else {
-					rev, err = fStore.ForFile(file).GetRevision(ctx, k)
+					rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, k)
 					if err == nil {
 						totalWeights += v
 						allRevs = append(allRevs, rev)
@@ -282,14 +285,14 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 			}
 
 			if totalWeights < 1 {
-				rev, err = fStore.ForFile(file).GetCurrentRevision(ctx)
+				rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 			} else {
 				x, err := rand.Int(rand.Reader, big.NewInt(int64(totalWeights)))
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				choice := int(x.Int64())
 				var idx int
@@ -304,23 +307,18 @@ func (engine *engine) mux(ctx context.Context, namespace, path, ref string) (*da
 		}
 	}
 
-	cached := new(database.CacheData)
-	cached.Namespace = ns
-	cached.File = file
-	cached.Revision = rev
+	// if cached.Ref == nil {
+	// 	// TODO: yassir, how are we going to fake these fields?
+	// 	cached.Ref = &database.Ref{
+	// 		// ID: ,
+	// 		// Immutable: ,
+	// 		// Name: ,
+	// 		// CreatedAt: ,
+	// 		Revision: rev.ID,
+	// 	}
+	// }
 
-	if cached.Ref == nil {
-		// TODO: yassir, how are we going to fake these fields?
-		cached.Ref = &database.Ref{
-			// ID: ,
-			// Immutable: ,
-			// Name: ,
-			// CreatedAt: ,
-			Revision: rev.ID,
-		}
-	}
-
-	return cached, nil
+	return file, rev, nil
 }
 
 const (
@@ -365,14 +363,14 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.GetFile(ctx, id)
+	file, err := tx.FileStore().GetFile(ctx, id)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) {
 			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
@@ -382,7 +380,8 @@ func (flow *flow) cronHandler(data []byte) {
 		flow.sugar.Error(err)
 		return
 	}
-	rollback()
+
+	tx.Rollback()
 
 	ns, err := flow.edb.Namespace(ctx, file.RootID)
 	if err != nil {
@@ -397,30 +396,30 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	cached := new(database.CacheData)
-	cached.Namespace = ns
-	cached.File = file
-
-	clients := flow.edb.Clients(ctx)
-
-	k, err := clients.Instance.Query().Where(entinst.WorkflowID(cached.File.ID)).Where(entinst.CreatedAtGT(time.Now().Add(-time.Second*30)), entinst.HasRuntimeWith(entirt.CallerData(util.CallerCron))).Count(ctx)
-	if err != nil {
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.ID)
+	if errors.Is(err, instancestore.ErrParallelCron) {
+		// already triggered
+		return
+	} else if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
 
-	if k != 0 {
-		// already triggered
-		return
-	}
+	span := trace.SpanFromContext(ctx)
 
-	args := new(newInstanceArgs)
-	args.Namespace = cached.Namespace.Name
-	args.Path = cached.File.Path
-	args.Ref = ""
-	args.Input = nil
-	args.Caller = util.CallerCron
-	args.CallerData = util.CallerCron
+	args := &newInstanceArgs{
+		ID:        uuid.New(),
+		Namespace: ns,
+		CalledAs:  file.Path,
+		Input:     nil,
+		Invoker:   instancestore.InvokerCron,
+		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
+			TraceID: span.SpanContext().TraceID().String(),
+			SpanID:  span.SpanContext().SpanID().String(),
+			// TODO: alan, CallPath: ,
+			NamespaceName: ns.Name,
+		},
+	}
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
@@ -431,8 +430,8 @@ func (flow *flow) cronHandler(data []byte) {
 	flow.engine.queue(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
-	ms, verr, err := flow.validateRouter(ctx, fStore, store, file)
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
+	ms, verr, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}

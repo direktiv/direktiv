@@ -9,21 +9,22 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
+
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, instance, key string, load bool) (*database.CacheData, *database.VarRef, *database.VarData, error) {
-	return nil, nil, nil, nil
+func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, instance, key string, load bool) (*database.CacheData, *enginerefactor.Instance, *database.VarRef, *database.VarData, error) {
+	return nil, nil, nil, nil, nil
 }
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +32,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	var resp grpc.InstanceVariableResponse
 
 	resp.Namespace = cached.Namespace.Name
-	resp.Instance = cached.Instance.ID.String()
+	resp.Instance = instance.Instance.ID.String()
 	resp.Key = vref.Name
 	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -53,7 +54,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 
 	ctx := srv.Context()
 
-	cached, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
+	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
 	if err != nil {
 		return err
 	}
@@ -64,7 +65,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 		resp := new(grpc.InstanceVariableResponse)
 
 		resp.Namespace = cached.Namespace.Name
-		resp.Instance = cached.Instance.ID.String()
+		resp.Instance = instance.Instance.ID.String()
 		resp.Key = vref.Name
 		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
 		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
@@ -100,28 +101,25 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	instanceID, err := uuid.Parse(req.GetInstance())
+	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
 
-	list, err := store.RuntimeVariables().ListByInstanceID(ctx, instanceID)
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	list, err := tx.DataStore().RuntimeVariables().ListByInstanceID(ctx, instance.Instance.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	resp := new(grpc.InstanceVariablesResponse)
-	resp.Namespace = ns.Name
-	resp.Instance = req.GetInstance()
+	resp.Namespace = instance.TelemetryInfo.NamespaceName
+	resp.Instance = instance.Instance.ID.String()
 	resp.Variables = new(grpc.Variables)
 	resp.Variables.PageInfo = nil
 

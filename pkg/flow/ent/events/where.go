@@ -81,6 +81,11 @@ func WorkflowID(v uuid.UUID) predicate.Events {
 	return predicate.Events(sql.FieldEQ(FieldWorkflowID, v))
 }
 
+// InstanceID applies equality check predicate on the "instance_id" field. It's identical to InstanceIDEQ.
+func InstanceID(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldEQ(FieldInstanceID, v))
+}
+
 // SignatureEQ applies the EQ predicate on the "signature" field.
 func SignatureEQ(v []byte) predicate.Events {
 	return predicate.Events(sql.FieldEQ(FieldSignature, v))
@@ -301,6 +306,56 @@ func WorkflowIDNotNil() predicate.Events {
 	return predicate.Events(sql.FieldNotNull(FieldWorkflowID))
 }
 
+// InstanceIDEQ applies the EQ predicate on the "instance_id" field.
+func InstanceIDEQ(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldEQ(FieldInstanceID, v))
+}
+
+// InstanceIDNEQ applies the NEQ predicate on the "instance_id" field.
+func InstanceIDNEQ(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldNEQ(FieldInstanceID, v))
+}
+
+// InstanceIDIn applies the In predicate on the "instance_id" field.
+func InstanceIDIn(vs ...uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldIn(FieldInstanceID, vs...))
+}
+
+// InstanceIDNotIn applies the NotIn predicate on the "instance_id" field.
+func InstanceIDNotIn(vs ...uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldNotIn(FieldInstanceID, vs...))
+}
+
+// InstanceIDGT applies the GT predicate on the "instance_id" field.
+func InstanceIDGT(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldGT(FieldInstanceID, v))
+}
+
+// InstanceIDGTE applies the GTE predicate on the "instance_id" field.
+func InstanceIDGTE(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldGTE(FieldInstanceID, v))
+}
+
+// InstanceIDLT applies the LT predicate on the "instance_id" field.
+func InstanceIDLT(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldLT(FieldInstanceID, v))
+}
+
+// InstanceIDLTE applies the LTE predicate on the "instance_id" field.
+func InstanceIDLTE(v uuid.UUID) predicate.Events {
+	return predicate.Events(sql.FieldLTE(FieldInstanceID, v))
+}
+
+// InstanceIDIsNil applies the IsNil predicate on the "instance_id" field.
+func InstanceIDIsNil() predicate.Events {
+	return predicate.Events(sql.FieldIsNull(FieldInstanceID))
+}
+
+// InstanceIDNotNil applies the NotNil predicate on the "instance_id" field.
+func InstanceIDNotNil() predicate.Events {
+	return predicate.Events(sql.FieldNotNull(FieldInstanceID))
+}
+
 // HasWfeventswait applies the HasEdge predicate on the "wfeventswait" edge.
 func HasWfeventswait() predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {
@@ -319,33 +374,6 @@ func HasWfeventswaitWith(preds ...predicate.EventsWait) predicate.Events {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(WfeventswaitInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, WfeventswaitTable, WfeventswaitColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasInstance applies the HasEdge predicate on the "instance" edge.
-func HasInstance() predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
-func HasInstanceWith(preds ...predicate.Instance) predicate.Events {
-	return predicate.Events(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InstanceInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -24,13 +25,13 @@ func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *
 		return
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	f, err = fStore.ForRootID(ns.ID).GetFile(ctx, path)
+	f, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
 		return
 	}
@@ -50,18 +51,19 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	if err != nil {
 		return nil, err
 	}
-	fStore, store, _, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +81,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	if resp.TotalSize > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
-	data, err := store.RuntimeVariables().LoadData(ctx, item.ID)
+	data, err := tx.DataStore().RuntimeVariables().LoadData(ctx, item.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -117,18 +119,19 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 	if err != nil {
 		return nil, err
 	}
-	fStore, store, _, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	list, err := store.RuntimeVariables().ListByWorkflowID(ctx, file.ID)
+	list, err := tx.DataStore().RuntimeVariables().ListByWorkflowID(ctx, file.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -174,18 +177,19 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	if err != nil {
 		return nil, err
 	}
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	newVar, err := store.RuntimeVariables().Set(ctx, &core.RuntimeVariable{
+	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
 		WorkflowID: file.ID,
 		Name:       req.GetKey(),
 		Data:       req.GetData(),
@@ -195,7 +199,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -290,27 +294,28 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 	if err != nil {
 		return nil, err
 	}
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetKey())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	err = store.RuntimeVariables().Delete(ctx, item.ID)
+	item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+
+	err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -342,26 +347,27 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	if err != nil {
 		return nil, err
 	}
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetOld())
+	defer tx.Rollback()
+
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+	item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, file.ID, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	updated, err := store.RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
+	updated, err := tx.DataStore().RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 

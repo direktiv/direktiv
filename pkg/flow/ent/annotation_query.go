@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
@@ -26,7 +25,6 @@ type AnnotationQuery struct {
 	inters        []Interceptor
 	predicates    []predicate.Annotation
 	withNamespace *NamespaceQuery
-	withInstance  *InstanceQuery
 	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -80,28 +78,6 @@ func (aq *AnnotationQuery) QueryNamespace() *NamespaceQuery {
 			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, annotation.NamespaceTable, annotation.NamespaceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryInstance chains the current query on the "instance" edge.
-func (aq *AnnotationQuery) QueryInstance() *InstanceQuery {
-	query := (&InstanceClient{config: aq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, selector),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,7 +278,6 @@ func (aq *AnnotationQuery) Clone() *AnnotationQuery {
 		inters:        append([]Interceptor{}, aq.inters...),
 		predicates:    append([]predicate.Annotation{}, aq.predicates...),
 		withNamespace: aq.withNamespace.Clone(),
-		withInstance:  aq.withInstance.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -317,17 +292,6 @@ func (aq *AnnotationQuery) WithNamespace(opts ...func(*NamespaceQuery)) *Annotat
 		opt(query)
 	}
 	aq.withNamespace = query
-	return aq
-}
-
-// WithInstance tells the query-builder to eager-load the nodes that are connected to
-// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AnnotationQuery) WithInstance(opts ...func(*InstanceQuery)) *AnnotationQuery {
-	query := (&InstanceClient{config: aq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withInstance = query
 	return aq
 }
 
@@ -410,12 +374,11 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 		nodes       = []*Annotation{}
 		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			aq.withNamespace != nil,
-			aq.withInstance != nil,
 		}
 	)
-	if aq.withNamespace != nil || aq.withInstance != nil {
+	if aq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -448,12 +411,6 @@ func (aq *AnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 			return nil, err
 		}
 	}
-	if query := aq.withInstance; query != nil {
-		if err := aq.loadInstance(ctx, query, nodes, nil,
-			func(n *Annotation, e *Instance) { n.Edges.Instance = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
 }
 
@@ -482,38 +439,6 @@ func (aq *AnnotationQuery) loadNamespace(ctx context.Context, query *NamespaceQu
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "namespace_annotations" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (aq *AnnotationQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*Annotation, init func(*Annotation), assign func(*Annotation, *Instance)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Annotation)
-	for i := range nodes {
-		if nodes[i].instance_annotations == nil {
-			continue
-		}
-		fk := *nodes[i].instance_annotations
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(instance.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "instance_annotations" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

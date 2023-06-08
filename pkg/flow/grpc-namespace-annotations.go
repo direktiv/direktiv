@@ -13,7 +13,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
+
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -292,12 +293,12 @@ func (x *entNamespaceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery 
 }
 
 type entInstanceAnnotationQuerier struct {
-	clients *entwrapper.EntClients
-	cached  *database.CacheData
+	clients  *entwrapper.EntClients
+	instance *enginerefactor.Instance
 }
 
 func (x *entInstanceAnnotationQuerier) QueryAnnotations() *ent.AnnotationQuery {
-	return x.clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(x.cached.Instance.ID)))
+	return x.clients.Annotation.Query().Where(entnote.InstanceID(x.instance.Instance.ID))
 }
 
 func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key string, mimetype string, data []byte) (*ent.Annotation, bool, error) {
@@ -325,9 +326,9 @@ func (flow *flow) SetAnnotation(ctx context.Context, q annotationQuerier, key st
 
 		switch v := q.(type) {
 		case *entNamespaceAnnotationQuerier:
-			query = query.SetNamespace(v.clients.Namespace.GetX(ctx, v.cached.Namespace.ID))
+			query = query.SetNamespaceID(v.cached.Namespace.ID)
 		case *entInstanceAnnotationQuerier:
-			query = query.SetInstance(v.clients.Instance.GetX(ctx, v.cached.Instance.ID))
+			query = query.SetInstanceID(v.instance.Instance.ID)
 		default:
 			panic(errors.New("bad querier"))
 		}

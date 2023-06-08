@@ -91,6 +91,11 @@ func MirrorActivityID(v uuid.UUID) predicate.LogMsg {
 	return predicate.LogMsg(sql.FieldEQ(FieldMirrorActivityID, v))
 }
 
+// InstanceID applies equality check predicate on the "instance_id" field. It's identical to InstanceIDEQ.
+func InstanceID(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldEQ(FieldInstanceID, v))
+}
+
 // TEQ applies the EQ predicate on the "t" field.
 func TEQ(v time.Time) predicate.LogMsg {
 	return predicate.LogMsg(sql.FieldEQ(FieldT, v))
@@ -501,6 +506,56 @@ func MirrorActivityIDNotNil() predicate.LogMsg {
 	return predicate.LogMsg(sql.FieldNotNull(FieldMirrorActivityID))
 }
 
+// InstanceIDEQ applies the EQ predicate on the "instance_id" field.
+func InstanceIDEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldEQ(FieldInstanceID, v))
+}
+
+// InstanceIDNEQ applies the NEQ predicate on the "instance_id" field.
+func InstanceIDNEQ(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldNEQ(FieldInstanceID, v))
+}
+
+// InstanceIDIn applies the In predicate on the "instance_id" field.
+func InstanceIDIn(vs ...uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldIn(FieldInstanceID, vs...))
+}
+
+// InstanceIDNotIn applies the NotIn predicate on the "instance_id" field.
+func InstanceIDNotIn(vs ...uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldNotIn(FieldInstanceID, vs...))
+}
+
+// InstanceIDGT applies the GT predicate on the "instance_id" field.
+func InstanceIDGT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldGT(FieldInstanceID, v))
+}
+
+// InstanceIDGTE applies the GTE predicate on the "instance_id" field.
+func InstanceIDGTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldGTE(FieldInstanceID, v))
+}
+
+// InstanceIDLT applies the LT predicate on the "instance_id" field.
+func InstanceIDLT(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldLT(FieldInstanceID, v))
+}
+
+// InstanceIDLTE applies the LTE predicate on the "instance_id" field.
+func InstanceIDLTE(v uuid.UUID) predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldLTE(FieldInstanceID, v))
+}
+
+// InstanceIDIsNil applies the IsNil predicate on the "instance_id" field.
+func InstanceIDIsNil() predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldIsNull(FieldInstanceID))
+}
+
+// InstanceIDNotNil applies the NotNil predicate on the "instance_id" field.
+func InstanceIDNotNil() predicate.LogMsg {
+	return predicate.LogMsg(sql.FieldNotNull(FieldInstanceID))
+}
+
 // HasNamespace applies the HasEdge predicate on the "namespace" edge.
 func HasNamespace() predicate.LogMsg {
 	return predicate.LogMsg(func(s *sql.Selector) {
@@ -519,33 +574,6 @@ func HasNamespaceWith(preds ...predicate.Namespace) predicate.LogMsg {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NamespaceInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, NamespaceTable, NamespaceColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasInstance applies the HasEdge predicate on the "instance" edge.
-func HasInstance() predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
-func HasInstanceWith(preds ...predicate.Instance) predicate.LogMsg {
-	return predicate.LogMsg(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InstanceInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InstanceTable, InstanceColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
