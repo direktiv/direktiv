@@ -5,11 +5,13 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Play } from "lucide-react";
+import { ScrollArea } from "~/design/ScrollArea";
 import { useCreateTag } from "~/api/tree/mutate/createTag";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -58,22 +60,37 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
       </DialogHeader>
       <div className="my-3 flex flex-col gap-y-5">
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <Card className="h-96 w-full p-4" noShadow>
-            <Editor
-              value={workflowInput}
-              onMount={(editor) => {
-                editor.focus();
-                editor.setPosition({ lineNumber: 2, column: 5 });
-              }}
-              onChange={(newData) => {
-                if (newData) {
-                  setWorkflowInput(newData);
-                }
-              }}
-              language="json"
-              theme={theme ?? undefined}
-            />
-          </Card>
+          <Tabs defaultValue="json">
+            <TabsList variant="boxed">
+              <TabsTrigger variant="boxed" value="json">
+                {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
+              </TabsTrigger>
+              <TabsTrigger variant="boxed" value="formInput">
+                {t("pages.explorer.tree.workflow.runWorkflow.formInput")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="json" asChild>
+              <Card className="h-96 w-full p-4" noShadow>
+                <Editor
+                  value={workflowInput}
+                  onMount={(editor) => {
+                    editor.focus();
+                    editor.setPosition({ lineNumber: 2, column: 5 });
+                  }}
+                  onChange={(newData) => {
+                    if (newData) {
+                      setWorkflowInput(newData);
+                    }
+                  }}
+                  language="json"
+                  theme={theme ?? undefined}
+                />
+              </Card>
+            </TabsContent>
+            <TabsContent value="formInput" asChild>
+              <ScrollArea className="h-96 w-full p-4"></ScrollArea>
+            </TabsContent>
+          </Tabs>
         </form>
       </div>
       <DialogFooter>
