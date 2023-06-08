@@ -6,7 +6,7 @@
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
     "@hookform/resolvers": "^3.0.0",
-    "@monaco-editor/react": "^4.3.1",
+    "@monaco-editor/react": "^4.4.6",
     "@mui/material": "^5.9.2",
     "@radix-ui/colors": "^0.1.8",
     "@radix-ui/react-checkbox": "^1.0.3",
