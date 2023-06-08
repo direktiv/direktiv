@@ -70,7 +70,7 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="json" asChild>
-              <Card className="h-96 w-full p-4" noShadow>
+              <Card className="h-96 w-full p-4 sm:h-[500px]" noShadow>
                 <Editor
                   value={workflowInput}
                   onMount={(editor) => {
@@ -88,7 +88,7 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
               </Card>
             </TabsContent>
             <TabsContent value="formInput" asChild>
-              <ScrollArea className="h-96 w-full p-4"></ScrollArea>
+              <ScrollArea className="h-96 w-full p-4 sm:h-[500px]"></ScrollArea>
             </TabsContent>
           </Tabs>
         </form>
