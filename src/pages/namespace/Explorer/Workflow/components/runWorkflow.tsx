@@ -31,7 +31,7 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
     resolver: zodResolver(z.object({})),
   });
 
-  const [workflowData, setWorkflowData] = useState("{\n\n}");
+  const [workflowInput, setWorkflowInput] = useState("{\n    \n}");
 
   // TODO: replace useCreateTag with useRunWorkflow
   const { mutate: runWorkflow, isLoading } = useCreateTag({
@@ -60,10 +60,14 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <Card className="h-96 w-full p-4" noShadow>
             <Editor
-              value={workflowData}
+              value={workflowInput}
+              onMount={(editor) => {
+                editor.focus();
+                editor.setPosition({ lineNumber: 2, column: 5 });
+              }}
               onChange={(newData) => {
                 if (newData) {
-                  setWorkflowData(newData);
+                  setWorkflowInput(newData);
                 }
               }}
               language="json"
