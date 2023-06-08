@@ -28,7 +28,7 @@ func validateLabel(name string) error {
 	return nil
 }
 
-func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
+func serviceBaseInfo(s *v1.Service) *igrpc.FunctionsBaseInfo {
 	var sz, scale int32
 	fmt.Sscan(s.Annotations[ServiceHeaderSize], &sz)
 	fmt.Sscan(s.Annotations[ServiceHeaderScale], &scale)
@@ -41,7 +41,7 @@ func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
 	rev := s.Labels[ServiceHeaderRevision]
 	img, cmd := containerFromList(s.Spec.ConfigurationSpec.Template.Spec.PodSpec.Containers)
 
-	info := &igrpc.BaseInfo{
+	info := &igrpc.FunctionsBaseInfo{
 		Name:          &n,
 		Namespace:     &ns,
 		Workflow:      &wf,
@@ -57,11 +57,11 @@ func serviceBaseInfo(s *v1.Service) *igrpc.BaseInfo {
 	return info
 }
 
-func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Condition) {
+func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.FunctionsCondition) {
 	// status and status messages
 	status := string(corev1.ConditionUnknown)
 
-	var condList []*igrpc.Condition
+	var condList []*igrpc.FunctionsCondition
 
 	for m := range conditions {
 		cond := conditions[m]
@@ -72,7 +72,7 @@ func statusFromCondition(conditions []apis.Condition) (string, []*igrpc.Conditio
 
 		ct := string(cond.Type)
 		st := string(cond.Status)
-		c := &igrpc.Condition{
+		c := &igrpc.FunctionsCondition{
 			Name:    &ct,
 			Status:  &st,
 			Reason:  &cond.Reason,

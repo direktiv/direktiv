@@ -12,14 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	ns  = "namespace"
-	wf  = "workflow"
-	srv = "server"
-	ins = "instance"
-	mir = "mirror"
-)
-
 var _ logengine.LogStore = &sqlLogStore{} // Ensures SQLLogStore struct conforms to logengine.LogStore interface.
 
 type sqlLogStore struct {
@@ -30,15 +22,13 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "oid", "t", "level", "msg")
-	vals = append(vals, uuid.New(), timestamp, level, msg)
+	cols = append(cols, "oid", "timestamp", "level")
+	vals = append(vals, uuid.New(), timestamp, level)
 	databaseCols := []string{
-		"instance_logs",
+		"sender",
 		"log_instance_call_path",
 		"root_instance_id",
-		"workflow_id",
-		"namespace_logs",
-		"mirror_activity_id",
+		"sender_type",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -46,15 +36,14 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 			vals = append(vals, v)
 		}
 	}
-	if len(keysAndValues) > 0 {
-		b, err := json.Marshal(keysAndValues)
-		if err != nil {
-			return err
-		}
-		cols = append(cols, "tags")
-		vals = append(vals, b)
+	keysAndValues["message"] = msg
+	b, err := json.Marshal(keysAndValues)
+	if err != nil {
+		return err
 	}
-	q := "INSERT INTO log_msgs ("
+	cols = append(cols, "entry")
+	vals = append(vals, b)
+	q := "INSERT INTO log_entries ("
 	qTail := "VALUES ("
 	for i := range vals {
 		q += fmt.Sprintf(cols[i])
@@ -78,17 +67,11 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
 	wEq := []string{}
-	if keysAndValues["sender_type"] == srv {
-		wEq = append(wEq, "workflow_id IS NULL")
-		wEq = append(wEq, "namespace_logs IS NULL")
-		wEq = append(wEq, "instance_logs IS NULL")
-	}
+
 	databaseCols := []string{
-		"instance_logs",
+		"sender",
+		"sender_type",
 		"root_instance_id",
-		"workflow_id",
-		"namespace_logs",
-		"mirror_activity_id",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -114,16 +97,18 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
-		err := json.Unmarshal(e.Tags, &m)
+		err := json.Unmarshal(e.Entry, &m)
 		if err != nil {
 			return nil, err
 		}
 
 		levels := []string{"debug", "info", "error"}
 		m["level"] = levels[e.Level]
+		msg := fmt.Sprintf("%v", m["message"])
+		delete(m, "message")
 		convertedList = append(convertedList, &logengine.LogEntry{
-			T:      e.T,
-			Msg:    e.Msg,
+			T:      e.Timestamp,
+			Msg:    msg,
 			Fields: m,
 		})
 	}
@@ -132,8 +117,8 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT t, msg, level, root_instance_id, log_instance_call_path, tags, workflow_id, mirror_activity_id, instance_logs, namespace_logs
-	FROM log_msgs `
+	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, sender, sender_type, entry
+	FROM log_entries `
 	q += "WHERE "
 	for i, e := range wEq {
 		q += e
@@ -141,7 +126,7 @@ func composeQuery(limit, offset int, wEq []string) string {
 			q += " AND "
 		}
 	}
-	q += " ORDER BY t ASC"
+	q += " ORDER BY timestamp ASC"
 	if limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d ", limit)
 	}
@@ -153,14 +138,11 @@ func composeQuery(limit, offset int, wEq []string) string {
 }
 
 type gormLogMsg struct {
-	T                   time.Time
-	Msg                 string
+	Timestamp           time.Time
 	Level               int
-	Tags                []byte
-	WorkflowID          string
-	MirrorActivityID    string
-	InstanceLogs        string
-	NamespaceLogs       string
+	Entry               []byte
+	Sender              uuid.UUID
+	SenderType          string
 	RootInstanceID      string
 	LogInstanceCallPath string
 }

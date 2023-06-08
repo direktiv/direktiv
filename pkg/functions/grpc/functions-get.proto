@@ -6,16 +6,16 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message GetFunctionRequest {
+message FunctionsGetFunctionRequest {
 	optional string ServiceName = 1;
 }
 
-message GetFunctionResponse {
+message FunctionsGetFunctionResponse {
 	optional string name = 1;
 	optional string namespace = 2;
 	optional string workflow = 3;
 	optional FunctionsConfig config = 4;
-	repeated Revision revisions = 5;
+	repeated FunctionsRevision revisions = 5;
 	optional string scope = 6;
 	optional string namespaceID = 7;
 	optional string path = 8;

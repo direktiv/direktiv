@@ -16,6 +16,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	grpc2 "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/dop251/goja"
@@ -27,9 +28,10 @@ import (
 )
 
 type flowHandler struct {
-	logger     *zap.SugaredLogger
-	client     grpc.FlowClient
-	prometheus prometheus.Client
+	logger          *zap.SugaredLogger
+	client          grpc.FlowClient
+	functionsClient grpc2.FunctionsClient
+	prometheus      prometheus.Client
 }
 
 func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Config) (*flowHandler, error) {
@@ -57,6 +59,7 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	}
 
 	h.initRoutes(router)
+	h.initFunctionsRoutes(router.PathPrefix("/functions").Subrouter())
 
 	return h, nil
 }

@@ -551,14 +551,6 @@ func (pubsub *Pubsub) NotifyNamespaceAnnotations(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceAnnotations(ns)))
 }
 
-func (pubsub *Pubsub) namespaceRegistries(ns *database.Namespace) string {
-	return fmt.Sprintf("registries:%s", ns.ID.String())
-}
-
-func (pubsub *Pubsub) SubscribeNamespaceRegistries(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceRegistries(ns))
-}
-
 func (pubsub *Pubsub) instanceLogs(in *uuid.UUID) string {
 	return fmt.Sprintf("instlogs:%s", in.String())
 }
