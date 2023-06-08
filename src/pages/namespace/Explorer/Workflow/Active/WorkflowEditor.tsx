@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import RunWorkflow from "../components/runWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -153,7 +154,9 @@ const WorkflowEditor: FC<{
             <Play />
             {t("pages.explorer.workflow.editor.runBtn")}
           </Button>
-          <DialogContent></DialogContent>
+          <DialogContent>
+            <RunWorkflow path={path} close={() => setDialogOpen(false)} />
+          </DialogContent>
         </Dialog>
         <Button
           variant="outline"
