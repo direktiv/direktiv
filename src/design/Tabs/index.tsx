@@ -61,18 +61,10 @@ TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content> & {
-    noBorder?: boolean;
-  }
->(({ className, noBorder = false, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
-    className={twMerge(
-      clsx(
-        "mt-2 rounded-md p-6",
-        !noBorder && "border border-gray-4  dark:border-gray-dark-4",
-        className
-      )
-    )}
+    className={twMerge(clsx("mt-2", className))}
     {...props}
     ref={ref}
   />
