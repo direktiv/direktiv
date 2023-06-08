@@ -71,19 +71,22 @@ const Editor: FC<
     theme?: "light" | "dark";
     onSave?: (value: string | undefined) => void;
     onChange?: (value: string | undefined) => void;
+    onMount?: EditorProps["onMount"];
   }
-> = ({ options, theme, onSave, onChange, ...props }) => {
+> = ({ options, theme, onSave, onChange, onMount, ...props }) => {
   const monacoRef = useRef<EditorType>();
 
   const handleChange = () => {
     onChange && onChange(monacoRef.current?.getValue());
   };
 
-  const onMount: EditorProps["onMount"] = (editor, monaco) => {
+  // this is the shared onMount function, that will be called for
+  // every Editor component. Each Editor can implement their own
+  // onMount function on top of this one.
+  const commonOnMount: EditorProps["onMount"] = (editor, monaco) => {
     monacoRef.current = editor;
-    editor.focus();
     monacoRef.current.onDidChangeModelContent(handleChange);
-
+    onMount?.(editor, monaco);
     onSave &&
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         onSave(
@@ -101,7 +104,7 @@ const Editor: FC<
           width={width}
           height={height}
           beforeMount={beforeMount}
-          onMount={onMount}
+          onMount={commonOnMount}
           options={{
             scrollBeyondLastLine: false,
             cursorBlinking: "smooth",

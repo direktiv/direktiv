@@ -67,6 +67,9 @@ const WorkflowEditor: FC<{
       <Card className="grow p-4">
         <Editor
           value={workflowData}
+          onMount={(editor) => {
+            editor.focus();
+          }}
           onChange={(newData) => {
             setValue(newData);
           }}
