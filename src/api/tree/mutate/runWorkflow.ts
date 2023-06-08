@@ -22,7 +22,11 @@ export const runWorkflow = apiFactory({
   schema: WorkflowStartedSchema,
 });
 
-export const useRunWorkflow = () => {
+type ResolvedRunWorkflow = Awaited<ReturnType<typeof runWorkflow>>;
+
+export const useRunWorkflow = ({
+  onSuccess,
+}: { onSuccess?: (data: ResolvedRunWorkflow) => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -41,5 +45,8 @@ export const useRunWorkflow = () => {
           path,
         },
       }),
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
   });
 };
