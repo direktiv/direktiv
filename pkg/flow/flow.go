@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/version"
 	"google.golang.org/protobuf/types/known/emptypb"
