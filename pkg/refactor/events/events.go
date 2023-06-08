@@ -39,12 +39,11 @@ type EventListener struct {
 	ListeningForEventTypes      []string    // the types of the event the listener is waiting for to be triggered.
 	ReceivedEventsForAndTrigger []*Event    // events already received for the EventsAnd trigger.
 	LifespanOfReceivedEvents    int         // set 0 to omit the value.
-	NeedsAllEventTypes          bool        // set true for EventsAnd.
+	TriggerType                 TriggerType // set true for EventsAnd.
 	Trigger                     TriggerInfo // hold the information to decide what to do if the listener has satisfied.
 }
 
 type TriggerInfo struct {
-	Type       TriggerType
 	WorkflowID uuid.UUID // the id of the workflow.
 	InstanceID uuid.UUID // optional fill for instance-waiting trigger.
 	Step       int       // optional fill for instance-waiting trigger.
@@ -53,8 +52,14 @@ type TriggerInfo struct {
 type TriggerType int
 
 const (
-	Start TriggerType = iota
-	Wait  TriggerType = iota
+	StartAnd    TriggerType = iota
+	WaitAnd     TriggerType = iota
+	StartSimple TriggerType = iota
+	WaitSimple  TriggerType = iota
+	StartOR     TriggerType = iota
+	WaitOR      TriggerType = iota
+	StartXOR    TriggerType = iota
+	WaitXOR     TriggerType = iota
 )
 
 type EventListenerStore interface {
