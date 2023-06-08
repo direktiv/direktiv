@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -155,4 +156,23 @@ func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Inst
 		ErrorMessage: string(instance.Instance.ErrorMessage),
 		Invoker:      instance.Instance.Invoker,
 	}
+}
+
+func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*grpc.Instance {
+	list := make([]*grpc.Instance, 0)
+	for idx := range instances {
+		instance := &instances[idx]
+		list = append(list, &grpc.Instance{
+			CreatedAt:    timestamppb.New(instance.CreatedAt),
+			UpdatedAt:    timestamppb.New(instance.UpdatedAt),
+			Id:           instance.ID.String(),
+			As:           instance.CalledAs,
+			Status:       instance.Status.String(),
+			ErrorCode:    instance.ErrorCode,
+			ErrorMessage: string(instance.ErrorMessage),
+			Invoker:      instance.Invoker,
+		})
+	}
+
+	return list
 }

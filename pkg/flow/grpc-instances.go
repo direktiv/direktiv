@@ -306,10 +306,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 		// Filter: ,
 	}
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Instances.Results)
-	if err != nil {
-		return nil, err
-	}
+	resp.Instances.Results = bytedata.ConvertInstancesToGrpcInstances(results.Results)
 
 	return resp, nil
 }

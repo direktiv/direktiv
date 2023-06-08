@@ -780,7 +780,7 @@ describe('Test behaviour specific to the root node', () => {
                 },
                 results: expect.arrayContaining([
                     {
-                        as: "listener.yml",
+                        as: "/listener.yml",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                         errorCode: "",
