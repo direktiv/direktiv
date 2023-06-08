@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -29,14 +28,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -578,12 +575,6 @@ func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.S
 	return nil
 }
 
-func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResponse, error) {
-	var resp grpc.BuildResponse
-	resp.Build = version.Version
-	return &resp, nil
-}
-
 func this() string {
 	pc, _, _, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)
@@ -621,8 +612,8 @@ func (tx *sqlTx) Rollback() {
 	}
 }
 
-func (flow *flow) beginSqlTx(ctx context.Context) (*sqlTx, error) {
-	res := flow.gormDB.WithContext(ctx).Begin()
+func (srv *server) beginSqlTx(ctx context.Context) (*sqlTx, error) {
+	res := srv.gormDB.WithContext(ctx).Begin()
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -631,8 +622,8 @@ func (flow *flow) beginSqlTx(ctx context.Context) (*sqlTx, error) {
 	}, nil
 }
 
-func (flow *flow) runSqlTx(ctx context.Context, fun func(tx *sqlTx) error) error {
-	tx, err := flow.beginSqlTx(ctx)
+func (srv *server) runSqlTx(ctx context.Context, fun func(tx *sqlTx) error) error {
+	tx, err := srv.beginSqlTx(ctx)
 	if err != nil {
 		return err
 	}
