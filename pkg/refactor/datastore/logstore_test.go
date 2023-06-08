@@ -21,10 +21,10 @@ func Test_Add_Get(t *testing.T) {
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
 	id := uuid.New()
-	addRandomMsgs(t, logstore, "sender", id, logengine.Info)
+	addRandomMsgs(t, logstore, "source", id, logengine.Info)
 	q := make(map[string]interface{}, 0)
 	q["level"] = logengine.Info
-	q["sender"] = id
+	q["source"] = id
 	got, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)

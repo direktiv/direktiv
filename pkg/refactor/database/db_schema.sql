@@ -121,8 +121,8 @@ CREATE TABLE IF NOT EXISTS "log_entries" (
     "timestamp" timestamptz NOT NULL,
     "level" integer,
     "root_instance_id" uuid,
-    "sender" uuid,
-    "sender_type" text,
+    "source" uuid,
+    "type" text,
     "log_instance_call_path" text,
     "entry" jsonb NOT NULL,
     PRIMARY KEY ("oid")

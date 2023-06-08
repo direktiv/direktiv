@@ -10,6 +10,27 @@ import (
 	"go.uber.org/zap"
 )
 
+// This logger SHOULD only be used to log relevant monitoring information for
+// direktiv workflow developers and workflow administrators.
+//
+// 1. BetterLogger is an event-style-logger.
+// This means that an log-entry MUST have a "source" and an "type".
+// The type is passed via tags with the key recipientType. The sender via recipientID.
+//
+// BetterLogger will "smartly" publish a notification on any waiting
+// listeners about new logs, depending on the source and type values.
+//
+// 2. Additional contextual information for the log-entry SHOULD be passed via tags.
+// 3. !!! Tags will be parsed and !modified to enable "smart" logs.
+// Therefor BetterLogger makes assumptions about some entries in the tags.
+// BetterLogger assumes:
+// - tags["level"] is present and one those values: "debug", "info", "error"
+// - tags["callpath"] is present when tags["recipientType"] is instance.
+// - tags["callpath"] has a "special" structure "/uuid/uuid/".
+// - tags["instance-id"] is present and is a uuid when tags["recipientType"] is instance.
+// - tags["loop-index"] is present when the log-message originated inside a loop execution in a workflow.
+//
+// Also BetterLogger will extract from the passed context ctx the trace-id and add it to the tags.
 type BetterLogger interface {
 	Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
 	Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
@@ -25,7 +46,7 @@ func (s SugarBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, ta
 	_ = ctx
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
-	tags["sender"] = recipientID.String()
+	tags["source"] = recipientID.String()
 	s.log(Debug, tags, msg)
 }
 
@@ -33,7 +54,7 @@ func (s SugarBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tag
 	_ = ctx
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
-	tags["sender"] = recipientID.String()
+	tags["source"] = recipientID.String()
 	s.log(Info, tags, msg)
 }
 
@@ -41,7 +62,7 @@ func (s SugarBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, ta
 	_ = ctx
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
-	tags["sender"] = recipientID.String()
+	tags["source"] = recipientID.String()
 	s.log(Error, tags, msg)
 }
 
@@ -111,7 +132,7 @@ func (cls *CachedSQLLogStore) logWorker() {
 		}
 
 		attributes := make(map[string]string)
-		attributes["recipientType"] = "sender_type"
+		attributes["recipientType"] = "type"
 		attributes["root-instance-id"] = "root_instance_id"
 		attributes["callpath"] = "log_instance_call_path"
 		for k, v := range attributes {
