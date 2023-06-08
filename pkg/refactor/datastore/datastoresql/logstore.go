@@ -25,10 +25,10 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols = append(cols, "oid", "timestamp", "level")
 	vals = append(vals, uuid.New(), timestamp, level)
 	databaseCols := []string{
-		"sender",
+		"source",
 		"log_instance_call_path",
 		"root_instance_id",
-		"sender_type",
+		"type",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -69,8 +69,8 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	wEq := []string{}
 
 	databaseCols := []string{
-		"sender",
-		"sender_type",
+		"source",
+		"type",
 		"root_instance_id",
 	}
 	for _, k := range databaseCols {
@@ -117,7 +117,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, sender, sender_type, entry
+	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, source, type, entry
 	FROM log_entries `
 	q += "WHERE "
 	for i, e := range wEq {
@@ -141,8 +141,8 @@ type gormLogMsg struct {
 	Timestamp           time.Time
 	Level               int
 	Entry               []byte
-	Sender              uuid.UUID
-	SenderType          string
+	Source              uuid.UUID
+	Type                string
 	RootInstanceID      string
 	LogInstanceCallPath string
 }
