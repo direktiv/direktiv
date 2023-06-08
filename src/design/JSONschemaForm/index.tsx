@@ -1,8 +1,7 @@
-import "./styles.css";
-
 import {
+  ArrayFieldTemplateItemType,
+  ArrayFieldTemplateProps,
   BaseInputTemplateProps,
-  IconButtonProps,
   RJSFSchema,
   RegistryWidgetsType,
   SubmitButtonProps,
@@ -32,7 +31,7 @@ import Form from "@rjsf/core";
 import Input from "../Input";
 import validator from "@rjsf/validator-ajv8";
 
-const CustomSelectWidget: React.FunctionComponent<WidgetProps> = (props) => (
+const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   <div className="my-4">
     <Select onValueChange={props.onChange}>
       <SelectTrigger>
@@ -50,7 +49,8 @@ const CustomSelectWidget: React.FunctionComponent<WidgetProps> = (props) => (
     </Select>
   </div>
 );
-function SubmitButton(props: SubmitButtonProps) {
+
+const SubmitButton = (props: SubmitButtonProps) => {
   const { uiSchema } = props;
   const { norender } = getSubmitButtonOptions(uiSchema);
   if (norender) {
@@ -61,51 +61,66 @@ function SubmitButton(props: SubmitButtonProps) {
       Submit
     </Button>
   );
-}
-function AddButton(props: IconButtonProps) {
-  const { ...btnProps } = props;
-  return (
-    <div className="inline-block w-full divide-y divide-solid">
+};
+
+const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
+  <div {...props} className="flex flex-row items-end gap-4">
+    <div className="w-3/4">{props.children}</div>
+    <div className="float-right flex w-1/4 flex-row gap-2">
       <Button
-        {...btnProps}
+        disabled={!props.hasMoveDown}
+        className="flex-1"
+        onClick={(e) => {
+          props.onReorderClick(props.index, props.index + 1)(e);
+        }}
         icon
-        className="float-right mt-4 w-1/4 bg-danger-10"
       >
-        <PlusIcon />
+        <ChevronDownIcon />
       </Button>
-      <div className="mt-2 w-full" />
+      <Button
+        disabled={!props.hasMoveUp}
+        className="flex-1"
+        onClick={(e) => {
+          props.onReorderClick(props.index, props.index - 1)(e);
+        }}
+        icon
+      >
+        <ChevronUpIcon />
+      </Button>
+      <Button
+        className="flex-1"
+        onClick={(e) => {
+          props.onDropIndexClick(props.index)(e);
+        }}
+        icon
+      >
+        <MinusIcon />
+      </Button>
     </div>
-  );
-}
+  </div>
+);
 
-function RemoveButton(props: IconButtonProps) {
-  const { ...btnProps } = props;
-  return (
-    <Button {...btnProps} icon>
-      <MinusIcon />
-    </Button>
-  );
-}
+const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
+  <div>
+    {props.items.map((element) => (
+      <ArrayFieldTemplateItem {...element} key={`array-item-${element.key}`} />
+    ))}
+    {props.canAdd && (
+      <div className="inline-block w-full divide-y divide-solid">
+        <Button
+          onClick={props.onAddClick}
+          icon
+          className="float-right mt-4 w-1/4 bg-danger-10"
+        >
+          <PlusIcon />
+        </Button>
+        <div className="mt-2 w-full" />
+      </div>
+    )}
+  </div>
+);
 
-function MoveUpButton(props: IconButtonProps) {
-  const { ...btnProps } = props;
-  return (
-    <Button {...btnProps} icon>
-      <ChevronUpIcon />
-    </Button>
-  );
-}
-
-function MoveDownButton(props: IconButtonProps) {
-  const { ...btnProps } = props;
-  return (
-    <Button {...btnProps} icon>
-      <ChevronDownIcon />
-    </Button>
-  );
-}
-
-function BaseInputTemplate(props: BaseInputTemplateProps) {
+const BaseInputTemplate = (props: BaseInputTemplateProps) => {
   const type = useMemo(() => {
     if (props.schema.type === "integer") {
       return "number";
@@ -139,9 +154,9 @@ function BaseInputTemplate(props: BaseInputTemplateProps) {
       }}
     />
   );
-}
+};
 
-function TitleFieldTemplate(props: TitleFieldProps) {
+const TitleFieldTemplate = (props: TitleFieldProps) => {
   const { id, required, title } = props;
   return (
     <header id={id} className="mb-2 text-2xl">
@@ -149,26 +164,24 @@ function TitleFieldTemplate(props: TitleFieldProps) {
       {required && <mark>*</mark>}
     </header>
   );
-}
-
-const CustomCheckbox = function (props: WidgetProps) {
-  return (
-    <div className="flex space-x-2 p-2 ">
-      <Checkbox
-        onClick={() => props.onChange(!props.value)}
-        id={`wgt-checkbox-${props.id}`}
-      />
-      <div className="grid gap-1.5 leading-none">
-        <label
-          htmlFor={`wgt-checkbox-${props.id}`}
-          className="text-sm font-medium leading-none text-gray-10 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-dark-10"
-        >
-          {props.label}
-        </label>
-      </div>
-    </div>
-  );
 };
+
+const CustomCheckbox = (props: WidgetProps) => (
+  <div className="flex space-x-2 p-2 ">
+    <Checkbox
+      onClick={() => props.onChange(!props.value)}
+      id={`wgt-checkbox-${props.id}`}
+    />
+    <div className="grid gap-1.5 leading-none">
+      <label
+        htmlFor={`wgt-checkbox-${props.id}`}
+        className="text-sm font-medium leading-none text-gray-10 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-dark-10"
+      >
+        {props.label}
+      </label>
+    </div>
+  </div>
+);
 
 const widgets: RegistryWidgetsType = {
   CheckboxWidget: CustomCheckbox,
@@ -183,12 +196,9 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => (
     templates={{
       BaseInputTemplate,
       TitleFieldTemplate,
+      ArrayFieldTemplate,
       ButtonTemplates: {
         SubmitButton,
-        AddButton,
-        RemoveButton,
-        MoveUpButton,
-        MoveDownButton,
       },
     }}
     validator={validator}

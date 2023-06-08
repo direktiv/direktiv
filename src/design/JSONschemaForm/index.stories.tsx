@@ -1,9 +1,8 @@
 import {
   ArraySchemaSample,
   CustomArraySample,
-  FunctionSchema,
   SimpleSample,
-} from "./jsonSchema";
+} from "./jsonSchemaExamples";
 import type { Meta, StoryObj } from "@storybook/react";
 import { JSONSchemaForm } from "../JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
@@ -41,6 +40,10 @@ const defSchema: RJSFSchema = {
       type: "integer",
       title: "Age",
     },
+    occupation: {
+      type: "string",
+      enum: ["foo", "bar", "fuzz", "qux"],
+    },
   },
 };
 
@@ -62,8 +65,4 @@ export const CustomArraySampleForm = () => (
 
 export const SampleFormWithFileInput = () => (
   <JSONSchemaForm schema={SimpleSample} />
-);
-
-export const FunctionSchemaForm = () => (
-  <JSONSchemaForm schema={FunctionSchema as unknown as RJSFSchema} />
 );
