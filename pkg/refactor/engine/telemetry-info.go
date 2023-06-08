@@ -11,9 +11,7 @@ const (
 	telemetryInfoVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceTelemetryInfo = errors.New("invalid instance telemetry info")
-)
+var ErrInvalidInstanceTelemetryInfo = errors.New("invalid instance telemetry info")
 
 // InstanceTelemetryInfo keeps information useful to our telemetry logic.
 type InstanceTelemetryInfo struct {

@@ -12,9 +12,7 @@ const (
 	instanceRuntimeInfoVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceRuntimeInfo = errors.New("invalid instance runtime info")
-)
+var ErrInvalidInstanceRuntimeInfo = errors.New("invalid instance runtime info")
 
 // InstanceRuntimeInfo keeps other miscellaneous information useful to the engine.
 type InstanceRuntimeInfo struct {

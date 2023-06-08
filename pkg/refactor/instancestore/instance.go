@@ -2,11 +2,10 @@ package instancestore
 
 import (
 	"context"
+	sqldriver "database/sql/driver"
 	"errors"
 	"fmt"
 	"time"
-
-	sqldriver "database/sql/driver"
 
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"

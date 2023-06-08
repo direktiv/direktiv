@@ -13,11 +13,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

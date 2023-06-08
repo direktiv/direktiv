@@ -11,9 +11,7 @@ const (
 	instanceSettingsVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceSettings = errors.New("invalid instance settings")
-)
+var ErrInvalidInstanceSettings = errors.New("invalid instance settings")
 
 // InstanceSettings keeps a local copy of various namespace and workflow settings so that the engine doesn't have to look them up separately.
 type InstanceSettings struct {
