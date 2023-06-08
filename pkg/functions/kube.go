@@ -43,7 +43,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 		return err
 	}
 
-	svc, err := is.db.Services.Query().Where(services.And(
+	svc, err := is.dbx.Services.Query().Where(services.And(
 		services.Name(info.GetName()),
 		services.HasNamespaceWith(
 			namespace.ID(uid),
@@ -52,7 +52,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 
 	if err != nil && ent.IsNotFound(err) {
 		logger.Infof("creating service %v", info.GetName())
-		return is.db.Services.Create().
+		return is.dbx.Services.Create().
 			SetNamespaceID(uid).
 			SetName(info.GetName()).
 			SetURL(svcName).
@@ -152,7 +152,7 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 		conditions = append(conditions, services.Name(svcList[i]))
 	}
 
-	deleteRecord := is.db.Services.Delete().Where(services.Or(conditions...))
+	deleteRecord := is.dbx.Services.Delete().Where(services.Or(conditions...))
 	recordCount, err := deleteRecord.Exec(ctx)
 	if err != nil {
 		logger.Errorf("error delete knative database record %s: %w", in.GetAnnotations(), err)
@@ -263,7 +263,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 	}
 
 	if strings.HasPrefix(in.GetServiceName(), "namespace-") {
-		deleteRecord := is.db.Services.Delete().Where(services.And(
+		deleteRecord := is.dbx.Services.Delete().Where(services.And(
 			services.Name(in.GetServiceName()),
 		))
 		_, err := deleteRecord.Exec(ctx)
@@ -597,7 +597,7 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 
 func (is *functionsServer) reconstructService(name string, ctx context.Context) error {
 	// Get backed up service from database
-	dbSvc, err := is.db.Services.Query().Where(services.URL(name)).First(ctx)
+	dbSvc, err := is.dbx.Services.Query().Where(services.URL(name)).First(ctx)
 	if err != nil {
 		return err
 	}
@@ -620,7 +620,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 
 // recretae all services on startup.
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
-	svcs, err := is.db.Services.Query().All(ctx)
+	svcs, err := is.dbx.Services.Query().All(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprint("failed to get services from database: %w", err))
 		return err

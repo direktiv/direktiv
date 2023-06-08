@@ -44,7 +44,7 @@ const (
 
 type functionsServer struct {
 	igrpc.UnimplementedFunctionsServer
-	db *ent.Client
+	dbx *ent.Client
 
 	reusableCacheLock  sync.Mutex
 	reusableCache      map[string]*cacheTuple
@@ -79,7 +79,7 @@ func StartServer(echan chan error) {
 	}
 
 	fServer := functionsServer{
-		db:                 db,
+		dbx:                db,
 		reusableCache:      make(map[string]*cacheTuple),
 		reusableCacheIndex: make(map[string]*cacheTuple),
 	}
