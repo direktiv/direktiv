@@ -36,15 +36,13 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
   const [workflowInput, setWorkflowInput] = useState("{\n    \n}");
 
   // TODO: replace useCreateTag with useRunWorkflow
-  const { mutate: runWorkflow, isLoading } = useCreateTag({
+  const { isLoading } = useCreateTag({
     onSuccess: () => {
       close();
     },
   });
 
-  const onSubmit: SubmitHandler<FormInput> = () => {
-    console.log("🚀 submitted");
-  };
+  const onSubmit: SubmitHandler<FormInput> = () => null;
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
