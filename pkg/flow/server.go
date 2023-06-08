@@ -470,12 +470,12 @@ func (srv *server) PublishToCluster(payload string) {
 	})
 }
 
-func (server *server) CacheNotify(req *pubsub.PubsubUpdate) {
-	if server.ID.String() == req.Sender {
+func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
+	if srv.ID.String() == req.Sender {
 		return
 	}
 
-	server.database.HandleNotification(req.Key)
+	srv.database.HandleNotification(req.Key)
 }
 
 func (srv *server) registerFunctions() {
