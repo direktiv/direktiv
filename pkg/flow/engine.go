@@ -1110,6 +1110,37 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.CalledAs), im.GetInstanceID(), typ, code, err.Error())
 }
 
+func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
+	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
+
+	if attr := im.instance.Settings.LogToEvents; attr != "" {
+		s := fmt.Sprintf(msg, a...)
+		event := cloudevents.NewEvent()
+		event.SetID(uuid.New().String())
+		event.SetSource(im.instance.Instance.WorkflowID.String())
+		event.SetType("direktiv.instanceLog")
+		event.SetExtension("logger", attr)
+		event.SetDataContentType("application/json")
+		err := event.SetData("application/json", s)
+		if err != nil {
+			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
+		}
+
+		err = engine.events.BroadcastCloudevent(ctx, im.Namespace(), &event, 0)
+		if err != nil {
+			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
+			return
+		}
+	}
+}
+
+func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
+	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
+	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
+		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+	}
+}
+
 func rollback(tx database.Transaction) {
 	err := tx.Rollback()
 	if err != nil && !strings.Contains(err.Error(), "already been") {

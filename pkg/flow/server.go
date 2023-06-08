@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
@@ -585,49 +584,8 @@ func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResp
 	return &resp, nil
 }
 
-func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
-
-	if attr := im.instance.Settings.LogToEvents; attr != "" {
-		s := fmt.Sprintf(msg, a...)
-		event := cloudevents.NewEvent()
-		event.SetID(uuid.New().String())
-		event.SetSource(im.instance.Instance.WorkflowID.String())
-		event.SetType("direktiv.instanceLog")
-		event.SetExtension("logger", attr)
-		event.SetDataContentType("application/json")
-		err := event.SetData("application/json", s)
-		if err != nil {
-			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
-		}
-
-		err = engine.events.BroadcastCloudevent(ctx, im.Namespace(), &event, 0)
-		if err != nil {
-			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
-			return
-		}
-	}
-}
-
-func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
-	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
-	}
-}
-
 func this() string {
 	pc, _, _, _ := runtime.Caller(1)
-	fn := runtime.FuncForPC(pc)
-	elems := strings.Split(fn.Name(), ".")
-	return elems[len(elems)-1]
-}
-
-func parent() string {
-	pc, _, _, ok := runtime.Caller(2)
-	if !ok {
-		return ""
-	}
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
 	return elems[len(elems)-1]
