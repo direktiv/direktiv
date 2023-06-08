@@ -19,7 +19,7 @@ const fetchRegistries = async ({
   ReturnType<(typeof registriesKeys)["registriesList"]>
 >) =>
   getRegistries({
-    apiKey: apiKey,
+    apiKey,
     urlParams: { namespace },
     payload: undefined,
     headers: undefined,

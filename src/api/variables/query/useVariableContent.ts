@@ -17,7 +17,7 @@ const fetchVarContent = async ({
   queryKey: [{ namespace, apiKey, name }],
 }: QueryFunctionContext<ReturnType<(typeof varKeys)["varContent"]>>) =>
   getVarContent({
-    apiKey: apiKey,
+    apiKey,
     urlParams: { namespace, name },
     payload: undefined,
     headers: undefined,

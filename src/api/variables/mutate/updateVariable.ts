@@ -9,6 +9,7 @@ import { apiFactory } from "~/api/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
 const updateVar = apiFactory({
@@ -29,6 +30,7 @@ export const useUpdateVar = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -39,7 +41,7 @@ export const useUpdateVar = ({
       apiKey: apiKey ?? undefined,
       payload: content,
       urlParams: {
-        namespace: namespace,
+        namespace,
         name,
       },
       headers: {
@@ -67,16 +69,19 @@ export const useUpdateVar = ({
         })
       );
       toast({
-        title: "Variable saved",
-        description: `Variable ${data.key} was saved.`,
+        title: t("api.variables.mutate.createVariable.success.title"),
+        description: t(
+          "api.variables.mutate.createVariable.success.description",
+          { name: data.key }
+        ),
         variant: "success",
       });
       onSuccess?.(data);
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "Could not save variable 😢",
+        title: t("api.generic.error"),
+        description: t("api.variables.mutate.createVariable.error.description"),
         variant: "error",
       });
     },

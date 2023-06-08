@@ -17,7 +17,7 @@ const fetchSecrets = async ({
   queryKey: [{ apiKey, namespace }],
 }: QueryFunctionContext<ReturnType<(typeof secretKeys)["secretsList"]>>) =>
   getSecrets({
-    apiKey: apiKey,
+    apiKey,
     urlParams: { namespace },
     payload: undefined,
     headers: undefined,

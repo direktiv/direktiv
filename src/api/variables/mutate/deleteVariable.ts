@@ -5,6 +5,7 @@ import { apiFactory } from "~/api/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
 const deleteVar = apiFactory({
@@ -23,6 +24,7 @@ export const useDeleteVar = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -33,7 +35,7 @@ export const useDeleteVar = ({
       apiKey: apiKey ?? undefined,
       payload: undefined,
       urlParams: {
-        namespace: namespace,
+        namespace,
         name: variable.name,
       },
       headers: undefined,
@@ -48,16 +50,19 @@ export const useDeleteVar = ({
         })
       );
       toast({
-        title: "Variable deleted",
-        description: `Variable ${variables.variable.name} was deleted.`,
+        title: t("api.variables.mutate.deleteVariable.success.title"),
+        description: t(
+          "api.variables.mutate.deleteVariable.success.description",
+          { name: variables.variable.name }
+        ),
         variant: "success",
       });
       onSuccess?.();
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "Could not delete variable 😢",
+        title: t("api.generic.error"),
+        description: t("api.variables.mutate.deleteVariable.error.description"),
         variant: "error",
       });
     },

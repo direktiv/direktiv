@@ -18,7 +18,7 @@ const fetchVars = async ({
   queryKey: [{ apiKey, namespace }],
 }: QueryFunctionContext<ReturnType<(typeof varKeys)["varList"]>>) =>
   getVars({
-    apiKey: apiKey,
+    apiKey,
     urlParams: { namespace },
     payload: undefined,
     headers: undefined,

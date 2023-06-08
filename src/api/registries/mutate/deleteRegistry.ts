@@ -10,6 +10,7 @@ import { registriesKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
+import { useTranslation } from "react-i18next";
 
 const updateCache = (
   oldData: RegistryListSchemaType | undefined,
@@ -44,6 +45,7 @@ export const useDeleteRegistry = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -57,7 +59,7 @@ export const useDeleteRegistry = ({
           reg: registry.name,
         },
         urlParams: {
-          namespace: namespace,
+          namespace,
         },
         headers: undefined,
       }),
@@ -70,16 +72,21 @@ export const useDeleteRegistry = ({
         (oldData) => updateCache(oldData, deletedItem)
       );
       toast({
-        title: "Registry deleted",
-        description: `Registry ${variables.registry.name} was deleted`,
+        title: t("api.registries.mutate.deleteRegistry.success.title"),
+        description: t(
+          "api.registries.mutate.deleteRegistry.success.description",
+          { name: variables.registry.name }
+        ),
         variant: "success",
       });
       onSuccess?.();
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "Could not delete registry 😢",
+        title: t("api.generic.error"),
+        description: t(
+          "api.registries.mutate.deleteRegistry.error.description"
+        ),
         variant: "error",
       });
     },

@@ -11,6 +11,7 @@ import { secretKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
+import { useTranslation } from "react-i18next";
 
 const updateCache = (
   oldData: SecretListSchemaType | undefined,
@@ -45,6 +46,7 @@ export const useCreateSecret = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -56,7 +58,7 @@ export const useCreateSecret = ({
         apiKey: apiKey ?? undefined,
         payload: value,
         urlParams: {
-          namespace: namespace,
+          namespace,
           name,
         },
         headers: undefined,
@@ -69,16 +71,18 @@ export const useCreateSecret = ({
         (oldData) => updateCache(oldData, secret)
       );
       toast({
-        title: "Secret created",
-        description: `Secret ${secret.key} was created.`,
+        title: t("api.secrets.mutate.createSecret.success.title"),
+        description: t("api.secrets.mutate.createSecret.success.description", {
+          name: secret.key,
+        }),
         variant: "success",
       });
       onSuccess?.(secret);
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "Could not create secret 😢",
+        title: "api.generic.error",
+        description: t("api.secrets.mutate.createSecret.error.description"),
         variant: "error",
       });
     },

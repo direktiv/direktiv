@@ -264,7 +264,6 @@
             "description": "Directory {{directory}} was created in {{path}}"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create directory 😢"
           }
         },
@@ -351,8 +350,73 @@
             "description": "Namespace {{name}} was created successfully."
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create namespace 😢"
+          }
+        }
+      }
+    },
+    "registries": {
+      "mutate": {
+        "createRegistry": {
+          "success": {
+            "title": "Registry created",
+            "description": "Registry {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create registry 😢"
+          }
+        },
+        "deleteRegistry": {
+          "success": {
+            "title": "Registry deleted",
+            "description": "Registry {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete registry 😢"
+          }
+        }
+      }
+    },
+    "variables": {
+      "mutate": {
+        "createVariable": {
+          "success": {
+            "title": "Variable created",
+            "description": "Variable {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create variable 😢"
+          }
+        },
+        "deleteVariable": {
+          "success": {
+            "title": "Variable deleted",
+            "description": "Variable {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete variable 😢"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "mutate": {
+        "createSecret": {
+          "success": {
+            "title": "Secret created",
+            "description": "Secret {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create secret 😢"
+          }
+        },
+        "deleteSecret": {
+          "success": {
+            "title": "Secret deleted",
+            "description": "Secret {{name}} was deleted"
+          },
+          "error": {
+            "description": "Could not delete secret 😢"
           }
         }
       }

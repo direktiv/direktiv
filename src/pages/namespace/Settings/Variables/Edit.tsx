@@ -58,7 +58,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     values: {
       name: item.name,
       content: body ?? "",
-      mimeType: mimeType,
+      mimeType,
     },
   });
 

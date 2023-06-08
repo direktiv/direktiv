@@ -10,6 +10,7 @@ import { secretKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import { useToast } from "../../../design/Toast";
+import { useTranslation } from "react-i18next";
 
 const updateCache = (
   oldData: SecretListSchemaType | undefined,
@@ -46,6 +47,7 @@ export const useDeleteSecret = ({
   const namespace = useNamespace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -58,7 +60,7 @@ export const useDeleteSecret = ({
         payload: undefined,
         urlParams: {
           name: secret.name,
-          namespace: namespace,
+          namespace,
         },
         headers: undefined,
       }),
@@ -71,16 +73,18 @@ export const useDeleteSecret = ({
         (oldData) => updateCache(oldData, deletedItem)
       );
       toast({
-        title: "Secret deleted",
-        description: `Secret ${variables.secret.name} was deleted`,
+        title: t("api.secrets.mutate.deleteSecret.success.title"),
+        description: t("api.secrets.mutate.deleteSecret.success.description", {
+          name: variables.secret.name,
+        }),
         variant: "success",
       });
       onSuccess?.();
     },
     onError: () => {
       toast({
-        title: "An error occurred",
-        description: "Could not delete secret 😢",
+        title: t("api.generic.error"),
+        description: t("api.secrets.mutate.deleteSecret.error.description"),
         variant: "error",
       });
     },
