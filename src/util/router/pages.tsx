@@ -214,7 +214,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup =
       createHref: (params) =>
         `/${params.namespace}/Instances${
           params.instance ? `/${params.instance}` : ""
-        }}`,
+        }`,
       useParams: () => {
         const { namespace, instance } = useParams();
         return {
