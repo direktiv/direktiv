@@ -126,6 +126,13 @@
                 "action": "Open workflow"
               }
             }
+          },
+          "runWorkflow": {
+            "title": "Run Workflow",
+            "jsonInput": "JSON Input",
+            "formInput": "Form Input",
+            "cancelBtn": "Cancel",
+            "runBtn": "Run"
           }
         }
       },
