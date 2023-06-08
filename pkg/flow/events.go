@@ -849,7 +849,10 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 resend:
 
 	clients := flow.edb.Clients(ctx)
-
+	limit := req.Pagination.Limit
+	offset := req.Pagination.Offset
+	req.Pagination.Limit = 0
+	req.Pagination.Offset = 0
 	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
 
 	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
@@ -889,6 +892,17 @@ resend:
 			resp.Events.PageInfo.Total = int32(len(events))
 		}
 	}
+	if offset > 0 && int(offset) < len(resp.Events.Results) {
+		resp.Events.Results = resp.Events.Results[offset:]
+	}
+	if int(offset) > len(resp.Events.Results) {
+		resp.Events.Results = make([]*grpc.Event, 0)
+	}
+	if limit > 0 && int(limit) < len(resp.Events.Results) {
+		resp.Events.Results = resp.Events.Results[:limit]
+	}
+	resp.Events.PageInfo.Total = int32(len(resp.Events.Results))
+	// resp.Events.Results[:]
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
