@@ -157,7 +157,7 @@ const WorkflowEditor: FC<{
             <Play />
             {t("pages.explorer.workflow.editor.runBtn")}
           </Button>
-          <DialogContent>
+          <DialogContent className="sm:max-w-2xl">
             <RunWorkflow path={path} close={() => setDialogOpen(false)} />
           </DialogContent>
         </Dialog>
