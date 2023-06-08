@@ -49,6 +49,7 @@ type instanceTelemetryInfoV1 struct {
 	NamespaceName string
 }
 
+//nolint:dupl
 func LoadInstanceTelemetryInfo(data []byte) (*InstanceTelemetryInfo, error) {
 	m := make(map[string]interface{})
 

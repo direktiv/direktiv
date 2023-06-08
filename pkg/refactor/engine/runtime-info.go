@@ -47,6 +47,7 @@ type instanceRuntimeInfoV1 struct {
 	Attempts       int       `json:"attempts"`
 }
 
+//nolint:dupl
 func LoadInstanceRuntimeInfo(data []byte) (*InstanceRuntimeInfo, error) {
 	m := make(map[string]interface{})
 
