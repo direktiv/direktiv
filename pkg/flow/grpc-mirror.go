@@ -305,7 +305,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 		return nil, err
 	}
 	qu := make(map[string]interface{})
-	qu["mirror_activity_id"] = mirProcess
+	qu["source"] = mirProcess
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
@@ -354,7 +354,7 @@ resend:
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
-		qu["mirror_activity_id"] = mirProcessID
+		qu["source"] = mirProcessID
 		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err

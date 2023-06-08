@@ -74,7 +74,7 @@ func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (
 	le := make([]*logengine.LogEntry, 0)
 	err := flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
-		qu["sender_type"] = "server"
+		qu["type"] = "server"
 		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
@@ -114,7 +114,7 @@ resend:
 	le := make([]*logengine.LogEntry, 0)
 	err := flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		qu := make(map[string]interface{})
-		qu["sender_type"] = "server"
+		qu["type"] = "server"
 		qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
@@ -167,8 +167,8 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 	le := make([]*logengine.LogEntry, 0)
 	qu := make(map[string]interface{})
-	qu["sender"] = cached.Namespace.ID
-	qu["sender_type"] = ns
+	qu["source"] = cached.Namespace.ID
+	qu["type"] = ns
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
@@ -217,8 +217,8 @@ resend:
 
 	le := make([]*logengine.LogEntry, 0)
 	qu := make(map[string]interface{})
-	qu["sender"] = cached.Namespace.ID
-	qu["sender_type"] = ns
+	qu["source"] = cached.Namespace.ID
+	qu["type"] = ns
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
 		if err != nil {
@@ -271,8 +271,8 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 		return nil, err
 	}
 	qu := make(map[string]interface{})
-	qu["sender"] = f.ID
-	qu["sender_type"] = wf
+	qu["source"] = f.ID
+	qu["type"] = wf
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
@@ -318,8 +318,8 @@ func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Fl
 
 resend:
 	qu := make(map[string]interface{})
-	qu["sender"] = f.ID
-	qu["sender_type"] = wf
+	qu["source"] = f.ID
+	qu["type"] = wf
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
@@ -379,7 +379,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	qu := make(map[string]interface{})
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
-	qu["sender_type"] = ins
+	qu["type"] = ins
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
@@ -400,9 +400,20 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	leFiltered := filterLogs(le, qu)
 	if _, ok := qu["loop-index"]; ok && len(leFiltered) > 0 {
 		// special magic iterator stuff
-		call := fmt.Sprintf("%v", leFiltered[0].Fields["callpath"])
-		childs := getAllChilds(call, le)
-		leFiltered = append(leFiltered, childs...)
+		nestedLoop := false
+		i := 0
+		var e *logengine.LogEntry
+		for i, e = range leFiltered {
+			if e.Fields["state-type"] == "foreach" {
+				nestedLoop = true
+				break
+			}
+		}
+		if nestedLoop {
+			call := fmt.Sprintf("%v", leFiltered[i].Fields["callpath"])
+			childs := getAllChilds(call, le)
+			leFiltered = append(leFiltered, childs...)
+		}
 	}
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
@@ -438,7 +449,7 @@ resend:
 	qu := make(map[string]interface{})
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
-	qu["sender_type"] = ins
+	qu["type"] = ins
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
@@ -460,9 +471,20 @@ resend:
 	leFiltered := filterLogs(le, qu)
 	if _, ok := qu["loop-index"]; ok && len(leFiltered) > 0 {
 		// special magic iterator stuff
-		call := fmt.Sprintf("%v", leFiltered[0].Fields["callpath"])
-		childs := getAllChilds(call, le)
-		leFiltered = append(leFiltered, childs...)
+		nestedLoop := false
+		i := 0
+		var e *logengine.LogEntry
+		for i, e = range leFiltered {
+			if e.Fields["state-type"] == "foreach" {
+				nestedLoop = true
+				break
+			}
+		}
+		if nestedLoop {
+			call := fmt.Sprintf("%v", leFiltered[i].Fields["callpath"])
+			childs := getAllChilds(call, le)
+			leFiltered = append(leFiltered, childs...)
+		}
 	}
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = cached.Namespace.Name
@@ -495,9 +517,9 @@ resend:
 
 func filterLogs(logs []*logengine.LogEntry, keysAndValues map[string]interface{}) []*logengine.LogEntry {
 	databaseCols := []string{
-		"sender",
+		"source",
 		"log_instance_call_path",
-		"sender_type",
+		"type",
 		"level",
 		"root_instance_id",
 	}
