@@ -9,13 +9,12 @@ import (
 
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
-
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 )
 
 type flow struct {

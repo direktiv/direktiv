@@ -11,9 +11,7 @@ const (
 	telemetryInfoVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceTelemetryInfo = errors.New("invalid instance telemetry info")
-)
+var ErrInvalidInstanceTelemetryInfo = errors.New("invalid instance telemetry info")
 
 // InstanceTelemetryInfo keeps information useful to our telemetry logic.
 type InstanceTelemetryInfo struct {
@@ -51,6 +49,7 @@ type instanceTelemetryInfoV1 struct {
 	NamespaceName string
 }
 
+//nolint:dupl
 func LoadInstanceTelemetryInfo(data []byte) (*InstanceTelemetryInfo, error) {
 	m := make(map[string]interface{})
 

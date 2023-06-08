@@ -151,7 +151,7 @@ type broadcastInstanceInput struct {
 func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, instance *enginerefactor.Instance) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixInstance, eventType)
-	cfg, err := loadNSConfig([]byte(instance.Settings.NamespaceConfig))
+	cfg, err := loadNSConfig(instance.Settings.NamespaceConfig)
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
