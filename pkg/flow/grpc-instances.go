@@ -159,7 +159,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 
 	m := make(map[string]interface{})
-	err = json.Unmarshal([]byte(idata.Output), &m)
+	err = json.Unmarshal(idata.Output, &m)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 
 	var resp grpc.InstanceMetadataResponse
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-	resp.Data = []byte(idata.Metadata)
+	resp.Data = idata.Metadata
 	resp.Namespace = ns.Name
 
 	return &resp, nil
@@ -671,7 +671,7 @@ resend:
 
 		tx.Rollback()
 
-		resp.Data = []byte(idata.Output)
+		resp.Data = idata.Output
 	}
 
 	nhash = bytedata.Checksum(resp)

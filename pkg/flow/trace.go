@@ -78,7 +78,7 @@ func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (cont
 	im.instance.TelemetryInfo.TraceID = s
 	data, err := im.instance.TelemetryInfo.MarshalJSON()
 	if err != nil {
-		return ctx, nil
+		return nil, err
 	}
 
 	im.updateArgs.TelemetryInfo = &data
