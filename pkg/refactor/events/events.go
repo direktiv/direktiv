@@ -44,10 +44,18 @@ type EventListener struct {
 }
 
 type TriggerInfo struct {
+	Type       TriggerType
 	WorkflowID uuid.UUID // the id of the workflow.
 	InstanceID uuid.UUID // optional fill for instance-waiting trigger.
 	Step       int       // optional fill for instance-waiting trigger.
 }
+
+type TriggerType int
+
+const (
+	Start TriggerType = iota
+	Wait  TriggerType = iota
+)
 
 type EventListenerStore interface {
 	// adds a EventListener to the storage.
