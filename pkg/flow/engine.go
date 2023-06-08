@@ -370,8 +370,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	defer cleanup()
 
 	t := time.Now()
-	data := im.MarshalData()
-	memory := im.MarshalMemory()
 
 	im.instance.RuntimeInfo.Flow = flow
 	im.instance.RuntimeInfo.Controller = engine.pubsub.Hostname
@@ -385,12 +383,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	im.instance.Instance.Deadline = &deadline
 	im.updateArgs.Deadline = im.instance.Instance.Deadline
-
-	im.instance.Instance.StateMemory = []byte(memory)
-	im.updateArgs.StateMemory = &im.instance.Instance.StateMemory
-
-	im.instance.Instance.LiveData = []byte(data)
-	im.updateArgs.LiveData = &im.instance.Instance.LiveData
 
 	err = im.flushUpdates(ctx)
 	if err != nil {
@@ -593,7 +585,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return derrors.WrapCatchableError("unable to apply transform: %v", err)
 	}
 
-	im.data = x
+	im.replaceData(x)
 
 	return nil
 }

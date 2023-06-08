@@ -45,9 +45,9 @@ states:
     scope: instance
     as: inx
   transform:
-    nsx: 'jq(.nsx // 0)'
-    wfx: 'jq(.wfx // 0)'
-    inx: 'jq(.inx // 0)'
+    nsx: 'jq(.var.nsx // 0)'
+    wfx: 'jq(.var.wfx // 0)'
+    inx: 'jq(.var.inx // 0)'
   transition: b
 - id: b
   type: noop
@@ -118,9 +118,9 @@ states:
     scope: instance
     as: inx
   transform:
-    nsx: 'jq(.nsx // 0)'
-    wfx: 'jq(.wfx // 0)'
-    inx: 'jq(.inx // 0)'
+    nsx: 'jq(.var.nsx // 0)'
+    wfx: 'jq(.var.wfx // 0)'
+    inx: 'jq(.var.inx // 0)'
   transition: b
 - id: b
   type: noop

@@ -128,6 +128,11 @@ func (im *instanceMemory) MarshalOutput() string {
 
 func (im *instanceMemory) setMemory(x interface{}) {
 	im.memory = x
+
+	data := im.MarshalMemory()
+
+	im.instance.Instance.StateMemory = []byte(data)
+	im.updateArgs.StateMemory = &im.instance.Instance.StateMemory
 }
 
 func (im *instanceMemory) GetMemory() interface{} {
@@ -173,6 +178,13 @@ func (im *instanceMemory) StateBeginTime() time.Time {
 	return im.instance.RuntimeInfo.StateBeginTime
 }
 
+func (im *instanceMemory) replaceData(x map[string]interface{}) {
+	im.data = x
+	data := im.MarshalData()
+	im.instance.Instance.LiveData = []byte(data)
+	im.updateArgs.LiveData = &im.instance.Instance.LiveData
+}
+
 func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	m, ok := im.data.(map[string]interface{})
 	if !ok {
@@ -180,6 +192,8 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	}
 
 	m[key] = val
+
+	im.replaceData(m)
 
 	return nil
 }
