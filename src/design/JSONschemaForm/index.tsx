@@ -64,7 +64,7 @@ const SubmitButton = (props: SubmitButtonProps) => {
 };
 
 const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
-  <div {...props} className="flex flex-row items-end gap-4">
+  <div className="flex flex-row items-end gap-4">
     <div className="w-3/4">{props.children}</div>
     <div className="float-right flex w-1/4 flex-row gap-2">
       <Button
@@ -88,6 +88,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         <ChevronUpIcon />
       </Button>
       <Button
+        variant="destructive"
         className="flex-1"
         onClick={(e) => {
           props.onDropIndexClick(props.index)(e);
@@ -110,7 +111,7 @@ const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
         <Button
           onClick={props.onAddClick}
           icon
-          className="float-right mt-4 w-1/4 bg-danger-10"
+          className="float-right mt-4 w-1/4"
         >
           <PlusIcon />
         </Button>
@@ -159,7 +160,10 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
 const TitleFieldTemplate = (props: TitleFieldProps) => {
   const { id, required, title } = props;
   return (
-    <header id={id} className="mb-2 text-2xl">
+    <header
+      id={id}
+      className="mb-1 text-lg font-semibold text-gray-12 dark:text-gray-dark-12"
+    >
       {title}
       {required && <mark>*</mark>}
     </header>

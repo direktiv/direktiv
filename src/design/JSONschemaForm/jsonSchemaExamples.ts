@@ -44,13 +44,14 @@ export const CustomArraySample: RJSFSchema = {
 };
 export const SimpleSample: RJSFSchema = {
   title: "A registration form",
-  description: "A simple form example.",
+  description: "A simple form example description.",
   type: "object",
   required: ["firstName", "lastName"],
   properties: {
     firstName: {
       type: "string",
       title: "First name",
+      description: "field description for first name",
     },
     lastName: {
       type: "string",
