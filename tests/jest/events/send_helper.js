@@ -19,7 +19,7 @@ async function listInstancesAndFilter(ns, wf, status) {
 
     // if filter, then try to wait
     if (wf || status) {
-        for (let i = 0; i < 2000; i++) {
+        for (let i = 0; i < 20; i++) {
             instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ns}/instances?limit=10&offset=0` + append)
             if (status) {
                 var idFind = instancesResponse.body.instances.results.find(item => item.status === status);
@@ -29,7 +29,7 @@ async function listInstancesAndFilter(ns, wf, status) {
             } else if (instancesResponse.body.instances.pageInfo.total == 1) {
                 return instancesResponse.body.instances.results[0]
             }
-            sleep(500)
+            await sleep(100)
             instancesResponse = (function () {
 
             })();
@@ -65,7 +65,7 @@ async function sendEventAndList(ns, event) {
         if (idFind) {
             break
         }
-        sleep(500)
+        await sleep(100)
     }
     return idFind
 }

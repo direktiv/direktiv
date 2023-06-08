@@ -218,7 +218,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	opts := new(instancestore.ListOpts)
 	if req.Pagination != nil {
 		opts.Limit = int(req.Pagination.Limit)
-		opts.Limit = int(req.Pagination.Offset)
+		opts.Offset = int(req.Pagination.Offset)
 
 		for idx := range req.Pagination.Order {
 			x := req.Pagination.Order[idx]
@@ -248,7 +248,23 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 		for idx := range req.Pagination.Filter {
 			x := req.Pagination.Filter[idx]
 			var filter instancestore.Filter
-			filter.Kind = x.Type
+
+			switch x.Type {
+			case "CONTAINS":
+				filter.Kind = instancestore.FilterKindContains
+			case "WORKFLOW":
+				fallthrough
+			case "PREFIX":
+				filter.Kind = instancestore.FilterKindPrefix
+			case "MATCH":
+				filter.Kind = instancestore.FilterKindMatch
+			case "AFTER":
+				filter.Kind = instancestore.FilterKindAfter
+			case "BEFORE":
+				filter.Kind = instancestore.FilterKindBefore
+			default:
+				filter.Kind = x.Type
+			}
 
 			switch x.Field {
 			case "AS":
@@ -274,6 +290,8 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 				filter.Field = x.Field
 				filter.Value = x.Val
 			}
+
+			opts.Filters = append(opts.Filters, filter)
 		}
 	}
 
