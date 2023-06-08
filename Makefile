@@ -155,11 +155,18 @@ cross-build:
 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
 
+.PHONY: clean-grpc
+clean-grpc: ## Clean all generated grpc files.
+clean-grpc:
+	rm -rf pkg/*.pb.go
+	rm -rf pkg/*/*.pb.go
+	rm -rf pkg/*/*/*.pb.go
+
 
 BUF_VERSION:=1.18.0
-.PHONY: protoc
-protoc: ## Manually regenerates Go packages built from protobuf.
-protoc:
+.PHONY: build-grpc
+build-grpc: ## Manually regenerates Go packages built from protobuf.
+build-grpc: clean-grpc
 	docker run -v $$(pwd):/app -w /app bufbuild/buf:$(BUF_VERSION) generate
 
 
@@ -323,7 +330,7 @@ unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit test
 
 
 .PHONY: lint 
-lint: VERSION="v1.52"
+lint: VERSION="v1.53"
 lint: ## Runs very strict linting on the project.
 	-docker rm golangci-lint-${VERSION}-direktiv
 	-docker run \

@@ -578,7 +578,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logger.Debug(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
+	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
@@ -811,7 +811,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if ar.Container.Type == model.ReusableContainerFunctionType {
 		scale := int32(ar.Container.Scale)
 		size := int32(ar.Container.Size)
-		svn, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		svn, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &ar.Container.ID,
 			Namespace:     &ar.Workflow.NamespaceID,
 			Workflow:      &ar.Workflow.WorkflowID,
@@ -890,9 +890,9 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			if errors.As(err, &dnsErr) {
 				// recreate if the service does not exist
 				if ar.Container.Type == model.ReusableContainerFunctionType &&
-					!engine.isKnativeFunction(engine.actions.client, ar) {
+					!engine.isKnativeFunction(engine.functionsClient, ar) {
 					engine.sugar.Debugf("creating KnativeFunction %s %s", ar.Container.Image, ar.Container.ID)
-					err := createKnativeFunction(engine.actions.client, ar)
+					err := createKnativeFunction(engine.functionsClient, ar)
 					if err != nil && !strings.Contains(err.Error(), "already exists") {
 						engine.sugar.Errorf("can not create knative function: %v", err)
 						engine.reportError(ar, err)
@@ -902,8 +902,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 				// recreate if the service if it exists in the database but not knative
 				if (ar.Container.Type == model.NamespacedKnativeFunctionType) &&
-					!engine.isScopedKnativeFunction(engine.actions.client, ar.Container.Service) {
-					err := reconstructScopedKnativeFunction(engine.actions.client, ar.Container.Service)
+					!engine.isScopedKnativeFunction(engine.functionsClient, ar.Container.Service) {
+					err := reconstructScopedKnativeFunction(engine.functionsClient, ar.Container.Service)
 					if err != nil {
 						if stErr, ok := status.FromError(err); ok && stErr.Code() == codes.NotFound {
 							engine.sugar.Errorf("knative function: '%s' does not exist", ar.Container.Service)

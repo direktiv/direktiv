@@ -139,7 +139,7 @@ func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x 
 	case log.Error:
 		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Panic:
-		im.engine.logger.Panicf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 
@@ -397,7 +397,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Scale = int(scale)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &con.ID,
 			Workflow:      &wfID,
 			Revision:      &revID,
@@ -412,7 +412,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.BaseInfo{
+		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &con.KnativeService,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,

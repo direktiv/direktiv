@@ -8,6 +8,9 @@ run:
 
 linters:
   disable:
+    - depguard
+    - tagalign
+    - gocritic # must fix, currently causes panic
     - exhaustruct
     - wsl
     - prealloc
@@ -22,22 +25,6 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix
-
-
-    # Workarround to fix issue https://github.com/golangci/golangci-lint/issues/3711
-    # This workarround is mentioned here https://github.com/golangci/golangci-lint/issues/3086#issuecomment-1475232706
-    # under "current list".
-    # TODO: watch for new golangci-lint version to fix this issue.
-    - bodyclose # must fix
-    - contextcheck
-    - nilerr
-    - rowserrcheck
-    - unparam
-    - noctx
-    - sqlclosecheck
-    - tparallel
-    - wastedassign
-
 
   presets:
     - bugs
