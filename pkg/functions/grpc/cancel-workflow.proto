@@ -4,7 +4,7 @@ package direktiv_functions;
 
 option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
-message CancelWorkflowRequest {
+message FunctionsCancelWorkflowRequest {
 	optional string ServiceName = 1;
 	optional string ActionID = 2;
 }

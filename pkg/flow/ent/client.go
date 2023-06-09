@@ -20,8 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/services"
@@ -44,10 +42,6 @@ type Client struct {
 	Events *EventsClient
 	// EventsWait is the client for interacting with the EventsWait builders.
 	EventsWait *EventsWaitClient
-	// Instance is the client for interacting with the Instance builders.
-	Instance *InstanceClient
-	// InstanceRuntime is the client for interacting with the InstanceRuntime builders.
-	InstanceRuntime *InstanceRuntimeClient
 	// LogMsg is the client for interacting with the LogMsg builders.
 	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
@@ -72,8 +66,6 @@ func (c *Client) init() {
 	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Events = NewEventsClient(c.config)
 	c.EventsWait = NewEventsWaitClient(c.config)
-	c.Instance = NewInstanceClient(c.config)
-	c.InstanceRuntime = NewInstanceRuntimeClient(c.config)
 	c.LogMsg = NewLogMsgClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 	c.Services = NewServicesClient(c.config)
@@ -164,8 +156,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
 		EventsWait:        NewEventsWaitClient(cfg),
-		Instance:          NewInstanceClient(cfg),
-		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 		Services:          NewServicesClient(cfg),
@@ -193,8 +183,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
 		EventsWait:        NewEventsWaitClient(cfg),
-		Instance:          NewInstanceClient(cfg),
-		InstanceRuntime:   NewInstanceRuntimeClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 		Services:          NewServicesClient(cfg),
@@ -228,7 +216,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
-		c.Instance, c.InstanceRuntime, c.LogMsg, c.Namespace, c.Services,
+		c.LogMsg, c.Namespace, c.Services,
 	} {
 		n.Use(hooks...)
 	}
@@ -239,7 +227,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
-		c.Instance, c.InstanceRuntime, c.LogMsg, c.Namespace, c.Services,
+		c.LogMsg, c.Namespace, c.Services,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -258,10 +246,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Events.mutate(ctx, m)
 	case *EventsWaitMutation:
 		return c.EventsWait.mutate(ctx, m)
-	case *InstanceMutation:
-		return c.Instance.mutate(ctx, m)
-	case *InstanceRuntimeMutation:
-		return c.InstanceRuntime.mutate(ctx, m)
 	case *LogMsgMutation:
 		return c.LogMsg.mutate(ctx, m)
 	case *NamespaceMutation:
@@ -375,22 +359,6 @@ func (c *AnnotationClient) QueryNamespace(a *Annotation) *NamespaceQuery {
 			sqlgraph.From(annotation.Table, annotation.FieldID, id),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, annotation.NamespaceTable, annotation.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInstance queries the instance edge of a Annotation.
-func (c *AnnotationClient) QueryInstance(a *Annotation) *InstanceQuery {
-	query := (&InstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(annotation.Table, annotation.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, annotation.InstanceTable, annotation.InstanceColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -800,22 +768,6 @@ func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
 	return query
 }
 
-// QueryInstance queries the instance edge of a Events.
-func (c *EventsClient) QueryInstance(e *Events) *InstanceQuery {
-	query := (&InstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(events.Table, events.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, events.InstanceTable, events.InstanceColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryNamespace queries the namespace edge of a Events.
 func (c *EventsClient) QueryNamespace(e *Events) *NamespaceQuery {
 	query := (&NamespaceClient{config: c.config}).Query()
@@ -991,370 +943,6 @@ func (c *EventsWaitClient) mutate(ctx context.Context, m *EventsWaitMutation) (V
 	}
 }
 
-// InstanceClient is a client for the Instance schema.
-type InstanceClient struct {
-	config
-}
-
-// NewInstanceClient returns a client for the Instance from the given config.
-func NewInstanceClient(c config) *InstanceClient {
-	return &InstanceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `instance.Hooks(f(g(h())))`.
-func (c *InstanceClient) Use(hooks ...Hook) {
-	c.hooks.Instance = append(c.hooks.Instance, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `instance.Intercept(f(g(h())))`.
-func (c *InstanceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Instance = append(c.inters.Instance, interceptors...)
-}
-
-// Create returns a builder for creating a Instance entity.
-func (c *InstanceClient) Create() *InstanceCreate {
-	mutation := newInstanceMutation(c.config, OpCreate)
-	return &InstanceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Instance entities.
-func (c *InstanceClient) CreateBulk(builders ...*InstanceCreate) *InstanceCreateBulk {
-	return &InstanceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Instance.
-func (c *InstanceClient) Update() *InstanceUpdate {
-	mutation := newInstanceMutation(c.config, OpUpdate)
-	return &InstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *InstanceClient) UpdateOne(i *Instance) *InstanceUpdateOne {
-	mutation := newInstanceMutation(c.config, OpUpdateOne, withInstance(i))
-	return &InstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *InstanceClient) UpdateOneID(id uuid.UUID) *InstanceUpdateOne {
-	mutation := newInstanceMutation(c.config, OpUpdateOne, withInstanceID(id))
-	return &InstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Instance.
-func (c *InstanceClient) Delete() *InstanceDelete {
-	mutation := newInstanceMutation(c.config, OpDelete)
-	return &InstanceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *InstanceClient) DeleteOne(i *Instance) *InstanceDeleteOne {
-	return c.DeleteOneID(i.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *InstanceClient) DeleteOneID(id uuid.UUID) *InstanceDeleteOne {
-	builder := c.Delete().Where(instance.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &InstanceDeleteOne{builder}
-}
-
-// Query returns a query builder for Instance.
-func (c *InstanceClient) Query() *InstanceQuery {
-	return &InstanceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeInstance},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Instance entity by its id.
-func (c *InstanceClient) Get(ctx context.Context, id uuid.UUID) (*Instance, error) {
-	return c.Query().Where(instance.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *InstanceClient) GetX(ctx context.Context, id uuid.UUID) *Instance {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a Instance.
-func (c *InstanceClient) QueryNamespace(i *Instance) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, instance.NamespaceTable, instance.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryLogs queries the logs edge of a Instance.
-func (c *InstanceClient) QueryLogs(i *Instance) *LogMsgQuery {
-	query := (&LogMsgClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.LogsTable, instance.LogsColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRuntime queries the runtime edge of a Instance.
-func (c *InstanceClient) QueryRuntime(i *Instance) *InstanceRuntimeQuery {
-	query := (&InstanceRuntimeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(instanceruntime.Table, instanceruntime.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, instance.RuntimeTable, instance.RuntimeColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryChildren queries the children edge of a Instance.
-func (c *InstanceClient) QueryChildren(i *Instance) *InstanceRuntimeQuery {
-	query := (&InstanceRuntimeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(instanceruntime.Table, instanceruntime.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.ChildrenTable, instance.ChildrenColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEventlisteners queries the eventlisteners edge of a Instance.
-func (c *InstanceClient) QueryEventlisteners(i *Instance) *EventsQuery {
-	query := (&EventsClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(events.Table, events.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.EventlistenersTable, instance.EventlistenersColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnnotations queries the annotations edge of a Instance.
-func (c *InstanceClient) QueryAnnotations(i *Instance) *AnnotationQuery {
-	query := (&AnnotationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instance.Table, instance.FieldID, id),
-			sqlgraph.To(annotation.Table, annotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, instance.AnnotationsTable, instance.AnnotationsColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *InstanceClient) Hooks() []Hook {
-	return c.hooks.Instance
-}
-
-// Interceptors returns the client interceptors.
-func (c *InstanceClient) Interceptors() []Interceptor {
-	return c.inters.Instance
-}
-
-func (c *InstanceClient) mutate(ctx context.Context, m *InstanceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&InstanceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&InstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&InstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&InstanceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Instance mutation op: %q", m.Op())
-	}
-}
-
-// InstanceRuntimeClient is a client for the InstanceRuntime schema.
-type InstanceRuntimeClient struct {
-	config
-}
-
-// NewInstanceRuntimeClient returns a client for the InstanceRuntime from the given config.
-func NewInstanceRuntimeClient(c config) *InstanceRuntimeClient {
-	return &InstanceRuntimeClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `instanceruntime.Hooks(f(g(h())))`.
-func (c *InstanceRuntimeClient) Use(hooks ...Hook) {
-	c.hooks.InstanceRuntime = append(c.hooks.InstanceRuntime, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `instanceruntime.Intercept(f(g(h())))`.
-func (c *InstanceRuntimeClient) Intercept(interceptors ...Interceptor) {
-	c.inters.InstanceRuntime = append(c.inters.InstanceRuntime, interceptors...)
-}
-
-// Create returns a builder for creating a InstanceRuntime entity.
-func (c *InstanceRuntimeClient) Create() *InstanceRuntimeCreate {
-	mutation := newInstanceRuntimeMutation(c.config, OpCreate)
-	return &InstanceRuntimeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of InstanceRuntime entities.
-func (c *InstanceRuntimeClient) CreateBulk(builders ...*InstanceRuntimeCreate) *InstanceRuntimeCreateBulk {
-	return &InstanceRuntimeCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for InstanceRuntime.
-func (c *InstanceRuntimeClient) Update() *InstanceRuntimeUpdate {
-	mutation := newInstanceRuntimeMutation(c.config, OpUpdate)
-	return &InstanceRuntimeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *InstanceRuntimeClient) UpdateOne(ir *InstanceRuntime) *InstanceRuntimeUpdateOne {
-	mutation := newInstanceRuntimeMutation(c.config, OpUpdateOne, withInstanceRuntime(ir))
-	return &InstanceRuntimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *InstanceRuntimeClient) UpdateOneID(id uuid.UUID) *InstanceRuntimeUpdateOne {
-	mutation := newInstanceRuntimeMutation(c.config, OpUpdateOne, withInstanceRuntimeID(id))
-	return &InstanceRuntimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for InstanceRuntime.
-func (c *InstanceRuntimeClient) Delete() *InstanceRuntimeDelete {
-	mutation := newInstanceRuntimeMutation(c.config, OpDelete)
-	return &InstanceRuntimeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *InstanceRuntimeClient) DeleteOne(ir *InstanceRuntime) *InstanceRuntimeDeleteOne {
-	return c.DeleteOneID(ir.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *InstanceRuntimeClient) DeleteOneID(id uuid.UUID) *InstanceRuntimeDeleteOne {
-	builder := c.Delete().Where(instanceruntime.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &InstanceRuntimeDeleteOne{builder}
-}
-
-// Query returns a query builder for InstanceRuntime.
-func (c *InstanceRuntimeClient) Query() *InstanceRuntimeQuery {
-	return &InstanceRuntimeQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeInstanceRuntime},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a InstanceRuntime entity by its id.
-func (c *InstanceRuntimeClient) Get(ctx context.Context, id uuid.UUID) (*InstanceRuntime, error) {
-	return c.Query().Where(instanceruntime.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *InstanceRuntimeClient) GetX(ctx context.Context, id uuid.UUID) *InstanceRuntime {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryInstance queries the instance edge of a InstanceRuntime.
-func (c *InstanceRuntimeClient) QueryInstance(ir *InstanceRuntime) *InstanceQuery {
-	query := (&InstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ir.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instanceruntime.Table, instanceruntime.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, instanceruntime.InstanceTable, instanceruntime.InstanceColumn),
-		)
-		fromV = sqlgraph.Neighbors(ir.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCaller queries the caller edge of a InstanceRuntime.
-func (c *InstanceRuntimeClient) QueryCaller(ir *InstanceRuntime) *InstanceQuery {
-	query := (&InstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ir.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(instanceruntime.Table, instanceruntime.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, instanceruntime.CallerTable, instanceruntime.CallerColumn),
-		)
-		fromV = sqlgraph.Neighbors(ir.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *InstanceRuntimeClient) Hooks() []Hook {
-	return c.hooks.InstanceRuntime
-}
-
-// Interceptors returns the client interceptors.
-func (c *InstanceRuntimeClient) Interceptors() []Interceptor {
-	return c.inters.InstanceRuntime
-}
-
-func (c *InstanceRuntimeClient) mutate(ctx context.Context, m *InstanceRuntimeMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&InstanceRuntimeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&InstanceRuntimeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&InstanceRuntimeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&InstanceRuntimeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown InstanceRuntime mutation op: %q", m.Op())
-	}
-}
-
 // LogMsgClient is a client for the LogMsg schema.
 type LogMsgClient struct {
 	config
@@ -1457,22 +1045,6 @@ func (c *LogMsgClient) QueryNamespace(lm *LogMsg) *NamespaceQuery {
 			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
 			sqlgraph.To(namespace.Table, namespace.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.NamespaceTable, logmsg.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryInstance queries the instance edge of a LogMsg.
-func (c *LogMsgClient) QueryInstance(lm *LogMsg) *InstanceQuery {
-	query := (&InstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.InstanceTable, logmsg.InstanceColumn),
 		)
 		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
 		return fromV, nil
@@ -1596,22 +1168,6 @@ func (c *NamespaceClient) GetX(ctx context.Context, id uuid.UUID) *Namespace {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryInstances queries the instances edge of a Namespace.
-func (c *NamespaceClient) QueryInstances(n *Namespace) *InstanceQuery {
-	query := (&InstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.InstancesTable, namespace.InstancesColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryLogs queries the logs edge of a Namespace.
@@ -1872,12 +1428,12 @@ func (c *ServicesClient) mutate(ctx context.Context, m *ServicesMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, Instance,
-		InstanceRuntime, LogMsg, Namespace, Services []ent.Hook
+		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
+		Namespace, Services []ent.Hook
 	}
 	inters struct {
-		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, Instance,
-		InstanceRuntime, LogMsg, Namespace, Services []ent.Interceptor
+		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
+		Namespace, Services []ent.Interceptor
 	}
 )
 

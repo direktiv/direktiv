@@ -11,31 +11,29 @@ import (
 	"sync"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
-	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -60,16 +58,14 @@ type server struct {
 	engine *engine
 
 	gormDB *gorm.DB
-	// fStore    filestore.FileStore
-	// dataStore datastore.Store
 
 	mirrorManager mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
-	vars     *vars
-	actions  *actions
+	flow            *flow
+	internal        *internal
+	events          *events
+	vars            *vars
+	functionsClient igrpc.FunctionsClient
 
 	metrics    *metrics.Client
 	logger     *internallogger.Logger // TODO: remove
@@ -157,8 +153,6 @@ func (srv *server) start(ctx context.Context) error {
 	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
 	defer srv.cleanup(srv.database.Close)
 
-	// fmt.Printf(">>>>>> dsn %s\n", db)
-
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
@@ -167,7 +161,7 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Info,
+				LogLevel: logger.Silent,
 			},
 		),
 	})
@@ -181,8 +175,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
-	// srv.fStore = psql.NewSQLFileStore(srv.gormDB)
-	// srv.dataStore = sql.NewSQLStore(srv.gormDB)
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -261,11 +253,12 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	srv.sugar.Debug("Initializing mirror manager.")
-	store := datastoresql.NewSQLStore(srv.gormDB, os.Getenv(direktivSecretKey))
-	fStore := filestoresql.NewSQLFileStore(srv.gormDB)
+	noTx := &sqlTx{
+		res: srv.gormDB,
+	}
 
 	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
-		store.Logs().Append,
+		noTx.DataStore().Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
 		},
@@ -274,10 +267,10 @@ func (srv *server) start(ctx context.Context) error {
 	srv.loggerBeta = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
-			AddTraceFrom: func(ctx context.Context, toTags map[string]interface{}) map[string]interface{} {
+			AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
 				span := trace.SpanFromContext(ctx)
 				tid := span.SpanContext().TraceID()
-				toTags["trace"] = tid
+				toTags["trace"] = tid.String()
 				return toTags
 			},
 		},
@@ -289,12 +282,12 @@ func (srv *server) start(ctx context.Context) error {
 	}()
 
 	cc := func(ctx context.Context, file *filestore.File) error {
-		_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+		_, router, err := getRouter(ctx, noTx, file)
 		if err != nil {
 			return err
 		}
 
-		err = srv.flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), file.RootID, file, router, false)
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, file.RootID, file, router, false)
 		if err != nil {
 			return err
 		}
@@ -323,18 +316,19 @@ func (srv *server) start(ctx context.Context) error {
 			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
 			srv.logger.Errorf(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
 		},
-		store.Mirror(),
-		fStore,
+		noTx.DataStore().Mirror(),
+		noTx.FileStore(),
 		&mirror.GitSource{},
 		cc,
 	)
 
-	srv.sugar.Debug("Initializing actions grpc server.")
-
-	srv.actions, err = initActionsServer(cctx, srv)
+	srv.sugar.Debug("Initializing functions grpc client.")
+	functionsClientConn, err := util.GetEndpointTLS(srv.conf.FunctionsService + ":5555")
 	if err != nil {
+		srv.sugar.Error("initializing functions grpc client", "error", err)
 		return err
 	}
+	srv.functionsClient = igrpc.NewFunctionsClient(functionsClientConn)
 
 	if srv.conf.Eventing {
 		srv.sugar.Debug("Initializing knative eventing receiver.")
@@ -383,20 +377,6 @@ func (srv *server) start(ctx context.Context) error {
 		defer wg.Done()
 		defer cancel()
 		e := srv.flow.Run()
-		if e != nil {
-			srv.sugar.Error(err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		defer cancel()
-		e := srv.actions.Run()
 		if e != nil {
 			srv.sugar.Error(err)
 			lock.Lock()
@@ -487,12 +467,12 @@ func (srv *server) PublishToCluster(payload string) {
 	})
 }
 
-func (server *server) CacheNotify(req *pubsub.PubsubUpdate) {
-	if server.ID.String() == req.Sender {
+func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
+	if srv.ID.String() == req.Sender {
 		return
 	}
 
-	server.database.HandleNotification(req.Key)
+	srv.database.HandleNotification(req.Key)
 }
 
 func (srv *server) registerFunctions() {
@@ -528,21 +508,21 @@ func (srv *server) cronPoller() {
 func (srv *server) cronPoll() {
 	ctx := context.Background()
 
-	fStore, store, _, rollback, err := srv.flow.beginSqlTx(ctx)
+	tx, err := srv.flow.beginSqlTx(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	roots, err := fStore.GetAllRoots(ctx)
+	roots, err := tx.FileStore().GetAllRoots(ctx)
 	if err != nil {
 		srv.sugar.Error(err)
 		return
 	}
 
 	for _, root := range roots {
-		files, err := fStore.ForRootID(root.ID).ListAllFiles(ctx)
+		files, err := tx.FileStore().ForRootID(root.ID).ListAllFiles(ctx)
 		if err != nil {
 			srv.sugar.Error(err)
 			return
@@ -553,13 +533,13 @@ func (srv *server) cronPoll() {
 				continue
 			}
 
-			srv.cronPollerWorkflow(ctx, fStore, store.FileAnnotations(), file)
+			srv.cronPollerWorkflow(ctx, tx, file)
 		}
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, fStore filestore.FileStore, store core.FileAnnotationsStore, file *filestore.File) {
-	ms, muxErr, err := srv.validateRouter(ctx, fStore, store, file)
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx *sqlTx, file *filestore.File) {
+	ms, muxErr, err := srv.validateRouter(ctx, tx, file)
 	if err != nil || muxErr != nil {
 		return
 	}
@@ -595,43 +575,6 @@ func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.S
 	return nil
 }
 
-func (flow *flow) Build(ctx context.Context, in *emptypb.Empty) (*grpc.BuildResponse, error) {
-	var resp grpc.BuildResponse
-	resp.Build = version.Version
-	return &resp, nil
-}
-
-func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
-
-	if attr := im.runtime.LogToEvents; attr != "" {
-		s := fmt.Sprintf(msg, a...)
-		event := cloudevents.NewEvent()
-		event.SetID(uuid.New().String())
-		event.SetSource(im.cached.File.ID.String())
-		event.SetType("direktiv.instanceLog")
-		event.SetExtension("logger", attr)
-		event.SetDataContentType("application/json")
-		err := event.SetData("application/json", s)
-		if err != nil {
-			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
-		}
-
-		err = engine.events.BroadcastCloudevent(ctx, im.cached.Namespace, &event, 0)
-		if err != nil {
-			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
-			return
-		}
-	}
-}
-
-func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
-	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
-	}
-}
-
 func this() string {
 	pc, _, _, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)
@@ -639,46 +582,56 @@ func this() string {
 	return elems[len(elems)-1]
 }
 
-func parent() string {
-	pc, _, _, ok := runtime.Caller(2)
-	if !ok {
-		return ""
-	}
-	fn := runtime.FuncForPC(pc)
-	elems := strings.Split(fn.Name(), ".")
-	return elems[len(elems)-1]
+type sqlTx struct {
+	res *gorm.DB
 }
 
-func (flow *flow) beginSqlTx(ctx context.Context) (filestore.FileStore, datastore.Store, func(ctx context.Context) error, func(), error) {
-	res := flow.gormDB.WithContext(ctx).Begin()
-	if res.Error != nil {
-		return nil, nil, nil, nil, res.Error
-	}
-	rollbackFunc := func() {
-		err := res.Rollback().Error
-		if err != nil {
-			if !strings.Contains(err.Error(), "already") {
-				fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
-			}
+func (tx *sqlTx) FileStore() filestore.FileStore {
+	return filestoresql.NewSQLFileStore(tx.res)
+}
+
+func (tx *sqlTx) DataStore() datastore.Store {
+	return datastoresql.NewSQLStore(tx.res, os.Getenv(direktivSecretKey))
+}
+
+func (tx *sqlTx) InstanceStore() instancestore.Store {
+	logger := zap.NewNop()
+	return instancestoresql.NewSQLInstanceStore(tx.res, logger.Sugar())
+}
+
+func (tx *sqlTx) Commit(ctx context.Context) error {
+	return tx.res.WithContext(ctx).Commit().Error
+}
+
+func (tx *sqlTx) Rollback() {
+	err := tx.res.Rollback().Error
+	if err != nil {
+		if !strings.Contains(err.Error(), "already") {
+			fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
 		}
 	}
-	commitFunc := func(ctx context.Context) error {
-		return res.WithContext(ctx).Commit().Error
-	}
-
-	return filestoresql.NewSQLFileStore(res), datastoresql.NewSQLStore(res, os.Getenv(direktivSecretKey)), commitFunc, rollbackFunc, nil
 }
 
-func (flow *flow) runSqlTx(ctx context.Context, fun func(fStore filestore.FileStore, store datastore.Store) error) error {
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+func (srv *server) beginSqlTx(ctx context.Context) (*sqlTx, error) {
+	res := srv.gormDB.WithContext(ctx).Begin()
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &sqlTx{
+		res: res,
+	}, nil
+}
+
+func (srv *server) runSqlTx(ctx context.Context, fun func(tx *sqlTx) error) error {
+	tx, err := srv.beginSqlTx(ctx)
 	if err != nil {
 		return err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	if err := fun(fStore, store); err != nil {
+	if err := fun(tx); err != nil {
 		return err
 	}
 
-	return commit(ctx)
+	return tx.Commit(ctx)
 }

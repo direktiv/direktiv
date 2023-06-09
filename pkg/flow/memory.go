@@ -10,13 +10,11 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/util"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
 
@@ -31,97 +29,63 @@ type instanceMemory struct {
 	// stores the events to be fired on schedule
 	eventQueue []string
 
-	// stores row updates to fire all at once
-	instanceUpdater *ent.InstanceUpdateOne
-	runtimeUpdater  *ent.InstanceRuntimeUpdateOne
-
-	// tx      database.Transaction
-	cached  *database.CacheData
-	runtime *database.InstanceRuntime
-
 	tags map[string]string
+
+	instance   *enginerefactor.Instance
+	updateArgs *instancestore.UpdateInstanceDataArgs
 }
 
-func (im *instanceMemory) getInstanceUpdater() *ent.InstanceUpdateOne {
-	if im.instanceUpdater == nil {
-		clients := im.engine.edb.Clients(context.Background())
-		im.instanceUpdater = clients.Instance.UpdateOneID(im.cached.Instance.ID)
+func (im *instanceMemory) Namespace() *database.Namespace {
+	return &database.Namespace{
+		ID:   im.instance.Instance.NamespaceID,
+		Name: im.instance.TelemetryInfo.NamespaceName,
 	}
-
-	return im.instanceUpdater
-}
-
-func (im *instanceMemory) getRuntimeUpdater() *ent.InstanceRuntimeUpdateOne {
-	if im.runtimeUpdater == nil {
-		clients := im.engine.edb.Clients(context.Background())
-		im.runtimeUpdater = clients.InstanceRuntime.UpdateOneID(im.runtime.ID)
-	}
-
-	return im.runtimeUpdater
 }
 
 func (im *instanceMemory) flushUpdates(ctx context.Context) error {
-	var changes bool
-
-	if im.runtimeUpdater != nil {
-		changes = true
-
-		updater := im.runtimeUpdater
-		im.runtimeUpdater = nil
-
-		rt, err := updater.Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		im.runtime = entwrapper.EntInstanceRuntime(rt)
+	data, err := json.Marshal(im.updateArgs)
+	if err != nil {
+		panic(err)
 	}
 
-	if im.instanceUpdater != nil {
-		changes = true
-
-		updater := im.instanceUpdater
-		im.instanceUpdater = nil
-
-		in, err := updater.Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		im.cached.Instance = entwrapper.EntInstance(in)
-		im.cached.Instance.Namespace = im.cached.Namespace.ID
-		if im.cached.File != nil {
-			im.cached.Instance.Workflow = im.cached.File.ID
-		}
-		if im.cached.Revision != nil {
-			im.cached.Instance.Revision = im.cached.Revision.ID
-		}
-		im.cached.Instance.Runtime = im.runtime.ID
-
-		err = im.engine.database.FlushInstance(ctx, im.cached.Instance)
-		if err != nil {
-			return err
-		}
+	if string(data) == `{}` {
+		return nil
 	}
 
-	if changes {
-		im.engine.pubsub.NotifyInstance(im.cached.Instance)
-		im.engine.pubsub.NotifyInstances(im.cached.Namespace)
+	tx, err := im.engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
 	}
+	defer tx.Rollback()
+
+	err = tx.InstanceStore().ForInstanceID(im.instance.Instance.ID).UpdateInstanceData(ctx, im.updateArgs)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
+
+	im.engine.pubsub.NotifyInstance(im.instance.Instance.ID)
+	im.engine.pubsub.NotifyInstances(im.Namespace())
 
 	return nil
 }
 
 func (im *instanceMemory) ID() uuid.UUID {
-	return im.cached.Instance.ID
+	return im.instance.Instance.ID
 }
 
 func (im *instanceMemory) Controller() string {
-	return im.runtime.Controller
+	return im.instance.RuntimeInfo.Controller
 }
 
 func (im *instanceMemory) Model() (*model.Workflow, error) {
-	data := im.cached.Revision.Data
+	data := im.instance.Instance.Definition
 
 	workflow := new(model.Workflow)
 
@@ -134,15 +98,15 @@ func (im *instanceMemory) Model() (*model.Workflow, error) {
 }
 
 func (im *instanceMemory) Step() int {
-	return len(im.runtime.Flow)
+	return len(im.instance.RuntimeInfo.Flow)
 }
 
 func (im *instanceMemory) Status() string {
-	return im.cached.Instance.Status
+	return im.instance.Instance.Status.String()
 }
 
 func (im *instanceMemory) Flow() []string {
-	return im.runtime.Flow
+	return im.instance.RuntimeInfo.Flow
 }
 
 func (im *instanceMemory) MarshalData() string {
@@ -164,6 +128,11 @@ func (im *instanceMemory) MarshalOutput() string {
 
 func (im *instanceMemory) setMemory(x interface{}) {
 	im.memory = x
+
+	data := im.MarshalMemory()
+
+	im.instance.Instance.StateMemory = []byte(data)
+	im.updateArgs.StateMemory = &im.instance.Instance.StateMemory
 }
 
 func (im *instanceMemory) GetMemory() interface{} {
@@ -198,15 +167,22 @@ func (im *instanceMemory) UnmarshalMemory(x interface{}) error {
 }
 
 func (im *instanceMemory) ErrorCode() string {
-	return im.cached.Instance.ErrorCode
+	return im.instance.Instance.ErrorCode
 }
 
 func (im *instanceMemory) ErrorMessage() string {
-	return im.cached.Instance.ErrorMessage
+	return string(im.instance.Instance.ErrorMessage)
 }
 
 func (im *instanceMemory) StateBeginTime() time.Time {
-	return im.runtime.StateBeginTime
+	return im.instance.RuntimeInfo.StateBeginTime
+}
+
+func (im *instanceMemory) replaceData(x map[string]interface{}) {
+	im.data = x
+	data := im.MarshalData()
+	im.instance.Instance.LiveData = []byte(data)
+	im.updateArgs.LiveData = &im.instance.Instance.LiveData
 }
 
 func (im *instanceMemory) StoreData(key string, val interface{}) error {
@@ -217,11 +193,13 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 
 	m[key] = val
 
+	im.replaceData(m)
+
 	return nil
 }
 
 func (im *instanceMemory) GetAttributes() map[string]string {
-	tags := im.cached.GetAttributes(recipient.Instance)
+	tags := im.instance.GetAttributes(recipient.Instance)
 	for k, v := range im.tags {
 		tags[k] = v
 	}
@@ -229,18 +207,23 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 		tags["state-id"] = im.logic.GetID()
 		tags["state-type"] = im.logic.GetType().String()
 	}
-	a := strings.Split(im.cached.Instance.InvokerState, ":")
-	if len(a) >= 1 && a[0] != "" {
-		tags["invoker-workflow"] = a[0]
+
+	pi := im.engine.InstanceCaller(context.Background(), im)
+	if pi != nil {
+		a := strings.Split(pi.State, ":")
+		if len(a) >= 1 && a[0] != "" {
+			tags["invoker-workflow"] = a[0]
+		}
+		if len(a) > 1 {
+			tags["invoker-state-id"] = a[1]
+		}
 	}
-	if len(a) > 1 {
-		tags["invoker-state-id"] = a[1]
-	}
+
 	return tags
 }
 
 func (im *instanceMemory) GetState() string {
-	tags := im.cached.GetAttributes(recipient.Instance)
+	tags := im.instance.GetAttributes(recipient.Instance)
 	if im.logic != nil {
 		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
 	}
@@ -248,44 +231,33 @@ func (im *instanceMemory) GetState() string {
 }
 
 func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instanceMemory, error) {
-	uid, err := uuid.Parse(id)
+	instID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	cached := new(database.CacheData)
+	tx, err := engine.flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
 
-	// TODO: alan, need to load all of this information in a more performant manner
-	err = engine.database.Instance(ctx, cached, uid)
+	idata, err := tx.InstanceStore().ForInstanceID(instID).GetMost(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := engine.flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
+	tx.Rollback()
 
-	file, revision, err := fStore.GetRevision(ctx, cached.Instance.Revision)
-	if err != nil {
-		if !errors.Is(err, filestore.ErrNotFound) {
-			return nil, err
-		}
-	}
-
-	cached.File = file
-	cached.Revision = revision
-
-	rt, err := engine.database.InstanceRuntime(ctx, cached.Instance.Runtime)
+	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
 		return nil, err
 	}
 
 	im := new(instanceMemory)
 	im.engine = engine
-	im.cached = cached
-	im.runtime = rt
+	im.instance = instance
+	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
 
 	defer func() {
 		e := im.flushUpdates(ctx)
@@ -294,25 +266,19 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 		}
 	}()
 
-	if cached.File == nil || cached.Revision == nil {
-		err = errors.New("the workflow or revision was deleted")
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
-		return nil, err
-	}
-
-	err = json.Unmarshal([]byte(im.runtime.Data), &im.data)
+	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(im.runtime.Memory), &im.memory)
+	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
-	flow := im.runtime.Flow
+	flow := im.instance.RuntimeInfo.Flow
 	stateID := flow[len(flow)-1]
 
 	err = engine.loadStateLogic(im, stateID)
@@ -338,7 +304,7 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 
 	im.lock = conn
 
-	if !im.cached.Instance.EndAt.IsZero() {
+	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
 		engine.InstanceUnlock(im)
 		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
 	}
@@ -351,29 +317,18 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 	return ctx, im, nil
 }
 
-func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *subflowCaller {
-	var err error
-
-	str := im.runtime.CallerData
-	if str == "" || str == util.CallerCron {
+func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *enginerefactor.ParentInfo {
+	di := im.instance.DescentInfo
+	if len(di.Descent) == 0 {
 		return nil
 	}
 
-	output := new(subflowCaller)
-	err = json.Unmarshal([]byte(str), output)
-	if err != nil {
-		engine.sugar.Error(err)
-		return nil
-	}
-
-	return output
+	return &di.Descent[len(di.Descent)-1]
 }
 
 func (engine *engine) StoreMetadata(ctx context.Context, im *instanceMemory, data string) {
-	updater := im.getRuntimeUpdater()
-	updater = updater.SetMetadata(data)
-	im.runtime.Metadata = data
-	im.runtimeUpdater = updater
+	im.instance.Instance.Metadata = []byte(data)
+	im.updateArgs.Metadata = &im.instance.Instance.Metadata
 }
 
 func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
@@ -387,7 +342,7 @@ func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
 
 	ctx := context.Background()
 
-	err := engine.events.deleteInstanceEventListeners(ctx, im.cached)
+	err := engine.events.deleteInstanceEventListeners(ctx, im)
 	if err != nil {
 		engine.sugar.Error(err)
 	}
@@ -397,7 +352,7 @@ func (engine *engine) freeResources(im *instanceMemory) {
 	ctx := context.Background()
 
 	for i := range im.eventQueue {
-		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.cached.Namespace, true)
+		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.Namespace(), true)
 		if err != nil {
 			engine.sugar.Errorf("Failed to flush event: %v.", err)
 		}

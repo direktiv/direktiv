@@ -47,7 +47,7 @@ const (
 	ServiceKnativeHeaderRolloutDuration = "serving.knative.dev/rolloutDuration"
 )
 
-func createKnativeFunction(info *igrpc.BaseInfo) (*v1.Service, error) {
+func createKnativeFunction(info *igrpc.FunctionsBaseInfo) (*v1.Service, error) {
 	name, scope, hash := GenerateServiceName(info)
 
 	l, err := locksmgr.lock(name, false)
@@ -145,7 +145,7 @@ func trimRevisionSuffix(s string) string {
 	return s
 }
 
-func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
+func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.FunctionsBaseInfo) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
 		Name:        svn,
 		Namespace:   functionsConfig.Namespace,
@@ -174,7 +174,7 @@ func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo
 	return meta
 }
 
-func generatePodMeta(svn, scope, hash string, size int, info *igrpc.BaseInfo) metav1.ObjectMeta {
+func generatePodMeta(svn, scope, hash string, size int, info *igrpc.FunctionsBaseInfo) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   functionsConfig.Namespace,
 		Labels:      make(map[string]string),

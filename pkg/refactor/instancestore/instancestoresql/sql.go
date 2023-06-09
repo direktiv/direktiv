@@ -53,7 +53,8 @@ var (
 	summaryFields = []string{
 		fieldID, fieldNamespaceID, fieldWorkflowID, fieldRevisionID, fieldRootInstanceID,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
-		fieldErrorCode, fieldInvoker, fieldErrorMessage,
+		fieldErrorCode, fieldInvoker, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
+		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
 	}
 )
 
@@ -94,11 +95,11 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		Settings:       args.Settings,
 		DescentInfo:    args.DescentInfo,
 		TelemetryInfo:  args.TelemetryInfo,
-		RuntimeInfo:    []byte(`{}`),
-		ChildrenInfo:   []byte(`{}`),
+		RuntimeInfo:    args.RuntimeInfo,
+		ChildrenInfo:   args.ChildrenInfo,
 		Input:          args.Input,
-		LiveData:       []byte(`{}`),
-		StateMemory:    []byte(``),
+		LiveData:       args.LiveData,
+		StateMemory:    []byte(`{}`),
 		Output:         nil,
 		ErrorMessage:   nil,
 		Metadata:       nil,

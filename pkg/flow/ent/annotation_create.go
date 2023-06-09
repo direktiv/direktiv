@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
 )
@@ -84,6 +83,20 @@ func (ac *AnnotationCreate) SetMimeType(s string) *AnnotationCreate {
 	return ac
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (ac *AnnotationCreate) SetInstanceID(u uuid.UUID) *AnnotationCreate {
+	ac.mutation.SetInstanceID(u)
+	return ac
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (ac *AnnotationCreate) SetNillableInstanceID(u *uuid.UUID) *AnnotationCreate {
+	if u != nil {
+		ac.SetInstanceID(*u)
+	}
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *AnnotationCreate) SetID(u uuid.UUID) *AnnotationCreate {
 	ac.mutation.SetID(u)
@@ -115,25 +128,6 @@ func (ac *AnnotationCreate) SetNillableNamespaceID(id *uuid.UUID) *AnnotationCre
 // SetNamespace sets the "namespace" edge to the Namespace entity.
 func (ac *AnnotationCreate) SetNamespace(n *Namespace) *AnnotationCreate {
 	return ac.SetNamespaceID(n.ID)
-}
-
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (ac *AnnotationCreate) SetInstanceID(id uuid.UUID) *AnnotationCreate {
-	ac.mutation.SetInstanceID(id)
-	return ac
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (ac *AnnotationCreate) SetNillableInstanceID(id *uuid.UUID) *AnnotationCreate {
-	if id != nil {
-		ac = ac.SetInstanceID(*id)
-	}
-	return ac
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (ac *AnnotationCreate) SetInstance(i *Instance) *AnnotationCreate {
-	return ac.SetInstanceID(i.ID)
 }
 
 // Mutation returns the AnnotationMutation object of the builder.
@@ -277,6 +271,10 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 		_spec.SetField(annotation.FieldMimeType, field.TypeString, value)
 		_node.MimeType = value
 	}
+	if value, ok := ac.mutation.InstanceID(); ok {
+		_spec.SetField(annotation.FieldInstanceID, field.TypeUUID, value)
+		_node.InstanceID = value
+	}
 	if nodes := ac.mutation.NamespaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -292,23 +290,6 @@ func (ac *AnnotationCreate) createSpec() (*Annotation, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.namespace_annotations = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InstanceTable,
-			Columns: []string{annotation.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.instance_annotations = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -438,6 +419,24 @@ func (u *AnnotationUpsert) SetMimeType(v string) *AnnotationUpsert {
 // UpdateMimeType sets the "mime_type" field to the value that was provided on create.
 func (u *AnnotationUpsert) UpdateMimeType() *AnnotationUpsert {
 	u.SetExcluded(annotation.FieldMimeType)
+	return u
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *AnnotationUpsert) SetInstanceID(v uuid.UUID) *AnnotationUpsert {
+	u.Set(annotation.FieldInstanceID, v)
+	return u
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *AnnotationUpsert) UpdateInstanceID() *AnnotationUpsert {
+	u.SetExcluded(annotation.FieldInstanceID)
+	return u
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *AnnotationUpsert) ClearInstanceID() *AnnotationUpsert {
+	u.SetNull(annotation.FieldInstanceID)
 	return u
 }
 
@@ -580,6 +579,27 @@ func (u *AnnotationUpsertOne) SetMimeType(v string) *AnnotationUpsertOne {
 func (u *AnnotationUpsertOne) UpdateMimeType() *AnnotationUpsertOne {
 	return u.Update(func(s *AnnotationUpsert) {
 		s.UpdateMimeType()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *AnnotationUpsertOne) SetInstanceID(v uuid.UUID) *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *AnnotationUpsertOne) UpdateInstanceID() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *AnnotationUpsertOne) ClearInstanceID() *AnnotationUpsertOne {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.ClearInstanceID()
 	})
 }
 
@@ -885,6 +905,27 @@ func (u *AnnotationUpsertBulk) SetMimeType(v string) *AnnotationUpsertBulk {
 func (u *AnnotationUpsertBulk) UpdateMimeType() *AnnotationUpsertBulk {
 	return u.Update(func(s *AnnotationUpsert) {
 		s.UpdateMimeType()
+	})
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (u *AnnotationUpsertBulk) SetInstanceID(v uuid.UUID) *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.SetInstanceID(v)
+	})
+}
+
+// UpdateInstanceID sets the "instance_id" field to the value that was provided on create.
+func (u *AnnotationUpsertBulk) UpdateInstanceID() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.UpdateInstanceID()
+	})
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (u *AnnotationUpsertBulk) ClearInstanceID() *AnnotationUpsertBulk {
+	return u.Update(func(s *AnnotationUpsert) {
+		s.ClearInstanceID()
 	})
 }
 

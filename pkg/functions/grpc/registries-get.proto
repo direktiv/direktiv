@@ -4,16 +4,16 @@ package direktiv_functions;
 
 option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
-message Registry {
+message FunctionsRegistry {
 	optional string name = 1;
 	optional string id = 2;
 	optional string user = 3;
 }
 
-message GetRegistriesRequest {
+message FunctionsGetRegistriesRequest {
 	optional string namespace = 1;
 }
 
-message GetRegistriesResponse {
-	repeated Registry registries = 1;
+message FunctionsGetRegistriesResponse {
+	repeated FunctionsRegistry registries = 1;
 }

@@ -35,7 +35,11 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 
 	var allPaths []string
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").Select("path").Where("root_id", q.rootID).Find(&allPaths)
+	res := q.db.WithContext(ctx).Raw(`
+						SELECT path 
+						FROM filesystem_files 
+						WHERE root_id = ?
+						`, q.rootID).Find(&allPaths)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -284,12 +288,11 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 		}
 	}
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").
-		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
-		Select("id", "path", "depth", "typ", "root_id", "created_at", "updated_at").
-		Where("root_id", q.rootID).
-		Where("depth", filestore.GetPathDepth(path)+1).
-		Where("path LIKE ?", addTrailingSlash(path)+"%"). // trailing slash necessary otherwise "/a" will receive children for both "/a" and "/abc".
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT id, path, depth, typ, root_id, created_at, updated_at
+					FROM filesystem_files
+					WHERE root_id=? AND depth=? AND path LIKE ?`,
+		q.rootID, filestore.GetPathDepth(path)+1, addTrailingSlash(path)+"%").
 		Find(&list)
 
 	if res.Error != nil {

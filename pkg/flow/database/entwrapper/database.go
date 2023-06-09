@@ -9,8 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entrt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/google/uuid"
@@ -30,9 +28,7 @@ type EntClients struct {
 	Events            *ent.EventsClient
 	CloudEvents       *ent.CloudEventsClient
 	CloudEventFilters *ent.CloudEventFiltersClient
-	Instance          *ent.InstanceClient
 	LogMsg            *ent.LogMsgClient
-	InstanceRuntime   *ent.InstanceRuntimeClient
 }
 
 // TODO: delete.
@@ -50,9 +46,7 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 			Events:            db.Client.Events,
 			CloudEvents:       db.Client.CloudEvents,
 			CloudEventFilters: db.Client.CloudEventFilters,
-			Instance:          db.Client.Instance,
 			LogMsg:            db.Client.LogMsg,
-			InstanceRuntime:   db.Client.InstanceRuntime,
 		}
 	}
 
@@ -64,9 +58,7 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 		Events:            x.Events,
 		CloudEvents:       x.CloudEvents,
 		CloudEventFilters: x.CloudEventFilters,
-		Instance:          x.Instance,
 		LogMsg:            x.LogMsg,
-		InstanceRuntime:   x.InstanceRuntime,
 	}
 }
 
@@ -191,36 +183,6 @@ func (db *Database) NamespaceByName(ctx context.Context, name string) (*database
 	return db.entNamespace(ns), nil
 }
 
-func (db *Database) Instance(ctx context.Context, id uuid.UUID) (*database.Instance, error) {
-	clients := db.clients(ctx)
-
-	inst, err := clients.Instance.Query().Where(entinst.ID(id)).WithNamespace(func(q *ent.NamespaceQuery) {
-		q.Select(entns.FieldID)
-	}).WithRuntime(func(q *ent.InstanceRuntimeQuery) {
-		q.Select(entrt.FieldID)
-	}).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve instance: %v", parent(), err)
-		return nil, err
-	}
-
-	return entInstance(inst), nil
-}
-
-func (db *Database) InstanceRuntime(ctx context.Context, id uuid.UUID) (*database.InstanceRuntime, error) {
-	clients := db.clients(ctx)
-
-	rt, err := clients.InstanceRuntime.Query().Where(entrt.ID(id)).WithCaller(func(q *ent.InstanceQuery) {
-		q.Select(entinst.FieldID)
-	}).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve instance runtime data: %v", parent(), err)
-		return nil, err
-	}
-
-	return entInstanceRuntime(rt), nil
-}
-
 func (db *Database) NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*database.Annotation, error) {
 	clients := db.clients(ctx)
 
@@ -236,7 +198,7 @@ func (db *Database) NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key
 func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, key string) (*database.Annotation, error) {
 	clients := db.clients(ctx)
 
-	annotation, err := clients.Annotation.Query().Where(entnote.HasInstanceWith(entinst.ID(instID)), entnote.Name(key)).Only(ctx)
+	annotation, err := clients.Annotation.Query().Where(entnote.InstanceID(instID), entnote.Name(key)).Only(ctx)
 	if err != nil {
 		db.Sugar.Debugf("%s failed to resolve instance annotation: %v", parent(), err)
 		return nil, err

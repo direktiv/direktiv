@@ -445,13 +445,13 @@ func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType recipient.
 	case recipient.Server:
 		pubsub.Publish(pubsubNotify(""))
 	case recipient.Instance:
-		pubsub.Publish(pubsubNotify(pubsub.instanceLogs(&recipientID)))
+		pubsub.Publish(pubsubNotify(pubsub.instanceLogs(recipientID)))
 	case recipient.Workflow:
-		pubsub.Publish(pubsubNotify(pubsub.workflowLogs(&recipientID)))
+		pubsub.Publish(pubsubNotify(pubsub.workflowLogs(recipientID)))
 	case recipient.Namespace:
-		pubsub.Publish(pubsubNotify(pubsub.namespaceLogs(&recipientID)))
+		pubsub.Publish(pubsubNotify(pubsub.namespaceLogs(recipientID)))
 	case recipient.Mirror:
-		pubsub.Publish(pubsubNotify(pubsub.activityLogs(&recipientID)))
+		pubsub.Publish(pubsubNotify(pubsub.activityLogs(recipientID)))
 	default:
 		panic("how?")
 	}
@@ -473,11 +473,11 @@ func (pubsub *Pubsub) CloseNamespace(ns *database.Namespace) {
 	pubsub.Publish(pubsubDisconnect(ns.ID.String()))
 }
 
-func (pubsub *Pubsub) namespaceLogs(ns *uuid.UUID) string {
+func (pubsub *Pubsub) namespaceLogs(ns uuid.UUID) string {
 	return fmt.Sprintf("nslog:%s", ns.String())
 }
 
-func (pubsub *Pubsub) SubscribeNamespaceLogs(ns *uuid.UUID) *Subscription {
+func (pubsub *Pubsub) SubscribeNamespaceLogs(ns uuid.UUID) *Subscription {
 	return pubsub.Subscribe(ns.String(), pubsub.namespaceLogs(ns))
 }
 
@@ -518,7 +518,7 @@ func (pubsub *Pubsub) NotifyWorkflowVariables(id uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.workflowVars(id)))
 }
 
-func (pubsub *Pubsub) workflowLogs(wf *uuid.UUID) string {
+func (pubsub *Pubsub) workflowLogs(wf uuid.UUID) string {
 	return fmt.Sprintf("wflogs:%s", wf.String())
 }
 
@@ -527,16 +527,16 @@ func (pubsub *Pubsub) SubscribeWorkflowLogs(id uuid.UUID) *Subscription {
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) namespaceVars(ns *database.Namespace) string {
-	return fmt.Sprintf("nsvar:%s", ns.ID.String())
+func (pubsub *Pubsub) namespaceVars(nsID uuid.UUID) string {
+	return fmt.Sprintf("nsvar:%s", nsID.String())
 }
 
 func (pubsub *Pubsub) SubscribeNamespaceVariables(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceVars(ns))
+	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceVars(ns.ID))
 }
 
-func (pubsub *Pubsub) NotifyNamespaceVariables(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceVars(ns)))
+func (pubsub *Pubsub) NotifyNamespaceVariables(nsID uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.namespaceVars(nsID)))
 }
 
 func (pubsub *Pubsub) namespaceAnnotations(ns *database.Namespace) string {
@@ -551,48 +551,40 @@ func (pubsub *Pubsub) NotifyNamespaceAnnotations(ns *database.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceAnnotations(ns)))
 }
 
-func (pubsub *Pubsub) namespaceRegistries(ns *database.Namespace) string {
-	return fmt.Sprintf("registries:%s", ns.ID.String())
+func (pubsub *Pubsub) instanceLogs(instID uuid.UUID) string {
+	return fmt.Sprintf("instlogs:%s", instID.String())
 }
 
-func (pubsub *Pubsub) SubscribeNamespaceRegistries(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceRegistries(ns))
-}
-
-func (pubsub *Pubsub) instanceLogs(in *uuid.UUID) string {
-	return fmt.Sprintf("instlogs:%s", in.String())
-}
-
-func (pubsub *Pubsub) SubscribeInstanceLogs(cached *database.CacheData) *Subscription {
+func (pubsub *Pubsub) SubscribeInstanceLogs(instID uuid.UUID) *Subscription {
 	keys := []string{}
 
-	keys = append(keys, cached.Namespace.ID.String(), pubsub.instanceLogs(&cached.Instance.ID))
+	keys = append(keys, pubsub.instanceLogs(instID))
 
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) activityLogs(act *uuid.UUID) string {
+func (pubsub *Pubsub) activityLogs(act uuid.UUID) string {
 	return fmt.Sprintf("mactlogs:%s", act.String())
 }
 
 func (pubsub *Pubsub) SubscribeMirrorActivityLogs(namespaceID uuid.UUID, mirrorProcessID uuid.UUID) *Subscription {
 	keys := []string{}
 
-	keys = append(keys, namespaceID.String(), pubsub.activityLogs(&mirrorProcessID))
+	keys = append(keys, namespaceID.String(), pubsub.activityLogs(mirrorProcessID))
 
 	return pubsub.Subscribe(keys...)
 }
 
-func (pubsub *Pubsub) instanceVars(in *database.Instance) string {
-	return fmt.Sprintf("instvar:%s", in.ID.String())
+func (pubsub *Pubsub) instanceVars(id uuid.UUID) string {
+	return fmt.Sprintf("instvar:%s", id.String())
 }
 
-func (pubsub *Pubsub) SubscribeInstanceVariables(cached *database.CacheData) *Subscription {
-	return pubsub.Subscribe(cached.Namespace.ID.String(), pubsub.instanceVars(cached.Instance))
+func (pubsub *Pubsub) SubscribeInstanceVariables(instID uuid.UUID) *Subscription {
+	return pubsub.Subscribe(pubsub.instanceVars(instID))
 }
 
-func (pubsub *Pubsub) NotifyInstanceVariables(in *database.Instance) {
-	pubsub.Publish(pubsubNotify(pubsub.instanceVars(in)))
+func (pubsub *Pubsub) NotifyInstanceVariables(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.instanceVars(id)))
 }
 
 func (pubsub *Pubsub) instances(ns *database.Namespace) string {
@@ -607,16 +599,16 @@ func (pubsub *Pubsub) SubscribeInstances(ns *database.Namespace) *Subscription {
 	return pubsub.Subscribe(ns.ID.String(), pubsub.instances(ns))
 }
 
-func (pubsub *Pubsub) instance(in *database.Instance) string {
-	return fmt.Sprintf("instance:%s", in.ID.String())
+func (pubsub *Pubsub) instance(id uuid.UUID) string {
+	return fmt.Sprintf("instance:%s", id.String())
 }
 
-func (pubsub *Pubsub) NotifyInstance(in *database.Instance) {
-	pubsub.Publish(pubsubNotify(pubsub.instance(in)))
+func (pubsub *Pubsub) NotifyInstance(id uuid.UUID) {
+	pubsub.Publish(pubsubNotify(pubsub.instance(id)))
 }
 
-func (pubsub *Pubsub) SubscribeInstance(cached *database.CacheData) *Subscription {
-	return pubsub.Subscribe(cached.Namespace.ID.String(), pubsub.instance(cached.Instance))
+func (pubsub *Pubsub) SubscribeInstance(instID uuid.UUID) *Subscription {
+	return pubsub.Subscribe(pubsub.instance(instID))
 }
 
 func (pubsub *Pubsub) ClusterDeleteTimer(name string) {

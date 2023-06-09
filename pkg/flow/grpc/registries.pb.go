@@ -122,234 +122,6 @@ func (x *Registries) GetResults() []*Registry {
 	return nil
 }
 
-type NamespaceRegistriesRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Pagination *Pagination `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Namespace  string      `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-}
-
-func (x *NamespaceRegistriesRequest) Reset() {
-	*x = NamespaceRegistriesRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_registries_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NamespaceRegistriesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NamespaceRegistriesRequest) ProtoMessage() {}
-
-func (x *NamespaceRegistriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_registries_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NamespaceRegistriesRequest.ProtoReflect.Descriptor instead.
-func (*NamespaceRegistriesRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_registries_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *NamespaceRegistriesRequest) GetPagination() *Pagination {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *NamespaceRegistriesRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-type NamespaceRegistriesResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace  string      `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Registries *Registries `protobuf:"bytes,2,opt,name=registries,proto3" json:"registries,omitempty"`
-}
-
-func (x *NamespaceRegistriesResponse) Reset() {
-	*x = NamespaceRegistriesResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_registries_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NamespaceRegistriesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NamespaceRegistriesResponse) ProtoMessage() {}
-
-func (x *NamespaceRegistriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_registries_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NamespaceRegistriesResponse.ProtoReflect.Descriptor instead.
-func (*NamespaceRegistriesResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_registries_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *NamespaceRegistriesResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *NamespaceRegistriesResponse) GetRegistries() *Registries {
-	if x != nil {
-		return x.Registries
-	}
-	return nil
-}
-
-type DeleteNamespaceRegistryRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Registry  string `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
-}
-
-func (x *DeleteNamespaceRegistryRequest) Reset() {
-	*x = DeleteNamespaceRegistryRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_registries_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeleteNamespaceRegistryRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteNamespaceRegistryRequest) ProtoMessage() {}
-
-func (x *DeleteNamespaceRegistryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_registries_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteNamespaceRegistryRequest.ProtoReflect.Descriptor instead.
-func (*DeleteNamespaceRegistryRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_registries_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DeleteNamespaceRegistryRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *DeleteNamespaceRegistryRequest) GetRegistry() string {
-	if x != nil {
-		return x.Registry
-	}
-	return ""
-}
-
-type SetNamespaceRegistryRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Registry  string `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
-	Data      []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
-}
-
-func (x *SetNamespaceRegistryRequest) Reset() {
-	*x = SetNamespaceRegistryRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_registries_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SetNamespaceRegistryRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetNamespaceRegistryRequest) ProtoMessage() {}
-
-func (x *SetNamespaceRegistryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_registries_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetNamespaceRegistryRequest.ProtoReflect.Descriptor instead.
-func (*SetNamespaceRegistryRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_registries_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *SetNamespaceRegistryRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *SetNamespaceRegistryRequest) GetRegistry() string {
-	if x != nil {
-		return x.Registry
-	}
-	return ""
-}
-
-func (x *SetNamespaceRegistryRequest) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
 var File_pkg_flow_grpc_registries_proto protoreflect.FileDescriptor
 
 var file_pkg_flow_grpc_registries_proto_rawDesc = []byte{
@@ -367,38 +139,10 @@ var file_pkg_flow_grpc_registries_proto_rawDesc = []byte{
 	0x66, 0x6f, 0x12, 0x31, 0x0a, 0x07, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x18, 0x04, 0x20,
 	0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
 	0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x07, 0x72, 0x65,
-	0x73, 0x75, 0x6c, 0x74, 0x73, 0x22, 0x75, 0x0a, 0x1a, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74,
-	0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x50, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1c,
-	0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x22, 0x76, 0x0a, 0x1b,
-	0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
-	0x69, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
-	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x39, 0x0a, 0x0a, 0x72, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e,
-	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x69, 0x65, 0x73, 0x52, 0x0a, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x72, 0x69, 0x65, 0x73, 0x22, 0x5a, 0x0a, 0x1e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4e, 0x61,
-	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
-	0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x22, 0x6b, 0x0a, 0x1b, 0x53, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x1a, 0x0a,
-	0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74,
-	0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x42, 0x2c, 0x5a,
-	0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65,
-	0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x73, 0x75, 0x6c, 0x74, 0x73, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72,
+	0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67,
+	0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -413,27 +157,20 @@ func file_pkg_flow_grpc_registries_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_registries_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_registries_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_pkg_flow_grpc_registries_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_pkg_flow_grpc_registries_proto_goTypes = []interface{}{
-	(*Registry)(nil),                       // 0: direktiv_flow.Registry
-	(*Registries)(nil),                     // 1: direktiv_flow.Registries
-	(*NamespaceRegistriesRequest)(nil),     // 2: direktiv_flow.NamespaceRegistriesRequest
-	(*NamespaceRegistriesResponse)(nil),    // 3: direktiv_flow.NamespaceRegistriesResponse
-	(*DeleteNamespaceRegistryRequest)(nil), // 4: direktiv_flow.DeleteNamespaceRegistryRequest
-	(*SetNamespaceRegistryRequest)(nil),    // 5: direktiv_flow.SetNamespaceRegistryRequest
-	(*PageInfo)(nil),                       // 6: direktiv_flow.PageInfo
-	(*Pagination)(nil),                     // 7: direktiv_flow.Pagination
+	(*Registry)(nil),   // 0: direktiv_flow.Registry
+	(*Registries)(nil), // 1: direktiv_flow.Registries
+	(*PageInfo)(nil),   // 2: direktiv_flow.PageInfo
 }
 var file_pkg_flow_grpc_registries_proto_depIdxs = []int32{
-	6, // 0: direktiv_flow.Registries.pageInfo:type_name -> direktiv_flow.PageInfo
+	2, // 0: direktiv_flow.Registries.pageInfo:type_name -> direktiv_flow.PageInfo
 	0, // 1: direktiv_flow.Registries.results:type_name -> direktiv_flow.Registry
-	7, // 2: direktiv_flow.NamespaceRegistriesRequest.pagination:type_name -> direktiv_flow.Pagination
-	1, // 3: direktiv_flow.NamespaceRegistriesResponse.registries:type_name -> direktiv_flow.Registries
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_registries_proto_init() }
@@ -467,54 +204,6 @@ func file_pkg_flow_grpc_registries_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_registries_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NamespaceRegistriesRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_registries_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NamespaceRegistriesResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_registries_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteNamespaceRegistryRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_registries_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetNamespaceRegistryRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -522,7 +211,7 @@ func file_pkg_flow_grpc_registries_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_registries_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
     "namespace_id" uuid,
@@ -115,20 +116,15 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     -- TODO: alan, please add instance_id FOREIGN KEY.
 );
 
-
--- TODO: alex this table schema need have not null modifiers.
-CREATE TABLE IF NOT EXISTS "log_msgs" (
+CREATE TABLE IF NOT EXISTS "log_entries" (
     "oid" uuid,
-    "t" timestamptz,
-    "msg" text,
+    "timestamp" timestamptz NOT NULL,
     "level" integer,
     "root_instance_id" uuid,
+    "sender" uuid,
+    "sender_type" text,
     "log_instance_call_path" text,
-    "tags" jsonb,
-    "workflow_id" uuid,
-    "mirror_activity_id" uuid,
-    "instance_logs" text,
-    "namespace_logs" text,
+    "entry" jsonb NOT NULL,
     PRIMARY KEY ("oid")
 );
 
