@@ -4,14 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { Info, Play } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { Play } from "lucide-react";
-import { ScrollArea } from "~/design/ScrollArea";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
@@ -106,7 +105,27 @@ const RunWorkflow = ({ path }: { path: string }) => {
               </Card>
             </TabsContent>
             <TabsContent value="formInput" asChild>
-              <ScrollArea className="h-96 w-full p-4 sm:h-[500px]"></ScrollArea>
+              <Card
+                className="flex h-96 w-full flex-col items-center justify-center gap-y-5 p-10 sm:h-[500px]"
+                withBackground
+              >
+                <span className="text-center text-sm">
+                  {t("pages.explorer.tree.workflow.runWorkflow.formInputHint")}
+                </span>
+                <Button variant="outline" asChild>
+                  <a
+                    href="https://docs.direktiv.io/spec/workflow-yaml/validate/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Info />
+                    {t("pages.explorer.tree.workflow.runWorkflow.learnMoreBtn")}
+                  </a>
+                </Button>
+              </Card>
+              {/* <ScrollArea className="h-96 w-full p-4 sm:h-[500px]">
+                
+              </ScrollArea> */}
             </TabsContent>
           </Tabs>
         </form>
