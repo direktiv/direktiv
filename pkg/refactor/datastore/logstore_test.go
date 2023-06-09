@@ -38,8 +38,8 @@ func Test_Add_Get(t *testing.T) {
 func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level logengine.LogLevel) {
 	t.Helper()
 	want := []string{}
-	c := rand.Intn(20) + 1
-	for i := 0; i < c; i++ { //nolint:gosec
+	c := rand.Intn(20) + 1 //nolint:gosec
+	for i := 0; i < c; i++ {
 		want = append(want, fmt.Sprintf("test msg %d", rand.Intn(100)+1)) //nolint:gosec
 	}
 	in := map[string]interface{}{}
