@@ -1,6 +1,8 @@
 import { ArrowLeft, GitMerge, Tag, Undo } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
@@ -102,13 +104,24 @@ const WorkflowRevisionsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <Card className="grow p-4" data-testid="revisions-detail-editor">
-        <Editor
-          value={workflowData}
-          theme={theme ?? undefined}
-          options={{ readOnly: true }}
-        />
-      </Card>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Card className="grow p-4" data-testid="revisions-detail-editor">
+            <Editor
+              value={workflowData}
+              theme={theme ?? undefined}
+              options={{ readOnly: true }}
+            />
+          </Card>
+        </PopoverTrigger>
+        <PopoverContent asChild>
+          <Alert variant="info">
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
+            )}
+          </Alert>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

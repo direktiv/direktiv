@@ -133,6 +133,7 @@
                 "copy": "copy",
                 "copied": "copied",
                 "backBtn": "Revisions List",
+                "readOnlyNote": "You can't edit an old revision",
                 "revertBtn": "Revert"
               }
             }
