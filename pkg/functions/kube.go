@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"net/http"
 	"sort"
 	"strings"
@@ -14,6 +12,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -50,7 +50,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 		return is.dbStore.Create(ctx, &core.Service{
 			NamespaceID: uid,
 			Name:        info.GetName(),
-			Url:         svcName,
+			URL:         svcName,
 			Data:        string(b),
 		})
 	} else if err != nil {
@@ -61,7 +61,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 
 	return is.dbStore.Update(ctx, &core.Service{
 		ID:   svc.ID,
-		Url:  svcName,
+		URL:  svcName,
 		Data: string(b),
 	})
 }
@@ -591,7 +591,7 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 
 func (is *functionsServer) reconstructService(name string, ctx context.Context) error {
 	// Get backed up service from database
-	dbSvc, err := is.dbStore.GetOneByUrl(ctx, name)
+	dbSvc, err := is.dbStore.GetOneByURL(ctx, name)
 	if err != nil {
 		return err
 	}

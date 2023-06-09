@@ -12,7 +12,7 @@ type Service struct {
 	NamespaceID uuid.UUID
 
 	Name      string
-	Url       string
+	URL       string
 	Data      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -24,9 +24,9 @@ type ServicesStore interface {
 	// it returns datastore.ErrNotFound error.
 	GetByNamespaceAndName(ctx context.Context, namespace uuid.UUID, name string) (*Service, error)
 
-	// GetOneByUrl gets a single namespace service from the store. if no record found,
+	// GetOneByURL gets a single namespace service from the store. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetOneByUrl(ctx context.Context, url string) (*Service, error)
+	GetOneByURL(ctx context.Context, url string) (*Service, error)
 
 	// Create creates a service.
 	Create(ctx context.Context, secret *Service) error
