@@ -132,8 +132,8 @@
               "detail": {
                 "copy": "copy",
                 "copied": "copied",
-                "backBtn": "Go Back Revisions List",
-                "revertBtn": "Revert to revision"
+                "backBtn": "Revisions List",
+                "revertBtn": "Revert"
               }
             }
           }
