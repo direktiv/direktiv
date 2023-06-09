@@ -266,13 +266,13 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 		}
 	}()
 
-	err = json.Unmarshal([]byte(im.instance.Instance.LiveData), &im.data)
+	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(im.instance.Instance.StateMemory), &im.memory)
+	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 		return nil, err

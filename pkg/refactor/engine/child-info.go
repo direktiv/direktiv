@@ -11,9 +11,7 @@ const (
 	instanceChildInfoVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceChildInfo = errors.New("invalid instance child info")
-)
+var ErrInvalidInstanceChildInfo = errors.New("invalid instance child info")
 
 // ChildInfo is part of the ChildrenInfo structure. It represents useful information about a single child action.
 type ChildInfo struct {

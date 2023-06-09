@@ -13,9 +13,7 @@ const (
 	instanceDescentInfoVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceDescentInfo = errors.New("invalid instance descent info")
-)
+var ErrInvalidInstanceDescentInfo = errors.New("invalid instance descent info")
 
 // ParentInfo is part of the InstanceDescentInfo structure. It represents useful information about a single instance in the chain.
 type ParentInfo struct {

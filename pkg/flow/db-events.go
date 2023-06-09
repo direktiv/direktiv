@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 	entcev "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	entev "github.com/direktiv/direktiv/pkg/flow/ent/events"
-
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"

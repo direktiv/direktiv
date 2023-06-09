@@ -9,9 +9,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"

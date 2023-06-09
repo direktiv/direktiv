@@ -12,9 +12,7 @@ const (
 	instanceRuntimeInfoVersion1 = "v1"
 )
 
-var (
-	ErrInvalidInstanceRuntimeInfo = errors.New("invalid instance runtime info")
-)
+var ErrInvalidInstanceRuntimeInfo = errors.New("invalid instance runtime info")
 
 // InstanceRuntimeInfo keeps other miscellaneous information useful to the engine.
 type InstanceRuntimeInfo struct {
@@ -49,6 +47,7 @@ type instanceRuntimeInfoV1 struct {
 	Attempts       int       `json:"attempts"`
 }
 
+//nolint:dupl
 func LoadInstanceRuntimeInfo(data []byte) (*InstanceRuntimeInfo, error) {
 	m := make(map[string]interface{})
 
