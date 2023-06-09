@@ -32,7 +32,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     handleSubmit,
     setValue,
     getValues,
-    formState: { isValid, isSubmitted },
+    formState: { isValid },
   } = useForm<FormInput>({
     defaultValues: {
       payload: "{\n    \n}",
@@ -57,9 +57,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     });
   };
 
-  // you can not submit if the form has not changed or if there are any errors and
-  // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = isSubmitted && !isValid;
+  const disableSubmit = !isValid;
 
   const formId = `run-workflow-${path}`;
   return (
