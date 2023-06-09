@@ -16,7 +16,7 @@ type Event struct {
 	Round      int       // this value MUST be increased if the event is passed back into the queue.
 }
 
-// Persists events.
+// Persists and gets events.
 type EventHistoryStore interface {
 	// adds at least one and optionally multiple events to the storage.
 	// returns the events that where successfully appended
@@ -28,6 +28,12 @@ type EventHistoryStore interface {
 	GetAll(ctx context.Context) ([]*Event, error)
 	// deletes events that are older then the given timestamp.
 	DeleteOld(ctx context.Context, sinceWhen time.Time) error
+}
+
+// Helps query the proper event-listeners for a namespace and event-type.
+type EventTopicsStore interface {
+	Append(ctx context.Context, namespaceID, eventListenerID uuid.UUID, topic string) error
+	GetListeners(ctx context.Context, namespaceID uuid.UUID, eventType string) ([]*EventListener, error)
 }
 
 // represents a listener for one or multiple events with specific types.
@@ -65,15 +71,15 @@ const (
 type EventListenerStore interface {
 	// adds a EventListener to the storage.
 	Append(ctx context.Context, listener *EventListener) error
-	// updates the Eventlisteners.
+	// updates the EventListeners.
 	Update(ctx context.Context, listener *EventListener, more ...*EventListener) (error, []error)
 	GetByID(ctx context.Context, id uuid.UUID) (*EventListener, error)
 	GetAll(ctx context.Context) ([]*EventListener, error)
-	// return all Eventlisteners for a given namespace.
+	// return all EventListeners for a given namespace.
 	Get(ctx context.Context, namespace uuid.UUID) ([]*EventListener, error)
-	// returns all Eventlisteners for a given namespace that have a subscription for the given eventtype.
+	// returns all EventListeners for a given namespace that have a subscription for the given eventtype.
 	GetByTopic(ctx context.Context, namespace uuid.UUID, eventType string) ([]*EventListener, error)
-	// deletes Eventlisteners that have the deleted flag set.
+	// deletes EventListeners that have the deleted flag set.
 	Delete(ctx context.Context) error
 	// deletes the entries associated with the given instance ID.
 	DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error
