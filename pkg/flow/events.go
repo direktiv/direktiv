@@ -818,6 +818,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	if err != nil {
 		return nil, err
 	}
+	defer rowsC.Close()
 	count := 0
 	if rowsC.Next() {
 		err = rowsC.Scan(&count)
@@ -826,9 +827,9 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 			return nil, err
 		}
 	}
-
+	rowsC.Close()
 	defer rows.Close()
-	defer rowsC.Close()
+
 	var results []*ent.CloudEvents
 	for rows.Next() {
 		r := ent.CloudEvents{}
@@ -844,7 +845,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		}
 		results = append(results, &r)
 	}
-
+	rows.Close()
 	// clients := flow.edb.Clients(ctx)
 
 	// query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
@@ -942,6 +943,7 @@ resend:
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	flow.sugar.Error(qv[:len(qv)-2])
 	rowsC, err := db.Query(qCount, qv[:len(qv)-2]...)
 	if err != nil {
@@ -955,9 +957,7 @@ resend:
 			return err
 		}
 	}
-
-	defer rows.Close()
-	defer rowsC.Close()
+	rowsC.Close()
 	var results []*ent.CloudEvents
 	for rows.Next() {
 		r := ent.CloudEvents{}
@@ -973,7 +973,7 @@ resend:
 		}
 		results = append(results, &r)
 	}
-
+	rows.Close()
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Events = new(grpc.Events)
