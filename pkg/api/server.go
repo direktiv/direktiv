@@ -22,8 +22,7 @@ type Server struct {
 	config *util.Config
 
 	// handlers
-	functionHandler *functionHandler
-	flowHandler     *flowHandler
+	flowHandler *flowHandler
 
 	telend func()
 }
@@ -111,7 +110,7 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 		m["flow"] = flowResp.GetBuild()
 	}
 
-	funcsResp, _ := s.functionHandler.functionsClient.Build(ctx, &emptypb.Empty{})
+	funcsResp, _ := s.flowHandler.functionsClient.Build(ctx, &emptypb.Empty{})
 	if flowResp != nil {
 		m["functions"] = funcsResp.GetBuild()
 	}
