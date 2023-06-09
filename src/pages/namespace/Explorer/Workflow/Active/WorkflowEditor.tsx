@@ -42,7 +42,7 @@ const WorkflowEditor: FC<{
     },
   });
 
-  const [value, setValue] = useState<string | undefined>(workflowData);
+  const [value, setValue] = useState(workflowData);
   const theme = useTheme();
 
   const { mutate: createRevision } = useCreateRevision();
