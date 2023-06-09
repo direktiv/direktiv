@@ -65,11 +65,10 @@ const SubmitButton = (props: SubmitButtonProps) => {
 
 const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
   <div className="flex flex-row items-end gap-4">
-    <div className="w-3/4">{props.children}</div>
-    <div className="float-right flex w-1/4 flex-row gap-2">
+    <div className="grow">{props.children}</div>
+    <div className="mb-2 flex w-min flex-row gap-2">
       <Button
         disabled={!props.hasMoveDown}
-        className="flex-1"
         onClick={(e) => {
           props.onReorderClick(props.index, props.index + 1)(e);
         }}
@@ -79,7 +78,6 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
       </Button>
       <Button
         disabled={!props.hasMoveUp}
-        className="flex-1"
         onClick={(e) => {
           props.onReorderClick(props.index, props.index - 1)(e);
         }}
@@ -89,7 +87,6 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
       </Button>
       <Button
         variant="destructive"
-        className="flex-1"
         onClick={(e) => {
           props.onDropIndexClick(props.index)(e);
         }}
@@ -108,11 +105,7 @@ const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
     ))}
     {props.canAdd && (
       <div className="inline-block w-full divide-y divide-solid">
-        <Button
-          onClick={props.onAddClick}
-          icon
-          className="float-right mt-4 w-1/4"
-        >
+        <Button onClick={props.onAddClick} icon className="float-right mt-4">
           <PlusIcon />
         </Button>
         <div className="mt-2 w-full" />
