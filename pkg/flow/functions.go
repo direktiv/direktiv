@@ -23,15 +23,15 @@ func (flow *flow) functionsHeartbeat() {
 		return
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
-	defer rollback()
+	defer tx.Rollback()
 
 	for _, ns := range nss {
-		files, err := fStore.ForRootID(ns.ID).ListAllFiles(ctx)
+		files, err := tx.FileStore().ForRootID(ns.ID).ListAllFiles(ctx)
 		if err != nil {
 			flow.sugar.Error(err)
 			return
@@ -45,7 +45,7 @@ func (flow *flow) functionsHeartbeat() {
 			tuples := make([]*functions.HeartbeatTuple, 0)
 			checksums := make(map[string]bool)
 
-			revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+			revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 			if err != nil {
 				flow.sugar.Error(err)
 				continue

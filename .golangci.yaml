@@ -6,6 +6,17 @@ run:
   skip-dirs: ["ent/"]
   skip-files: [".pb.go"]
 
+linters-settings:
+  tagliatelle:
+    # Check the struck tag name case.
+    case:
+      # Use the struct field name to check the name of the struct tag.
+      # Default: false
+      use-field-name: true
+      rules:
+        json: snake
+        yaml: snake
+
 linters:
   disable:
     - depguard

@@ -27,18 +27,18 @@ func (flow *flow) Router(ctx context.Context, req *grpc.RouterRequest) (*grpc.Ro
 		return nil, err
 	}
 
-	fStore, store, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
@@ -86,18 +86,18 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	annotations, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	annotations, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
@@ -110,17 +110,17 @@ func (flow *flow) EditRouter(ctx context.Context, req *grpc.EditRouterRequest) (
 
 	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
 
-	err = store.FileAnnotations().Set(ctx, annotations)
+	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
+	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
 
-	err = commit(ctx)
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -143,18 +143,18 @@ func (flow *flow) ValidateRouter(ctx context.Context, req *grpc.ValidateRouterRe
 		return nil, err
 	}
 
-	fStore, store, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	_, verr, err := flow.validateRouter(ctx, fStore, store.FileAnnotations(), file)
+	_, verr, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}

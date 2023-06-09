@@ -10,8 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
@@ -93,28 +91,6 @@ func init() {
 	eventswaitDescID := eventswaitFields[0].Descriptor()
 	// eventswait.DefaultID holds the default value on creation for the id field.
 	eventswait.DefaultID = eventswaitDescID.Default.(func() uuid.UUID)
-	instanceFields := schema.Instance{}.Fields()
-	_ = instanceFields
-	// instanceDescCreatedAt is the schema descriptor for created_at field.
-	instanceDescCreatedAt := instanceFields[1].Descriptor()
-	// instance.DefaultCreatedAt holds the default value on creation for the created_at field.
-	instance.DefaultCreatedAt = instanceDescCreatedAt.Default.(func() time.Time)
-	// instanceDescUpdatedAt is the schema descriptor for updated_at field.
-	instanceDescUpdatedAt := instanceFields[2].Descriptor()
-	// instance.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	instance.DefaultUpdatedAt = instanceDescUpdatedAt.Default.(func() time.Time)
-	// instance.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	instance.UpdateDefaultUpdatedAt = instanceDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// instanceDescID is the schema descriptor for id field.
-	instanceDescID := instanceFields[0].Descriptor()
-	// instance.DefaultID holds the default value on creation for the id field.
-	instance.DefaultID = instanceDescID.Default.(func() uuid.UUID)
-	instanceruntimeFields := schema.InstanceRuntime{}.Fields()
-	_ = instanceruntimeFields
-	// instanceruntimeDescID is the schema descriptor for id field.
-	instanceruntimeDescID := instanceruntimeFields[0].Descriptor()
-	// instanceruntime.DefaultID holds the default value on creation for the id field.
-	instanceruntime.DefaultID = instanceruntimeDescID.Default.(func() uuid.UUID)
 	logmsgFields := schema.LogMsg{}.Fields()
 	_ = logmsgFields
 	// logmsgDescLevel is the schema descriptor for level field.

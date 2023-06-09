@@ -7,10 +7,9 @@ import (
 	"net"
 	"time"
 
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -53,12 +52,28 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		// instance garbage collector
 		ctx := context.Background()
 		<-time.After(2 * time.Minute)
+
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := clients.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
+
+			tx, err := srv.flow.beginSqlTx(ctx)
 			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to get transaction to cleanup old instances: %w", err))
+				continue
+			}
+
+			err = tx.InstanceStore().DeleteOldInstances(ctx, t)
+			if err != nil {
+				tx.Rollback()
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
+				continue
+			}
+
+			err = tx.Commit(ctx)
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to commit tx to cleanup old instances: %w", err))
+				continue
 			}
 
 			// TODO: alan: cleanup old instance variables.
@@ -104,24 +119,29 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 func (flow *flow) kickExpiredInstances() {
 	ctx := context.Background()
 
-	t := time.Now().Add(-1 * time.Minute)
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer tx.Rollback()
 
-	clients := flow.edb.Clients(ctx)
-
-	list, err := clients.InstanceRuntime.Query().
-		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
-		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(util.InstanceStatusPending))).
-		WithInstance().
-		All(ctx)
+	list, err := tx.InstanceStore().GetHangingInstances(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
 
 	for i := range list {
+		info, err := enginerefactor.LoadInstanceRuntimeInfo(list[i].RuntimeInfo)
+		if err != nil {
+			flow.sugar.Error(err)
+			continue
+		}
+
 		data, err := json.Marshal(&retryMessage{
-			InstanceID: list[i].Edges.Instance.ID.String(),
-			Step:       len(list[i].Flow),
+			InstanceID: list[i].ID.String(),
+			Step:       len(info.Flow),
 		})
 		if err != nil {
 			panic(err)

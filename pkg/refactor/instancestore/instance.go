@@ -2,6 +2,7 @@ package instancestore
 
 import (
 	"context"
+	sqldriver "database/sql/driver"
 	"errors"
 	"fmt"
 	"time"
@@ -36,6 +37,21 @@ var instanceStatusStrings = []string{
 
 func (status InstanceStatus) String() string {
 	return instanceStatusStrings[status-1]
+}
+
+func (status *InstanceStatus) Scan(src any) error {
+	k, ok := src.(int64)
+	if !ok {
+		return errors.New("unknown instance status type")
+	}
+
+	*status = InstanceStatus(k)
+
+	return nil
+}
+
+func (status InstanceStatus) Valuer() (sqldriver.Value, error) {
+	return int64(status), nil
 }
 
 func InstanceStatusFromString(s string) (InstanceStatus, error) {
@@ -135,25 +151,28 @@ type CreateInstanceDataArgs struct {
 	CalledAs       string
 	Definition     []byte
 	Input          []byte
+	LiveData       []byte
 	TelemetryInfo  []byte
 	Settings       []byte
 	DescentInfo    []byte
+	RuntimeInfo    []byte
+	ChildrenInfo   []byte
 }
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.
 type UpdateInstanceDataArgs struct {
-	EndedAt       *time.Time
-	Deadline      *time.Time
-	Status        *InstanceStatus
-	ErrorCode     *string
-	TelemetryInfo *[]byte
-	RuntimeInfo   *[]byte
-	ChildrenInfo  *[]byte
-	LiveData      *[]byte
-	StateMemory   *[]byte
-	Output        *[]byte
-	ErrorMessage  *[]byte
-	Metadata      *[]byte
+	EndedAt       *time.Time      `json:"ended_at,omitempty"`
+	Deadline      *time.Time      `json:"deadline,omitempty"`
+	Status        *InstanceStatus `json:"status,omitempty"`
+	ErrorCode     *string         `json:"error_code,omitempty"`
+	TelemetryInfo *[]byte         `json:"telemetry_info,omitempty"`
+	RuntimeInfo   *[]byte         `json:"runtime_info,omitempty"`
+	ChildrenInfo  *[]byte         `json:"children_info,omitempty"`
+	LiveData      *[]byte         `json:"live_data,omitempty"`
+	StateMemory   *[]byte         `json:"state_memory,omitempty"`
+	Output        *[]byte         `json:"output,omitempty"`
+	ErrorMessage  *[]byte         `json:"error_message,omitempty"`
+	Metadata      *[]byte         `json:"metadata,omitempty"`
 }
 
 type InstanceDataQuery interface {

@@ -27,10 +27,10 @@ const (
 	FieldWorkflowID = "workflow_id"
 	// FieldMirrorActivityID holds the string denoting the mirror_activity_id field in the database.
 	FieldMirrorActivityID = "mirror_activity_id"
+	// FieldInstanceID holds the string denoting the instance_id field in the database.
+	FieldInstanceID = "instance_id"
 	// EdgeNamespace holds the string denoting the namespace edge name in mutations.
 	EdgeNamespace = "namespace"
-	// EdgeInstance holds the string denoting the instance edge name in mutations.
-	EdgeInstance = "instance"
 	// Table holds the table name of the logmsg in the database.
 	Table = "log_msgs"
 	// NamespaceTable is the table that holds the namespace relation/edge.
@@ -40,13 +40,6 @@ const (
 	NamespaceInverseTable = "namespaces"
 	// NamespaceColumn is the table column denoting the namespace relation/edge.
 	NamespaceColumn = "namespace_logs"
-	// InstanceTable is the table that holds the instance relation/edge.
-	InstanceTable = "log_msgs"
-	// InstanceInverseTable is the table name for the Instance entity.
-	// It exists in this package in order to avoid circular dependency with the "instance" package.
-	InstanceInverseTable = "instances"
-	// InstanceColumn is the table column denoting the instance relation/edge.
-	InstanceColumn = "instance_logs"
 )
 
 // Columns holds all SQL columns for logmsg fields.
@@ -60,12 +53,12 @@ var Columns = []string{
 	FieldTags,
 	FieldWorkflowID,
 	FieldMirrorActivityID,
+	FieldInstanceID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "log_msgs"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"instance_logs",
 	"namespace_logs",
 }
 

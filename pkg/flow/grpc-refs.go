@@ -32,17 +32,17 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -105,17 +105,17 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -182,26 +182,26 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 	if err != nil {
 		return nil, err
 	}
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetRef())
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, req.GetRef())
 	if err != nil {
 		return nil, err
 	}
-	err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
+	err = tx.FileStore().ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -219,25 +219,25 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 	if err != nil {
 		return nil, err
 	}
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetTag())
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, req.GetTag())
 	if err != nil {
 		return nil, err
 	}
-	err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
+	err = tx.FileStore().ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 

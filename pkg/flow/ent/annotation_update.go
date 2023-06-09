@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
@@ -75,6 +74,26 @@ func (au *AnnotationUpdate) SetMimeType(s string) *AnnotationUpdate {
 	return au
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (au *AnnotationUpdate) SetInstanceID(u uuid.UUID) *AnnotationUpdate {
+	au.mutation.SetInstanceID(u)
+	return au
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (au *AnnotationUpdate) SetNillableInstanceID(u *uuid.UUID) *AnnotationUpdate {
+	if u != nil {
+		au.SetInstanceID(*u)
+	}
+	return au
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (au *AnnotationUpdate) ClearInstanceID() *AnnotationUpdate {
+	au.mutation.ClearInstanceID()
+	return au
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (au *AnnotationUpdate) SetNamespaceID(id uuid.UUID) *AnnotationUpdate {
 	au.mutation.SetNamespaceID(id)
@@ -94,25 +113,6 @@ func (au *AnnotationUpdate) SetNamespace(n *Namespace) *AnnotationUpdate {
 	return au.SetNamespaceID(n.ID)
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (au *AnnotationUpdate) SetInstanceID(id uuid.UUID) *AnnotationUpdate {
-	au.mutation.SetInstanceID(id)
-	return au
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (au *AnnotationUpdate) SetNillableInstanceID(id *uuid.UUID) *AnnotationUpdate {
-	if id != nil {
-		au = au.SetInstanceID(*id)
-	}
-	return au
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (au *AnnotationUpdate) SetInstance(i *Instance) *AnnotationUpdate {
-	return au.SetInstanceID(i.ID)
-}
-
 // Mutation returns the AnnotationMutation object of the builder.
 func (au *AnnotationUpdate) Mutation() *AnnotationMutation {
 	return au.mutation
@@ -121,12 +121,6 @@ func (au *AnnotationUpdate) Mutation() *AnnotationMutation {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (au *AnnotationUpdate) ClearNamespace() *AnnotationUpdate {
 	au.mutation.ClearNamespace()
-	return au
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (au *AnnotationUpdate) ClearInstance() *AnnotationUpdate {
-	au.mutation.ClearInstance()
 	return au
 }
 
@@ -215,6 +209,12 @@ func (au *AnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.MimeType(); ok {
 		_spec.SetField(annotation.FieldMimeType, field.TypeString, value)
 	}
+	if value, ok := au.mutation.InstanceID(); ok {
+		_spec.SetField(annotation.FieldInstanceID, field.TypeUUID, value)
+	}
+	if au.mutation.InstanceIDCleared() {
+		_spec.ClearField(annotation.FieldInstanceID, field.TypeUUID)
+	}
 	if au.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -237,35 +237,6 @@ func (au *AnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if au.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InstanceTable,
-			Columns: []string{annotation.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InstanceTable,
-			Columns: []string{annotation.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -338,6 +309,26 @@ func (auo *AnnotationUpdateOne) SetMimeType(s string) *AnnotationUpdateOne {
 	return auo
 }
 
+// SetInstanceID sets the "instance_id" field.
+func (auo *AnnotationUpdateOne) SetInstanceID(u uuid.UUID) *AnnotationUpdateOne {
+	auo.mutation.SetInstanceID(u)
+	return auo
+}
+
+// SetNillableInstanceID sets the "instance_id" field if the given value is not nil.
+func (auo *AnnotationUpdateOne) SetNillableInstanceID(u *uuid.UUID) *AnnotationUpdateOne {
+	if u != nil {
+		auo.SetInstanceID(*u)
+	}
+	return auo
+}
+
+// ClearInstanceID clears the value of the "instance_id" field.
+func (auo *AnnotationUpdateOne) ClearInstanceID() *AnnotationUpdateOne {
+	auo.mutation.ClearInstanceID()
+	return auo
+}
+
 // SetNamespaceID sets the "namespace" edge to the Namespace entity by ID.
 func (auo *AnnotationUpdateOne) SetNamespaceID(id uuid.UUID) *AnnotationUpdateOne {
 	auo.mutation.SetNamespaceID(id)
@@ -357,25 +348,6 @@ func (auo *AnnotationUpdateOne) SetNamespace(n *Namespace) *AnnotationUpdateOne 
 	return auo.SetNamespaceID(n.ID)
 }
 
-// SetInstanceID sets the "instance" edge to the Instance entity by ID.
-func (auo *AnnotationUpdateOne) SetInstanceID(id uuid.UUID) *AnnotationUpdateOne {
-	auo.mutation.SetInstanceID(id)
-	return auo
-}
-
-// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
-func (auo *AnnotationUpdateOne) SetNillableInstanceID(id *uuid.UUID) *AnnotationUpdateOne {
-	if id != nil {
-		auo = auo.SetInstanceID(*id)
-	}
-	return auo
-}
-
-// SetInstance sets the "instance" edge to the Instance entity.
-func (auo *AnnotationUpdateOne) SetInstance(i *Instance) *AnnotationUpdateOne {
-	return auo.SetInstanceID(i.ID)
-}
-
 // Mutation returns the AnnotationMutation object of the builder.
 func (auo *AnnotationUpdateOne) Mutation() *AnnotationMutation {
 	return auo.mutation
@@ -384,12 +356,6 @@ func (auo *AnnotationUpdateOne) Mutation() *AnnotationMutation {
 // ClearNamespace clears the "namespace" edge to the Namespace entity.
 func (auo *AnnotationUpdateOne) ClearNamespace() *AnnotationUpdateOne {
 	auo.mutation.ClearNamespace()
-	return auo
-}
-
-// ClearInstance clears the "instance" edge to the Instance entity.
-func (auo *AnnotationUpdateOne) ClearInstance() *AnnotationUpdateOne {
-	auo.mutation.ClearInstance()
 	return auo
 }
 
@@ -508,6 +474,12 @@ func (auo *AnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Annotation,
 	if value, ok := auo.mutation.MimeType(); ok {
 		_spec.SetField(annotation.FieldMimeType, field.TypeString, value)
 	}
+	if value, ok := auo.mutation.InstanceID(); ok {
+		_spec.SetField(annotation.FieldInstanceID, field.TypeUUID, value)
+	}
+	if auo.mutation.InstanceIDCleared() {
+		_spec.ClearField(annotation.FieldInstanceID, field.TypeUUID)
+	}
 	if auo.mutation.NamespaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -530,35 +502,6 @@ func (auo *AnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Annotation,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(namespace.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if auo.mutation.InstanceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InstanceTable,
-			Columns: []string{annotation.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.InstanceIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   annotation.InstanceTable,
-			Columns: []string{annotation.InstanceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(instance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

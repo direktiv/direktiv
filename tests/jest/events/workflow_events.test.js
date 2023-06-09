@@ -174,7 +174,6 @@ describe('Test workflow events', () => {
 
         await events.sendEventAndList(namespaceName, basevent("hello", "start-event"))
         var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
-
         expect(instance).not.toBeFalsy();
 
         var instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${instance.id}/output`)

@@ -23,13 +23,14 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	if err != nil {
 		return nil, err
 	}
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
-	data, err := store.RuntimeVariables().LoadData(ctx, item.ID)
+	data, err := tx.DataStore().RuntimeVariables().LoadData(ctx, item.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -84,13 +85,14 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 	if err != nil {
 		return nil, err
 	}
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	list, err := store.RuntimeVariables().ListByNamespaceID(ctx, ns.ID)
+	list, err := tx.DataStore().RuntimeVariables().ListByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -135,13 +137,14 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
+
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	newVar, err := store.RuntimeVariables().Set(ctx, &core.RuntimeVariable{
+	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
 		NamespaceID: ns.ID,
 		Name:        req.GetKey(),
 		Data:        req.GetData(),
@@ -151,7 +154,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -246,21 +249,22 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
 
-	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetKey())
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	err = store.RuntimeVariables().Delete(ctx, item.ID)
+	defer tx.Rollback()
+
+	item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -292,22 +296,23 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
 
-	item, err := store.RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetOld())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, ns.ID, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
 
-	updated, err := store.RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
+	updated, err := tx.DataStore().RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 

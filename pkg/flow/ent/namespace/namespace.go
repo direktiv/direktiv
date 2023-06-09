@@ -21,8 +21,6 @@ const (
 	FieldConfig = "config"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// EdgeInstances holds the string denoting the instances edge name in mutations.
-	EdgeInstances = "instances"
 	// EdgeLogs holds the string denoting the logs edge name in mutations.
 	EdgeLogs = "logs"
 	// EdgeCloudevents holds the string denoting the cloudevents edge name in mutations.
@@ -39,13 +37,6 @@ const (
 	CloudEventFiltersFieldID = "id"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
-	// InstancesTable is the table that holds the instances relation/edge.
-	InstancesTable = "instances"
-	// InstancesInverseTable is the table name for the Instance entity.
-	// It exists in this package in order to avoid circular dependency with the "instance" package.
-	InstancesInverseTable = "instances"
-	// InstancesColumn is the table column denoting the instances relation/edge.
-	InstancesColumn = "namespace_instances"
 	// LogsTable is the table that holds the logs relation/edge.
 	LogsTable = "log_msgs"
 	// LogsInverseTable is the table name for the LogMsg entity.

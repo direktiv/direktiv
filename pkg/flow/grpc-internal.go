@@ -92,27 +92,22 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := internal.getInstance(ctx, req.GetInstanceId())
+	instance, err := internal.getInstance(ctx, req.GetInstanceId())
 	if err != nil {
 		internal.sugar.Error(err)
 		return nil, err
 	}
 
-	rt, err := internal.edb.InstanceRuntime(ctx, cached.Instance.Runtime)
-	if err != nil {
-		return nil, err
-	}
-
-	flow := rt.Flow
+	flow := instance.RuntimeInfo.Flow
 	stateID := flow[len(flow)-1]
 
-	tags := cached.GetAttributes(recipient.Instance)
+	tags := instance.GetAttributes(recipient.Instance)
 	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
-		internal.logger.Infof(ctx, cached.Instance.ID, tags, res)
+		internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
 	}
 
 	var resp emptypb.Empty
