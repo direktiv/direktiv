@@ -20,23 +20,23 @@ type Service struct {
 
 // ServicesStore responsible for fetching and setting namespace services from datastore.
 type ServicesStore interface {
-	// GetByName gets a single namespace service from the store. if no record found,
+	// GetByNamespaceAndName gets a single namespace service from the store. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetByName(ctx context.Context, namespace uuid.UUID, name string) (*Service, error)
+	GetByNamespaceAndName(ctx context.Context, namespace uuid.UUID, name string) (*Service, error)
 
-	// GetByUrl gets a single namespace service from the store. if no record found,
+	// GetOneByUrl gets a single namespace service from the store. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetByUrl(ctx context.Context, name string) (*Service, error)
+	GetOneByUrl(ctx context.Context, url string) (*Service, error)
 
 	// Create creates a service.
 	Create(ctx context.Context, secret *Service) error
 
-	// Update creates a service.
+	// Update updates a service by id. if no record to update, it returns datastore.ErrNotFound error.
 	Update(ctx context.Context, secret *Service) error
 
-	// GetAll lists all namespace secrets.
+	// GetAll lists all services.
 	GetAll(ctx context.Context) ([]*Service, error)
 
-	// Delete removes a specific secret by name.
-	Delete(ctx context.Context, name string) error
+	// DeleteByName removes entries by name. if no record to delete, it returns datastore.ErrNotFound error.
+	DeleteByName(ctx context.Context, name string) error
 }

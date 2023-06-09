@@ -24,6 +24,8 @@ type Store interface {
 	Secrets() core.SecretsStore
 
 	RuntimeVariables() core.RuntimeVariablesStore
+
+	Services() core.ServicesStore
 }
 
 // ErrNotFound is a common error type that should be returned by any store implementation
