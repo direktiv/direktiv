@@ -39,7 +39,14 @@ const RunWorkflow = ({ path }: { path: string }) => {
     },
     resolver: zodResolver(
       z.object({
-        payload: z.string().nonempty(),
+        payload: z.string().refine((string) => {
+          try {
+            JSON.parse(string);
+            return true;
+          } catch (error) {
+            return false;
+          }
+        }),
       })
     ),
   });
