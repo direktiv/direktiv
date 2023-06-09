@@ -50,18 +50,7 @@ const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   </div>
 );
 
-const SubmitButton = (props: SubmitButtonProps) => {
-  const { uiSchema } = props;
-  const { norender } = getSubmitButtonOptions(uiSchema);
-  if (norender) {
-    return null;
-  }
-  return (
-    <Button type="submit" className="float-right mt-4">
-      Submit
-    </Button>
-  );
-};
+const SubmitButton = () => null;
 
 const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
   <div className="flex flex-row items-end gap-4">
