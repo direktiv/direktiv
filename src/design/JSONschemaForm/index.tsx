@@ -4,10 +4,8 @@ import {
   BaseInputTemplateProps,
   RJSFSchema,
   RegistryWidgetsType,
-  SubmitButtonProps,
   TitleFieldProps,
   WidgetProps,
-  getSubmitButtonOptions,
 } from "@rjsf/utils";
 import {
   ChevronDownIcon,
