@@ -69,30 +69,6 @@ func (f EventsWaitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventsWaitMutation", m)
 }
 
-// The InstanceFunc type is an adapter to allow the use of ordinary
-// function as Instance mutator.
-type InstanceFunc func(context.Context, *ent.InstanceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f InstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.InstanceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InstanceMutation", m)
-}
-
-// The InstanceRuntimeFunc type is an adapter to allow the use of ordinary
-// function as InstanceRuntime mutator.
-type InstanceRuntimeFunc func(context.Context, *ent.InstanceRuntimeMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f InstanceRuntimeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.InstanceRuntimeMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InstanceRuntimeMutation", m)
-}
-
 // The LogMsgFunc type is an adapter to allow the use of ordinary
 // function as LogMsg mutator.
 type LogMsgFunc func(context.Context, *ent.LogMsgMutation) (ent.Value, error)

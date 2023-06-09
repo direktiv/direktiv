@@ -27,6 +27,7 @@ func (Annotation) Fields() []ent.Field {
 		field.String("hash").StructTag(`json:"checksum"`),
 		field.Bytes("data"),
 		field.String("mime_type"),
+		field.UUID("instance_id", uuid.UUID{}).Optional().StorageKey("instance_id"),
 	}
 }
 
@@ -34,6 +35,6 @@ func (Annotation) Fields() []ent.Field {
 func (Annotation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("namespace", Namespace.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("instance", Instance.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		// edge.From("instance", Instance.Type).Ref("annotations").Unique().Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

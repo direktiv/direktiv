@@ -36,13 +36,13 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -51,12 +51,12 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if ref == "" {
 		ref = filestore.Latest
 	}
-	revision, err := fStore.ForFile(file).GetRevision(ctx, ref)
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
 
-	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
+	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -113,18 +113,18 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, "workflow name should have either .yaml or .yaml extension")
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, revision, err := fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
+	file, revision, err := tx.FileStore().ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
 
-	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
+	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,17 +140,17 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
+	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -190,34 +190,34 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 	if file.Typ != filestore.FileTypeWorkflow {
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
 	}
-	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
-	newRevision, err := fStore.ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
+	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
 	// delete the previous revision.
-	err = fStore.ForRevision(revision).Delete(ctx)
+	err = tx.FileStore().ForRevision(revision).Delete(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	dataReader, err := fStore.ForRevision(newRevision).GetData(ctx)
+	dataReader, err := tx.FileStore().ForRevision(newRevision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -227,17 +227,17 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
+	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	var resp grpc.UpdateWorkflowResponse
@@ -260,32 +260,32 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 	if file.Typ != filestore.FileTypeWorkflow {
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
 	}
-	revision, err := fStore.ForFile(file).GetCurrentRevision(ctx)
+	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := fStore.ForRevision(revision).GetData(ctx)
+	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
-	_, err = fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
+	_, err = tx.FileStore().ForFile(file).CreateRevision(ctx, "", dataReader)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err = fStore.ForRevision(revision).GetData(ctx)
+	dataReader, err = tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -294,17 +294,17 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
+	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -328,13 +328,13 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -344,7 +344,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	// Discarding head is basically reverting to the before latest revision.
 
-	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -365,20 +365,20 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 			beforeLatestRev = rev
 		}
 	}
-	dataReader, err := fStore.ForRevision(beforeLatestRev).GetData(ctx)
+	dataReader, err := tx.FileStore().ForRevision(beforeLatestRev).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
-	newRev, err := fStore.ForFile(file).CreateRevision(ctx, "", dataReader)
+	newRev, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", dataReader)
 	if err != nil {
 		return nil, err
 	}
 	// delete the old current revision.
-	err = fStore.ForRevision(currentRev).Delete(ctx)
+	err = tx.FileStore().ForRevision(currentRev).Delete(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err = fStore.ForRevision(newRev).GetData(ctx)
+	dataReader, err = tx.FileStore().ForRevision(newRev).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -386,16 +386,16 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
-	_, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
-	err = flow.configureWorkflowStarts(ctx, fStore, store.FileAnnotations(), ns.ID, file, router, true)
+	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -417,18 +417,18 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	annotations, router, err := getRouter(ctx, fStore, store.FileAnnotations(), file)
+	annotations, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
@@ -437,12 +437,12 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 
 	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
 
-	err = store.FileAnnotations().Set(ctx, annotations)
+	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}
 
-	err = commit(ctx)
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -458,18 +458,18 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
 
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
@@ -482,12 +482,12 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 
 	annotations.Data = annotations.Data.SetEntry("workflow_log_event_key", req.GetLogger())
 
-	err = store.FileAnnotations().Set(ctx, annotations)
+	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commit(ctx); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	var resp emptypb.Empty

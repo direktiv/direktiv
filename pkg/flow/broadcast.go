@@ -6,6 +6,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/google/uuid"
 )
 
@@ -147,10 +148,10 @@ type broadcastInstanceInput struct {
 	Caller       string
 }
 
-func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, cached *database.CacheData) error {
+func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, instance *enginerefactor.Instance) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixInstance, eventType)
-	cfg, err := loadNSConfig([]byte(cached.Namespace.Config))
+	cfg, err := loadNSConfig(instance.Settings.NamespaceConfig)
 	if err != nil {
 		return fmt.Errorf("failed to load namespace config: %w", err)
 	}
@@ -170,5 +171,5 @@ func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
 
-	return flow.events.BroadcastCloudevent(ctx, cached.Namespace, &event, 60)
+	return flow.events.BroadcastCloudevent(ctx, &database.Namespace{ID: instance.Instance.NamespaceID, Name: instance.TelemetryInfo.NamespaceName}, &event, 60)
 }

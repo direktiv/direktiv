@@ -26,6 +26,7 @@ func (Events) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.UUID("workflow_id", uuid.UUID{}).Optional().StorageKey("workflow_id"),
+		field.UUID("instance_id", uuid.UUID{}).Optional().StorageKey("instance_id"),
 	}
 }
 
@@ -33,7 +34,7 @@ func (Events) Fields() []ent.Field {
 func (Events) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("wfeventswait", EventsWait.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.From("instance", Instance.Type).Ref("eventlisteners").Unique(),
+		// edge.From("instance", Instance.Type).Ref("eventlisteners").Unique(),
 		edge.From("namespace", Namespace.Type).Unique().Required().Ref("namespacelisteners"),
 	}
 }

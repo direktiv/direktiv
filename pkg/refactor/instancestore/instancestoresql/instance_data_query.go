@@ -106,6 +106,10 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 		return res.Error
 	}
 
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("UpdateInstanceData expected 1 rows affected, got %d", res.RowsAffected)
+	}
+
 	return nil
 }
 

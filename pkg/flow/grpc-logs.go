@@ -8,7 +8,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -45,7 +44,7 @@ var logsFilters = map[*filteringInfo]func(query *ent.LogMsgQuery, v string) (*en
 		if err != nil {
 			return nil, err
 		}
-		return query.Where(entlog.HasInstanceWith(entinst.IDEQ(id))), nil
+		return query.Where(entlog.InstanceID(id)), nil
 	},
 	{
 		field: "LEVEL",
@@ -189,7 +188,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeNamespaceLogs(&cached.Namespace.ID)
+	sub := flow.pubsub.SubscribeNamespaceLogs(cached.Namespace.ID)
 	defer flow.cleanup(sub.Close)
 
 	clients := flow.edb.Clients(ctx)
@@ -319,18 +318,18 @@ resend:
 func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsRequest) (*grpc.InstanceLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return nil, err
 	}
 
 	// its important to append the instanceID to the callpath since we don't do it when creating the database entry
-	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	prefix := internallogger.AppendInstanceID(instance.TelemetryInfo.CallPath, instance.Instance.ID.String())
 	root, err := internallogger.GetRootinstanceID(prefix)
 	if err != nil {
 		return nil, err
 	}
-	callerIsRoot := root == cached.Instance.Invoker
+	callerIsRoot := root == instance.Instance.Invoker
 
 	query := buildInstanceLogsQuery(ctx, flow.edb, root, prefix, callerIsRoot)
 	logmsgs, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
@@ -354,17 +353,18 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 
 	var tailing bool
 
-	cached, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstanceLogs(cached)
+	sub := flow.pubsub.SubscribeInstanceLogs(instance.Instance.ID)
 	defer flow.cleanup(sub.Close)
+
 	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
-	prefix := internallogger.AppendInstanceID(cached.Instance.CallPath, cached.Instance.ID.String())
+	prefix := internallogger.AppendInstanceID(instance.TelemetryInfo.CallPath, instance.Instance.ID.String())
 	root, err := internallogger.GetRootinstanceID(prefix)
-	callerIsRoot := root == cached.Instance.ID.String()
+	callerIsRoot := root == instance.Instance.ID.String()
 	if err != nil {
 		return err
 	}

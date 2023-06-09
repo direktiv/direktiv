@@ -21,12 +21,6 @@ type Events func(*sql.Selector)
 // EventsWait is the predicate function for eventswait builders.
 type EventsWait func(*sql.Selector)
 
-// Instance is the predicate function for instance builders.
-type Instance func(*sql.Selector)
-
-// InstanceRuntime is the predicate function for instanceruntime builders.
-type InstanceRuntime func(*sql.Selector)
-
 // LogMsg is the predicate function for logmsg builders.
 type LogMsg func(*sql.Selector)
 

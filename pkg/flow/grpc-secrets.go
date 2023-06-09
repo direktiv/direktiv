@@ -18,13 +18,13 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 	if err != nil {
 		return nil, err
 	}
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	list, err := store.Secrets().GetAll(ctx, ns.ID)
+	list, err := tx.DataStore().Secrets().GetAll(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +71,13 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 	if err != nil {
 		return nil, err
 	}
-	_, store, _, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	list, err := store.Secrets().Search(ctx, ns.ID, req.GetKey())
+	list, err := tx.DataStore().Secrets().Search(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -101,13 +101,13 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	err = store.Secrets().Set(ctx, &core.Secret{
+	err = tx.DataStore().Secrets().Set(ctx, &core.Secret{
 		ID:          uuid.New(),
 		NamespaceID: ns.ID,
 		Name:        req.GetKey(),
@@ -117,7 +117,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	// TODO: Alax, please look into this.
@@ -139,18 +139,18 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	err = store.Secrets().CreateFolder(ctx, ns.ID, req.GetKey())
+	err = tx.DataStore().Secrets().CreateFolder(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -173,18 +173,18 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	err = store.Secrets().Delete(ctx, ns.ID, req.GetKey())
+	err = tx.DataStore().Secrets().Delete(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -204,18 +204,18 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	err = store.Secrets().DeleteFolder(ctx, ns.ID, req.GetKey())
+	err = tx.DataStore().Secrets().DeleteFolder(ctx, ns.ID, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -235,13 +235,13 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	if err != nil {
 		return nil, err
 	}
-	_, store, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	err = store.Secrets().Update(ctx, &core.Secret{
+	err = tx.DataStore().Secrets().Update(ctx, &core.Secret{
 		NamespaceID: ns.ID,
 		Name:        req.GetKey(),
 		Data:        req.GetData(),
@@ -250,11 +250,11 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 		return nil, err
 	}
 
-	if err = commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
-	// TODO: Alax, please look into this.
+	// TODO: Alex, please look into this.
 	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace secret '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 

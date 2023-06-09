@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
@@ -28,7 +27,6 @@ type EventsQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.Events
 	withWfeventswait *EventsWaitQuery
-	withInstance     *InstanceQuery
 	withNamespace    *NamespaceQuery
 	withFKs          bool
 	modifiers        []func(*sql.Selector)
@@ -83,28 +81,6 @@ func (eq *EventsQuery) QueryWfeventswait() *EventsWaitQuery {
 			sqlgraph.From(events.Table, events.FieldID, selector),
 			sqlgraph.To(eventswait.Table, eventswait.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, events.WfeventswaitTable, events.WfeventswaitColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryInstance chains the current query on the "instance" edge.
-func (eq *EventsQuery) QueryInstance() *InstanceQuery {
-	query := (&InstanceClient{config: eq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := eq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(events.Table, events.FieldID, selector),
-			sqlgraph.To(instance.Table, instance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, events.InstanceTable, events.InstanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -327,7 +303,6 @@ func (eq *EventsQuery) Clone() *EventsQuery {
 		inters:           append([]Interceptor{}, eq.inters...),
 		predicates:       append([]predicate.Events{}, eq.predicates...),
 		withWfeventswait: eq.withWfeventswait.Clone(),
-		withInstance:     eq.withInstance.Clone(),
 		withNamespace:    eq.withNamespace.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
@@ -343,17 +318,6 @@ func (eq *EventsQuery) WithWfeventswait(opts ...func(*EventsWaitQuery)) *EventsQ
 		opt(query)
 	}
 	eq.withWfeventswait = query
-	return eq
-}
-
-// WithInstance tells the query-builder to eager-load the nodes that are connected to
-// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EventsQuery) WithInstance(opts ...func(*InstanceQuery)) *EventsQuery {
-	query := (&InstanceClient{config: eq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	eq.withInstance = query
 	return eq
 }
 
@@ -447,13 +411,12 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 		nodes       = []*Events{}
 		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			eq.withWfeventswait != nil,
-			eq.withInstance != nil,
 			eq.withNamespace != nil,
 		}
 	)
-	if eq.withInstance != nil || eq.withNamespace != nil {
+	if eq.withNamespace != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -484,12 +447,6 @@ func (eq *EventsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event
 		if err := eq.loadWfeventswait(ctx, query, nodes,
 			func(n *Events) { n.Edges.Wfeventswait = []*EventsWait{} },
 			func(n *Events, e *EventsWait) { n.Edges.Wfeventswait = append(n.Edges.Wfeventswait, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := eq.withInstance; query != nil {
-		if err := eq.loadInstance(ctx, query, nodes, nil,
-			func(n *Events, e *Instance) { n.Edges.Instance = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -530,38 +487,6 @@ func (eq *EventsQuery) loadWfeventswait(ctx context.Context, query *EventsWaitQu
 			return fmt.Errorf(`unexpected foreign-key "events_wfeventswait" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
-	}
-	return nil
-}
-func (eq *EventsQuery) loadInstance(ctx context.Context, query *InstanceQuery, nodes []*Events, init func(*Events), assign func(*Events, *Instance)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Events)
-	for i := range nodes {
-		if nodes[i].instance_eventlisteners == nil {
-			continue
-		}
-		fk := *nodes[i].instance_eventlisteners
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(instance.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "instance_eventlisteners" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
 	}
 	return nil
 }

@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
-	"github.com/direktiv/direktiv/pkg/flow/ent/instance"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/google/uuid"
 )
@@ -33,10 +32,11 @@ type Annotation struct {
 	Data []byte `json:"data,omitempty"`
 	// MimeType holds the value of the "mime_type" field.
 	MimeType string `json:"mime_type,omitempty"`
+	// InstanceID holds the value of the "instance_id" field.
+	InstanceID uuid.UUID `json:"instance_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AnnotationQuery when eager-loading is set.
 	Edges                 AnnotationEdges `json:"edges"`
-	instance_annotations  *uuid.UUID
 	namespace_annotations *uuid.UUID
 }
 
@@ -44,11 +44,9 @@ type Annotation struct {
 type AnnotationEdges struct {
 	// Namespace holds the value of the namespace edge.
 	Namespace *Namespace `json:"namespace,omitempty"`
-	// Instance holds the value of the instance edge.
-	Instance *Instance `json:"instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // NamespaceOrErr returns the Namespace value or an error if the edge
@@ -64,19 +62,6 @@ func (e AnnotationEdges) NamespaceOrErr() (*Namespace, error) {
 	return nil, &NotLoadedError{edge: "namespace"}
 }
 
-// InstanceOrErr returns the Instance value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AnnotationEdges) InstanceOrErr() (*Instance, error) {
-	if e.loadedTypes[1] {
-		if e.Instance == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: instance.Label}
-		}
-		return e.Instance, nil
-	}
-	return nil, &NotLoadedError{edge: "instance"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Annotation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -90,11 +75,9 @@ func (*Annotation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case annotation.FieldCreatedAt, annotation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case annotation.FieldID:
+		case annotation.FieldID, annotation.FieldInstanceID:
 			values[i] = new(uuid.UUID)
-		case annotation.ForeignKeys[0]: // instance_annotations
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case annotation.ForeignKeys[1]: // namespace_annotations
+		case annotation.ForeignKeys[0]: // namespace_annotations
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Annotation", columns[i])
@@ -159,14 +142,13 @@ func (a *Annotation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.MimeType = value.String
 			}
-		case annotation.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field instance_annotations", values[i])
-			} else if value.Valid {
-				a.instance_annotations = new(uuid.UUID)
-				*a.instance_annotations = *value.S.(*uuid.UUID)
+		case annotation.FieldInstanceID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_id", values[i])
+			} else if value != nil {
+				a.InstanceID = *value
 			}
-		case annotation.ForeignKeys[1]:
+		case annotation.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace_annotations", values[i])
 			} else if value.Valid {
@@ -181,11 +163,6 @@ func (a *Annotation) assignValues(columns []string, values []any) error {
 // QueryNamespace queries the "namespace" edge of the Annotation entity.
 func (a *Annotation) QueryNamespace() *NamespaceQuery {
 	return NewAnnotationClient(a.config).QueryNamespace(a)
-}
-
-// QueryInstance queries the "instance" edge of the Annotation entity.
-func (a *Annotation) QueryInstance() *InstanceQuery {
-	return NewAnnotationClient(a.config).QueryInstance(a)
 }
 
 // Update returns a builder for updating this Annotation.
@@ -231,6 +208,9 @@ func (a *Annotation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("mime_type=")
 	builder.WriteString(a.MimeType)
+	builder.WriteString(", ")
+	builder.WriteString("instance_id=")
+	builder.WriteString(fmt.Sprintf("%v", a.InstanceID))
 	builder.WriteByte(')')
 	return builder.String()
 }
