@@ -12,8 +12,9 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { useCreateTag } from "~/api/tree/mutate/createTag";
-import { useState } from "react";
+import { pages } from "~/util/router/pages";
+import { useNavigate } from "react-router-dom";
+import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -23,30 +24,42 @@ type FormInput = {
   payload: string;
 };
 
-const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
+const RunWorkflow = ({ path }: { path: string }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigate = useNavigate();
   const {
     handleSubmit,
-    formState: { isDirty, isValid, isSubmitted },
+    setValue,
+    getValues,
+    formState: { isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: zodResolver(z.object({})),
+    defaultValues: {
+      payload: "{\n    \n}",
+    },
+    resolver: zodResolver(
+      z.object({
+        payload: z.string().nonempty(),
+      })
+    ),
   });
 
-  const [workflowInput, setWorkflowInput] = useState("{\n    \n}");
-
-  // TODO: replace useCreateTag with useRunWorkflow
-  const { isLoading } = useCreateTag({
-    onSuccess: () => {
-      close();
+  const { mutate: runWorkflow, isLoading } = useRunWorkflow({
+    onSuccess: ({ namespace, instance }) => {
+      navigate(pages.instances.createHref({ namespace, instance }));
     },
   });
 
-  const onSubmit: SubmitHandler<FormInput> = () => null;
+  const onSubmit: SubmitHandler<FormInput> = ({ payload }) => {
+    runWorkflow({
+      path,
+      payload,
+    });
+  };
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = !isDirty || (isSubmitted && !isValid);
+  const disableSubmit = isSubmitted && !isValid;
 
   const formId = `run-workflow-${path}`;
   return (
@@ -70,14 +83,16 @@ const RunWorkflow = ({ path, close }: { path: string; close: () => void }) => {
             <TabsContent value="json" asChild>
               <Card className="h-96 w-full p-4 sm:h-[500px]" noShadow>
                 <Editor
-                  value={workflowInput}
+                  value={getValues("payload")}
                   onMount={(editor) => {
                     editor.focus();
                     editor.setPosition({ lineNumber: 2, column: 5 });
                   }}
                   onChange={(newData) => {
                     if (newData) {
-                      setWorkflowInput(newData);
+                      setValue("payload", newData, {
+                        shouldValidate: true,
+                      });
                     }
                   }}
                   language="json"
