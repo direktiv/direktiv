@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "namespace_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "deleted" boolean NOT NULL DEFAULT 0,
+    "deleted" boolean NOT NULL,
     "received_events" bytea,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
@@ -198,8 +198,9 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
     FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- for processing the events with minimal latency, for bulk processing we would need only an index on the topic
-CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_listeners" USING hash("namespace_id, topic");
+-- for processing the events with minimal latency, we assume that the topic 
+-- is a compound like this: "namespace-id:event-type"
+CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
 
 CREATE TABLE IF NOT EXISTS "events_filters" (
     "id" uuid,
