@@ -2,6 +2,7 @@ import {
   ArrayFieldTemplateItemType,
   ArrayFieldTemplateProps,
   BaseInputTemplateProps,
+  DescriptionFieldProps,
   RJSFSchema,
   RegistryWidgetsType,
   TitleFieldProps,
@@ -149,6 +150,12 @@ const TitleFieldTemplate = (props: TitleFieldProps) => {
     </header>
   );
 };
+const DescriptionFieldTemplate = (props: DescriptionFieldProps) => {
+  const { description } = props;
+  return (
+    <div className="mb-2 text-gray-9 dark:text-gray-dark-9">{description}</div>
+  );
+};
 
 const CustomCheckbox = (props: WidgetProps) => (
   <div className="flex space-x-2 p-2 ">
@@ -181,6 +188,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => (
       BaseInputTemplate,
       TitleFieldTemplate,
       ArrayFieldTemplate,
+      DescriptionFieldTemplate,
       ButtonTemplates: {
         SubmitButton,
       },
