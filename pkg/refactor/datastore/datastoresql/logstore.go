@@ -22,7 +22,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "oid", "timestamp", "level")
+	cols = append(cols, "id", "timestamp", "level")
 	vals = append(vals, uuid.New(), timestamp, level)
 	databaseCols := []string{
 		"source",
