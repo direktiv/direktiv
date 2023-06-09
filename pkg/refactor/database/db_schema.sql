@@ -172,6 +172,9 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     PRIMARY KEY ("id")
 );
 
+-- for cursor style pagination
+CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespace_id", "created_at" DESC);
+
 CREATE TABLE IF NOT EXISTS "event_listeners" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
@@ -181,11 +184,22 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "received_events" bytea,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
-    "topic_compound" text NOT NULL,
     "trigger_info" bytea NOT NULL,
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "event_topics" (
+    "id" uuid,
+    "event_listener_id" uuid NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "topic" text NOT NULL,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- for processing the events with minimal latency, for bulk processing we would need only an index on the topic
+CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_listeners" USING hash("namespace_id, topic");
 
 CREATE TABLE IF NOT EXISTS "events_filters" (
     "id" uuid,
