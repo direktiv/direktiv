@@ -89,7 +89,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
                     editor.setPosition({ lineNumber: 2, column: 5 });
                   }}
                   onChange={(newData) => {
-                    if (newData) {
+                    if (typeof newData === "string") {
                       setValue("payload", newData, {
                         shouldValidate: true,
                       });
