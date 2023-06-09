@@ -13,7 +13,6 @@ type Event struct {
 	Event      *cloudevents.Event
 	Namespace  uuid.UUID
 	ReceivedAt time.Time // marks when the events received by the web-API or created via internal logic.
-	Round      int       // this value MUST be increased if the event is passed back into the queue.
 }
 
 // Persists and gets events.
@@ -24,7 +23,8 @@ type EventHistoryStore interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*Event, error)
 	// the result will be sorted by the AcceptedAt value.
 	// pass 0 for limit or offset to get all events.
-	Get(ctx context.Context, namespace uuid.UUID, limit, offset int) ([]*Event, error)
+	// The total row count is also returned for pagination.
+	Get(ctx context.Context, namespace uuid.UUID, limit, offset int) ([]*Event, int, error)
 	GetAll(ctx context.Context) ([]*Event, error)
 	// deletes events that are older then the given timestamp.
 	DeleteOld(ctx context.Context, sinceWhen time.Time) error
@@ -75,10 +75,8 @@ type EventListenerStore interface {
 	Update(ctx context.Context, listener *EventListener, more ...*EventListener) (error, []error)
 	GetByID(ctx context.Context, id uuid.UUID) (*EventListener, error)
 	GetAll(ctx context.Context) ([]*EventListener, error)
-	// return all EventListeners for a given namespace.
-	Get(ctx context.Context, namespace uuid.UUID) ([]*EventListener, error)
-	// returns all EventListeners for a given namespace that have a subscription for the given eventtype.
-	GetByTopic(ctx context.Context, namespace uuid.UUID, eventType string) ([]*EventListener, error)
+	// return EventListeners for a given namespace with the total row count for pagination.
+	Get(ctx context.Context, namespace uuid.UUID, limit, offet int) ([]*EventListener, int, error)
 	// deletes EventListeners that have the deleted flag set.
 	Delete(ctx context.Context) error
 	// deletes the entries associated with the given instance ID.
@@ -96,6 +94,6 @@ type NamespaceCloudEventFilter struct {
 type CloudEventsFilterStore interface {
 	Delete(ctx context.Context, nsID uuid.UUID, filterName string) error
 	Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error
-	Get(ctx context.Context, nsID uuid.UUID, filterName string) (NamespaceCloudEventFilter, error)
+	Get(ctx context.Context, nsID uuid.UUID, filterName string, limit, offset int) (NamespaceCloudEventFilter, int, error)
 	GetAll(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, error)
 }
