@@ -14,7 +14,7 @@ type LogStore interface {
 	// - source:uuid, type:string SHOULD be present in keyValues. This makes it possible to process the logEntry as an log-event.
 	// - for keysAndValues["type"]="instance" the following also SHOULD be present: log_instance_call_path:string, root_instance_id:uuid.
 	Append(ctx context.Context, timestamp time.Time, level LogLevel, msg string, keysAndValues map[string]interface{}) error
-	// Returns a limited number of log-entries that have matching associated fields with the provided keysAndValues pairs
+	// Returns a limited number of log-entries (and the total count) that have matching associated fields with the provided keysAndValues pairs
 	// starting a given offset. For no offset or unlimited log-entries in the result set the value to 0.
 	// - level SHOULD be passed as a string. Possible values are debug, info, error.
 	// - This method will search for any of followings keys and query all matching logs:
@@ -23,7 +23,7 @@ type LogStore interface {
 	// Returned log-entries will have same or higher level as the passed one.
 	// - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
 	// when passing log_instance_call_path the root_instance_id SHOULD be passed to optimize the performance of the query.
-	Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*LogEntry, error)
+	Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*LogEntry, int, error)
 }
 
 // Represents an individual log entry.

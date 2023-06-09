@@ -65,7 +65,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
+func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, int, error) {
 	wEq := []string{}
 
 	databaseCols := []string{
@@ -92,14 +92,21 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, 0, tx.Error
+	}
+	count := 0
+	queryCount := composeCountQuery(wEq)
+
+	tx = sl.db.WithContext(ctx).Raw(queryCount).Scan(&count)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
 	}
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
 		err := json.Unmarshal(e.Entry, &m)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		levels := []string{"debug", "info", "error"}
@@ -113,7 +120,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 		})
 	}
 
-	return convertedList, nil
+	return convertedList, count, nil
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
@@ -132,6 +139,20 @@ func composeQuery(limit, offset int, wEq []string) string {
 	}
 	if offset > 0 {
 		q += fmt.Sprintf(" OFFSET %d ", offset)
+	}
+
+	return q + ";"
+}
+
+func composeCountQuery(wEq []string) string {
+	q := `SELECT count(id)
+	FROM log_entries `
+	q += "WHERE "
+	for i, e := range wEq {
+		q += e
+		if i+1 < len(wEq) {
+			q += " AND "
+		}
 	}
 
 	return q + ";"

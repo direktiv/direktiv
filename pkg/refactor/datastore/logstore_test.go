@@ -25,7 +25,7 @@ func Test_Add_Get(t *testing.T) {
 	q := make(map[string]interface{}, 0)
 	q["level"] = logengine.Info
 	q["source"] = id
-	got, err := logstore.Get(context.Background(), q, -1, -1)
+	got, _, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -38,7 +38,8 @@ func Test_Add_Get(t *testing.T) {
 func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level logengine.LogLevel) {
 	t.Helper()
 	want := []string{}
-	for i := 0; i < rand.Intn(20)+1; i++ { //nolint:gosec
+	c := rand.Intn(20) + 1
+	for i := 0; i < c; i++ { //nolint:gosec
 		want = append(want, fmt.Sprintf("test msg %d", rand.Intn(100)+1)) //nolint:gosec
 	}
 	in := map[string]interface{}{}
@@ -51,12 +52,15 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 	}
 	q := map[string]interface{}{}
 	q[col] = id
-	got, err := logstore.Get(context.Background(), q, -1, -1)
+	got, count, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
+	if count != c {
+		t.Errorf("got wrong total count Want %v got %v", c, count)
+	}
 	if len(got) != len(want) {
-		t.Error("got wrong number of results")
+		t.Error("got wrong number of results.")
 	}
 	for _, le := range got {
 		ok := false
