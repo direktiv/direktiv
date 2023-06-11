@@ -20,9 +20,9 @@ type Service struct {
 
 // ServicesStore responsible for fetching and setting namespace services from datastore.
 type ServicesStore interface {
-	// GetByNamespaceAndName gets a single namespace service from the store. if no record found,
+	// GetByNamespaceIDAndName gets a single namespace service from the store. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetByNamespaceAndName(ctx context.Context, namespace uuid.UUID, name string) (*Service, error)
+	GetByNamespaceIDAndName(ctx context.Context, namespaceID uuid.UUID, name string) (*Service, error)
 
 	// GetOneByURL gets a single namespace service from the store. if no record found,
 	// it returns datastore.ErrNotFound error.

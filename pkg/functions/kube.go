@@ -43,7 +43,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 		return err
 	}
 
-	svc, err := is.dbStore.GetByNamespaceAndName(ctx, uid, info.GetName())
+	svc, err := is.dbStore.GetByNamespaceIDAndName(ctx, uid, info.GetName())
 
 	if err != nil && ent.IsNotFound(err) {
 		logger.Infof("creating service %v", info.GetName())

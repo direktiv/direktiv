@@ -91,6 +91,20 @@ CREATE TABLE IF NOT EXISTS "secrets" (
 );
 
 
+CREATE TABLE IF NOT EXISTS "services" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "name" text NOT NULL,
+    "url" text NOT NULL,
+    "data" 	 text NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("id"),
+    CONSTRAINT "fk_namespaces_services"
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
     "namespace_id" uuid,
