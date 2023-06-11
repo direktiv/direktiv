@@ -3,17 +3,16 @@ package functions
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -43,31 +42,27 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 		return err
 	}
 
-	svc, err := is.db.Services.Query().Where(services.And(
-		services.Name(info.GetName()),
-		services.HasNamespaceWith(
-			namespace.ID(uid),
-		),
-	)).Only(ctx)
-
-	if err != nil && ent.IsNotFound(err) {
+	svc, err := is.dbStore.GetByNamespaceIDAndName(ctx, uid, info.GetName())
+	if errors.Is(err, datastore.ErrNotFound) {
 		logger.Infof("creating service %v", info.GetName())
-		return is.db.Services.Create().
-			SetNamespaceID(uid).
-			SetName(info.GetName()).
-			SetURL(svcName).
-			SetData(string(b)).
-			Exec(ctx)
-	} else if err != nil {
+		return is.dbStore.Create(ctx, &core.Service{
+			NamespaceID: uid,
+			Name:        info.GetName(),
+			URL:         svcName,
+			Data:        string(b),
+		})
+	}
+	if err != nil {
 		return err
 	}
 
 	logger.Infof("updating service %v", info.GetName())
 
-	return svc.Update().
-		SetData(string(b)).
-		SetURL(svcName).
-		Exec(ctx)
+	return is.dbStore.Update(ctx, &core.Service{
+		ID:   svc.ID,
+		URL:  svcName,
+		Data: string(b),
+	})
 }
 
 func (is *functionsServer) CreateFunction(ctx context.Context, in *igrpc.FunctionsCreateFunctionRequest) (*emptypb.Empty, error) {
@@ -147,19 +142,20 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	// Delete Database records
 	logger.Debugf("deleting database records %v", in.GetAnnotations())
 
-	conditions := make([]predicate.Services, 0)
+	deletesCount := 0
 	for i := range svcList {
-		conditions = append(conditions, services.Name(svcList[i]))
+		err := is.dbStore.DeleteByName(ctx, svcList[i])
+		if errors.Is(err, datastore.ErrNotFound) {
+			continue
+		}
+		if err != nil {
+			logger.Errorf("error delete knative database record %s: %w", in.GetAnnotations(), err)
+			return &empty, err
+		}
+		deletesCount = deletesCount + 1
 	}
 
-	deleteRecord := is.db.Services.Delete().Where(services.Or(conditions...))
-	recordCount, err := deleteRecord.Exec(ctx)
-	if err != nil {
-		logger.Errorf("error delete knative database record %s: %w", in.GetAnnotations(), err)
-		return &empty, err
-	}
-
-	logger.Debugf("deleted %v database records", recordCount)
+	logger.Debugf("deleted %v database records", deletesCount)
 
 	return &empty, err
 }
@@ -231,7 +227,7 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 		logger.Errorf("could not recreate service: %v", err)
 
 		// Service backup record not found in database
-		if ent.IsNotFound(err) {
+		if errors.Is(err, datastore.ErrNotFound) {
 			return &empty, status.Error(codes.NotFound, "could not recreate service")
 		}
 		return &empty, fmt.Errorf("could not recreate service")
@@ -263,10 +259,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 	}
 
 	if strings.HasPrefix(in.GetServiceName(), "namespace-") {
-		deleteRecord := is.db.Services.Delete().Where(services.And(
-			services.Name(in.GetServiceName()),
-		))
-		_, err := deleteRecord.Exec(ctx)
+		err = is.dbStore.DeleteByName(ctx, in.GetServiceName())
 		if err != nil {
 			logger.Errorf("successfully delete service, but could not delete backup record: %v", err)
 			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %w", err)
@@ -597,7 +590,7 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 
 func (is *functionsServer) reconstructService(name string, ctx context.Context) error {
 	// Get backed up service from database
-	dbSvc, err := is.db.Services.Query().Where(services.URL(name)).First(ctx)
+	dbSvc, err := is.dbStore.GetOneByURL(ctx, name)
 	if err != nil {
 		return err
 	}
@@ -620,7 +613,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 
 // recretae all services on startup.
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
-	svcs, err := is.db.Services.Query().All(ctx)
+	svcs, err := is.dbStore.GetAll(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprint("failed to get services from database: %w", err))
 		return err
