@@ -90,7 +90,6 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
 CREATE TABLE IF NOT EXISTS "services" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,

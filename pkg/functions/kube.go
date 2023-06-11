@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -44,8 +43,7 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 	}
 
 	svc, err := is.dbStore.GetByNamespaceIDAndName(ctx, uid, info.GetName())
-
-	if err != nil && ent.IsNotFound(err) {
+	if errors.Is(err, datastore.ErrNotFound) {
 		logger.Infof("creating service %v", info.GetName())
 		return is.dbStore.Create(ctx, &core.Service{
 			NamespaceID: uid,
@@ -53,7 +51,8 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.Functio
 			URL:         svcName,
 			Data:        string(b),
 		})
-	} else if err != nil {
+	}
+	if err != nil {
 		return err
 	}
 
@@ -228,7 +227,7 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 		logger.Errorf("could not recreate service: %v", err)
 
 		// Service backup record not found in database
-		if ent.IsNotFound(err) {
+		if errors.Is(err, datastore.ErrNotFound) {
 			return &empty, status.Error(codes.NotFound, "could not recreate service")
 		}
 		return &empty, fmt.Errorf("could not recreate service")
