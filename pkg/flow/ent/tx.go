@@ -28,8 +28,6 @@ type Tx struct {
 	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Services is the client for interacting with the Services builders.
-	Services *ServicesClient
 
 	// lazily loaded.
 	client     *Client
@@ -168,7 +166,6 @@ func (tx *Tx) init() {
 	tx.EventsWait = NewEventsWaitClient(tx.config)
 	tx.LogMsg = NewLogMsgClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)
-	tx.Services = NewServicesClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

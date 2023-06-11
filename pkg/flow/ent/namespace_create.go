@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/google/uuid"
 )
 
@@ -165,21 +164,6 @@ func (nc *NamespaceCreate) AddCloudeventfilters(c ...*CloudEventFilters) *Namesp
 		ids[i] = c[i].ID
 	}
 	return nc.AddCloudeventfilterIDs(ids...)
-}
-
-// AddServiceIDs adds the "services" edge to the Services entity by IDs.
-func (nc *NamespaceCreate) AddServiceIDs(ids ...uuid.UUID) *NamespaceCreate {
-	nc.mutation.AddServiceIDs(ids...)
-	return nc
-}
-
-// AddServices adds the "services" edges to the Services entity.
-func (nc *NamespaceCreate) AddServices(s ...*Services) *NamespaceCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return nc.AddServiceIDs(ids...)
 }
 
 // Mutation returns the NamespaceMutation object of the builder.
@@ -379,22 +363,6 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(cloudeventfilters.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := nc.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.ServicesTable,
-			Columns: []string{namespace.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(services.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

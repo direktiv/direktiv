@@ -93,18 +93,6 @@ func (f NamespaceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NamespaceMutation", m)
 }
 
-// The ServicesFunc type is an adapter to allow the use of ordinary
-// function as Services mutator.
-type ServicesFunc func(context.Context, *ent.ServicesMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ServicesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ServicesMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServicesMutation", m)
-}
-
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

@@ -13,7 +13,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
-	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	"github.com/google/uuid"
 )
 
@@ -149,32 +148,4 @@ func init() {
 	namespaceDescID := namespaceFields[0].Descriptor()
 	// namespace.DefaultID holds the default value on creation for the id field.
 	namespace.DefaultID = namespaceDescID.Default.(func() uuid.UUID)
-	servicesFields := schema.Services{}.Fields()
-	_ = servicesFields
-	// servicesDescCreatedAt is the schema descriptor for created_at field.
-	servicesDescCreatedAt := servicesFields[1].Descriptor()
-	// services.DefaultCreatedAt holds the default value on creation for the created_at field.
-	services.DefaultCreatedAt = servicesDescCreatedAt.Default.(func() time.Time)
-	// servicesDescUpdatedAt is the schema descriptor for updated_at field.
-	servicesDescUpdatedAt := servicesFields[2].Descriptor()
-	// services.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	services.DefaultUpdatedAt = servicesDescUpdatedAt.Default.(func() time.Time)
-	// services.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	services.UpdateDefaultUpdatedAt = servicesDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// servicesDescURL is the schema descriptor for url field.
-	servicesDescURL := servicesFields[3].Descriptor()
-	// services.URLValidator is a validator for the "url" field. It is called by the builders before save.
-	services.URLValidator = servicesDescURL.Validators[0].(func(string) error)
-	// servicesDescName is the schema descriptor for name field.
-	servicesDescName := servicesFields[4].Descriptor()
-	// services.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	services.NameValidator = servicesDescName.Validators[0].(func(string) error)
-	// servicesDescData is the schema descriptor for data field.
-	servicesDescData := servicesFields[5].Descriptor()
-	// services.DataValidator is a validator for the "data" field. It is called by the builders before save.
-	services.DataValidator = servicesDescData.Validators[0].(func(string) error)
-	// servicesDescID is the schema descriptor for id field.
-	servicesDescID := servicesFields[0].Descriptor()
-	// services.DefaultID holds the default value on creation for the id field.
-	services.DefaultID = servicesDescID.Default.(func() uuid.UUID)
 }
