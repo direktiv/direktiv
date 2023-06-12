@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { Info, Play } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
@@ -14,6 +13,7 @@ import Editor from "~/design/Editor";
 import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { NodeSchemaType } from "~/api/tree/schema";
+import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import YAML from "js-yaml";
 import { pages } from "~/util/router/pages";
