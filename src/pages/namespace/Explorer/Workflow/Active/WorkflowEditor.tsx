@@ -1,4 +1,4 @@
-import { Bug, GitBranchPlus, GitMerge, Play, Save, Undo } from "lucide-react";
+import { Bug, GitBranchPlus, Play, Save, Undo } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +9,7 @@ import { FC, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { RxChevronDown } from "react-icons/rx";
@@ -105,19 +106,10 @@ const WorkflowEditor: FC<{
           </Popover>
         )}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <ButtonBar>
             <Button
               variant="outline"
               disabled={hasUnsavedChanged}
-              data-testid="workflow-editor-btn-revision"
-            >
-              <GitMerge />
-              {t("pages.explorer.workflow.editor.revisionsBtn")}
-              <RxChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-60">
-            <DropdownMenuItem
               onClick={() => {
                 createRevision({
                   path,
@@ -125,9 +117,20 @@ const WorkflowEditor: FC<{
               }}
               data-testid="workflow-editor-btn-make-revision"
             >
-              <GitBranchPlus className="mr-2 h-4 w-4" />
+              <GitBranchPlus />
               {t("pages.explorer.workflow.editor.makeRevision")}
-            </DropdownMenuItem>
+            </Button>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={hasUnsavedChanged}
+                variant="outline"
+                data-testid="workflow-editor-btn-revision-drop"
+              >
+                <RxChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+          </ButtonBar>
+          <DropdownMenuContent className="w-60">
             <DropdownMenuItem
               onClick={() => {
                 revertRevision({

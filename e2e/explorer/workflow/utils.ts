@@ -56,7 +56,7 @@ export const actionWaitForSuccessToast = async (page: Page) => {
 };
 
 export const actionRevertRevision = async (page: Page) => {
-  const revisionTrigger = page.getByTestId("workflow-editor-btn-revision");
+  const revisionTrigger = page.getByTestId("workflow-editor-btn-revision-drop");
   await revisionTrigger.click();
   const revertRevisionButton = page.getByTestId(
     "workflow-editor-btn-revert-revision"
@@ -65,8 +65,6 @@ export const actionRevertRevision = async (page: Page) => {
 };
 
 export const actionMakeRevision = async (page: Page) => {
-  const revisionTrigger = page.getByTestId("workflow-editor-btn-revision");
-  await revisionTrigger.click();
   const makeRevisionButton = page.getByTestId(
     "workflow-editor-btn-make-revision"
   );
