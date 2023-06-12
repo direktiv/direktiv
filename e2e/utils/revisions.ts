@@ -2,7 +2,7 @@ import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
-const getRevisionContentVariation = (revision: number) => `
+const getRevisionContentVariation = (revision: number) => `\
 description: minimal workflow
 states:
 - id: revision-${revision}
