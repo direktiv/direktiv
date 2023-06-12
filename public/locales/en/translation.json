@@ -146,7 +146,7 @@
           "settings": "Settings"
         },
         "updated": "Updated {{relativeTime}}",
-        "actionsBtn": "Actions",
+        "actionsBtn": "Run",
         "editor": {
           "unsavedNote": "you have unsaved changes",
           "theresOneIssue": "There is one issue",
