@@ -1,4 +1,10 @@
-import { ChevronDown, GitBranchIcon, Undo } from "lucide-react";
+import {
+  ChevronDown,
+  GitBranchIcon,
+  SearchIcon,
+  Trash2Icon,
+  Undo,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,4 +55,57 @@ export const GitButtonBar = () => (
       </ButtonBar>
     </DropdownMenu>
   </div>
+);
+export const ButtonSizes = () => (
+  <div className="flex flex-col gap-4">
+    <ButtonBar>
+      <Button size="lg">Start</Button>
+      <Button size="lg">Mid-1</Button>
+      <Button size="lg">Mid-2</Button>
+      <Button size="lg">
+        <GitBranchIcon /> Review
+      </Button>
+      <Button size="lg">
+        <SearchIcon /> Search
+      </Button>
+    </ButtonBar>
+    <ButtonBar>
+      <Button>Start</Button>
+      <Button>Mid-1</Button>
+      <Button>Mid-2</Button>
+      <Button>
+        <GitBranchIcon /> Review
+      </Button>
+      <Button>
+        <SearchIcon /> Search
+      </Button>
+    </ButtonBar>
+    <ButtonBar>
+      <Button size="sm">Start</Button>
+      <Button size="sm">Mid-1</Button>
+      <Button size="sm">Mid-2</Button>
+      <Button size="sm">
+        <GitBranchIcon /> Review
+      </Button>
+      <Button size="sm">
+        <SearchIcon /> Search
+      </Button>
+    </ButtonBar>
+  </div>
+);
+export const Toolbar = () => (
+  <ButtonBar>
+    <Button>Start</Button>
+    <Button>Mid-1</Button>
+    <Button>Mid-2</Button>
+    <Button size="lg">
+      <GitBranchIcon /> Review
+    </Button>
+    <Button variant="primary">
+      <SearchIcon /> Search
+    </Button>
+    <Button size="sm" variant="destructive">
+      <Trash2Icon /> Remove
+    </Button>
+  </ButtonBar>
 );
