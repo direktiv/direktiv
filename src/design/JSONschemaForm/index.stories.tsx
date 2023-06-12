@@ -1,41 +1,68 @@
-import Form from "@rjsf/core";
+import {
+  ArraySchemaSample,
+  CustomArraySample,
+  SimpleSample,
+} from "./jsonSchemaExamples";
+import type { Meta, StoryObj } from "@storybook/react";
+import { JSONSchemaForm } from "../JSONschemaForm";
+import { RJSFSchema } from "@rjsf/utils";
 
-export default {
-  title: "Components/JSON schema Form",
+const meta = {
+  title: "Components/JSONSchemaForm",
+  component: JSONSchemaForm,
+} satisfies Meta<typeof JSONSchemaForm>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const defSchema: RJSFSchema = {
+  title: "A registration form",
+  type: "object",
+  required: ["firstName", "lastName"],
+  properties: {
+    password: {
+      type: "string",
+      title: "Password",
+    },
+    lastName: {
+      type: "string",
+      title: "Last name",
+    },
+    bio: {
+      type: "string",
+      title: "Bio",
+    },
+    firstName: {
+      type: "string",
+      title: "First name",
+    },
+    age: {
+      type: "integer",
+      title: "Age",
+    },
+    occupation: {
+      type: "string",
+      enum: ["foo", "bar", "fuzz", "qux"],
+    },
+  },
 };
 
-// for examples to to
-// https://rjsf-team.github.io/react-jsonschema-form/
-// select one template copy the generated JSONSchemach
+export const Default: Story = {
+  render: ({ ...args }) => <JSONSchemaForm {...args} />,
+  args: {
+    schema: defSchema,
+  },
+  tags: ["autodocs"],
+};
 
-export const Default = () => (
-  <Form
-    schema={{
-      title: "A registration form",
-      type: "object",
-      required: ["firstName", "lastName"],
-      properties: {
-        password: {
-          type: "string",
-          title: "Password",
-        },
-        lastName: {
-          type: "string",
-          title: "Last name",
-        },
-        bio: {
-          type: "string",
-          title: "Bio",
-        },
-        firstName: {
-          type: "string",
-          title: "First name",
-        },
-        age: {
-          type: "integer",
-          title: "Age",
-        },
-      },
-    }}
-  />
+export const ArraySchemaSampleForm = () => (
+  <JSONSchemaForm schema={ArraySchemaSample} />
+);
+
+export const CustomArraySampleForm = () => (
+  <JSONSchemaForm schema={CustomArraySample} />
+);
+
+export const SampleFormWithFileInput = () => (
+  <JSONSchemaForm schema={SimpleSample} />
 );
