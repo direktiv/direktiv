@@ -50,7 +50,7 @@
         },
         "delete": {
           "title": "Delete",
-          "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
+          "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
           "directoryMsg": "All content of this directory will be deleted as well.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
@@ -72,58 +72,69 @@
         },
         "workflow": {
           "revisions": {
-            "trafficShaping": {
-              "title": "Traffic Shaping",
-              "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
-              "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
-              "hint": "Please select 2 different revisions to configure traffic shaping.",
-              "saveBtn": "Save",
-              "revisionSelector": {
-                "placeholder": "Select Revision...",
-                "searchPlaceholder": "Search Revisions...",
-                "tags": "Tags",
-                "revisions": "Revisions",
-                "notFound": "No Revisions found."
-              }
-            },
-            "list": {
-              "title": "Revisions",
-              "distribution": "{{count}} % of traffic distribution",
-              "contextMenu": {
-                "title": "Actions",
-                "delete": "Delete",
-                "tag": "Create Tag",
-                "revert": "Revert to Revision"
-              }
-            },
-            "delete": {
-              "titleTag": "Delete Tag",
-              "titleRevision": "Delete Revision",
-              "description": "Are you sure you want to delete <b>{{name}}</b>? This can not be undone.",
-              "revisionNote": "Please note that this will also delete all corresponding tags as well.",
-              "cancelBtn": "Cancel",
-              "deleteBtn": "Delete"
-            },
-            "tag": {
-              "titleTag": "Create a Tag",
-              "description": "You are about to create a tag based on <b>{{name}}</b>.",
-              "tagAlreadyExist": "This tag already exists.",
-              "cancelBtn": "Cancel",
-              "createBtn": "Create Tag"
-            },
-            "revert": {
-              "title": "Revert to Revision",
-              "description": "Are you sure you want to revert to <b>{{name}}</b>?",
-              "cancelBtn": "Cancel",
-              "revertBtn": "Revert",
-              "error": {
-                "title": "Error",
-                "description": "Something went wrong reverting this workflow."
+            "overview": {
+              "trafficShaping": {
+                "title": "Traffic Shaping",
+                "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
+                "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
+                "hint": "Please select 2 different revisions to configure traffic shaping.",
+                "saveBtn": "Save",
+                "revisionSelector": {
+                  "placeholder": "Select Revision...",
+                  "searchPlaceholder": "Search Revisions...",
+                  "tags": "Tags",
+                  "revisions": "Revisions",
+                  "notFound": "No Revisions found."
+                }
               },
-              "success": {
-                "title": "Successfully reverted",
-                "description": "Your workflow was reverted to {{name}}.",
-                "action": "Open workflow"
+              "list": {
+                "title": "Revisions",
+                "distribution": "{{count}} % of traffic distribution",
+                "copy": "copy",
+                "copied": "copied",
+                "contextMenu": {
+                  "title": "Actions",
+                  "delete": "Delete",
+                  "tag": "Create Tag",
+                  "revert": "Revert to Revision"
+                },
+                "delete": {
+                  "titleTag": "Delete Tag",
+                  "titleRevision": "Delete Revision",
+                  "description": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+                  "revisionNote": "Please note that this will also delete all corresponding tags as well.",
+                  "cancelBtn": "Cancel",
+                  "deleteBtn": "Delete"
+                },
+                "tag": {
+                  "titleTag": "Create a Tag",
+                  "description": "You are about to create a tag based on <b>{{name}}</b>.",
+                  "tagAlreadyExist": "This tag already exists.",
+                  "cancelBtn": "Cancel",
+                  "createBtn": "Create Tag"
+                },
+                "revert": {
+                  "title": "Revert to Revision",
+                  "description": "Are you sure you want to revert to <b>{{name}}</b>?",
+                  "cancelBtn": "Cancel",
+                  "revertBtn": "Revert",
+                  "error": {
+                    "title": "Error",
+                    "description": "Something went wrong reverting this workflow."
+                  },
+                  "success": {
+                    "title": "Successfully reverted",
+                    "description": "Your workflow was reverted to {{name}}.",
+                    "action": "Open workflow"
+                  }
+                }
+              },
+              "detail": {
+                "copy": "copy",
+                "copied": "copied",
+                "backBtn": "Revisions List",
+                "readOnlyNote": "You cannot edit an old revision",
+                "revertBtn": "Revert"
               }
             }
           }
@@ -136,6 +147,7 @@
           "overview": "Overview",
           "settings": "Settings"
         },
+        "headline": "Latest",
         "updated": "Updated {{relativeTime}}",
         "actionsBtn": "Actions",
         "editor": {

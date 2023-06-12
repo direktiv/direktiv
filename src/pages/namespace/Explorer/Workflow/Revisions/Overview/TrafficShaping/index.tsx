@@ -1,14 +1,14 @@
 import { FC, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import Button from "../../../../../../design/Button";
-import { Card } from "../../../../../../design/Card";
+import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import RevisionSelector from "./RevisionSelector";
-import { Slider } from "../../../../../../design/Slider";
-import { pages } from "../../../../../../util/router/pages";
-import { useNodeRevisions } from "../../../../../../api/tree/query/revisions";
-import { useNodeTags } from "../../../../../../api/tree/query/tags";
+import { Slider } from "~/design/Slider";
+import { pages } from "~/util/router/pages";
+import { useNodeRevisions } from "~/api/tree/query/revisions";
+import { useNodeTags } from "~/api/tree/query/tags";
 import { useRouter } from "~/api/tree/query/router";
 import { useSetRouter } from "~/api/tree/mutate/setRouter";
 
@@ -73,8 +73,10 @@ const TrafficShaping: FC = () => {
   return (
     <>
       <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-        <Network />
-        {t("pages.explorer.tree.workflow.revisions.trafficShaping.title")}
+        <Network className="h-5" />
+        {t(
+          "pages.explorer.tree.workflow.revisions.overview.trafficShaping.title"
+        )}
       </h3>
       <Card
         className="flex flex-col gap-y-6 p-4"
@@ -82,7 +84,7 @@ const TrafficShaping: FC = () => {
       >
         <div className="text-sm font-medium">
           {t(
-            "pages.explorer.tree.workflow.revisions.trafficShaping.description"
+            "pages.explorer.tree.workflow.revisions.overview.trafficShaping.description"
           )}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -136,7 +138,7 @@ const TrafficShaping: FC = () => {
               }}
             >
               {t(
-                "pages.explorer.tree.workflow.revisions.trafficShaping.saveBtn"
+                "pages.explorer.tree.workflow.revisions.overview.trafficShaping.saveBtn"
               )}
             </Button>
           </div>
@@ -144,7 +146,7 @@ const TrafficShaping: FC = () => {
         <div className="text-sm" data-testid="traffic-shaping-note">
           {isEnabled ? (
             <Trans
-              i18nKey="pages.explorer.tree.workflow.revisions.trafficShaping.setup"
+              i18nKey="pages.explorer.tree.workflow.revisions.overview.trafficShaping.setup"
               values={{
                 aName: routeA,
                 bName: routeB,
@@ -153,7 +155,9 @@ const TrafficShaping: FC = () => {
               }}
             />
           ) : (
-            t("pages.explorer.tree.workflow.revisions.trafficShaping.hint")
+            t(
+              "pages.explorer.tree.workflow.revisions.overview.trafficShaping.hint"
+            )
           )}
         </div>
       </Card>

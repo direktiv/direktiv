@@ -66,20 +66,29 @@ const RevisionTableRow: FC<{
       <TableCell className="w-0 justify-start gap-x-3">
         {isPrimaryTraffic && (
           <Badge data-testid="traffic-distribution-primary">
-            {t("pages.explorer.tree.workflow.revisions.list.distribution", {
-              count: router?.routes?.[0]?.weight,
-            })}
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.list.distribution",
+              {
+                count: router?.routes?.[0]?.weight,
+              }
+            )}
           </Badge>
         )}
         {isSecondaryTraffic && (
           <Badge data-testid="traffic-distribution-secondary" variant="outline">
-            {t("pages.explorer.tree.workflow.revisions.list.distribution", {
-              count: router?.routes?.[1]?.weight,
-            })}
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.list.distribution",
+              {
+                count: router?.routes?.[1]?.weight,
+              }
+            )}
           </Badge>
         )}
       </TableCell>
-      <TableCell className="flex w-auto justify-end gap-x-3">
+      <TableCell
+        className="flex w-auto justify-end gap-x-3"
+        data-testid={`workflow-revisions-item-last-row-${revision.name}`}
+      >
         {!isLatest && (
           <CopyButton
             value={revision.name}
@@ -89,7 +98,13 @@ const RevisionTableRow: FC<{
               size: "sm",
             }}
           >
-            {(copied) => (copied ? "copied" : "copy")}
+            {(copied) =>
+              copied
+                ? t(
+                    "pages.explorer.tree.workflow.revisions.overview.list.copied"
+                  )
+                : t("pages.explorer.tree.workflow.revisions.overview.list.copy")
+            }
           </CopyButton>
         )}
         {!isLatest && (
@@ -108,7 +123,7 @@ const RevisionTableRow: FC<{
             >
               <DropdownMenuLabel>
                 {t(
-                  "pages.explorer.tree.workflow.revisions.list.contextMenu.title"
+                  "pages.explorer.tree.workflow.revisions.overview.list.contextMenu.title"
                 )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -126,7 +141,7 @@ const RevisionTableRow: FC<{
                 <DropdownMenuItem>
                   <Trash className="mr-2 h-4 w-4" />
                   {t(
-                    "pages.explorer.tree.workflow.revisions.list.contextMenu.delete"
+                    "pages.explorer.tree.workflow.revisions.overview.list.contextMenu.delete"
                   )}
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -140,7 +155,7 @@ const RevisionTableRow: FC<{
                 <DropdownMenuItem>
                   <Tag className="mr-2 h-4 w-4" />
                   {t(
-                    "pages.explorer.tree.workflow.revisions.list.contextMenu.tag"
+                    "pages.explorer.tree.workflow.revisions.overview.list.contextMenu.tag"
                   )}
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -154,7 +169,7 @@ const RevisionTableRow: FC<{
                 <DropdownMenuItem>
                   <Undo className="mr-2 h-4 w-4" />
                   {t(
-                    "pages.explorer.tree.workflow.revisions.list.contextMenu.revert"
+                    "pages.explorer.tree.workflow.revisions.overview.list.contextMenu.revert"
                   )}
                 </DropdownMenuItem>
               </DialogTrigger>

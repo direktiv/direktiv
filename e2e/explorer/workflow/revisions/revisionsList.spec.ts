@@ -249,3 +249,34 @@ test("it is possible to delete the tag by deleting the base revision", async ({
     "after reload, tag item should not be visible in the page"
   ).not.toBeVisible();
 });
+
+test('the context menu is not shown in the list for the "latest" revision', async ({
+  page,
+}) => {
+  const workflow = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [, secondRevision],
+  } = await createWorkflowWithThreeRevisions(namespace, workflow);
+
+  await page.goto(`/${namespace}/explorer/workflow/revisions/${workflow}`);
+
+  await expect(
+    page
+      .getByTestId(
+        `workflow-revisions-item-last-row-${secondRevision.revision.name}`
+      )
+      .getByTestId(
+        `workflow-revisions-item-menu-trg-${secondRevision.revision.name}`
+      ),
+    "the last row of the second revision has a button to show the context menu"
+  ).toBeVisible();
+
+  expect(
+    await page
+      .getByTestId(
+        `workflow-revisions-item-last-row-${secondRevision.revision.name}`
+      )
+      .innerText(),
+    'the last row of the "latest" revision has no content at all'
+  ).toBe("");
+});
