@@ -115,7 +115,7 @@ const WorkflowRevisionsPage = () => {
           </Card>
         </PopoverTrigger>
         <PopoverContent asChild>
-          <Alert variant="info">
+          <Alert variant="info" className="min-w-max">
             {t(
               "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
             )}
