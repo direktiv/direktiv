@@ -101,11 +101,14 @@ const Editor: FC<
     <AutoSizer>
       {({ height, width }) => (
         <MonacoEditor
+          // remove "Cannot edit in read-only editor" tooltip
+          className="[&_.monaco-editor-overlaymessage]:!hidden"
           width={width}
           height={height}
           beforeMount={beforeMount}
           onMount={commonOnMount}
           options={{
+            // options reference: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html
             scrollBeyondLastLine: false,
             cursorBlinking: "smooth",
             wordWrap: true,
