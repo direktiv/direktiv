@@ -1,5 +1,5 @@
 import { Bug, GitBranchPlus, GitMerge, Play, Save, Undo } from "lucide-react";
-import { Dialog, DialogContent } from "~/design/Dialog";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,6 @@ const WorkflowEditor: FC<{
 }> = ({ data, path }) => {
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
   const workflowData = data.revision?.source && atob(data?.revision?.source);
   const updatedAt = useUpdatedAt(data.revision?.createdAt);
@@ -147,16 +146,13 @@ const WorkflowEditor: FC<{
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setDialogOpen(true);
-            }}
-          >
-            <Play />
-            {t("pages.explorer.workflow.editor.runBtn")}
-          </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Play />
+              {t("pages.explorer.workflow.editor.runBtn")}
+            </Button>
+          </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
             <RunWorkflow path={path} />
           </DialogContent>
