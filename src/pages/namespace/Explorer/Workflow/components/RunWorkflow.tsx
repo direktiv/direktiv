@@ -12,10 +12,9 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
-import { NodeSchemaType } from "~/api/tree/schema";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import YAML from "js-yaml";
+import { getValidationSchema } from "./utils";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -27,18 +26,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   payload: string;
-};
-
-const getValidationSchema = (node: NodeSchemaType) => {
-  const workflowData = node?.revision?.source && atob(node?.revision?.source);
-  const workflowDataJson = YAML.load(workflowData ?? "");
-  if (
-    workflowDataJson?.states?.[0]?.type === "validate" &&
-    workflowDataJson?.states?.[0].schema
-  ) {
-    return workflowDataJson?.states?.[0].schema;
-  }
-  return null;
 };
 
 const RunWorkflow = ({ path }: { path: string }) => {
