@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
@@ -23,6 +25,9 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	logger2 "gorm.io/gorm/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -44,7 +49,7 @@ const (
 
 type functionsServer struct {
 	igrpc.UnimplementedFunctionsServer
-	db *ent.Client
+	dbStore core.ServicesStore
 
 	reusableCacheLock  sync.Mutex
 	reusableCache      map[string]*cacheTuple
@@ -71,15 +76,33 @@ func StartServer(echan chan error) {
 		return
 	}
 
-	// Setup database
-	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  os.Getenv(util.DBConn),
+		PreferSimpleProtocol: false, // disables implicit prepared statement usage
+		// Conn:                 edb.DB(),
+	}), &gorm.Config{
+		Logger: logger2.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger2.Config{
+				LogLevel: logger2.Silent,
+			},
+		),
+	})
 	if err != nil {
-		logger.Errorf("failed to connect database client: %w", err)
-		echan <- fmt.Errorf("failed to connect database client: %w", err)
+		echan <- fmt.Errorf("creating services store, err: %w", err)
+		return
 	}
 
+	gdb, err := gormDB.DB()
+	if err != nil {
+		echan <- fmt.Errorf("connecting via gorm driver, err: %w", err)
+		return
+	}
+	gdb.SetMaxIdleConns(8)
+	gdb.SetMaxOpenConns(8)
+
 	fServer := functionsServer{
-		db:                 db,
+		dbStore:            datastoresql.NewServicesStore(gormDB),
 		reusableCache:      make(map[string]*cacheTuple),
 		reusableCacheIndex: make(map[string]*cacheTuple),
 	}

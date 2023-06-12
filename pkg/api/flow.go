@@ -38,15 +38,25 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	flowAddr := fmt.Sprintf("%s:6666", conf.FlowService)
 	logger.Infof("connecting to flow %s", flowAddr)
 
-	conn, err := util.GetEndpointTLS(flowAddr)
+	flowConn, err := util.GetEndpointTLS(flowAddr)
 	if err != nil {
 		logger.Errorf("can not connect to direktiv flows: %v", err)
 		return nil, err
 	}
 
+	funcAddr := fmt.Sprintf("%s:5555", conf.FunctionsService)
+	logger.Infof("connecting to functions %s", funcAddr)
+
+	funcConn, err := util.GetEndpointTLS(funcAddr)
+	if err != nil {
+		logger.Errorf("can not connect to direktiv function: %v", err)
+		return nil, err
+	}
+
 	h := &flowHandler{
-		logger: logger,
-		client: grpc.NewFlowClient(conn),
+		logger:          logger,
+		client:          grpc.NewFlowClient(flowConn),
+		functionsClient: grpc2.NewFunctionsClient(funcConn),
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.PrometheusBackend)

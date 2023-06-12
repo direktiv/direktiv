@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -79,7 +78,6 @@ func columnChecker(table string) func(string) error {
 		eventswait.Table:        eventswait.ValidColumn,
 		logmsg.Table:            logmsg.ValidColumn,
 		namespace.Table:         namespace.ValidColumn,
-		services.Table:          services.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

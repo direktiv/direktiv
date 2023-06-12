@@ -22,7 +22,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 
 	stdsql "database/sql"
 )
@@ -46,8 +45,6 @@ type Client struct {
 	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
-	// Services is the client for interacting with the Services builders.
-	Services *ServicesClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -68,7 +65,6 @@ func (c *Client) init() {
 	c.EventsWait = NewEventsWaitClient(c.config)
 	c.LogMsg = NewLogMsgClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
-	c.Services = NewServicesClient(c.config)
 }
 
 type (
@@ -158,7 +154,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		EventsWait:        NewEventsWaitClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
-		Services:          NewServicesClient(cfg),
 	}, nil
 }
 
@@ -185,7 +180,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		EventsWait:        NewEventsWaitClient(cfg),
 		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
-		Services:          NewServicesClient(cfg),
 	}, nil
 }
 
@@ -216,7 +210,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
-		c.LogMsg, c.Namespace, c.Services,
+		c.LogMsg, c.Namespace,
 	} {
 		n.Use(hooks...)
 	}
@@ -227,7 +221,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Annotation, c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait,
-		c.LogMsg, c.Namespace, c.Services,
+		c.LogMsg, c.Namespace,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -250,8 +244,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.LogMsg.mutate(ctx, m)
 	case *NamespaceMutation:
 		return c.Namespace.mutate(ctx, m)
-	case *ServicesMutation:
-		return c.Services.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -1250,22 +1242,6 @@ func (c *NamespaceClient) QueryCloudeventfilters(n *Namespace) *CloudEventFilter
 	return query
 }
 
-// QueryServices queries the services edge of a Namespace.
-func (c *NamespaceClient) QueryServices(n *Namespace) *ServicesQuery {
-	query := (&ServicesClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(services.Table, services.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.ServicesTable, namespace.ServicesColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
@@ -1291,149 +1267,15 @@ func (c *NamespaceClient) mutate(ctx context.Context, m *NamespaceMutation) (Val
 	}
 }
 
-// ServicesClient is a client for the Services schema.
-type ServicesClient struct {
-	config
-}
-
-// NewServicesClient returns a client for the Services from the given config.
-func NewServicesClient(c config) *ServicesClient {
-	return &ServicesClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `services.Hooks(f(g(h())))`.
-func (c *ServicesClient) Use(hooks ...Hook) {
-	c.hooks.Services = append(c.hooks.Services, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `services.Intercept(f(g(h())))`.
-func (c *ServicesClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Services = append(c.inters.Services, interceptors...)
-}
-
-// Create returns a builder for creating a Services entity.
-func (c *ServicesClient) Create() *ServicesCreate {
-	mutation := newServicesMutation(c.config, OpCreate)
-	return &ServicesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Services entities.
-func (c *ServicesClient) CreateBulk(builders ...*ServicesCreate) *ServicesCreateBulk {
-	return &ServicesCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Services.
-func (c *ServicesClient) Update() *ServicesUpdate {
-	mutation := newServicesMutation(c.config, OpUpdate)
-	return &ServicesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ServicesClient) UpdateOne(s *Services) *ServicesUpdateOne {
-	mutation := newServicesMutation(c.config, OpUpdateOne, withServices(s))
-	return &ServicesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ServicesClient) UpdateOneID(id uuid.UUID) *ServicesUpdateOne {
-	mutation := newServicesMutation(c.config, OpUpdateOne, withServicesID(id))
-	return &ServicesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Services.
-func (c *ServicesClient) Delete() *ServicesDelete {
-	mutation := newServicesMutation(c.config, OpDelete)
-	return &ServicesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ServicesClient) DeleteOne(s *Services) *ServicesDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ServicesClient) DeleteOneID(id uuid.UUID) *ServicesDeleteOne {
-	builder := c.Delete().Where(services.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ServicesDeleteOne{builder}
-}
-
-// Query returns a query builder for Services.
-func (c *ServicesClient) Query() *ServicesQuery {
-	return &ServicesQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeServices},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Services entity by its id.
-func (c *ServicesClient) Get(ctx context.Context, id uuid.UUID) (*Services, error) {
-	return c.Query().Where(services.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ServicesClient) GetX(ctx context.Context, id uuid.UUID) *Services {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a Services.
-func (c *ServicesClient) QueryNamespace(s *Services) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(services.Table, services.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, services.NamespaceTable, services.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ServicesClient) Hooks() []Hook {
-	return c.hooks.Services
-}
-
-// Interceptors returns the client interceptors.
-func (c *ServicesClient) Interceptors() []Interceptor {
-	return c.inters.Services
-}
-
-func (c *ServicesClient) mutate(ctx context.Context, m *ServicesMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ServicesCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ServicesUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ServicesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ServicesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Services mutation op: %q", m.Op())
-	}
-}
-
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
-		Namespace, Services []ent.Hook
+		Namespace []ent.Hook
 	}
 	inters struct {
 		Annotation, CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
-		Namespace, Services []ent.Interceptor
+		Namespace []ent.Interceptor
 	}
 )
 
