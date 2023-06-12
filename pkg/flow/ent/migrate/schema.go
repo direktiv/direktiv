@@ -183,37 +183,6 @@ var (
 		Columns:    NamespacesColumns,
 		PrimaryKey: []*schema.Column{NamespacesColumns[0]},
 	}
-	// ServicesColumns holds the columns for the "services" table.
-	ServicesColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "url", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString},
-		{Name: "data", Type: field.TypeString},
-		{Name: "namespace_services", Type: field.TypeUUID},
-	}
-	// ServicesTable holds the schema information for the "services" table.
-	ServicesTable = &schema.Table{
-		Name:       "services",
-		Columns:    ServicesColumns,
-		PrimaryKey: []*schema.Column{ServicesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "services_namespaces_services",
-				Columns:    []*schema.Column{ServicesColumns[6]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "services_name_namespace_services",
-				Unique:  true,
-				Columns: []*schema.Column{ServicesColumns[4], ServicesColumns[6]},
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AnnotationsTable,
@@ -223,7 +192,6 @@ var (
 		EventsWaitsTable,
 		LogMsgsTable,
 		NamespacesTable,
-		ServicesTable,
 	}
 )
 
@@ -234,5 +202,4 @@ func init() {
 	EventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 	LogMsgsTable.ForeignKeys[0].RefTable = NamespacesTable
-	ServicesTable.ForeignKeys[0].RefTable = NamespacesTable
 }
