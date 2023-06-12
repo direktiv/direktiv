@@ -751,8 +751,8 @@ var cloudeventsOrderings = []*orderingInfo{
 }
 
 const (
-	match = "MATCH"
-	cr    = "CREATED"
+	contains = "CONTAINS"
+	cr       = "CREATED"
 )
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
@@ -791,9 +791,9 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 			}
 			qv = append(qv, t)
 		}
-		if t == match && f == "TYPE" {
-			qs = append(qs, " and event::json->>'type' = $%v")
-			qv = append(qv, v)
+		if t == contains && f == "TYPE" {
+			qs = append(qs, " and event::json->>'type' like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
 		}
 	}
 	tail := ""
@@ -807,7 +807,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	q = fmt.Sprintf(`select oid, event_id, event, fire, created, processed
 		from cloud_events %v order by created desc limit $%v offset $%v`, tail, i+1, i+2)
 	qCount := `select count(oid) as count from cloud_events `
-	qCount += tail // SELECT COUNT(*) as count_pet FROM pet;
+	qCount += tail
 
 	rows, err = db.Query(q, qv...)
 	if err != nil {
@@ -920,9 +920,10 @@ resend:
 			}
 			qv = append(qv, t)
 		}
-		if t == match && f == "TYPE" {
-			qs = append(qs, " and event::json->>'type' = $%v")
-			qv = append(qv, v)
+
+		if t == contains && f == "TYPE" {
+			qs = append(qs, " and event::json->>'type' like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
 		}
 	}
 	tail := ""
