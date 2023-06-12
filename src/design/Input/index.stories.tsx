@@ -45,3 +45,9 @@ export const Disabled = () => (
     <Input value="disabled" disabled />
   </div>
 );
+
+export const FileInput = () => (
+  <div className="flex space-x-3">
+    <Input type="file" />
+  </div>
+);
