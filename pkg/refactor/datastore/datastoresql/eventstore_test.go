@@ -15,6 +15,7 @@ import (
 )
 
 func Test_Add_Get(t *testing.T) {
+	ns := uuid.New()
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -51,7 +52,7 @@ func Test_Add_Get(t *testing.T) {
 				Source:  *types.ParseURIRef("test.com"),
 			},
 		},
-		Namespace:  uuid.New(),
+		Namespace:  ns,
 		ReceivedAt: time.Now(),
 	}, ls...,
 	)
@@ -64,7 +65,7 @@ func Test_Add_Get(t *testing.T) {
 	events, err := hist.GetAll(context.Background())
 	if err != nil {
 		t.Error(err)
-		
+
 		return
 	}
 	if len(events) == 0 {
@@ -74,5 +75,18 @@ func Test_Add_Get(t *testing.T) {
 		if e.Event.Type() != "test" {
 			t.Error("Event had no type")
 		}
+	}
+	var c int
+	res, c, err := hist.Get(context.Background(), 0, 0, ns)
+	if err != nil {
+		t.Error(err)
+		
+		return
+	}
+	if len(res) == 0 {
+		t.Error("got not results")
+	}
+	if c != len(res) {
+		t.Error("total count is off")
 	}
 }

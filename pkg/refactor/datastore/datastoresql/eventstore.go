@@ -3,6 +3,7 @@ package datastoresql
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -62,10 +63,72 @@ func (*sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time)
 }
 
 func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
-	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE namespace_id = $1;"
 	res := make([]*events.Event, 0)
+	if len(keyAndValues)%2 != 0 {
+		return nil, 0, fmt.Errorf("keyAnValues have to be a pair of keys and values")
+	}
+	qs := make([]string, 0)
+	qv := make([]interface{}, 0)
+	qs = append(qs, "where namespace_id= $%v ")
+	qv = append(qv, namespace)
 
-	rows, err := hs.db.WithContext(ctx).Raw(q).Rows()
+	for i := 0; i < len(keyAndValues); i += 2 {
+		v := keyAndValues[i+1]
+		if keyAndValues[i] == "created_before" {
+			qs = append(qs, " and created_at > $%v")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "created_after" {
+			qs = append(qs, " and created_at <= $%v")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "received_before" {
+			qs = append(qs, " and received_at > $%v")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "received_after" {
+			qs = append(qs, " and received_at <= $%v")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "event_contains" {
+			qs = append(qs, " and cloudevent like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+		if keyAndValues[i] == "type_contains" {
+			qs = append(qs, " and type like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+	}
+
+	tail := ""
+	i := 0
+	var x string
+	q := `SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history
+	%v ORDER BY created_at DESC`
+
+	for i, x = range qs {
+		tail += fmt.Sprintf(x, i+1)
+	}
+	i++
+	if limit > 0 {
+		i++
+		q += fmt.Sprintf(" LIMIT $%v ", i)
+	}
+	if offset > 0 {
+		i++
+		q += fmt.Sprintf(" OFFSET $%v ", i)
+	}
+	qv = append(qv, limit, offset)
+	q = fmt.Sprintf(q, tail)
+
+	qCount := `select count(id) as count from events_history `
+	qCount += tail + ";"
+	count := 0
+	tx := hs.db.Raw(qCount, qv[:len(qv)-2]...).Scan(&count)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	rows, err := hs.db.WithContext(ctx).Raw(q, qv...).Rows()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -89,7 +152,7 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 		res = append(res, &events.Event{Namespace: ns, ReceivedAt: received, Event: &finalCE})
 	}
 
-	return res, 0, nil
+	return res, count, nil
 }
 
 func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
