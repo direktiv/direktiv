@@ -10,14 +10,14 @@ import { getValidationSchemaFromYaml } from "../utils";
 
 describe("getValidationSchemaFromYaml", () => {
   describe("valid yaml input", () => {
-    test("a workflow with a validation state as the first state will return the JSONschema", () => {
+    test("a workflow with a validation state as the first state will return the equivalent JSONschema", () => {
       expect(getValidationSchemaFromYaml(validationAsFirstState)).toEqual({
         type: "object",
         properties: { email: { type: "string", format: "email" } },
       });
     });
 
-    test("it supports required fields and a title in the JSONschema", () => {
+    test("it supports required fields and a title inside the validation step and reflect them in the JSONschema", () => {
       expect(
         getValidationSchemaFromYaml(complexValidationAsFirstState)
       ).toEqual({
@@ -55,7 +55,7 @@ describe("getValidationSchemaFromYaml", () => {
       );
     });
 
-    test("a workflow with not validation state will return null", () => {
+    test("a workflow with no validation state will return null", () => {
       expect(getValidationSchemaFromYaml(noValidateState)).toEqual(null);
     });
   });
