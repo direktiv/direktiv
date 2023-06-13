@@ -1,9 +1,10 @@
-import { describe, expect, test } from "vitest";
 import {
+  complexValidationAsFirstState,
   noValidateState,
   validationAsFirstState,
   validationAsSecondState,
 } from "./workflowTemplates";
+import { describe, expect, test } from "vitest";
 
 import { getValidationSchemaFromYaml } from "../utils";
 
@@ -13,6 +14,38 @@ describe("getValidationSchemaFromYaml", () => {
       expect(getValidationSchemaFromYaml(validationAsFirstState)).toEqual({
         type: "object",
         properties: { email: { type: "string", format: "email" } },
+      });
+    });
+
+    test("it supports required fields and a title in the JSONschema", () => {
+      expect(
+        getValidationSchemaFromYaml(complexValidationAsFirstState)
+      ).toEqual({
+        type: "object",
+        title: "A registration form",
+        required: ["firstName", "lastName"],
+        properties: {
+          age: {
+            title: "Age",
+            type: "integer",
+          },
+          firstName: {
+            title: "First name",
+            type: "string",
+          },
+          bio: {
+            title: "Bio",
+            type: "string",
+          },
+          lastName: {
+            title: "Last name",
+            type: "string",
+          },
+          password: {
+            title: "Password",
+            type: "string",
+          },
+        },
       });
     });
 

@@ -25,8 +25,7 @@ states:
 - id: email-valid
   type: noop
   transform:
-    result: "Email is valid."
-`;
+    result: "Email is valid."`;
 
 export const validationAsSecondState = `description: A simple 'validate' state workflow that checks an email
 states:
@@ -55,8 +54,34 @@ states:
 - id: email-valid
   type: noop
   transform:
-    result: "Email is valid."
-`;
+    result: "Email is valid."`;
+
+export const complexValidationAsFirstState = `description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: input
+  type: validate
+  schema:
+    title: A registration form
+    type: object
+    required:
+    - firstName
+    - lastName
+    properties:
+      password:
+        type: string
+        title: Password
+      lastName:
+        type: string
+        title: Last name
+      bio:
+        type: string
+        title: Bio
+      firstName:
+        type: string
+        title: First name
+      age:
+        type: integer
+        title: Age`;
 
 export const noValidateState = `description: A simple 'validate' state workflow that checks an email
 states:
@@ -72,5 +97,4 @@ states:
 - id: email-valid
   type: noop
   transform:
-    result: "Email is valid."
-`;
+    result: "Email is valid."`;
