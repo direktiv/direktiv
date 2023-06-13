@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { ZodSchema, z } from "zod";
 
 const getAuthHeader = (apiKey: string) => ({
   "direktiv-token": apiKey,
@@ -36,6 +36,36 @@ type ApiParams<TPayload, THeaders, TUrlParams> = {
   urlParams: TUrlParams;
 };
 
+const defaultResponseParser = async ({
+  res,
+  schema,
+  method,
+  urlParams,
+  path,
+}) => {
+  // if we can not evaluate the response, we have null as the default
+  let parsedResponse = null;
+  const textResult = await res.text();
+  try {
+    // try to parse the response as json
+    parsedResponse = JSON.parse(textResult);
+  } catch (e) {
+    // We use the text response under 'body' if its not an empty string
+    if (textResult !== "") parsedResponse = { body: textResult };
+  }
+  try {
+    if (parsedResponse) {
+      return schema.parse({ ...parsedResponse });
+    }
+    return schema.parse(null);
+  } catch (error) {
+    process.env.NODE_ENV !== "test" && console.error(error);
+    return Promise.reject(
+      `could not format response for ${method} ${path(urlParams)}`
+    );
+  }
+};
+
 export const apiFactory =
   <TSchema, TPayload, THeaders, TUrlParams>({
     // the path to the api endpoint
@@ -51,10 +81,12 @@ export const apiFactory =
     // does not scale very well when the complexity of an app grows and leads to
     // even worse user experience).
     schema,
+    responseParser = defaultResponseParser,
   }: FactoryParams<TUrlParams, TSchema>): (({
     apiKey,
     payload,
     urlParams,
+    responseParser,
   }: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>) =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
     const res = await fetch(path(urlParams), {
@@ -70,34 +102,9 @@ export const apiFactory =
           }
         : {}),
     });
+
     if (res.ok) {
-      // if we can not evaluate the response, we have null as the default
-      let parsedResponse = null;
-      const textResult = await res.text();
-      try {
-        // try to parse the response as json
-        parsedResponse = JSON.parse(textResult);
-      } catch (e) {
-        // We use the text response if its not an empt string
-        if (textResult !== "") parsedResponse = { body: textResult };
-      }
-      try {
-        // If response has content, add headers, otherwise return null.
-        // Note: merging headers and response like this is not optimal, but
-        // acceptable as an interim solution. In the long run, API should be
-        // updated to return all relevant data in the JSON payload, so
-        // consuming HTTP headers this way will no longer be needed.
-        const headers = Object.fromEntries(res.headers);
-        if (parsedResponse) {
-          return schema.parse({ ...parsedResponse, headers });
-        }
-        return schema.parse(null);
-      } catch (error) {
-        process.env.NODE_ENV !== "test" && console.error(error);
-        return Promise.reject(
-          `could not format response for ${method} ${path(urlParams)}`
-        );
-      }
+      return responseParser({ res, schema, method, urlParams, path });
     }
 
     try {
