@@ -43,6 +43,7 @@ type EventTopicsStore interface {
 
 // represents a listener for one or multiple events with specific types.
 type EventListener struct {
+	ID                          uuid.UUID
 	CreatedAt                   time.Time
 	UpdatedAt                   time.Time
 	Deleted                     bool        // set true to remove the subscription.
