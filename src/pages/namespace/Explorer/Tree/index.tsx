@@ -64,7 +64,7 @@ const ExplorerPage: FC = () => {
     <>
       <ExplorerHeader />
       <div className="p-5">
-        <Card weight={1}>
+        <Card background="weight-1">
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <Table>

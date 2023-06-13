@@ -109,7 +109,7 @@ const WorkflowRevisionsPage = () => {
           <Card
             className="grow p-4"
             data-testid="revisions-detail-editor"
-            weight={1}
+            background="weight-1"
           >
             <Editor
               value={workflowData}

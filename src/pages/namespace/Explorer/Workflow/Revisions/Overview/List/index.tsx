@@ -61,7 +61,7 @@ const RevisionsList: FC = () => {
         <GitMerge className="h-5" />
         {t("pages.explorer.tree.workflow.revisions.overview.list.title")}
       </h3>
-      <Card weight={1}>
+      <Card background="weight-1">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Table>
             <TableBody>

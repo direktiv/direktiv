@@ -27,7 +27,7 @@ export default meta;
 export const Default = () => {
   const [date, setDate] = React.useState<Date | undefined>();
   return (
-    <Card className="flex w-72 justify-center" weight={1}>
+    <Card className="flex w-72 justify-center" background="weight-1">
       <Datepicker mode="single" selected={date} onSelect={setDate} />
     </Card>
   );

@@ -12,7 +12,7 @@ const ActiveWorkflowPage: FC = () => {
 
   return (
     <div className="flex flex-col space-y-4 p-4">
-      <Card className="p-4" weight={1}>
+      <Card className="p-4" background="weight-1">
         <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
       </Card>
     </div>

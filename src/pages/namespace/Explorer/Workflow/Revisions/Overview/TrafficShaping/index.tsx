@@ -81,7 +81,7 @@ const TrafficShaping: FC = () => {
       <Card
         className="flex flex-col gap-y-6 p-4"
         data-testid="traffic-shaping-container"
-        weight={1}
+        background="weight-1"
       >
         <div className="text-sm font-medium">
           {t(

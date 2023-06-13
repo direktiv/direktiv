@@ -23,7 +23,7 @@ const SettiongsPage: FC = () => {
 
   return (
     <div className="flex flex-col space-y-5 p-10">
-      <Card className="p-4" weight={1}>
+      <Card className="p-4" background="weight-1">
         <h1>
           theme <span className="font-bold">{theme}</span>
         </h1>
@@ -35,7 +35,7 @@ const SettiongsPage: FC = () => {
           <Button onClick={() => setTheme(null)}>reset theme</Button>
         </div>
       </Card>
-      <Card className="p-4" weight={1}>
+      <Card className="p-4" background="weight-1">
         <h1>
           namespace <span className="font-bold">{selectedNamespace}</span>
         </h1>
@@ -45,7 +45,7 @@ const SettiongsPage: FC = () => {
           </Button>
         </div>
       </Card>
-      <Card className="p-4" weight={1}>
+      <Card className="p-4" background="weight-1">
         <h1>
           api key is <span className="font-bold">{apiKey}</span>
         </h1>
