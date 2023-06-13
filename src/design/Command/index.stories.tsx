@@ -376,6 +376,7 @@ export function CommandDropdownMenu() {
     <Card
       noShadow
       className="flex w-full flex-col items-start justify-between p-3 sm:flex-row sm:items-center"
+      weight={1}
     >
       <div className="text-sm">
         <Badge>{label}</Badge> Create a new project

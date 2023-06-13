@@ -72,7 +72,7 @@ export const Darkmode = () => (
 export const WithCardAnd100Height = () => (
   <div className="flex h-[97vh] min-h-full flex-col gap-y-3 bg-black">
     <div>This Story is not aware of light and dark mode.</div>
-    <Card className="grow p-4">
+    <Card className="grow p-4" weight={1}>
       <Editor value={value} theme="dark" />
     </Card>
   </div>

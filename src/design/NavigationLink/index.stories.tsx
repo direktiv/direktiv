@@ -63,7 +63,7 @@ const navigation = [
 ];
 
 export const Navigation = () => (
-  <Card className="m-5 w-44 p-3">
+  <Card className="m-5 w-44 p-3" weight={1}>
     {navigation.map((item) => (
       <NavigationLink key={item.name} href={item.href} active={item.current}>
         <item.icon aria-hidden="true" />

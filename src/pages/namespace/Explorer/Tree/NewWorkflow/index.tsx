@@ -168,7 +168,7 @@ const NewWorkflow = ({
           </fieldset>
           <fieldset className="flex items-start gap-5">
             <Textarea className="hidden" {...register("fileContent")} />
-            <Card className="h-96 w-full p-4" noShadow>
+            <Card className="h-96 w-full p-4" noShadow weight={1}>
               <Editor
                 value={workflowData}
                 onChange={(newData) => {

@@ -106,7 +106,11 @@ const WorkflowRevisionsPage = () => {
       </div>
       <Popover>
         <PopoverTrigger asChild>
-          <Card className="grow p-4" data-testid="revisions-detail-editor">
+          <Card
+            className="grow p-4"
+            data-testid="revisions-detail-editor"
+            weight={1}
+          >
             <Editor
               value={workflowData}
               theme={theme ?? undefined}
