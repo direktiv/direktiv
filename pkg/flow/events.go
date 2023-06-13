@@ -819,7 +819,6 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	if err != nil {
 		return nil, err
 	}
-	flow.sugar.Error(qv[:len(qv)-2])
 	rowsC, err := db.Query(qCount, qv[:len(qv)-2]...)
 	if err != nil {
 		return nil, err
@@ -852,14 +851,6 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		results = append(results, &r)
 	}
 	rows.Close()
-	// clients := flow.edb.Clients(ctx)
-
-	// query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	// results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = cached.Namespace.Name
@@ -955,7 +946,7 @@ resend:
 		return err
 	}
 	defer rows.Close()
-	flow.sugar.Error(qv[:len(qv)-2])
+
 	rowsC, err := db.Query(qCount, qv[:len(qv)-2]...)
 	if err != nil {
 		return err
