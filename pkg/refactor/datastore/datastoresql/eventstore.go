@@ -186,8 +186,28 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, er
 	return res, nil
 }
 
-func (*sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
-	panic("unimplemented")
+type gormEventHitoryEntry struct {
+	ID, NamespaceID          uuid.UUID
+	Type, Source, Cloudevent string
+	CreatedAt, ReceivedAt    time.Time
+}
+
+func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
+	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE id = $1 ;"
+
+	e := gormEventHitoryEntry{}
+	tx := hs.db.WithContext(ctx).Raw(q, id).Scan(&e)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	var finalCE event.Event
+	err := json.Unmarshal([]byte(e.Cloudevent), &finalCE)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &events.Event{Namespace: e.NamespaceID, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
 }
 
 var _ events.EventTopicsStore = &sqlEventTopicsStore{}

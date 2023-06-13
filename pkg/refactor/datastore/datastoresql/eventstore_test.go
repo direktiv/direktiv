@@ -16,6 +16,7 @@ import (
 
 func Test_Add_Get(t *testing.T) {
 	ns := uuid.New()
+	eID := uuid.New()
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -44,7 +45,7 @@ func Test_Add_Get(t *testing.T) {
 		Event: &cloudevents.Event{
 			Context: &event.EventContextV03{
 				Type: "test",
-				ID:   uuid.NewString(),
+				ID:   eID.String(),
 				Time: &types.Timestamp{
 					Time: time.Now(),
 				},
@@ -80,7 +81,7 @@ func Test_Add_Get(t *testing.T) {
 	res, c, err := hist.Get(context.Background(), 0, 0, ns)
 	if err != nil {
 		t.Error(err)
-		
+
 		return
 	}
 	if len(res) == 0 {
@@ -88,5 +89,13 @@ func Test_Add_Get(t *testing.T) {
 	}
 	if c != len(res) {
 		t.Error("total count is off")
+	}
+
+	e, err := hist.GetByID(context.Background(), eID)
+	if err != nil {
+		t.Error(err)
+	}
+	if e.Namespace != ns {
+		t.Error("returned event contains wrong ns")
 	}
 }
