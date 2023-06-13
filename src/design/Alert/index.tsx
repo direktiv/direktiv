@@ -29,13 +29,13 @@ const Alert: FC<AlertProps> = ({ variant, className, children }) => (
       )
     )}
   >
-    <div className="flex items-center [&>svg]:inline">
+    <div className="flex flex-col items-center sm:flex-row">
       {variant === "success" && <CheckCircle />}
       {variant === "warning" && <AlertTriangle />}
       {variant === "info" && <Info />}
       {variant === "error" && <XCircle />}
       {variant === undefined && <Info />}
-      <span className="px-2">{children}</span>
+      <span className="flex-1 px-2">{children}</span>
     </div>
   </div>
 );
