@@ -1,0 +1,209 @@
+package bus
+
+import (
+	"net"
+	"net/url"
+	"os"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/nats-io/nats-server/v2/server"
+	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	direktivNATSUser        = "admin"
+	direktivNATSStorage     = "/nats/storage"
+	direktivNATSCluster     = "direktiv-cluster"
+	direktivNATSClusterPort = 6222
+
+	natsLocal = "nats://127.0.0.1:4222"
+
+	serveWaitTime = 30
+)
+
+var (
+	envDirektivDeployment = os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
+	envDirektivNamespace  = os.Getenv("DIREKTIV_NAMESPACE")
+	envDirektivNatsPwd    = os.Getenv("NATS_PWD")
+
+	mu sync.Mutex
+)
+
+type Bus struct {
+	NodeFinder func(*Bus) ([]*url.URL, error)
+	Logger     *zap.SugaredLogger
+
+	server   *server.Server
+	hostname string
+
+	isClustered bool
+	options     server.Options
+
+	startupWg sync.WaitGroup
+
+	connPwd string
+}
+
+func NewBusStart() (*Bus, error) {
+	bus, err := NewBus()
+	if err != nil {
+		return nil, err
+	}
+
+	return bus, bus.Start()
+}
+
+func NewBus() (*Bus, error) {
+	logger, err := dlog.ApplicationLogger("bus")
+	if err != nil {
+		return nil, err
+	}
+
+	b := &Bus{
+		Logger:     logger,
+		NodeFinder: NodeFinderKubernetes,
+	}
+
+	b.startupWg.Add(1)
+
+	return b, nil
+}
+
+func (b *Bus) Start() error {
+	b.Logger.Infof("starting bus")
+
+	hn, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	b.hostname = hn
+
+	logLevel, err := strconv.ParseBool(os.Getenv(util.DirektivDebug))
+	if err != nil {
+		logLevel = false
+	}
+
+	// set encrypted password
+	pwdBrcypt, err := bcrypt.GenerateFromPassword([]byte(envDirektivNatsPwd), bcrypt.DefaultCost)
+	if err != nil {
+		b.Logger.Errorf("can not encrypt password: %s", err.Error())
+		os.Exit(1)
+	}
+	b.connPwd = string(pwdBrcypt)
+
+	acc := server.NewAccount(direktivNATSUser)
+	opts := server.Options{
+		JetStream:  true,
+		ServerName: hn,
+
+		Users: []*server.User{
+			{
+				Username: direktivNATSUser,
+				Password: string(pwdBrcypt),
+				Permissions: &server.Permissions{
+					Publish: &server.SubjectPermission{
+						Allow: []string{">"},
+					},
+					Subscribe: &server.SubjectPermission{
+						Allow: []string{">"},
+					},
+				},
+				Account: acc,
+			},
+		},
+		Accounts: []*server.Account{
+			acc,
+		},
+		SystemAccount: direktivNATSUser,
+
+		Debug:        logLevel,
+		Trace:        false,
+		TraceVerbose: false,
+
+		StoreDir: direktivNATSStorage,
+	}
+
+	nodes, err := b.NodeFinder(b)
+	if err != nil {
+		b.Logger.Error("nodefinder failed for bus: %s", err.Error())
+
+		return err
+	}
+
+	opts.Routes = make([]*url.URL, 0)
+	if b.isClustered {
+
+		b.Logger.Info("starting bus in cluster mode")
+
+		opts.Cluster = server.ClusterOpts{
+			Name: direktivNATSCluster,
+			Host: net.IPv4zero.String(),
+			Port: direktivNATSClusterPort,
+		}
+		opts.Routes = nodes
+	} else {
+		b.Logger.Info("starting bus in single mode")
+	}
+
+	b.options = opts
+
+	natsServer, err := server.NewServer(&opts)
+	if err != nil {
+		return err
+	}
+	natsServer.ConfigureLogger()
+
+	b.server = natsServer
+
+	go func() {
+		natsServer.Start()
+	}()
+
+	if !b.server.ReadyForConnections(serveWaitTime * time.Second) {
+		b.Logger.Infof("bus not ready for connections")
+		os.Exit(1)
+	}
+
+	b.startupWg.Done()
+
+	return nil
+
+}
+
+func (b *Bus) Stop() {
+	b.Logger.Info("shutting down bus")
+	b.server.Shutdown()
+}
+
+func (b *Bus) setBusRoutes(routes []*url.URL) error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	shutdown := func() {
+		b.server.Shutdown()
+		b.server.WaitForShutdown()
+		os.Exit(1)
+	}
+
+	// switch from clustered to single nodes
+	if b.isClustered && len(routes) == 0 {
+		b.Logger.Infof("switching from cluster bus to single node")
+		shutdown()
+	} else if !b.isClustered && len(routes) > 0 {
+		b.Logger.Infof("switching from single node bus to cluster")
+		shutdown()
+	}
+
+	b.Logger.Debugf("set new routes: %v", routes)
+
+	b.options.Routes = routes
+
+	return b.server.ReloadOptions(&b.options)
+
+}
