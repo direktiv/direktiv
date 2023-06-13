@@ -193,7 +193,7 @@ export const Default: Story = {
 };
 
 export const TableAndCard = () => (
-  <Card className="flex flex-col space-y-5" background="weight-1">
+  <Card className="flex flex-col space-y-5">
     <Table>
       <TableBody>
         {files.map((file) => (

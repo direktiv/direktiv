@@ -14,7 +14,7 @@ import { Card } from "../Card";
 import { NavigationLink } from "./index";
 
 const meta = {
-  title: "Components/NavigationItem",
+  title: "Components/NavigationLink",
   component: NavigationLink,
 } satisfies Meta<typeof NavigationLink>;
 
@@ -63,7 +63,7 @@ const navigation = [
 ];
 
 export const Navigation = () => (
-  <Card className="m-5 w-44 p-3" background="weight-1">
+  <Card className="m-5 w-44 p-3">
     {navigation.map((item) => (
       <NavigationLink key={item.name} href={item.href} active={item.current}>
         <item.icon aria-hidden="true" />
