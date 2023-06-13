@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -64,8 +65,35 @@ func (*sqlEventHistoryStore) Get(ctx context.Context, namespace uuid.UUID, limit
 	panic("unimplemented")
 }
 
-func (*sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
-	panic("unimplemented")
+func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
+	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history;"
+	res := make([]*events.Event, 0)
+
+	rows, err := hs.db.WithContext(ctx).Raw(q).Rows()
+	if err != nil {
+		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	defer rows.Close()
+	if rows.Next() {
+		var id, ns uuid.UUID
+		var t, source, ce string
+		var created, received time.Time
+		err := rows.Scan(&id, &t, &source, &ce, &ns, &received, &created)
+		if err != nil {
+			return nil, err
+		}
+		var finalCE event.Event
+		err = json.Unmarshal([]byte(ce), &finalCE)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, &events.Event{Namespace: ns, ReceivedAt: received, Event: &finalCE})
+	}
+
+	return res, nil
 }
 
 func (*sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {

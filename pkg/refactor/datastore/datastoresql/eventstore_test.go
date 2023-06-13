@@ -57,5 +57,22 @@ func Test_Add_Get(t *testing.T) {
 	)
 	if err != nil {
 		t.Error(err)
+
+		return
+	}
+
+	events, err := hist.GetAll(context.Background())
+	if err != nil {
+		t.Error(err)
+		
+		return
+	}
+	if len(events) == 0 {
+		t.Error("got no results")
+	}
+	for _, e := range events {
+		if e.Event.Type() != "test" {
+			t.Error("Event had no type")
+		}
 	}
 }

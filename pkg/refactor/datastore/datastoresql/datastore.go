@@ -72,29 +72,24 @@ func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
 	}
 }
 
-// Services returns services store.
 func (s *sqlStore) Services() core.ServicesStore {
 	return &sqlServicesStore{
 		db: s.db,
 	}
 }
 
-// EventFilter implements datastore.Store
 func (*sqlStore) EventFilter() events.CloudEventsFilterStore {
 	return &sqlNamespaceCloudEventFilter{}
 }
 
-// EventHistory implements datastore.Store
 func (s *sqlStore) EventHistory() events.EventHistoryStore {
 	return &sqlEventHistoryStore{db: s.db}
 }
 
-// EventListener implements datastore.Store
 func (*sqlStore) EventListener() events.EventListenerStore {
 	return &sqlEventListenerStore{}
 }
 
-// EventListenerTopics implements datastore.Store
 func (*sqlStore) EventListenerTopics() events.EventTopicsStore {
 	return &sqlEventTopicsStore{}
 }
