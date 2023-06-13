@@ -10,6 +10,7 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
     {...props}
     className={clsx(
       "[&_button]:rounded-none",
+      "[&_button]:mr-[-1px]",
       "[&_button]:active:outline-none",
       "[&_button]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
       "[&_button]:active:ring-0 [&_button]:active:ring-offset-0",
