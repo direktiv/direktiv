@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS "log_entries" (
     "source" uuid,
     "type" text,
     "log_instance_call_path" text,
-    "entry" jsonb NOT NULL,
+    "entry" bytea NOT NULL,
     PRIMARY KEY ("id")
 );
 
