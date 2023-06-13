@@ -61,7 +61,7 @@ func (*sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time)
 	panic("unimplemented")
 }
 
-func (hs *sqlEventHistoryStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.Event, int, error) {
+func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
 	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE namespace_id = $1;"
 	res := make([]*events.Event, 0)
 
