@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -13,19 +15,21 @@ func main() {
 	fmt.Println("start")
 
 	port1 := os.Getenv("PORT1")
+	port1a := os.Getenv("PORT1a")
 	port2 := os.Getenv("PORT2")
 	port3 := os.Getenv("PORT3")
 
 	c := bus.DefaultConfig()
 	c.NSQDListen = fmt.Sprintf("127.0.0.1:%s", port1)
+	c.NSQDListenHTTP = fmt.Sprintf("127.0.0.1:%s", port1a)
 	c.LookupListen = fmt.Sprintf("127.0.0.1:%s", port2)
 	c.LookupListenHTTP = fmt.Sprintf("127.0.0.1:%s", port3)
-	c.PREFIX = "[JENS] "
+	c.PREFIX = "[!!!!!!!!!!!!!!!!!JENS] "
 
 	nfs := bus.NewNodefinderStatic(
 		[]string{
 			// "127.0.0.1:5551",
-			"127.0.0.1:4260",
+			"127.0.0.1:4270",
 		},
 	)
 	c.Nodefinder = nfs
@@ -37,16 +41,32 @@ func main() {
 	}
 	defer bus1.Stop()
 
-	if port1 == "4250" {
-		time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
+
+	// config := nsq.NewConfig()
+
+	url := fmt.Sprintf("http://%s/topic/create?topic=%s", c.NSQDListenHTTP, "topic1")
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		panic(err)
 	}
 
-	config := nsq.NewConfig()
+	r, err := io.ReadAll(resp.Body)
+	fmt.Printf(">> %v %v\n", string(r), err)
+
+	url = fmt.Sprintf("http://%s/topic/create?topic=%s", c.NSQDListenHTTP, "topic2")
+	resp, err = http.Post(url, "application/json", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	r, err = io.ReadAll(resp.Body)
+	fmt.Printf(">> %v %v\n", string(r), err)
 
 	// if port1 == "4280" {
-	go publish(c.NSQDListen, port1)
+	// go publish(c.NSQDListen, port1)
 	// }
-	time.Sleep(1 * time.Second)
+	// time.Sleep(1 * time.Second)
 	// prod, err := nsq.NewProducer(c.NSQDListen, config)
 	// if err != nil {
 	// 	panic(err)
@@ -58,26 +78,40 @@ func main() {
 	// fmt.Println("PUBLISHED!!!!!")
 	// time.Sleep(5 * time.Second)
 
-	cons, err := nsq.NewConsumer("4250", port3, config)
-	if err != nil {
-		panic(err)
-	}
-	cons.AddHandler(&myMessageHandler{
-		topic: "PORT1",
-	})
-	err = cons.ConnectToNSQLookupd("127.0.0.1:4270")
+	// cons, err := nsq.NewConsumer("4250", port3, config)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// cons.AddHandler(&myMessageHandler{
+	// 	topic: "PORT1",
+	// })
+	// err = cons.ConnectToNSQLookupd("127.0.0.1:4270")
 
-	cons2, err := nsq.NewConsumer("4280", port2, config)
-	if err != nil {
-		panic(err)
-	}
-	cons2.AddHandler(&myMessageHandler{
-		topic: "PORT2",
-	})
-	err = cons2.ConnectToNSQLookupd("127.0.0.1:4270")
+	// cons2, err := nsq.NewConsumer("4280", port2, config)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// cons2.AddHandler(&myMessageHandler{
+	// 	topic: "PORT2",
+	// })
+	// err = cons2.ConnectToNSQLookupd("127.0.0.1:4270")
 
-	if err != nil {
-		panic(err)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	for i := 1; i < 20; i++ {
+
+		url = fmt.Sprintf("http://%s/nodes", "127.0.0.1:4280")
+		resp, err = http.Get(url)
+		if err != nil {
+			panic(err)
+		}
+
+		r, err = io.ReadAll(resp.Body)
+		fmt.Printf(">>INFO %v %v\n", string(r), err)
+
+		time.Sleep(1 * time.Second)
 	}
 
 	// for i := 1; i < 20; i++ {
@@ -124,23 +158,23 @@ func startBus(config *bus.Config) (*bus.Bus, error) {
 	return bus, nil
 }
 
-func publish(listen, topic string) {
+// func publish(listen, topic string) {
 
-	for {
-		config := nsq.NewConfig()
-		prod, err := nsq.NewProducer(listen, config)
-		if err != nil {
-			panic(err)
-		}
+// 	for {
+// 		config := nsq.NewConfig()
+// 		prod, err := nsq.NewProducer(listen, config)
+// 		if err != nil {
+// 			panic(err)
+// 		}
 
-		d := fmt.Sprintf("%v", time.Now().UnixMicro())
+// 		d := fmt.Sprintf("%v", time.Now().UnixMicro())
 
-		err = prod.Publish(topic, []byte(d))
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("PUBLISHED!!!!! %v\n", topic)
-		time.Sleep(2 * time.Second)
-	}
+// 		err = prod.Publish(topic, []byte(d))
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		fmt.Printf("PUBLISHED!!!!! %v\n", topic)
+// 		time.Sleep(2 * time.Second)
+// 	}
 
-}
+// }

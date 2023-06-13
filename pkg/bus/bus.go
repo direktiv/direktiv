@@ -25,7 +25,7 @@ type Config struct {
 	DataPath   string
 	Nodefinder Nodefinder
 
-	NSQDListen, LookupListen, LookupListenHTTP string
+	NSQDListen, LookupListen, LookupListenHTTP, NSQDListenHTTP string
 
 	PREFIX string
 }
@@ -39,8 +39,9 @@ func DefaultConfig() *Config {
 		DataPath:         "/tmp/nsqd",
 		Nodefinder:       nfs,
 		NSQDListen:       "0.0.0.0:4150",
-		LookupListen:     "0.0.0.0:4160",
-		LookupListenHTTP: "0.0.0.0:4170",
+		NSQDListenHTTP:   "0.0.0.0:4160",
+		LookupListen:     "0.0.0.0:4170",
+		LookupListenHTTP: "0.0.0.0:4180",
 	}
 
 }
@@ -64,11 +65,12 @@ func NewBus(config *Config) (*Bus, error) {
 	opts.DataPath = config.DataPath
 	opts.MemQueueSize = config.QueueSize
 	opts.NSQLookupdTCPAddresses = nodes
-
-	opts.BroadcastAddress = "127.0.0.1"
+	// opts.BroadcastAddress = "127.0.0.1"
 
 	opts.TCPAddress = config.NSQDListen
-	opts.HTTPAddress = ""
+	opts.HTTPAddress = config.NSQDListenHTTP
+
+	// opts.HTTPAddress = ""
 	opts.LogLevel = 1
 
 	nsqd, err := nsqd.New(opts)
@@ -82,7 +84,7 @@ func NewBus(config *Config) (*Bus, error) {
 	lookupOptions.LogPrefix = config.PREFIX
 	lookupOptions.LogLevel = 1
 
-	lookupOptions.BroadcastAddress = "127.0.0.1"
+	// lookupOptions.BroadcastAddress = "127.0.0.1"
 
 	lookup, err := nsqlookupd.New(lookupOptions)
 	if err != nil {
