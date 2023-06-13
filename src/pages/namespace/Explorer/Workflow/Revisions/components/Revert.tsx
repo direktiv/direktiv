@@ -35,16 +35,16 @@ const Revert = ({
       onSuccess: () => {
         toast({
           title: t(
-            "pages.explorer.tree.workflow.revisions.revert.success.title"
+            "pages.explorer.tree.workflow.revisions.overview.list.revert.success.title"
           ),
           description: t(
-            "pages.explorer.tree.workflow.revisions.revert.success.description",
+            "pages.explorer.tree.workflow.revisions.overview.list.revert.success.description",
             { name: revision.name }
           ),
           action: (
             <ToastAction
               altText={t(
-                "pages.explorer.tree.workflow.revisions.revert.success.action"
+                "pages.explorer.tree.workflow.revisions.overview.list.revert.success.action"
               )}
               onClick={() => {
                 if (!namespace) {
@@ -61,7 +61,7 @@ const Revert = ({
               data-testid="workflow-revert-revision-toast-action"
             >
               {t(
-                "pages.explorer.tree.workflow.revisions.revert.success.action"
+                "pages.explorer.tree.workflow.revisions.overview.list.revert.success.action"
               )}
             </ToastAction>
           ),
@@ -73,7 +73,7 @@ const Revert = ({
         toast({
           title: t("api.generic.error"),
           description: t(
-            "pages.explorer.tree.workflow.revisions.revert.error.description"
+            "pages.explorer.tree.workflow.revisions.overview.list.revert.error.description"
           ),
           variant: "error",
         });
@@ -88,19 +88,23 @@ const Revert = ({
       <DialogHeader>
         <DialogTitle>
           <Undo />
-          {t("pages.explorer.tree.workflow.revisions.revert.title")}
+          {t(
+            "pages.explorer.tree.workflow.revisions.overview.list.revert.title"
+          )}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
         <Trans
-          i18nKey="pages.explorer.tree.workflow.revisions.revert.description"
+          i18nKey="pages.explorer.tree.workflow.revisions.overview.list.revert.description"
           values={{ name: revision.name }}
         />
       </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.workflow.revisions.revert.cancelBtn")}
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.list.revert.cancelBtn"
+            )}
           </Button>
         </DialogClose>
         <Button
@@ -109,12 +113,13 @@ const Revert = ({
               updateWorkflow({ path, fileContent: workflowData });
             }
           }}
-          variant="destructive"
           loading={isLoading}
           data-testid="dialog-revert-revision-btn-submit"
         >
           {!isLoading && <Undo />}
-          {t("pages.explorer.tree.workflow.revisions.revert.revertBtn")}
+          {t(
+            "pages.explorer.tree.workflow.revisions.overview.list.revert.revertBtn"
+          )}
         </Button>
       </DialogFooter>
     </>

@@ -1,4 +1,4 @@
-import { Bug, GitBranchPlus, Play, Save, Undo } from "lucide-react";
+import { Bug, GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,8 +61,12 @@ const WorkflowEditor: FC<{
   };
 
   return (
-    <div className="relative flex grow flex-col space-y-4 p-4">
-      <Card className="grow p-4">
+    <div className="relative flex grow flex-col space-y-4 p-5">
+      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+        <Tag className="h-5" />
+        {t("pages.explorer.workflow.headline")}
+      </h3>
+      <Card className="grow p-4" data-testid="workflow-editor">
         <Editor
           value={workflowData}
           onChange={(newData) => {

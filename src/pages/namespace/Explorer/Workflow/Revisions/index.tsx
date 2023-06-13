@@ -1,11 +1,14 @@
-import List from "./List";
-import TrafficShaping from "./TrafficShaping";
+import RevisionsDetailPage from "./Detail";
+import RevisionsOverviewPage from "./Overview";
+import { pages } from "~/util/router/pages";
 
-const WorkflowRevisionsPage = () => (
-  <div className="flex flex-col gap-y-4 p-5 ">
-    <TrafficShaping />
-    <List />
-  </div>
-);
+const RevisionsPage = () => {
+  const { revision: selectedRevision } = pages.explorer.useParams();
+  return (
+    <div className="flex grow flex-col gap-y-4 p-5">
+      {selectedRevision ? <RevisionsDetailPage /> : <RevisionsOverviewPage />}
+    </div>
+  );
+};
 
-export default WorkflowRevisionsPage;
+export default RevisionsPage;
