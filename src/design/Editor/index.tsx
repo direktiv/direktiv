@@ -30,35 +30,35 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
-        token: "string.key.json", //JSON Key
+        token: "string.key.json", // JSON Key
       },
       {
         foreground: "6473FF", // primary.400
-        token: "string.value.json", //JSON Value
+        token: "string.value.json", // JSON Value
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
-        token: "tag", //HTML Tag
+        token: "tag", // HTML Tag
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
-        token: "metatag.html", //HTML Meta tag
+        token: "metatag.html", // HTML Meta tag
       },
       {
         foreground: "6473FF", // primary.400
-        token: "metatag.content.html", //HTML Meta tag content
+        token: "metatag.content.html", // HTML Meta tag content
       },
       {
         foreground: "6473FF", // primary.400
-        token: "delimiter", //HTML Meta tag content
+        token: "delimiter", // HTML Meta tag content
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
-        token: "attribute.name", //HTML Attribute Name
+        token: "attribute.name", // HTML Attribute Name
       },
       {
         foreground: "6473FF", // primary.400
-        token: "attribute.value.html", //HTML Attribute Name
+        token: "attribute.value.html", // HTML Attribute Name
       },
       {
         foreground: "30A46C", // green9 - success-dark-9
@@ -70,15 +70,15 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "6473FF", // primary.400
-        token: "attribute.value.number", //html attribute value number, e.g. [5]px
+        token: "attribute.value.number", // html attribute value number, e.g. [5]px
       },
       {
         foreground: "6473FF", // primary.400
-        token: "attribute.value.unit", //html attribute value unit, e.g. 5[px]
+        token: "attribute.value.unit", // html attribute value unit, e.g. 5[px]
       },
       {
         foreground: "6473FF", // primary.400
-        token: "string", //css string value: e.g. font-family: "Segoe UI","HelveticaNeue-Light",
+        token: "string", // css string value: e.g. font-family: "Segoe UI","HelveticaNeue-Light",
       },
       {
         foreground: "6473FF", // primary.400
@@ -86,7 +86,7 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "6473FF", // primary.400
-        token: "keyword", //keyword in Shell script
+        token: "keyword", // keyword in Shell script
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
@@ -127,35 +127,35 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "858585", // gray.gray10
-        token: "string.key.json", //JSON Key
+        token: "string.key.json", // JSON Key
       },
       {
         foreground: "5364FF",
-        token: "string.value.json", //JSON Value
+        token: "string.value.json", // JSON Value
       },
       {
         foreground: "858585", // gray.gray10
-        token: "tag", //HTML Tag
+        token: "tag", // HTML Tag
       },
       {
         foreground: "858585", // gray.gray10
-        token: "metatag.html", //HTML Meta tag
+        token: "metatag.html", // HTML Meta tag
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "metatag.content.html", //HTML Meta tag content
+        foreground: "5364FF", // primary.500
+        token: "metatag.content.html", // HTML Meta tag content
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "delimiter", //HTML Meta tag content
+        foreground: "5364FF", // primary.500
+        token: "delimiter", // HTML Meta tag content
       },
       {
         foreground: "858585", // gray.gray10
-        token: "attribute.name", //HTML Attribute Name
+        token: "attribute.name", // HTML Attribute Name
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "attribute.value.html", //HTML Attribute Name
+        foreground: "5364FF", // primary.500
+        token: "attribute.value.html", // HTML Attribute Name
       },
       {
         foreground: "30A46C", // success-9
@@ -166,24 +166,24 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
         token: "attribute.value",
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "attribute.value.number", //html attribute value number, e.g. [5]px
+        foreground: "5364FF", // primary.500
+        token: "attribute.value.number", // html attribute value number, e.g. [5]px
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "attribute.value.unit", //html attribute value unit, e.g. 5[px]
+        foreground: "5364FF", // primary.500
+        token: "attribute.value.unit", // html attribute value unit, e.g. 5[px]
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "string", //css string value: e.g. font-family: "Segoe UI","HelveticaNeue-Light",
+        foreground: "5364FF", // primary.500
+        token: "string", // css string value: e.g. font-family: "Segoe UI","HelveticaNeue-Light",
       },
       {
-        foreground: "5364FF", //primary.500
+        foreground: "5364FF", // primary.500
         token: "metatag", // metatag in Shell script e.g. #!/bin/bash
       },
       {
-        foreground: "5364FF", //primary.500
-        token: "keyword", //keyword in Shell script
+        foreground: "5364FF", // primary.500
+        token: "keyword", // keyword in Shell script
       },
       {
         foreground: "858585", // gray.gray10
