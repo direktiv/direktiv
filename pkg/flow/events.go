@@ -753,6 +753,8 @@ var cloudeventsOrderings = []*orderingInfo{
 const (
 	contains = "CONTAINS"
 	cr       = "CREATED"
+	after    = "AFTER"
+	before   = "BEFORE"
 )
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
@@ -775,7 +777,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		f := e.Field
 		t := e.Type
 		v := e.Val
-		if f == cr && t == "BEFORE" {
+		if f == cr && t == before {
 			qs = append(qs, " and created < $%v")
 			t, err := time.Parse(time.RFC3339, v)
 			if err != nil {
@@ -783,7 +785,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 			}
 			qv = append(qv, t)
 		}
-		if f == cr && t == "AFTER" {
+		if f == cr && t == after {
 			qs = append(qs, " and created >= $%v")
 			t, err := time.Parse(time.RFC3339, v)
 			if err != nil {
@@ -908,7 +910,7 @@ resend:
 		f := e.Field
 		t := e.Type
 		v := e.Val
-		if f == cr && t == "BEFORE" {
+		if f == cr && t == before {
 			qs = append(qs, " and created < $%v")
 			t, err := time.Parse(time.RFC3339, v)
 			if err != nil {
@@ -916,7 +918,7 @@ resend:
 			}
 			qv = append(qv, t)
 		}
-		if f == cr && t == "AFTER" {
+		if f == cr && t == after {
 			qs = append(qs, " and created >= $%v")
 			t, err := time.Parse(time.RFC3339, v)
 			if err != nil {
@@ -925,6 +927,10 @@ resend:
 			qv = append(qv, t)
 		}
 
+		if t == contains && f == "TEXT" {
+			qs = append(qs, " and event::text like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
 		if t == contains && f == "TYPE" {
 			qs = append(qs, " and event::json->>'type' like $%v")
 			qv = append(qv, fmt.Sprintf("%%%v%%", v))
