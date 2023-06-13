@@ -33,8 +33,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { data } = useNodeContent({ path });
+  const validationSchema = getValidationSchema(
+    data?.revision?.source && atob(data?.revision?.source)
+  );
 
-  const validationSchema = getValidationSchema(data);
   const formAvailable = validationSchema !== null;
   const tabs = ["json", "form"] as const;
   const activeTab: (typeof tabs)[number] = formAvailable ? "form" : "json";
