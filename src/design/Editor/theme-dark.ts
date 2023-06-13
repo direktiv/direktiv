@@ -90,8 +90,20 @@ export default {
       token: "variable.predefined", // variable defined in Shell script
     },
     {
-      foreground: "5364FF", // primary.500
+      foreground: "6473FF", // primary.400
       token: "variable", // Shell script variable
+    },
+    {
+      foreground: "6473FF", // primary.400
+      token: "attribute.value.number.css",
+    },
+    {
+      foreground: "6473FF", // primary.400
+      token: "attribute.value.unit.css",
+    },
+    {
+      foreground: "6473FF", // primary.400
+      token: "attribute.value.hex.css",
     },
   ],
   colors: {

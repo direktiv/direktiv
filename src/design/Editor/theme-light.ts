@@ -93,6 +93,18 @@ export default {
       foreground: "5364FF", // primary.500
       token: "variable", // Shell script variable
     },
+    {
+      foreground: "5364FF", // primary.500
+      token: "attribute.value.number.css",
+    },
+    {
+      foreground: "5364FF", // primary.500
+      token: "attribute.value.unit.css",
+    },
+    {
+      foreground: "5364FF", // primary.500
+      token: "attribute.value.hex.css",
+    },
   ],
   colors: {
     "editor.foreground": "#858585", // added for HTML Tag Content
