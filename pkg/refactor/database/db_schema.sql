@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     "id" uuid,
     "type" text NOT NULL,
     "source" text NOT NULL,
-    "cloudevent" bytea NOT NULL,
+    "cloudevent" text NOT NULL,
     "namespace_id" uuid NOT NULL,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
