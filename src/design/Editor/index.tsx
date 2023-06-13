@@ -56,8 +56,41 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
         foreground: "858585", // gray.gray10
         token: "type",
       },
+      {
+        foreground: "858585",
+        token: "string.key.json", //JSON Key
+      },
+      {
+        foreground: "5364FF",
+        token: "string.value.json", //JSON Value
+      },
+      {
+        foreground: "858585",
+        token: "tag", //HTML Tag
+      },
+      {
+        foreground: "858585",
+        token: "metatag.html", //HTML Meta tag
+      },
+      {
+        foreground: "5364FF",
+        token: "metatag.content.html", //HTML Meta tag content
+      },
+      {
+        foreground: "5364FF",
+        token: "delimiter", //HTML Meta tag content
+      },
+      {
+        foreground: "858585",
+        token: "attribute.name", //HTML Attribute Name
+      },
+      {
+        foreground: "5364FF",
+        token: "attribute.value.html", //HTML Attribute Name
+      },
     ],
     colors: {
+      "editor.foreground": "#858585", // added for HTML Tag Content
       "editor.background": "#ffffff",
       "editor.selectionBackground": "#00000012", // blackA.blackA4
     },
@@ -71,8 +104,9 @@ const Editor: FC<
     theme?: "light" | "dark";
     onSave?: (value: string | undefined) => void;
     onChange?: (value: string | undefined) => void;
+    language?: "html" | "css" | "json" | "shell" | "plaintext" | "yaml";
   }
-> = ({ options, theme, onSave, onChange, ...props }) => {
+> = ({ options, theme, onSave, onChange, language = "yaml", ...props }) => {
   const monacoRef = useRef<EditorType>();
 
   const handleChange = () => {
@@ -114,7 +148,7 @@ const Editor: FC<
             ...options,
           }}
           loading=""
-          language="yaml"
+          language={language}
           theme={theme === "dark" ? "direktiv-dark" : "direktiv-light"}
           {...props}
         />
