@@ -38,14 +38,18 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
-        token: "tag", // HTML Tag
+        token: "tag", // HTML Tag name
+      },
+      {
+        foreground: "7E7E7E", // gray.gray10
+        token: "delimiter.html", // HTML Tag <>
       },
       {
         foreground: "7E7E7E", // grayDark.gray10
         token: "metatag.html", // HTML Meta tag
       },
       {
-        foreground: "6473FF", // primary.400
+        foreground: "7E7E7E", // grayDark.gray10
         token: "metatag.content.html", // HTML Meta tag content
       },
       {
@@ -135,14 +139,18 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
       },
       {
         foreground: "858585", // gray.gray10
-        token: "tag", // HTML Tag
+        token: "tag", // HTML Tag name
+      },
+      {
+        foreground: "858585", // gray.gray10
+        token: "delimiter.html", // HTML Tag <>
       },
       {
         foreground: "858585", // gray.gray10
         token: "metatag.html", // HTML Meta tag
       },
       {
-        foreground: "5364FF", // primary.500
+        foreground: "858585", // gray.gray10
         token: "metatag.content.html", // HTML Meta tag content
       },
       {
