@@ -23,7 +23,10 @@ export const Default: Story = {
 
 export const AlertVariants = () => (
   <div className="flex flex-col space-y-5">
-    <Alert>default alert text here </Alert>
+    <Alert>
+      default alert text here default alert text here default alert text here
+      default alert text here default alert text here default alert text here
+    </Alert>
     <Alert variant="info">info alert text here</Alert>
     <Alert variant="success">success alert text here </Alert>
     <Alert variant="warning">warning alert text here </Alert>
