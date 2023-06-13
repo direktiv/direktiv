@@ -20,9 +20,7 @@ func Test_Add_Get(t *testing.T) {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	subj := "subject"
-	hist := datastoresql.SQLEventHistoryStore{
-		DB: db,
-	}
+	hist := datastoresql.NewSQLStore(db, "some key").EventHistory()
 	ev := events.Event{
 		Event: &cloudevents.Event{
 			Context: &event.EventContextV03{

@@ -10,13 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ events.EventHistoryStore = &SQLEventHistoryStore{}
+var _ events.EventHistoryStore = &sqlEventHistoryStore{}
 
-type SQLEventHistoryStore struct {
-	DB *gorm.DB
+type sqlEventHistoryStore struct {
+	db *gorm.DB
 }
 
-func (hs *SQLEventHistoryStore) Append(ctx context.Context, event *events.Event, more ...*events.Event) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) Append(ctx context.Context, event *events.Event, more ...*events.Event) ([]*events.Event, error) {
 	values := make([]interface{}, 0)
 	q := "INSERT INTO events_history (id, type, source, cloudevent, namespace_id, received_at, created_at) VALUES ( $1 , $2 , $3 , $4 , $5 , $6, $7 )"
 	eventByte, err := json.Marshal(event.Event)
@@ -30,7 +30,7 @@ func (hs *SQLEventHistoryStore) Append(ctx context.Context, event *events.Event,
 	values = append(values, event.Namespace)
 	values = append(values, event.ReceivedAt)
 	values = append(values, time.Now())
-	tx := hs.DB.WithContext(ctx).Exec(q, values...)
+	tx := hs.db.WithContext(ctx).Exec(q, values...)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -47,7 +47,7 @@ func (hs *SQLEventHistoryStore) Append(ctx context.Context, event *events.Event,
 		values = append(values, v.Namespace)
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now())
-		tx := hs.DB.WithContext(ctx).Exec(q, values...)
+		tx := hs.db.WithContext(ctx).Exec(q, values...)
 		if tx.Error != nil {
 			return nil, tx.Error
 		}
@@ -56,86 +56,86 @@ func (hs *SQLEventHistoryStore) Append(ctx context.Context, event *events.Event,
 	return append([]*events.Event{event}, more...), nil
 }
 
-func (*SQLEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time) error {
+func (*sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time) error {
 	panic("unimplemented")
 }
 
-func (*SQLEventHistoryStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.Event, int, error) {
+func (*sqlEventHistoryStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.Event, int, error) {
 	panic("unimplemented")
 }
 
-func (*SQLEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
+func (*sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
 	panic("unimplemented")
 }
 
-func (*SQLEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
+func (*sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
 	panic("unimplemented")
 }
 
-var _ events.EventTopicsStore = &SQLEventTopicsStore{}
+var _ events.EventTopicsStore = &sqlEventTopicsStore{}
 
-type SQLEventTopicsStore struct{}
+type sqlEventTopicsStore struct{}
 
-func (*SQLEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string) error {
+func (*sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string) error {
 	panic("unimplemented")
 }
 
-func (*SQLEventTopicsStore) GetListeners(ctx context.Context, namespaceID uuid.UUID, eventType string) ([]*events.EventListener, error) {
+func (*sqlEventTopicsStore) GetListeners(ctx context.Context, namespaceID uuid.UUID, eventType string) ([]*events.EventListener, error) {
 	panic("unimplemented")
 }
 
-var _ events.EventListenerStore = &SQLEventListenerStore{}
+var _ events.EventListenerStore = &sqlEventListenerStore{}
 
-type SQLEventListenerStore struct{}
+type sqlEventListenerStore struct{}
 
-func (*SQLEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
+func (*sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) Delete(ctx context.Context) error {
+func (*sqlEventListenerStore) Delete(ctx context.Context) error {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error {
+func (*sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error {
+func (*sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
+func (*sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
+func (*sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
+func (*sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
 	panic("unimplemented")
 }
 
-func (*SQLEventListenerStore) Update(ctx context.Context, listener *events.EventListener, more ...*events.EventListener) (error, []error) {
+func (*sqlEventListenerStore) Update(ctx context.Context, listener *events.EventListener, more ...*events.EventListener) (error, []error) {
 	panic("unimplemented")
 }
 
-var _ events.CloudEventsFilterStore = &SQLNamespaceCloudEventFilter{}
+var _ events.CloudEventsFilterStore = &sqlNamespaceCloudEventFilter{}
 
-type SQLNamespaceCloudEventFilter struct{}
+type sqlNamespaceCloudEventFilter struct{}
 
-func (*SQLNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error {
+func (*sqlNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error {
 	panic("unimplemented")
 }
 
-func (*SQLNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UUID, filterName string) error {
+func (*sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UUID, filterName string) error {
 	panic("unimplemented")
 }
 
-func (*SQLNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, filterName string, limit int, offset int) (events.NamespaceCloudEventFilter, int, error) {
+func (*sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, filterName string, limit int, offset int) (events.NamespaceCloudEventFilter, int, error) {
 	panic("unimplemented")
 }
 
-func (*SQLNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, error) {
+func (*sqlNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, error) {
 	panic("unimplemented")
 }
