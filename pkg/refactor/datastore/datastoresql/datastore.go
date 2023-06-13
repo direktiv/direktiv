@@ -86,10 +86,10 @@ func (s *sqlStore) EventHistory() events.EventHistoryStore {
 	return &sqlEventHistoryStore{db: s.db}
 }
 
-func (*sqlStore) EventListener() events.EventListenerStore {
-	return &sqlEventListenerStore{}
+func (s *sqlStore) EventListener() events.EventListenerStore {
+	return &sqlEventListenerStore{db: s.db}
 }
 
-func (*sqlStore) EventListenerTopics() events.EventTopicsStore {
-	return &sqlEventTopicsStore{}
+func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
+	return &sqlEventTopicsStore{db: s.db}
 }

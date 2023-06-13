@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -206,28 +207,77 @@ func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &events.Event{Namespace: e.NamespaceID, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
 }
 
 var _ events.EventTopicsStore = &sqlEventTopicsStore{}
 
-type sqlEventTopicsStore struct{}
-
-func (*sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string) error {
-	panic("unimplemented")
+type sqlEventTopicsStore struct {
+	db *gorm.DB
 }
 
-func (*sqlEventTopicsStore) GetListeners(ctx context.Context, namespaceID uuid.UUID, eventType string) ([]*events.EventListener, error) {
-	panic("unimplemented")
+func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string) error {
+	q := "INSERT INTO event_topics (id, event_listener_id, namespace_id, topic) VALUES ( $1 , $2 , $3 , $4 );"
+	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID, namespaceID, topic)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, namespaceID uuid.UUID, topic string) ([]*events.EventListener, error) {
+	q := `SELECT 
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
+	FROM event_listeners E WHERE E.deleted = 0 and E.id in 
+	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
+	// event_listener_id, namespace_id, topic FROM event_topics et WHERE topic=$1 and et.event_listener_id
+	res := make([]*events.EventListener, 0)
+	tx := s.db.WithContext(ctx).Raw(q, topic).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return res, nil
 }
 
 var _ events.EventListenerStore = &sqlEventListenerStore{}
 
-type sqlEventListenerStore struct{}
+type sqlEventListenerStore struct {
+	db *gorm.DB
+}
 
-func (*sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
+	q := `INSERT INTO event_listeners
+	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info) 
+	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 );`
+	b, err := json.Marshal(listener.Trigger)
+	if err != nil {
+		return err
+	}
+	ceB, err := json.Marshal(listener.ReceivedEventsForAndTrigger)
+	if err != nil {
+		return err
+	}
+
+	tx := s.db.WithContext(ctx).Exec(
+		q,
+		listener.ID,
+		listener.NamespaceID,
+		listener.CreatedAt,
+		listener.UpdatedAt,
+		listener.Deleted,
+		ceB,
+		listener.TriggerType,
+		listener.LifespanOfReceivedEvents,
+		strings.Join(listener.ListeningForEventTypes, " "),
+		b)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
 
 func (*sqlEventListenerStore) Delete(ctx context.Context) error {

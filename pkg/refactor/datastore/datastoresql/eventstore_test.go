@@ -99,3 +99,46 @@ func Test_Add_Get(t *testing.T) {
 		t.Error("returned event contains wrong ns")
 	}
 }
+
+func Test_Topic_Add_Get(t *testing.T) {
+	ns := uuid.New()
+	eID := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	store := datastoresql.NewSQLStore(db, "some key")
+	topics := store.EventListenerTopics()
+	listeners := store.EventListener()
+	err = listeners.Append(context.Background(), &events.EventListener{
+		ID:                          eID,
+		CreatedAt:                   time.Now(),
+		UpdatedAt:                   time.Now(),
+		Deleted:                     false,
+		NamespaceID:                 ns,
+		ListeningForEventTypes:      []string{"a"},
+		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+		LifespanOfReceivedEvents:    10000,
+		TriggerType:                 1,
+		Trigger:                     events.TriggerInfo{WorkflowID: uuid.New()},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	err = topics.Append(context.Background(), ns, eID, "a")
+	if err != nil {
+		t.Error(err)
+	}
+	res, err := topics.GetListeners(context.Background(), ns, "a")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(res) == 0 {
+		t.Error("got no results")
+	}
+	for _, el := range res {
+		if el.NamespaceID != ns {
+			t.Error("got wrong namespace")
+		}
+	}
+}
