@@ -791,7 +791,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 			}
 			qv = append(qv, t)
 		}
-		if f == contains && t == "TEXT" {
+		if t == contains && f == "TEXT" {
 			qs = append(qs, " and event::text like $%v")
 			qv = append(qv, fmt.Sprintf("%%%v%%", v))
 		}
