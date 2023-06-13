@@ -26,29 +26,48 @@ export const Default: Story = {
 
 export const CardBackgrounds = () => (
   <div className="flex space-x-5 bg-info-3 p-10 dark:bg-info-dark-3">
-    <Card weight={0} className="flex h-64 w-64 items-center justify-center">
+    <Card
+      weight={0}
+      className="flex h-64 w-64 items-center justify-center p-5 text-center"
+    >
       no background
     </Card>
-    <Card weight={1} className="flex h-64 w-64 items-center justify-center">
-      with white background
+    <Card
+      weight={1}
+      className="flex h-64 w-64 items-center justify-center p-5 text-center"
+    >
+      background weight 1
     </Card>
-    <Card weight={2} className="flex h-64 w-64 items-center justify-center">
-      with gray-1 background
+    <Card
+      weight={2}
+      className="flex h-64 w-64 items-center justify-center p-5 text-center"
+    >
+      background weight 2
     </Card>
   </div>
 );
 
 export const NoShadow = () => (
   <div className="flex space-x-5 bg-info-3 p-10 dark:bg-info-dark-3">
-    <Card noShadow className="flex h-64 w-64 items-center justify-center">
+    <Card
+      noShadow
+      className="flex h-64 w-64 items-center justify-center p-5 text-center"
+    >
       no shadow, no background
     </Card>
     <Card
       weight={1}
       noShadow
-      className="flex h-64 w-64 items-center justify-center"
+      className="flex h-64 w-64 items-center justify-center p-5 text-center"
     >
-      no shadow, with background
+      no shadow, background weight 1
+    </Card>
+    <Card
+      weight={2}
+      noShadow
+      className="flex h-64 w-64 items-center justify-center p-5 text-center"
+    >
+      no shadow, background weight 2
     </Card>
   </div>
 );
