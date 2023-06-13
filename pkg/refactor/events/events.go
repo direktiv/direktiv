@@ -24,7 +24,11 @@ type EventHistoryStore interface {
 	// the result will be sorted by the AcceptedAt value.
 	// pass 0 for limit or offset to get all events.
 	// The total row count is also returned for pagination.
-	Get(ctx context.Context, namespace uuid.UUID, limit, offset int) ([]*Event, int, error)
+	// keyValues MUST be passed as key value pairs.
+	// passed keyValues will be used filter results.
+	// supported keys are created_before, created_after,
+	// received_before, received_after, event_contains, type_contains.
+	Get(ctx context.Context, limit, offset int, namespace uuid.UUID, keyValues ...string) ([]*Event, int, error)
 	GetAll(ctx context.Context) ([]*Event, error)
 	// deletes events that are older then the given timestamp.
 	DeleteOld(ctx context.Context, sinceWhen time.Time) error
