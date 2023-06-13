@@ -61,8 +61,35 @@ func (*sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time)
 	panic("unimplemented")
 }
 
-func (*sqlEventHistoryStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.Event, int, error) {
-	panic("unimplemented")
+func (hs *sqlEventHistoryStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.Event, int, error) {
+	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE namespace_id = $1;"
+	res := make([]*events.Event, 0)
+
+	rows, err := hs.db.WithContext(ctx).Raw(q).Rows()
+	if err != nil {
+		return nil, 0, err
+	}
+	if rows.Err() != nil {
+		return nil, 0, rows.Err()
+	}
+	defer rows.Close()
+	if rows.Next() {
+		var id, ns uuid.UUID
+		var t, source, ce string
+		var created, received time.Time
+		err := rows.Scan(&id, &t, &source, &ce, &ns, &received, &created)
+		if err != nil {
+			return nil, 0, err
+		}
+		var finalCE event.Event
+		err = json.Unmarshal([]byte(ce), &finalCE)
+		if err != nil {
+			return nil, 0, err
+		}
+		res = append(res, &events.Event{Namespace: ns, ReceivedAt: received, Event: &finalCE})
+	}
+
+	return res, 0, nil
 }
 
 func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
