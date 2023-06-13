@@ -14,7 +14,7 @@ import { Card } from "../Card";
 import { NavigationLink } from "./index";
 
 const meta = {
-  title: "Components/NavigationItem",
+  title: "Components/NavigationLink",
   component: NavigationLink,
 } satisfies Meta<typeof NavigationLink>;
 

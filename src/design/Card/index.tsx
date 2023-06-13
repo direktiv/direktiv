@@ -3,13 +3,13 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  withBackground?: boolean;
+  background?: "none" | "weight-1" | "weight-2";
   noShadow?: boolean;
 }
 export const Card: React.FC<CardProps> = React.forwardRef<
   HTMLDivElement,
   CardProps
->(({ children, className, withBackground, noShadow, ...props }, ref) => (
+>(({ children, className, background = "none", noShadow, ...props }, ref) => (
   <div
     ref={ref}
     {...props}
@@ -19,9 +19,8 @@ export const Card: React.FC<CardProps> = React.forwardRef<
         "ring-gray-5",
         "dark:ring-gray-dark-5",
         !noShadow && "shadow",
-        withBackground
-          ? "bg-gray-1 dark:bg-gray-dark-1"
-          : "bg-white dark:bg-black",
+        background === "weight-1" && "bg-white dark:bg-black",
+        background === "weight-2" && "bg-gray-1 dark:bg-gray-dark-1",
         className
       )
     )}
