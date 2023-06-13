@@ -28,8 +28,77 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
         foreground: "7E7E7E", // grayDark.gray10
         token: "type",
       },
+      {
+        foreground: "7E7E7E", // grayDark.gray10
+        token: "string.key.json", //JSON Key
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "string.value.json", //JSON Value
+      },
+      {
+        foreground: "7E7E7E", // grayDark.gray10
+        token: "tag", //HTML Tag
+      },
+      {
+        foreground: "7E7E7E", // grayDark.gray10
+        token: "metatag.html", //HTML Meta tag
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "metatag.content.html", //HTML Meta tag content
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "delimiter", //HTML Meta tag content
+      },
+      {
+        foreground: "7E7E7E", // grayDark.gray10
+        token: "attribute.name", //HTML Attribute Name
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "attribute.value.html", //HTML Attribute Name
+      },
+      {
+        foreground: "30A46C", // green9 - success-dark-9
+        token: "comment",
+      },
+      {
+        foreground: "30A46C", // green9 - success-dark-9
+        token: "attribute.value",
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "attribute.value.number", //html attribute value number, e.g. [5]px
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "attribute.value.unit", //html attribute value unit, e.g. 5[px]
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "string", //css string value: e.g. font-family: "Segoe UI","HelveticaNeue-Light",
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "metatag", // metatag in Shell script e.g. #!/bin/bash
+      },
+      {
+        foreground: "6473FF", // primary.400
+        token: "keyword", //keyword in Shell script
+      },
+      {
+        foreground: "7E7E7E", // grayDark.gray10
+        token: "variable.predefined", // variable defined in Shell script
+      },
+      {
+        foreground: "5364FF", // primary.500
+        token: "variable", // Shell script variable
+      },
     ],
     colors: {
+      "editor.foreground": "#7E7E7E", // added for HTML Tag Content gray-dark-10
       "editor.background": "#000000",
       "editor.selectionBackground": "#ffffff2e", // whiteA.whiteA7
     },
@@ -57,7 +126,7 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
         token: "type",
       },
       {
-        foreground: "858585",
+        foreground: "858585", // gray.gray10
         token: "string.key.json", //JSON Key
       },
       {
@@ -65,28 +134,64 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
         token: "string.value.json", //JSON Value
       },
       {
-        foreground: "858585",
+        foreground: "858585", // gray.gray10
         token: "tag", //HTML Tag
       },
       {
-        foreground: "858585",
+        foreground: "858585", // gray.gray10
         token: "metatag.html", //HTML Meta tag
       },
       {
-        foreground: "5364FF",
+        foreground: "5364FF", //primary.500
         token: "metatag.content.html", //HTML Meta tag content
       },
       {
-        foreground: "5364FF",
+        foreground: "5364FF", //primary.500
         token: "delimiter", //HTML Meta tag content
       },
       {
-        foreground: "858585",
+        foreground: "858585", // gray.gray10
         token: "attribute.name", //HTML Attribute Name
       },
       {
-        foreground: "5364FF",
+        foreground: "5364FF", //primary.500
         token: "attribute.value.html", //HTML Attribute Name
+      },
+      {
+        foreground: "30A46C", // success-9
+        token: "comment",
+      },
+      {
+        foreground: "30A46C", // success-9
+        token: "attribute.value",
+      },
+      {
+        foreground: "5364FF", //primary.500
+        token: "attribute.value.number", //html attribute value number, e.g. [5]px
+      },
+      {
+        foreground: "5364FF", //primary.500
+        token: "attribute.value.unit", //html attribute value unit, e.g. 5[px]
+      },
+      {
+        foreground: "5364FF", //primary.500
+        token: "string", //css string value: e.g. font-family: "Segoe UI","HelveticaNeue-Light",
+      },
+      {
+        foreground: "5364FF", //primary.500
+        token: "metatag", // metatag in Shell script e.g. #!/bin/bash
+      },
+      {
+        foreground: "5364FF", //primary.500
+        token: "keyword", //keyword in Shell script
+      },
+      {
+        foreground: "858585", // gray.gray10
+        token: "variable.predefined", // variable defined in Shell script
+      },
+      {
+        foreground: "5364FF", // primary.500
+        token: "variable", // Shell script variable
       },
     ],
     colors: {
