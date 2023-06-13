@@ -8,7 +8,8 @@ const validationSchema = z.object({
 });
 
 const workflowSchema = z.object({
-  states: z.array(validationSchema).nonempty(),
+  // first step must be a validationSchema, the rest can be anything
+  states: z.tuple([validationSchema]).rest(z.unknown()),
 });
 
 export const getValidationSchemaFromYaml = (
