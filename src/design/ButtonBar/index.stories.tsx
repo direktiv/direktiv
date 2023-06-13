@@ -1,10 +1,4 @@
-import {
-  ChevronDown,
-  GitBranchIcon,
-  SearchIcon,
-  Trash2Icon,
-  Undo,
-} from "lucide-react";
+import { ChevronDown, GitBranchIcon, SearchIcon, Undo } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,20 +86,4 @@ export const ButtonSizes = () => (
       </Button>
     </ButtonBar>
   </div>
-);
-export const Toolbar = () => (
-  <ButtonBar>
-    <Button>Start</Button>
-    <Button>Mid-1</Button>
-    <Button>Mid-2</Button>
-    <Button size="lg">
-      <GitBranchIcon /> Review
-    </Button>
-    <Button variant="primary">
-      <SearchIcon /> Search
-    </Button>
-    <Button size="sm" variant="destructive">
-      <Trash2Icon /> Remove
-    </Button>
-  </ButtonBar>
 );
