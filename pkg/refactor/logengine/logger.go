@@ -67,22 +67,22 @@ func (s SugarBetterLogger) log(level LogLevel, tags map[string]string, msg strin
 type ChainedBetterLogger []BetterLogger
 
 func (loggers ChainedBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	appenInstanceInheritanceInfo(tags)
 	for i := range loggers {
-		appenInstanceInheritanceInfo(tags)
 		loggers[i].Debugf(ctx, recipientID, tags, msg, a...)
 	}
 }
 
 func (loggers ChainedBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	appenInstanceInheritanceInfo(tags)
 	for i := range loggers {
-		appenInstanceInheritanceInfo(tags)
 		loggers[i].Infof(ctx, recipientID, tags, msg, a...)
 	}
 }
 
 func (loggers ChainedBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	appenInstanceInheritanceInfo(tags)
 	for i := range loggers {
-		appenInstanceInheritanceInfo(tags)
 		loggers[i].Errorf(ctx, recipientID, tags, msg, a...)
 	}
 }
@@ -214,12 +214,12 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 // instance-id before to the callpath tag of the log-entry
 // and add the root-instance-id tag fro the constructed final callpath.
 func appenInstanceInheritanceInfo(tags map[string]string) {
-	if v, ok := tags["callpath"]; ok {
+	if _, ok := tags["callpath"]; ok {
 		if tags["callpath"] == "/" {
 			tags["root-instance-id"] = tags["instance-id"]
 		}
-		tags["callpath"] = internallogger.AppendInstanceID(v, tags["instance-id"])
-		res, err := internallogger.GetRootinstanceID(v)
+		tags["callpath"] = internallogger.AppendInstanceID(tags["callpath"], tags["instance-id"])
+		res, err := internallogger.GetRootinstanceID(tags["callpath"])
 		if err != nil {
 			tags["root-instance-id"] = tags["instance-id"]
 		} else {
