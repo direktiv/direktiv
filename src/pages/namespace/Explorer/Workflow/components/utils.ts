@@ -11,7 +11,9 @@ const workflowSchema = z.object({
   states: z.array(validationSchema).nonempty(),
 });
 
-export const getValidationSchema = (workflowContent: string | undefined) => {
+export const getValidationSchemaFromYaml = (
+  workflowContent: string | undefined
+) => {
   const workflowDataJson = YAML.load(workflowContent ?? "");
   const parsed = workflowSchema.passthrough().safeParse(workflowDataJson);
   if (!parsed.success) return null;

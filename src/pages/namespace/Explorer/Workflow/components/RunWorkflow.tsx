@@ -14,7 +14,7 @@ import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { getValidationSchema } from "./utils";
+import { getValidationSchemaFromYaml } from "./utils";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -33,7 +33,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { data } = useNodeContent({ path });
-  const validationSchema = getValidationSchema(
+  const validationSchema = getValidationSchemaFromYaml(
     data?.revision?.source && atob(data?.revision?.source)
   );
 
