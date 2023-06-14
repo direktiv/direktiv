@@ -142,3 +142,44 @@ func Test_Topic_Add_Get(t *testing.T) {
 		}
 	}
 }
+
+func Test_Listener_Add_Delete_Get(t *testing.T) {
+	ns := uuid.New()
+	eID := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	store := datastoresql.NewSQLStore(db, "some key")
+	listeners := store.EventListener()
+	err = listeners.Append(context.Background(), &events.EventListener{
+		ID:                          eID,
+		CreatedAt:                   time.Now(),
+		UpdatedAt:                   time.Now(),
+		Deleted:                     true,
+		NamespaceID:                 ns,
+		ListeningForEventTypes:      []string{"a"},
+		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+		LifespanOfReceivedEvents:    10000,
+		TriggerType:                 1,
+		Trigger:                     events.TriggerInfo{WorkflowID: uuid.New()},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	res, err := listeners.GetByID(context.Background(), eID)
+	if err != nil {
+		t.Error(err)
+	}
+	if res.ID != eID {
+		t.Error("got wrong entry")
+	}
+	err = listeners.Delete(context.Background())
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = listeners.GetByID(context.Background(), eID)
+	if err == nil {
+		t.Error("entry was excepted to be deleted")
+	}
+}

@@ -280,8 +280,14 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 	return nil
 }
 
-func (*sqlEventListenerStore) Delete(ctx context.Context) error {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) Delete(ctx context.Context) error {
+	q := "DELETE FROM event_listeners WHERE deleted = TRUE;"
+	tx := s.db.WithContext(ctx).Exec(q)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
 
 func (*sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error {
@@ -300,8 +306,51 @@ func (*sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListen
 	panic("unimplemented")
 }
 
-func (*sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
-	panic("unimplemented")
+type gormEventListener struct {
+	Count          int
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	NamespaceID    uuid.UUID
+	Deleted        bool
+	TriggerType    int
+	EventType      string
+	TriggerInfo    []byte
+	EventsLifespan int
+	ReceivedEvents []byte
+}
+
+func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
+	q := "SELECT count(id), id, namespace_id, created_at, updated_at ,received_events, trigger_type, events_lifespan, event_types, trigger_info FROM event_listeners WHERE id = $1 ;"
+	var l gormEventListener
+	tx := s.db.WithContext(ctx).Raw(q, id).First(&l)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	var trigger events.TriggerInfo
+	var ev []*events.Event
+
+	err := json.Unmarshal(l.TriggerInfo, &trigger)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(l.ReceivedEvents, &ev)
+	if err != nil {
+		return nil, err
+	}
+
+	return &events.EventListener{
+		ID:                          l.ID,
+		UpdatedAt:                   l.UpdatedAt,
+		CreatedAt:                   l.CreatedAt,
+		Deleted:                     l.Deleted,
+		NamespaceID:                 l.NamespaceID,
+		ListeningForEventTypes:      strings.Split(l.EventType, " "),
+		LifespanOfReceivedEvents:    l.EventsLifespan,
+		TriggerType:                 events.TriggerType(l.TriggerType),
+		Trigger:                     trigger,
+		ReceivedEventsForAndTrigger: ev,
+	}, nil
 }
 
 func (*sqlEventListenerStore) Update(ctx context.Context, listener *events.EventListener, more ...*events.EventListener) (error, []error) {
