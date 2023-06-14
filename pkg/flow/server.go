@@ -64,7 +64,6 @@ type server struct {
 	flow            *flow
 	internal        *internal
 	events          *events
-	vars            *vars
 	functionsClient igrpc.FunctionsClient
 
 	metrics    *metrics.Client
@@ -230,14 +229,6 @@ func (srv *server) start(ctx context.Context) error {
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	srv.sugar.Debug("Initializing vars server.")
-
-	srv.vars, err = initVarsServer(cctx, srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.vars.Close)
-
 	srv.sugar.Debug("Initializing internal grpc server.")
 
 	srv.internal, err = initInternalServer(cctx, srv)
@@ -344,20 +335,6 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-
-	go func() {
-		defer wg.Done()
-		defer cancel()
-		e := srv.vars.Run()
-		if e != nil {
-			srv.sugar.Error(err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
-		}
-	}()
 
 	go func() {
 		defer wg.Done()
