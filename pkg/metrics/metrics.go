@@ -3,9 +3,10 @@ package metrics
 import (
 	"context"
 	"fmt"
-	"gorm.io/gorm"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Client ..
