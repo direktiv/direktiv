@@ -997,8 +997,8 @@ var file_pkg_flow_grpc_protocol_proto_rawDesc = []byte{
 	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4d,
 	0x69, 0x72, 0x72, 0x6f, 0x72, 0x41, 0x63, 0x74, 0x69, 0x76, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x32, 0xd0,
-	0x08, 0x0a, 0x08, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x12, 0x5a, 0x0a, 0x13, 0x52,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x32, 0xeb,
+	0x06, 0x0a, 0x08, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x12, 0x5a, 0x0a, 0x13, 0x52,
 	0x65, 0x70, 0x6f, 0x72, 0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x75, 0x6c,
 	0x74, 0x73, 0x12, 0x29, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c,
 	0x6f, 0x77, 0x2e, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52,
@@ -1038,45 +1038,30 @@ var file_pkg_flow_grpc_protocol_proto_rawDesc = []byte{
 	0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
 	0x6c, 0x6f, 0x77, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49,
 	0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x00, 0x28, 0x01, 0x12, 0x6c, 0x0a, 0x15, 0x54, 0x68, 0x72, 0x65, 0x61, 0x64, 0x56, 0x61, 0x72,
-	0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x26, 0x2e, 0x64,
-	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x56, 0x61, 0x72,
-	0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f,
-	0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74,
-	0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30,
-	0x01, 0x12, 0x75, 0x0a, 0x18, 0x53, 0x65, 0x74, 0x54, 0x68, 0x72, 0x65, 0x61, 0x64, 0x56, 0x61,
-	0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x29, 0x2e,
-	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x53, 0x65,
-	0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61,
-	0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69,
-	0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x6e, 0x0a, 0x17, 0x49, 0x6e, 0x73, 0x74,
-	0x61, 0x6e, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63,
-	0x65, 0x6c, 0x73, 0x12, 0x26, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
-	0x6c, 0x6f, 0x77, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65,
-	0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x64, 0x69,
-	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x56, 0x61, 0x72, 0x69,
-	0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x30, 0x01, 0x12, 0x77, 0x0a, 0x1a, 0x53, 0x65, 0x74, 0x49,
-	0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50,
-	0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x29, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
-	0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62,
-	0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x2a, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f,
+	0x00, 0x28, 0x01, 0x12, 0x6e, 0x0a, 0x17, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x56,
+	0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c, 0x73, 0x12, 0x26,
+	0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x56,
+	0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
+	0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49,
+	0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x30, 0x01, 0x12, 0x77, 0x0a, 0x1a, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e,
+	0x63, 0x65, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x61, 0x72, 0x63, 0x65, 0x6c,
+	0x73, 0x12, 0x29, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f,
 	0x77, 0x2e, 0x53, 0x65, 0x74, 0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74,
-	0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28,
-	0x01, 0x32, 0x5a, 0x0a, 0x08, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x69, 0x6e, 0x67, 0x12, 0x4e, 0x0a,
-	0x0d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x1e,
-	0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19,
-	0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x43,
-	0x6c, 0x6f, 0x75, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x00, 0x30, 0x01, 0x42, 0x2c, 0x5a,
-	0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65,
-	0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x65, 0x72, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x64,
+	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x53, 0x65, 0x74,
+	0x56, 0x61, 0x72, 0x69, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x32, 0x5a, 0x0a, 0x08,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x69, 0x6e, 0x67, 0x12, 0x4e, 0x0a, 0x0d, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x1e, 0x2e, 0x64, 0x69, 0x72, 0x65,
+	0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x69,
+	0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x64, 0x69, 0x72, 0x65,
+	0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x22, 0x00, 0x30, 0x01, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f,
+	0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f,
+	0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_pkg_flow_grpc_protocol_proto_goTypes = []interface{}{
@@ -1441,177 +1426,173 @@ var file_pkg_flow_grpc_protocol_proto_depIdxs = []int32{
 	117, // 156: direktiv_flow.Internal.SetNamespaceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
 	116, // 157: direktiv_flow.Internal.WorkflowVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
 	117, // 158: direktiv_flow.Internal.SetWorkflowVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	116, // 159: direktiv_flow.Internal.ThreadVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
-	117, // 160: direktiv_flow.Internal.SetThreadVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	116, // 161: direktiv_flow.Internal.InstanceVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
-	117, // 162: direktiv_flow.Internal.SetInstanceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
-	118, // 163: direktiv_flow.Eventing.RequestEvents:input_type -> direktiv_flow.EventingRequest
-	119, // 164: direktiv_flow.Flow.Namespace:output_type -> direktiv_flow.NamespaceResponse
-	120, // 165: direktiv_flow.Flow.Namespaces:output_type -> direktiv_flow.NamespacesResponse
-	120, // 166: direktiv_flow.Flow.NamespacesStream:output_type -> direktiv_flow.NamespacesResponse
-	121, // 167: direktiv_flow.Flow.CreateNamespace:output_type -> direktiv_flow.CreateNamespaceResponse
-	81,  // 168: direktiv_flow.Flow.DeleteNamespace:output_type -> google.protobuf.Empty
-	122, // 169: direktiv_flow.Flow.RenameNamespace:output_type -> direktiv_flow.RenameNamespaceResponse
-	123, // 170: direktiv_flow.Flow.ServerLogs:output_type -> direktiv_flow.ServerLogsResponse
-	123, // 171: direktiv_flow.Flow.ServerLogsParcels:output_type -> direktiv_flow.ServerLogsResponse
-	124, // 172: direktiv_flow.Flow.NamespaceLogs:output_type -> direktiv_flow.NamespaceLogsResponse
-	124, // 173: direktiv_flow.Flow.NamespaceLogsParcels:output_type -> direktiv_flow.NamespaceLogsResponse
-	125, // 174: direktiv_flow.Flow.WorkflowLogs:output_type -> direktiv_flow.WorkflowLogsResponse
-	125, // 175: direktiv_flow.Flow.WorkflowLogsParcels:output_type -> direktiv_flow.WorkflowLogsResponse
-	126, // 176: direktiv_flow.Flow.Directory:output_type -> direktiv_flow.DirectoryResponse
-	126, // 177: direktiv_flow.Flow.DirectoryStream:output_type -> direktiv_flow.DirectoryResponse
-	127, // 178: direktiv_flow.Flow.CreateDirectory:output_type -> direktiv_flow.CreateDirectoryResponse
-	81,  // 179: direktiv_flow.Flow.DeleteNode:output_type -> google.protobuf.Empty
-	128, // 180: direktiv_flow.Flow.RenameNode:output_type -> direktiv_flow.RenameNodeResponse
-	129, // 181: direktiv_flow.Flow.Node:output_type -> direktiv_flow.NodeResponse
-	130, // 182: direktiv_flow.Flow.Workflow:output_type -> direktiv_flow.WorkflowResponse
-	130, // 183: direktiv_flow.Flow.WorkflowStream:output_type -> direktiv_flow.WorkflowResponse
-	131, // 184: direktiv_flow.Flow.CreateWorkflow:output_type -> direktiv_flow.CreateWorkflowResponse
-	132, // 185: direktiv_flow.Flow.UpdateWorkflow:output_type -> direktiv_flow.UpdateWorkflowResponse
-	133, // 186: direktiv_flow.Flow.SaveHead:output_type -> direktiv_flow.SaveHeadResponse
-	134, // 187: direktiv_flow.Flow.DiscardHead:output_type -> direktiv_flow.DiscardHeadResponse
-	135, // 188: direktiv_flow.Flow.Tags:output_type -> direktiv_flow.TagsResponse
-	135, // 189: direktiv_flow.Flow.TagsStream:output_type -> direktiv_flow.TagsResponse
-	136, // 190: direktiv_flow.Flow.Refs:output_type -> direktiv_flow.RefsResponse
-	136, // 191: direktiv_flow.Flow.RefsStream:output_type -> direktiv_flow.RefsResponse
-	137, // 192: direktiv_flow.Flow.Revisions:output_type -> direktiv_flow.RevisionsResponse
-	137, // 193: direktiv_flow.Flow.RevisionsStream:output_type -> direktiv_flow.RevisionsResponse
-	81,  // 194: direktiv_flow.Flow.DeleteRevision:output_type -> google.protobuf.Empty
-	81,  // 195: direktiv_flow.Flow.Tag:output_type -> google.protobuf.Empty
-	81,  // 196: direktiv_flow.Flow.Untag:output_type -> google.protobuf.Empty
-	81,  // 197: direktiv_flow.Flow.Retag:output_type -> google.protobuf.Empty
-	138, // 198: direktiv_flow.Flow.Router:output_type -> direktiv_flow.RouterResponse
-	138, // 199: direktiv_flow.Flow.RouterStream:output_type -> direktiv_flow.RouterResponse
-	139, // 200: direktiv_flow.Flow.EditRouter:output_type -> direktiv_flow.EditRouterResponse
-	140, // 201: direktiv_flow.Flow.ValidateRef:output_type -> direktiv_flow.ValidateRefResponse
-	141, // 202: direktiv_flow.Flow.ValidateRouter:output_type -> direktiv_flow.ValidateRouterResponse
-	142, // 203: direktiv_flow.Flow.Secrets:output_type -> direktiv_flow.SecretsResponse
-	142, // 204: direktiv_flow.Flow.SecretsStream:output_type -> direktiv_flow.SecretsResponse
-	143, // 205: direktiv_flow.Flow.SetSecret:output_type -> direktiv_flow.SetSecretResponse
-	144, // 206: direktiv_flow.Flow.CreateSecretsFolder:output_type -> direktiv_flow.CreateSecretsFolderResponse
-	81,  // 207: direktiv_flow.Flow.DeleteSecret:output_type -> google.protobuf.Empty
-	81,  // 208: direktiv_flow.Flow.DeleteSecretsFolder:output_type -> google.protobuf.Empty
-	145, // 209: direktiv_flow.Flow.SearchSecret:output_type -> direktiv_flow.SearchSecretResponse
-	146, // 210: direktiv_flow.Flow.UpdateSecret:output_type -> direktiv_flow.UpdateSecretResponse
-	147, // 211: direktiv_flow.Flow.Instance:output_type -> direktiv_flow.InstanceResponse
-	147, // 212: direktiv_flow.Flow.InstanceStream:output_type -> direktiv_flow.InstanceResponse
-	148, // 213: direktiv_flow.Flow.Instances:output_type -> direktiv_flow.InstancesResponse
-	148, // 214: direktiv_flow.Flow.InstancesStream:output_type -> direktiv_flow.InstancesResponse
-	149, // 215: direktiv_flow.Flow.InstanceInput:output_type -> direktiv_flow.InstanceInputResponse
-	150, // 216: direktiv_flow.Flow.InstanceOutput:output_type -> direktiv_flow.InstanceOutputResponse
-	151, // 217: direktiv_flow.Flow.InstanceLogs:output_type -> direktiv_flow.InstanceLogsResponse
-	151, // 218: direktiv_flow.Flow.InstanceLogsParcels:output_type -> direktiv_flow.InstanceLogsResponse
-	152, // 219: direktiv_flow.Flow.StartWorkflow:output_type -> direktiv_flow.StartWorkflowResponse
-	153, // 220: direktiv_flow.Flow.RunWorkflow:output_type -> direktiv_flow.RunWorkflowResponse
-	154, // 221: direktiv_flow.Flow.AwaitWorkflow:output_type -> direktiv_flow.AwaitWorkflowResponse
-	81,  // 222: direktiv_flow.Flow.CancelInstance:output_type -> google.protobuf.Empty
-	81,  // 223: direktiv_flow.Flow.BroadcastCloudevent:output_type -> google.protobuf.Empty
-	81,  // 224: direktiv_flow.Flow.ApplyCloudEventFilter:output_type -> google.protobuf.Empty
-	81,  // 225: direktiv_flow.Flow.DeleteCloudEventFilter:output_type -> google.protobuf.Empty
-	81,  // 226: direktiv_flow.Flow.CreateCloudEventFilter:output_type -> google.protobuf.Empty
-	81,  // 227: direktiv_flow.Flow.UpdateCloudEventFilter:output_type -> google.protobuf.Empty
-	155, // 228: direktiv_flow.Flow.GetCloudEventFilterScript:output_type -> direktiv_flow.GetCloudEventFilterScriptResponse
-	156, // 229: direktiv_flow.Flow.GetCloudEventFilters:output_type -> direktiv_flow.GetCloudEventFiltersResponse
-	157, // 230: direktiv_flow.Flow.NamespaceVariable:output_type -> direktiv_flow.NamespaceVariableResponse
-	157, // 231: direktiv_flow.Flow.NamespaceVariableParcels:output_type -> direktiv_flow.NamespaceVariableResponse
-	158, // 232: direktiv_flow.Flow.NamespaceVariables:output_type -> direktiv_flow.NamespaceVariablesResponse
-	158, // 233: direktiv_flow.Flow.NamespaceVariablesStream:output_type -> direktiv_flow.NamespaceVariablesResponse
-	159, // 234: direktiv_flow.Flow.SetNamespaceVariable:output_type -> direktiv_flow.SetNamespaceVariableResponse
-	159, // 235: direktiv_flow.Flow.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetNamespaceVariableResponse
-	81,  // 236: direktiv_flow.Flow.DeleteNamespaceVariable:output_type -> google.protobuf.Empty
-	160, // 237: direktiv_flow.Flow.RenameNamespaceVariable:output_type -> direktiv_flow.RenameNamespaceVariableResponse
-	161, // 238: direktiv_flow.Flow.WorkflowVariable:output_type -> direktiv_flow.WorkflowVariableResponse
-	161, // 239: direktiv_flow.Flow.WorkflowVariableParcels:output_type -> direktiv_flow.WorkflowVariableResponse
-	162, // 240: direktiv_flow.Flow.WorkflowVariables:output_type -> direktiv_flow.WorkflowVariablesResponse
-	162, // 241: direktiv_flow.Flow.WorkflowVariablesStream:output_type -> direktiv_flow.WorkflowVariablesResponse
-	163, // 242: direktiv_flow.Flow.SetWorkflowVariable:output_type -> direktiv_flow.SetWorkflowVariableResponse
-	163, // 243: direktiv_flow.Flow.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetWorkflowVariableResponse
-	81,  // 244: direktiv_flow.Flow.DeleteWorkflowVariable:output_type -> google.protobuf.Empty
-	164, // 245: direktiv_flow.Flow.RenameWorkflowVariable:output_type -> direktiv_flow.RenameWorkflowVariableResponse
-	165, // 246: direktiv_flow.Flow.InstanceVariable:output_type -> direktiv_flow.InstanceVariableResponse
-	165, // 247: direktiv_flow.Flow.InstanceVariableParcels:output_type -> direktiv_flow.InstanceVariableResponse
-	166, // 248: direktiv_flow.Flow.InstanceVariables:output_type -> direktiv_flow.InstanceVariablesResponse
-	166, // 249: direktiv_flow.Flow.InstanceVariablesStream:output_type -> direktiv_flow.InstanceVariablesResponse
-	167, // 250: direktiv_flow.Flow.SetInstanceVariable:output_type -> direktiv_flow.SetInstanceVariableResponse
-	167, // 251: direktiv_flow.Flow.SetInstanceVariableParcels:output_type -> direktiv_flow.SetInstanceVariableResponse
-	81,  // 252: direktiv_flow.Flow.DeleteInstanceVariable:output_type -> google.protobuf.Empty
-	168, // 253: direktiv_flow.Flow.RenameInstanceVariable:output_type -> direktiv_flow.RenameInstanceVariableResponse
-	169, // 254: direktiv_flow.Flow.JQ:output_type -> direktiv_flow.JQResponse
-	81,  // 255: direktiv_flow.Flow.CreateNodeAttributes:output_type -> google.protobuf.Empty
-	81,  // 256: direktiv_flow.Flow.DeleteNodeAttributes:output_type -> google.protobuf.Empty
-	170, // 257: direktiv_flow.Flow.WorkflowMetrics:output_type -> direktiv_flow.WorkflowMetricsResponse
-	171, // 258: direktiv_flow.Flow.EventListeners:output_type -> direktiv_flow.EventListenersResponse
-	171, // 259: direktiv_flow.Flow.EventListenersStream:output_type -> direktiv_flow.EventListenersResponse
-	172, // 260: direktiv_flow.Flow.EventHistory:output_type -> direktiv_flow.EventHistoryResponse
-	172, // 261: direktiv_flow.Flow.EventHistoryStream:output_type -> direktiv_flow.EventHistoryResponse
-	173, // 262: direktiv_flow.Flow.HistoricalEvent:output_type -> direktiv_flow.HistoricalEventResponse
-	81,  // 263: direktiv_flow.Flow.ReplayEvent:output_type -> google.protobuf.Empty
-	81,  // 264: direktiv_flow.Flow.ToggleWorkflow:output_type -> google.protobuf.Empty
-	81,  // 265: direktiv_flow.Flow.SetWorkflowEventLogging:output_type -> google.protobuf.Empty
-	119, // 266: direktiv_flow.Flow.ResolveNamespaceUID:output_type -> direktiv_flow.NamespaceResponse
-	130, // 267: direktiv_flow.Flow.ResolveWorkflowUID:output_type -> direktiv_flow.WorkflowResponse
-	174, // 268: direktiv_flow.Flow.SetNamespaceConfig:output_type -> direktiv_flow.SetNamespaceConfigResponse
-	175, // 269: direktiv_flow.Flow.GetNamespaceConfig:output_type -> direktiv_flow.GetNamespaceConfigResponse
-	176, // 270: direktiv_flow.Flow.Build:output_type -> direktiv_flow.BuildResponse
-	177, // 271: direktiv_flow.Flow.InstanceMetadata:output_type -> direktiv_flow.InstanceMetadataResponse
-	178, // 272: direktiv_flow.Flow.NamespaceAnnotation:output_type -> direktiv_flow.NamespaceAnnotationResponse
-	178, // 273: direktiv_flow.Flow.NamespaceAnnotationParcels:output_type -> direktiv_flow.NamespaceAnnotationResponse
-	179, // 274: direktiv_flow.Flow.NamespaceAnnotations:output_type -> direktiv_flow.NamespaceAnnotationsResponse
-	179, // 275: direktiv_flow.Flow.NamespaceAnnotationsStream:output_type -> direktiv_flow.NamespaceAnnotationsResponse
-	180, // 276: direktiv_flow.Flow.SetNamespaceAnnotation:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
-	180, // 277: direktiv_flow.Flow.SetNamespaceAnnotationParcels:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
-	81,  // 278: direktiv_flow.Flow.DeleteNamespaceAnnotation:output_type -> google.protobuf.Empty
-	181, // 279: direktiv_flow.Flow.RenameNamespaceAnnotation:output_type -> direktiv_flow.RenameNamespaceAnnotationResponse
-	182, // 280: direktiv_flow.Flow.WorkflowAnnotation:output_type -> direktiv_flow.WorkflowAnnotationResponse
-	182, // 281: direktiv_flow.Flow.WorkflowAnnotationParcels:output_type -> direktiv_flow.WorkflowAnnotationResponse
-	183, // 282: direktiv_flow.Flow.WorkflowAnnotations:output_type -> direktiv_flow.WorkflowAnnotationsResponse
-	183, // 283: direktiv_flow.Flow.WorkflowAnnotationsStream:output_type -> direktiv_flow.WorkflowAnnotationsResponse
-	184, // 284: direktiv_flow.Flow.SetWorkflowAnnotation:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
-	184, // 285: direktiv_flow.Flow.SetWorkflowAnnotationParcels:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
-	81,  // 286: direktiv_flow.Flow.DeleteWorkflowAnnotation:output_type -> google.protobuf.Empty
-	185, // 287: direktiv_flow.Flow.RenameWorkflowAnnotation:output_type -> direktiv_flow.RenameWorkflowAnnotationResponse
-	186, // 288: direktiv_flow.Flow.InstanceAnnotation:output_type -> direktiv_flow.InstanceAnnotationResponse
-	186, // 289: direktiv_flow.Flow.InstanceAnnotationParcels:output_type -> direktiv_flow.InstanceAnnotationResponse
-	187, // 290: direktiv_flow.Flow.InstanceAnnotations:output_type -> direktiv_flow.InstanceAnnotationsResponse
-	187, // 291: direktiv_flow.Flow.InstanceAnnotationsStream:output_type -> direktiv_flow.InstanceAnnotationsResponse
-	188, // 292: direktiv_flow.Flow.SetInstanceAnnotation:output_type -> direktiv_flow.SetInstanceAnnotationResponse
-	188, // 293: direktiv_flow.Flow.SetInstanceAnnotationParcels:output_type -> direktiv_flow.SetInstanceAnnotationResponse
-	81,  // 294: direktiv_flow.Flow.DeleteInstanceAnnotation:output_type -> google.protobuf.Empty
-	189, // 295: direktiv_flow.Flow.RenameInstanceAnnotation:output_type -> direktiv_flow.RenameInstanceAnnotationResponse
-	190, // 296: direktiv_flow.Flow.ReleaseInstance:output_type -> direktiv_flow.ReleaseInstanceResponse
-	191, // 297: direktiv_flow.Flow.NodeAnnotation:output_type -> direktiv_flow.NodeAnnotationResponse
-	191, // 298: direktiv_flow.Flow.NodeAnnotationParcels:output_type -> direktiv_flow.NodeAnnotationResponse
-	192, // 299: direktiv_flow.Flow.NodeAnnotations:output_type -> direktiv_flow.NodeAnnotationsResponse
-	192, // 300: direktiv_flow.Flow.NodeAnnotationsStream:output_type -> direktiv_flow.NodeAnnotationsResponse
-	193, // 301: direktiv_flow.Flow.SetNodeAnnotation:output_type -> direktiv_flow.SetNodeAnnotationResponse
-	193, // 302: direktiv_flow.Flow.SetNodeAnnotationParcels:output_type -> direktiv_flow.SetNodeAnnotationResponse
-	81,  // 303: direktiv_flow.Flow.DeleteNodeAnnotation:output_type -> google.protobuf.Empty
-	194, // 304: direktiv_flow.Flow.RenameNodeAnnotation:output_type -> direktiv_flow.RenameNodeAnnotationResponse
-	121, // 305: direktiv_flow.Flow.CreateNamespaceMirror:output_type -> direktiv_flow.CreateNamespaceResponse
-	127, // 306: direktiv_flow.Flow.CreateDirectoryMirror:output_type -> direktiv_flow.CreateDirectoryResponse
-	81,  // 307: direktiv_flow.Flow.UpdateMirrorSettings:output_type -> google.protobuf.Empty
-	81,  // 308: direktiv_flow.Flow.LockMirror:output_type -> google.protobuf.Empty
-	81,  // 309: direktiv_flow.Flow.UnlockMirror:output_type -> google.protobuf.Empty
-	81,  // 310: direktiv_flow.Flow.SoftSyncMirror:output_type -> google.protobuf.Empty
-	81,  // 311: direktiv_flow.Flow.HardSyncMirror:output_type -> google.protobuf.Empty
-	195, // 312: direktiv_flow.Flow.MirrorInfo:output_type -> direktiv_flow.MirrorInfoResponse
-	195, // 313: direktiv_flow.Flow.MirrorInfoStream:output_type -> direktiv_flow.MirrorInfoResponse
-	196, // 314: direktiv_flow.Flow.MirrorActivityLogs:output_type -> direktiv_flow.MirrorActivityLogsResponse
-	196, // 315: direktiv_flow.Flow.MirrorActivityLogsParcels:output_type -> direktiv_flow.MirrorActivityLogsResponse
-	81,  // 316: direktiv_flow.Flow.CancelMirrorActivity:output_type -> google.protobuf.Empty
-	81,  // 317: direktiv_flow.Internal.ReportActionResults:output_type -> google.protobuf.Empty
-	81,  // 318: direktiv_flow.Internal.ActionLog:output_type -> google.protobuf.Empty
-	197, // 319: direktiv_flow.Internal.NamespaceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	198, // 320: direktiv_flow.Internal.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	197, // 321: direktiv_flow.Internal.WorkflowVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	198, // 322: direktiv_flow.Internal.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	197, // 323: direktiv_flow.Internal.ThreadVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	198, // 324: direktiv_flow.Internal.SetThreadVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	197, // 325: direktiv_flow.Internal.InstanceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
-	198, // 326: direktiv_flow.Internal.SetInstanceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
-	199, // 327: direktiv_flow.Eventing.RequestEvents:output_type -> direktiv_flow.CloudEvent
-	164, // [164:328] is the sub-list for method output_type
-	0,   // [0:164] is the sub-list for method input_type
+	116, // 159: direktiv_flow.Internal.InstanceVariableParcels:input_type -> direktiv_flow.VariableInternalRequest
+	117, // 160: direktiv_flow.Internal.SetInstanceVariableParcels:input_type -> direktiv_flow.SetVariableInternalRequest
+	118, // 161: direktiv_flow.Eventing.RequestEvents:input_type -> direktiv_flow.EventingRequest
+	119, // 162: direktiv_flow.Flow.Namespace:output_type -> direktiv_flow.NamespaceResponse
+	120, // 163: direktiv_flow.Flow.Namespaces:output_type -> direktiv_flow.NamespacesResponse
+	120, // 164: direktiv_flow.Flow.NamespacesStream:output_type -> direktiv_flow.NamespacesResponse
+	121, // 165: direktiv_flow.Flow.CreateNamespace:output_type -> direktiv_flow.CreateNamespaceResponse
+	81,  // 166: direktiv_flow.Flow.DeleteNamespace:output_type -> google.protobuf.Empty
+	122, // 167: direktiv_flow.Flow.RenameNamespace:output_type -> direktiv_flow.RenameNamespaceResponse
+	123, // 168: direktiv_flow.Flow.ServerLogs:output_type -> direktiv_flow.ServerLogsResponse
+	123, // 169: direktiv_flow.Flow.ServerLogsParcels:output_type -> direktiv_flow.ServerLogsResponse
+	124, // 170: direktiv_flow.Flow.NamespaceLogs:output_type -> direktiv_flow.NamespaceLogsResponse
+	124, // 171: direktiv_flow.Flow.NamespaceLogsParcels:output_type -> direktiv_flow.NamespaceLogsResponse
+	125, // 172: direktiv_flow.Flow.WorkflowLogs:output_type -> direktiv_flow.WorkflowLogsResponse
+	125, // 173: direktiv_flow.Flow.WorkflowLogsParcels:output_type -> direktiv_flow.WorkflowLogsResponse
+	126, // 174: direktiv_flow.Flow.Directory:output_type -> direktiv_flow.DirectoryResponse
+	126, // 175: direktiv_flow.Flow.DirectoryStream:output_type -> direktiv_flow.DirectoryResponse
+	127, // 176: direktiv_flow.Flow.CreateDirectory:output_type -> direktiv_flow.CreateDirectoryResponse
+	81,  // 177: direktiv_flow.Flow.DeleteNode:output_type -> google.protobuf.Empty
+	128, // 178: direktiv_flow.Flow.RenameNode:output_type -> direktiv_flow.RenameNodeResponse
+	129, // 179: direktiv_flow.Flow.Node:output_type -> direktiv_flow.NodeResponse
+	130, // 180: direktiv_flow.Flow.Workflow:output_type -> direktiv_flow.WorkflowResponse
+	130, // 181: direktiv_flow.Flow.WorkflowStream:output_type -> direktiv_flow.WorkflowResponse
+	131, // 182: direktiv_flow.Flow.CreateWorkflow:output_type -> direktiv_flow.CreateWorkflowResponse
+	132, // 183: direktiv_flow.Flow.UpdateWorkflow:output_type -> direktiv_flow.UpdateWorkflowResponse
+	133, // 184: direktiv_flow.Flow.SaveHead:output_type -> direktiv_flow.SaveHeadResponse
+	134, // 185: direktiv_flow.Flow.DiscardHead:output_type -> direktiv_flow.DiscardHeadResponse
+	135, // 186: direktiv_flow.Flow.Tags:output_type -> direktiv_flow.TagsResponse
+	135, // 187: direktiv_flow.Flow.TagsStream:output_type -> direktiv_flow.TagsResponse
+	136, // 188: direktiv_flow.Flow.Refs:output_type -> direktiv_flow.RefsResponse
+	136, // 189: direktiv_flow.Flow.RefsStream:output_type -> direktiv_flow.RefsResponse
+	137, // 190: direktiv_flow.Flow.Revisions:output_type -> direktiv_flow.RevisionsResponse
+	137, // 191: direktiv_flow.Flow.RevisionsStream:output_type -> direktiv_flow.RevisionsResponse
+	81,  // 192: direktiv_flow.Flow.DeleteRevision:output_type -> google.protobuf.Empty
+	81,  // 193: direktiv_flow.Flow.Tag:output_type -> google.protobuf.Empty
+	81,  // 194: direktiv_flow.Flow.Untag:output_type -> google.protobuf.Empty
+	81,  // 195: direktiv_flow.Flow.Retag:output_type -> google.protobuf.Empty
+	138, // 196: direktiv_flow.Flow.Router:output_type -> direktiv_flow.RouterResponse
+	138, // 197: direktiv_flow.Flow.RouterStream:output_type -> direktiv_flow.RouterResponse
+	139, // 198: direktiv_flow.Flow.EditRouter:output_type -> direktiv_flow.EditRouterResponse
+	140, // 199: direktiv_flow.Flow.ValidateRef:output_type -> direktiv_flow.ValidateRefResponse
+	141, // 200: direktiv_flow.Flow.ValidateRouter:output_type -> direktiv_flow.ValidateRouterResponse
+	142, // 201: direktiv_flow.Flow.Secrets:output_type -> direktiv_flow.SecretsResponse
+	142, // 202: direktiv_flow.Flow.SecretsStream:output_type -> direktiv_flow.SecretsResponse
+	143, // 203: direktiv_flow.Flow.SetSecret:output_type -> direktiv_flow.SetSecretResponse
+	144, // 204: direktiv_flow.Flow.CreateSecretsFolder:output_type -> direktiv_flow.CreateSecretsFolderResponse
+	81,  // 205: direktiv_flow.Flow.DeleteSecret:output_type -> google.protobuf.Empty
+	81,  // 206: direktiv_flow.Flow.DeleteSecretsFolder:output_type -> google.protobuf.Empty
+	145, // 207: direktiv_flow.Flow.SearchSecret:output_type -> direktiv_flow.SearchSecretResponse
+	146, // 208: direktiv_flow.Flow.UpdateSecret:output_type -> direktiv_flow.UpdateSecretResponse
+	147, // 209: direktiv_flow.Flow.Instance:output_type -> direktiv_flow.InstanceResponse
+	147, // 210: direktiv_flow.Flow.InstanceStream:output_type -> direktiv_flow.InstanceResponse
+	148, // 211: direktiv_flow.Flow.Instances:output_type -> direktiv_flow.InstancesResponse
+	148, // 212: direktiv_flow.Flow.InstancesStream:output_type -> direktiv_flow.InstancesResponse
+	149, // 213: direktiv_flow.Flow.InstanceInput:output_type -> direktiv_flow.InstanceInputResponse
+	150, // 214: direktiv_flow.Flow.InstanceOutput:output_type -> direktiv_flow.InstanceOutputResponse
+	151, // 215: direktiv_flow.Flow.InstanceLogs:output_type -> direktiv_flow.InstanceLogsResponse
+	151, // 216: direktiv_flow.Flow.InstanceLogsParcels:output_type -> direktiv_flow.InstanceLogsResponse
+	152, // 217: direktiv_flow.Flow.StartWorkflow:output_type -> direktiv_flow.StartWorkflowResponse
+	153, // 218: direktiv_flow.Flow.RunWorkflow:output_type -> direktiv_flow.RunWorkflowResponse
+	154, // 219: direktiv_flow.Flow.AwaitWorkflow:output_type -> direktiv_flow.AwaitWorkflowResponse
+	81,  // 220: direktiv_flow.Flow.CancelInstance:output_type -> google.protobuf.Empty
+	81,  // 221: direktiv_flow.Flow.BroadcastCloudevent:output_type -> google.protobuf.Empty
+	81,  // 222: direktiv_flow.Flow.ApplyCloudEventFilter:output_type -> google.protobuf.Empty
+	81,  // 223: direktiv_flow.Flow.DeleteCloudEventFilter:output_type -> google.protobuf.Empty
+	81,  // 224: direktiv_flow.Flow.CreateCloudEventFilter:output_type -> google.protobuf.Empty
+	81,  // 225: direktiv_flow.Flow.UpdateCloudEventFilter:output_type -> google.protobuf.Empty
+	155, // 226: direktiv_flow.Flow.GetCloudEventFilterScript:output_type -> direktiv_flow.GetCloudEventFilterScriptResponse
+	156, // 227: direktiv_flow.Flow.GetCloudEventFilters:output_type -> direktiv_flow.GetCloudEventFiltersResponse
+	157, // 228: direktiv_flow.Flow.NamespaceVariable:output_type -> direktiv_flow.NamespaceVariableResponse
+	157, // 229: direktiv_flow.Flow.NamespaceVariableParcels:output_type -> direktiv_flow.NamespaceVariableResponse
+	158, // 230: direktiv_flow.Flow.NamespaceVariables:output_type -> direktiv_flow.NamespaceVariablesResponse
+	158, // 231: direktiv_flow.Flow.NamespaceVariablesStream:output_type -> direktiv_flow.NamespaceVariablesResponse
+	159, // 232: direktiv_flow.Flow.SetNamespaceVariable:output_type -> direktiv_flow.SetNamespaceVariableResponse
+	159, // 233: direktiv_flow.Flow.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetNamespaceVariableResponse
+	81,  // 234: direktiv_flow.Flow.DeleteNamespaceVariable:output_type -> google.protobuf.Empty
+	160, // 235: direktiv_flow.Flow.RenameNamespaceVariable:output_type -> direktiv_flow.RenameNamespaceVariableResponse
+	161, // 236: direktiv_flow.Flow.WorkflowVariable:output_type -> direktiv_flow.WorkflowVariableResponse
+	161, // 237: direktiv_flow.Flow.WorkflowVariableParcels:output_type -> direktiv_flow.WorkflowVariableResponse
+	162, // 238: direktiv_flow.Flow.WorkflowVariables:output_type -> direktiv_flow.WorkflowVariablesResponse
+	162, // 239: direktiv_flow.Flow.WorkflowVariablesStream:output_type -> direktiv_flow.WorkflowVariablesResponse
+	163, // 240: direktiv_flow.Flow.SetWorkflowVariable:output_type -> direktiv_flow.SetWorkflowVariableResponse
+	163, // 241: direktiv_flow.Flow.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetWorkflowVariableResponse
+	81,  // 242: direktiv_flow.Flow.DeleteWorkflowVariable:output_type -> google.protobuf.Empty
+	164, // 243: direktiv_flow.Flow.RenameWorkflowVariable:output_type -> direktiv_flow.RenameWorkflowVariableResponse
+	165, // 244: direktiv_flow.Flow.InstanceVariable:output_type -> direktiv_flow.InstanceVariableResponse
+	165, // 245: direktiv_flow.Flow.InstanceVariableParcels:output_type -> direktiv_flow.InstanceVariableResponse
+	166, // 246: direktiv_flow.Flow.InstanceVariables:output_type -> direktiv_flow.InstanceVariablesResponse
+	166, // 247: direktiv_flow.Flow.InstanceVariablesStream:output_type -> direktiv_flow.InstanceVariablesResponse
+	167, // 248: direktiv_flow.Flow.SetInstanceVariable:output_type -> direktiv_flow.SetInstanceVariableResponse
+	167, // 249: direktiv_flow.Flow.SetInstanceVariableParcels:output_type -> direktiv_flow.SetInstanceVariableResponse
+	81,  // 250: direktiv_flow.Flow.DeleteInstanceVariable:output_type -> google.protobuf.Empty
+	168, // 251: direktiv_flow.Flow.RenameInstanceVariable:output_type -> direktiv_flow.RenameInstanceVariableResponse
+	169, // 252: direktiv_flow.Flow.JQ:output_type -> direktiv_flow.JQResponse
+	81,  // 253: direktiv_flow.Flow.CreateNodeAttributes:output_type -> google.protobuf.Empty
+	81,  // 254: direktiv_flow.Flow.DeleteNodeAttributes:output_type -> google.protobuf.Empty
+	170, // 255: direktiv_flow.Flow.WorkflowMetrics:output_type -> direktiv_flow.WorkflowMetricsResponse
+	171, // 256: direktiv_flow.Flow.EventListeners:output_type -> direktiv_flow.EventListenersResponse
+	171, // 257: direktiv_flow.Flow.EventListenersStream:output_type -> direktiv_flow.EventListenersResponse
+	172, // 258: direktiv_flow.Flow.EventHistory:output_type -> direktiv_flow.EventHistoryResponse
+	172, // 259: direktiv_flow.Flow.EventHistoryStream:output_type -> direktiv_flow.EventHistoryResponse
+	173, // 260: direktiv_flow.Flow.HistoricalEvent:output_type -> direktiv_flow.HistoricalEventResponse
+	81,  // 261: direktiv_flow.Flow.ReplayEvent:output_type -> google.protobuf.Empty
+	81,  // 262: direktiv_flow.Flow.ToggleWorkflow:output_type -> google.protobuf.Empty
+	81,  // 263: direktiv_flow.Flow.SetWorkflowEventLogging:output_type -> google.protobuf.Empty
+	119, // 264: direktiv_flow.Flow.ResolveNamespaceUID:output_type -> direktiv_flow.NamespaceResponse
+	130, // 265: direktiv_flow.Flow.ResolveWorkflowUID:output_type -> direktiv_flow.WorkflowResponse
+	174, // 266: direktiv_flow.Flow.SetNamespaceConfig:output_type -> direktiv_flow.SetNamespaceConfigResponse
+	175, // 267: direktiv_flow.Flow.GetNamespaceConfig:output_type -> direktiv_flow.GetNamespaceConfigResponse
+	176, // 268: direktiv_flow.Flow.Build:output_type -> direktiv_flow.BuildResponse
+	177, // 269: direktiv_flow.Flow.InstanceMetadata:output_type -> direktiv_flow.InstanceMetadataResponse
+	178, // 270: direktiv_flow.Flow.NamespaceAnnotation:output_type -> direktiv_flow.NamespaceAnnotationResponse
+	178, // 271: direktiv_flow.Flow.NamespaceAnnotationParcels:output_type -> direktiv_flow.NamespaceAnnotationResponse
+	179, // 272: direktiv_flow.Flow.NamespaceAnnotations:output_type -> direktiv_flow.NamespaceAnnotationsResponse
+	179, // 273: direktiv_flow.Flow.NamespaceAnnotationsStream:output_type -> direktiv_flow.NamespaceAnnotationsResponse
+	180, // 274: direktiv_flow.Flow.SetNamespaceAnnotation:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
+	180, // 275: direktiv_flow.Flow.SetNamespaceAnnotationParcels:output_type -> direktiv_flow.SetNamespaceAnnotationResponse
+	81,  // 276: direktiv_flow.Flow.DeleteNamespaceAnnotation:output_type -> google.protobuf.Empty
+	181, // 277: direktiv_flow.Flow.RenameNamespaceAnnotation:output_type -> direktiv_flow.RenameNamespaceAnnotationResponse
+	182, // 278: direktiv_flow.Flow.WorkflowAnnotation:output_type -> direktiv_flow.WorkflowAnnotationResponse
+	182, // 279: direktiv_flow.Flow.WorkflowAnnotationParcels:output_type -> direktiv_flow.WorkflowAnnotationResponse
+	183, // 280: direktiv_flow.Flow.WorkflowAnnotations:output_type -> direktiv_flow.WorkflowAnnotationsResponse
+	183, // 281: direktiv_flow.Flow.WorkflowAnnotationsStream:output_type -> direktiv_flow.WorkflowAnnotationsResponse
+	184, // 282: direktiv_flow.Flow.SetWorkflowAnnotation:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
+	184, // 283: direktiv_flow.Flow.SetWorkflowAnnotationParcels:output_type -> direktiv_flow.SetWorkflowAnnotationResponse
+	81,  // 284: direktiv_flow.Flow.DeleteWorkflowAnnotation:output_type -> google.protobuf.Empty
+	185, // 285: direktiv_flow.Flow.RenameWorkflowAnnotation:output_type -> direktiv_flow.RenameWorkflowAnnotationResponse
+	186, // 286: direktiv_flow.Flow.InstanceAnnotation:output_type -> direktiv_flow.InstanceAnnotationResponse
+	186, // 287: direktiv_flow.Flow.InstanceAnnotationParcels:output_type -> direktiv_flow.InstanceAnnotationResponse
+	187, // 288: direktiv_flow.Flow.InstanceAnnotations:output_type -> direktiv_flow.InstanceAnnotationsResponse
+	187, // 289: direktiv_flow.Flow.InstanceAnnotationsStream:output_type -> direktiv_flow.InstanceAnnotationsResponse
+	188, // 290: direktiv_flow.Flow.SetInstanceAnnotation:output_type -> direktiv_flow.SetInstanceAnnotationResponse
+	188, // 291: direktiv_flow.Flow.SetInstanceAnnotationParcels:output_type -> direktiv_flow.SetInstanceAnnotationResponse
+	81,  // 292: direktiv_flow.Flow.DeleteInstanceAnnotation:output_type -> google.protobuf.Empty
+	189, // 293: direktiv_flow.Flow.RenameInstanceAnnotation:output_type -> direktiv_flow.RenameInstanceAnnotationResponse
+	190, // 294: direktiv_flow.Flow.ReleaseInstance:output_type -> direktiv_flow.ReleaseInstanceResponse
+	191, // 295: direktiv_flow.Flow.NodeAnnotation:output_type -> direktiv_flow.NodeAnnotationResponse
+	191, // 296: direktiv_flow.Flow.NodeAnnotationParcels:output_type -> direktiv_flow.NodeAnnotationResponse
+	192, // 297: direktiv_flow.Flow.NodeAnnotations:output_type -> direktiv_flow.NodeAnnotationsResponse
+	192, // 298: direktiv_flow.Flow.NodeAnnotationsStream:output_type -> direktiv_flow.NodeAnnotationsResponse
+	193, // 299: direktiv_flow.Flow.SetNodeAnnotation:output_type -> direktiv_flow.SetNodeAnnotationResponse
+	193, // 300: direktiv_flow.Flow.SetNodeAnnotationParcels:output_type -> direktiv_flow.SetNodeAnnotationResponse
+	81,  // 301: direktiv_flow.Flow.DeleteNodeAnnotation:output_type -> google.protobuf.Empty
+	194, // 302: direktiv_flow.Flow.RenameNodeAnnotation:output_type -> direktiv_flow.RenameNodeAnnotationResponse
+	121, // 303: direktiv_flow.Flow.CreateNamespaceMirror:output_type -> direktiv_flow.CreateNamespaceResponse
+	127, // 304: direktiv_flow.Flow.CreateDirectoryMirror:output_type -> direktiv_flow.CreateDirectoryResponse
+	81,  // 305: direktiv_flow.Flow.UpdateMirrorSettings:output_type -> google.protobuf.Empty
+	81,  // 306: direktiv_flow.Flow.LockMirror:output_type -> google.protobuf.Empty
+	81,  // 307: direktiv_flow.Flow.UnlockMirror:output_type -> google.protobuf.Empty
+	81,  // 308: direktiv_flow.Flow.SoftSyncMirror:output_type -> google.protobuf.Empty
+	81,  // 309: direktiv_flow.Flow.HardSyncMirror:output_type -> google.protobuf.Empty
+	195, // 310: direktiv_flow.Flow.MirrorInfo:output_type -> direktiv_flow.MirrorInfoResponse
+	195, // 311: direktiv_flow.Flow.MirrorInfoStream:output_type -> direktiv_flow.MirrorInfoResponse
+	196, // 312: direktiv_flow.Flow.MirrorActivityLogs:output_type -> direktiv_flow.MirrorActivityLogsResponse
+	196, // 313: direktiv_flow.Flow.MirrorActivityLogsParcels:output_type -> direktiv_flow.MirrorActivityLogsResponse
+	81,  // 314: direktiv_flow.Flow.CancelMirrorActivity:output_type -> google.protobuf.Empty
+	81,  // 315: direktiv_flow.Internal.ReportActionResults:output_type -> google.protobuf.Empty
+	81,  // 316: direktiv_flow.Internal.ActionLog:output_type -> google.protobuf.Empty
+	197, // 317: direktiv_flow.Internal.NamespaceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	198, // 318: direktiv_flow.Internal.SetNamespaceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	197, // 319: direktiv_flow.Internal.WorkflowVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	198, // 320: direktiv_flow.Internal.SetWorkflowVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	197, // 321: direktiv_flow.Internal.InstanceVariableParcels:output_type -> direktiv_flow.VariableInternalResponse
+	198, // 322: direktiv_flow.Internal.SetInstanceVariableParcels:output_type -> direktiv_flow.SetVariableInternalResponse
+	199, // 323: direktiv_flow.Eventing.RequestEvents:output_type -> direktiv_flow.CloudEvent
+	162, // [162:324] is the sub-list for method output_type
+	0,   // [0:162] is the sub-list for method input_type
 	0,   // [0:0] is the sub-list for extension type_name
 	0,   // [0:0] is the sub-list for extension extendee
 	0,   // [0:0] is the sub-list for field type_name
