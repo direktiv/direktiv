@@ -37,9 +37,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
     data?.revision?.source && atob(data?.revision?.source)
   );
 
-  const formAvailable = validationSchema !== null;
+  // tab handling
+  const isFormAvailable = validationSchema !== null;
   const tabs = ["json", "form"] as const;
-  const activeTab: (typeof tabs)[number] = formAvailable ? "form" : "json";
+  const activeTab: (typeof tabs)[number] = isFormAvailable ? "form" : "json";
 
   const {
     handleSubmit,
@@ -119,7 +120,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
               </Card>
             </TabsContent>
             <TabsContent value={tabs[1]} asChild>
-              {formAvailable ? (
+              {isFormAvailable ? (
                 <ScrollArea className="h-96 w-full p-4 sm:h-[500px]">
                   <JSONSchemaForm schema={validationSchema}></JSONSchemaForm>
                 </ScrollArea>
