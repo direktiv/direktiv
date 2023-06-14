@@ -100,7 +100,11 @@ const RunWorkflow = ({ path }: { path: string }) => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value={tabs[0]} asChild>
-              <Card className="h-96 w-full p-4 sm:h-[500px]" noShadow>
+              <Card
+                className="h-96 w-full p-4 sm:h-[500px]"
+                noShadow
+                background="weight-1"
+              >
                 <Editor
                   value={getValues("payload")}
                   onMount={(editor) => {
