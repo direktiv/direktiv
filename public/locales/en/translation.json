@@ -160,7 +160,7 @@
         "updated": "Updated {{relativeTime}}",
         "actionsBtn": "Run",
         "editor": {
-          "unsavedNote": "you have unsaved changes",
+          "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is one issue",
           "revisionsBtn": "Revisions",
           "makeRevision": "Make Revision",
