@@ -150,6 +150,13 @@
       }
     },
     "settings": {
+      "generic": {
+        "contextMenu": {
+          "title": "Actions",
+          "delete": "Delete",
+          "edit": "Edit"
+        }
+      },
       "secrets": {
         "list": {
           "title": "Secrets",

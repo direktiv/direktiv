@@ -1,12 +1,12 @@
-import { Boxes, PlusCircle } from "lucide-react";
-import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import { Table, TableBody } from "~/design/Table";
 
-import Button from "~/design/Button";
+import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Create from "./Create";
+import CreateItemButton from "../compopnents/CreateItemButton";
 import Delete from "./Delete";
+import { Dialog } from "~/design/Dialog";
 import EmptyList from "../compopnents/EmptyList";
 import ItemRow from "../compopnents/ItemRow";
 import { RegistrySchemaType } from "~/api/registries/schema";
@@ -45,15 +45,10 @@ const RegistriesList: FC = () => {
           {t("pages.settings.registries.list.title")}
         </h3>
 
-        <DialogTrigger
-          asChild
-          data-testid="registry-create"
+        <CreateItemButton
           onClick={() => setCreateRegistry(true)}
-        >
-          <Button variant="ghost">
-            <PlusCircle />
-          </Button>
-        </DialogTrigger>
+          data-testid="registry-create"
+        />
       </div>
 
       <Card>

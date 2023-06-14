@@ -1,12 +1,12 @@
-import { Braces, PlusCircle } from "lucide-react";
-import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import { Table, TableBody } from "~/design/Table";
 
-import Button from "~/design/Button";
+import { Braces } from "lucide-react";
 import { Card } from "~/design/Card";
 import Create from "./Create";
+import CreateItemButton from "../compopnents/CreateItemButton";
 import Delete from "./Delete";
+import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
 import EmptyList from "../compopnents/EmptyList";
 import ItemRow from "../compopnents/ItemRow";
@@ -47,15 +47,10 @@ const VariablesList: FC = () => {
           {t("pages.settings.variables.list.title")}
         </h3>
 
-        <DialogTrigger
-          asChild
+        <CreateItemButton
           data-testid="variable-create"
           onClick={() => setCreateItem(true)}
-        >
-          <Button variant="ghost">
-            <PlusCircle />
-          </Button>
-        </DialogTrigger>
+        />
       </div>
 
       <Card>

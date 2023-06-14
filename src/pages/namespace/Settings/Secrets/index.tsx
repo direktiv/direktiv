@@ -1,15 +1,15 @@
-import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { PlusCircle, SquareAsterisk } from "lucide-react";
 import { Table, TableBody } from "~/design/Table";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Create from "./Create";
+import CreateItemButton from "../compopnents/CreateItemButton";
 import Delete from "./Delete";
+import { Dialog } from "~/design/Dialog";
 import EmptyList from "../compopnents/EmptyList";
 import ItemRow from "../compopnents/ItemRow";
 import { SecretSchemaType } from "~/api/secrets/schema";
+import { SquareAsterisk } from "lucide-react";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useTranslation } from "react-i18next";
@@ -45,15 +45,10 @@ const SecretsList: FC = () => {
           {t("pages.settings.secrets.list.title")}
         </h3>
 
-        <DialogTrigger
-          asChild
+        <CreateItemButton
           data-testid="secret-create"
           onClick={() => setCreateSecret(true)}
-        >
-          <Button variant="ghost">
-            <PlusCircle />
-          </Button>
-        </DialogTrigger>
+        />
       </div>
 
       <Card>
