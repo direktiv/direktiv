@@ -18,20 +18,3 @@ func (db *Database) entNamespace(ns *ent.Namespace) *database.Namespace {
 		Name:      ns.Name,
 	}
 }
-
-func (db *Database) entAnnotation(annotation *ent.Annotation) *database.Annotation {
-	if annotation == nil {
-		return nil
-	}
-
-	return &database.Annotation{
-		ID:        annotation.ID,
-		Name:      annotation.Name,
-		CreatedAt: annotation.CreatedAt,
-		UpdatedAt: annotation.UpdatedAt,
-		Size:      annotation.Size,
-		Hash:      annotation.Hash,
-		Data:      annotation.Data,
-		MimeType:  annotation.MimeType,
-	}
-}

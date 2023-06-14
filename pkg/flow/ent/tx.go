@@ -14,8 +14,6 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// Annotation is the client for interacting with the Annotation builders.
-	Annotation *AnnotationClient
 	// CloudEventFilters is the client for interacting with the CloudEventFilters builders.
 	CloudEventFilters *CloudEventFiltersClient
 	// CloudEvents is the client for interacting with the CloudEvents builders.
@@ -159,7 +157,6 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.Annotation = NewAnnotationClient(tx.config)
 	tx.CloudEventFilters = NewCloudEventFiltersClient(tx.config)
 	tx.CloudEvents = NewCloudEventsClient(tx.config)
 	tx.Events = NewEventsClient(tx.config)
@@ -175,7 +172,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Annotation.QueryXXX(), the query will be executed
+// applies a query, for example: CloudEventFilters.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.
