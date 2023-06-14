@@ -1,5 +1,6 @@
 import "cross-fetch/polyfill";
 
+import { ResponseParser, apiFactory } from "../utils";
 import {
   afterAll,
   afterEach,
@@ -13,7 +14,6 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { UseQueryWrapper } from "../../../test/utils";
-import { apiFactory } from "../utils";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { z } from "zod";
@@ -97,6 +97,13 @@ afterEach(() => {
   testApi.resetHandlers();
 });
 
+const customResponseParser: ResponseParser = async ({ res, schema }) => {
+  const textResult = await res.text();
+  return schema.parse({
+    "custom-key": textResult,
+  });
+};
+
 const getMyApi = apiFactory({
   url: () => apiEndpoint,
   method: "GET",
@@ -155,13 +162,22 @@ const apiThatReturnsHeader = apiFactory({
   schema: z.object({}).passthrough(), // allow object with any keys
 });
 
-const getMyWithDynamicSegment = apiFactory({
+const apiWithDynamicSegment = apiFactory({
   url: ({ segment }: { segment: string }) =>
     `http://localhost/${segment}/my-api`,
   method: "GET",
   schema: z.object({
     response: z.string(),
   }),
+});
+
+const apiWithCustomResponseParser = apiFactory({
+  url: () => apiEndpointTextResponse,
+  method: "GET",
+  schema: z.object({
+    "custom-key": z.string(),
+  }),
+  responseParser: customResponseParser,
 });
 
 describe("processApiResponse", () => {
@@ -356,7 +372,7 @@ describe("processApiResponse", () => {
       useQuery({
         queryKey: ["getmyapikey", API_KEY, pathParams],
         queryFn: () =>
-          getMyWithDynamicSegment({
+          apiWithDynamicSegment({
             apiKey: API_KEY,
             payload: undefined,
             headers: undefined,
@@ -438,6 +454,29 @@ describe("processApiResponse", () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.data?.my).toBe("custom header");
+    });
+  });
+
+  test("it is possible to provide a custom responseParser to the api", async () => {
+    const useCallWithCustomParser = () =>
+      useQuery({
+        queryKey: ["textResponse"],
+        queryFn: () =>
+          apiWithCustomResponseParser({
+            payload: undefined,
+            headers: undefined,
+            urlParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCallWithCustomParser(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toStrictEqual({
+        "custom-key": "this is a text response",
+      });
     });
   });
 });
