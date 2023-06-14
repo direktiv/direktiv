@@ -160,7 +160,7 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Silent,
+				LogLevel: logger.Info,
 			},
 		),
 	})
@@ -174,6 +174,8 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
+
+	fmt.Printf(">>>>>> dsn %s\n", db)
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -208,10 +210,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing metrics.")
 
-	srv.metrics, err = metrics.NewClient()
-	if err != nil {
-		return err
-	}
+	srv.metrics = metrics.NewClient(srv.gormDB)
 
 	srv.sugar.Debug("Initializing engine.")
 

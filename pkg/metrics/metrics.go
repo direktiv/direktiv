@@ -2,82 +2,113 @@ package metrics
 
 import (
 	"context"
-	"os"
+	"fmt"
+	"gorm.io/gorm"
 	"strings"
 	"time"
-
-	"github.com/direktiv/direktiv/pkg/metrics/ent"
-	"github.com/direktiv/direktiv/pkg/metrics/ent/metrics"
-	"github.com/direktiv/direktiv/pkg/util"
 )
 
 // Client ..
 type Client struct {
-	db *ent.Client
+	db *gorm.DB
+}
+
+type Metrics struct {
+	ID         int       `json:"id"`
+	Namespace  string    `json:"namespace"`
+	Workflow   string    `json:"workflow"`
+	Revision   string    `json:"revision"`
+	Instance   string    `json:"instance"`
+	State      string    `json:"state"`
+	Timestamp  time.Time `json:"timestamp"`
+	WorkflowMS int       `json:"workflow_ms"`
+	IsolateMS  int       `json:"isolate_ms"`
+	ErrorCode  string    `json:"error_code"`
+	Invoker    string    `json:"invoker"`
+	Next       int       `json:"next"`
+	Transition string    `json:"transition"`
+}
+
+func (r *Metrics) didSucceed() bool {
+	if r.ErrorCode == "" {
+		// state finished without error
+		return true
+	}
+
+	if NextEnums[r.Next] == NextTransition {
+		// error occurred but was caught
+		return true
+	}
+
+	// uncaught error
+	return false
 }
 
 // NewClient ..
-func NewClient() (*Client, error) {
-	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
-	if err != nil {
-		return nil, err
+func NewClient(db *gorm.DB) *Client {
+	return &Client{
+		db: db,
 	}
-
-	ctx := context.Background()
-
-	// Run the auto migration tool.
-	if err := db.Schema.Create(ctx); err != nil {
-		return nil, err
-	}
-
-	out := new(Client)
-	out.db = db
-
-	return out, nil
 }
 
 // InsertRecord inserts a metric record into the database.
 func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 	wf := strings.Split(args.Workflow, ":")[0]
 
-	r := c.db.Metrics.Create()
-	r = r.SetNamespace(args.Namespace)
-	r = r.SetWorkflow(wf)
-	r = r.SetRevision(args.Revision)
-	r = r.SetInstance(args.Instance)
-	r = r.SetState(args.State)
-	r = r.SetTimestamp(time.Now())
-	r = r.SetWorkflowMs(args.WorkflowMilliSeconds)
-	r = r.SetIsolateMs(args.IsolateMilliSeconds)
-	r = r.SetErrorCode(args.ErrorCode)
-	r = r.SetInvoker(args.Invoker)
-	r = r.SetNext(int8(args.Next))
-	r = r.SetTransition(args.Transition)
+	res := c.db.WithContext(context.Background()).Exec(
+		`
+					INSERT INTO metrics(
+									namespace,workflow,revision,instance,state,
+									workflow_ms,isolate_ms,error_code,
+									invoker,next,transition) 
+					VALUES(?,?,?,?,?,?,?,?,?,?,?)`,
+		args.Namespace,
+		wf,
+		args.Revision,
+		args.Instance,
+		args.State,
 
-	_, err := r.Save(context.Background())
-	return err
+		args.WorkflowMilliSeconds,
+		args.IsolateMilliSeconds,
+		args.ErrorCode,
+
+		args.Invoker,
+		args.Next,
+		args.Transition,
+	)
+
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected metrics insert count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return nil
 }
 
 // GetMetrics returns the metrics from the database.
 func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
 	ctx := context.Background()
 
-	records, err := c.db.Metrics.Query().Where(
-		metrics.And(
-			metrics.NamespaceEQ(args.Namespace),
-			metrics.WorkflowEQ(args.Workflow),
-			metrics.RevisionEQ(args.Revision),
-			metrics.TimestampGT(args.Since),
-		),
-	).All(ctx)
-	if err != nil {
-		return nil, err
+	var metricsList []*Metrics
+	res := c.db.WithContext(ctx).Raw(`
+					SELECT * FROM services
+					WHERE namespace=? AND workflow=? AND revision=? AND timestamp=?`,
+		args.Namespace,
+		args.Workflow,
+		args.Revision,
+		args.Since,
+	).
+		Find(&metricsList)
+	if res.Error != nil {
+		return nil, res.Error
 	}
 
-	return generateDataset(records)
+	return generateDataset(metricsList)
 }
 
-func generateDataset(records []*ent.Metrics) (*Dataset, error) {
+func generateDataset(records []*Metrics) (*Dataset, error) {
 	out := new(Dataset)
 
 	// range through all records and sort by state
@@ -117,7 +148,7 @@ func generateDataset(records []*ent.Metrics) (*Dataset, error) {
 	return out, nil
 }
 
-func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metrics) {
+func sortRecord(m map[string]*StateData, instances map[string]int, v *Metrics) {
 	if _, ok := m[v.State]; !ok {
 		m[v.State] = &StateData{
 			Name: v.State,
@@ -151,51 +182,47 @@ func sortRecord(m map[string]*StateData, instances map[string]int, v *ent.Metric
 		instances[v.Instance] = x + 1
 	}
 
-	r := record{
-		r: v,
+	if v.Invoker == "" {
+		v.Invoker = "unknown"
 	}
 
-	if r.r.Invoker == "" {
-		r.r.Invoker = "unknown"
+	if _, ok := s.Invokers[v.Invoker]; !ok {
+		s.Invokers[v.Invoker] = 0
 	}
+	s.Invokers[v.Invoker]++
 
-	if _, ok := s.Invokers[r.r.Invoker]; !ok {
-		s.Invokers[r.r.Invoker] = 0
-	}
-	s.Invokers[r.r.Invoker]++
-
-	if _, ok := s.InvokersRepresentation[r.r.Invoker]; !ok {
-		s.InvokersRepresentation[r.r.Invoker] = 0
+	if _, ok := s.InvokersRepresentation[v.Invoker]; !ok {
+		s.InvokersRepresentation[v.Invoker] = 0
 	}
 
 	s.TotalExecutions++
-	s.TotalMilliSeconds += int32(v.WorkflowMs)
+	s.TotalMilliSeconds += int32(v.WorkflowMS)
 
-	handleSuccessRecord(&r, s)
-	handleFailRecord(&r, s)
+	handleSuccessRecord(v, s)
+	handleFailRecord(v, s)
 
 	m[v.State] = s
 }
 
-func handleSuccessRecord(r *record, s *StateData) {
+func handleSuccessRecord(r *Metrics, s *StateData) {
 	if !r.didSucceed() {
 		return
 	}
 
-	if NextEnums[r.r.Next] == NextEnd {
+	if NextEnums[r.Next] == NextEnd {
 		s.TotalSuccesses++
 		s.Outcomes.EndStates.Success++
 	} else {
-		if _, ok := s.Outcomes.Transitions[r.r.Transition]; !ok {
-			s.Outcomes.Transitions[r.r.Transition] = 1
-			s.MeanOutcomes.Transitions[r.r.Transition] = 0
+		if _, ok := s.Outcomes.Transitions[r.Transition]; !ok {
+			s.Outcomes.Transitions[r.Transition] = 1
+			s.MeanOutcomes.Transitions[r.Transition] = 0
 		} else {
-			s.Outcomes.Transitions[r.r.Transition]++
+			s.Outcomes.Transitions[r.Transition]++
 		}
 	}
 }
 
-func handleFailRecord(r *record, s *StateData) {
+func handleFailRecord(r *Metrics, s *StateData) {
 	if r.didSucceed() {
 		return
 	}
@@ -203,13 +230,13 @@ func handleFailRecord(r *record, s *StateData) {
 	s.Outcomes.EndStates.Failure++
 	s.totalUnhandledErrors++
 
-	if _, ok := s.UnhandledErrors[r.r.ErrorCode]; !ok {
-		s.UnhandledErrors[r.r.ErrorCode] = 0
-		s.UnhandledErrorsRepresentation[r.r.ErrorCode] = 0
+	if _, ok := s.UnhandledErrors[r.ErrorCode]; !ok {
+		s.UnhandledErrors[r.ErrorCode] = 0
+		s.UnhandledErrorsRepresentation[r.ErrorCode] = 0
 	}
-	s.UnhandledErrors[r.r.ErrorCode] = s.UnhandledErrors[r.r.ErrorCode] + 1
+	s.UnhandledErrors[r.ErrorCode] = s.UnhandledErrors[r.ErrorCode] + 1
 
-	if NextEnums[r.r.Next] == NextRetry {
+	if NextEnums[r.Next] == NextRetry {
 		s.TotalRetries++
 	} else {
 		s.TotalFailures++
