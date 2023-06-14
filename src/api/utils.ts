@@ -4,11 +4,34 @@ const getAuthHeader = (apiKey: string) => ({
   "direktiv-token": apiKey,
 });
 
+type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+
+export type ResponseParser = <TUrlParams, TSchema>({
+  res,
+  schema,
+  method,
+  urlParams,
+  path,
+}: {
+  res: Response;
+  schema: z.ZodSchema<TSchema>;
+  method: HTTPMethod;
+  urlParams: TUrlParams;
+  path: (urlParams: TUrlParams) => string;
+}) => Promise<TSchema>;
+
 type FactoryParams<TUrlParams, TSchema> = {
   url: (urlParams: TUrlParams) => string;
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  method: HTTPMethod;
   schema: z.ZodSchema<TSchema>;
+  responseParser?: ResponseParser;
 };
+
+type ApiReturnFunction<TPayload, THeaders, TUrlParams, TSchema> = ({
+  apiKey,
+  payload,
+  urlParams,
+}: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>;
 
 /**
  * atm payload and headers must alway be defined. I tried to make TS infer the property
@@ -36,7 +59,7 @@ type ApiParams<TPayload, THeaders, TUrlParams> = {
   urlParams: TUrlParams;
 };
 
-const defaultResponseParser = async ({
+const defaultResponseParser: ResponseParser = async ({
   res,
   schema,
   method,
@@ -66,28 +89,36 @@ const defaultResponseParser = async ({
   }
 };
 
+/**
+ * API Factory
+ *
+ * @param url the path to the api endpoint
+ * @param method the http method that should be used for the request
+ * @param schema the zod schema that the response should be parsed against.
+ * This will give us not only the typesafety of the response, it also validates
+ * the response at runtime. Runtime validation is important to catch unexpected
+ * responses from the api very early in the application lifecycle and give us
+ * confidence about the Typescript types. It comes with the downside that the
+ * app is more likely to show errors to the user instead of trying to handle
+ * them (which does not scale very well when the complexity of an app grows and
+ * leads to even worse user experience).
+ * @param responseParser A default parser is supplied, but can be overwritten
+ * with a custom parser. Creates a zod parsed response based on the fetch API
+ * resonse.
+ * @returns a Promise that resolves to the zod parsed response.
+ */
 export const apiFactory =
   <TSchema, TPayload, THeaders, TUrlParams>({
-    // the path to the api endpoint
     url: path,
-    // the http method that should be used for the request
     method,
-    // the zod schema that the response should be parsed against. This will give
-    // us not only the typesafety of the response, it also validates the response
-    // at runtime. Runtime validation is important to catch unexpected responses
-    // from the api very early in the application lifecycle and give us confidence
-    // about the Typescript types. It comes with the downside that the app is more
-    // likely to show errors to the user instead of trying to handle them (which
-    // does not scale very well when the complexity of an app grows and leads to
-    // even worse user experience).
     schema,
     responseParser = defaultResponseParser,
-  }: FactoryParams<TUrlParams, TSchema>): (({
-    apiKey,
-    payload,
-    urlParams,
-    responseParser,
-  }: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>) =>
+  }: FactoryParams<TUrlParams, TSchema>): ApiReturnFunction<
+    TPayload,
+    THeaders,
+    TUrlParams,
+    TSchema
+  > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
     const res = await fetch(path(urlParams), {
       method,
@@ -104,7 +135,13 @@ export const apiFactory =
     });
 
     if (res.ok) {
-      return responseParser({ res, schema, method, urlParams, path });
+      return responseParser({
+        res,
+        schema,
+        method,
+        urlParams,
+        path,
+      });
     }
 
     try {

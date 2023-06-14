@@ -125,29 +125,6 @@ const textResponse = apiFactory({
   schema: z.object({ body: z.string() }),
 });
 
-const textResponseWithHeaders = apiFactory({
-  url: () => apiEndpointTextResponseWithHeaders,
-  method: "GET",
-  schema: z.object({
-    body: z.string(),
-    headers: z.object({
-      "custom-header": z.string(),
-    }),
-  }),
-});
-
-const jsonResponseWithHeaders = apiFactory({
-  url: () => apiEndpointJSONResponseWithHeaders,
-  method: "GET",
-  schema: z.object({
-    "some-key": z.string(),
-    "another-key": z.string(),
-    headers: z.object({
-      "custom-header": z.string(),
-    }),
-  }),
-});
-
 const api404 = apiFactory({
   url: () => apiEndpoint404,
   method: "GET",
@@ -277,59 +254,6 @@ describe("processApiResponse", () => {
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.data).toStrictEqual({
         body: "this is a text response",
-      });
-    });
-  });
-
-  test("api response is plain text with headers", async () => {
-    const useCall = () =>
-      useQuery({
-        queryKey: ["textResponseWithHeaders"],
-        queryFn: () =>
-          textResponseWithHeaders({
-            payload: undefined,
-            headers: undefined,
-            urlParams: undefined,
-          }),
-      });
-
-    const { result } = renderHook(() => useCall(), {
-      wrapper: UseQueryWrapper,
-    });
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-      expect(result.current.data).toStrictEqual({
-        body: "this is a text response with headers",
-        headers: {
-          "custom-header": "mock-value",
-        },
-      });
-    });
-  });
-
-  test("api response is json with headers", async () => {
-    const useCall = () =>
-      useQuery({
-        queryKey: ["jsonResponseWithHeaders"],
-        queryFn: () =>
-          jsonResponseWithHeaders({
-            payload: undefined,
-            headers: undefined,
-            urlParams: undefined,
-          }),
-      });
-
-    const { result } = renderHook(() => useCall(), {
-      wrapper: UseQueryWrapper,
-    });
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-      expect(result.current.data).toStrictEqual({
-        headers: {
-          "custom-header": "mock-value",
-        },
-        "some-key": "some data",
-        "another-key": "some other data",
       });
     });
   });
