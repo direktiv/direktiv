@@ -29,9 +29,7 @@ const SettiongsPage: FC = () => {
         </h1>
         <div className="flex space-x-5">
           <Button onClick={() => setTheme("dark")}>darkmode</Button>
-          <Button className="" onClick={() => setTheme("light")}>
-            lightmode
-          </Button>
+          <Button onClick={() => setTheme("light")}>lightmode</Button>
           <Button onClick={() => setTheme(null)}>reset theme</Button>
         </div>
       </Card>
