@@ -93,3 +93,7 @@ func (s *sqlStore) EventListener() events.EventListenerStore {
 func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
 	return &sqlEventTopicsStore{db: s.db}
 }
+
+func (s *sqlStore) NamespaceCloudEventFilter() events.CloudEventsFilterStore {
+	return &sqlNamespaceCloudEventFilter{db: s.db}
+}

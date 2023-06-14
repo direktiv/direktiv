@@ -187,7 +187,7 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, er
 	return res, nil
 }
 
-type gormEventHitoryEntry struct {
+type gormEventHistoryEntry struct {
 	ID, NamespaceID          uuid.UUID
 	Type, Source, Cloudevent string
 	CreatedAt, ReceivedAt    time.Time
@@ -196,7 +196,7 @@ type gormEventHitoryEntry struct {
 func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
 	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE id = $1 ;"
 
-	e := gormEventHitoryEntry{}
+	e := gormEventHistoryEntry{}
 	tx := hs.db.WithContext(ctx).Raw(q, id).Scan(&e)
 	if tx.Error != nil {
 		return nil, tx.Error
@@ -470,20 +470,60 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.Eve
 
 var _ events.CloudEventsFilterStore = &sqlNamespaceCloudEventFilter{}
 
-type sqlNamespaceCloudEventFilter struct{}
-
-func (*sqlNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error {
-	panic("unimplemented")
+type sqlNamespaceCloudEventFilter struct {
+	db *gorm.DB
 }
 
-func (*sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UUID, filterName string) error {
-	panic("unimplemented")
+func (sf *sqlNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error {
+	q := `INSERT INTO events_filters (id, namespace_id, name, jscode) VALUES ( $1 , $2 , $3 , $4 )`
+	id := uuid.New()
+
+	tx := sf.db.WithContext(ctx).Raw(
+		q, id, nsID, filterName, script)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
 }
 
-func (*sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, filterName string, limit int, offset int) (events.NamespaceCloudEventFilter, int, error) {
-	panic("unimplemented")
+func (sf *sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UUID, filterName string) error {
+	q := `DELETE FROM events_filters WHERE namespace_id = $1 AND name = $2`
+	tx := sf.db.WithContext(ctx).Raw(
+		q, nsID, filterName)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
 }
 
-func (*sqlNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, error) {
-	panic("unimplemented")
+func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, filterName string, limit int, offset int) ([]*events.NamespaceCloudEventFilter, int, error) {
+	q := `SELECT namespace_id, name, jscode FROM events_filters WHERE namespace_id = $1 `
+	qCount := `SELECT count(id) FROM events_filters WHERE namespace_id = $1 `
+	var count int
+	tx := sf.db.WithContext(ctx).Exec(
+		qCount, nsID).Scan(&count)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if count == 0 {
+		return make([]*events.NamespaceCloudEventFilter, 0), 0, nil
+	}
+	res := make([]*events.NamespaceCloudEventFilter, 0)
+	tx = sf.db.WithContext(ctx).Exec(
+		q, nsID).Scan(&res)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	return res, count, nil
+}
+
+func (sf *sqlNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, error) {
+	q := `SELECT namespace_id, name, jscode FROM events_filters WHERE namespace_id = $1 `
+	res := make([]*events.NamespaceCloudEventFilter, 0)
+	tx := sf.db.WithContext(ctx).Exec(
+		q, nsID).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return res, nil
 }
