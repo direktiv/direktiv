@@ -81,7 +81,7 @@ const WorkflowEditor: FC<{
           onSave={onSave}
         />
       </Card>
-      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-end gap-4 md:flex-row md:items-center">
         <div
           data-testid="workflow-txt-updated"
           className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8"
