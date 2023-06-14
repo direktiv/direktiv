@@ -149,13 +149,3 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 		}
 	}
 }
-
-func (internal *internal) SetThreadVariableParcels(srv grpc.Internal_SetThreadVariableParcelsServer) error {
-	// TODO: fix this controller.
-	return nil
-}
-
-func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstanceVariableParcelsServer) error {
-	// TODO: fix this controller.
-	return nil
-}
