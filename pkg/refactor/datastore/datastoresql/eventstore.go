@@ -59,8 +59,14 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, event *events.Event,
 	return append([]*events.Event{event}, more...), nil
 }
 
-func (*sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time) error {
-	panic("unimplemented")
+func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time) error {
+	q := "DELETE FROM events_history WHERE received_at < $1;"
+	tx := hs.db.WithContext(ctx).Exec(q, sinceWhen)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
 
 func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
@@ -317,12 +323,26 @@ func (s *sqlEventListenerStore) Delete(ctx context.Context) error {
 	return nil
 }
 
-func (*sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error {
+	q := "DELETE FROM event_listeners WHERE trigger_info like $1;"
+	val := fmt.Sprintf("%%%v%%", instID)
+	tx := s.db.WithContext(ctx).Exec(q, val)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
 
-func (*sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error {
+	q := "DELETE FROM event_listeners WHERE trigger_info like $1;"
+	val := fmt.Sprintf("%%%v%%", workflowID)
+	tx := s.db.WithContext(ctx).Exec(q, val)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
 
 func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
@@ -381,8 +401,45 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	return conv, count, nil
 }
 
-func (*sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
+	q := `SELECT 
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
+	FROM event_listeners `
+	q += " ORDER BY updated_at DESC;"
+	res := make([]*gormEventListener, 0)
+	tx := s.db.WithContext(ctx).Raw(q).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	conv := make([]*events.EventListener, 0)
+
+	for _, l := range res {
+		var trigger events.TriggerInfo
+		var ev []*events.Event
+
+		err := json.Unmarshal(l.TriggerInfo, &trigger)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(l.ReceivedEvents, &ev)
+		if err != nil {
+			return nil, err
+		}
+		conv = append(conv, &events.EventListener{
+			ID:                          l.ID,
+			UpdatedAt:                   l.UpdatedAt,
+			CreatedAt:                   l.CreatedAt,
+			Deleted:                     l.Deleted,
+			NamespaceID:                 l.NamespaceID,
+			ListeningForEventTypes:      strings.Split(l.EventType, " "),
+			LifespanOfReceivedEvents:    l.EventsLifespan,
+			TriggerType:                 events.TriggerType(l.TriggerType),
+			Trigger:                     trigger,
+			ReceivedEventsForAndTrigger: ev,
+		})
+	}
+
+	return conv, nil
 }
 
 type gormEventListener struct {
@@ -465,6 +522,7 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.Eve
 			errs[i] = tx.Error
 		}
 	}
+
 	return nil, errs
 }
 
@@ -483,6 +541,7 @@ func (sf *sqlNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UU
 	if tx.Error != nil {
 		return tx.Error
 	}
+
 	return nil
 }
 
@@ -493,6 +552,7 @@ func (sf *sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UU
 	if tx.Error != nil {
 		return tx.Error
 	}
+
 	return nil
 }
 
@@ -508,12 +568,20 @@ func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID,
 	if count == 0 {
 		return make([]*events.NamespaceCloudEventFilter, 0), 0, nil
 	}
+	if limit > 0 {
+		q += fmt.Sprintf("LIMIT %v", limit)
+	}
+	if offset > 0 {
+		q += fmt.Sprintf("OFFSET %v", offset)
+	}
+	q += " ORDER BY updated_at DESC;"
 	res := make([]*events.NamespaceCloudEventFilter, 0)
 	tx = sf.db.WithContext(ctx).Exec(
 		q, nsID).Scan(&res)
 	if tx.Error != nil {
 		return nil, 0, tx.Error
 	}
+
 	return res, count, nil
 }
 
@@ -525,5 +593,6 @@ func (sf *sqlNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UU
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
+
 	return res, nil
 }
