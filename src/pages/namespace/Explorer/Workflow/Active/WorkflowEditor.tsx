@@ -96,7 +96,7 @@ const WorkflowEditor: FC<{
           {error && (
             <Popover defaultOpen>
               <PopoverTrigger asChild>
-                <span className="flex items-center text-danger-11 dark:text-danger-dark-11">
+                <span className="flex items-center gap-x-1 text-danger-11 dark:text-danger-dark-11">
                   <Bug className="h-5" />
                   {t("pages.explorer.workflow.editor.theresOneIssue")}
                 </span>
