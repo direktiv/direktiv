@@ -156,7 +156,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 		ID:                          eID,
 		CreatedAt:                   time.Now(),
 		UpdatedAt:                   time.Now(),
-		Deleted:                     true,
+		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"a"},
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
@@ -186,6 +186,31 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	}
 	if got[0].ID != eID {
 		t.Error("got wrong entry")
+	}
+	got[0].UpdatedAt = time.Now()
+	got[0].Deleted = true
+	err, errs := listeners.Update(context.Background(), got[0])
+	if err != nil {
+		t.Error(err)
+	}
+	if len(errs) != 0 {
+		t.Error("got unexpected errs")
+	}
+	got, count, err = listeners.Get(context.Background(), ns, 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("got wrong count")
+	}
+	if len(got) != 1 {
+		t.Error("got wrong results")
+	}
+	if got[0].ID != eID {
+		t.Error("got wrong entry")
+	}
+	if !got[0].Deleted {
+		t.Error("entry was not updated")
 	}
 	err = listeners.Delete(context.Background())
 	if err != nil {

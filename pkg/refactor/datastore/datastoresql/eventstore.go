@@ -432,8 +432,40 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	}, nil
 }
 
-func (*sqlEventListenerStore) Update(ctx context.Context, listener *events.EventListener, more ...*events.EventListener) (error, []error) {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.EventListener, more ...*events.EventListener) (error, []error) {
+	q := `UPDATE event_listeners SET
+	 updated_at = $1 , deleted = $2, received_events = $3 WHERE id = $4;`
+	b, err := json.Marshal(listener.ReceivedEventsForAndTrigger)
+	if err != nil {
+		return err, nil
+	}
+	tx := s.db.WithContext(ctx).Exec(
+		q,
+		listener.UpdatedAt,
+		listener.Deleted,
+		b,
+		listener.ID)
+	if tx.Error != nil {
+		return tx.Error, nil
+	}
+	errs := make([]error, len(more))
+	for i := range more {
+		e := more[i]
+		b, err := json.Marshal(e.ReceivedEventsForAndTrigger)
+		if err != nil {
+			return err, nil
+		}
+		tx := s.db.WithContext(ctx).Exec(
+			q,
+			e.UpdatedAt,
+			e.Deleted,
+			b,
+			e.ID)
+		if tx.Error != nil {
+			errs[i] = tx.Error
+		}
+	}
+	return nil, errs
 }
 
 var _ events.CloudEventsFilterStore = &sqlNamespaceCloudEventFilter{}
