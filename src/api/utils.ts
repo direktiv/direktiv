@@ -6,18 +6,12 @@ const getAuthHeader = (apiKey: string) => ({
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-export type ResponseParser = <TUrlParams, TSchema>({
+export type ResponseParser = <TSchema>({
   res,
   schema,
-  method,
-  urlParams,
-  path,
 }: {
   res: Response;
   schema: z.ZodSchema<TSchema>;
-  method: HTTPMethod;
-  urlParams: TUrlParams;
-  path: (urlParams: TUrlParams) => string;
 }) => Promise<TSchema>;
 
 type FactoryParams<TUrlParams, TSchema> = {
@@ -59,13 +53,16 @@ type ApiReturnFunction<TPayload, THeaders, TUrlParams, TSchema> = ({
   urlParams,
 }: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>;
 
-const defaultResponseParser: ResponseParser = async ({
-  res,
-  schema,
-  method,
-  urlParams,
-  path,
-}) => {
+/**
+ * Pass your own responseParser to apiFactory when needed. This will be invoked
+ * in a try/catch block which will log an error if it fails, so no custom
+ * error handling is needed here.
+ *
+ * @param res the response from the fetch api
+ * @param schema the schema to parse against at the end
+ * @returns a promise, should always return schema.parse(result)
+ */
+const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
   // if we can not evaluate the response, we have null as the default
   let parsedResponse = null;
   const textResult = await res.text();
@@ -76,17 +73,10 @@ const defaultResponseParser: ResponseParser = async ({
     // We use the text response under 'body' if its not an empty string
     if (textResult !== "") parsedResponse = { body: textResult };
   }
-  try {
-    if (parsedResponse) {
-      return schema.parse({ ...parsedResponse });
-    }
-    return schema.parse(null);
-  } catch (error) {
-    process.env.NODE_ENV !== "test" && console.error(error);
-    return Promise.reject(
-      `could not format response for ${method} ${path(urlParams)}`
-    );
+  if (parsedResponse) {
+    return schema.parse({ ...parsedResponse });
   }
+  return schema.parse(null);
 };
 
 /**
@@ -135,13 +125,18 @@ export const apiFactory =
     });
 
     if (res.ok) {
-      return responseParser({
-        res,
-        schema,
-        method,
-        urlParams,
-        path,
-      });
+      try {
+        const result = await responseParser({
+          res,
+          schema,
+        });
+        return result;
+      } catch (error) {
+        process.env.NODE_ENV !== "test" && console.error(error);
+        return Promise.reject(
+          `could not format response for ${method} ${path(urlParams)}`
+        );
+      }
     }
 
     try {

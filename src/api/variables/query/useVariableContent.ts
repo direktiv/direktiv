@@ -7,33 +7,20 @@ import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 import { varKeys } from "..";
 
-const variableResponseParser: ResponseParser = async ({
-  res,
-  schema,
-  method,
-  urlParams,
-  path,
-}) => {
+const variableResponseParser: ResponseParser = async ({ res, schema }) => {
   // Different from the default responseParser, for varibles we
   // don't want to try to parse the response as JSON because
   // it will always be treated as text to be displayed or edited
   // (even if it is JSON).
-  try {
-    const textResult = await res.text();
-    if (!textResult) return schema.parse(null);
+  const textResult = await res.text();
+  if (!textResult) return schema.parse(null);
 
-    // If response is not null, return it as 'body',
-    // and also add the response headers (content type is needed later)
-    // This is a workaround, in the new API we should return the
-    // content type as part of the JSON response.
-    const headers = Object.fromEntries(res.headers);
-    return schema.parse({ body: textResult, headers });
-  } catch (error) {
-    process.env.NODE_ENV !== "test" && console.error(error);
-    return Promise.reject(
-      `could not format response for ${method} ${path(urlParams)}`
-    );
-  }
+  // If response is not null, return it as 'body',
+  // and also add the response headers (content type is needed later)
+  // This is a workaround, in the new API we should return the
+  // content type as part of the JSON response.
+  const headers = Object.fromEntries(res.headers);
+  return schema.parse({ body: textResult, headers });
 };
 
 const getVarContent = apiFactory({
