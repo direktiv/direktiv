@@ -227,7 +227,7 @@ func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID,
 	return nil
 }
 
-func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, namespaceID uuid.UUID, topic string) ([]*events.EventListener, error) {
+func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
 	FROM event_listeners E WHERE E.deleted = 0 and E.id in 

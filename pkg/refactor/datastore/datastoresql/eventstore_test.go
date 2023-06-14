@@ -125,11 +125,11 @@ func Test_Topic_Add_Get(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = topics.Append(context.Background(), ns, eID, "a")
+	err = topics.Append(context.Background(), ns, eID, ns.String()+"-a")
 	if err != nil {
 		t.Error(err)
 	}
-	res, err := topics.GetListeners(context.Background(), ns, "a")
+	res, err := topics.GetListeners(context.Background(), ns.String()+"-a")
 	if err != nil {
 		t.Error(err)
 	}
