@@ -100,6 +100,6 @@ type NamespaceCloudEventFilter struct {
 type CloudEventsFilterStore interface {
 	Delete(ctx context.Context, nsID uuid.UUID, filterName string) error
 	Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error
-	Get(ctx context.Context, nsID uuid.UUID, filterName string, limit, offset int) (NamespaceCloudEventFilter, int, error)
+	Get(ctx context.Context, nsID uuid.UUID, filterName string, limit, offset int) ([]*NamespaceCloudEventFilter, int, error)
 	GetAll(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, error)
 }
