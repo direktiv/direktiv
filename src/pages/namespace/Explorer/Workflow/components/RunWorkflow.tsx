@@ -124,13 +124,15 @@ const RunWorkflow = ({ path }: { path: string }) => {
               </Card>
             </TabsContent>
             <TabsContent value={tabs[1]} asChild>
-              {isFormAvailable ? (
-                <ScrollArea className="h-96 w-full p-4 sm:h-[500px]">
-                  <JSONSchemaForm schema={validationSchema}></JSONSchemaForm>
-                </ScrollArea>
-              ) : (
-                <FormInputHint />
-              )}
+              <Card className="h-96 w-full p-4 sm:h-[500px]">
+                {isFormAvailable ? (
+                  <ScrollArea className="h-full">
+                    <JSONSchemaForm schema={validationSchema} />
+                  </ScrollArea>
+                ) : (
+                  <FormInputHint />
+                )}
+              </Card>
             </TabsContent>
           </Tabs>
         </form>
