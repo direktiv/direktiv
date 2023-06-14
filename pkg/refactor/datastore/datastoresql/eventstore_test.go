@@ -174,6 +174,19 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	if res.ID != eID {
 		t.Error("got wrong entry")
 	}
+	got, count, err := listeners.Get(context.Background(), ns, 0, 0)
+	if err != nil {
+		t.Error(err)
+	}
+	if count != 1 {
+		t.Error("got wrong count")
+	}
+	if len(got) != 1 {
+		t.Error("got wrong results")
+	}
+	if got[0].ID != eID {
+		t.Error("got wrong entry")
+	}
 	err = listeners.Delete(context.Background())
 	if err != nil {
 		t.Error(err)

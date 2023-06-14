@@ -232,7 +232,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
 	FROM event_listeners E WHERE E.deleted = 0 and E.id in 
 	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
-	// event_listener_id, namespace_id, topic FROM event_topics et WHERE topic=$1 and et.event_listener_id
+
 	res := make([]*gormEventListener, 0)
 	tx := s.db.WithContext(ctx).Raw(q, topic).Scan(&res)
 	if tx.Error != nil {
@@ -265,6 +265,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 			ReceivedEventsForAndTrigger: ev,
 		})
 	}
+
 	return conv, nil
 }
 
@@ -324,8 +325,60 @@ func (*sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflow
 	panic("unimplemented")
 }
 
-func (*sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
-	panic("unimplemented")
+func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
+	q := `SELECT 
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
+	FROM event_listeners WHERE namespace_id = $1 `
+	if limit > 0 {
+		q += fmt.Sprintf("LIMIT %v", limit)
+	}
+	if offet > 0 {
+		q += fmt.Sprintf("OFFSET %v", offet)
+	}
+	q += " ORDER BY updated_at DESC;"
+	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 ;`
+	var count int
+	tx := s.db.WithContext(ctx).Raw(qCount, namespace).Scan(&count)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if count == 0 {
+		return make([]*events.EventListener, 0), 0, nil
+	}
+	res := make([]*gormEventListener, 0)
+	tx = s.db.WithContext(ctx).Raw(q, namespace).Scan(&res)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	conv := make([]*events.EventListener, 0)
+
+	for _, l := range res {
+		var trigger events.TriggerInfo
+		var ev []*events.Event
+
+		err := json.Unmarshal(l.TriggerInfo, &trigger)
+		if err != nil {
+			return nil, 0, err
+		}
+		err = json.Unmarshal(l.ReceivedEvents, &ev)
+		if err != nil {
+			return nil, 0, err
+		}
+		conv = append(conv, &events.EventListener{
+			ID:                          l.ID,
+			UpdatedAt:                   l.UpdatedAt,
+			CreatedAt:                   l.CreatedAt,
+			Deleted:                     l.Deleted,
+			NamespaceID:                 l.NamespaceID,
+			ListeningForEventTypes:      strings.Split(l.EventType, " "),
+			LifespanOfReceivedEvents:    l.EventsLifespan,
+			TriggerType:                 events.TriggerType(l.TriggerType),
+			Trigger:                     trigger,
+			ReceivedEventsForAndTrigger: ev,
+		})
+	}
+
+	return conv, count, nil
 }
 
 func (*sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
