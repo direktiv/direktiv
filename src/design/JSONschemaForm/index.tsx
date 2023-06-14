@@ -14,7 +14,7 @@ import {
   MinusIcon,
   PlusIcon,
 } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { ComponentProps, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -178,12 +178,21 @@ const widgets: RegistryWidgetsType = {
   CheckboxWidget: CustomCheckbox,
   SelectWidget: CustomSelectWidget,
 };
-export interface JSONSchemaFormProps {
+
+type JSONSchemaFormProps = Omit<
+  // copy the props from the original form, and remove the ones we want to implement ourselves
+  ComponentProps<typeof Form>,
+  "schema" | "templates" | "validator" | "widgets"
+> & {
   schema: RJSFSchema;
-}
-export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => (
+};
+
+export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
+  schema,
+  ...props
+}) => (
   <Form
-    schema={props.schema}
+    schema={schema}
     templates={{
       BaseInputTemplate,
       TitleFieldTemplate,
@@ -195,6 +204,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => (
     }}
     validator={validator}
     widgets={widgets}
+    {...props}
   />
 );
 
