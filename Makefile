@@ -348,3 +348,6 @@ test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
 	node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
 
+server-godoc:
+	go install golang.org/x/tools/cmd/godoc@latest
+	godoc -http=:6060

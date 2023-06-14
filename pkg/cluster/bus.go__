@@ -1,4 +1,4 @@
-package bus
+package cluster
 
 import (
 	"fmt"
@@ -27,6 +27,8 @@ type Config struct {
 
 	NSQDListen, LookupListen, LookupListenHTTP, NSQDListenHTTP string
 
+	ID int64
+
 	PREFIX string
 }
 
@@ -42,6 +44,7 @@ func DefaultConfig() *Config {
 		NSQDListenHTTP:   "0.0.0.0:4160",
 		LookupListen:     "0.0.0.0:4170",
 		LookupListenHTTP: "0.0.0.0:4180",
+		ID:               1,
 	}
 
 }
@@ -69,6 +72,8 @@ func NewBus(config *Config) (*Bus, error) {
 
 	opts.TCPAddress = config.NSQDListen
 	opts.HTTPAddress = config.NSQDListenHTTP
+
+	opts.ID = config.ID
 
 	// opts.HTTPAddress = ""
 	opts.LogLevel = 1
