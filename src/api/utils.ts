@@ -1,4 +1,4 @@
-import { ZodSchema, z } from "zod";
+import { z } from "zod";
 
 const getAuthHeader = (apiKey: string) => ({
   "direktiv-token": apiKey,
@@ -27,12 +27,6 @@ type FactoryParams<TUrlParams, TSchema> = {
   responseParser?: ResponseParser;
 };
 
-type ApiReturnFunction<TPayload, THeaders, TUrlParams, TSchema> = ({
-  apiKey,
-  payload,
-  urlParams,
-}: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>;
-
 /**
  * atm payload and headers must alway be defined. I tried to make TS infer the property
  * with
@@ -58,6 +52,12 @@ type ApiParams<TPayload, THeaders, TUrlParams> = {
   headers: THeaders extends undefined ? undefined : THeaders;
   urlParams: TUrlParams;
 };
+
+type ApiReturnFunction<TPayload, THeaders, TUrlParams, TSchema> = ({
+  apiKey,
+  payload,
+  urlParams,
+}: ApiParams<TPayload, THeaders, TUrlParams>) => Promise<TSchema>;
 
 const defaultResponseParser: ResponseParser = async ({
   res,
