@@ -8,7 +8,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entnote "github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/google/uuid"
@@ -24,7 +23,6 @@ const (
 // TODO: un-export EntClients.
 type EntClients struct {
 	Namespace         *ent.NamespaceClient
-	Annotation        *ent.AnnotationClient
 	Events            *ent.EventsClient
 	CloudEvents       *ent.CloudEventsClient
 	CloudEventFilters *ent.CloudEventFiltersClient
@@ -42,7 +40,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 	if a == nil {
 		return &EntClients{
 			Namespace:         db.Client.Namespace,
-			Annotation:        db.Client.Annotation,
 			Events:            db.Client.Events,
 			CloudEvents:       db.Client.CloudEvents,
 			CloudEventFilters: db.Client.CloudEventFilters,
@@ -54,7 +51,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 
 	return &EntClients{
 		Namespace:         x.Namespace,
-		Annotation:        x.Annotation,
 		Events:            x.Events,
 		CloudEvents:       x.CloudEvents,
 		CloudEventFilters: x.CloudEventFilters,
@@ -181,28 +177,4 @@ func (db *Database) NamespaceByName(ctx context.Context, name string) (*database
 	}
 
 	return db.entNamespace(ns), nil
-}
-
-func (db *Database) NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*database.Annotation, error) {
-	clients := db.clients(ctx)
-
-	annotation, err := clients.Annotation.Query().Where(entnote.HasNamespaceWith(entns.ID(nsID)), entnote.Name(key)).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve namespace annotation: %v", parent(), err)
-		return nil, err
-	}
-
-	return db.entAnnotation(annotation), nil
-}
-
-func (db *Database) InstanceAnnotation(ctx context.Context, instID uuid.UUID, key string) (*database.Annotation, error) {
-	clients := db.clients(ctx)
-
-	annotation, err := clients.Annotation.Query().Where(entnote.InstanceID(instID), entnote.Name(key)).Only(ctx)
-	if err != nil {
-		db.Sugar.Debugf("%s failed to resolve instance annotation: %v", parent(), err)
-		return nil, err
-	}
-
-	return db.entAnnotation(annotation), nil
 }
