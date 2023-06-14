@@ -46,7 +46,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, event *events.Event,
 		values = append(values, v.Event.ID())
 		values = append(values, v.Event.Type())
 		values = append(values, v.Event.Source())
-		values = append(values, eventByte)
+		values = append(values, string(eventByte))
 		values = append(values, v.Namespace)
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now())
@@ -69,8 +69,13 @@ func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Ti
 	return nil
 }
 
+type gormEventHistoryEntry struct {
+	ID, NamespaceID          uuid.UUID
+	Type, Source, Cloudevent string
+	CreatedAt, ReceivedAt    time.Time
+}
+
 func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
-	res := make([]*events.Event, 0)
 	if len(keyAndValues)%2 != 0 {
 		return nil, 0, fmt.Errorf("keyAnValues have to be a pair of keys and values")
 	}
@@ -117,86 +122,69 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 		tail += fmt.Sprintf(x, i+1)
 	}
 	i++
+	o := 0
 	if limit > 0 {
 		i++
 		q += fmt.Sprintf(" LIMIT $%v ", i)
+		qv = append(qv, limit)
+		o++
 	}
 	if offset > 0 {
 		i++
 		q += fmt.Sprintf(" OFFSET $%v ", i)
+		qv = append(qv, offset)
+		o++
 	}
-	qv = append(qv, limit, offset)
 	q = fmt.Sprintf(q, tail)
 
-	qCount := `select count(id) as count from events_history `
+	qCount := `select count(id) from events_history `
 	qCount += tail + ";"
 	count := 0
-	tx := hs.db.Raw(qCount, qv[:len(qv)-2]...).Scan(&count)
+	tx := hs.db.Raw(qCount, qv[:len(qv)-o]...).Scan(&count)
 	if tx.Error != nil {
 		return nil, 0, tx.Error
 	}
-	rows, err := hs.db.WithContext(ctx).Raw(q, qv...).Rows()
-	if err != nil {
-		return nil, 0, err
-	}
-	if rows.Err() != nil {
-		return nil, 0, rows.Err()
-	}
-	defer rows.Close()
-	if rows.Next() {
-		var id, ns uuid.UUID
-		var t, source, ce string
-		var created, received time.Time
-		err := rows.Scan(&id, &t, &source, &ce, &ns, &received, &created)
-		if err != nil {
-			return nil, 0, err
-		}
-		var finalCE event.Event
-		err = json.Unmarshal([]byte(ce), &finalCE)
-		if err != nil {
-			return nil, 0, err
-		}
-		res = append(res, &events.Event{Namespace: ns, ReceivedAt: received, Event: &finalCE})
+	res := make([]*gormEventHistoryEntry, 0)
+
+	tx = hs.db.WithContext(ctx).Raw(q, qv...).Scan(&res)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
 	}
 
-	return res, count, nil
+	conv := make([]*events.Event, 0, len(res))
+
+	for _, v := range res {
+		var finalCE event.Event
+		err := json.Unmarshal([]byte(v.Cloudevent), &finalCE)
+		if err != nil {
+			return nil, 0, err
+		}
+		conv = append(conv, &events.Event{Namespace: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+	}
+
+	return conv, count, nil
 }
 
 func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
 	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history;"
-	res := make([]*events.Event, 0)
+	res := make([]*gormEventHistoryEntry, 0)
 
-	rows, err := hs.db.WithContext(ctx).Raw(q).Rows()
-	if err != nil {
-		return nil, err
+	tx := hs.db.WithContext(ctx).Raw(q).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-	defer rows.Close()
-	if rows.Next() {
-		var id, ns uuid.UUID
-		var t, source, ce string
-		var created, received time.Time
-		err := rows.Scan(&id, &t, &source, &ce, &ns, &received, &created)
-		if err != nil {
-			return nil, err
-		}
+	conv := make([]*events.Event, 0, len(res))
+
+	for _, v := range res {
 		var finalCE event.Event
-		err = json.Unmarshal([]byte(ce), &finalCE)
+		err := json.Unmarshal([]byte(v.Cloudevent), &finalCE)
 		if err != nil {
 			return nil, err
 		}
-		res = append(res, &events.Event{Namespace: ns, ReceivedAt: received, Event: &finalCE})
+		conv = append(conv, &events.Event{Namespace: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
 	}
 
-	return res, nil
-}
-
-type gormEventHistoryEntry struct {
-	ID, NamespaceID          uuid.UUID
-	Type, Source, Cloudevent string
-	CreatedAt, ReceivedAt    time.Time
+	return conv, nil
 }
 
 func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
@@ -250,7 +238,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 		var trigger events.TriggerInfo
 		var ev []*events.Event
 
-		err := json.Unmarshal(l.TriggerInfo, &trigger)
+		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
 		if err != nil {
 			return nil, err
 		}
@@ -305,7 +293,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		listener.TriggerType,
 		listener.LifespanOfReceivedEvents,
 		strings.Join(listener.ListeningForEventTypes, " "),
-		b)
+		string(b))
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -335,7 +323,7 @@ func (s *sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID
 }
 
 func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error {
-	q := "DELETE FROM event_listeners WHERE trigger_info like $1;"
+	q := "DELETE FROM event_listeners WHERE trigger_info like $1 ;"
 	val := fmt.Sprintf("%%%v%%", workflowID)
 	tx := s.db.WithContext(ctx).Exec(q, val)
 	if tx.Error != nil {
@@ -376,7 +364,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 		var trigger events.TriggerInfo
 		var ev []*events.Event
 
-		err := json.Unmarshal(l.TriggerInfo, &trigger)
+		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -417,7 +405,7 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 		var trigger events.TriggerInfo
 		var ev []*events.Event
 
-		err := json.Unmarshal(l.TriggerInfo, &trigger)
+		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
 		if err != nil {
 			return nil, err
 		}
@@ -451,7 +439,7 @@ type gormEventListener struct {
 	Deleted        bool
 	TriggerType    int
 	EventType      string
-	TriggerInfo    []byte
+	TriggerInfo    string
 	EventsLifespan int
 	ReceivedEvents []byte
 }
@@ -466,7 +454,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	var trigger events.TriggerInfo
 	var ev []*events.Event
 
-	err := json.Unmarshal(l.TriggerInfo, &trigger)
+	err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
 	if err != nil {
 		return nil, err
 	}
@@ -500,7 +488,7 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.Eve
 		q,
 		listener.UpdatedAt,
 		listener.Deleted,
-		b,
+		string(b),
 		listener.ID)
 	if tx.Error != nil {
 		return tx.Error, nil
@@ -516,7 +504,7 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.Eve
 			q,
 			e.UpdatedAt,
 			e.Deleted,
-			b,
+			string(b),
 			e.ID)
 		if tx.Error != nil {
 			errs[i] = tx.Error

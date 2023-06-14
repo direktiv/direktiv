@@ -17,67 +17,44 @@ import (
 func Test_Add_Get(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
+	e2ID := uuid.New()
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	subj := "subject"
 	hist := datastoresql.NewSQLStore(db, "some key").EventHistory()
-	ev := events.Event{
-		Event: &cloudevents.Event{
-			Context: &event.EventContextV03{
-				Type: "test",
-				ID:   uuid.NewString(),
-				Time: &types.Timestamp{
-					Time: time.Now(),
-				},
-				Subject: &subj,
-				Source:  *types.ParseURIRef("test.com"),
-			},
-		},
-		Namespace:  uuid.New(),
-		ReceivedAt: time.Now(),
-	}
+	ev := newEvent(subj, "test-type", eID, ns)
+	ev2 := newEvent(subj, "test-type", e2ID, ns)
 
 	ls := make([]*events.Event, 0)
-	ls = append(ls, &ev)
-	_, err = hist.Append(context.Background(), &events.Event{
-		Event: &cloudevents.Event{
-			Context: &event.EventContextV03{
-				Type: "test",
-				ID:   eID.String(),
-				Time: &types.Timestamp{
-					Time: time.Now(),
-				},
-				Subject: &subj,
-				Source:  *types.ParseURIRef("test.com"),
-			},
-		},
-		Namespace:  ns,
-		ReceivedAt: time.Now(),
-	}, ls...,
-	)
+	ls = append(ls, &ev2)
+	_, err = hist.Append(context.Background(), &ev, ls...)
 	if err != nil {
 		t.Error(err)
 
 		return
 	}
 
-	events, err := hist.GetAll(context.Background())
+	gotEvents, err := hist.GetAll(context.Background())
 	if err != nil {
 		t.Error(err)
 
 		return
 	}
-	if len(events) == 0 {
+	if len(gotEvents) == 0 {
 		t.Error("got no results")
 	}
-	for _, e := range events {
+	if len(gotEvents) != 2 {
+		t.Error("missing results")
+
+		return
+	}
+	for _, e := range gotEvents {
 		if e.Event.Type() != "test" {
-			t.Error("Event had no type")
+			t.Error("Event had wrong type")
 		}
 	}
-	var c int
 	res, c, err := hist.Get(context.Background(), 0, 0, ns)
 	if err != nil {
 		t.Error(err)
@@ -87,8 +64,25 @@ func Test_Add_Get(t *testing.T) {
 	if len(res) == 0 {
 		t.Error("got not results")
 	}
+
 	if c != len(res) {
 		t.Error("total count is off")
+	}
+
+	res, c, err = hist.Get(context.Background(), 1, 0, ns)
+	if err != nil {
+		t.Error(err)
+
+		return
+	}
+	if len(res) == 0 {
+		t.Error("got not results")
+	}
+	if len(res) != 1 {
+		t.Error("limit was not applied is off")
+	}
+	if c == 1 {
+		t.Error("count is off")
 	}
 
 	e, err := hist.GetByID(context.Background(), eID)
@@ -98,6 +92,26 @@ func Test_Add_Get(t *testing.T) {
 	if e.Namespace != ns {
 		t.Error("returned event contains wrong ns")
 	}
+}
+
+func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
+	ev := events.Event{
+		Event: &cloudevents.Event{
+			Context: &event.EventContextV03{
+				Type: t,
+				ID:   id.String(),
+				Time: &types.Timestamp{
+					Time: time.Now(),
+				},
+				Subject: &subj,
+				Source:  *types.ParseURIRef("test.com"),
+			},
+		},
+		Namespace:  ns,
+		ReceivedAt: time.Now(),
+	}
+
+	return ev
 }
 
 func Test_Topic_Add_Get(t *testing.T) {
@@ -146,6 +160,7 @@ func Test_Topic_Add_Get(t *testing.T) {
 func Test_Listener_Add_Delete_Get(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
+	wf := uuid.New()
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -162,7 +177,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		Trigger:                     events.TriggerInfo{WorkflowID: uuid.New()},
+		Trigger:                     events.TriggerInfo{WorkflowID: wf},
 	})
 	if err != nil {
 		t.Error(err)
@@ -186,6 +201,9 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	}
 	if got[0].ID != eID {
 		t.Error("got wrong entry")
+	}
+	if got[0].Trigger.WorkflowID != wf {
+		t.Error("trigger info was not correct")
 	}
 	got[0].UpdatedAt = time.Now()
 	got[0].Deleted = true
@@ -219,5 +237,41 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	_, err = listeners.GetByID(context.Background(), eID)
 	if err == nil {
 		t.Error("entry was excepted to be deleted")
+	}
+}
+
+func Test_Listener_Add_Delete_ByWf(t *testing.T) {
+	ns := uuid.New()
+	eID := uuid.New()
+	wf := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	store := datastoresql.NewSQLStore(db, "some key")
+	listeners := store.EventListener()
+	err = listeners.Append(context.Background(), &events.EventListener{
+		ID:                          eID,
+		CreatedAt:                   time.Now(),
+		UpdatedAt:                   time.Now(),
+		Deleted:                     false,
+		NamespaceID:                 ns,
+		ListeningForEventTypes:      []string{"a"},
+		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+		LifespanOfReceivedEvents:    10000,
+		TriggerType:                 1,
+		Trigger:                     events.TriggerInfo{WorkflowID: wf},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = listeners.DeleteAllForWorkflow(context.Background(), wf)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = listeners.GetByID(context.Background(), eID)
+	if err == nil {
+		t.Error("expected this listener to be deleted")
 	}
 }
