@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -32,7 +31,6 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAnnotation        = "Annotation"
 	TypeCloudEventFilters = "CloudEventFilters"
 	TypeCloudEvents       = "CloudEvents"
 	TypeEvents            = "Events"
@@ -40,841 +38,6 @@ const (
 	TypeLogMsg            = "LogMsg"
 	TypeNamespace         = "Namespace"
 )
-
-// AnnotationMutation represents an operation that mutates the Annotation nodes in the graph.
-type AnnotationMutation struct {
-	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	name             *string
-	created_at       *time.Time
-	updated_at       *time.Time
-	size             *int
-	addsize          *int
-	hash             *string
-	data             *[]byte
-	mime_type        *string
-	instance_id      *uuid.UUID
-	clearedFields    map[string]struct{}
-	namespace        *uuid.UUID
-	clearednamespace bool
-	done             bool
-	oldValue         func(context.Context) (*Annotation, error)
-	predicates       []predicate.Annotation
-}
-
-var _ ent.Mutation = (*AnnotationMutation)(nil)
-
-// annotationOption allows management of the mutation configuration using functional options.
-type annotationOption func(*AnnotationMutation)
-
-// newAnnotationMutation creates new mutation for the Annotation entity.
-func newAnnotationMutation(c config, op Op, opts ...annotationOption) *AnnotationMutation {
-	m := &AnnotationMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeAnnotation,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withAnnotationID sets the ID field of the mutation.
-func withAnnotationID(id uuid.UUID) annotationOption {
-	return func(m *AnnotationMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Annotation
-		)
-		m.oldValue = func(ctx context.Context) (*Annotation, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Annotation.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withAnnotation sets the old Annotation of the mutation.
-func withAnnotation(node *Annotation) annotationOption {
-	return func(m *AnnotationMutation) {
-		m.oldValue = func(context.Context) (*Annotation, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AnnotationMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m AnnotationMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Annotation entities.
-func (m *AnnotationMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *AnnotationMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *AnnotationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Annotation.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetName sets the "name" field.
-func (m *AnnotationMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *AnnotationMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *AnnotationMutation) ResetName() {
-	m.name = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *AnnotationMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *AnnotationMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *AnnotationMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *AnnotationMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *AnnotationMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *AnnotationMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetSize sets the "size" field.
-func (m *AnnotationMutation) SetSize(i int) {
-	m.size = &i
-	m.addsize = nil
-}
-
-// Size returns the value of the "size" field in the mutation.
-func (m *AnnotationMutation) Size() (r int, exists bool) {
-	v := m.size
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSize returns the old "size" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldSize(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSize is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSize requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSize: %w", err)
-	}
-	return oldValue.Size, nil
-}
-
-// AddSize adds i to the "size" field.
-func (m *AnnotationMutation) AddSize(i int) {
-	if m.addsize != nil {
-		*m.addsize += i
-	} else {
-		m.addsize = &i
-	}
-}
-
-// AddedSize returns the value that was added to the "size" field in this mutation.
-func (m *AnnotationMutation) AddedSize() (r int, exists bool) {
-	v := m.addsize
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetSize resets all changes to the "size" field.
-func (m *AnnotationMutation) ResetSize() {
-	m.size = nil
-	m.addsize = nil
-}
-
-// SetHash sets the "hash" field.
-func (m *AnnotationMutation) SetHash(s string) {
-	m.hash = &s
-}
-
-// Hash returns the value of the "hash" field in the mutation.
-func (m *AnnotationMutation) Hash() (r string, exists bool) {
-	v := m.hash
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldHash returns the old "hash" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldHash(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHash is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHash requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHash: %w", err)
-	}
-	return oldValue.Hash, nil
-}
-
-// ResetHash resets all changes to the "hash" field.
-func (m *AnnotationMutation) ResetHash() {
-	m.hash = nil
-}
-
-// SetData sets the "data" field.
-func (m *AnnotationMutation) SetData(b []byte) {
-	m.data = &b
-}
-
-// Data returns the value of the "data" field in the mutation.
-func (m *AnnotationMutation) Data() (r []byte, exists bool) {
-	v := m.data
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldData returns the old "data" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldData(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldData is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldData requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldData: %w", err)
-	}
-	return oldValue.Data, nil
-}
-
-// ResetData resets all changes to the "data" field.
-func (m *AnnotationMutation) ResetData() {
-	m.data = nil
-}
-
-// SetMimeType sets the "mime_type" field.
-func (m *AnnotationMutation) SetMimeType(s string) {
-	m.mime_type = &s
-}
-
-// MimeType returns the value of the "mime_type" field in the mutation.
-func (m *AnnotationMutation) MimeType() (r string, exists bool) {
-	v := m.mime_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMimeType returns the old "mime_type" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldMimeType(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMimeType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMimeType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMimeType: %w", err)
-	}
-	return oldValue.MimeType, nil
-}
-
-// ResetMimeType resets all changes to the "mime_type" field.
-func (m *AnnotationMutation) ResetMimeType() {
-	m.mime_type = nil
-}
-
-// SetInstanceID sets the "instance_id" field.
-func (m *AnnotationMutation) SetInstanceID(u uuid.UUID) {
-	m.instance_id = &u
-}
-
-// InstanceID returns the value of the "instance_id" field in the mutation.
-func (m *AnnotationMutation) InstanceID() (r uuid.UUID, exists bool) {
-	v := m.instance_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInstanceID returns the old "instance_id" field's value of the Annotation entity.
-// If the Annotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AnnotationMutation) OldInstanceID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInstanceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInstanceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInstanceID: %w", err)
-	}
-	return oldValue.InstanceID, nil
-}
-
-// ClearInstanceID clears the value of the "instance_id" field.
-func (m *AnnotationMutation) ClearInstanceID() {
-	m.instance_id = nil
-	m.clearedFields[annotation.FieldInstanceID] = struct{}{}
-}
-
-// InstanceIDCleared returns if the "instance_id" field was cleared in this mutation.
-func (m *AnnotationMutation) InstanceIDCleared() bool {
-	_, ok := m.clearedFields[annotation.FieldInstanceID]
-	return ok
-}
-
-// ResetInstanceID resets all changes to the "instance_id" field.
-func (m *AnnotationMutation) ResetInstanceID() {
-	m.instance_id = nil
-	delete(m.clearedFields, annotation.FieldInstanceID)
-}
-
-// SetNamespaceID sets the "namespace" edge to the Namespace entity by id.
-func (m *AnnotationMutation) SetNamespaceID(id uuid.UUID) {
-	m.namespace = &id
-}
-
-// ClearNamespace clears the "namespace" edge to the Namespace entity.
-func (m *AnnotationMutation) ClearNamespace() {
-	m.clearednamespace = true
-}
-
-// NamespaceCleared reports if the "namespace" edge to the Namespace entity was cleared.
-func (m *AnnotationMutation) NamespaceCleared() bool {
-	return m.clearednamespace
-}
-
-// NamespaceID returns the "namespace" edge ID in the mutation.
-func (m *AnnotationMutation) NamespaceID() (id uuid.UUID, exists bool) {
-	if m.namespace != nil {
-		return *m.namespace, true
-	}
-	return
-}
-
-// NamespaceIDs returns the "namespace" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NamespaceID instead. It exists only for internal usage by the builders.
-func (m *AnnotationMutation) NamespaceIDs() (ids []uuid.UUID) {
-	if id := m.namespace; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetNamespace resets all changes to the "namespace" edge.
-func (m *AnnotationMutation) ResetNamespace() {
-	m.namespace = nil
-	m.clearednamespace = false
-}
-
-// Where appends a list predicates to the AnnotationMutation builder.
-func (m *AnnotationMutation) Where(ps ...predicate.Annotation) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the AnnotationMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AnnotationMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Annotation, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *AnnotationMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *AnnotationMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Annotation).
-func (m *AnnotationMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *AnnotationMutation) Fields() []string {
-	fields := make([]string, 0, 8)
-	if m.name != nil {
-		fields = append(fields, annotation.FieldName)
-	}
-	if m.created_at != nil {
-		fields = append(fields, annotation.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, annotation.FieldUpdatedAt)
-	}
-	if m.size != nil {
-		fields = append(fields, annotation.FieldSize)
-	}
-	if m.hash != nil {
-		fields = append(fields, annotation.FieldHash)
-	}
-	if m.data != nil {
-		fields = append(fields, annotation.FieldData)
-	}
-	if m.mime_type != nil {
-		fields = append(fields, annotation.FieldMimeType)
-	}
-	if m.instance_id != nil {
-		fields = append(fields, annotation.FieldInstanceID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *AnnotationMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case annotation.FieldName:
-		return m.Name()
-	case annotation.FieldCreatedAt:
-		return m.CreatedAt()
-	case annotation.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case annotation.FieldSize:
-		return m.Size()
-	case annotation.FieldHash:
-		return m.Hash()
-	case annotation.FieldData:
-		return m.Data()
-	case annotation.FieldMimeType:
-		return m.MimeType()
-	case annotation.FieldInstanceID:
-		return m.InstanceID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *AnnotationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case annotation.FieldName:
-		return m.OldName(ctx)
-	case annotation.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case annotation.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case annotation.FieldSize:
-		return m.OldSize(ctx)
-	case annotation.FieldHash:
-		return m.OldHash(ctx)
-	case annotation.FieldData:
-		return m.OldData(ctx)
-	case annotation.FieldMimeType:
-		return m.OldMimeType(ctx)
-	case annotation.FieldInstanceID:
-		return m.OldInstanceID(ctx)
-	}
-	return nil, fmt.Errorf("unknown Annotation field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AnnotationMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case annotation.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case annotation.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case annotation.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case annotation.FieldSize:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSize(v)
-		return nil
-	case annotation.FieldHash:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetHash(v)
-		return nil
-	case annotation.FieldData:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetData(v)
-		return nil
-	case annotation.FieldMimeType:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMimeType(v)
-		return nil
-	case annotation.FieldInstanceID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetInstanceID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Annotation field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *AnnotationMutation) AddedFields() []string {
-	var fields []string
-	if m.addsize != nil {
-		fields = append(fields, annotation.FieldSize)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *AnnotationMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case annotation.FieldSize:
-		return m.AddedSize()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AnnotationMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case annotation.FieldSize:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSize(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Annotation numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *AnnotationMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(annotation.FieldInstanceID) {
-		fields = append(fields, annotation.FieldInstanceID)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *AnnotationMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *AnnotationMutation) ClearField(name string) error {
-	switch name {
-	case annotation.FieldInstanceID:
-		m.ClearInstanceID()
-		return nil
-	}
-	return fmt.Errorf("unknown Annotation nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *AnnotationMutation) ResetField(name string) error {
-	switch name {
-	case annotation.FieldName:
-		m.ResetName()
-		return nil
-	case annotation.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case annotation.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case annotation.FieldSize:
-		m.ResetSize()
-		return nil
-	case annotation.FieldHash:
-		m.ResetHash()
-		return nil
-	case annotation.FieldData:
-		m.ResetData()
-		return nil
-	case annotation.FieldMimeType:
-		m.ResetMimeType()
-		return nil
-	case annotation.FieldInstanceID:
-		m.ResetInstanceID()
-		return nil
-	}
-	return fmt.Errorf("unknown Annotation field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AnnotationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.namespace != nil {
-		edges = append(edges, annotation.EdgeNamespace)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *AnnotationMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case annotation.EdgeNamespace:
-		if id := m.namespace; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AnnotationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *AnnotationMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AnnotationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearednamespace {
-		edges = append(edges, annotation.EdgeNamespace)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *AnnotationMutation) EdgeCleared(name string) bool {
-	switch name {
-	case annotation.EdgeNamespace:
-		return m.clearednamespace
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *AnnotationMutation) ClearEdge(name string) error {
-	switch name {
-	case annotation.EdgeNamespace:
-		m.ClearNamespace()
-		return nil
-	}
-	return fmt.Errorf("unknown Annotation unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *AnnotationMutation) ResetEdge(name string) error {
-	switch name {
-	case annotation.EdgeNamespace:
-		m.ResetNamespace()
-		return nil
-	}
-	return fmt.Errorf("unknown Annotation edge %s", name)
-}
 
 // CloudEventFiltersMutation represents an operation that mutates the CloudEventFilters nodes in the graph.
 type CloudEventFiltersMutation struct {
@@ -4257,9 +3420,6 @@ type NamespaceMutation struct {
 	namespacelisteners        map[uuid.UUID]struct{}
 	removednamespacelisteners map[uuid.UUID]struct{}
 	clearednamespacelisteners bool
-	annotations               map[uuid.UUID]struct{}
-	removedannotations        map[uuid.UUID]struct{}
-	clearedannotations        bool
 	cloudeventfilters         map[int]struct{}
 	removedcloudeventfilters  map[int]struct{}
 	clearedcloudeventfilters  bool
@@ -4678,60 +3838,6 @@ func (m *NamespaceMutation) ResetNamespacelisteners() {
 	m.removednamespacelisteners = nil
 }
 
-// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by ids.
-func (m *NamespaceMutation) AddAnnotationIDs(ids ...uuid.UUID) {
-	if m.annotations == nil {
-		m.annotations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.annotations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAnnotations clears the "annotations" edge to the Annotation entity.
-func (m *NamespaceMutation) ClearAnnotations() {
-	m.clearedannotations = true
-}
-
-// AnnotationsCleared reports if the "annotations" edge to the Annotation entity was cleared.
-func (m *NamespaceMutation) AnnotationsCleared() bool {
-	return m.clearedannotations
-}
-
-// RemoveAnnotationIDs removes the "annotations" edge to the Annotation entity by IDs.
-func (m *NamespaceMutation) RemoveAnnotationIDs(ids ...uuid.UUID) {
-	if m.removedannotations == nil {
-		m.removedannotations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.annotations, ids[i])
-		m.removedannotations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAnnotations returns the removed IDs of the "annotations" edge to the Annotation entity.
-func (m *NamespaceMutation) RemovedAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedannotations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AnnotationsIDs returns the "annotations" edge IDs in the mutation.
-func (m *NamespaceMutation) AnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.annotations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAnnotations resets all changes to the "annotations" edge.
-func (m *NamespaceMutation) ResetAnnotations() {
-	m.annotations = nil
-	m.clearedannotations = false
-	m.removedannotations = nil
-}
-
 // AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by ids.
 func (m *NamespaceMutation) AddCloudeventfilterIDs(ids ...int) {
 	if m.cloudeventfilters == nil {
@@ -4970,7 +4076,7 @@ func (m *NamespaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NamespaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.logs != nil {
 		edges = append(edges, namespace.EdgeLogs)
 	}
@@ -4979,9 +4085,6 @@ func (m *NamespaceMutation) AddedEdges() []string {
 	}
 	if m.namespacelisteners != nil {
 		edges = append(edges, namespace.EdgeNamespacelisteners)
-	}
-	if m.annotations != nil {
-		edges = append(edges, namespace.EdgeAnnotations)
 	}
 	if m.cloudeventfilters != nil {
 		edges = append(edges, namespace.EdgeCloudeventfilters)
@@ -5011,12 +4114,6 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case namespace.EdgeAnnotations:
-		ids := make([]ent.Value, 0, len(m.annotations))
-		for id := range m.annotations {
-			ids = append(ids, id)
-		}
-		return ids
 	case namespace.EdgeCloudeventfilters:
 		ids := make([]ent.Value, 0, len(m.cloudeventfilters))
 		for id := range m.cloudeventfilters {
@@ -5029,7 +4126,7 @@ func (m *NamespaceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NamespaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.removedlogs != nil {
 		edges = append(edges, namespace.EdgeLogs)
 	}
@@ -5038,9 +4135,6 @@ func (m *NamespaceMutation) RemovedEdges() []string {
 	}
 	if m.removednamespacelisteners != nil {
 		edges = append(edges, namespace.EdgeNamespacelisteners)
-	}
-	if m.removedannotations != nil {
-		edges = append(edges, namespace.EdgeAnnotations)
 	}
 	if m.removedcloudeventfilters != nil {
 		edges = append(edges, namespace.EdgeCloudeventfilters)
@@ -5070,12 +4164,6 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case namespace.EdgeAnnotations:
-		ids := make([]ent.Value, 0, len(m.removedannotations))
-		for id := range m.removedannotations {
-			ids = append(ids, id)
-		}
-		return ids
 	case namespace.EdgeCloudeventfilters:
 		ids := make([]ent.Value, 0, len(m.removedcloudeventfilters))
 		for id := range m.removedcloudeventfilters {
@@ -5088,7 +4176,7 @@ func (m *NamespaceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NamespaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.clearedlogs {
 		edges = append(edges, namespace.EdgeLogs)
 	}
@@ -5097,9 +4185,6 @@ func (m *NamespaceMutation) ClearedEdges() []string {
 	}
 	if m.clearednamespacelisteners {
 		edges = append(edges, namespace.EdgeNamespacelisteners)
-	}
-	if m.clearedannotations {
-		edges = append(edges, namespace.EdgeAnnotations)
 	}
 	if m.clearedcloudeventfilters {
 		edges = append(edges, namespace.EdgeCloudeventfilters)
@@ -5117,8 +4202,6 @@ func (m *NamespaceMutation) EdgeCleared(name string) bool {
 		return m.clearedcloudevents
 	case namespace.EdgeNamespacelisteners:
 		return m.clearednamespacelisteners
-	case namespace.EdgeAnnotations:
-		return m.clearedannotations
 	case namespace.EdgeCloudeventfilters:
 		return m.clearedcloudeventfilters
 	}
@@ -5145,9 +4228,6 @@ func (m *NamespaceMutation) ResetEdge(name string) error {
 		return nil
 	case namespace.EdgeNamespacelisteners:
 		m.ResetNamespacelisteners()
-		return nil
-	case namespace.EdgeAnnotations:
-		m.ResetAnnotations()
 		return nil
 	case namespace.EdgeCloudeventfilters:
 		m.ResetCloudeventfilters()
