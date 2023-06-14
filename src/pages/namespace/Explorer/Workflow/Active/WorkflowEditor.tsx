@@ -124,6 +124,7 @@ const WorkflowEditor: FC<{
                   path,
                 });
               }}
+              className="grow"
               data-testid="workflow-editor-btn-make-revision"
             >
               <GitBranchPlus />
