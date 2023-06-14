@@ -115,6 +115,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
 
   return (
     <Input
+      value={props.value}
       className="mb-2 mt-1 w-full"
       type={type}
       required={props.required}
