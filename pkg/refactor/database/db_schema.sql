@@ -225,7 +225,6 @@ CREATE TABLE IF NOT EXISTS "events_filters" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS "metrics";
 CREATE TABLE IF NOT EXISTS "metrics" (
     "id" serial,
     "namespace" text,
