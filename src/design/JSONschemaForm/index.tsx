@@ -33,8 +33,12 @@ import validator from "@rjsf/validator-ajv8";
 const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   <div className="my-4">
     <Select onValueChange={props.onChange}>
-      <SelectTrigger>
-        <SelectValue placeholder={`Select ${props.label}`} />
+      <SelectTrigger value={props.value}>
+        <SelectValue
+          placeholder={props.value ? props.value : `Select ${props.label}`}
+        >
+          {props.value}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -115,7 +119,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
 
   return (
     <Input
-      value={props.value}
+      defaultValue={props.value}
       className="mb-2 mt-1 w-full"
       type={type}
       required={props.required}
