@@ -224,3 +224,20 @@ CREATE TABLE IF NOT EXISTS "events_filters" (
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "metrics" (
+    "id" serial,
+    "namespace" text,
+    "workflow" text,
+    "revision" text,
+    "instance" text,
+    "state" text,
+    "timestamp" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "workflow_ms" integer,
+    "isolate_ms" integer,
+    "error_code" text,
+    "invoker" text,
+    "next" integer,
+    "transition" text,
+    PRIMARY KEY ("id")
+);
