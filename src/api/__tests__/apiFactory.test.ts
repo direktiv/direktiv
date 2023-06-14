@@ -28,7 +28,6 @@ const apiEndpointEmptyResponse = "http://localhost/empty-response";
 const apiEndpointTextResponse = "http://localhost/text-response";
 const apiEndpointHeaders = "http://localhost/headers";
 const apiEndpointTextResponseWithHeaders = "http://localhost/text-and-headers";
-const apiEndpointJSONResponseWithHeaders = "http://localhost/json-and-headers";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -63,15 +62,6 @@ const testApi = setupServer(
       ctx.body("this is a text response with headers")
     )
   ),
-  rest.get(apiEndpointJSONResponseWithHeaders, (_req, res, ctx) =>
-    res(
-      ctx.set("custom-header", "mock-value"),
-      ctx.json({
-        "some-key": "some data",
-        "another-key": "some other data",
-      })
-    )
-  ),
   rest.post(apiEndpointPost, async (req, res, ctx) => {
     const body = await req.text();
     return res(
@@ -99,7 +89,9 @@ afterEach(() => {
 
 const customResponseParser: ResponseParser = async ({ res, schema }) => {
   const textResult = await res.text();
+  const headers = Object.fromEntries(res.headers);
   return schema.parse({
+    ...headers,
     "custom-key": textResult,
   });
 };
@@ -171,10 +163,11 @@ const apiWithDynamicSegment = apiFactory({
   }),
 });
 
-const apiWithCustomResponseParser = apiFactory({
-  url: () => apiEndpointTextResponse,
+const apiWithHeadersAndCustomResponseParser = apiFactory({
+  url: () => apiEndpointTextResponseWithHeaders,
   method: "GET",
   schema: z.object({
+    "custom-header": z.string(),
     "custom-key": z.string(),
   }),
   responseParser: customResponseParser,
@@ -457,12 +450,12 @@ describe("processApiResponse", () => {
     });
   });
 
-  test("it is possible to provide a custom responseParser to the api", async () => {
+  test("it is possible to process headers in a custom responseParser", async () => {
     const useCallWithCustomParser = () =>
       useQuery({
-        queryKey: ["textResponse"],
+        queryKey: ["textResponseWithHeader"],
         queryFn: () =>
-          apiWithCustomResponseParser({
+          apiWithHeadersAndCustomResponseParser({
             payload: undefined,
             headers: undefined,
             urlParams: undefined,
@@ -475,7 +468,8 @@ describe("processApiResponse", () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.data).toStrictEqual({
-        "custom-key": "this is a text response",
+        "custom-header": "mock-value",
+        "custom-key": "this is a text response with headers",
       });
     });
   });
