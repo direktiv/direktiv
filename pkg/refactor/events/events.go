@@ -36,8 +36,9 @@ type EventHistoryStore interface {
 
 // Helps query the proper event-listeners for a namespace and event-type.
 type EventTopicsStore interface {
+	// topic SHOULD be a compound of namespaceID and the eventType like this: "uuid-eventType"
 	Append(ctx context.Context, namespaceID, eventListenerID uuid.UUID, topic string) error
-	GetListeners(ctx context.Context, namespaceID uuid.UUID, eventType string) ([]*EventListener, error)
+	GetListeners(ctx context.Context, topic string) ([]*EventListener, error)
 }
 
 // represents a listener for one or multiple events with specific types.
