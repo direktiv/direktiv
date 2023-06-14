@@ -33,7 +33,7 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
-  const workflowData = data.revision?.source && atob(data?.revision?.source);
+  const workflowData = atob(data?.revision?.source ?? "");
   const updatedAt = useUpdatedAt(data.revision?.createdAt);
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
@@ -75,7 +75,7 @@ const WorkflowEditor: FC<{
             editor.focus();
           }}
           onChange={(newData) => {
-            setValue(newData);
+            setValue(newData ?? "");
           }}
           theme={theme ?? undefined}
           onSave={onSave}

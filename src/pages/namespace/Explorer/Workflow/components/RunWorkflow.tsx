@@ -34,7 +34,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const navigate = useNavigate();
   const { data } = useNodeContent({ path });
   const validationSchema = getValidationSchemaFromYaml(
-    data?.revision?.source && atob(data?.revision?.source)
+    atob(data?.revision?.source ?? "")
   );
 
   // tab handling
