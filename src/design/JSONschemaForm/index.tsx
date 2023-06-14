@@ -144,7 +144,7 @@ const TitleFieldTemplate = (props: TitleFieldProps) => {
   return (
     <header
       id={id}
-      className="mb-1 text-lg font-semibold text-gray-12 dark:text-gray-dark-12"
+      className="mb-4 font-semibold text-gray-12 dark:text-gray-dark-12"
     >
       {title}
       {required && <mark>*</mark>}
