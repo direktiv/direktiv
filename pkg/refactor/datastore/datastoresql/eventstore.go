@@ -496,7 +496,7 @@ func (sf *sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UU
 	return nil
 }
 
-func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, filterName string, limit int, offset int) ([]*events.NamespaceCloudEventFilter, int, error) {
+func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, limit int, offset int) ([]*events.NamespaceCloudEventFilter, int, error) {
 	q := `SELECT namespace_id, name, jscode FROM events_filters WHERE namespace_id = $1 `
 	qCount := `SELECT count(id) FROM events_filters WHERE namespace_id = $1 `
 	var count int
