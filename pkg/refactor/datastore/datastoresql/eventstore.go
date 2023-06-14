@@ -233,13 +233,39 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 	FROM event_listeners E WHERE E.deleted = 0 and E.id in 
 	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
 	// event_listener_id, namespace_id, topic FROM event_topics et WHERE topic=$1 and et.event_listener_id
-	res := make([]*events.EventListener, 0)
+	res := make([]*gormEventListener, 0)
 	tx := s.db.WithContext(ctx).Raw(q, topic).Scan(&res)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
+	conv := make([]*events.EventListener, 0)
 
-	return res, nil
+	for _, l := range res {
+		var trigger events.TriggerInfo
+		var ev []*events.Event
+
+		err := json.Unmarshal(l.TriggerInfo, &trigger)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(l.ReceivedEvents, &ev)
+		if err != nil {
+			return nil, err
+		}
+		conv = append(conv, &events.EventListener{
+			ID:                          l.ID,
+			UpdatedAt:                   l.UpdatedAt,
+			CreatedAt:                   l.CreatedAt,
+			Deleted:                     l.Deleted,
+			NamespaceID:                 l.NamespaceID,
+			ListeningForEventTypes:      strings.Split(l.EventType, " "),
+			LifespanOfReceivedEvents:    l.EventsLifespan,
+			TriggerType:                 events.TriggerType(l.TriggerType),
+			Trigger:                     trigger,
+			ReceivedEventsForAndTrigger: ev,
+		})
+	}
+	return conv, nil
 }
 
 var _ events.EventListenerStore = &sqlEventListenerStore{}
