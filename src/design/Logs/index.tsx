@@ -27,13 +27,13 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
           "p-2 text-[13px] text-black dark:text-white",
           "flex flex-row",
           variant === "error" &&
-          "bg-danger-4 text-danger-10 dark:bg-danger-dark-4 dark:text-danger-dark-10",
+            "bg-danger-4 text-danger-10 dark:bg-danger-dark-4 dark:text-danger-dark-10",
           variant === "success" &&
-          "bg-success-4 text-success-10 dark:bg-success-dark-4 dark:text-success-dark-10",
+            "bg-success-4 text-success-10 dark:bg-success-dark-4 dark:text-success-dark-10",
           variant === "warning" &&
-          "bg-warning-4 text-warning-10 dark:bg-warning-dark-4 dark:text-warning-dark-10",
+            "bg-warning-4 text-warning-10 dark:bg-warning-dark-4 dark:text-warning-dark-10",
           variant === "info" &&
-          "bg-info-4 text-info-10 dark:bg-info-dark-4 dark:text-info-dark-10",
+            "bg-info-4 text-info-10 dark:bg-info-dark-4 dark:text-info-dark-10",
           !linewrap && "overflow-scroll",
           className
         )
