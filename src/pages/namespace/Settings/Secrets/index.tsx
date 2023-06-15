@@ -3,11 +3,11 @@ import { Table, TableBody } from "~/design/Table";
 
 import { Card } from "~/design/Card";
 import Create from "./Create";
-import CreateItemButton from "../compopnents/CreateItemButton";
+import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
-import EmptyList from "../compopnents/EmptyList";
-import ItemRow from "../compopnents/ItemRow";
+import EmptyList from "../components/EmptyList";
+import ItemRow from "../components/ItemRow";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { SquareAsterisk } from "lucide-react";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
