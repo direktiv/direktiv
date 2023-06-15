@@ -1,14 +1,18 @@
+import { ComponentProps, FC } from "react";
+
 import Alert from "~/design/Alert";
 import { useTranslation } from "react-i18next";
 
 type errorsType = Record<string, { message?: string }>;
 
-const FormErrors = ({ errors }: { errors: errorsType }) => {
+type FormErrorsProps = ComponentProps<typeof Alert> & { errors: errorsType };
+
+const FormErrors: FC<FormErrorsProps> = ({ errors, ...props }) => {
   const { t } = useTranslation();
   const entries = Object.entries(errors);
 
   return entries.length ? (
-    <Alert variant="error" className="mb-5">
+    <Alert variant="error" {...props}>
       <ul>
         {entries.map(([key, value]) => (
           <li key={key}>{`${key}: ${
