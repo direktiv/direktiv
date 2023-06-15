@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/utils";
 import { secretKeys } from "..";
+import { sortByName } from "~/api/tree/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
@@ -23,9 +24,7 @@ const updateCache = (
   return {
     ...oldData,
     secrets: {
-      results: [...oldResults, newListItem].sort((a, b) =>
-        a.name.localeCompare(b.name)
-      ),
+      results: [...oldResults, newListItem].sort(sortByName),
     },
   };
 };
