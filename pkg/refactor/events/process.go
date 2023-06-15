@@ -2,7 +2,6 @@ package events
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -125,8 +124,7 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 			return err
 		}
 	}
-
-	return fmt.Errorf("unimplemented")
+	return nil // TODO
 }
 
 func eventPassedGatekeeper(globPatterns []string, event cloudevents.Event) bool {
