@@ -1,3 +1,4 @@
+import { FolderTree, GitCommit, Hexagon, Key, Palette } from "lucide-react";
 import { useApiActions, useApiKey } from "~/util/store/apiKey";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import { useTheme, useThemeActions } from "~/util/store/theme";
@@ -5,10 +6,14 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { FC } from "react";
+import RegistriesList from "./Registries";
+import SecretsList from "./Secrets";
+import VariablesList from "./Variables";
 import { useListNamespaces } from "~/api/namespaces/query/get";
+import { useTranslation } from "react-i18next";
 import { useVersion } from "~/api/version";
 
-const SettiongsPage: FC = () => {
+const SettingsPage: FC = () => {
   const apiKey = useApiKey();
   const { setApiKey } = useApiActions();
   const theme = useTheme();
@@ -21,59 +26,96 @@ const SettiongsPage: FC = () => {
   const { data: namespaces, isLoading: isLoadingNamespaces } =
     useListNamespaces();
 
-  return (
-    <div className="flex flex-col space-y-5 p-10">
-      <Card className="p-4">
-        <h1>
-          theme <span className="font-bold">{theme}</span>
-        </h1>
-        <div className="flex space-x-5">
-          <Button onClick={() => setTheme("dark")}>darkmode</Button>
-          <Button className="" onClick={() => setTheme("light")}>
-            lightmode
-          </Button>
-          <Button onClick={() => setTheme(null)}>reset theme</Button>
-        </div>
-      </Card>
-      <Card className="p-4">
-        <h1>
-          namespace <span className="font-bold">{selectedNamespace}</span>
-        </h1>
-        <div className="flex space-x-5">
-          <Button variant="destructive" onClick={() => setNamespace(null)}>
-            reset namespace
-          </Button>
-        </div>
-      </Card>
-      <Card className="p-4">
-        <h1>
-          api key is <span className="font-bold">{apiKey}</span>
-        </h1>
-        <div className="flex space-x-5">
-          <Button onClick={() => setApiKey("password")}>
-            set Api key to password
-          </Button>
-          <Button variant="destructive" onClick={() => setApiKey(null)}>
-            reset api key
-          </Button>
-        </div>
-      </Card>
-      <div>
-        <h1 className="font-bold">Version</h1>
-        {isVersionLoading ? "Loading version...." : version?.api}
-      </div>
-      <div>
-        <h1 className="font-bold">namespaces</h1>
-        {isLoadingNamespaces
-          ? "Loading namespaces"
-          : namespaces?.results.map((namespace) => (
-              <div key={namespace.name}>{namespace.name}</div>
-            ))}
-      </div>
+  const { t } = useTranslation();
 
-      <div></div>
+  return (
+    <div className="flex flex-col space-y-6 p-10">
+      <section>
+        <SecretsList />
+      </section>
+
+      <section>
+        <RegistriesList />
+      </section>
+
+      <section>
+        <VariablesList />
+      </section>
+
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Palette className="h-5" />
+          {t("pages.settings.theme.title")} {theme}
+        </h3>
+
+        <Card className="flex gap-x-3 p-4">
+          <div className="flex space-x-5">
+            <Button onClick={() => setTheme("dark")}>darkmode</Button>
+            <Button className="" onClick={() => setTheme("light")}>
+              lightmode
+            </Button>
+            <Button onClick={() => setTheme(null)}>reset theme</Button>
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Hexagon className="h-5" />
+          {t("pages.settings.namespace.title")} {selectedNamespace}
+        </h3>
+
+        <Card className="flex gap-x-3 p-4">
+          <div className="flex space-x-5">
+            <Button variant="destructive" onClick={() => setNamespace(null)}>
+              reset namespace
+            </Button>
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <Key className="h-5" />
+          {t("pages.settings.apiKey.title")} {apiKey}
+        </h3>
+
+        <Card className="flex gap-x-3 p-4">
+          <div className="flex space-x-5">
+            <Button onClick={() => setApiKey("password")}>
+              set Api key to password
+            </Button>
+            <Button variant="destructive" onClick={() => setApiKey(null)}>
+              reset api key
+            </Button>
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <h3 className="mb-3 flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <GitCommit className="h-5" />
+          {t("pages.settings.version.title")}
+        </h3>
+        <div className="mt-2 ml-2">
+          {isVersionLoading ? "Loading version...." : version?.api}
+        </div>
+      </section>
+      <section>
+        <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+          <FolderTree className="h-5" />
+          {t("pages.settings.namespacesList.title")}
+        </h3>
+        <div className="mt-2 ml-2">
+          {isLoadingNamespaces
+            ? "Loading namespaces"
+            : namespaces?.results.map((namespace) => (
+                <div key={namespace.name}>{namespace.name}</div>
+              ))}
+        </div>
+      </section>
     </div>
   );
 };
 
-export default SettiongsPage;
+export default SettingsPage;

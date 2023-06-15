@@ -12,7 +12,7 @@ import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import React from "react";
 import type { RouteObject } from "react-router-dom";
-import SettiongsPage from "~/pages/namespace/Settings";
+import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
@@ -241,7 +241,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup = {
     createHref: (params) => `/${params.namespace}/settings`,
     route: {
       path: "settings",
-      element: <SettiongsPage />,
+      element: <SettingsPage />,
     },
   },
 };
