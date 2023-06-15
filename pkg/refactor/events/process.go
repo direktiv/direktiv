@@ -79,7 +79,7 @@ func (ee EventEngine) GetEventHandlers(ctx context.Context,
 	for _, l := range listeners {
 		handlers = append(handlers, ee.CreateEventHandler(l))
 	}
-	
+
 	return handlers, nil
 }
 
@@ -89,246 +89,21 @@ func (ee EventEngine) CreateEventHandler(l *EventListener) EventHandler {
 	}
 	switch l.TriggerType {
 	case StartAnd:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				for _, r := range l.ReceivedEventsForAndTrigger {
-					if r.Event.Type() == event.Event.Type() {
-						continue
-					}
-				}
-				l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
-				typeMatch := make([]bool, len(l.ReceivedEventsForAndTrigger))
-				ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
-				for i := range l.ReceivedEventsForAndTrigger {
-					e := l.ReceivedEventsForAndTrigger[i]
-					ces = append(ces, e.Event)
-					for _, t := range types {
-						if e.Event.Type() == t {
-							typeMatch[i] = true
-						}
-					}
-				}
-				hasAll := true
-				for _, h := range typeMatch {
-					hasAll = hasAll && h
-				}
-				if !hasAll {
-					// TODO metrics
-					continue
-				}
-				go ee.WorkflowStart(l.Trigger.WorkflowID, ces...)
-			}
-		}
+		return ee.EventAndHandler(l, false)
 	case WaitAnd:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				for _, r := range l.ReceivedEventsForAndTrigger {
-					if r.Event.Type() == event.Event.Type() {
-						continue
-					}
-				}
-				l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
-				typeMatch := make([]bool, len(l.ReceivedEventsForAndTrigger))
-				ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
-				for i := range l.ReceivedEventsForAndTrigger {
-					e := l.ReceivedEventsForAndTrigger[i]
-					ces = append(ces, e.Event)
-					for _, t := range types {
-						if e.Event.Type() == t {
-							typeMatch[i] = true
-						}
-					}
-				}
-				hasAll := true
-				for _, h := range typeMatch {
-					hasAll = hasAll && h
-				}
-				if !hasAll {
-					// TODO metrics
-					continue
-				}
-				l.Deleted = true
-				go ee.WorkflowStart(l.Trigger.WorkflowID, ces...)
-			}
-		}
+		return ee.EventAndHandler(l, true)
 	case StartSimple:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !EventPassedGatekeeper(l.Trigger.GlobGatekeepers, *event.Event) {
-					continue
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				go ee.WorkflowStart(l.Trigger.WorkflowID, event.Event)
-			}
-		}
+		return ee.EventSimpleHandler(l, false)
 	case WaitSimple:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				l.Deleted = true
-				go ee.WakeInstance(l.Trigger.InstanceID, l.Trigger.Step, []*cloudevents.Event{event.Event})
-			}
-		}
+		return ee.EventSimpleHandler(l, true)
 	case StartOR:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				go ee.WorkflowStart(l.Trigger.WorkflowID, event.Event)
-			}
-		}
+		return ee.EventSimpleHandler(l, false)
 	case WaitOR:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				l.Deleted = true
-				go ee.WakeInstance(l.Trigger.InstanceID, l.Trigger.Step, []*cloudevents.Event{event.Event})
-			}
-		}
+		return ee.EventSimpleHandler(l, true)
 	case StartXOR:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				go ee.WorkflowStart(l.Trigger.WorkflowID, event.Event)
-			}
-		}
+		return ee.EventSimpleHandler(l, false)
 	case WaitXOR:
-		return func(ctx context.Context, events ...*Event) {
-			for _, event := range events {
-				if l.Deleted {
-					return
-				}
-				if event.Namespace != l.NamespaceID {
-					continue
-				}
-				types := l.ListeningForEventTypes
-				match := false
-				for _, t := range types {
-					if event.Event.Type() == t {
-						match = true
-					}
-				}
-				if !match {
-					// TODO metrics
-					continue
-				}
-				l.Deleted = true
-				go ee.WakeInstance(l.Trigger.InstanceID, l.Trigger.Step, []*cloudevents.Event{event.Event})
-			}
-		}
+		return ee.EventSimpleHandler(l, true)
 	}
 	return func(ctx context.Context, events ...*Event) {
 		// TODO metrics
@@ -344,6 +119,7 @@ func (ee EventEngine) UsePostProcessingEvents(ctx context.Context,
 			return err
 		}
 	}
+	
 	return fmt.Errorf("unimplemented")
 }
 
@@ -366,5 +142,94 @@ func (EventEngine) HandleEvents(ctx context.Context,
 	}
 	for _, eh := range h {
 		eh(ctx, events...)
+	}
+}
+
+func (ee EventEngine) EventAndHandler(l *EventListener, waitType bool) EventHandler {
+	return func(ctx context.Context, events ...*Event) {
+		for _, event := range events {
+			if l.Deleted {
+				return
+			}
+			if event.Namespace != l.NamespaceID {
+				continue
+			}
+			types := l.ListeningForEventTypes
+			match := false
+			for _, t := range types {
+				if event.Event.Type() == t {
+					match = true
+				}
+			}
+			if !match {
+				// TODO metrics
+				continue
+			}
+			for _, r := range l.ReceivedEventsForAndTrigger {
+				if r.Event.Type() == event.Event.Type() {
+					continue
+				}
+			}
+			l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
+			typeMatch := make([]bool, len(l.ReceivedEventsForAndTrigger))
+			ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
+			for i := range l.ReceivedEventsForAndTrigger {
+				e := l.ReceivedEventsForAndTrigger[i]
+				ces = append(ces, e.Event)
+				for _, t := range types {
+					if e.Event.Type() == t {
+						typeMatch[i] = true
+					}
+				}
+			}
+			hasAll := true
+			for _, h := range typeMatch {
+				hasAll = hasAll && h
+			}
+			if !hasAll {
+				// TODO metrics
+				continue
+			}
+			if waitType {
+				l.Deleted = true
+				go ee.WakeInstance(l.Trigger.InstanceID, l.Trigger.Step, ces)
+
+				return
+			}
+			go ee.WorkflowStart(l.Trigger.WorkflowID, ces...)
+		}
+	}
+}
+
+func (ee EventEngine) EventSimpleHandler(l *EventListener, waitType bool) EventHandler {
+	return func(ctx context.Context, events ...*Event) {
+		for _, event := range events {
+			if l.Deleted {
+				return
+			}
+			if event.Namespace != l.NamespaceID {
+				continue
+			}
+			types := l.ListeningForEventTypes
+			match := false
+			for _, t := range types {
+				if event.Event.Type() == t {
+					match = true
+				}
+			}
+			if !EventPassedGatekeeper(l.Trigger.GlobGatekeepers, *event.Event) {
+				continue
+			}
+			if !match {
+				// TODO metrics
+				continue
+			}
+			if waitType {
+				l.Deleted = true
+				go ee.WakeInstance(l.Trigger.InstanceID, l.Trigger.Step, []*cloudevents.Event{event.Event})
+				return
+			}
+			go ee.WorkflowStart(l.Trigger.WorkflowID, event.Event)
+		}
 	}
 }
