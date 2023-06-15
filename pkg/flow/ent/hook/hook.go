@@ -9,18 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 )
 
-// The AnnotationFunc type is an adapter to allow the use of ordinary
-// function as Annotation mutator.
-type AnnotationFunc func(context.Context, *ent.AnnotationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AnnotationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AnnotationMutation", m)
-}
-
 // The CloudEventFiltersFunc type is an adapter to allow the use of ordinary
 // function as CloudEventFilters mutator.
 type CloudEventFiltersFunc func(context.Context, *ent.CloudEventFiltersMutation) (ent.Value, error)

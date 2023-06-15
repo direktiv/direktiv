@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -134,21 +133,6 @@ func (nc *NamespaceCreate) AddNamespacelisteners(e ...*Events) *NamespaceCreate 
 		ids[i] = e[i].ID
 	}
 	return nc.AddNamespacelistenerIDs(ids...)
-}
-
-// AddAnnotationIDs adds the "annotations" edge to the Annotation entity by IDs.
-func (nc *NamespaceCreate) AddAnnotationIDs(ids ...uuid.UUID) *NamespaceCreate {
-	nc.mutation.AddAnnotationIDs(ids...)
-	return nc
-}
-
-// AddAnnotations adds the "annotations" edges to the Annotation entity.
-func (nc *NamespaceCreate) AddAnnotations(a ...*Annotation) *NamespaceCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return nc.AddAnnotationIDs(ids...)
 }
 
 // AddCloudeventfilterIDs adds the "cloudeventfilters" edge to the CloudEventFilters entity by IDs.
@@ -331,22 +315,6 @@ func (nc *NamespaceCreate) createSpec() (*Namespace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(events.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := nc.mutation.AnnotationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   namespace.AnnotationsTable,
-			Columns: []string{namespace.AnnotationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(annotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
