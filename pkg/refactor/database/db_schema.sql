@@ -173,3 +173,54 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     CONSTRAINT "fk_namespaces_instances"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "events_history" (
+    "id" uuid,
+    "type" text NOT NULL,
+    "source" text NOT NULL,
+    "cloudevent" text NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamptz NOT NULL,
+    PRIMARY KEY ("id")
+);
+
+-- for cursor style pagination
+CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespace_id", "created_at" DESC);
+
+CREATE TABLE IF NOT EXISTS "event_listeners" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted" boolean NOT NULL,
+    "received_events" bytea,
+    "trigger_type" integer NOT NULL,
+    "events_lifespan" integer NOT NULL DEFAULT 0,
+    "event_types" text NOT NULL, -- lets keep it for the ui just in case
+    "trigger_info" text NOT NULL,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "event_topics" (
+    "id" uuid,
+    "event_listener_id" uuid NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "topic" text NOT NULL,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- for processing the events with minimal latency, we assume that the topic 
+-- is a compound like this: "namespace-id:event-type"
+CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
+
+CREATE TABLE IF NOT EXISTS "events_filters" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "name" text NOT NULL,
+    "jscode" text NOT NULL,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+);
