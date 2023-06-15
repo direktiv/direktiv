@@ -39,7 +39,7 @@ type EventTopicsStore interface {
 	// topic SHOULD be a compound of namespaceID and the eventType like this: "uuid-eventType"
 	Append(ctx context.Context, namespaceID, eventListenerID uuid.UUID, topic string) error
 	GetListeners(ctx context.Context, topic string) ([]*EventListener, error)
-	Delete(ctx context.Context, namespaceID uuid.UUID, topic string, eventListenerID uuid.UUID) error
+	Delete(ctx context.Context, eventListenerID uuid.UUID) error
 }
 
 // represents a listener for one or multiple events with specific types.
