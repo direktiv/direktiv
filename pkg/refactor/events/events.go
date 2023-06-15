@@ -19,7 +19,7 @@ type Event struct {
 type EventHistoryStore interface {
 	// adds at least one and optionally multiple events to the storage.
 	// returns the events that where successfully appended
-	Append(ctx context.Context, event *Event, more ...*Event) ([]*Event, error)
+	Append(ctx context.Context, event []*Event) ([]*Event, []error)
 	GetByID(ctx context.Context, id uuid.UUID) (*Event, error)
 	// the result will be sorted by the AcceptedAt value.
 	// pass 0 for limit or offset to get all events.
@@ -78,7 +78,7 @@ type EventListenerStore interface {
 	// adds a EventListener to the storage.
 	Append(ctx context.Context, listener *EventListener) error
 	// updates the EventListeners.
-	Update(ctx context.Context, listener *EventListener, more ...*EventListener) (error, []error)
+	Update(ctx context.Context, listener []*EventListener) []error
 	GetByID(ctx context.Context, id uuid.UUID) (*EventListener, error)
 	GetAll(ctx context.Context) ([]*EventListener, error)
 	// return EventListeners for a given namespace with the total row count for pagination.
