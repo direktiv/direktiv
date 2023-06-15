@@ -43,7 +43,8 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
       <div
         className={clsx(
           !linewrap && "whitespace-nowrap",
-          linewrap && "whitespace-pre-wrap"
+          linewrap && "whitespace-pre-wrap",
+          "font-menlo"
         )}
       >
         {children}
