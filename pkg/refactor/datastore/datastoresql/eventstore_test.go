@@ -51,7 +51,7 @@ func Test_Add_Get(t *testing.T) {
 		return
 	}
 	for _, e := range gotEvents {
-		if e.Event.Type() != "test" {
+		if e.Event.Type() != "test-type" {
 			t.Error("Event had wrong type")
 		}
 	}
