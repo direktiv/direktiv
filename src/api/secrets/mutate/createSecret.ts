@@ -81,7 +81,7 @@ export const useCreateSecret = ({
     },
     onError: () => {
       toast({
-        title: "api.generic.error",
+        title: t("api.generic.error"),
         description: t("api.secrets.mutate.createSecret.error.description"),
         variant: "error",
       });
