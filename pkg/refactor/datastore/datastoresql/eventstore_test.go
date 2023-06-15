@@ -33,6 +33,7 @@ func Test_Add_Get(t *testing.T) {
 	for _, err := range errs {
 		if err != nil {
 			t.Error(err)
+
 			return
 		}
 	}
@@ -212,6 +213,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	for _, err := range errs {
 		if err != nil {
 			t.Error(err)
+
 			return
 		}
 	}

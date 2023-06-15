@@ -27,6 +27,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Eve
 		eventByte, err := json.Marshal(v.Event)
 		if err != nil {
 			errs[i] = err
+
 			continue
 		}
 		values := make([]interface{}, 0)
@@ -40,6 +41,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Eve
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
 		if tx.Error != nil {
 			errs[i] = tx.Error
+
 			continue
 		}
 	}
@@ -331,7 +333,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	if offet > 0 {
 		q += fmt.Sprintf("OFFSET %v", offet)
 	}
-	q += " ORDER BY updated_at DESC;"
+	q += " ORDER BY updated_at DESC;" //nolint:goconst
 	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 ;`
 	var count int
 	tx := s.db.WithContext(ctx).Raw(qCount, namespace).Scan(&count)
@@ -475,6 +477,7 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listeners []*events.
 		b, err := json.Marshal(e.ReceivedEventsForAndTrigger)
 		if err != nil {
 			errs[i] = err
+
 			continue
 		}
 		tx := s.db.WithContext(ctx).Exec(
@@ -485,6 +488,8 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listeners []*events.
 			e.ID)
 		if tx.Error != nil {
 			errs[i] = tx.Error
+
+			continue
 		}
 	}
 
