@@ -41,7 +41,7 @@ func (ee EventEngine) ProcessEvents(
 	h, _ := ee.GetEventHandlers(ctx, listeners)
 	// TODO log errors
 	ee.HandleEvents(ctx, namespace, cloudevents, h)
-	ee.UsePostProcessingEvents(ctx, listeners)
+	_ = ee.UsePostProcessingEvents(ctx, listeners)
 }
 
 func (ee EventEngine) GetListeners(ctx context.Context, topics ...string) ([]*EventListener, error) {
@@ -54,6 +54,7 @@ func (ee EventEngine) GetListeners(ctx context.Context, topics ...string) ([]*Ev
 		}
 		res = append(res, listeners...)
 	}
+
 	return res, nil
 }
 
@@ -67,6 +68,7 @@ func (EventEngine) GetTopics(ctx context.Context, namespace uuid.UUID, cloudeven
 	for topic := range topics {
 		topicls = append(topicls, topic)
 	}
+
 	return topicls
 }
 
@@ -77,6 +79,7 @@ func (ee EventEngine) GetEventHandlers(ctx context.Context,
 	for _, l := range listeners {
 		handlers = append(handlers, ee.CreateEventHandler(l))
 	}
+	
 	return handlers, nil
 }
 
@@ -353,11 +356,12 @@ func (EventEngine) HandleEvents(ctx context.Context,
 	cloudevents []cloudevents.Event, h []EventHandler,
 ) {
 	events := make([]*Event, 0, len(cloudevents))
-	for _, e := range cloudevents {
+	for i := range cloudevents {
+		e := &cloudevents[i]
 		events = append(events, &Event{
 			Namespace:  namespace,
 			ReceivedAt: time.Now(),
-			Event:      &e,
+			Event:      e,
 		})
 	}
 	for _, eh := range h {
