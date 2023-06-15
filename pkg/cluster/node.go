@@ -5,11 +5,15 @@ package cluster
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/hashicorp/serf/serf"
+	"github.com/mitchellh/hashstructure/v2"
+	"github.com/nsqio/go-nsq"
 	"go.uber.org/zap"
 )
 
@@ -23,12 +27,21 @@ const (
 	defaultNSQLookupPort           = 4151
 	defaultNSQDListenHTTPPort      = 4152
 	defaultNSQLookupListenHTTPPort = 4153
+	defaultNSQInactiveTimeout      = 300 * time.Second
+	defaultNSQTombstoneTimeout     = 45 * time.Second
 
-	serfAddress = "SERF_ADDRESS"
+	nsqLookupAddress = "NSQD_LOOKUP_ADDRESS"
+
+	sharedChannel = "shared"
 )
+
+var busClientLogEnabled = true
+var busLogEnabled = false
+var serfLogEnabled = false
 
 // Config is the configuration structure for one node
 type Config struct {
+
 	// Port for the serf server.
 	SerfPort int
 
@@ -46,7 +59,14 @@ type Config struct {
 	NSQDPort, NSQLookupPort,
 	NSQLookupListenHTTPPort, NSQDListenHTTPPort int
 
-	DataDir string
+	// timeouts
+	NSQInactiveTimeout  time.Duration
+	NSQTombstoneTimeout time.Duration
+
+	// topics to handle
+	NSQTopics []string
+
+	NSQDataDir string
 }
 
 type Node struct {
@@ -60,7 +80,10 @@ type Node struct {
 
 	upCh chan bool
 
-	Bus *bus
+	// nsq settings
+	bus            *bus
+	BusChannelName string
+	producer       *nsq.Producer
 }
 
 // nodefinders have to return all ips/addr of the serf nodes available on startup
@@ -87,12 +110,25 @@ func NewNode(config Config) (*Node, error) {
 		upCh:       make(chan bool),
 	}
 
-	node.Bus, err = newBus(config)
+	node.bus, err = newBus(config)
 	if err != nil {
 		return nil, err
 	}
-	go node.Bus.Start()
-	node.Bus.WaitTillConnected()
+	go node.bus.start()
+	node.bus.waitTillConnected()
+
+	producerConfig := nsq.NewConfig()
+	node.producer, err = nsq.NewProducer(fmt.Sprintf("127.0.0.1:%d", config.NSQDPort), producerConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	bl := &busLogger{
+		logger: node.logger,
+		debug:  busClientLogEnabled,
+	}
+
+	node.producer.SetLogger(bl, 1)
 
 	serfConfig := serf.DefaultConfig()
 	serfConfig.Init()
@@ -105,6 +141,16 @@ func NewNode(config Config) (*Node, error) {
 	}
 	serfConfig.NodeName = net.JoinHostPort(addr, fmt.Sprintf("%d", config.SerfPort))
 
+	serfConfig.Tags = make(map[string]string)
+	serfConfig.Tags[nsqLookupAddress] = net.JoinHostPort(addr,
+		fmt.Sprintf("%d", config.NSQLookupPort))
+
+	hash, err := hashstructure.Hash(serfConfig.NodeName, hashstructure.FormatV2, nil)
+	if err != nil {
+		return nil, err
+	}
+	node.BusChannelName = fmt.Sprintf("%d", hash)
+
 	serfConfig.MemberlistConfig.BindAddr = net.IPv4zero.String()
 	serfConfig.MemberlistConfig.BindPort = config.SerfPort
 
@@ -115,7 +161,16 @@ func NewNode(config Config) (*Node, error) {
 	node.events = make(chan serf.Event)
 	serfConfig.EventCh = node.events
 
-	serfConfig.Logger = zap.NewStdLog(logger.Desugar())
+	loggerDiscard := log.New(io.Discard, "", log.LstdFlags)
+
+	serfConfig.MemberlistConfig.Logger = loggerDiscard
+	serfConfig.Logger = loggerDiscard
+
+	if serfLogEnabled {
+		serfConfig.Logger = zap.NewStdLog(logger.Desugar())
+		serfConfig.MemberlistConfig.Logger = zap.NewStdLog(logger.Desugar())
+	}
+
 	node.serfServer, err = serf.Create(serfConfig)
 	if err != nil {
 		return nil, err
@@ -154,12 +209,16 @@ func DefaultConfig() Config {
 		NSQLookupPort:           defaultNSQLookupPort,
 		NSQDListenHTTPPort:      defaultNSQDListenHTTPPort,
 		NSQLookupListenHTTPPort: defaultNSQLookupListenHTTPPort,
+		NSQInactiveTimeout:      defaultNSQInactiveTimeout,
+		NSQTombstoneTimeout:     defaultNSQTombstoneTimeout,
 
 		Nodefinder: NewNodefinderStatic(nil),
 	}
 }
 
 func (node *Node) Stop() error {
+
+	node.bus.stop()
 
 	// stop serf
 	err := node.serfServer.Leave()
@@ -168,6 +227,50 @@ func (node *Node) Stop() error {
 	}
 
 	return node.serfServer.Shutdown()
+}
+
+// prepareBus creates the configured topics and their channels.
+// a shared channel for one receiver and the other one to be used to share the message
+// across the cluster.
+func (node *Node) prepareBus() error {
+
+	for i := range node.bus.config.NSQTopics {
+		topic := node.bus.config.NSQTopics[i]
+		err := node.bus.createTopic(topic)
+		if err != nil {
+			node.logger.Errorf("can not create topic %s: %s", topic, err.Error())
+			return err
+		}
+		err = node.bus.createDeleteChannel(topic, sharedChannel, true)
+		if err != nil {
+			node.logger.Errorf("can not create channel shared: %s", err.Error())
+			return err
+		}
+		err = node.bus.createDeleteChannel(topic, node.BusChannelName, true)
+		if err != nil {
+			node.logger.Errorf("can not create channel individual: %s", err.Error())
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (node *Node) updateBusMember() error {
+
+	members := node.serfServer.Members()
+	updateBusMember := make([]string, 0)
+	for i := range members {
+		m := members[i]
+		updateBusMember = append(updateBusMember, m.Tags[nsqLookupAddress])
+	}
+
+	err := node.bus.updateBusNodes(updateBusMember)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (node *Node) eventHandler() {
@@ -179,11 +282,26 @@ func (node *Node) eventHandler() {
 		case serf.EventMemberJoin:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				for _, member := range memberEvent.Members {
+
 					if node.serfServer.LocalMember().Name == member.Name {
+
+						err := node.prepareBus()
+						if err != nil {
+							node.logger.Errorf("can not prepare bus: %s", err.Error())
+							panic("can not handle member join (prepare)")
+						}
 						node.upCh <- true
+
 						continue
 					}
-					node.logger.Infof("member joined")
+
+					node.logger.Infof("member %s joined", member.Name)
+					err := node.updateBusMember()
+					if err != nil {
+						node.logger.Errorf("can not prepare bus: %s", err.Error())
+						panic("can not handle member join (update)")
+					}
+
 				}
 			}
 		case serf.EventMemberFailed:
@@ -206,8 +324,77 @@ func (node *Node) eventHandler() {
 					continue
 				}
 				node.logger.Warnf("member %s reaped", member.Name)
+				err := node.updateBusMember()
+				if err != nil {
+					node.logger.Errorf("can not prepare bus: %s", err.Error())
+					panic("can not handle member join (reaped)")
+				}
 			}
 		}
 	}
 
+}
+
+func (node *Node) doSubscribe(topic, channel string,
+	handler func(m []byte) error) (*MessageConsumer, error) {
+
+	config := nsq.NewConfig()
+	config.MaxInFlight = 100
+	config.MsgTimeout = 1 * time.Minute
+	config.OutputBufferTimeout = 1 * time.Second
+	config.WriteTimeout = 3 * time.Second
+
+	consumer, err := nsq.NewConsumer(topic, channel, config)
+	if err != nil {
+		return nil, err
+	}
+
+	bl := &busLogger{
+		logger: node.logger,
+		debug:  busClientLogEnabled,
+	}
+	consumer.SetLogger(bl, 1)
+
+	mh := &MessageConsumer{
+		topic:    topic,
+		consumer: consumer,
+		executor: handler,
+	}
+
+	consumer.AddConcurrentHandlers(mh, 50)
+
+	err = consumer.ConnectToNSQLookupd(fmt.Sprintf("127.0.0.1:%d",
+		node.bus.config.NSQLookupListenHTTPPort))
+	if err != nil {
+		return nil, err
+	}
+
+	return mh, nil
+
+}
+
+func (node *Node) Subscribe(topic string, handler func(m []byte) error) (*MessageConsumer, error) {
+	return node.doSubscribe(topic, node.BusChannelName, handler)
+}
+
+func (node *Node) SubscribeOnce(topic string, handler func(m []byte) error) (*MessageConsumer, error) {
+	return node.doSubscribe(topic, sharedChannel, handler)
+}
+
+func (node *Node) Unsubscribe(messageConsumer *MessageConsumer) {
+	messageConsumer.consumer.Stop()
+}
+
+func (node *Node) Publish(topic string, message []byte) error {
+	return node.producer.Publish(topic, message)
+}
+
+type MessageConsumer struct {
+	topic    string
+	executor func(m []byte) error
+	consumer *nsq.Consumer
+}
+
+func (h *MessageConsumer) HandleMessage(m *nsq.Message) error {
+	return h.executor(m.Body)
 }

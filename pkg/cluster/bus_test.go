@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/nsqio/go-nsq"
-	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBusConfig(t *testing.T) {
@@ -15,18 +16,55 @@ func TestBusConfig(t *testing.T) {
 
 	// setting data dir with temp folder
 	b, err := newBus(config)
-	NoError(t, err)
-	NotEmpty(t, b.dataDir)
-	defer b.Stop()
+	require.NoError(t, err)
+	require.NotEmpty(t, b.dataDir)
+	defer b.stop()
 
-	config.DataDir = "/tmp/jens"
+	config.NSQDataDir = "/tmp/test"
+	config.NSQDPort = 4250
+	config.NSQDListenHTTPPort = 4251
+	config.NSQLookupPort = 4252
+	config.NSQLookupListenHTTPPort = 4253
 
 	b2, err := newBus(config)
-	defer b2.Stop()
-	Nil(t, err)
-	NotNil(t, b)
+	require.NoError(t, err)
+	defer b2.stop()
 
-	Equal(t, "/tmp/jens", b2.dataDir)
+	require.NotNil(t, b2)
+	assert.Equal(t, "/tmp/test", b2.dataDir)
+
+}
+
+func TestBusFunctions(t *testing.T) {
+
+	config := DefaultConfig()
+
+	// setting data dir with temp folder
+	b, err := newBus(config)
+	require.NoError(t, err)
+	defer b.stop()
+
+	go b.start()
+	err = b.waitTillConnected()
+	require.NoError(t, err)
+
+	err = b.createTopic("topic1")
+	assert.NoError(t, err)
+
+	err = b.createTopic("^%&^%&!")
+	assert.Error(t, err)
+
+	err = b.createDeleteChannel("topic1", "channel1", true)
+	assert.NoError(t, err)
+
+	err = b.createDeleteChannel("topic1", "&^&*^%&^%&^%", true)
+	assert.Error(t, err)
+
+	err = b.createDeleteChannel("unknown", "channel1", true)
+	assert.Error(t, err)
+
+	err = b.updateBusNodes([]string{"server1:5555"})
+	assert.NoError(t, err)
 
 }
 
@@ -36,10 +74,10 @@ func TestBusCluster(t *testing.T) {
 
 	// setting data dir with temp folder
 	b, err := newBus(config)
-	Nil(t, err)
-	defer b.Stop()
-	go b.Start()
-	b.WaitTillConnected()
+	require.NoError(t, err)
+	defer b.stop()
+	go b.start()
+	b.waitTillConnected()
 
 	config.NSQDPort = 4250
 	config.NSQDListenHTTPPort = 4251
@@ -47,28 +85,30 @@ func TestBusCluster(t *testing.T) {
 	config.NSQLookupListenHTTPPort = 4253
 
 	b2, err := newBus(config)
-	Nil(t, err)
-	defer b2.Stop()
-	go b2.Start()
-	b.WaitTillConnected()
+	require.NoError(t, err)
+	defer b2.stop()
+	go b2.start()
+	b.waitTillConnected()
 
-	err = b.UpdateBusNodes([]string{
+	// update cluster
+	err = b.updateBusNodes([]string{
 		"127.0.0.1:4151",
 		"127.0.0.1:4252",
 	})
-
-	err = b2.UpdateBusNodes([]string{
+	require.NoError(t, err)
+	err = b2.updateBusNodes([]string{
 		"127.0.0.1:4151",
 		"127.0.0.1:4252",
 	})
+	require.NoError(t, err)
 
 	// both instances should have 2 nodes
-	Eventually(t, func() bool {
-		newNodes, err := b.Nodes()
+	require.Eventually(t, func() bool {
+		newNodes, err := b.nodes()
 		if err != nil {
 			return false
 		}
-		newNodes2, err := b2.Nodes()
+		newNodes2, err := b2.nodes()
 		if err != nil {
 			return false
 		}
@@ -81,17 +121,14 @@ func TestBusCluster(t *testing.T) {
 
 	// add topcs to both busses
 	addTopics := func(bin *bus) {
-		bin.ModifyTopic("topic1", true)
-		bin.CreateChannel("topic1", "ch1")
-		bin.CreateChannel("topic1", "ch2")
-		bin.ModifyTopic("topic2", true)
-		bin.CreateChannel("topic2", "ch3")
+		bin.createTopic("topic1")
+		bin.createTopic("topic2")
+		bin.createDeleteChannel("topic1", "ch1", true)
+		bin.createDeleteChannel("topic1", "ch2", true)
+		bin.createDeleteChannel("topic2", "ch3", true)
 	}
 	addTopics(b)
 	addTopics(b2)
-
-	time.Sleep(2 * time.Second)
-	// t.FailNow()
 
 	clientConfig := nsq.NewConfig()
 
@@ -99,7 +136,6 @@ func TestBusCluster(t *testing.T) {
 		consumer, _ := nsq.NewConsumer(topic, channel, clientConfig)
 		consumer.AddHandler(mh)
 		consumer.ConnectToNSQLookupd(connect)
-		// time.Sleep(5 * time.Second)
 	}
 
 	mh1 := &messageHandler{
@@ -114,60 +150,39 @@ func TestBusCluster(t *testing.T) {
 		bus: "mh3",
 	}
 	createConsumer("topic2", "ch3", "localhost:4253", mh3)
+	mh4 := &messageHandler{
+		bus: "mh4",
+	}
+	createConsumer("topic2", "ch3", "localhost:4253", mh4)
 
-	// consumer, err := nsq.NewConsumer("topic1", "channel1", clientConfig)
-	// Nil(t, err)
-	// consumer.AddHandler(&myMessageHandler{
-	// 	bus: "bus1",
-	// })
-	// err = consumer.ConnectToNSQLookupd("localhost:4153")
-	// Nil(t, err)
-
-	// consumer2, err := nsq.NewConsumer("topic1", "channel2", clientConfig)
-	// Nil(t, err)
-	// consumer2.AddHandler(&myMessageHandler{
-	// 	bus: "bus2",
-	// })
-	// err = consumer2.ConnectToNSQLookupd("localhost:4253")
-	// Nil(t, err)
-
-	// consumer3, err := nsq.NewConsumer("topic2", "channel3", clientConfig)
-	// Nil(t, err)
-	// consumer3.AddHandler(&myMessageHandler{
-	// 	bus: "bus3",
-	// })
-	// err = consumer3.ConnectToNSQLookupd("localhost:4153")
-	// Nil(t, err)
-
+	// send messages
 	producer, err := nsq.NewProducer("127.0.0.1:4150", clientConfig)
-	Nil(t, err)
-	err = producer.Publish("topic1", []byte("JENS1"))
-	err = producer.Publish("topic1", []byte("JENS2"))
-	err = producer.Publish("topic1", []byte("JENS3"))
-	err = producer.Publish("topic1", []byte("JENS4"))
+	require.NoError(t, err)
+	defer producer.Stop()
 
-	fmt.Printf("?????????????????????????????????????????????ERR %v\n", err)
-
-	// producer2, err := nsq.NewProducer("127.0.0.1:4250", clientConfig)
-	// Nil(t, err)
+	err = producer.Publish("topic1", []byte("msg1"))
+	assert.NoError(t, err)
+	err = producer.Publish("topic1", []byte("msg2"))
+	assert.NoError(t, err)
 	err = producer.Publish("topic2", []byte("JENS1"))
+	assert.NoError(t, err)
 
-	fmt.Printf("?????????????????????????????????????????????ERR %v\n", err)
+	require.Eventually(t, func() bool {
+		status := true
 
-	// producer.Stop()
-	// producer2.Stop()
-	time.Sleep(10 * time.Second)
+		// both message handler should have gotten the two messages
+		if mh1.counter != 2 || mh2.counter != 2 {
+			status = false
+		}
 
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!! %d %d %d\n", mh1.counter, mh2.counter, mh3.counter)
-	// pl, err := b.Nodes()
-	// NoError(t, err)
+		// on the same channel. only one should get it
+		if (mh3.counter == 1 && mh4.counter == 1) ||
+			(mh3.counter == 0 && mh4.counter == 0) {
+			status = false
+		}
 
-	// for i := range pl.Producers {
-	// 	p := pl.Producers[i]
-	// 	t.Logf("topics %v: %v", p.TCPPort, p.Topics)
-	// }
-
-	// connect to first one and subscribe to second
+		return status
+	}, 10*time.Second, time.Second)
 
 }
 
@@ -178,6 +193,6 @@ type messageHandler struct {
 
 func (h *messageHandler) HandleMessage(m *nsq.Message) error {
 	h.counter += 1
-	fmt.Printf("%v <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,\n", h.bus)
+	fmt.Printf("%s: %d\n", h.bus, h.counter)
 	return nil
 }

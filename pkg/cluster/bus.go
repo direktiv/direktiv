@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -25,6 +26,20 @@ type bus struct {
 	dataDir string
 
 	config Config
+
+	mtx sync.Mutex
+}
+
+type busLogger struct {
+	logger *zap.SugaredLogger
+	debug  bool
+}
+
+func (bl *busLogger) Output(maxdepth int, s string) error {
+	if bl.debug {
+		bl.logger.Infof(s)
+	}
+	return nil
 }
 
 func newBus(config Config) (*bus, error) {
@@ -36,7 +51,7 @@ func newBus(config Config) (*bus, error) {
 
 	// create data dir if it does not exist
 	// if not set we use a tmp folder
-	dataDir := config.DataDir
+	dataDir := config.NSQDataDir
 	if dataDir == "" {
 		dir, err := os.MkdirTemp(os.TempDir(), "nsq")
 		if err != nil {
@@ -62,26 +77,24 @@ func newBus(config Config) (*bus, error) {
 
 	opts := nsqd.NewOptions()
 
-	// addr, err := config.Nodefinder.GetAddr()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// h, err := hashstructure.Hash(addr, hashstructure.FormatV2, nil)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// opts.ID = int64(h)
 	opts.DataPath = dataDir
-	opts.MemQueueSize = 100
-	opts.LogLevel = 1
-	// opts.NSQLookupdTCPAddresses = nodes
 
 	opts.TCPAddress = net.JoinHostPort(net.IPv4zero.String(),
 		fmt.Sprintf("%d", config.NSQDPort))
 	opts.HTTPAddress = net.JoinHostPort(net.IPv4zero.String(),
 		fmt.Sprintf("%d", config.NSQDListenHTTPPort))
+
+	opts.NSQLookupdTCPAddresses = []string{
+		fmt.Sprintf("127.0.0.1:%d", config.NSQLookupPort),
+	}
+
+	opts.MaxRdyCount = 10000
+	opts.MemQueueSize = 10000
+
+	opts.Logger = &busLogger{
+		logger: logger,
+		debug:  busLogEnabled,
+	}
 
 	bus.nsqd, err = nsqd.New(opts)
 	if err != nil {
@@ -94,6 +107,14 @@ func newBus(config Config) (*bus, error) {
 	lookupOptions.HTTPAddress = net.JoinHostPort(net.IPv4zero.String(),
 		fmt.Sprintf("%d", config.NSQLookupListenHTTPPort))
 
+	lookupOptions.InactiveProducerTimeout = config.NSQInactiveTimeout
+	lookupOptions.TombstoneLifetime = config.NSQTombstoneTimeout
+
+	lookupOptions.Logger = &busLogger{
+		logger: logger,
+		debug:  busLogEnabled,
+	}
+
 	bus.lookup, err = nsqlookupd.New(lookupOptions)
 	if err != nil {
 		return nil, err
@@ -103,7 +124,7 @@ func newBus(config Config) (*bus, error) {
 
 }
 
-func (b *bus) Stop() {
+func (b *bus) stop() {
 	if b.nsqd != nil {
 		b.nsqd.Exit()
 	}
@@ -125,7 +146,7 @@ type ProducerList struct {
 	} `json:"producers"`
 }
 
-func (b *bus) Nodes() (*ProducerList, error) {
+func (b *bus) nodes() (*ProducerList, error) {
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/nodes", b.config.NSQLookupListenHTTPPort)
 	resp, err := http.Get(url)
@@ -149,7 +170,10 @@ func (b *bus) Nodes() (*ProducerList, error) {
 
 }
 
-func (b *bus) UpdateBusNodes(nodes []string) error {
+func (b *bus) updateBusNodes(nodes []string) error {
+
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/config/nsqlookupd_tcp_addresses", b.config.NSQDListenHTTPPort)
 
@@ -172,11 +196,15 @@ func (b *bus) UpdateBusNodes(nodes []string) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("can not set newe bus members")
+	}
+
 	return nil
 
 }
 
-func (b *bus) Start() error {
+func (b *bus) start() error {
 	errChan := make(chan error, 1)
 
 	go func() {
@@ -194,30 +222,49 @@ func (b *bus) Start() error {
 
 }
 
-func (b *bus) WaitTillConnected() error {
+func (b *bus) waitTillConnected() error {
 	startCh := make(chan bool)
 	ticker := time.NewTicker(1 * time.Second)
+
+	ping := func(port int) bool {
+		url := fmt.Sprintf("http://127.0.0.1:%d/ping", port)
+		resp, err := http.Get(url)
+		if err != nil {
+			return false
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != 200 {
+			return false
+		}
+
+		bo, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return false
+		}
+
+		if string(bo) == "OK" {
+			return true
+		}
+
+		return false
+	}
+
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
 
-				url := fmt.Sprintf("http://127.0.0.1:%d/ping", b.config.NSQDListenHTTPPort)
-				resp, err := http.Get(url)
-				if err != nil {
-					continue
-				}
-				defer resp.Body.Close()
-
-				bo, err := io.ReadAll(resp.Body)
-				if err != nil {
+				if !ping(b.config.NSQDListenHTTPPort) {
 					continue
 				}
 
-				if string(bo) == "OK" {
-					startCh <- true
-					return
+				if !ping(b.config.NSQLookupListenHTTPPort) {
+					continue
 				}
+
+				startCh <- true
+				return
 
 			case <-time.After(60 * time.Second):
 				startCh <- false
@@ -233,33 +280,9 @@ func (b *bus) WaitTillConnected() error {
 	return nil
 }
 
-func (b *bus) ModifyTopic(topic string, create bool) error {
+func (b *bus) createTopic(topic string) error {
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/topic/create?topic=%s", b.config.NSQDListenHTTPPort, topic)
-
-	m := http.MethodPost
-	if !create {
-		m = http.MethodDelete
-	}
-
-	req, err := http.NewRequest(m, url, nil)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
-}
-
-func (b *bus) CreateChannel(topic, channel string) error {
-
-	url := fmt.Sprintf("http://127.0.0.1:%d/channel/create?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, topic, channel)
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
@@ -272,6 +295,38 @@ func (b *bus) CreateChannel(topic, channel string) error {
 		return err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("create channel failed")
+	}
+
+	return nil
+}
+
+func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
+
+	action := "delete"
+	if create {
+		action = "create"
+	}
+
+	url := fmt.Sprintf("http://127.0.0.1:%d/channel/%s?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, action, topic, channel)
+
+	req, err := http.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("create channel failed")
+	}
 
 	return nil
 }
