@@ -57,7 +57,7 @@ const Create = ({ onSuccess }: CreateProps) => {
         <FormErrors errors={errors} />
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right text-[15px]" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.registries.create.url")}
           </label>
           <Input
@@ -68,7 +68,7 @@ const Create = ({ onSuccess }: CreateProps) => {
         </fieldset>
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right text-[15px]" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.registries.create.user")}
           </label>
           <Input
@@ -79,7 +79,7 @@ const Create = ({ onSuccess }: CreateProps) => {
         </fieldset>
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right text-[15px]" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.registries.create.password")}
           </label>
           <Input

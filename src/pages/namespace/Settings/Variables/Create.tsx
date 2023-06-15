@@ -73,7 +73,7 @@ const Create = ({ onSuccess }: CreateProps) => {
         <FormErrors errors={errors} />
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right text-[15px]" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.variables.create.name")}
           </label>
           <Input
@@ -99,10 +99,7 @@ const Create = ({ onSuccess }: CreateProps) => {
         </Card>
 
         <fieldset className="flex items-center gap-5">
-          <label
-            className="w-[150px] text-right text-[15px]"
-            htmlFor="template"
-          >
+          <label className="w-[150px] text-right" htmlFor="template">
             {t("pages.settings.variables.edit.mimeType")}
           </label>
           <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />

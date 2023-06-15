@@ -125,10 +125,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
             </div>
           </Card>
           <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[150px] text-right text-[15px]"
-              htmlFor="template"
-            >
+            <label className="w-[150px] text-right" htmlFor="template">
               {t("pages.settings.variables.edit.mimeType")}
             </label>
             <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
