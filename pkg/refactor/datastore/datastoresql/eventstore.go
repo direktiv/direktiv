@@ -19,28 +19,15 @@ type sqlEventHistoryStore struct {
 	db *gorm.DB
 }
 
-func (hs *sqlEventHistoryStore) Append(ctx context.Context, event *events.Event, more ...*events.Event) ([]*events.Event, error) {
-	values := make([]interface{}, 0)
+func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Event) ([]*events.Event, []error) {
 	q := "INSERT INTO events_history (id, type, source, cloudevent, namespace_id, received_at, created_at) VALUES ( $1 , $2 , $3 , $4 , $5 , $6, $7 )"
-	eventByte, err := json.Marshal(event.Event)
-	if err != nil {
-		return nil, err
-	}
-	values = append(values, event.Event.ID())
-	values = append(values, event.Event.Type())
-	values = append(values, event.Event.Source())
-	values = append(values, eventByte)
-	values = append(values, event.Namespace)
-	values = append(values, event.ReceivedAt)
-	values = append(values, time.Now())
-	tx := hs.db.WithContext(ctx).Exec(q, values...)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	for _, v := range more {
+	errs := make([]error, len(events))
+	for i := range events {
+		v := events[i]
 		eventByte, err := json.Marshal(v.Event)
 		if err != nil {
-			return nil, err
+			errs[i] = err
+			continue
 		}
 		values := make([]interface{}, 0)
 		values = append(values, v.Event.ID())
@@ -52,11 +39,12 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, event *events.Event,
 		values = append(values, time.Now())
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
 		if tx.Error != nil {
-			return nil, tx.Error
+			errs[i] = tx.Error
+			continue
 		}
 	}
 
-	return append([]*events.Event{event}, more...), nil
+	return events, nil
 }
 
 func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time) error {
@@ -477,28 +465,17 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	}, nil
 }
 
-func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.EventListener, more ...*events.EventListener) (error, []error) {
+func (s *sqlEventListenerStore) Update(ctx context.Context, listeners []*events.EventListener) []error {
 	q := `UPDATE event_listeners SET
 	 updated_at = $1 , deleted = $2, received_events = $3 WHERE id = $4;`
-	b, err := json.Marshal(listener.ReceivedEventsForAndTrigger)
-	if err != nil {
-		return err, nil
-	}
-	tx := s.db.WithContext(ctx).Exec(
-		q,
-		listener.UpdatedAt,
-		listener.Deleted,
-		string(b),
-		listener.ID)
-	if tx.Error != nil {
-		return tx.Error, nil
-	}
-	errs := make([]error, len(more))
-	for i := range more {
-		e := more[i]
+
+	errs := make([]error, len(listeners))
+	for i := range listeners {
+		e := listeners[i]
 		b, err := json.Marshal(e.ReceivedEventsForAndTrigger)
 		if err != nil {
-			return err, nil
+			errs[i] = err
+			continue
 		}
 		tx := s.db.WithContext(ctx).Exec(
 			q,
@@ -511,7 +488,7 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listener *events.Eve
 		}
 	}
 
-	return nil, errs
+	return errs
 }
 
 var _ events.CloudEventsFilterStore = &sqlNamespaceCloudEventFilter{}

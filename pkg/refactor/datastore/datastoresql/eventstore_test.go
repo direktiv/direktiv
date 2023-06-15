@@ -28,12 +28,13 @@ func Test_Add_Get(t *testing.T) {
 	ev2 := newEvent(subj, "test-type", e2ID, ns)
 
 	ls := make([]*events.Event, 0)
-	ls = append(ls, &ev2)
-	_, err = hist.Append(context.Background(), &ev, ls...)
-	if err != nil {
-		t.Error(err)
-
-		return
+	ls = append(ls, &ev, &ev2)
+	_, errs := hist.Append(context.Background(), ls)
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+			return
+		}
 	}
 
 	gotEvents, err := hist.GetAll(context.Background())
@@ -207,12 +208,12 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	}
 	got[0].UpdatedAt = time.Now()
 	got[0].Deleted = true
-	err, errs := listeners.Update(context.Background(), got[0])
-	if err != nil {
-		t.Error(err)
-	}
-	if len(errs) != 0 {
-		t.Error("got unexpected errs")
+	errs := listeners.Update(context.Background(), []*events.EventListener{got[0]})
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+			return
+		}
 	}
 	got, count, err = listeners.Get(context.Background(), ns, 0, 0)
 	if err != nil {
