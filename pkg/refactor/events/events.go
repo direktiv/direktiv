@@ -39,6 +39,7 @@ type EventTopicsStore interface {
 	// topic SHOULD be a compound of namespaceID and the eventType like this: "uuid-eventType"
 	Append(ctx context.Context, namespaceID, eventListenerID uuid.UUID, topic string) error
 	GetListeners(ctx context.Context, topic string) ([]*EventListener, error)
+	Delete(ctx context.Context, namespaceID uuid.UUID, topic string, eventListenerID uuid.UUID) error
 }
 
 // represents a listener for one or multiple events with specific types.
@@ -56,9 +57,10 @@ type EventListener struct {
 }
 
 type TriggerInfo struct {
-	WorkflowID uuid.UUID // the id of the workflow.
-	InstanceID uuid.UUID // optional fill for instance-waiting trigger.
-	Step       int       // optional fill for instance-waiting trigger.
+	WorkflowID      uuid.UUID // the id of the workflow.
+	InstanceID      uuid.UUID // optional fill for instance-waiting trigger.
+	Step            int       // optional fill for instance-waiting trigger.
+	GlobGatekeepers []string
 }
 
 type TriggerType int
