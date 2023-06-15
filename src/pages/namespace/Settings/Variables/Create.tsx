@@ -92,8 +92,6 @@ const Create = ({ onSuccess }: CreateProps) => {
               }}
               theme={theme ?? undefined}
               data-testid="variable-editor"
-
-              //
             />
           </div>
         </Card>
