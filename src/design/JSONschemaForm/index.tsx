@@ -26,6 +26,7 @@ import {
 
 import Button from "../Button";
 import { Checkbox } from "../Checkbox";
+import FileInput from "../Fileinput";
 import Form from "@rjsf/core";
 import Input from "../Input";
 import validator from "@rjsf/validator-ajv8";
@@ -106,13 +107,31 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
   const type = useMemo(() => {
     if (props.schema.type === "integer") {
       return "number";
-    } else if (props.type === "file") {
-      return "file";
     } else {
       return undefined;
     }
-  }, [props.type, props.schema.type]);
+  }, [props.schema.type]);
 
+  if (props.type === "file")
+    return (
+      <FileInput
+        className="mb-2 mt-1 w-full"
+        type="file"
+        required={props.required}
+        id={props.id}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          if (e.target.files && e.target.files.length > 0) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              props.onChange(reader.result);
+            };
+            reader.readAsDataURL(e.target.files[0] as Blob);
+          } else {
+            props.onChange(e.target.files);
+          }
+        }}
+      />
+    );
   return (
     <Input
       className="mb-2 mt-1 w-full"
@@ -120,19 +139,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
       required={props.required}
       id={props.id}
       onChange={(e) => {
-        if (
-          props.type === "file" &&
-          e.target.files &&
-          e.target.files.length > 0
-        ) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            props.onChange(reader.result);
-          };
-          reader.readAsDataURL(e.target.files[0] as Blob);
-        } else {
-          props.onChange(e.target.value);
-        }
+        props.onChange(e.target.value);
       }}
     />
   );
