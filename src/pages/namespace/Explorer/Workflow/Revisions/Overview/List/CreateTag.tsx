@@ -9,6 +9,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Tag } from "lucide-react";
 import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
@@ -76,11 +77,7 @@ const CreateTag = ({
         </DialogTitle>
       </DialogHeader>
       <div className="my-3 flex flex-col gap-y-5">
-        {!!errors.name && (
-          <Alert variant="error" className="mb-5">
-            <p>{errors.name.message}</p>
-          </Alert>
-        )}
+        <FormErrors errors={errors} />
         <div>
           <Trans
             i18nKey="pages.explorer.tree.workflow.revisions.overview.list.tag.description"

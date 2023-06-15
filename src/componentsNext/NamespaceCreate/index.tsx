@@ -7,8 +7,8 @@ import {
 import { Home, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { fileNameSchema } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
@@ -79,11 +79,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
       </DialogHeader>
 
       <div className="my-3">
-        {!!errors.name && (
-          <Alert variant="error" className="mb-5">
-            <p>{errors.name.message}</p>
-          </Alert>
-        )}
+        <FormErrors errors={errors} className="mb-5" />
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="name">
