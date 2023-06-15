@@ -72,7 +72,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.registries.create.user")}
           </label>
           <Input
-            className="h-96"
             data-testid="new-registry-user"
             placeholder="user-name"
             {...register("user")}
@@ -84,7 +83,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.registries.create.password")}
           </label>
           <Input
-            className="h-96"
             data-testid="new-registry-pwd"
             type="password"
             placeholder="password"
