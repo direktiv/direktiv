@@ -253,6 +253,17 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 	return conv, nil
 }
 
+// Delete implements events.EventTopicsStore
+func (s *sqlEventTopicsStore) Delete(ctx context.Context, eventListenerID uuid.UUID) error {
+	q := "DELETE FROM event_topics WHERE eventListenerID = $1;"
+	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
 var _ events.EventListenerStore = &sqlEventListenerStore{}
 
 type sqlEventListenerStore struct {
