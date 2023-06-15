@@ -28,8 +28,7 @@ const ItemRow = <ItemType,>({
 
   return (
     <TableRow>
-      <TableCell>{item.name}</TableCell>
-
+      <TableCell data-testid="item-name">{item.name}</TableCell>
       <TableCell className="w-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

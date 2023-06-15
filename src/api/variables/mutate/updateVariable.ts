@@ -12,9 +12,16 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
-const updateVar = apiFactory({
-  url: ({ namespace, name }: { namespace: string; name: string }) =>
-    `/api/namespaces/${namespace}/vars/${name}`,
+export const updateVar = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    name,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    name: string;
+  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/vars/${name}`,
   method: "PUT",
   schema: VarUpdatedSchema,
 });

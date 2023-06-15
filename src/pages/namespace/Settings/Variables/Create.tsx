@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import MimeTypeSelect, { MimeTypeType } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
@@ -13,7 +14,6 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import MimeTypeSelect from "./MimeTypeSelect";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -29,7 +29,7 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const [name, setName] = useState<string | undefined>();
   const [body, setBody] = useState<string | undefined>();
-  const [mimeType, setMimeType] = useState<string | undefined>();
+  const [mimeType, setMimeType] = useState<MimeTypeType | undefined>();
 
   const {
     handleSubmit,
