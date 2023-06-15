@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
   MimeTypeSchema,
   MimeTypeType,
@@ -21,7 +22,6 @@ import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import { Trash } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
@@ -48,7 +48,8 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
-  const [editorLanguage, setEditorLanguage] = useState<string>("");
+  const [editorLanguage, setEditorLanguage] =
+    useState<EditorLanguagesType>("plaintext");
 
   const {
     handleSubmit,
