@@ -5,9 +5,17 @@ import VariablesList from "./Variables";
 
 const SettingsPage: FC = () => (
   <div className="flex flex-col space-y-6 p-10">
-    <SecretsList />
-    <RegistriesList />
-    <VariablesList />
+    <section>
+      <SecretsList />
+    </section>
+
+    <section>
+      <RegistriesList />
+    </section>
+
+    <section>
+      <VariablesList />
+    </section>
   </div>
 );
 
