@@ -1,12 +1,9 @@
 import Button from "~/design/Button";
+import { ComponentPropsWithoutRef } from "react";
 import { DialogTrigger } from "~/design/Dialog";
 import { PlusCircle } from "lucide-react";
 
-interface CreateItemButtonProps {
-  onClick: () => void;
-}
-
-const CreateItemButton = (props: CreateItemButtonProps) => (
+const CreateItemButton = (props: ComponentPropsWithoutRef<"button">) => (
   <DialogTrigger {...props} asChild>
     <Button variant="outline">
       <PlusCircle />
