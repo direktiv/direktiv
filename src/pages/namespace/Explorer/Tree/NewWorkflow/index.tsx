@@ -14,7 +14,6 @@ import {
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
