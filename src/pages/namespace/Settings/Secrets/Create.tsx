@@ -71,7 +71,7 @@ const Create = ({ onSuccess }: CreateProps) => {
         <fieldset className="flex items-start gap-5">
           <Textarea
             className="h-96"
-            data-testid="new-workflow-editor"
+            data-testid="new-secret-editor"
             {...register("value")}
           />
         </fieldset>
