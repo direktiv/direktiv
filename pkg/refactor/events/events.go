@@ -56,9 +56,10 @@ type EventListener struct {
 }
 
 type TriggerInfo struct {
-	WorkflowID uuid.UUID // the id of the workflow.
-	InstanceID uuid.UUID // optional fill for instance-waiting trigger.
-	Step       int       // optional fill for instance-waiting trigger.
+	WorkflowID      uuid.UUID // the id of the workflow.
+	InstanceID      uuid.UUID // optional fill for instance-waiting trigger.
+	Step            int       // optional fill for instance-waiting trigger.
+	GlobGatekeepers []string
 }
 
 type TriggerType int
