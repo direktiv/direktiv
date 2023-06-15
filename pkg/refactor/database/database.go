@@ -21,6 +21,7 @@ func sqlLiteSchema() string {
 		"timestamptz": "datetime",
 		"bytea":       "blob",
 		"boolean":     "numeric",
+		"serial":      "integer",
 	}
 
 	liteSchema := Schema

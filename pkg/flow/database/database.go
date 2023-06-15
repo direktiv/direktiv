@@ -22,7 +22,6 @@ type Database interface {
 
 	Namespace(ctx context.Context, id uuid.UUID) (*Namespace, error)
 	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
-	NamespaceAnnotation(ctx context.Context, nsID uuid.UUID, key string) (*Annotation, error)
 }
 
 type CacheData struct {
