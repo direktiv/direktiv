@@ -744,7 +744,12 @@ var cloudeventsOrderings = []*orderingInfo{
 	},
 }
 
-var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){}
+const (
+	contains = "CONTAINS"
+	cr       = "CREATED"
+	after    = "AFTER"
+	before   = "BEFORE"
+)
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -755,20 +760,95 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	if err != nil {
 		return nil, err
 	}
+	db := flow.edb.DB()
+	q := ""
+	var rows *sql.Rows
+	qs := make([]string, 0)
+	qv := make([]interface{}, 0)
+	qs = append(qs, "where namespace_cloudevents=$%v ")
+	qv = append(qv, cached.Namespace.ID)
+	for _, e := range req.Pagination.Filter {
+		f := e.Field
+		t := e.Type
+		v := e.Val
+		if f == cr && t == before {
+			qs = append(qs, " and created < $%v")
+			t, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return nil, err
+			}
+			qv = append(qv, t)
+		}
+		if f == cr && t == after {
+			qs = append(qs, " and created >= $%v")
+			t, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return nil, err
+			}
+			qv = append(qv, t)
+		}
+		if t == contains && f == "TEXT" {
+			qs = append(qs, " and event::text like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+		if t == contains && f == "TYPE" {
+			qs = append(qs, " and event::json->>'type' like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+	}
+	tail := ""
+	i := 0
+	x := ""
+	for i, x = range qs {
+		tail += fmt.Sprintf(x, i+1)
+	}
+	i++
+	qv = append(qv, req.Pagination.Limit, req.Pagination.Offset)
+	q = fmt.Sprintf(`select oid, event_id, event, fire, created, processed
+		from cloud_events %v order by created desc limit $%v offset $%v`, tail, i+1, i+2)
+	qCount := `select count(oid) as count from cloud_events `
+	qCount += tail
 
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
+	rows, err = db.Query(q, qv...)
 	if err != nil {
 		return nil, err
 	}
+	rowsC, err := db.Query(qCount, qv[:len(qv)-2]...)
+	if err != nil {
+		return nil, err
+	}
+	defer rowsC.Close()
+	count := 0
+	if rowsC.Next() {
+		err = rowsC.Scan(&count)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	rowsC.Close()
+	defer rows.Close()
+
+	var results []*ent.CloudEvents
+	for rows.Next() {
+		r := ent.CloudEvents{}
+		var b []uint8
+		err := rows.Scan(&r.ID, &r.EventId, &b, &r.Fire, &r.Created, &r.Processed)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(b, &r.Event)
+
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, &r)
+	}
+	rows.Close()
 
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = pi
 
 	for _, x := range results {
 		e := new(grpc.Event)
@@ -780,6 +860,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		e.Type = x.Event.Type()
 		e.Cloudevent = []byte(x.Event.String())
 	}
+	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
 
 	return resp, nil
 }
@@ -803,19 +884,95 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 
 resend:
 
-	clients := flow.edb.Clients(ctx)
+	db := flow.edb.DB()
+	q := ""
+	var rows *sql.Rows
+	qs := make([]string, 0)
+	qv := make([]interface{}, 0)
+	qs = append(qs, "where namespace_cloudevents=$%v ")
+	qv = append(qv, cached.Namespace.ID)
+	for _, e := range req.Pagination.Filter {
+		f := e.Field
+		t := e.Type
+		v := e.Val
+		if f == cr && t == before {
+			qs = append(qs, " and created < $%v")
+			t, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return err
+			}
+			qv = append(qv, t)
+		}
+		if f == cr && t == after {
+			qs = append(qs, " and created >= $%v")
+			t, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return err
+			}
+			qv = append(qv, t)
+		}
 
-	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
+		if t == contains && f == "TEXT" {
+			qs = append(qs, " and event::text like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+		if t == contains && f == "TYPE" {
+			qs = append(qs, " and event::json->>'type' like $%v")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+	}
+	tail := ""
+	i := 0
+	x := ""
+	for i, x = range qs {
+		tail += fmt.Sprintf(x, i+1)
+	}
+	i++
+	qv = append(qv, req.Pagination.Limit, req.Pagination.Offset)
+	q = fmt.Sprintf(`select oid, event_id, event, fire, created, processed
+	from cloud_events %v order by created desc limit $%v offset $%v`, tail, i+1, i+2)
+	qCount := `select count(oid) as count from cloud_events `
+	qCount += tail
+	// SELECT COUNT(*) as count_pet FROM pet;
 
-	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
+	rows, err = db.Query(q, qv...)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
+	rowsC, err := db.Query(qCount, qv[:len(qv)-2]...)
+	if err != nil {
+		return err
+	}
+	count := 0
+	if rowsC.Next() {
+		err = rowsC.Scan(&count)
+
+		if err != nil {
+			return err
+		}
+	}
+	rowsC.Close()
+	var results []*ent.CloudEvents
+	for rows.Next() {
+		r := ent.CloudEvents{}
+		var b []uint8
+		err := rows.Scan(&r.ID, &r.EventId, &b, &r.Fire, &r.Created, &r.Processed)
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(b, &r.Event)
+
+		if err != nil {
+			return err
+		}
+		results = append(results, &r)
+	}
+	rows.Close()
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = pi
 
 	for _, x := range results {
 		e := new(grpc.Event)
@@ -827,6 +984,7 @@ resend:
 		e.Type = x.Event.Type()
 		e.Cloudevent = []byte(x.Event.String())
 	}
+	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
