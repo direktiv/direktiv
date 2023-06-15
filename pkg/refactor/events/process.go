@@ -39,7 +39,7 @@ func (ee EventEngine) ProcessEvents(
 	topics := ee.getTopics(ctx, namespace, cloudevents)
 	listeners, _ := ee.getListeners(ctx, topics...)
 	// TODO log err
-	h, _ := ee.getEventHandlers(ctx, listeners)
+	h := ee.getEventHandlers(ctx, listeners)
 	// TODO log errors
 	ee.handleEvents(ctx, namespace, cloudevents, h)
 	_ = ee.usePostProcessingEvents(ctx, listeners)
@@ -76,7 +76,7 @@ func (EventEngine) getTopics(ctx context.Context, namespace uuid.UUID, cloudeven
 
 func (ee EventEngine) getEventHandlers(ctx context.Context,
 	listeners []*EventListener,
-) ([]eventHandler, error) {
+) []eventHandler {
 	_ = ctx // todo otel
 
 	handlers := make([]eventHandler, 0, len(listeners))
@@ -84,7 +84,7 @@ func (ee EventEngine) getEventHandlers(ctx context.Context,
 		handlers = append(handlers, ee.createEventHandler(l))
 	}
 
-	return handlers, nil
+	return handlers
 }
 
 func (ee EventEngine) createEventHandler(l *EventListener) eventHandler {
@@ -124,6 +124,7 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 			return err
 		}
 	}
+
 	return nil // TODO
 }
 
