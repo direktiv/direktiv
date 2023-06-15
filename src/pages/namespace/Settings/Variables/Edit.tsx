@@ -110,10 +110,8 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               />
             </DialogTitle>
           </DialogHeader>
-
           <FormErrors errors={errors} />
-
-          <Card className="grow p-4 pl-0">
+          <Card className="grow p-4 pl-0" background="weight-1">
             <div className="h-[500px]">
               <Editor
                 value={body}
@@ -126,7 +124,6 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               />
             </div>
           </Card>
-
           <fieldset className="flex items-center gap-5">
             <label
               className="w-[150px] text-right text-[15px]"
@@ -136,7 +133,6 @@ const Edit = ({ item, onSuccess }: EditProps) => {
             </label>
             <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
           </fieldset>
-
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="ghost">

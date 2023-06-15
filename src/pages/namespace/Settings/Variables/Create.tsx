@@ -83,7 +83,7 @@ const Create = ({ onSuccess }: CreateProps) => {
           />
         </fieldset>
 
-        <Card className="grow p-4 pl-0">
+        <Card className="grow p-4 pl-0" background="weight-1">
           <div className="h-[500px]">
             <Editor
               value={body}
@@ -92,6 +92,8 @@ const Create = ({ onSuccess }: CreateProps) => {
               }}
               theme={theme ?? undefined}
               data-testid="variable-editor"
+
+              //
             />
           </div>
         </Card>
