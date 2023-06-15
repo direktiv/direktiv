@@ -70,7 +70,7 @@ const Create = ({ onSuccess }: CreateProps) => {
           </DialogHeader>
         </DialogHeader>
 
-        <FormErrors errors={errors} />
+        <FormErrors errors={errors} className="mb-5" />
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="name">

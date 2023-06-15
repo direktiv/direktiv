@@ -110,7 +110,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               />
             </DialogTitle>
           </DialogHeader>
-          <FormErrors errors={errors} />
+          <FormErrors errors={errors} className="mb-5" />
           <Card className="grow p-4 pl-0" background="weight-1">
             <div className="h-[500px]">
               <Editor
