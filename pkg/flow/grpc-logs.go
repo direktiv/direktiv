@@ -394,6 +394,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
 	qu["type"] = ins
+	flow.sugar.Errorf("XXXXXXXX %v", prefix)
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
@@ -470,6 +471,7 @@ resend:
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
 	qu["type"] = ins
+	flow.sugar.Errorf("XXXXXXXX %v", prefix)
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
