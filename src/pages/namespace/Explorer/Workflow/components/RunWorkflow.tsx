@@ -89,53 +89,60 @@ const RunWorkflow = ({ path }: { path: string }) => {
         </DialogTitle>
       </DialogHeader>
       <div className="my-3 flex flex-col gap-y-5">
-        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <Tabs defaultValue={activeTab}>
-            <TabsList variant="boxed">
-              <TabsTrigger variant="boxed" value={tabs[0]}>
-                {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
-              </TabsTrigger>
-              <TabsTrigger variant="boxed" value={tabs[1]}>
-                {t("pages.explorer.tree.workflow.runWorkflow.formInput")}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value={tabs[0]} asChild>
-              <Card
-                className="h-96 w-full p-4 sm:h-[500px]"
-                noShadow
-                background="weight-1"
-              >
-                <Editor
-                  value={getValues("payload")}
-                  onMount={(editor) => {
-                    editor.focus();
-                    editor.setPosition({ lineNumber: 2, column: 5 });
-                  }}
-                  onChange={(newData) => {
-                    if (typeof newData === "string") {
-                      setValue("payload", newData, {
-                        shouldValidate: true,
-                      });
-                    }
-                  }}
-                  language="json"
-                  theme={theme ?? undefined}
-                />
-              </Card>
-            </TabsContent>
-            <TabsContent value={tabs[1]} asChild>
-              <Card className="h-96 w-full p-4 sm:h-[500px]">
-                {isFormAvailable ? (
-                  <ScrollArea className="h-full">
-                    <JSONSchemaForm schema={validationSchema} />
-                  </ScrollArea>
-                ) : (
-                  <FormInputHint />
-                )}
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </form>
+        <form id={formId} onSubmit={handleSubmit(onSubmit)}></form>
+        <Tabs defaultValue={activeTab}>
+          <TabsList variant="boxed">
+            <TabsTrigger variant="boxed" value={tabs[0]}>
+              {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
+            </TabsTrigger>
+            <TabsTrigger variant="boxed" value={tabs[1]}>
+              {t("pages.explorer.tree.workflow.runWorkflow.formInput")}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value={tabs[0]} asChild>
+            <Card
+              className="h-96 w-full p-4 sm:h-[500px]"
+              noShadow
+              background="weight-1"
+            >
+              <Editor
+                value={getValues("payload")}
+                onMount={(editor) => {
+                  editor.focus();
+                  editor.setPosition({ lineNumber: 2, column: 5 });
+                }}
+                onChange={(newData) => {
+                  if (typeof newData === "string") {
+                    setValue("payload", newData, {
+                      shouldValidate: true,
+                    });
+                  }
+                }}
+                language="json"
+                theme={theme ?? undefined}
+              />
+            </Card>
+          </TabsContent>
+          <TabsContent value={tabs[1]} asChild>
+            <Card className="h-96 w-full p-4 sm:h-[500px]">
+              {isFormAvailable ? (
+                <ScrollArea className="h-full">
+                  <JSONSchemaForm
+                    schema={validationSchema}
+                    action="submit"
+                    onSubmit={(form) => {
+                      onSubmit({ payload: JSON.stringify(form.formData) });
+                    }}
+                  >
+                    <Button type="submit">submit</Button>
+                  </JSONSchemaForm>
+                </ScrollArea>
+              ) : (
+                <FormInputHint />
+              )}
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
       <DialogFooter>
         <DialogClose asChild>
