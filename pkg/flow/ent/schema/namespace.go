@@ -58,7 +58,6 @@ func (Namespace) Edges() []ent.Edge {
 		edge.To("logs", LogMsg.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("cloudevents", CloudEvents.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("namespacelisteners", Events.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("annotations", Annotation.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("cloudeventfilters", CloudEventFilters.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

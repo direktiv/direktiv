@@ -5,7 +5,6 @@ package ent
 import (
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent/annotation"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
@@ -20,26 +19,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	annotationFields := schema.Annotation{}.Fields()
-	_ = annotationFields
-	// annotationDescName is the schema descriptor for name field.
-	annotationDescName := annotationFields[1].Descriptor()
-	// annotation.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	annotation.NameValidator = annotationDescName.Validators[0].(func(string) error)
-	// annotationDescCreatedAt is the schema descriptor for created_at field.
-	annotationDescCreatedAt := annotationFields[2].Descriptor()
-	// annotation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	annotation.DefaultCreatedAt = annotationDescCreatedAt.Default.(func() time.Time)
-	// annotationDescUpdatedAt is the schema descriptor for updated_at field.
-	annotationDescUpdatedAt := annotationFields[3].Descriptor()
-	// annotation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	annotation.DefaultUpdatedAt = annotationDescUpdatedAt.Default.(func() time.Time)
-	// annotation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	annotation.UpdateDefaultUpdatedAt = annotationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// annotationDescID is the schema descriptor for id field.
-	annotationDescID := annotationFields[0].Descriptor()
-	// annotation.DefaultID holds the default value on creation for the id field.
-	annotation.DefaultID = annotationDescID.Default.(func() uuid.UUID)
 	cloudeventfiltersFields := schema.CloudEventFilters{}.Fields()
 	_ = cloudeventfiltersFields
 	// cloudeventfiltersDescName is the schema descriptor for name field.

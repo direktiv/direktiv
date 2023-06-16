@@ -138,8 +138,3 @@ func (db *CachedDatabase) InvalidateNamespace(ctx context.Context, cached *Cache
 
 	db.invalidateCachedNamespace(ctx, cached.Namespace.ID, recursive)
 }
-
-func (db *CachedDatabase) NamespaceAnnotation(ctx context.Context, inodeID uuid.UUID, key string) (*Annotation, error) {
-	// NOTE: not bothering to cache this right now
-	return db.source.NamespaceAnnotation(ctx, inodeID, key)
-}

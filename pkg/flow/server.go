@@ -64,7 +64,6 @@ type server struct {
 	flow            *flow
 	internal        *internal
 	events          *events
-	vars            *vars
 	functionsClient igrpc.FunctionsClient
 
 	metrics    *metrics.Client
@@ -161,7 +160,7 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Silent,
+				LogLevel: logger.Info,
 			},
 		),
 	})
@@ -175,6 +174,8 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
+
+	fmt.Printf(">>>>>> dsn %s\n", db)
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -209,10 +210,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing metrics.")
 
-	srv.metrics, err = metrics.NewClient()
-	if err != nil {
-		return err
-	}
+	srv.metrics = metrics.NewClient(srv.gormDB)
 
 	srv.sugar.Debug("Initializing engine.")
 
@@ -229,14 +227,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	srv.sugar.Debug("Initializing vars server.")
-
-	srv.vars, err = initVarsServer(cctx, srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.vars.Close)
 
 	srv.sugar.Debug("Initializing internal grpc server.")
 
@@ -344,20 +334,6 @@ func (srv *server) start(ctx context.Context) error {
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-
-	go func() {
-		defer wg.Done()
-		defer cancel()
-		e := srv.vars.Run()
-		if e != nil {
-			srv.sugar.Error(err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
-		}
-	}()
 
 	go func() {
 		defer wg.Done()
