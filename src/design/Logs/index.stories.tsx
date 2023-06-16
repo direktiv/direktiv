@@ -76,18 +76,33 @@ export const NoWrapLog = () => (
 
 export const EditorVSLogsFontCompare = () => (
   <div className="flex flex-row gap-5">
-    <Card>
-      <Logs>
+    <Card className="h-[500px] flex-1">
+      <Logs linewrap>
+        <LogEntry time="12:34:23">
+          Preparing workflow triggered by api.
+        </LogEntry>
+        <LogEntry time="12:34:23">Starting workflow demo.yml.</LogEntry>
+        <LogEntry time="12:34:23">
+          Running state logic (step:1) -- helloworld
+        </LogEntry>
+        <LogEntry time="12:34:23">Transforming state data.</LogEntry>
+        <LogEntry time="12:34:23" variant="warning">
+          Warning: this is a very long line with a warning. this is a very long
+          line with a warning. this is a very long line with a warning. this is
+          a very long line with a warning. this is a very long line with a
+          warning. this is a very long line with a warning. this is a very long
+          line with a warning. this is a very long line with a warning. this is
+          a very long line with a warning. this is a very long line with a
+          warning. this is a very long line with a warning. this is a very long
+          line with a warning.
+        </LogEntry>
         <LogEntry time="12:34:23" variant="success">
-          {`${YamlSample}
-          `}
+          Workflow demo.yml completed.
         </LogEntry>
       </Logs>
     </Card>
-    <Card>
-      <div className="h-[500px] w-[500px]">
-        <Editor value={YamlSample} />
-      </div>
+    <Card className="h-[500px] flex-1 p-4">
+      <Editor className="grow" value={YamlSample} />
     </Card>
   </div>
 );
