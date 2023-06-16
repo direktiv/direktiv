@@ -1,4 +1,4 @@
-package datastore_test
+package datastoresql_test
 
 import (
 	"context"
@@ -26,6 +26,47 @@ func Test_Add_Get(t *testing.T) {
 	q["level"] = logengine.Info
 	q["source"] = id
 	got, _, err := logstore.Get(context.Background(), q, -1, -1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(got) < 1 {
+		t.Error("got no results")
+	}
+}
+
+func Test_Callpath(t *testing.T) {
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	logstore := ds.Logs()
+	id := uuid.New()
+	tags := make(map[string]interface{})
+	tags["log_instance_call_path"] = "/" + id.String()
+	err = logstore.Append(context.Background(), time.Now(), logengine.Debug, "testing callpath", tags)
+	if err != nil {
+		t.Error(err)
+	}
+	q := make(map[string]interface{}, 0)
+	q["log_instance_call_path"] = "/" + id.String()
+	got, _, err := logstore.Get(context.Background(), q, -1, -1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(got) < 1 {
+		t.Error("got no results")
+	}
+	tags["log_instance_call_path"] = "/" + id.String() + "/" + uuid.NewString()
+	err = logstore.Append(context.Background(), time.Now(), logengine.Debug, "testing callpath", tags)
+	if err != nil {
+		t.Error(err)
+	}
+	q = make(map[string]interface{}, 0)
+	q["log_instance_call_path"] = "/" + id.String()
+	got, _, err = logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
