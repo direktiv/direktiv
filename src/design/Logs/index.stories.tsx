@@ -1,6 +1,8 @@
 import { LogEntry, Logs } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Card } from "../Card";
+import Editor from "../Editor";
+import { YamlSample } from "../Editor/languageSamples";
 
 const meta = {
   title: "Components/Logs",
@@ -46,71 +48,46 @@ export const LogVariants = () => (
 
 export const WrapLog = () => (
   <Card>
-    <Logs>
-      <LogEntry time="12:34:23" linewrap>
-        Hey this is the error log Hey this is the error logHey this is the error
-        logHey this is the error logHey this is the error logHey this is the
-        error logHey this is the error logHey this is the error logHey this is
-        the error logHey this is the error logHey this is the error logHey this
-        is the error logHey this is the error logHey this is the error logHey
-        this is the error logHey this is the error logHey this is the error
-        logHey this is the error logHey this is the error logHey this is the
-        error logHey this is the error logHey this is the error logHey this is
-        the error log
-      </LogEntry>
-    </Logs>
-    <Logs>
-      <LogEntry time="12:34:23" linewrap variant="info">
-        {`
-                # To compare the font with Monaco Editor
-functions:
-- id: greeter
-  image: direktiv/greeting:v3
-  type: knative-workflow
-- id: solve2
-  image: direktiv/solve:v3
-  type: knative-workflow
-description: 1
-states:
-- id: event-xor
-  type: eventXor
-  timeout: PT1H
-  events:
-  - event: 
-      type: solveexpressioncloudevent
-    transition: solve
-  - event: 
-      type: greetingcloudevent
-    transition: greet
-- id: greet
-  type: action
-  action:
-    function: greeter
-    input: jq(.greetingcloudevent.data)
-  transform: 
-    greeting: jq(.return.greeting)
-- id: solve
-  type: action
-  action:
-    function: solve2
-    input: jq(.solveexpressioncloudevent.data)
-  transform: 
-    solvedexpression: jq(.return)
-                `}
-      </LogEntry>
-    </Logs>
-    <Logs>
-      <LogEntry time="12:34:23">
-        Hey this is the error log Hey this is the error logHey this is the error
-        logHey this is the error logHey this is the error logHey this is the
-        error logHey this is the error logHey this is the error logHey this is
-        the error logHey this is the error logHey this is the error logHey this
-        is the error logHey this is the error logHey this is the error logHey
-        this is the error logHey this is the error logHey this is the error
-        logHey this is the error logHey this is the error logHey this is the
-        error logHey this is the error logHey this is the error logHey this is
-        the error log
+    <Logs linewrap>
+      <LogEntry time="12:34:23" variant="success">
+        {`This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line
+          Next line
+          Third line`}
       </LogEntry>
     </Logs>
   </Card>
+);
+
+export const NoWrapLog = () => (
+  <Card>
+    <Logs>
+      <LogEntry time="12:34:23" variant="success">
+        {`This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line
+          Next line
+          Third line
+        `}
+      </LogEntry>
+      <LogEntry time="12:34:23" variant="error">
+        New Entry
+      </LogEntry>
+    </Logs>
+  </Card>
+);
+
+export const EditorVSLogsFontCompare = () => (
+  <div className="flex flex-row gap-5">
+    <Card>
+      <Logs>
+        <LogEntry time="12:34:23" variant="success">
+          {`${YamlSample}
+          `}
+        </LogEntry>
+      </Logs>
+    </Card>
+    <Card>
+      <div className="h-[500px] w-[500px]">
+        <Editor value={YamlSample} />
+      </div>
+    </Card>
+  </div>
 );
