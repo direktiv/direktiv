@@ -32,6 +32,7 @@ func Test_ChachedSQLLogStore(t *testing.T) {
 				Fields: tagsCopy,
 			}
 			dbMock <- l
+
 			return nil
 		},
 		func(objectID uuid.UUID, objectType string) {},
@@ -113,6 +114,7 @@ func Test_TracingLogger(t *testing.T) {
 		Sugar: zap.S(),
 		AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
 			traceTagsMock = true
+
 			return toTags
 		},
 	}
