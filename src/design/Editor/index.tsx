@@ -13,13 +13,21 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
 
 type EditorType = Parameters<NonNullable<EditorProps["onMount"]>>[0];
 
+export type EditorLanguagesType =
+  | "html"
+  | "css"
+  | "json"
+  | "shell"
+  | "plaintext"
+  | "yaml";
+
 const Editor: FC<
   Omit<EditorProps, "beforeMount" | "onMount" | "onChange"> & {
     theme?: "light" | "dark";
     onSave?: (value: string | undefined) => void;
     onChange?: (value: string | undefined) => void;
     onMount?: EditorProps["onMount"];
-    language?: "html" | "css" | "json" | "shell" | "plaintext" | "yaml";
+    language?: EditorLanguagesType;
   }
 > = ({
   options,

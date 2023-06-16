@@ -1,5 +1,6 @@
 import "cross-fetch/polyfill";
 
+import { ResponseParser, apiFactory } from "../utils";
 import {
   afterAll,
   afterEach,
@@ -13,7 +14,6 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { UseQueryWrapper } from "../../../test/utils";
-import { apiFactory } from "../utils";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { z } from "zod";
@@ -27,6 +27,7 @@ const apiEndpointWithDynamicSegment = "http://localhost/this-is-dynamic/my-api";
 const apiEndpointEmptyResponse = "http://localhost/empty-response";
 const apiEndpointTextResponse = "http://localhost/text-response";
 const apiEndpointHeaders = "http://localhost/headers";
+const apiEndpointTextResponseWithHeaders = "http://localhost/text-and-headers";
 
 const testApi = setupServer(
   rest.get(apiEndpoint, (req, res, ctx) =>
@@ -53,7 +54,13 @@ const testApi = setupServer(
   ),
   rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
-    res(ctx.text("this is a text response"))
+    res(ctx.body("this is a text response"))
+  ),
+  rest.get(apiEndpointTextResponseWithHeaders, (_req, res, ctx) =>
+    res(
+      ctx.set("custom-header", "mock-value"),
+      ctx.body("this is a text response with headers")
+    )
   ),
   rest.post(apiEndpointPost, async (req, res, ctx) => {
     const body = await req.text();
@@ -80,6 +87,15 @@ afterEach(() => {
   testApi.resetHandlers();
 });
 
+const customResponseParser: ResponseParser = async ({ res, schema }) => {
+  const textResult = await res.text();
+  const headers = Object.fromEntries(res.headers);
+  return schema.parse({
+    ...headers,
+    "custom-key": textResult,
+  });
+};
+
 const getMyApi = apiFactory({
   url: () => apiEndpoint,
   method: "GET",
@@ -105,7 +121,7 @@ const emptyResponse = apiFactory({
 const textResponse = apiFactory({
   url: () => apiEndpointTextResponse,
   method: "GET",
-  schema: z.string(),
+  schema: z.object({ body: z.string() }),
 });
 
 const api404 = apiFactory({
@@ -138,13 +154,23 @@ const apiThatReturnsHeader = apiFactory({
   schema: z.object({}).passthrough(), // allow object with any keys
 });
 
-const getMyWithDynamicSegment = apiFactory({
+const apiWithDynamicSegment = apiFactory({
   url: ({ segment }: { segment: string }) =>
     `http://localhost/${segment}/my-api`,
   method: "GET",
   schema: z.object({
     response: z.string(),
   }),
+});
+
+const apiWithHeadersAndCustomResponseParser = apiFactory({
+  url: () => apiEndpointTextResponseWithHeaders,
+  method: "GET",
+  schema: z.object({
+    "custom-header": z.string(),
+    "custom-key": z.string(),
+  }),
+  responseParser: customResponseParser,
 });
 
 describe("processApiResponse", () => {
@@ -235,7 +261,9 @@ describe("processApiResponse", () => {
     });
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
-      expect(result.current.data).toBe("this is a text response");
+      expect(result.current.data).toStrictEqual({
+        body: "this is a text response",
+      });
     });
   });
 
@@ -337,7 +365,7 @@ describe("processApiResponse", () => {
       useQuery({
         queryKey: ["getmyapikey", API_KEY, pathParams],
         queryFn: () =>
-          getMyWithDynamicSegment({
+          apiWithDynamicSegment({
             apiKey: API_KEY,
             payload: undefined,
             headers: undefined,
@@ -419,6 +447,30 @@ describe("processApiResponse", () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
       expect(result.current.data?.my).toBe("custom header");
+    });
+  });
+
+  test("it is possible to process headers in a custom responseParser", async () => {
+    const useCallWithCustomParser = () =>
+      useQuery({
+        queryKey: ["textResponseWithHeader"],
+        queryFn: () =>
+          apiWithHeadersAndCustomResponseParser({
+            payload: undefined,
+            headers: undefined,
+            urlParams: undefined,
+          }),
+      });
+
+    const { result } = renderHook(() => useCallWithCustomParser(), {
+      wrapper: UseQueryWrapper,
+    });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toStrictEqual({
+        "custom-header": "mock-value",
+        "custom-key": "this is a text response with headers",
+      });
     });
   });
 });

@@ -14,10 +14,10 @@ import {
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "./utils";
@@ -112,11 +112,7 @@ const NewWorkflow = ({
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
-        {!!errors.name && (
-          <Alert variant="error" className="mb-5">
-            <p>{errors.name.message}</p>
-          </Alert>
-        )}
+        <FormErrors errors={errors} className="mb-5" />
         <form
           id={formId}
           onSubmit={handleSubmit(onSubmit)}

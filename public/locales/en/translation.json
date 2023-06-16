@@ -169,6 +169,76 @@
           "saveBtn": "Save"
         }
       }
+    },
+    "settings": {
+      "generic": {
+        "contextMenu": {
+          "title": "Actions",
+          "delete": "Delete",
+          "edit": "Edit"
+        }
+      },
+      "secrets": {
+        "list": {
+          "title": "Secrets",
+          "empty": "No secrets exist yet"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "description": "Add a secret",
+          "name": "Name"
+        }
+      },
+      "registries": {
+        "list": {
+          "title": "Container Registries",
+          "empty": "No registries exist yet"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "description": "Add a container registry",
+          "url": "URL",
+          "user": "User",
+          "password": "Password"
+        }
+      },
+      "variables": {
+        "list": {
+          "title": "Variables",
+          "empty": "No variables exist yet"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "title": "Add a variable",
+          "name": "Name"
+        },
+        "edit": {
+          "title": "Edit {{name}}",
+          "name": "Name",
+          "mimeType": "Mimetype"
+        }
+      },
+      "theme": {
+        "title": "Theme"
+      },
+      "namespace": {
+        "title": "Namespace"
+      },
+      "apiKey": {
+        "title": "Api Key"
+      },
+      "version": {
+        "title": "Version"
+      },
+      "namespacesList": {
+        "title": "Namespaces"
+      }
     }
   },
   "components": {
@@ -185,6 +255,22 @@
       "namespaceLabel": "Namespace",
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel"
+    },
+    "button": {
+      "label": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "delete": "Delete",
+        "save": "Save"
+      }
+    },
+    "dialog": {
+      "header": {
+        "confirm": "Confirmation required"
+      }
+    },
+    "formErrors": {
+      "fieldInvalid": "this field is invalid"
     }
   },
   "api": {
@@ -206,7 +292,6 @@
             "description": "Directory {{directory}} was created in {{path}}"
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create directory 😢"
           }
         },
@@ -293,8 +378,73 @@
             "description": "Namespace {{name}} was created successfully."
           },
           "error": {
-            "title": "An error occurred",
             "description": "could not create namespace 😢"
+          }
+        }
+      }
+    },
+    "registries": {
+      "mutate": {
+        "createRegistry": {
+          "success": {
+            "title": "Registry created",
+            "description": "Registry {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create registry 😢"
+          }
+        },
+        "deleteRegistry": {
+          "success": {
+            "title": "Registry deleted",
+            "description": "Registry {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete registry 😢"
+          }
+        }
+      }
+    },
+    "variables": {
+      "mutate": {
+        "createVariable": {
+          "success": {
+            "title": "Variable created",
+            "description": "Variable {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create variable 😢"
+          }
+        },
+        "deleteVariable": {
+          "success": {
+            "title": "Variable deleted",
+            "description": "Variable {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete variable 😢"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "mutate": {
+        "createSecret": {
+          "success": {
+            "title": "Secret created",
+            "description": "Secret {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create secret 😢"
+          }
+        },
+        "deleteSecret": {
+          "success": {
+            "title": "Secret deleted",
+            "description": "Secret {{name}} was deleted"
+          },
+          "error": {
+            "description": "Could not delete secret 😢"
           }
         }
       }

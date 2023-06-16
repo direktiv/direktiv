@@ -7,8 +7,8 @@ import {
 import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { useRenameNode } from "~/api/tree/mutate/renameNode";
@@ -74,11 +74,7 @@ const Rename = ({
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
-        {!!errors.name && (
-          <Alert variant="error" className="mb-5">
-            <p>{errors.name.message}</p>
-          </Alert>
-        )}
+        <FormErrors errors={errors} className="mb-5" />
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <Input {...register("name")} data-testid="node-rename-input" />
         </form>
