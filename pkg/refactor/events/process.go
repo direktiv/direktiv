@@ -198,22 +198,27 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 				ces = append(ces, e.Event)
 			}
 			// TODO metrics
-			if canTriggerAction(l, types) {
-				ee.triggerAction(waitType, l, ces)
+			if canTriggerAction(ces, types) {
+				ee.triggerAction(waitType, l.Trigger, ces)
+				l.ReceivedEventsForAndTrigger = []*Event{}
+				if waitType {
+					l.Deleted = true
+				}
 			}
 		}
 	}
 }
 
-func canTriggerAction(l *EventListener, types []string) bool {
-	typeMatch := make([]bool, len(l.ReceivedEventsForAndTrigger))
-	for i := range l.ReceivedEventsForAndTrigger {
-		e := l.ReceivedEventsForAndTrigger[i]
-		for _, t := range types {
-			if e.Event.Type() == t {
-				typeMatch[i] = true
-			}
-		}
+func canTriggerAction(l []*cloudevents.Event, types []string) bool {
+	if len(types) < len(l) {
+		return false
+	}
+	typeMatch := make(map[string]bool)
+	for _, v := range types {
+		typeMatch[v] = false
+	}
+	for _, e := range l {
+		typeMatch[e.Type()] = true
 	}
 	hasAll := true
 	for _, h := range typeMatch {
@@ -250,19 +255,21 @@ func (ee EventEngine) eventSimpleHandler(l *EventListener, waitType bool) eventH
 			if !eventPassedGatekeeper(l.Trigger.GlobGatekeepers, *event.Event) {
 				continue
 			}
-			ee.triggerAction(waitType, l, []*cloudevents.Event{event.Event})
+			ee.triggerAction(waitType, l.Trigger, []*cloudevents.Event{event.Event})
+			if waitType {
+				l.Deleted = true
+			}
 		}
 	}
 }
 
-func (ee EventEngine) triggerAction(waitType bool, l *EventListener, ces []*event.Event) {
+func (ee EventEngine) triggerAction(waitType bool, t TriggerInfo, ces []*event.Event) {
 	if waitType {
-		l.Deleted = true
-		go ee.WakeInstance(l.Trigger.InstanceID, l.Trigger.Step, ces)
+		go ee.WakeInstance(t.InstanceID, t.Step, ces)
 
 		return
 	}
-	go ee.WorkflowStart(l.Trigger.WorkflowID, ces...)
+	go ee.WorkflowStart(t.WorkflowID, ces...)
 }
 
 func typeMatches(types []string, event *Event) bool {
