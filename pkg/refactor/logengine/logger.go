@@ -3,6 +3,7 @@ package logengine
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
@@ -14,7 +15,7 @@ import (
 // direktiv workflow developers and workflow administrators.
 //
 // 1. BetterLogger is an event-style-logger.
-// This means that an log-entry MUST have a "source" and an "type".
+// This means that an log-entry MUST have an "type".
 // The type is passed via tags with the key recipientType. The sender via recipientID.
 //
 // BetterLogger will "smartly" publish a notification on any waiting
@@ -24,7 +25,6 @@ import (
 // 3. !!! Tags will be parsed and !modified to enable "smart" logs.
 // Therefor BetterLogger makes assumptions about some entries in the tags.
 // BetterLogger assumes:
-// - tags["level"] is present and one those values: "debug", "info", "error"
 // - tags["callpath"] is present when tags["recipientType"] is instance.
 // - tags["callpath"] has a "special" structure "/uuid/uuid/".
 // - tags["instance-id"] is present and is a uuid when tags["recipientType"] is instance.
@@ -45,6 +45,7 @@ type SugarBetterLogger struct {
 
 func (s SugarBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	appendInstanceInheritanceInfo(tags)
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
 	tags["source"] = recipientID.String()
@@ -53,6 +54,7 @@ func (s SugarBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, ta
 
 func (s SugarBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	appendInstanceInheritanceInfo(tags)
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
 	tags["source"] = recipientID.String()
@@ -61,6 +63,7 @@ func (s SugarBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tag
 
 func (s SugarBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	appendInstanceInheritanceInfo(tags)
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
 	tags["source"] = recipientID.String()
@@ -89,23 +92,32 @@ func (s SugarBetterLogger) log(level LogLevel, tags map[string]string, msg strin
 type ChainedBetterLogger []BetterLogger
 
 func (loggers ChainedBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	appenInstanceInheritanceInfo(tags)
+	tagsCopy := map[string]string{}
+	for k, v := range tags {
+		tagsCopy[k] = v
+	}
 	for i := range loggers {
-		loggers[i].Debugf(ctx, recipientID, tags, msg, a...)
+		loggers[i].Debugf(ctx, recipientID, tagsCopy, msg, a...)
 	}
 }
 
 func (loggers ChainedBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	appenInstanceInheritanceInfo(tags)
+	tagsCopy := map[string]string{}
+	for k, v := range tags {
+		tagsCopy[k] = v
+	}
 	for i := range loggers {
-		loggers[i].Infof(ctx, recipientID, tags, msg, a...)
+		loggers[i].Infof(ctx, recipientID, tagsCopy, msg, a...)
 	}
 }
 
 func (loggers ChainedBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
-	appenInstanceInheritanceInfo(tags)
+	tagsCopy := map[string]string{}
+	for k, v := range tags {
+		tagsCopy[k] = v
+	}
 	for i := range loggers {
-		loggers[i].Errorf(ctx, recipientID, tags, msg, a...)
+		loggers[i].Errorf(ctx, recipientID, tagsCopy, msg, a...)
 	}
 }
 
@@ -131,7 +143,6 @@ func (cls *CachedSQLLogStore) logWorker() {
 		if !more {
 			return
 		}
-
 		attributes := make(map[string]string)
 		attributes["recipientType"] = "type"
 		attributes["root-instance-id"] = "root_instance_id"
@@ -145,6 +156,7 @@ func (cls *CachedSQLLogStore) logWorker() {
 		for k, v := range l.tags {
 			convertedTags[k] = v
 		}
+		convertedTags["source"] = l.recipientID
 		err := cls.storeAdd(context.Background(), l.time, l.level, l.msg, convertedTags)
 		if err != nil {
 			cls.logError("cachedSQLLogStore error storing logs, %v", err)
@@ -170,6 +182,7 @@ func (cls *CachedSQLLogStore) closeLogWorkers() {
 
 func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
 		time:          time.Now(),
@@ -186,6 +199,7 @@ func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID,
 
 func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
 		time:          time.Now(),
@@ -202,6 +216,7 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 
 func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
 		time:          time.Now(),
@@ -235,10 +250,13 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 // to make querying the logs more connivent and efficient we append the missing
 // instance-id before to the callpath tag of the log-entry
 // and add the root-instance-id tag fro the constructed final callpath.
-func appenInstanceInheritanceInfo(tags map[string]string) {
+func appendInstanceInheritanceInfo(tags map[string]string) {
 	if _, ok := tags["callpath"]; ok {
 		if tags["callpath"] == "/" {
 			tags["root-instance-id"] = tags["instance-id"]
+		}
+		if strings.Contains(tags["callpath"], tags["instance-id"]) {
+			return
 		}
 		tags["callpath"] = internallogger.AppendInstanceID(tags["callpath"], tags["instance-id"])
 		res, err := internallogger.GetRootinstanceID(tags["callpath"])
