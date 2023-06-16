@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 	"github.com/google/uuid"
@@ -69,24 +68,6 @@ func init() {
 	eventswaitDescID := eventswaitFields[0].Descriptor()
 	// eventswait.DefaultID holds the default value on creation for the id field.
 	eventswait.DefaultID = eventswaitDescID.Default.(func() uuid.UUID)
-	logmsgFields := schema.LogMsg{}.Fields()
-	_ = logmsgFields
-	// logmsgDescLevel is the schema descriptor for level field.
-	logmsgDescLevel := logmsgFields[3].Descriptor()
-	// logmsg.DefaultLevel holds the default value on creation for the level field.
-	logmsg.DefaultLevel = logmsgDescLevel.Default.(string)
-	// logmsgDescRootInstanceId is the schema descriptor for rootInstanceId field.
-	logmsgDescRootInstanceId := logmsgFields[4].Descriptor()
-	// logmsg.DefaultRootInstanceId holds the default value on creation for the rootInstanceId field.
-	logmsg.DefaultRootInstanceId = logmsgDescRootInstanceId.Default.(string)
-	// logmsgDescLogInstanceCallPath is the schema descriptor for logInstanceCallPath field.
-	logmsgDescLogInstanceCallPath := logmsgFields[5].Descriptor()
-	// logmsg.DefaultLogInstanceCallPath holds the default value on creation for the logInstanceCallPath field.
-	logmsg.DefaultLogInstanceCallPath = logmsgDescLogInstanceCallPath.Default.(string)
-	// logmsgDescID is the schema descriptor for id field.
-	logmsgDescID := logmsgFields[0].Descriptor()
-	// logmsg.DefaultID holds the default value on creation for the id field.
-	logmsg.DefaultID = logmsgDescID.Default.(func() uuid.UUID)
 	namespaceFields := schema.Namespace{}.Fields()
 	_ = namespaceFields
 	// namespaceDescCreatedAt is the schema descriptor for created_at field.

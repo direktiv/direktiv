@@ -18,8 +18,5 @@ type Events func(*sql.Selector)
 // EventsWait is the predicate function for eventswait builders.
 type EventsWait func(*sql.Selector)
 
-// LogMsg is the predicate function for logmsg builders.
-type LogMsg func(*sql.Selector)
-
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)

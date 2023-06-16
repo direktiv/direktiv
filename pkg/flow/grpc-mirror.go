@@ -6,10 +6,10 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -304,21 +304,24 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
+	qu := make(map[string]interface{})
+	qu["source"] = mirProcess
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
 	}
+	le := make([]*logengine.LogEntry, 0)
+	res, total, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+	if err != nil {
+		return nil, err
+	}
+	le = append(le, res...)
 
 	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return nil, err
 	}
@@ -358,22 +361,28 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 	defer flow.cleanup(sub.Close)
 
 resend:
+	qu := make(map[string]interface{})
+	qu["source"] = mirProcessID
+	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+	if err != nil {
+		return err
+	}
+	le := make([]*logengine.LogEntry, 0)
+	res, total, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+	if err != nil {
+		return err
+	}
+	le = append(le, res...)
 
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.LogMsg.Query().Where(entlog.MirrorActivityID(mirProcess.ID))
-
-	results, pi, err := paginate[*ent.LogMsgQuery, *ent.LogMsg](ctx, req.Pagination, query, logsOrderings, logsFilters)
 	if err != nil {
 		return err
 	}
 
 	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = ns.Name
-	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = pi
-
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	resp.Activity = mirProcessID.String()
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
+	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -23,6 +22,8 @@ type flow struct {
 	srv      *libgrpc.Server
 	grpc.UnimplementedFlowServer
 }
+
+const srv = "server"
 
 func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	var err error
@@ -40,8 +41,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
-
-	clients := flow.edb.Clients(ctx)
 
 	go func() {
 		<-ctx.Done()
@@ -82,15 +81,16 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	go func() {
 		// logs garbage collector
-		ctx := context.Background()
+		// ctx := context.Background()
+		// TODO: remove ent
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().Add(time.Hour * -24)
-			_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
-			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
-			}
+			// t := time.Now().Add(time.Hour * -24)
+			// _, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			// if err != nil {
+			// 	flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
+			// }
 		}
 	}()
 
@@ -203,6 +203,6 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 func (flow *flow) GetAttributes() map[string]string {
 	tags := make(map[string]string)
-	tags["recipientType"] = "server"
+	tags["recipientType"] = srv
 	return tags
 }

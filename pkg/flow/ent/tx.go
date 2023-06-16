@@ -22,8 +22,6 @@ type Tx struct {
 	Events *EventsClient
 	// EventsWait is the client for interacting with the EventsWait builders.
 	EventsWait *EventsWaitClient
-	// LogMsg is the client for interacting with the LogMsg builders.
-	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 
@@ -161,7 +159,6 @@ func (tx *Tx) init() {
 	tx.CloudEvents = NewCloudEventsClient(tx.config)
 	tx.Events = NewEventsClient(tx.config)
 	tx.EventsWait = NewEventsWaitClient(tx.config)
-	tx.LogMsg = NewLogMsgClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)
 }
 
