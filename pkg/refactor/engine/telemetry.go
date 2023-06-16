@@ -8,10 +8,14 @@ import (
 
 func (instance *Instance) GetAttributes(recipientType recipient.RecipientType) map[string]string {
 	tags := make(map[string]string)
+	callpath := ""
+	for _, v := range instance.DescentInfo.Descent {
+		callpath += "/" + v.ID.String()
+	}
 	tags["recipientType"] = string(recipientType)
 	tags["instance-id"] = instance.Instance.ID.String()
 	tags["invoker"] = instance.Instance.Invoker
-	tags["callpath"] = instance.TelemetryInfo.CallPath
+	tags["callpath"] = callpath
 	tags["workflow"] = getWorkflow(instance.Instance.CalledAs)
 	tags["workflow-id"] = instance.Instance.WorkflowID.String()
 	tags["namespace-id"] = instance.Instance.NamespaceID.String()
