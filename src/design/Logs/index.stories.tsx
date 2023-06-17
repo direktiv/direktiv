@@ -52,9 +52,9 @@ export const WrapLog = () => (
   <Card>
     <Logs linewrap>
       <LogEntry time="12:34:23" variant="success">
-        {`This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line
-          Next line
-          Third line`}
+        This is going to be a very long line This is going to be a very long
+        line This is going to be a very long line This is going to be a very
+        long line This is going to be a very long line Next line Third line
       </LogEntry>
     </Logs>
   </Card>
@@ -64,10 +64,9 @@ export const NoWrapLog = () => (
   <Card>
     <Logs>
       <LogEntry time="12:34:23" variant="success">
-        {`This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line This is going to be a very long line
-          Next line
-          Third line
-        `}
+        This is going to be a very long line This is going to be a very long
+        line This is going to be a very long line This is going to be a very
+        long line This is going to be a very long line Next line Third line
       </LogEntry>
       <LogEntry time="12:34:23" variant="error">
         New Entry

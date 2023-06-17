@@ -51,7 +51,7 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
         )
       )}
     >
-      <div className="w-32 shrink-0 pr-2">{time}</div>
+      <div className="w-32 shrink-0 pr-2 font-menlo">{time}</div>
       <div className={clsx("font-menlo")}>
         <pre>{children}</pre>
       </div>
