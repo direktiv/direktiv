@@ -209,10 +209,10 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup =
       },
     },
     instances: {
-      name: "Instances",
+      name: "instances",
       icon: Box,
       createHref: (params) =>
-        `/${params.namespace}/Instances${
+        `/${params.namespace}/instances${
           params.instance ? `/${params.instance}` : ""
         }`,
       useParams: () => {
