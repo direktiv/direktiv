@@ -137,6 +137,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
               className="h-96 w-full p-4 sm:h-[500px]"
               noShadow
               background="weight-1"
+              data-testid="run-workflow-editor"
             >
               <Editor
                 value={getValues("payload")}
