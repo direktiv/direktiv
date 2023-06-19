@@ -34,10 +34,10 @@ type EditProps = {
   onSuccess: () => void;
 };
 
-// mimeType defaults to text/plain to avoid backend defaulting to
+// mimeType should always be initialized to avoid backend defaulting to
 // "text/plain, charset=utf-8", which does not fit the options in
 // MimeTypeSelect
-const defaultMimeType: MimeTypeType = "text/plain";
+const defaultMimeType: MimeTypeType = "application/json";
 
 const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();

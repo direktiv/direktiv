@@ -43,13 +43,13 @@ const Create = ({ onSuccess }: CreateProps) => {
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
-    // mimeType defaults to text/plain to avoid backend defaulting to
+    // mimeType should always be initialized to avoid backend defaulting to
     // "text/plain, charset=utf-8", which does not fit the options in
     // MimeTypeSelect
     values: {
       name: name ?? "",
       content: body ?? "",
-      mimeType: mimeType ?? "text/plain",
+      mimeType: mimeType ?? "application/json",
     },
   });
 
