@@ -117,10 +117,18 @@ const RunWorkflow = ({ path }: { path: string }) => {
           }}
         >
           <TabsList variant="boxed">
-            <TabsTrigger variant="boxed" value={tabs[0]}>
+            <TabsTrigger
+              variant="boxed"
+              value={tabs[0]}
+              data-testid="run-workflow-json-tab-btn"
+            >
               {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
             </TabsTrigger>
-            <TabsTrigger variant="boxed" value={tabs[1]}>
+            <TabsTrigger
+              variant="boxed"
+              value={tabs[1]}
+              data-testid="run-workflow-form-tab-btn"
+            >
               {t("pages.explorer.tree.workflow.runWorkflow.formInput")}
             </TabsTrigger>
           </TabsList>

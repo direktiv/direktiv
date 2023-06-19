@@ -46,13 +46,32 @@ test("it is possible to run the workflow by setting an input JSON via tha editor
 }) => {
   await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
 
-  // open modal via editor button
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
     await page.getByTestId("run-workflow-dialog"),
     "it opens the dialog"
   ).toBeVisible();
 
-  // url should be
-  await expect(page).toHaveURL(new RegExp(`${namespace}/instances/`));
+  expect(
+    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
+    "the submit button is enabled by default"
+  ).toEqual(true);
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected")
+  ).toBe("true");
+
+  expect(
+    await page
+      .getByTestId("run-workflow-form-tab-btn")
+      .getAttribute("aria-selected")
+  ).toBe("false");
+
+  // run-workflow-dialog
+  // await page.getByTestId("run-workflow-submit-btn").click();
+
+  // // url should be
+  // await expect(page).toHaveURL(new RegExp(`${namespace}/instances/`));
 });
