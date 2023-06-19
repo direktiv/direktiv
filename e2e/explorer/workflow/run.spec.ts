@@ -34,3 +34,17 @@ test("it is possible top open the run workflow modal from the editor and the hea
   await page.getByTestId("run-workflow-cancel-btn").click();
   expect(await page.getByTestId("run-workflow-dialog")).not.toBeVisible();
 });
+
+test("it is possible to run the workflow by setting an input JSON via tha editor", async ({
+  page,
+}) => {
+  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+
+  // open modal via editor button
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(await page.getByTestId("run-workflow-dialog")).toBeVisible();
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // url should be
+  await expect(page).toHaveURL(new RegExp(`${namespace}/instances/`));
+});
