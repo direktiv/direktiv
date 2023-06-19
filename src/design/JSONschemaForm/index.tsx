@@ -37,7 +37,11 @@ const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
         <SelectValue
           placeholder={props.value ? props.value : `Select ${props.label}`}
         >
-          {props.value}
+          {/* 
+          the blank space is weirdly important here, otherwise the first change
+          of this select will result in the select showing an empty text.
+           */}
+          {props.value}{" "}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
