@@ -6,7 +6,10 @@ const FormInputHint = () => {
   const { t } = useTranslation();
   return (
     <div className="flex h-full flex-col items-center justify-center gap-y-5 p-10">
-      <span className="text-center text-sm">
+      <span
+        className="text-center text-sm"
+        data-testid="run-workflow-form-input-hint"
+      >
         {t("pages.explorer.tree.workflow.runWorkflow.formInputHint")}
       </span>
       <Button variant="outline" asChild>
