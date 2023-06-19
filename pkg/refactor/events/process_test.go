@@ -33,7 +33,7 @@ func Test_Add_Get(t *testing.T) {
 		NamespaceID:            ns,
 		ListeningForEventTypes: []string{"test-wait-topic"},
 		TriggerType:            events.WaitSimple,
-		Trigger:                events.TriggerInfo{InstanceID: instID},
+		TriggerInstance:        instID,
 	}
 	listeners := make([]*events.EventListener, 0)
 	listeners = append(listeners,
@@ -45,7 +45,7 @@ func Test_Add_Get(t *testing.T) {
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            events.StartSimple,
-			Trigger:                events.TriggerInfo{WorkflowID: wfID},
+			TriggerWorkflow:        wfID,
 		},
 		waitListener,
 		&events.EventListener{
@@ -56,7 +56,7 @@ func Test_Add_Get(t *testing.T) {
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"event-and-topic-a", "event-and-topic-b"},
 			TriggerType:            events.StartAnd,
-			Trigger:                events.TriggerInfo{WorkflowID: wfID},
+			TriggerWorkflow:        wfID,
 		},
 	)
 	resultsForEngine := make(chan triggerMock, 1)

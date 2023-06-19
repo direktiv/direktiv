@@ -104,10 +104,6 @@ func (ee EventEngine) createEventHandler(l *EventListener) eventHandler {
 		return ee.eventSimpleHandler(l, false)
 	case WaitOR:
 		return ee.eventSimpleHandler(l, true)
-	case StartXOR:
-		return ee.eventSimpleHandler(l, false)
-	case WaitXOR:
-		return ee.eventSimpleHandler(l, true)
 	}
 
 	return func(ctx context.Context, events ...*Event) {
@@ -199,7 +195,12 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			}
 			// TODO metrics
 			if canTriggerAction(ces, types) {
-				ee.triggerAction(waitType, l.Trigger, ces)
+				tr := triggerActionArgs{
+					WorkflowID: l.TriggerWorkflow,
+					InstanceID: l.TriggerInstance,
+					Step:       l.TriggerInstanceStep,
+				}
+				ee.triggerAction(waitType, tr, ces)
 				l.ReceivedEventsForAndTrigger = []*Event{}
 				if waitType {
 					l.Deleted = true
@@ -252,10 +253,15 @@ func (ee EventEngine) eventSimpleHandler(l *EventListener, waitType bool) eventH
 			if !match {
 				continue
 			}
-			if !eventPassedGatekeeper(l.Trigger.GlobGatekeepers, *event.Event) {
+			tr := triggerActionArgs{
+				WorkflowID: l.TriggerWorkflow,
+				InstanceID: l.TriggerInstance,
+				Step:       l.TriggerInstanceStep,
+			}
+			if !eventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
 				continue
 			}
-			ee.triggerAction(waitType, l.Trigger, []*cloudevents.Event{event.Event})
+			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})
 			if waitType {
 				l.Deleted = true
 			}
@@ -263,7 +269,13 @@ func (ee EventEngine) eventSimpleHandler(l *EventListener, waitType bool) eventH
 	}
 }
 
-func (ee EventEngine) triggerAction(waitType bool, t TriggerInfo, ces []*event.Event) {
+type triggerActionArgs struct {
+	WorkflowID uuid.UUID // the id of the workflow.
+	InstanceID uuid.UUID // optional fill for instance-waiting trigger.
+	Step       int       // optional fill for instance-waiting trigger.
+}
+
+func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*event.Event) {
 	if waitType {
 		go ee.WakeInstance(t.InstanceID, t.Step, ces)
 
