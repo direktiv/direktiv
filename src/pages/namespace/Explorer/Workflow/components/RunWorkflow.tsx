@@ -6,6 +6,7 @@ import {
 } from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
+import { getValidationSchemaFromYaml, workflowInputSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -14,7 +15,6 @@ import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { getValidationSchemaFromYaml } from "./utils";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -51,18 +51,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     defaultValues: {
       payload: "{\n    \n}",
     },
-    resolver: zodResolver(
-      z.object({
-        payload: z.string().refine((string) => {
-          try {
-            JSON.parse(string);
-            return true;
-          } catch (error) {
-            return false;
-          }
-        }),
-      })
-    ),
+    resolver: zodResolver(z.object({ payload: workflowInputSchema })),
   });
 
   const { mutate: runWorkflow, isLoading } = useRunWorkflow({

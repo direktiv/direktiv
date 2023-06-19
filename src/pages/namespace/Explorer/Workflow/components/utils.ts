@@ -2,6 +2,15 @@ import { RJSFSchema } from "@rjsf/utils";
 import YAML from "js-yaml";
 import { z } from "zod";
 
+export const workflowInputSchema = z.string().refine((string) => {
+  try {
+    JSON.parse(string);
+    return true;
+  } catch (error) {
+    return false;
+  }
+});
+
 const validationSchema = z.object({
   type: z.literal("validate"),
   schema: z.object({}).passthrough(), // allow any object and keep all the entries
