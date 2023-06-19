@@ -1,15 +1,14 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "../../utils/node";
+import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
+import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
-let workflow = "";
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
-  workflow = await createWorkflow(namespace, faker.git.shortSha() + ".yaml");
 });
 
 test.afterEach(async () => {
@@ -20,6 +19,17 @@ test.afterEach(async () => {
 test("it is possible top open and use the run workflow modal from the editor and the header of the workflow page", async ({
   page,
 }) => {
+  const workflow = faker.system.commonFileName("yaml");
+  await createWorkflow({
+    payload: basicWorkflow.data,
+    headers: undefined,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: workflow,
+    },
+  });
+
   await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
 
   // open modal via editor button
@@ -79,6 +89,17 @@ test("it is possible top open and use the run workflow modal from the editor and
 test("it is possible to run the workflow by setting an input JSON via tha editor", async ({
   page,
 }) => {
+  const workflow = faker.system.commonFileName("yaml");
+  await createWorkflow({
+    payload: basicWorkflow.data,
+    headers: undefined,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: workflow,
+    },
+  });
+
   await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
