@@ -179,7 +179,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		TriggerWorkflow:             uuid.New(),
+		TriggerWorkflow:             wf,
 	})
 	if err != nil {
 		t.Error(err)
@@ -263,7 +263,7 @@ func Test_Listener_Add_Delete_ByWf(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		TriggerWorkflow:             uuid.New(),
+		TriggerWorkflow:             wf,
 	})
 	if err != nil {
 		t.Error(err)
