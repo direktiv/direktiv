@@ -60,18 +60,39 @@ test("it is possible to run the workflow by setting an input JSON via tha editor
   expect(
     await page
       .getByTestId("run-workflow-json-tab-btn")
-      .getAttribute("aria-selected")
+      .getAttribute("aria-selected"),
+    "the json tab is selected by default"
   ).toBe("true");
 
   expect(
     await page
       .getByTestId("run-workflow-form-tab-btn")
-      .getAttribute("aria-selected")
+      .getAttribute("aria-selected"),
+    "the form tab is not selected"
   ).toBe("false");
 
-  // run-workflow-dialog
-  // await page.getByTestId("run-workflow-submit-btn").click();
+  await page.type("textarea", "some invalid json");
 
-  // // url should be
-  // await expect(page).toHaveURL(new RegExp(`${namespace}/instances/`));
+  expect(
+    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
+    "submit button is disaled when the json is invalid"
+  ).toEqual(false);
+
+  await page.getByTestId("run-workflow-editor").click();
+  await page.keyboard.press("Control+A");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(`{"cool": true}`);
+
+  expect(
+    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
+    "submit is enabled when the json is valid"
+  ).toEqual(true);
+
+  // run-workflow-editor
+
+  // run-workflow-dialog
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // url should be
+  await expect(page).toHaveURL(new RegExp(`${namespace}/instances/`));
 });
