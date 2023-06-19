@@ -130,17 +130,19 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
 );
 
 CREATE TABLE IF NOT EXISTS "log_entries" (
-    "oid" uuid,
+    "id" uuid,
     "timestamp" timestamptz NOT NULL,
     "level" integer,
     "root_instance_id" uuid,
-    "sender" uuid,
-    "sender_type" text,
+    "source" uuid,
+    "type" text,
     "log_instance_call_path" text,
-    "entry" jsonb NOT NULL,
-    PRIMARY KEY ("oid")
+    "entry" bytea NOT NULL,
+    PRIMARY KEY ("id")
 );
 
+-- speeds up pagination
+CREATE INDEX  IF NOT EXISTS "log_entries_sorted" ON log_entries ("timestamp" ASC);
 
 -- TODO: alan please fix id and other fields types for postgres.
 CREATE TABLE IF NOT EXISTS "instances_v2" (

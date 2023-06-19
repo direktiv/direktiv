@@ -1,4 +1,4 @@
-package datastore_test
+package datastoresql_test
 
 import (
 	"context"
@@ -21,11 +21,52 @@ func Test_Add_Get(t *testing.T) {
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	logstore := ds.Logs()
 	id := uuid.New()
-	addRandomMsgs(t, logstore, "sender", id, logengine.Info)
+	addRandomMsgs(t, logstore, "source", id, logengine.Info)
 	q := make(map[string]interface{}, 0)
 	q["level"] = logengine.Info
-	q["sender"] = id
-	got, err := logstore.Get(context.Background(), q, -1, -1)
+	q["source"] = id
+	got, _, err := logstore.Get(context.Background(), q, -1, -1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(got) < 1 {
+		t.Error("got no results")
+	}
+}
+
+func Test_Callpath(t *testing.T) {
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	logstore := ds.Logs()
+	id := uuid.New()
+	tags := make(map[string]interface{})
+	tags["log_instance_call_path"] = "/" + id.String()
+	err = logstore.Append(context.Background(), time.Now(), logengine.Debug, "testing callpath", tags)
+	if err != nil {
+		t.Error(err)
+	}
+	q := make(map[string]interface{}, 0)
+	q["log_instance_call_path"] = "/" + id.String()
+	got, _, err := logstore.Get(context.Background(), q, -1, -1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(got) < 1 {
+		t.Error("got no results")
+	}
+	tags["log_instance_call_path"] = "/" + id.String() + "/" + uuid.NewString()
+	err = logstore.Append(context.Background(), time.Now(), logengine.Debug, "testing callpath", tags)
+	if err != nil {
+		t.Error(err)
+	}
+	q = make(map[string]interface{}, 0)
+	q["log_instance_call_path"] = "/" + id.String()
+	got, _, err = logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -38,7 +79,8 @@ func Test_Add_Get(t *testing.T) {
 func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uuid.UUID, level logengine.LogLevel) {
 	t.Helper()
 	want := []string{}
-	for i := 0; i < rand.Intn(20)+1; i++ { //nolint:gosec
+	c := rand.Intn(20) + 1 //nolint:gosec
+	for i := 0; i < c; i++ {
 		want = append(want, fmt.Sprintf("test msg %d", rand.Intn(100)+1)) //nolint:gosec
 	}
 	in := map[string]interface{}{}
@@ -51,12 +93,15 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 	}
 	q := map[string]interface{}{}
 	q[col] = id
-	got, err := logstore.Get(context.Background(), q, -1, -1)
+	got, count, err := logstore.Get(context.Background(), q, -1, -1)
 	if err != nil {
 		t.Error(err)
 	}
+	if count != c {
+		t.Errorf("got wrong total count Want %v got %v", c, count)
+	}
 	if len(got) != len(want) {
-		t.Error("got wrong number of results")
+		t.Error("got wrong number of results.")
 	}
 	for _, le := range got {
 		ok := false
