@@ -54,14 +54,13 @@ type EventListener struct {
 	LifespanOfReceivedEvents    int         // set 0 to omit the value.
 	TriggerType                 TriggerType // set true for EventsAnd.
 	Trigger                     TriggerInfo // hold the information to decide what to do if the listener has satisfied.
+	TriggerWorkflow             uuid.UUID   // the id of the workflow.
+	TriggerInstance             uuid.UUID   // optional fill for instance-waiting trigger.
+	TriggerInstanceStep         int         // optional fill for instance-waiting trigger.
+	GlobGatekeepers             []string
 }
 
-type TriggerInfo struct {
-	WorkflowID      uuid.UUID // the id of the workflow.
-	InstanceID      uuid.UUID // optional fill for instance-waiting trigger.
-	Step            int       // optional fill for instance-waiting trigger.
-	GlobGatekeepers []string
-}
+type TriggerInfo struct{}
 
 type TriggerType int
 
