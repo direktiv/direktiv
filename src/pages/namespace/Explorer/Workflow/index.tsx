@@ -88,7 +88,7 @@ const Header: FC = () => {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="primary">
+              <Button variant="primary" data-testid="workflow-header-btn-run">
                 <Play />
                 {t("pages.explorer.workflow.runBtn")}
               </Button>

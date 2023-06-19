@@ -159,7 +159,7 @@ const WorkflowEditor: FC<{
         </DropdownMenu>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" data-testid="workflow-editor-btn-run">
               <Play />
               {t("pages.explorer.workflow.editor.runBtn")}
             </Button>

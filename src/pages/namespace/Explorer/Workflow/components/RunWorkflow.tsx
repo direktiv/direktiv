@@ -103,7 +103,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
           <Play /> {t("pages.explorer.tree.workflow.runWorkflow.title")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-3 flex flex-col gap-y-5">
+      <div
+        className="my-3 flex flex-col gap-y-5"
+        data-testid="run-workflow-dialog"
+      >
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
@@ -170,7 +173,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
       </div>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">
+          <Button variant="ghost" data-testid="run-workflow-cancel-btn">
             {t("pages.explorer.tree.workflow.runWorkflow.cancelBtn")}
           </Button>
         </DialogClose>
@@ -179,7 +182,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
           disabled={disableSubmit}
           loading={isLoading}
           onClick={runButtonOnClick}
-          data-testid="dialog-create-tag-btn-submit"
+          data-testid="run-workflow-submit-btn"
         >
           {!isLoading && <Play />}
           {t("pages.explorer.tree.workflow.runWorkflow.runBtn")}
