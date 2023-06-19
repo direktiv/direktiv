@@ -94,6 +94,13 @@ const Create = ({ onSuccess }: CreateProps) => {
           />
         </fieldset>
 
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[150px] text-right" htmlFor="template">
+            {t("pages.settings.variables.edit.mimeType")}
+          </label>
+          <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
+        </fieldset>
+
         <Card className="grow p-4 pl-0" background="weight-1">
           <div className="h-[500px]">
             <Editor
@@ -107,13 +114,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             />
           </div>
         </Card>
-
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="template">
-            {t("pages.settings.variables.edit.mimeType")}
-          </label>
-          <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
-        </fieldset>
 
         <DialogFooter>
           <DialogClose asChild>

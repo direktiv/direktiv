@@ -110,7 +110,16 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               />
             </DialogTitle>
           </DialogHeader>
+
           <FormErrors errors={errors} className="mb-5" />
+
+          <fieldset className="flex items-center gap-5">
+            <label className="w-[150px] text-right" htmlFor="template">
+              {t("pages.settings.variables.edit.mimeType")}
+            </label>
+            <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
+          </fieldset>
+
           <Card className="grow p-4 pl-0" background="weight-1">
             <div className="h-[500px]">
               <Editor
@@ -124,12 +133,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               />
             </div>
           </Card>
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[150px] text-right" htmlFor="template">
-              {t("pages.settings.variables.edit.mimeType")}
-            </label>
-            <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
-          </fieldset>
+
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="ghost">
