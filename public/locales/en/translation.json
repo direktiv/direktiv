@@ -158,7 +158,7 @@
         },
         "headline": "Latest",
         "updated": "Updated {{relativeTime}}",
-        "actionsBtn": "Run",
+        "runBtn": "Run",
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is one issue",

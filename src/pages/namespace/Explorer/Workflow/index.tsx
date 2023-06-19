@@ -90,7 +90,7 @@ const Header: FC = () => {
             <DialogTrigger asChild>
               <Button variant="primary">
                 <Play />
-                {t("pages.explorer.workflow.actionsBtn")}
+                {t("pages.explorer.workflow.runBtn")}
               </Button>
             </DialogTrigger>
 
