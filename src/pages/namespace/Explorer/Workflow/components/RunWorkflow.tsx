@@ -4,9 +4,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { getValidationSchemaFromYaml, workflowInputSchema } from "./utils";
+import { useEffect, useRef, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -16,6 +16,7 @@ import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { pages } from "~/util/router/pages";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
@@ -28,11 +29,14 @@ type FormInput = {
   payload: string;
 };
 
+type JSONSchemaFormSubmit = Parameters<typeof JSONSchemaForm>[0]["onSubmit"];
+
 const RunWorkflow = ({ path }: { path: string }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
   const { data } = useNodeContent({ path });
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
   const validationSchema = getValidationSchemaFromYaml(
     atob(data?.revision?.source ?? "")
   );
@@ -40,10 +44,18 @@ const RunWorkflow = ({ path }: { path: string }) => {
   // tab handling
   const isFormAvailable = validationSchema !== null;
   const tabs = ["json", "form"] as const;
-  const activeTab: (typeof tabs)[number] = isFormAvailable ? "form" : "json";
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>(
+    isFormAvailable ? "form" : "json"
+  );
+
+  // it is possible that no data (or stale cache data) is available when this component
+  // mounts and the initial value of activeTab is out of synch with the actual isFormAvailable
+  // value
+  useEffect(() => {
+    setActiveTab(isFormAvailable ? "form" : "json");
+  }, [isFormAvailable]);
 
   const {
-    handleSubmit,
     setValue,
     getValues,
     formState: { isValid },
@@ -60,16 +72,30 @@ const RunWorkflow = ({ path }: { path: string }) => {
     },
   });
 
-  const onSubmit: SubmitHandler<FormInput> = ({ payload }) => {
-    runWorkflow({
-      path,
-      payload,
-    });
+  const runButtonOnClick = () => {
+    // if this workflow supports a JSON form and the json form
+    // tab is active we need to trigger this form via a ref to an
+    // invisble submit button (this should be optimized but a ref
+    // to the form did not work)
+    if (isFormAvailable && activeTab === "form") {
+      // this will implcitly trigger the JSONschema forms onSubmit callback
+      submitButtonRef.current?.click();
+    }
+
+    if (activeTab === "json") {
+      runWorkflow({
+        path,
+        payload: getValues("payload"),
+      });
+    }
+  };
+
+  const jsonSchemaFormSubmit: JSONSchemaFormSubmit = (form) => {
+    runWorkflow({ path, payload: JSON.stringify(form.formData) });
   };
 
   const disableSubmit = !isValid;
 
-  const formId = `run-workflow-${path}`;
   return (
     <>
       <DialogHeader>
@@ -78,8 +104,15 @@ const RunWorkflow = ({ path }: { path: string }) => {
         </DialogTitle>
       </DialogHeader>
       <div className="my-3 flex flex-col gap-y-5">
-        <form id={formId} onSubmit={handleSubmit(onSubmit)}></form>
-        <Tabs defaultValue={activeTab}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            const tabValueParsed = z.enum(tabs).safeParse(value);
+            if (tabValueParsed.success) {
+              setActiveTab(tabValueParsed.data);
+            }
+          }}
+        >
           <TabsList variant="boxed">
             <TabsTrigger variant="boxed" value={tabs[0]}>
               {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
@@ -119,11 +152,13 @@ const RunWorkflow = ({ path }: { path: string }) => {
                   <JSONSchemaForm
                     schema={validationSchema}
                     action="submit"
-                    onSubmit={(form) => {
-                      onSubmit({ payload: JSON.stringify(form.formData) });
-                    }}
+                    onSubmit={jsonSchemaFormSubmit}
                   >
-                    <Button type="submit">submit</Button>
+                    <Button
+                      type="submit"
+                      ref={submitButtonRef}
+                      className="hidden"
+                    />
                   </JSONSchemaForm>
                 </ScrollArea>
               ) : (
@@ -143,7 +178,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
           type="submit"
           disabled={disableSubmit}
           loading={isLoading}
-          form={formId}
+          onClick={runButtonOnClick}
           data-testid="dialog-create-tag-btn-submit"
         >
           {!isLoading && <Play />}
