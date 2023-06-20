@@ -181,7 +181,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: API_KEY,
-            payload: undefined,
             urlParams: undefined,
           }),
       });
@@ -202,7 +201,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: "wrong-api-key",
-            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -227,7 +225,6 @@ describe("processApiResponse", () => {
         queryKey: ["emptyresponse"],
         queryFn: () =>
           emptyResponse({
-            payload: undefined,
             urlParams: undefined,
           }),
       });
@@ -247,7 +244,6 @@ describe("processApiResponse", () => {
         queryKey: ["textResponse"],
         queryFn: () =>
           textResponse({
-            payload: undefined,
             urlParams: undefined,
           }),
       });
@@ -270,7 +266,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApiWrongSchema({
             apiKey: API_KEY,
-            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -296,7 +291,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           api404({
             apiKey: API_KEY,
-            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -327,7 +321,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           apiJSONError({
             apiKey: API_KEY,
-            payload: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -360,7 +353,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           apiWithDynamicSegment({
             apiKey: API_KEY,
-            payload: undefined,
             urlParams: pathParams,
           }),
       });
@@ -422,7 +414,6 @@ describe("processApiResponse", () => {
       useMutation({
         mutationFn: () =>
           apiThatReturnsHeader({
-            payload: undefined,
             headers,
             urlParams: undefined,
           }),
@@ -447,7 +438,6 @@ describe("processApiResponse", () => {
         queryKey: ["textResponseWithHeader"],
         queryFn: () =>
           apiWithHeadersAndCustomResponseParser({
-            payload: undefined,
             urlParams: undefined,
           }),
       });

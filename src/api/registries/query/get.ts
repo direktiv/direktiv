@@ -21,7 +21,6 @@ const fetchRegistries = async ({
   getRegistries({
     apiKey,
     urlParams: { namespace },
-    payload: undefined,
   });
 
 export const useRegistries = () => {

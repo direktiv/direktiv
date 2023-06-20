@@ -57,7 +57,6 @@ export const useDeleteSecret = ({
     mutationFn: ({ secret }: { secret: SecretSchemaType }) =>
       deleteSecret({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
         urlParams: {
           name: secret.name,
           namespace,

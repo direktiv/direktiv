@@ -19,7 +19,6 @@ const fetchSecrets = async ({
   getSecrets({
     apiKey,
     urlParams: { namespace },
-    payload: undefined,
   });
 
 export const useSecrets = () => {

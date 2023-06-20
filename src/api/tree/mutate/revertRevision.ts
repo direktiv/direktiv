@@ -33,7 +33,6 @@ export const useRevertRevision = () => {
     mutationFn: ({ path }: { path: string }) =>
       revertRevision({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
         urlParams: {
           namespace,
           path,

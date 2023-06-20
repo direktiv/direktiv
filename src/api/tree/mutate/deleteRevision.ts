@@ -43,7 +43,6 @@ export const useDeleteRevision = ({
     mutationFn: ({ path, revision }: { path: string; revision: string }) =>
       deleteRevision({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
         urlParams: {
           path,
           namespace,

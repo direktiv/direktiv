@@ -36,7 +36,6 @@ export const createWorkflowWithThreeRevisions = async (
   });
 
   const firstRevision = await createRevision({
-    payload: undefined,
     urlParams: commonUrlParams,
   });
 
@@ -46,7 +45,6 @@ export const createWorkflowWithThreeRevisions = async (
     urlParams: commonUrlParams,
   });
   const secondRevision = await createRevision({
-    payload: undefined,
     urlParams: commonUrlParams,
   });
 
@@ -56,7 +54,6 @@ export const createWorkflowWithThreeRevisions = async (
     urlParams: commonUrlParams,
   });
   const thirdRevision = await createRevision({
-    payload: undefined,
     urlParams: commonUrlParams,
   });
 

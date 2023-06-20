@@ -15,7 +15,6 @@ const fetchVersions = async ({
 }: QueryFunctionContext<ReturnType<(typeof versionKeys)["all"]>>) =>
   getVersion({
     apiKey,
-    payload: undefined,
     urlParams: undefined,
   });
 

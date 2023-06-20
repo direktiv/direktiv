@@ -42,7 +42,6 @@ export const useCreateRevision = () => {
     mutationFn: ({ path }: { path: string }) =>
       createRevision({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
         urlParams: {
           namespace,
           path,

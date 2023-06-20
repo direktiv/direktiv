@@ -20,7 +20,6 @@ const fetchVars = async ({
   getVars({
     apiKey,
     urlParams: { namespace },
-    payload: undefined,
   });
 
 export const useVars = () => {

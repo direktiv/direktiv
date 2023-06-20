@@ -33,7 +33,6 @@ export const useDeleteVar = ({
   const mutationFn = ({ variable }: { variable: VarSchemaType }) =>
     deleteVar({
       apiKey: apiKey ?? undefined,
-      payload: undefined,
       urlParams: {
         namespace,
         name: variable.name,
