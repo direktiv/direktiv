@@ -65,6 +65,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
     <div className="mb-2 flex w-min flex-row gap-2">
       <Button
         disabled={!props.hasMoveDown}
+        variant="outline"
         onClick={(e) => {
           props.onReorderClick(props.index, props.index + 1)(e);
         }}
@@ -74,6 +75,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
       </Button>
       <Button
         disabled={!props.hasMoveUp}
+        variant="outline"
         onClick={(e) => {
           props.onReorderClick(props.index, props.index - 1)(e);
         }}
@@ -82,7 +84,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         <ChevronUpIcon />
       </Button>
       <Button
-        variant="destructive"
+        variant="outline"
         onClick={(e) => {
           props.onDropIndexClick(props.index)(e);
         }}
@@ -98,7 +100,12 @@ const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
   <div className="my-4">
     <div className="my-2 flex items-center">
       <div className="grow">{props.title}</div>
-      <Button onClick={props.onAddClick} icon disabled={!props.canAdd}>
+      <Button
+        onClick={props.onAddClick}
+        icon
+        disabled={!props.canAdd}
+        variant="outline"
+      >
         <PlusIcon />
       </Button>
     </div>
