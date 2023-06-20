@@ -21,7 +21,7 @@ const RegistriesList: FC = () => {
   const [deleteRegistry, setDeleteRegistry] = useState<RegistrySchemaType>();
   const [createRegistry, setCreateRegistry] = useState(false);
 
-  const registries = useRegistries();
+  const { data, isFetched } = useRegistries();
 
   const { mutate: deleteRegistryMutation } = useDeleteRegistry({
     onSuccess: () => {
@@ -36,6 +36,8 @@ const RegistriesList: FC = () => {
       setCreateRegistry(false);
     }
   }, [dialogOpen]);
+
+  if (!isFetched) return null;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -52,10 +54,10 @@ const RegistriesList: FC = () => {
       </div>
 
       <Card>
-        {registries.data?.registries.length ? (
+        {data?.registries.length ? (
           <Table>
             <TableBody>
-              {registries.data?.registries.map((item, i) => (
+              {data?.registries.map((item, i) => (
                 <ItemRow key={i} item={item} onDelete={setDeleteRegistry} />
               ))}
             </TableBody>
