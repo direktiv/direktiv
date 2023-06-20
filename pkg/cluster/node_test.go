@@ -54,12 +54,15 @@ func TestNewNode(t *testing.T) {
 func rightNumber(nodes []*Node) bool {
 
 	for i := 0; i < len(nodes); i++ {
+
+		fmt.Printf("compare nodes: %d - %d\n", len(nodes), nodes[i].serfServer.NumNodes())
 		if nodes[i].serfServer.NumNodes() != len(nodes) {
 			return false
 		}
 
 		nn, _ := nodes[i].bus.nodes()
 
+		fmt.Printf("compare producers: %d - %d\n", len(nn.Producers), len(nodes))
 		if len(nn.Producers) != len(nodes) {
 			return false
 		}
@@ -72,13 +75,14 @@ func rightNumber(nodes []*Node) bool {
 func createConfig(topics []string, i int, change bool) Config {
 
 	config := DefaultConfig()
-	config.SerfReapTimeout = 3 * time.Second
-	config.SerfReapInterval = 1 * time.Second
-	config.SerfTombstoneTimeout = 5 * time.Second
 
 	if change {
 		config.NSQInactiveTimeout = 10 * time.Second
 		config.NSQTombstoneTimeout = 5 * time.Second
+
+		config.SerfReapTimeout = 3 * time.Second
+		config.SerfReapInterval = 1 * time.Second
+		config.SerfTombstoneTimeout = 5 * time.Second
 	}
 
 	config.NSQTopics = topics
@@ -93,7 +97,7 @@ func createConfig(topics []string, i int, change bool) Config {
 
 }
 
-func createCluster(count int, topics []string, change bool) ([]*Node, error) {
+func createCluster(count int, topics []string, change bool, idx int) ([]*Node, error) {
 
 	nfNodes := make([]string, 0)
 	finalNodes := make([]*Node, 0)
@@ -101,15 +105,14 @@ func createCluster(count int, topics []string, change bool) ([]*Node, error) {
 	hn, _ := os.Hostname()
 
 	for i := 0; i < count; i++ {
-		nfNodes = append(nfNodes, fmt.Sprintf("%s:%d", hn, 5223+(100*i)))
+		nfNodes = append(nfNodes, fmt.Sprintf("%s:%d", hn, 5223+(100*i*idx)))
 	}
 
 	nf := NewNodefinderStatic(nfNodes)
 
 	for i := 0; i < count; i++ {
-		config := createConfig(topics, i, change)
+		config := createConfig(topics, (idx)+i, change)
 		config.Nodefinder = nf
-
 		node, err := NewNode(config)
 		if err != nil {
 			return nil, err
@@ -123,7 +126,7 @@ func createCluster(count int, topics []string, change bool) ([]*Node, error) {
 func TestCluster(t *testing.T) {
 
 	count := 3
-	nodes, err := createCluster(count, []string{"topic1"}, true)
+	nodes, err := createCluster(count, []string{"topic1"}, true, 0)
 	require.NoError(t, err)
 
 	for i := 0; i < count; i++ {
@@ -132,10 +135,8 @@ func TestCluster(t *testing.T) {
 
 	// check three node cluster
 	require.Eventually(t, func() bool {
-
 		return rightNumber(nodes)
-
-	}, 10*time.Second, time.Second)
+	}, 10*time.Second, time.Second, "node count failed")
 
 	// // stop one node
 	err = nodes[count-1].Stop()
@@ -171,11 +172,13 @@ func TestCluster(t *testing.T) {
 
 	// add a node again
 	nf := NewNodefinderStatic(nfNodes)
-	// config := createConfig([]string{"topic1"}, 2)
 	config.Nodefinder = nf
 
 	newNode, err := NewNode(config)
 	require.NoError(t, err)
+
+	defer newNode.Stop()
+
 	nodes = append(nodes, newNode)
 
 	require.Eventually(t, func() bool {
@@ -187,7 +190,7 @@ func TestCluster(t *testing.T) {
 func TestClusterSubscribe(t *testing.T) {
 
 	count := 3
-	nodes, err := createCluster(count, []string{"topic1", "topic2"}, false)
+	nodes, err := createCluster(count, []string{"topic1", "topic2"}, false, 7)
 	require.NoError(t, err)
 
 	for i := 0; i < count; i++ {
@@ -260,7 +263,7 @@ func TestClusterSubscribe(t *testing.T) {
 	require.Eventually(t, func() bool {
 		t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
 		return counter1.cc+counter2.cc+counter3.cc == 10
-	}, 30*time.Second, time.Second)
+	}, 30*time.Second, time.Second, "did not get recieved events")
 
 }
 
@@ -272,7 +275,6 @@ var j int
 
 func (ch *counterHandler) counter(msg []byte) error {
 	j += 1
-	// fmt.Printf("COUNT %v\n", j)
 	ch.cc += 1
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
@@ -35,7 +36,7 @@ const (
 	sharedChannel = "shared"
 )
 
-var busClientLogEnabled = true
+var busClientLogEnabled = false
 var busLogEnabled = false
 var serfLogEnabled = false
 
@@ -218,7 +219,15 @@ func DefaultConfig() Config {
 
 func (node *Node) Stop() error {
 
-	node.bus.stop()
+	node.logger.Infof("stopping node: %v", node.serfServer.LocalMember().Addr)
+
+	if node.bus != nil {
+		node.bus.stop()
+	}
+
+	if node.producer != nil {
+		node.producer.Stop()
+	}
 
 	// stop serf
 	err := node.serfServer.Leave()
@@ -226,7 +235,16 @@ func (node *Node) Stop() error {
 		return err
 	}
 
-	return node.serfServer.Shutdown()
+	shutdownCh := node.serfServer.ShutdownCh()
+
+	err = node.serfServer.Shutdown()
+	if err != nil {
+		return err
+	}
+
+	<-shutdownCh
+
+	return nil
 }
 
 // prepareBus creates the configured topics and their channels.
@@ -264,6 +282,8 @@ func (node *Node) updateBusMember() error {
 		m := members[i]
 		updateBusMember = append(updateBusMember, m.Tags[nsqLookupAddress])
 	}
+
+	node.logger.Debugf("updating bus members: %s", strings.Join(updateBusMember, ","))
 
 	err := node.bus.updateBusNodes(updateBusMember)
 	if err != nil {

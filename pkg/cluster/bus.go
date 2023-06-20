@@ -125,9 +125,12 @@ func newBus(config Config) (*bus, error) {
 }
 
 func (b *bus) stop() {
+
+	b.logger.Info("stopping nsqd")
 	if b.nsqd != nil {
 		b.nsqd.Exit()
 	}
+	b.logger.Info("stopping nsqd lookup")
 	if b.lookup != nil {
 		b.lookup.Exit()
 	}

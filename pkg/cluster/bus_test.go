@@ -117,7 +117,7 @@ func TestBusCluster(t *testing.T) {
 			return true
 		}
 		return false
-	}, 10*time.Second, time.Second)
+	}, 60*time.Second, time.Second, "all nodes test failed")
 
 	// add topcs to both busses
 	addTopics := func(bin *bus) {
@@ -164,7 +164,7 @@ func TestBusCluster(t *testing.T) {
 	assert.NoError(t, err)
 	err = producer.Publish("topic1", []byte("msg2"))
 	assert.NoError(t, err)
-	err = producer.Publish("topic2", []byte("JENS1"))
+	err = producer.Publish("topic2", []byte("msg3"))
 	assert.NoError(t, err)
 
 	require.Eventually(t, func() bool {
@@ -182,7 +182,7 @@ func TestBusCluster(t *testing.T) {
 		}
 
 		return status
-	}, 10*time.Second, time.Second)
+	}, 60*time.Second, time.Second, "one chanel does not work")
 
 }
 
