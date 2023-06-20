@@ -37,7 +37,7 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
       {...props}
       className={twMerge(
         clsx(
-          "p-2 text-[13px] text-black dark:text-white",
+          "px-2 text-[13px] text-black dark:text-white",
           "flex min-w-full flex-row",
           variant === "error" &&
             "bg-danger-4 text-danger-10 dark:bg-danger-dark-4 dark:text-danger-dark-10",
@@ -52,7 +52,7 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
       )}
     >
       <div className="w-32 shrink-0 pr-2 font-menlo">{time}</div>
-      <div className={clsx("font-menlo")}>
+      <div className={clsx("font-menlo", "leading-5")}>
         <pre>{children}</pre>
       </div>
     </div>
