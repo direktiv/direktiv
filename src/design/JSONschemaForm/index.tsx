@@ -69,6 +69,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         onClick={(e) => {
           props.onReorderClick(props.index, props.index + 1)(e);
         }}
+        data-testid={`json-schema-form-down-button-${props.index}`}
         icon
       >
         <ChevronDownIcon />
@@ -79,6 +80,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         onClick={(e) => {
           props.onReorderClick(props.index, props.index - 1)(e);
         }}
+        data-testid={`json-schema-form-up-button-${props.index}`}
         icon
       >
         <ChevronUpIcon />
@@ -88,6 +90,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         onClick={(e) => {
           props.onDropIndexClick(props.index)(e);
         }}
+        data-testid={`json-schema-form-remove-button-${props.index}`}
         icon
       >
         <MinusIcon />
@@ -105,6 +108,7 @@ const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
         icon
         disabled={!props.canAdd}
         variant="outline"
+        data-testid="json-schema-form-add-button"
       >
         <PlusIcon />
       </Button>
