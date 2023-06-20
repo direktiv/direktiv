@@ -3,6 +3,7 @@ package datastoresql
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"gorm.io/gorm"
@@ -71,9 +72,28 @@ func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
 	}
 }
 
-// Services returns services store.
 func (s *sqlStore) Services() core.ServicesStore {
 	return &sqlServicesStore{
 		db: s.db,
 	}
+}
+
+func (*sqlStore) EventFilter() events.CloudEventsFilterStore {
+	return &sqlNamespaceCloudEventFilter{}
+}
+
+func (s *sqlStore) EventHistory() events.EventHistoryStore {
+	return &sqlEventHistoryStore{db: s.db}
+}
+
+func (s *sqlStore) EventListener() events.EventListenerStore {
+	return &sqlEventListenerStore{db: s.db}
+}
+
+func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
+	return &sqlEventTopicsStore{db: s.db}
+}
+
+func (s *sqlStore) NamespaceCloudEventFilter() events.CloudEventsFilterStore {
+	return &sqlNamespaceCloudEventFilter{db: s.db}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 )
@@ -26,6 +27,11 @@ type Store interface {
 	RuntimeVariables() core.RuntimeVariablesStore
 
 	Services() core.ServicesStore
+
+	EventHistory() events.EventHistoryStore
+	EventListener() events.EventListenerStore
+	EventFilter() events.CloudEventsFilterStore
+	EventListenerTopics() events.EventTopicsStore
 }
 
 // ErrNotFound is a common error type that should be returned by any store implementation
