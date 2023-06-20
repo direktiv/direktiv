@@ -8,6 +8,38 @@ import { getInput } from "~/api/instances/query/input";
 
 let namespace = "";
 
+const jsonSchemaFormWorkflow = `description: A workflow with a complex json schema form'
+states:
+- id: input
+  type: validate
+  schema:
+    title: some test
+    type: object
+    required:
+    - firstName
+    - lastName
+    properties:
+      firstName:
+        type: string
+        title: First name
+      lastName:
+        type: string
+        title: Last name
+      select:
+        title: select a string
+        type: string
+        enum: 
+          - "select 1"
+          - "select 2"
+      array:
+        title: A list of strings
+        type: array
+        items:
+          type: string
+      age:
+        type: integer
+        title: Age`;
+
 test.beforeEach(async () => {
   namespace = await createNamespace();
 });
@@ -168,4 +200,112 @@ test("it is possible to run the workflow by setting an input JSON via tha editor
     serverJson,
     "the JSON representation of the server result equals the client input"
   ).toEqual(clientJson);
+});
+
+test("it is possible to provide the input via a JSONschema form", async ({
+  page,
+}) => {
+  const workflow = faker.system.commonFileName("yaml");
+  await createWorkflow({
+    payload: jsonSchemaFormWorkflow,
+    headers: undefined,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: workflow,
+    },
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-form-tab-btn")
+      .getAttribute("aria-selected"),
+    "it detects the validate step and makes the form tab active by default"
+  ).toBe("true");
+
+  // it generated a form (first and last name are required)
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByLabel("Age")).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "Select a string" })
+  ).toBeVisible();
+  await expect(page.getByTestId("json-schema-form-add-button")).toBeVisible();
+  await expect(page.getByLabel("Age")).toBeVisible();
+
+  // interact with the select input
+  await page.getByRole("combobox", { name: "Select a string" }).click();
+  await page.getByRole("option", { name: "Select 2" }).click();
+
+  // interact with the array input
+  await page.getByTestId("json-schema-form-add-button").click();
+  await page.getByTestId("json-schema-form-add-button").click();
+  await page.getByTestId("json-schema-form-add-button").click();
+  await page.getByLabel("array-0*").fill("array item 2");
+  await page.getByLabel("array-1*").fill("array item 1");
+  await page.getByTestId("json-schema-form-down-button-0").click(); // switch 1 and 2
+  await page
+    .getByLabel("array-2*")
+    .fill("this will be deleted in the next step");
+  await page.getByTestId("json-schema-form-remove-button-2").click();
+
+  // interact with the number input
+  await page.getByLabel("Age").fill("2");
+
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // last name is required, try to send the form without filling it
+  // await expect(page.getByLabel("First Name")).not.toBeFocused();
+  await page.getByTestId("run-workflow-submit-btn").click();
+  await expect(page.getByLabel("First Name")).toBeFocused();
+  await page.getByLabel("First Name").fill("Marty");
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // first name is also required and will now be focused
+  await expect(page.getByLabel("Last Name")).toBeFocused();
+  await page.getByLabel("Last Name").fill("McFly");
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(page, "user was redirected to the instances page").toHaveURL(
+    reg
+  );
+  const instanceId = page.url().match(reg)?.[1];
+
+  if (!instanceId) {
+    throw new Error("instanceId not found");
+  }
+
+  // check the server state of the input
+  const res = await getInput({
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      instanceId,
+      namespace,
+    },
+    headers: undefined,
+    payload: undefined,
+  });
+
+  const expectedJson = {
+    age: 2,
+    array: ["array item 1", "array item 2"],
+    firstName: "Marty",
+    lastName: "McFly",
+    select: "select 2",
+  };
+
+  // the server returns the in put as a base64 encoded string
+  // we need to decode it and parse it as JSON to compare it
+  // to the expected result
+  const serverInputAsObject = JSON.parse(atob(res.data));
+  expect(serverInputAsObject).toEqual(expectedJson);
 });
