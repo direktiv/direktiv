@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Test_Add_Get(t *testing.T) {
+func Test_LogStoreAddGet(t *testing.T) {
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
