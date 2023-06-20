@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 const mimeTypes = [
@@ -45,19 +46,25 @@ const MimeTypeSelect = ({
   id?: string;
   mimeType: string | undefined;
   onChange: (value: MimeTypeType) => void;
-}) => (
-  <Select value={mimeType} onValueChange={onChange}>
-    <SelectTrigger id={id} variant="outline" block>
-      <SelectValue placeholder="Select a mimetype" />
-    </SelectTrigger>
-    <SelectContent>
-      {mimeTypes.map((type) => (
-        <SelectItem key={type.value} value={type.value}>
-          {type.label}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-);
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <Select value={mimeType} onValueChange={onChange}>
+      <SelectTrigger id={id} variant="outline" block>
+        <SelectValue
+          placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}
+        />
+      </SelectTrigger>
+      <SelectContent>
+        {mimeTypes.map((type) => (
+          <SelectItem key={type.value} value={type.value}>
+            {type.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
 
 export default MimeTypeSelect;

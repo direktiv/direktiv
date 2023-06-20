@@ -115,7 +115,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
           <fieldset className="flex items-center gap-5">
             <label className="w-[150px] text-right" htmlFor="mimetype">
-              {t("pages.settings.variables.edit.mimeType")}
+              {t("pages.settings.variables.edit.mimeType.label")}
             </label>
             <MimeTypeSelect
               id="mimetype"
