@@ -16,7 +16,6 @@ const fetchVersions = async ({
   getVersion({
     apiKey,
     payload: undefined,
-    headers: undefined,
     urlParams: undefined,
   });
 

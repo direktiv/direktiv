@@ -62,7 +62,6 @@ export const useDeleteSecret = ({
           name: secret.name,
           namespace,
         },
-        headers: undefined,
       }),
     onSuccess(_, variables) {
       const deletedItem = variables.secret;

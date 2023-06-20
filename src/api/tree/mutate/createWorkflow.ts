@@ -53,7 +53,6 @@ export const useCreateWorkflow = ({
       createWorkflow({
         apiKey: apiKey ?? undefined,
         payload: fileContent,
-        headers: undefined,
         urlParams: {
           namespace,
           path,

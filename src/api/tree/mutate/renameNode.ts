@@ -52,7 +52,6 @@ export const useRenameNode = ({
         payload: {
           new: `${removeLeadingSlash(node.parent)}/${newName}`,
         },
-        headers: undefined,
         urlParams: {
           path: node.path,
           namespace,

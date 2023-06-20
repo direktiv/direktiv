@@ -27,7 +27,6 @@ export const createWorkflowWithThreeRevisions = async (
   // revision 1
   await createWorkflow({
     payload: contentRevision1,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -38,31 +37,26 @@ export const createWorkflowWithThreeRevisions = async (
 
   const firstRevision = await createRevision({
     payload: undefined,
-    headers: undefined,
     urlParams: commonUrlParams,
   });
 
   // revision 2
   await updateWorkflow({
     payload: contentRevision2,
-    headers: undefined,
     urlParams: commonUrlParams,
   });
   const secondRevision = await createRevision({
     payload: undefined,
-    headers: undefined,
     urlParams: commonUrlParams,
   });
 
   // revision 3
   await updateWorkflow({
     payload: contentRevision3,
-    headers: undefined,
     urlParams: commonUrlParams,
   });
   const thirdRevision = await createRevision({
     payload: undefined,
-    headers: undefined,
     urlParams: commonUrlParams,
   });
 

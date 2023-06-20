@@ -20,7 +20,6 @@ const fetchRevisions = async ({
   getTags({
     apiKey,
     payload: undefined,
-    headers: undefined,
     urlParams: {
       namespace,
       path,

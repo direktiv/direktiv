@@ -61,7 +61,6 @@ export const useDeleteRegistry = ({
         urlParams: {
           namespace,
         },
-        headers: undefined,
       }),
     onSuccess(_, variables) {
       const deletedItem = variables.registry;

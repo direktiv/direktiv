@@ -46,7 +46,6 @@ export const useSetRouter = () => {
           route: [routeA, routeB],
           live: true,
         },
-        headers: undefined,
         urlParams: {
           namespace,
           path,

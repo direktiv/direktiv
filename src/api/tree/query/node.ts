@@ -33,7 +33,6 @@ const fetchTree = async ({
   getNodeContent({
     apiKey,
     payload: undefined,
-    headers: undefined,
     urlParams: {
       namespace,
       path,

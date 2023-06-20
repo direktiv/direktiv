@@ -21,7 +21,6 @@ const fetchRouter = async ({
   getRouter({
     apiKey,
     payload: undefined,
-    headers: undefined,
     urlParams: {
       namespace,
       path,

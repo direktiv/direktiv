@@ -38,7 +38,6 @@ const fetchVarContent = async ({
     apiKey,
     urlParams: { namespace, name },
     payload: undefined,
-    headers: undefined,
   });
 
 export const useVarContent = (name: string) => {

@@ -17,7 +17,6 @@ const fetchNamespaces = async ({
   getNamespaces({
     apiKey,
     payload: undefined,
-    headers: undefined,
     urlParams: undefined,
   });
 
