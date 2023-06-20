@@ -34,10 +34,9 @@ type EditProps = {
   onSuccess: () => void;
 };
 
-// mimeType should always be initialized to avoid backend defaulting to
-// "text/plain, charset=utf-8", which does not fit the options in
-// MimeTypeSelect
-const defaultMimeType: MimeTypeType = "application/json";
+// mimeType should always be initialized in the form, to avoid the backend
+// setting defaults that may not fit with the options in MimeTypeSelect
+const fallbackMimeType: MimeTypeType = "text/plain";
 
 const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();
@@ -46,10 +45,11 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const varContent = useVarContent(item.name);
 
   const [body, setBody] = useState<string | undefined>();
-  const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
+  const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
-  const [editorLanguage, setEditorLanguage] =
-    useState<EditorLanguagesType>("plaintext");
+  const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
+    mimeTypeToLanguageDict[fallbackMimeType]
+  );
 
   const {
     handleSubmit,
@@ -72,18 +72,14 @@ const Edit = ({ item, onSuccess }: EditProps) => {
       const safeParsedContentType = MimeTypeSchema.safeParse(contentType);
       if (!safeParsedContentType.success) {
         return console.error(
-          `Unexpected content-type, defaulting to ${defaultMimeType}`
+          `Unexpected content-type, defaulting to ${fallbackMimeType}`
         );
       }
       setMimeType(safeParsedContentType.data);
-
+      setEditorLanguage(mimeTypeToLanguageDict[safeParsedContentType.data]);
       setIsInitialized(true);
     }
   }, [varContent, isInitialized]);
-
-  useEffect(() => {
-    setEditorLanguage(mimeTypeToLanguageDict[mimeType]);
-  }, [mimeType]);
 
   const { mutate: updateVarMutation } = useUpdateVar({
     onSuccess,

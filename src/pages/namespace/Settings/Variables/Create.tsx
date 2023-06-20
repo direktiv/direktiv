@@ -12,13 +12,13 @@ import MimeTypeSelect, {
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
-import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
+import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
@@ -35,8 +35,9 @@ const Create = ({ onSuccess }: CreateProps) => {
   const [name, setName] = useState<string | undefined>();
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
-  const [editorLanguage, setEditorLanguage] =
-    useState<EditorLanguagesType>("plaintext");
+  const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
+    mimeTypeToLanguageDict[defaultMimeType]
+  );
 
   const {
     handleSubmit,
@@ -49,13 +50,14 @@ const Create = ({ onSuccess }: CreateProps) => {
     values: {
       name: name ?? "",
       content: body ?? "",
-      mimeType: mimeType ?? "application/json",
+      mimeType: mimeType ?? defaultMimeType,
     },
   });
 
-  useEffect(() => {
-    setEditorLanguage(mimeTypeToLanguageDict[mimeType]);
-  }, [mimeType]);
+  const onMimetypeChange = (value: MimeTypeType) => {
+    setMimeType(value);
+    setEditorLanguage(mimeTypeToLanguageDict[value]);
+  };
 
   const { mutate: createVarMutation } = useUpdateVar({
     onSuccess,
@@ -102,7 +104,7 @@ const Create = ({ onSuccess }: CreateProps) => {
           <MimeTypeSelect
             id="mimetype"
             mimeType={mimeType}
-            onChange={setMimeType}
+            onChange={onMimetypeChange}
           />
         </fieldset>
 
