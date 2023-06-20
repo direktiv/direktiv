@@ -83,7 +83,7 @@ export const EditorVSLogsFontCompare = () => {
         {!lineWrap && "don't"} wrap long lines
       </Button>
       <div className="flex flex-row gap-5">
-        <Card className="h-[500px] flex-1">
+        <Card className="h-[500px] flex-1 overflow-x-auto">
           <Logs linewrap={lineWrap}>
             <LogEntry time="12:34:23">
               Preparing workflow triggered by api.
