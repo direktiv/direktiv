@@ -65,8 +65,8 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("secret-create").click();
   const newSecret = {
     name: faker.random.alphaNumeric(7),
-    value: faker.random.alphaNumeric(20)
-  }
+    value: faker.random.alphaNumeric(20),
+  };
   await page.getByTestId("new-secret-name").type(newSecret.name);
   await page.getByTestId("new-secret-editor").type(newSecret.value);
   await page.getByTestId("secret-create-submit").click();
@@ -83,20 +83,25 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
   const itemName = page.getByTestId("item-name");
 
-  await expect(itemName.filter({ hasText: newSecret.name }), "there should remain the newly created secret in the list").toBeVisible();
-  await expect(itemName.filter({ hasText: `${defaultSecrets[1]?.key}` }), "the deleted item shouldn't be in the list").toBeHidden();
-
+  await expect(
+    itemName.filter({ hasText: newSecret.name }),
+    "there should remain the newly created secret in the list"
+  ).toBeVisible();
+  await expect(
+    itemName.filter({ hasText: `${defaultSecrets[1]?.key}` }),
+    "the deleted item shouldn't be in the list"
+  ).toBeHidden();
 });
 
 test("it is possible to create and delete registries", async ({ page }) => {
-  const defaultRegistries = await createRegistries(namespace, 3);
+  await createRegistries(namespace, 3);
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("registry-create").click();
 
   const newRegistry = {
     url: faker.internet.url(),
     user: faker.internet.userName(),
-    password: faker.internet.password()
+    password: faker.internet.password(),
   };
 
   await page.getByTestId("new-registry-url").type(newRegistry.url);
@@ -110,26 +115,35 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
   const itemName = page.getByTestId("item-name");
   const removing = await itemName.nth(2).innerText();
-  await page.getByTestId(/dropdown-trg-item/).nth(2).click();
+  await page
+    .getByTestId(/dropdown-trg-item/)
+    .nth(2)
+    .click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
   await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
 
-  await expect(itemName.filter({ hasText: newRegistry.url }), "there should remain the newly created secret in the list").toBeVisible();
-  await expect(itemName.filter({ hasText: removing }), "the deleted item shouldn't be in the list").toBeHidden();
+  await expect(
+    itemName.filter({ hasText: newRegistry.url }),
+    "there should remain the newly created secret in the list"
+  ).toBeVisible();
+  await expect(
+    itemName.filter({ hasText: removing }),
+    "the deleted item shouldn't be in the list"
+  ).toBeHidden();
 });
 
 test("it is possible to create and delete variables", async ({ page }) => {
-  const defaultVariables = await createVariables(namespace, 3);
+  await createVariables(namespace, 3);
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("variable-create").click();
 
   const newVariable = {
     name: faker.random.word(),
     value: faker.random.words(20),
-    mimeType: options[Math.floor(Math.random() * 5)]
+    mimeType: options[Math.floor(Math.random() * 5)],
   };
   await page.getByTestId("new-variable-name").type(newVariable.name);
   await page.waitForTimeout(5000);
@@ -141,33 +155,43 @@ test("it is possible to create and delete variables", async ({ page }) => {
   await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
   const itemName = page.getByTestId("item-name");
   const removing = await itemName.nth(2).innerText();
-  await page.getByTestId(/dropdown-trg-item/).nth(2).click();
+  await page
+    .getByTestId(/dropdown-trg-item/)
+    .nth(2)
+    .click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
-
 
   await actionWaitForSuccessToast(page);
   await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
 
-  await expect(itemName.filter({ hasText: removing }), "the deleted item shouldn't be in the list").toBeHidden();
+  await expect(
+    itemName.filter({ hasText: removing }),
+    "the deleted item shouldn't be in the list"
+  ).toBeHidden();
   if (newVariable.name !== removing) {
-    await expect(itemName.filter({ hasText: newVariable.name }), "there should remain the newly created secret in the list").toBeVisible();
+    await expect(
+      itemName.filter({ hasText: newVariable.name }),
+      "there should remain the newly created secret in the list"
+    ).toBeVisible();
   }
 });
 
 test("it is possible to edit variables", async ({ page }) => {
-  const defaultVariables = await createVariables(namespace, 3);
+  await createVariables(namespace, 3);
   await page.goto(`/${namespace}/settings`);
-  await page.getByTestId("variable-create").click();
-
-  const itemName = page.getByTestId("item-name");
-  const editing = await itemName.nth(2).innerText();
-  await page.getByTestId(/dropdown-trg-item/).nth(2).click();
+  // const itemName = page.getByTestId("item-name");
+  // const editing = await itemName.nth(2).innerText();
+  await page
+    .getByTestId(/dropdown-trg-item/)
+    .nth(2)
+    .click();
   await page.getByTestId("dropdown-actions-edit").click();
-  await page.getByTestId("registry-delete-confirm").click();
-
-  await expect(itemName.filter({ hasText: removing }), "the deleted item shouldn't be in the list").toBeHidden();
-  if (newVariable.name !== removing) {
-    await expect(itemName.filter({ hasText: newVariable.name }), "there should remain the newly created secret in the list").toBeVisible();
-  }
+  // await page.getByTestId("registry-delete-confirm").click();
+  const textArea = page.getByRole("textbox");
+  await page.waitForTimeout(5000);
+  await textArea.type(faker.random.alphaNumeric(10));
+  // const updatedValue = textArea.inputValue();
+  await page.getByTestId("var-edit-submit").click();
+  actionWaitForSuccessToast(page);
 });
