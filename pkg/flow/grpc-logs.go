@@ -568,10 +568,8 @@ func filterLogs(logs []*logengine.LogEntry, keysAndValues map[string]interface{}
 func shouldAdd(keysAndValues map[string]interface{}, fields map[string]interface{}) bool {
 	match := true
 	for k, e := range keysAndValues {
-		t, ok := fields[k]
-		if ok {
-			match = match && e == t
-		}
+		t := fields[k]
+		match = match && e == t
 	}
 
 	return match
