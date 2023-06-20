@@ -114,10 +114,14 @@ const Edit = ({ item, onSuccess }: EditProps) => {
           <FormErrors errors={errors} className="mb-5" />
 
           <fieldset className="flex items-center gap-5">
-            <label className="w-[150px] text-right" htmlFor="template">
+            <label className="w-[150px] text-right" htmlFor="mimetype">
               {t("pages.settings.variables.edit.mimeType")}
             </label>
-            <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
+            <MimeTypeSelect
+              id="mimetype"
+              mimeType={mimeType}
+              onChange={setMimeType}
+            />
           </fieldset>
 
           <Card className="grow p-4 pl-0" background="weight-1">

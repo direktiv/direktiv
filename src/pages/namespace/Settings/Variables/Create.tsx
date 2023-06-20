@@ -88,6 +88,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.variables.create.name")}
           </label>
           <Input
+            id="name"
             data-testid="new-variable-name"
             placeholder="variable-name"
             onChange={(event) => setName(event.target.value)}
@@ -95,10 +96,14 @@ const Create = ({ onSuccess }: CreateProps) => {
         </fieldset>
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="template">
+          <label className="w-[150px] text-right" htmlFor="mimetype">
             {t("pages.settings.variables.edit.mimeType")}
           </label>
-          <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
+          <MimeTypeSelect
+            id="mimetype"
+            mimeType={mimeType}
+            onChange={setMimeType}
+          />
         </fieldset>
 
         <Card className="grow p-4 pl-0" background="weight-1">

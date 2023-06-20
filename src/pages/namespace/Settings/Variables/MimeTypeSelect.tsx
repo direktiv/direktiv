@@ -38,14 +38,16 @@ export const MimeTypeSchema = z.enum([
 export type MimeTypeType = z.infer<typeof MimeTypeSchema>;
 
 const MimeTypeSelect = ({
+  id,
   mimeType,
   onChange,
 }: {
+  id?: string;
   mimeType: string | undefined;
   onChange: (value: MimeTypeType) => void;
 }) => (
   <Select value={mimeType} onValueChange={onChange}>
-    <SelectTrigger variant="outline" block>
+    <SelectTrigger id={id} variant="outline" block>
       <SelectValue placeholder="Select a mimetype" />
     </SelectTrigger>
     <SelectContent>
