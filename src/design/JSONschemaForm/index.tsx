@@ -95,18 +95,16 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
 );
 
 const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
-  <div>
+  <div className="my-4">
+    <div className="my-2 flex items-center">
+      <div className="grow">{props.title}</div>
+      <Button onClick={props.onAddClick} icon disabled={!props.canAdd}>
+        <PlusIcon />
+      </Button>
+    </div>
     {props.items.map((element) => (
       <ArrayFieldTemplateItem {...element} key={`array-item-${element.key}`} />
     ))}
-    {props.canAdd && (
-      <div className="inline-block w-full divide-y divide-solid">
-        <Button onClick={props.onAddClick} icon className="float-right mt-4">
-          <PlusIcon />
-        </Button>
-        <div className="mt-2 w-full" />
-      </div>
-    )}
   </div>
 );
 
