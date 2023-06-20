@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Test_Add_Get(t *testing.T) {
+func Test_EventStoreAddGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	e2ID := uuid.New()
@@ -116,7 +116,7 @@ func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
 	return ev
 }
 
-func Test_Topic_Add_Get(t *testing.T) {
+func Test_TopicAddGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	db, err := database.NewMockGorm()
@@ -159,7 +159,7 @@ func Test_Topic_Add_Get(t *testing.T) {
 	}
 }
 
-func Test_Listener_Add_Delete_Get(t *testing.T) {
+func Test_ListenerAddDeleteGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	wf := uuid.New()
@@ -243,7 +243,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	}
 }
 
-func Test_Listener_Add_Delete_ByWf(t *testing.T) {
+func Test_ListenerAddDeleteByWf(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	wf := uuid.New()
