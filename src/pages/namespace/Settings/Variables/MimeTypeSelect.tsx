@@ -45,7 +45,7 @@ const MimeTypeSelect = ({
   onChange: (value: MimeTypeType) => void;
 }) => (
   <Select value={mimeType} onValueChange={onChange}>
-    <SelectTrigger variant="outline">
+    <SelectTrigger variant="outline" block>
       <SelectValue placeholder="Select a mimetype" />
     </SelectTrigger>
     <SelectContent>
