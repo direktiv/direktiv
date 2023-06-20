@@ -1,6 +1,6 @@
 import "cross-fetch/polyfill";
 
-import { ResponseParser, apiFactory } from "../utils";
+import { ResponseParser, apiFactory } from "../apiFactory";
 import {
   afterAll,
   afterEach,

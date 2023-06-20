@@ -1,6 +1,6 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { RegistryListSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "../../apiFactory";
 import { registriesKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";

@@ -1,7 +1,7 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import type { ResponseParser } from "../../utils";
+import type { ResponseParser } from "../../apiFactory";
 import { VarContentSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "../../apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
