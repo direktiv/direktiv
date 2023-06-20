@@ -21,25 +21,6 @@ type FactoryParams<TUrlParams, TSchema> = {
   responseParser?: ResponseParser;
 };
 
-/**
- * atm payload and headers must alway be defined. I tried to make TS infer the property
- * with
- *
- * type ReturnT<TPayload> = {
- *   apiKey: string;
- * } & (TPayload extends undefined ? object : { payload: Partial<TPayload> });
- *
- * but it didn't work. I also tried
- *
- * type ReturnT<TPayload> = {
- *   apiKey: string;
- *   payload?: TPayload;
- * };
- *
- * but this would have the downside that payload is always optional. And we would
- * lose typesafety when some api enpoints have a required payload
- *
- */
 type ApiParams<TPayload, THeaders, TUrlParams> = {
   apiKey?: string;
   payload?: TPayload extends undefined ? undefined : TPayload;
