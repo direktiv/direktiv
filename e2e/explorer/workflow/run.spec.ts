@@ -125,8 +125,8 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   await page.getByTestId("run-workflow-editor").click();
   await page.keyboard.press("Control+A");
   await page.keyboard.press("Backspace");
-  const jsonInput = `{"string": "1", "integer": 1, "boolean": true, "array": [1,2,3], "object": {"key": "value"}}`;
-  await page.keyboard.type(jsonInput);
+  const userInputString = `{"string": "1", "integer": 1, "boolean": true, "array": [1,2,3], "object": {"key": "value"}}`;
+  await page.keyboard.type(userInputString);
 
   expect(
     await page.getByTestId("run-workflow-submit-btn").isEnabled(),
@@ -137,9 +137,10 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   await page.getByTestId("run-workflow-submit-btn").click();
 
   const reg = new RegExp(`${namespace}/instances/(.*)`);
-  await expect(page, "user was redirected to the instances page").toHaveURL(
-    reg
-  );
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
   const instanceId = page.url().match(reg)?.[1];
 
   if (!instanceId) {
@@ -157,19 +158,21 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     payload: undefined,
   });
 
-  const serverJson = JSON.parse(atob(res.data));
-  const clientJson = JSON.parse(jsonInput);
+  const inputResponseString = atob(res.data);
+  const inputResponseAsJson = JSON.parse(inputResponseString);
+  const userInputAsJson = JSON.parse(userInputString);
+
   expect(
-    atob(res.data),
+    inputResponseString,
     "the server result is not exactly the same as the input that was sent (keys were sorted and the order of the array was changed))"
-  ).not.toBe(jsonInput);
+  ).not.toBe(userInputString);
   expect(
-    serverJson,
+    inputResponseAsJson,
     "the JSON representation of the server result equals the client input"
-  ).toEqual(clientJson);
+  ).toEqual(userInputAsJson);
 });
 
-test("it is possible to provide the input via a JSON schema form", async ({
+test("it is possible to provide the input via generated form", async ({
   page,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
@@ -239,7 +242,7 @@ test("it is possible to provide the input via a JSON schema form", async ({
   // not trigger the buttons from the array form
   await page.keyboard.press("Enter");
 
-  // last name is required, try to send the form without filling it
+  // last name is required and we just tried to send the form without filling it
   await expect(page.getByLabel("First Name")).toBeFocused();
   await page.getByLabel("First Name").fill("Marty");
   await page.getByTestId("run-workflow-submit-btn").click();
@@ -250,9 +253,10 @@ test("it is possible to provide the input via a JSON schema form", async ({
   await page.getByTestId("run-workflow-submit-btn").click();
 
   const reg = new RegExp(`${namespace}/instances/(.*)`);
-  await expect(page, "user was redirected to the instances page").toHaveURL(
-    reg
-  );
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
   const instanceId = page.url().match(reg)?.[1];
 
   if (!instanceId) {
@@ -279,9 +283,6 @@ test("it is possible to provide the input via a JSON schema form", async ({
     file: `data:application/json;base64,ewogICJ0ZXN0IjogIkkgYW0ganVzdCBhIHRlc3RmaWxlIHRoYXQgY2FuIGJlIHVzZWQgdG8gdGVzdCBhbiB1cGxvYWQgZm9ybSB3aXRoaW4gYSBwbGF5d3JpZ2h0IHRlc3QuIgp9`,
   };
 
-  // the server returns the in put as a base64 encoded string
-  // we need to decode it and parse it as JSON to compare it
-  // to the expected result
-  const serverInputAsObject = JSON.parse(atob(res.data));
-  expect(serverInputAsObject).toEqual(expectedJson);
+  const inputResponseAsJson = JSON.parse(atob(res.data));
+  expect(inputResponseAsJson).toEqual(expectedJson);
 });
