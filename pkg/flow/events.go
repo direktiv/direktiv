@@ -953,6 +953,7 @@ resend:
 			return err
 		}
 	}
+	defer rowsC.Close()
 	rowsC.Close()
 	var results []*ent.CloudEvents
 	for rows.Next() {
