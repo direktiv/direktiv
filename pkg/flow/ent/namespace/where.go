@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -284,87 +283,6 @@ func NameEqualFold(v string) predicate.Namespace {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Namespace {
 	return predicate.Namespace(sql.FieldContainsFold(FieldName, v))
-}
-
-// HasCloudevents applies the HasEdge predicate on the "cloudevents" edge.
-func HasCloudevents() predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventsTable, CloudeventsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCloudeventsWith applies the HasEdge predicate on the "cloudevents" edge with a given conditions (other predicates).
-func HasCloudeventsWith(preds ...predicate.CloudEvents) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CloudeventsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventsTable, CloudeventsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasNamespacelisteners applies the HasEdge predicate on the "namespacelisteners" edge.
-func HasNamespacelisteners() predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NamespacelistenersTable, NamespacelistenersColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasNamespacelistenersWith applies the HasEdge predicate on the "namespacelisteners" edge with a given conditions (other predicates).
-func HasNamespacelistenersWith(preds ...predicate.Events) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NamespacelistenersInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NamespacelistenersTable, NamespacelistenersColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasCloudeventfilters applies the HasEdge predicate on the "cloudeventfilters" edge.
-func HasCloudeventfilters() predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventfiltersTable, CloudeventfiltersColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCloudeventfiltersWith applies the HasEdge predicate on the "cloudeventfilters" edge with a given conditions (other predicates).
-func HasCloudeventfiltersWith(preds ...predicate.CloudEventFilters) predicate.Namespace {
-	return predicate.Namespace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CloudeventfiltersInverseTable, CloudEventFiltersFieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CloudeventfiltersTable, CloudeventfiltersColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"entgo.io/ent"
-	"entgo.io/ent/dialect/entsql"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -48,15 +46,5 @@ func (Namespace) Fields() []ent.Field {
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("config").Default(DefaultNamespaceConfig),
 		field.String("name").Match(util.NameRegex).Unique().NotEmpty().MaxLen(64).MinLen(1),
-	}
-}
-
-// Edges of the Namespace.
-func (Namespace) Edges() []ent.Edge {
-	return []ent.Edge{
-		// edge.To("instances", Instance.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("cloudevents", CloudEvents.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("namespacelisteners", Events.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
-		edge.To("cloudeventfilters", CloudEventFilters.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

@@ -9,54 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent"
 )
 
-// The CloudEventFiltersFunc type is an adapter to allow the use of ordinary
-// function as CloudEventFilters mutator.
-type CloudEventFiltersFunc func(context.Context, *ent.CloudEventFiltersMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f CloudEventFiltersFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.CloudEventFiltersMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CloudEventFiltersMutation", m)
-}
-
-// The CloudEventsFunc type is an adapter to allow the use of ordinary
-// function as CloudEvents mutator.
-type CloudEventsFunc func(context.Context, *ent.CloudEventsMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f CloudEventsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.CloudEventsMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CloudEventsMutation", m)
-}
-
-// The EventsFunc type is an adapter to allow the use of ordinary
-// function as Events mutator.
-type EventsFunc func(context.Context, *ent.EventsMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f EventsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.EventsMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventsMutation", m)
-}
-
-// The EventsWaitFunc type is an adapter to allow the use of ordinary
-// function as EventsWait mutator.
-type EventsWaitFunc func(context.Context, *ent.EventsWaitMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f EventsWaitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.EventsWaitMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventsWaitMutation", m)
-}
-
 // The NamespaceFunc type is an adapter to allow the use of ordinary
 // function as Namespace mutator.
 type NamespaceFunc func(context.Context, *ent.NamespaceMutation) (ent.Value, error)
