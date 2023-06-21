@@ -109,6 +109,7 @@ const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
         disabled={!props.canAdd}
         variant="outline"
         data-testid="json-schema-form-add-button"
+        type="button"
       >
         <PlusIcon />
       </Button>
