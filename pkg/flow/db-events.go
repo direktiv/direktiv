@@ -8,106 +8,58 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/model"
+	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
-func (events *events) markEventAsProcessed(ctx context.Context, ns *database.Namespace, eventID string) (*cloudevents.Event, error) {
-	clients := events.edb.Clients(ctx)
-
-	e, err := clients.CloudEvents.Query().Where(entcev.HasNamespaceWith(entns.ID(ns.ID)), entcev.EventId(eventID)).Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if e.Processed {
-		return nil, fmt.Errorf("event already processed")
-	}
-
-	e, err = e.Update().SetProcessed(true).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	ev := e.Event
-
-	return &ev, nil
-}
-
-func (events *events) getEarliestEvent(ctx context.Context) (*ent.CloudEvents, error) {
-	clients := events.edb.Clients(ctx)
-
-	e, err := clients.CloudEvents.Query().
-		Where(entcev.Processed(false)).
-		Order(ent.Asc(entcev.FieldFire)).
-		WithNamespace().
-		First(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return e, nil
-}
-
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
-	t := time.Now().Unix() + delay
+	// t := time.Now().Unix() + delay
 
-	processed := delay == 0
+	// processed := delay == 0 //TODO:
 
-	ev := *eventin
-
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.CloudEvents.
-		Create().
-		SetEvent(ev).
-		SetNamespaceID(ns.ID).
-		SetFire(time.Unix(t, 0)).
-		SetProcessed(processed).
-		SetEventId(eventin.ID()).
-		Save(ctx)
+	li := make([]*pkgevents.Event, 0)
+	_, err := uuid.Parse(eventin.ID())
+	if err != nil {
+		eventin.SetID(uuid.NewString())
+	}
+	li = append(li, &pkgevents.Event{
+		Event:      eventin,
+		Namespace:  ns.ID,
+		ReceivedAt: time.Now(),
+	})
+	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
+		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
+		for _, err2 := range errs {
+			if err2 != nil {
+				return err2
+			}
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (events *events) deleteEventListeners(ctx context.Context, nsID, evID uuid.UUID) error {
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.Events.Delete().Where(entev.IDEQ(evID)).Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	events.pubsub.NotifyEventListeners(nsID)
-
 	return nil
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.Events.Delete().Where(entev.WorkflowID(file.ID)).Exec(ctx)
+	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+		return tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
+	})
 	if err != nil {
 		return err
 	}
-
 	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.Events.
-		Delete().
-		Where(entev.InstanceID(im.instance.Instance.ID)).
-		Exec(ctx)
+	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+		return tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
+	})
 	if err != nil {
 		return err
 	}
@@ -124,8 +76,8 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	}
 
 	if len(ms.Events) > 0 && ms.Enabled {
-		var ev []map[string]interface{}
-		for i, e := range ms.Events {
+		// var ev []map[string]interface{}
+		for _, e := range ms.Events {
 			em := make(map[string]interface{})
 			em[eventTypeString] = e.Type
 
@@ -133,31 +85,43 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
 			}
 
-			// these value are set when a matching event comes in
-			em["time"] = 0
-			em["value"] = ""
-			em["idx"] = i
+			// // these value are set when a matching event comes in
+			// em["time"] = 0
+			// em["value"] = ""
+			// em["idx"] = i
 
-			ev = append(ev, em)
+			// ev = append(ev, em)
 		}
 
-		correlations := []string{}
-		count := 1
-
-		if ms.Type == model.StartTypeEventsAnd.String() {
-			count = len(ms.Events)
+		fEv := &pkgevents.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now(),
+			UpdatedAt:              time.Now(),
+			Deleted:                false,
+			NamespaceID:            nsID,
+			TriggerType:            pkgevents.StartSimple,
+			ListeningForEventTypes: []string{},
+			TriggerWorkflow:        file.ID,
+			// LifespanOfReceivedEvents: , TODO?
+			// GlobGatekeepers: , TODO
+		}
+		switch ms.Type {
+		case "default":
+			fEv.TriggerType = pkgevents.StartSimple
+		case "event":
+			fEv.TriggerType = pkgevents.StartSimple // TODO: is this correct?
+		case "eventsXor":
+			fEv.TriggerType = pkgevents.StartOR // TODO: is this correct?
+		case "eventsAnd":
+			fEv.TriggerType = pkgevents.StartAnd // TODO: is this correct?
+		}
+		for _, sed := range ms.Events {
+			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
 		}
 
-		clients := events.edb.Clients(ctx)
-
-		_, err = clients.Events.Create().
-			SetNamespaceID(nsID).
-			SetWorkflowID(file.ID).
-			SetEvents(ev).
-			SetCorrelations(correlations).
-			SetCount(count).
-			Save(ctx)
-
+		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			return tx.DataStore().EventListener().Append(ctx, fEv)
+		})
 		if err != nil {
 			return err
 		}
@@ -168,17 +132,10 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	return nil
 }
 
-func (events *events) updateInstanceEventListener(ctx context.Context, id uuid.UUID, ev []map[string]interface{}) error {
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.Events.UpdateOneID(id).SetEvents(ev).Save(ctx)
-	return err
-}
-
 // called from workflow instances to create event listeners.
-func (events *events) addInstanceEventListener(ctx context.Context, im *instanceMemory, sevents []*model.ConsumeEventDefinition, signature []byte, all bool) error {
-	var ev []map[string]interface{}
-	for i, e := range sevents {
+func (events *events) addInstanceEventListener(ctx context.Context, namespace, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
+	// var ev []map[string]interface{}
+	for _, e := range sevents {
 		em := make(map[string]interface{})
 		em[eventTypeString] = e.Type
 
@@ -186,35 +143,45 @@ func (events *events) addInstanceEventListener(ctx context.Context, im *instance
 			em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
 		}
 
-		// these value are set when a matching event comes in
-		em["time"] = 0
-		em["value"] = ""
-		em["idx"] = i
+		// // these value are set when a matching event comes in
+		// em["time"] = 0
+		// em["value"] = ""
+		// em["idx"] = i
 
-		ev = append(ev, em)
+		// ev = append(ev, em)
 	}
 
-	count := 1
+	fEv := &pkgevents.EventListener{
+		ID:                     uuid.New(),
+		CreatedAt:              time.Now(),
+		UpdatedAt:              time.Now(),
+		Deleted:                false,
+		NamespaceID:            namespace,
+		TriggerType:            pkgevents.WaitSimple,
+		ListeningForEventTypes: []string{},
+		TriggerInstance:        instance,
+		TriggerInstanceStep:    step,
+		// LifespanOfReceivedEvents: , TODO?
+		// GlobGatekeepers: , TODO
+	}
+	for _, ced := range sevents {
+		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
+	}
 	if all {
-		count = len(sevents)
+		fEv.TriggerType = pkgevents.WaitAnd
+	}
+	if !all && len(fEv.ListeningForEventTypes) > 1 {
+		fEv.TriggerType = pkgevents.WaitOR
 	}
 
-	clients := events.edb.Clients(ctx)
-
-	_, err := clients.Events.Create().
-		SetNamespaceID(im.instance.Instance.NamespaceID).
-		SetWorkflowID(im.instance.Instance.WorkflowID).
-		SetInstanceID(im.instance.Instance.ID).
-		SetEvents(ev).
-		SetCorrelations([]string{}).
-		SetSignature(signature).
-		SetCount(count).
-		Save(ctx)
+	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+		return tx.DataStore().EventListener().Append(ctx, fEv)
+	})
 	if err != nil {
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
+	events.pubsub.NotifyEventListeners(namespace)
 
 	return nil
 }

@@ -24,6 +24,9 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Eve
 	errs := make([]error, len(events))
 	for i := range events {
 		v := events[i]
+		if v.Event == nil {
+			panic("event was nil")
+		}
 		eventByte, err := json.Marshal(v.Event)
 		if err != nil {
 			errs[i] = err

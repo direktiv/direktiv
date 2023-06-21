@@ -984,16 +984,8 @@ func (engine *engine) createTransport() *http.Transport {
 	return tr
 }
 
-func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
-	sig := new(eventsWaiterSignature)
-	err := json.Unmarshal(signature, sig)
-	if err != nil {
-		err = derrors.NewInternalError(err)
-		engine.sugar.Error(err)
-		return
-	}
-
-	ctx, im, err := engine.loadInstanceMemory(sig.InstanceID, sig.Step)
+func (engine *engine) wakeEventsWaiter(instance uuid.UUID, step int, events []*cloudevents.Event) {
+	ctx, im, err := engine.loadInstanceMemory(instance.String(), step)
 	if err != nil {
 		err = fmt.Errorf("cannot load workflow logic instance: %w", err)
 		engine.sugar.Error(err)
