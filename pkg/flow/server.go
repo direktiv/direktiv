@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
@@ -66,11 +65,10 @@ type server struct {
 	events          *events
 	functionsClient igrpc.FunctionsClient
 
-	metrics    *metrics.Client
-	logger     *internallogger.Logger // TODO: remove
-	loggerBeta logengine.BetterLogger
-	edb        *entwrapper.Database // TODO: remove
-	database   *database.CachedDatabase
+	metrics  *metrics.Client
+	logger   logengine.BetterLogger
+	edb      *entwrapper.Database // TODO: remove
+	database *database.CachedDatabase
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -101,7 +99,6 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 		return nil, err
 	}
 
-	srv.logger = internallogger.InitLogger()
 	srv.initJQ()
 
 	return srv, nil
@@ -192,8 +189,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-	srv.logger.StartLogWorkers(1, srv.edb, srv.pubsub, srv.sugar)
-
 	srv.sugar.Debug("Initializing timers.")
 
 	srv.timers, err = initTimers(srv.pubsub)
@@ -246,7 +241,6 @@ func (srv *server) start(ctx context.Context) error {
 	noTx := &sqlTx{
 		res: srv.gormDB,
 	}
-
 	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		noTx.DataStore().Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
@@ -254,7 +248,7 @@ func (srv *server) start(ctx context.Context) error {
 		},
 		srv.sugar.Errorf,
 	)
-	srv.loggerBeta = logengine.ChainedBetterLogger{
+	srv.logger = logengine.ChainedBetterLogger{
 		logengine.SugarBetterLogger{
 			Sugar: srv.sugar,
 			AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
@@ -367,7 +361,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	wg.Wait()
 
-	srv.logger.CloseLogWorkers()
 	closelogworker()
 
 	if err != nil {

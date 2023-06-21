@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
 	"github.com/google/uuid"
@@ -28,7 +27,6 @@ type NamespaceQuery struct {
 	order                  []OrderFunc
 	inters                 []Interceptor
 	predicates             []predicate.Namespace
-	withLogs               *LogMsgQuery
 	withCloudevents        *CloudEventsQuery
 	withNamespacelisteners *EventsQuery
 	withCloudeventfilters  *CloudEventFiltersQuery
@@ -67,28 +65,6 @@ func (nq *NamespaceQuery) Unique(unique bool) *NamespaceQuery {
 func (nq *NamespaceQuery) Order(o ...OrderFunc) *NamespaceQuery {
 	nq.order = append(nq.order, o...)
 	return nq
-}
-
-// QueryLogs chains the current query on the "logs" edge.
-func (nq *NamespaceQuery) QueryLogs() *LogMsgQuery {
-	query := (&LogMsgClient{config: nq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := nq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := nq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, selector),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.LogsTable, namespace.LogsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryCloudevents chains the current query on the "cloudevents" edge.
@@ -349,7 +325,6 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		order:                  append([]OrderFunc{}, nq.order...),
 		inters:                 append([]Interceptor{}, nq.inters...),
 		predicates:             append([]predicate.Namespace{}, nq.predicates...),
-		withLogs:               nq.withLogs.Clone(),
 		withCloudevents:        nq.withCloudevents.Clone(),
 		withNamespacelisteners: nq.withNamespacelisteners.Clone(),
 		withCloudeventfilters:  nq.withCloudeventfilters.Clone(),
@@ -357,17 +332,6 @@ func (nq *NamespaceQuery) Clone() *NamespaceQuery {
 		sql:  nq.sql.Clone(),
 		path: nq.path,
 	}
-}
-
-// WithLogs tells the query-builder to eager-load the nodes that are connected to
-// the "logs" edge. The optional arguments are used to configure the query builder of the edge.
-func (nq *NamespaceQuery) WithLogs(opts ...func(*LogMsgQuery)) *NamespaceQuery {
-	query := (&LogMsgClient{config: nq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	nq.withLogs = query
-	return nq
 }
 
 // WithCloudevents tells the query-builder to eager-load the nodes that are connected to
@@ -481,8 +445,7 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 	var (
 		nodes       = []*Namespace{}
 		_spec       = nq.querySpec()
-		loadedTypes = [4]bool{
-			nq.withLogs != nil,
+		loadedTypes = [3]bool{
 			nq.withCloudevents != nil,
 			nq.withNamespacelisteners != nil,
 			nq.withCloudeventfilters != nil,
@@ -508,13 +471,6 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
-	}
-	if query := nq.withLogs; query != nil {
-		if err := nq.loadLogs(ctx, query, nodes,
-			func(n *Namespace) { n.Edges.Logs = []*LogMsg{} },
-			func(n *Namespace, e *LogMsg) { n.Edges.Logs = append(n.Edges.Logs, e) }); err != nil {
-			return nil, err
-		}
 	}
 	if query := nq.withCloudevents; query != nil {
 		if err := nq.loadCloudevents(ctx, query, nodes,
@@ -542,37 +498,6 @@ func (nq *NamespaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Na
 	return nodes, nil
 }
 
-func (nq *NamespaceQuery) loadLogs(ctx context.Context, query *LogMsgQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *LogMsg)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Namespace)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.LogMsg(func(s *sql.Selector) {
-		s.Where(sql.InValues(namespace.LogsColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.namespace_logs
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "namespace_logs" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "namespace_logs" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (nq *NamespaceQuery) loadCloudevents(ctx context.Context, query *CloudEventsQuery, nodes []*Namespace, init func(*Namespace), assign func(*Namespace, *CloudEvents)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Namespace)

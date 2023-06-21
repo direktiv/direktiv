@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 )
 
@@ -74,7 +73,6 @@ func columnChecker(table string) func(string) error {
 		cloudevents.Table:       cloudevents.ValidColumn,
 		events.Table:            events.ValidColumn,
 		eventswait.Table:        eventswait.ValidColumn,
-		logmsg.Table:            logmsg.ValidColumn,
 		namespace.Table:         namespace.ValidColumn,
 	}
 	check, ok := checks[table]
