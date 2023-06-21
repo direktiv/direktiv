@@ -71,6 +71,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         }}
         data-testid={`json-schema-form-down-button-${props.index}`}
         icon
+        type="button"
       >
         <ChevronDownIcon />
       </Button>
@@ -82,6 +83,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         }}
         data-testid={`json-schema-form-up-button-${props.index}`}
         icon
+        type="button"
       >
         <ChevronUpIcon />
       </Button>
@@ -92,6 +94,7 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
         }}
         data-testid={`json-schema-form-remove-button-${props.index}`}
         icon
+        type="button"
       >
         <MinusIcon />
       </Button>
