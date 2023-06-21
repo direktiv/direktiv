@@ -39,15 +39,15 @@ job "deployment-nginx" {
 ############################################################# Upstreams
 
 {{ range nomadServices }}
-
 {{ if .Name | contains "direktiv-ui" }}
-
-# server {{ .Address }}:{{ .Port }};
+{{$name := .Name -}}
+{{ range nomadService $name }}
 
 upstream {{ .Name }} {
   server {{ .Address }}:{{ .Port }};
 }
 
+{{ end }}
 {{ end }}
 {{ end }}
 
@@ -74,9 +74,8 @@ upstream {{ .Name }} {
   }
 ############################################################# Proxy Server
   server {
-      server_name "*.direktiv.dev";
+      server_name "~^([a-zA-Z0-9-_]*).direktiv.dev";
       set $deployment_name $1;
-
 
       listen 443 ssl;
       listen  [::]:443 ssl;
