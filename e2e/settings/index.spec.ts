@@ -64,7 +64,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("secret-create").click();
   const newSecret = {
-    name: faker.random.alphaNumeric(7),
+    name: faker.internet.domainWord(),
     value: faker.random.alphaNumeric(20),
   };
   await page.getByTestId("new-secret-name").type(newSecret.name);
