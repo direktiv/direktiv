@@ -147,7 +147,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		req.Pagination.Offset += int32(len(le))
 	}
 
 	more := sub.Wait(ctx)
@@ -228,13 +228,11 @@ resend:
 	if err != nil {
 		return err
 	}
-	total := 0
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
-		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -245,7 +243,7 @@ resend:
 
 	// leFiltered := logengine.FilterLogs(le, qu)
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return err
@@ -285,13 +283,11 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 		return nil, err
 	}
 	le := make([]*logengine.LogEntry, 0)
-	total := 0
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
-		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -301,7 +297,7 @@ func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsReques
 	resp := new(grpc.WorkflowLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Path = f.Path
-	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return nil, err
@@ -334,13 +330,11 @@ resend:
 		return err
 	}
 	le := make([]*logengine.LogEntry, 0)
-	total := 0
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
-		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -352,7 +346,7 @@ resend:
 	resp.Namespace = ns.Name
 	resp.Path = f.Path
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	resp.PageInfo.Total = int32(total)
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
 	if err != nil {
 		return err
 	}
@@ -394,19 +388,16 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
 	qu["type"] = ins
-	flow.sugar.Errorf("XXXXXXXX %v", prefix)
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
 	}
 	le := make([]*logengine.LogEntry, 0)
-	total := 0
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
-		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -435,7 +426,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = req.Namespace
 	resp.Instance = req.Instance
-	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return nil, err
@@ -471,19 +462,16 @@ resend:
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
 	qu["type"] = ins
-	flow.sugar.Errorf("XXXXXXXX %v", prefix)
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
 	}
 	le := make([]*logengine.LogEntry, 0)
-	total := 0
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
-		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -512,7 +500,7 @@ resend:
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = req.Namespace
 	resp.Instance = req.Instance
-	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
+	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return err
@@ -526,7 +514,7 @@ resend:
 			return err
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		req.Pagination.Offset += int32(len(le))
 	}
 
 	more := sub.Wait(ctx)
