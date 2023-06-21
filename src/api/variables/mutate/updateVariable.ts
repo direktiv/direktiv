@@ -76,9 +76,9 @@ export const useUpdateVar = ({
         })
       );
       toast({
-        title: t("api.variables.mutate.createVariable.success.title"),
+        title: t("api.variables.mutate.updateVariable.success.title"),
         description: t(
-          "api.variables.mutate.createVariable.success.description",
+          "api.variables.mutate.updateVariable.success.description",
           { name: data.key }
         ),
         variant: "success",
@@ -88,7 +88,7 @@ export const useUpdateVar = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.variables.mutate.createVariable.error.description"),
+        description: t("api.variables.mutate.updateVariable.error.description"),
         variant: "error",
       });
     },
