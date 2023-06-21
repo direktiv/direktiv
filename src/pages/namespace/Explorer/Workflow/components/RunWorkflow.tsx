@@ -134,7 +134,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
           </TabsList>
           <TabsContent value={tabs[0]} asChild>
             <Card
-              className="h-96 w-full p-4 sm:h-[500px]"
+              className="h-96 w-full p-4 sm:h-[700px]"
               noShadow
               background="weight-1"
               data-testid="run-workflow-editor"
@@ -158,7 +158,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
             </Card>
           </TabsContent>
           <TabsContent value={tabs[1]} asChild>
-            <Card className="h-96 w-full p-4 sm:h-[500px]">
+            <Card className="h-96 w-full p-4 sm:h-[700px]">
               {isFormAvailable ? (
                 <ScrollArea className="h-full">
                   <JSONSchemaForm
