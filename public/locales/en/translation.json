@@ -157,7 +157,7 @@
           "settings": "Settings"
         },
         "headline": "Latest",
-        "updated": "Updated {{relativeTime}}",
+        "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
         "editor": {
           "unsavedNote": "unsaved changes",
