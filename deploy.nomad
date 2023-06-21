@@ -23,7 +23,7 @@ job "DEPLOYMENT_NAME" {
       }
 
       service {
-        name     = "direktiv-ui"
+        name     = "direktiv-ui-DEPLOYMENT_NAME"
         port     = "http"
         provider = "nomad"
 
