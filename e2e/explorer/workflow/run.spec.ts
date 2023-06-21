@@ -5,44 +5,9 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkfl
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
+import { jsonSchemaFormWorkflow } from "./utils";
 
 let namespace = "";
-
-const jsonSchemaFormWorkflow = `description: A workflow with a complex json schema form'
-states:
-- id: input
-  type: validate
-  schema:
-    title: some test
-    type: object
-    required:
-    - firstName
-    - lastName
-    properties:
-      firstName:
-        type: string
-        title: First name
-      lastName:
-        type: string
-        title: Last name
-      select:
-        title: select a string
-        type: string
-        enum: 
-          - select 1
-          - select 2
-      array:
-        title: A list of strings
-        type: array
-        items:
-          type: string
-      age:
-        type: integer
-        title: Age
-      file:
-        type: string
-        title: file upload
-        format: data-url`;
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
