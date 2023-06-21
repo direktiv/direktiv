@@ -29,8 +29,8 @@ states:
         title: select a string
         type: string
         enum: 
-          - "select 1"
-          - "select 2"
+          - select 1
+          - select 2
       array:
         title: A list of strings
         type: array
@@ -38,7 +38,11 @@ states:
           type: string
       age:
         type: integer
-        title: Age`;
+        title: Age
+      file:
+        type: string
+        title: file upload
+        format: data-url`;
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -240,10 +244,16 @@ test("it is possible to provide the input via a JSONschema form", async ({
   ).toBeVisible();
   await expect(page.getByTestId("json-schema-form-add-button")).toBeVisible();
   await expect(page.getByLabel("Age")).toBeVisible();
+  await expect(page.getByLabel("File")).toBeVisible();
 
   // interact with the select input
   await page.getByRole("combobox", { name: "Select a string" }).click();
   await page.getByRole("option", { name: "Select 2" }).click();
+
+  // interact with the file input
+  await page
+    .getByLabel("File")
+    .setInputFiles("./e2e/utils/fixtures/upload-testfile.json");
 
   // interact with the array input
   await page.getByTestId("json-schema-form-add-button").click();
@@ -303,6 +313,7 @@ test("it is possible to provide the input via a JSONschema form", async ({
     firstName: "Marty",
     lastName: "McFly",
     select: "select 2",
+    file: `data:application/json;base64,ewogICJ0ZXN0IjogIkkgYW0ganVzdCBhIHRlc3RmaWxlIHRoYXQgY2FuIGJlIHVzZWQgdG8gdGVzdCBhbiB1cGxvYWQgZm9ybSB3aXRoaW4gYSBwbGF5d3JpZ2h0IHRlc3QuIgp9`,
   };
 
   // the server returns the in put as a base64 encoded string
