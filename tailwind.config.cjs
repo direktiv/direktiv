@@ -22,6 +22,7 @@ module.exports = {
     fontFamily: {
       sans: ["Inter", ...defaultTheme.fontFamily.sans],
       mono: ["RobotoMono", ...defaultTheme.fontFamily.mono],
+      menlo: 'Menlo, Monaco, "Courier New", monospace'
     },
     extend: {
       colors: {

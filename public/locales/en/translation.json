@@ -221,7 +221,10 @@
         "edit": {
           "title": "Edit {{name}}",
           "name": "Name",
-          "mimeType": "Mimetype"
+          "mimeType": {
+            "label": "Mimetype",
+            "placeholder": "Select a mimetype"
+          }
         }
       },
       "theme": {

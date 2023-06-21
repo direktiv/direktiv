@@ -61,8 +61,8 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.secrets.create.name")}
           </label>
           <Input
-            data-testid="new-secret-name"
             id="name"
+            data-testid="new-secret-name"
             placeholder="secret-name"
             {...register("name")}
           />

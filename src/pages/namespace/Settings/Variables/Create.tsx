@@ -5,15 +5,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import Editor, { EditorLanguagesType } from "~/design/Editor";
+import MimeTypeSelect, {
+  MimeTypeType,
+  mimeTypeToLanguageDict,
+} from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import MimeTypeSelect from "./MimeTypeSelect";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -23,28 +26,38 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };
 
+const defaultMimeType: MimeTypeType = "application/json";
+
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const [name, setName] = useState<string | undefined>();
   const [body, setBody] = useState<string | undefined>();
-  const [mimeType, setMimeType] = useState<string | undefined>();
+  const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
+  const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
+    mimeTypeToLanguageDict[defaultMimeType]
+  );
 
   const {
     handleSubmit,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
-    // mimeType defaults to text/plain to avoid backend defaulting to
+    // mimeType should always be initialized to avoid backend defaulting to
     // "text/plain, charset=utf-8", which does not fit the options in
     // MimeTypeSelect
     values: {
       name: name ?? "",
       content: body ?? "",
-      mimeType: mimeType ?? "text/plain",
+      mimeType: mimeType ?? defaultMimeType,
     },
   });
+
+  const onMimetypeChange = (value: MimeTypeType) => {
+    setMimeType(value);
+    setEditorLanguage(mimeTypeToLanguageDict[value]);
+  };
 
   const { mutate: createVarMutation } = useUpdateVar({
     onSuccess,
@@ -77,9 +90,21 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.variables.create.name")}
           </label>
           <Input
+            id="name"
             data-testid="new-variable-name"
             placeholder="variable-name"
             onChange={(event) => setName(event.target.value)}
+          />
+        </fieldset>
+
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[150px] text-right" htmlFor="mimetype">
+            {t("pages.settings.variables.edit.mimeType.label")}
+          </label>
+          <MimeTypeSelect
+            id="mimetype"
+            mimeType={mimeType}
+            onChange={onMimetypeChange}
           />
         </fieldset>
 
@@ -92,16 +117,10 @@ const Create = ({ onSuccess }: CreateProps) => {
               }}
               theme={theme ?? undefined}
               data-testid="variable-editor"
+              language={editorLanguage}
             />
           </div>
         </Card>
-
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="template">
-            {t("pages.settings.variables.edit.mimeType")}
-          </label>
-          <MimeTypeSelect mimeType={mimeType} onChange={setMimeType} />
-        </fieldset>
 
         <DialogFooter>
           <DialogClose asChild>
