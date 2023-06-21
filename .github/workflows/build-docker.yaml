@@ -56,6 +56,10 @@ jobs:
       NOMAD_ADDR: https://noamd.direktiv.dev:4646
       NOMAD_VAR_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
 
+    environment:
+      name: review-${GITHUB_REF////-}
+      url: https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev
+
     steps:
       - uses: actions/checkout@v2
       - uses: lucasmelin/setup-nomad@v1
