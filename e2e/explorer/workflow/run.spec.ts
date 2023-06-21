@@ -280,7 +280,7 @@ test("it is possible to provide the input via generated form", async ({
     firstName: "Marty",
     lastName: "McFly",
     select: "select 2",
-    file: `data:application/json;base64,ewogICJ0ZXN0IjogIkkgYW0ganVzdCBhIHRlc3RmaWxlIHRoYXQgY2FuIGJlIHVzZWQgdG8gdGVzdCBhbiB1cGxvYWQgZm9ybSB3aXRoaW4gYSBwbGF5d3JpZ2h0IHRlc3QuIgp9`,
+    file: `data:application/json;base64,ewogICJ0ZXN0IjogIkkgYW0ganVzdCBhIHRlc3RmaWxlIHRoYXQgY2FuIGJlIHVzZWQgdG8gdGVzdCBhbiB1cGxvYWQgZm9ybSB3aXRoaW4gYSBwbGF5d3JpZ2h0IHRlc3QuIgp9Cg==`,
   };
 
   const inputResponseAsJson = JSON.parse(atob(res.data));
