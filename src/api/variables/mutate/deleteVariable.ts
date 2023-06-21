@@ -1,7 +1,7 @@
 import { VarDeletedSchema, VarSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
@@ -33,12 +33,10 @@ export const useDeleteVar = ({
   const mutationFn = ({ variable }: { variable: VarSchemaType }) =>
     deleteVar({
       apiKey: apiKey ?? undefined,
-      payload: undefined,
       urlParams: {
         namespace,
         name: variable.name,
       },
-      headers: undefined,
     });
 
   return useMutation({

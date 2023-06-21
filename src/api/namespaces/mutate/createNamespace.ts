@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { sortByName } from "~/api/tree/utils";
 import { useApiKey } from "~/util/store/apiKey";
@@ -29,8 +29,6 @@ export const useCreateNamespace = ({
     mutationFn: ({ name }: { name: string }) =>
       createNamespace({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
-        headers: undefined,
         urlParams: {
           name,
         },

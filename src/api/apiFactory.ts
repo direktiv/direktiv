@@ -21,29 +21,10 @@ type FactoryParams<TUrlParams, TSchema> = {
   responseParser?: ResponseParser;
 };
 
-/**
- * atm payload and headers must alway be defined. I tried to make TS infer the property
- * with
- *
- * type ReturnT<TPayload> = {
- *   apiKey: string;
- * } & (TPayload extends undefined ? object : { payload: Partial<TPayload> });
- *
- * but it didn't work. I also tried
- *
- * type ReturnT<TPayload> = {
- *   apiKey: string;
- *   payload?: TPayload;
- * };
- *
- * but this would have the downside that payload is always optional. And we would
- * lose typesafety when some api enpoints have a required payload
- *
- */
 type ApiParams<TPayload, THeaders, TUrlParams> = {
   apiKey?: string;
-  payload: TPayload extends undefined ? undefined : TPayload;
-  headers: THeaders extends undefined ? undefined : THeaders;
+  payload?: TPayload extends undefined ? undefined : TPayload;
+  headers?: THeaders extends undefined ? undefined : THeaders;
   urlParams: TUrlParams;
 };
 
@@ -82,7 +63,7 @@ const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
 /**
  * API Factory
  *
- * @param url the path to the api endpoint
+ * @param url the url to the api endpoint
  * @param method the http method that should be used for the request
  * @param schema the zod schema that the response should be parsed against.
  * This will give us not only the typesafety of the response, it also validates
@@ -99,7 +80,7 @@ const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
  */
 export const apiFactory =
   <TSchema, TPayload, THeaders, TUrlParams>({
-    url: path,
+    url,
     method,
     schema,
     responseParser = defaultResponseParser,
@@ -110,7 +91,7 @@ export const apiFactory =
     TSchema
   > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
-    const res = await fetch(path(urlParams), {
+    const res = await fetch(url(urlParams), {
       method,
       headers: {
         ...(headers && typeof headers === "object" ? headers : {}),
@@ -134,7 +115,7 @@ export const apiFactory =
       } catch (error) {
         process.env.NODE_ENV !== "test" && console.error(error);
         return Promise.reject(
-          `could not format response for ${method} ${path(urlParams)}`
+          `could not format response for ${method} ${url(urlParams)}`
         );
       }
     }
@@ -145,7 +126,7 @@ export const apiFactory =
     } catch (error) {
       process.env.NODE_ENV !== "test" && console.error(error);
       return Promise.reject(
-        `error ${res.status} for ${method} ${path(urlParams)}`
+        `error ${res.status} for ${method} ${url(urlParams)}`
       );
     }
   };

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { NodeDeletedSchema } from "../schema";
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -43,8 +43,6 @@ export const useDeleteRevision = ({
     mutationFn: ({ path, revision }: { path: string; revision: string }) =>
       deleteRevision({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
-        headers: undefined,
         urlParams: {
           path,
           namespace,
