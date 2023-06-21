@@ -9,7 +9,7 @@ const { options } = MimeTypeSchema;
 export const createVariables = async (namespace: string, amount = 5) => {
   const variables = Array.from({ length: amount }, () => ({
     name: faker.internet.domainWord(),
-    content: faker.lorem.sentence,
+    content: faker.lorem.sentence(),
     mimeType: options[Math.floor(Math.random() * options.length)],
   }));
 
