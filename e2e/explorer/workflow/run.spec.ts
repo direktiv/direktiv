@@ -260,11 +260,13 @@ test("it is possible to provide the input via a JSONschema form", async ({
   // interact with the number input
   await page.getByLabel("Age").fill("2");
 
-  await page.getByTestId("run-workflow-submit-btn").click();
+  // submit this form via enter:
+  // we have an array form on this page, which also has some buttons
+  // using enter here makes sure that we will submit the form and
+  // not trigger the buttons from the array form
+  await page.keyboard.press("Enter");
 
   // last name is required, try to send the form without filling it
-  // await expect(page.getByLabel("First Name")).not.toBeFocused();
-  await page.getByTestId("run-workflow-submit-btn").click();
   await expect(page.getByLabel("First Name")).toBeFocused();
   await page.getByLabel("First Name").fill("Marty");
   await page.getByTestId("run-workflow-submit-btn").click();
