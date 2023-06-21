@@ -18,7 +18,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it is possible top open and use the run workflow modal from the editor and the header of the workflow page", async ({
+test("it is possible to open and use the run workflow modal from the editor and the header of the workflow page", async ({
   page,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
@@ -55,7 +55,7 @@ test("it is possible top open and use the run workflow modal from the editor and
     await page
       .getByTestId("run-workflow-json-tab-btn")
       .getAttribute("aria-selected"),
-    "the json tab is selected by default"
+    "the json tab is selected by default (since this workflow has no JSON schema)"
   ).toBe("true");
 
   expect(
@@ -88,7 +88,7 @@ test("it is possible top open and use the run workflow modal from the editor and
   expect(await page.getByTestId("run-workflow-dialog")).not.toBeVisible();
 });
 
-test("it is possible to run the workflow by setting an input JSON via tha editor", async ({
+test("it is possible to run the workflow by setting an input JSON via the editor", async ({
   page,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
@@ -119,7 +119,7 @@ test("it is possible to run the workflow by setting an input JSON via tha editor
 
   expect(
     await page.getByTestId("run-workflow-submit-btn").isEnabled(),
-    "submit button is disaled when the json is invalid"
+    "submit button is disabled when the json is invalid"
   ).toEqual(false);
 
   await page.getByTestId("run-workflow-editor").click();
@@ -133,9 +133,7 @@ test("it is possible to run the workflow by setting an input JSON via tha editor
     "submit is enabled when the json is valid"
   ).toEqual(true);
 
-  // run-workflow-editor
-
-  // run-workflow-dialog
+  // submit to run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
 
   const reg = new RegExp(`${namespace}/instances/(.*)`);
@@ -171,7 +169,7 @@ test("it is possible to run the workflow by setting an input JSON via tha editor
   ).toEqual(clientJson);
 });
 
-test("it is possible to provide the input via a JSONschema form", async ({
+test("it is possible to provide the input via a JSON schema form", async ({
   page,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
