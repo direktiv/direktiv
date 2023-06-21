@@ -224,7 +224,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup =
         };
       },
       route: {
-        path: "instances/:instance",
+        path: "instances/:instance?",
         element: <div className="flex flex-col space-y-5 p-10">Instances</div>,
         handle: { isInstancePage: true },
       },
