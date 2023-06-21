@@ -65,6 +65,6 @@ jobs:
       - name: Run nomad job
         timeout-minutes: 4
         run: |
-          sed -i "s/DEPLOYMENT_NAME/${{ github.ref_name }}/g" deploy.nomad
+          sed -i "s/DEPLOYMENT_NAME/$GITHUB_REF_SLUG_URL/g" deploy.nomad
           nomad validate deploy.nomad
           nomad run deploy.nomad
