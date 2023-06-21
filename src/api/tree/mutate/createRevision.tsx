@@ -1,7 +1,7 @@
 import { ToastAction, useToast } from "~/design/Toast";
 
 import { WorkflowCreatedSchema } from "../schema";
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { pages } from "~/util/router/pages";
 import { useApiKey } from "~/util/store/apiKey";
@@ -42,8 +42,6 @@ export const useCreateRevision = () => {
     mutationFn: ({ path }: { path: string }) =>
       createRevision({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
-        headers: undefined,
         urlParams: {
           namespace,
           path,

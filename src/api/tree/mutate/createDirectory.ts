@@ -1,5 +1,5 @@
 import { FolderCreatedSchema } from "../schema";
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
@@ -42,8 +42,6 @@ export const useCreateDirectory = ({
     mutationFn: ({ path, directory }: { path?: string; directory: string }) =>
       createDirectory({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
-        headers: undefined,
         urlParams: {
           directory,
           namespace,

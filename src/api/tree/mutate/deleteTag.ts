@@ -5,7 +5,7 @@ import {
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -47,8 +47,6 @@ export const useDeleteTag = ({
     mutationFn: ({ path, tag }: { path: string; tag: string }) =>
       deleteTag({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
-        headers: undefined,
         urlParams: {
           path,
           namespace,

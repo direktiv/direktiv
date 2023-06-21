@@ -24,7 +24,6 @@ test('it is possible to open the revision details of the "latest" revision', asy
   const revision = "latest";
   await createWorkflow({
     payload: basicWorkflow.data,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
