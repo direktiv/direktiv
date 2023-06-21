@@ -224,15 +224,17 @@ resend:
 	qu := make(map[string]interface{})
 	qu["source"] = cached.Namespace.ID
 	qu["type"] = ns
+	total := 0
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
 	}
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
+		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -243,7 +245,7 @@ resend:
 
 	// leFiltered := logengine.FilterLogs(le, qu)
 	resp := new(grpc.NamespaceLogsResponse)
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(len(le))}
+	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return err
@@ -393,11 +395,13 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 		return nil, err
 	}
 	le := make([]*logengine.LogEntry, 0)
+	total := 0
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
+		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -426,7 +430,7 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = req.Namespace
 	resp.Instance = req.Instance
-	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
+	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return nil, err
@@ -458,6 +462,7 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	}
 
 resend:
+	total := 0
 	qu := make(map[string]interface{})
 	qu["log_instance_call_path"] = prefix
 	qu["root_instance_id"] = root
@@ -468,10 +473,11 @@ resend:
 	}
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
 		}
+		total = t
 		le = append(le, res...)
 		return nil
 	})
@@ -500,7 +506,7 @@ resend:
 	resp := new(grpc.InstanceLogsResponse)
 	resp.Namespace = req.Namespace
 	resp.Instance = req.Instance
-	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
+	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(leFiltered)
 	if err != nil {
 		return err
