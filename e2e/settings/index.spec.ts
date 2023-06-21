@@ -114,7 +114,7 @@ test("it is possible to create and delete registries", async ({ page }) => {
   const menuButtons = page.getByTestId(/dropdown-trg-item-/);
   await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
   const itemName = page.getByTestId("item-name");
-  const removing = await itemName.nth(2).innerText();
+  const removedItemName = await itemName.nth(2).innerText();
   await page
     .getByTestId(/dropdown-trg-item/)
     .nth(2)
@@ -130,7 +130,7 @@ test("it is possible to create and delete registries", async ({ page }) => {
     "there should remain the newly created secret in the list"
   ).toBeVisible();
   await expect(
-    itemName.filter({ hasText: removing }),
+    itemName.filter({ hasText: removedItemName }),
     "the deleted item shouldn't be in the list"
   ).toBeHidden();
 });
@@ -154,7 +154,7 @@ test("it is possible to create and delete variables", async ({ page }) => {
   const menuButtons = page.getByTestId(/dropdown-trg-item-/);
   await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
   const itemName = page.getByTestId("item-name");
-  const removing = await itemName.nth(2).innerText();
+  const removedItemName = await itemName.nth(2).innerText();
   await page
     .getByTestId(/dropdown-trg-item/)
     .nth(2)
@@ -166,10 +166,10 @@ test("it is possible to create and delete variables", async ({ page }) => {
   await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: removing }),
+    itemName.filter({ hasText: removedItemName }),
     "the deleted item shouldn't be in the list"
   ).toBeHidden();
-  if (newVariable.name !== removing) {
+  if (newVariable.name !== removedItemName) {
     await expect(
       itemName.filter({ hasText: newVariable.name }),
       "there should remain the newly created secret in the list"
