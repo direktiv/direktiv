@@ -90,6 +90,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
 
 test("it is possible to run the workflow by setting an input JSON via the editor", async ({
   page,
+  browserName,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
   await createWorkflow({
@@ -123,7 +124,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   ).toEqual(false);
 
   await page.getByTestId("run-workflow-editor").click();
-  await page.keyboard.press("Control+A");
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
   await page.keyboard.press("Backspace");
   const userInputString = `{"string": "1", "integer": 1, "boolean": true, "array": [1,2,3], "object": {"key": "value"}}`;
   await page.keyboard.type(userInputString);
