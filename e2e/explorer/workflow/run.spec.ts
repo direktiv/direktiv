@@ -219,7 +219,7 @@ test("it is possible to provide the input via generated form", async ({
   // interact with the file input
   await page
     .getByLabel("File")
-    .setInputFiles("./e2e/utils/fixtures/upload-testfile.json");
+    .setInputFiles("./e2e/utils/fixtures/upload-testfile.txt");
 
   // interact with the array input
   await page.getByTestId("json-schema-form-add-button").click();
@@ -280,9 +280,8 @@ test("it is possible to provide the input via generated form", async ({
     firstName: "Marty",
     lastName: "McFly",
     select: "select 2",
-    file: `data:application/json;base64,ewogICJ0ZXN0IjogIkkgYW0ganVzdCBhIHRlc3RmaWxlIHRoYXQgY2FuIGJlIHVzZWQgdG8gdGVzdCBhbiB1cGxvYWQgZm9ybSB3aXRoaW4gYSBwbGF5d3JpZ2h0IHRlc3QuIgp9Cg==`,
+    file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
-
   const inputResponseAsJson = JSON.parse(atob(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
