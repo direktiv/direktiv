@@ -218,6 +218,11 @@
           }
         }
       },
+      "broadcasts": {
+        "list": {
+          "title": "Broadcasts"
+        }
+      },
       "theme": {
         "title": "Theme"
       },

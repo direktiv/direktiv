@@ -1,3 +1,4 @@
+import Broadcasts from "./Broadcasts";
 import { FC } from "react";
 import RegistriesList from "./Registries";
 import SecretsList from "./Secrets";
@@ -15,6 +16,10 @@ const SettingsPage: FC = () => (
 
     <section>
       <VariablesList />
+    </section>
+
+    <section data-testid="broadcasts-list">
+      <Broadcasts />
     </section>
   </div>
 );
