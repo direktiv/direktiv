@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
 	"github.com/direktiv/direktiv/pkg/flow/ent/events"
 	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
-	"github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 
 	stdsql "database/sql"
@@ -38,8 +37,6 @@ type Client struct {
 	Events *EventsClient
 	// EventsWait is the client for interacting with the EventsWait builders.
 	EventsWait *EventsWaitClient
-	// LogMsg is the client for interacting with the LogMsg builders.
-	LogMsg *LogMsgClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 }
@@ -59,7 +56,6 @@ func (c *Client) init() {
 	c.CloudEvents = NewCloudEventsClient(c.config)
 	c.Events = NewEventsClient(c.config)
 	c.EventsWait = NewEventsWaitClient(c.config)
-	c.LogMsg = NewLogMsgClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 }
 
@@ -147,7 +143,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
 		EventsWait:        NewEventsWaitClient(cfg),
-		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 	}, nil
 }
@@ -172,7 +167,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CloudEvents:       NewCloudEventsClient(cfg),
 		Events:            NewEventsClient(cfg),
 		EventsWait:        NewEventsWaitClient(cfg),
-		LogMsg:            NewLogMsgClient(cfg),
 		Namespace:         NewNamespaceClient(cfg),
 	}, nil
 }
@@ -202,23 +196,21 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	for _, n := range []interface{ Use(...Hook) }{
-		c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait, c.LogMsg,
-		c.Namespace,
-	} {
-		n.Use(hooks...)
-	}
+	c.CloudEventFilters.Use(hooks...)
+	c.CloudEvents.Use(hooks...)
+	c.Events.Use(hooks...)
+	c.EventsWait.Use(hooks...)
+	c.Namespace.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.CloudEventFilters, c.CloudEvents, c.Events, c.EventsWait, c.LogMsg,
-		c.Namespace,
-	} {
-		n.Intercept(interceptors...)
-	}
+	c.CloudEventFilters.Intercept(interceptors...)
+	c.CloudEvents.Intercept(interceptors...)
+	c.Events.Intercept(interceptors...)
+	c.EventsWait.Intercept(interceptors...)
+	c.Namespace.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -232,8 +224,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Events.mutate(ctx, m)
 	case *EventsWaitMutation:
 		return c.EventsWait.mutate(ctx, m)
-	case *LogMsgMutation:
-		return c.LogMsg.mutate(ctx, m)
 	case *NamespaceMutation:
 		return c.Namespace.mutate(ctx, m)
 	default:
@@ -793,140 +783,6 @@ func (c *EventsWaitClient) mutate(ctx context.Context, m *EventsWaitMutation) (V
 	}
 }
 
-// LogMsgClient is a client for the LogMsg schema.
-type LogMsgClient struct {
-	config
-}
-
-// NewLogMsgClient returns a client for the LogMsg from the given config.
-func NewLogMsgClient(c config) *LogMsgClient {
-	return &LogMsgClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `logmsg.Hooks(f(g(h())))`.
-func (c *LogMsgClient) Use(hooks ...Hook) {
-	c.hooks.LogMsg = append(c.hooks.LogMsg, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `logmsg.Intercept(f(g(h())))`.
-func (c *LogMsgClient) Intercept(interceptors ...Interceptor) {
-	c.inters.LogMsg = append(c.inters.LogMsg, interceptors...)
-}
-
-// Create returns a builder for creating a LogMsg entity.
-func (c *LogMsgClient) Create() *LogMsgCreate {
-	mutation := newLogMsgMutation(c.config, OpCreate)
-	return &LogMsgCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of LogMsg entities.
-func (c *LogMsgClient) CreateBulk(builders ...*LogMsgCreate) *LogMsgCreateBulk {
-	return &LogMsgCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for LogMsg.
-func (c *LogMsgClient) Update() *LogMsgUpdate {
-	mutation := newLogMsgMutation(c.config, OpUpdate)
-	return &LogMsgUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *LogMsgClient) UpdateOne(lm *LogMsg) *LogMsgUpdateOne {
-	mutation := newLogMsgMutation(c.config, OpUpdateOne, withLogMsg(lm))
-	return &LogMsgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *LogMsgClient) UpdateOneID(id uuid.UUID) *LogMsgUpdateOne {
-	mutation := newLogMsgMutation(c.config, OpUpdateOne, withLogMsgID(id))
-	return &LogMsgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for LogMsg.
-func (c *LogMsgClient) Delete() *LogMsgDelete {
-	mutation := newLogMsgMutation(c.config, OpDelete)
-	return &LogMsgDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *LogMsgClient) DeleteOne(lm *LogMsg) *LogMsgDeleteOne {
-	return c.DeleteOneID(lm.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *LogMsgClient) DeleteOneID(id uuid.UUID) *LogMsgDeleteOne {
-	builder := c.Delete().Where(logmsg.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &LogMsgDeleteOne{builder}
-}
-
-// Query returns a query builder for LogMsg.
-func (c *LogMsgClient) Query() *LogMsgQuery {
-	return &LogMsgQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeLogMsg},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a LogMsg entity by its id.
-func (c *LogMsgClient) Get(ctx context.Context, id uuid.UUID) (*LogMsg, error) {
-	return c.Query().Where(logmsg.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *LogMsgClient) GetX(ctx context.Context, id uuid.UUID) *LogMsg {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a LogMsg.
-func (c *LogMsgClient) QueryNamespace(lm *LogMsg) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := lm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(logmsg.Table, logmsg.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, logmsg.NamespaceTable, logmsg.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(lm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *LogMsgClient) Hooks() []Hook {
-	return c.hooks.LogMsg
-}
-
-// Interceptors returns the client interceptors.
-func (c *LogMsgClient) Interceptors() []Interceptor {
-	return c.inters.LogMsg
-}
-
-func (c *LogMsgClient) mutate(ctx context.Context, m *LogMsgMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&LogMsgCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&LogMsgUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&LogMsgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&LogMsgDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown LogMsg mutation op: %q", m.Op())
-	}
-}
-
 // NamespaceClient is a client for the Namespace schema.
 type NamespaceClient struct {
 	config
@@ -1020,22 +876,6 @@ func (c *NamespaceClient) GetX(ctx context.Context, id uuid.UUID) *Namespace {
 	return obj
 }
 
-// QueryLogs queries the logs edge of a Namespace.
-func (c *NamespaceClient) QueryLogs(n *Namespace) *LogMsgQuery {
-	query := (&LogMsgClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(logmsg.Table, logmsg.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.LogsTable, namespace.LogsColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryCloudevents queries the cloudevents edge of a Namespace.
 func (c *NamespaceClient) QueryCloudevents(n *Namespace) *CloudEventsQuery {
 	query := (&CloudEventsClient{config: c.config}).Query()
@@ -1112,11 +952,10 @@ func (c *NamespaceClient) mutate(ctx context.Context, m *NamespaceMutation) (Val
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg, Namespace []ent.Hook
+		CloudEventFilters, CloudEvents, Events, EventsWait, Namespace []ent.Hook
 	}
 	inters struct {
-		CloudEventFilters, CloudEvents, Events, EventsWait, LogMsg,
-		Namespace []ent.Interceptor
+		CloudEventFilters, CloudEvents, Events, EventsWait, Namespace []ent.Interceptor
 	}
 )
 

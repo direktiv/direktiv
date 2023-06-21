@@ -26,7 +26,6 @@ type EntClients struct {
 	Events            *ent.EventsClient
 	CloudEvents       *ent.CloudEventsClient
 	CloudEventFilters *ent.CloudEventFiltersClient
-	LogMsg            *ent.LogMsgClient
 }
 
 // TODO: delete.
@@ -43,7 +42,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 			Events:            db.Client.Events,
 			CloudEvents:       db.Client.CloudEvents,
 			CloudEventFilters: db.Client.CloudEventFilters,
-			LogMsg:            db.Client.LogMsg,
 		}
 	}
 
@@ -54,7 +52,6 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 		Events:            x.Events,
 		CloudEvents:       x.CloudEvents,
 		CloudEventFilters: x.CloudEventFilters,
-		LogMsg:            x.LogMsg,
 	}
 }
 

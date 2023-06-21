@@ -114,34 +114,6 @@ var (
 			},
 		},
 	}
-	// LogMsgsColumns holds the columns for the "log_msgs" table.
-	LogMsgsColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "t", Type: field.TypeTime},
-		{Name: "msg", Type: field.TypeString},
-		{Name: "level", Type: field.TypeString, Default: "info"},
-		{Name: "root_instance_id", Type: field.TypeString, Default: ""},
-		{Name: "log_instance_call_path", Type: field.TypeString, Default: ""},
-		{Name: "tags", Type: field.TypeJSON, Nullable: true},
-		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "mirror_activity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "namespace_logs", Type: field.TypeUUID, Nullable: true},
-	}
-	// LogMsgsTable holds the schema information for the "log_msgs" table.
-	LogMsgsTable = &schema.Table{
-		Name:       "log_msgs",
-		Columns:    LogMsgsColumns,
-		PrimaryKey: []*schema.Column{LogMsgsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "log_msgs_namespaces_logs",
-				Columns:    []*schema.Column{LogMsgsColumns[10]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// NamespacesColumns holds the columns for the "namespaces" table.
 	NamespacesColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -162,7 +134,6 @@ var (
 		CloudEventsTable,
 		EventsTable,
 		EventsWaitsTable,
-		LogMsgsTable,
 		NamespacesTable,
 	}
 )
@@ -172,5 +143,4 @@ func init() {
 	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsTable.ForeignKeys[0].RefTable = NamespacesTable
 	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
-	LogMsgsTable.ForeignKeys[0].RefTable = NamespacesTable
 }

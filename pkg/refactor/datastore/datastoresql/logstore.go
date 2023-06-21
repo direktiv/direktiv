@@ -22,13 +22,13 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "oid", "timestamp", "level")
+	cols = append(cols, "id", "timestamp", "level")
 	vals = append(vals, uuid.New(), timestamp, level)
 	databaseCols := []string{
-		"sender",
+		"source",
 		"log_instance_call_path",
 		"root_instance_id",
-		"sender_type",
+		"type",
 	}
 	for _, k := range databaseCols {
 		if v, ok := keysAndValues[k]; ok {
@@ -65,12 +65,12 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	return nil
 }
 
-func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, error) {
+func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, int, error) {
 	wEq := []string{}
 
 	databaseCols := []string{
-		"sender",
-		"sender_type",
+		"source",
+		"type",
 		"root_instance_id",
 	}
 	for _, k := range databaseCols {
@@ -92,14 +92,21 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, 0, tx.Error
+	}
+	count := 0
+	queryCount := composeCountQuery(wEq)
+
+	tx = sl.db.WithContext(ctx).Raw(queryCount).Scan(&count)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
 	}
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
 		err := json.Unmarshal(e.Entry, &m)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		levels := []string{"debug", "info", "error"}
@@ -113,11 +120,11 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 		})
 	}
 
-	return convertedList, nil
+	return convertedList, count, nil
 }
 
 func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, sender, sender_type, entry
+	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, source, type, entry
 	FROM log_entries `
 	q += "WHERE "
 	for i, e := range wEq {
@@ -137,12 +144,26 @@ func composeQuery(limit, offset int, wEq []string) string {
 	return q + ";"
 }
 
+func composeCountQuery(wEq []string) string {
+	q := `SELECT count(id)
+	FROM log_entries `
+	q += "WHERE "
+	for i, e := range wEq {
+		q += e
+		if i+1 < len(wEq) {
+			q += " AND "
+		}
+	}
+
+	return q + ";"
+}
+
 type gormLogMsg struct {
 	Timestamp           time.Time
 	Level               int
 	Entry               []byte
-	Sender              uuid.UUID
-	SenderType          string
+	Source              uuid.UUID
+	Type                string
 	RootInstanceID      string
 	LogInstanceCallPath string
 }

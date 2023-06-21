@@ -211,6 +211,12 @@ func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID,
 	return nil
 }
 
+type triggerInfo struct {
+	WorkflowID uuid.UUID
+	InstanceID uuid.UUID
+	Step       int
+}
+
 func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
@@ -225,7 +231,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 	conv := make([]*events.EventListener, 0)
 
 	for _, l := range res {
-		var trigger events.TriggerInfo
+		var trigger triggerInfo
 		var ev []*events.Event
 
 		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
@@ -245,7 +251,9 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 			ListeningForEventTypes:      strings.Split(l.EventType, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
-			Trigger:                     trigger,
+			TriggerWorkflow:             trigger.WorkflowID,
+			TriggerInstance:             trigger.InstanceID,
+			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 		})
 	}
@@ -273,7 +281,12 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 	q := `INSERT INTO event_listeners
 	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info) 
 	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 );`
-	b, err := json.Marshal(listener.Trigger)
+	trigger := triggerInfo{
+		WorkflowID: listener.TriggerWorkflow,
+		InstanceID: listener.TriggerInstance,
+		Step:       listener.TriggerInstanceStep,
+	}
+	b, err := json.Marshal(trigger)
 	if err != nil {
 		return err
 	}
@@ -361,9 +374,8 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	conv := make([]*events.EventListener, 0)
 
 	for _, l := range res {
-		var trigger events.TriggerInfo
+		var trigger triggerInfo
 		var ev []*events.Event
-
 		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
 		if err != nil {
 			return nil, 0, err
@@ -381,7 +393,9 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 			ListeningForEventTypes:      strings.Split(l.EventType, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
-			Trigger:                     trigger,
+			TriggerWorkflow:             trigger.WorkflowID,
+			TriggerInstance:             trigger.InstanceID,
+			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 		})
 	}
@@ -402,7 +416,7 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 	conv := make([]*events.EventListener, 0)
 
 	for _, l := range res {
-		var trigger events.TriggerInfo
+		var trigger triggerInfo
 		var ev []*events.Event
 
 		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
@@ -422,7 +436,9 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 			ListeningForEventTypes:      strings.Split(l.EventType, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
-			Trigger:                     trigger,
+			TriggerWorkflow:             trigger.WorkflowID,
+			TriggerInstance:             trigger.InstanceID,
+			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 		})
 	}
@@ -451,7 +467,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	var trigger events.TriggerInfo
+	var trigger triggerInfo
 	var ev []*events.Event
 
 	err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
@@ -472,7 +488,9 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		ListeningForEventTypes:      strings.Split(l.EventType, " "),
 		LifespanOfReceivedEvents:    l.EventsLifespan,
 		TriggerType:                 events.TriggerType(l.TriggerType),
-		Trigger:                     trigger,
+		TriggerWorkflow:             trigger.WorkflowID,
+		TriggerInstance:             trigger.InstanceID,
+		TriggerInstanceStep:         trigger.Step,
 		ReceivedEventsForAndTrigger: ev,
 	}, nil
 }

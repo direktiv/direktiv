@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Test_Add_Get(t *testing.T) {
+func Test_EventStoreAddGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	e2ID := uuid.New()
@@ -116,7 +116,7 @@ func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
 	return ev
 }
 
-func Test_Topic_Add_Get(t *testing.T) {
+func Test_TopicAddGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	db, err := database.NewMockGorm()
@@ -136,7 +136,7 @@ func Test_Topic_Add_Get(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		Trigger:                     events.TriggerInfo{WorkflowID: uuid.New()},
+		TriggerWorkflow:             uuid.New(),
 	})
 	if err != nil {
 		t.Error(err)
@@ -159,7 +159,7 @@ func Test_Topic_Add_Get(t *testing.T) {
 	}
 }
 
-func Test_Listener_Add_Delete_Get(t *testing.T) {
+func Test_ListenerAddDeleteGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	wf := uuid.New()
@@ -179,7 +179,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		Trigger:                     events.TriggerInfo{WorkflowID: wf},
+		TriggerWorkflow:             wf,
 	})
 	if err != nil {
 		t.Error(err)
@@ -204,7 +204,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	if got[0].ID != eID {
 		t.Error("got wrong entry")
 	}
-	if got[0].Trigger.WorkflowID != wf {
+	if got[0].TriggerWorkflow != wf {
 		t.Error("trigger info was not correct")
 	}
 	got[0].UpdatedAt = time.Now()
@@ -243,7 +243,7 @@ func Test_Listener_Add_Delete_Get(t *testing.T) {
 	}
 }
 
-func Test_Listener_Add_Delete_ByWf(t *testing.T) {
+func Test_ListenerAddDeleteByWf(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	wf := uuid.New()
@@ -263,7 +263,7 @@ func Test_Listener_Add_Delete_ByWf(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		Trigger:                     events.TriggerInfo{WorkflowID: wf},
+		TriggerWorkflow:             wf,
 	})
 	if err != nil {
 		t.Error(err)

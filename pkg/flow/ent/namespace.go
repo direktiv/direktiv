@@ -32,8 +32,6 @@ type Namespace struct {
 
 // NamespaceEdges holds the relations/edges for other nodes in the graph.
 type NamespaceEdges struct {
-	// Logs holds the value of the logs edge.
-	Logs []*LogMsg `json:"logs,omitempty"`
 	// Cloudevents holds the value of the cloudevents edge.
 	Cloudevents []*CloudEvents `json:"cloudevents,omitempty"`
 	// Namespacelisteners holds the value of the namespacelisteners edge.
@@ -42,22 +40,13 @@ type NamespaceEdges struct {
 	Cloudeventfilters []*CloudEventFilters `json:"cloudeventfilters,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
-}
-
-// LogsOrErr returns the Logs value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) LogsOrErr() ([]*LogMsg, error) {
-	if e.loadedTypes[0] {
-		return e.Logs, nil
-	}
-	return nil, &NotLoadedError{edge: "logs"}
+	loadedTypes [3]bool
 }
 
 // CloudeventsOrErr returns the Cloudevents value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Cloudevents, nil
 	}
 	return nil, &NotLoadedError{edge: "cloudevents"}
@@ -66,7 +55,7 @@ func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
 // NamespacelistenersOrErr returns the Namespacelisteners value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Namespacelisteners, nil
 	}
 	return nil, &NotLoadedError{edge: "namespacelisteners"}
@@ -75,7 +64,7 @@ func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
 // CloudeventfiltersOrErr returns the Cloudeventfilters value or an error if the edge
 // was not loaded in eager-loading.
 func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Cloudeventfilters, nil
 	}
 	return nil, &NotLoadedError{edge: "cloudeventfilters"}
@@ -140,11 +129,6 @@ func (n *Namespace) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryLogs queries the "logs" edge of the Namespace entity.
-func (n *Namespace) QueryLogs() *LogMsgQuery {
-	return NewNamespaceClient(n.config).QueryLogs(n)
 }
 
 // QueryCloudevents queries the "cloudevents" edge of the Namespace entity.
