@@ -1,5 +1,5 @@
 import { InstancesInputSchema } from "../schema";
-import { apiFactory } from "../../utils";
+import { apiFactory } from "~/api/apiFactory";
 
 export const getInput = apiFactory({
   url: ({
