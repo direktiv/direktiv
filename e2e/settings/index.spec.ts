@@ -146,7 +146,7 @@ test("it is possible to create and delete variables", async ({ page }) => {
     mimeType: options[Math.floor(Math.random() * 5)],
   };
   await page.getByTestId("new-variable-name").type(newVariable.name);
-  await page.waitForTimeout(5000);
+  await page.getByTestId("variable-create-card").click();
   await page.type("textarea", newVariable.value);
   await page.getByTestId("variable-create-submit").click();
   await actionWaitForSuccessToast(page);
@@ -180,18 +180,29 @@ test("it is possible to create and delete variables", async ({ page }) => {
 test("it is possible to edit variables", async ({ page }) => {
   await createVariables(namespace, 3);
   await page.goto(`/${namespace}/settings`);
-  // const itemName = page.getByTestId("item-name");
-  // const editing = await itemName.nth(2).innerText();
   await page
     .getByTestId(/dropdown-trg-item/)
     .nth(2)
     .click();
   await page.getByTestId("dropdown-actions-edit").click();
-  // await page.getByTestId("registry-delete-confirm").click();
   const textArea = page.getByRole("textbox");
-  await page.waitForTimeout(5000);
+  await page.getByTestId("variable-editor-card").click();
   await textArea.type(faker.random.alphaNumeric(10));
-  // const updatedValue = textArea.inputValue();
+  const updatedValue = await textArea.inputValue();
   await page.getByTestId("var-edit-submit").click();
-  actionWaitForSuccessToast(page);
+  await actionWaitForSuccessToast(page);
+  await page.reload({
+    waitUntil: "networkidle",
+  });
+  await page
+    .getByTestId(/dropdown-trg-item/)
+    .nth(2)
+    .click();
+  await page.getByTestId("dropdown-actions-edit").click();
+  await page.getByTestId("variable-editor-card").click();
+  const afterReloadValue = await textArea.inputValue();
+  expect(
+    updatedValue,
+    "after reload, the edited value should be the same"
+  ).toBe(afterReloadValue);
 });
