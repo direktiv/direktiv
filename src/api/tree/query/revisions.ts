@@ -1,6 +1,6 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { RevisionsListSchema } from "../schema";
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "../";
 import { useApiKey } from "~/util/store/apiKey";
@@ -19,8 +19,6 @@ const fetchRevisions = async ({
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["revisionsList"]>>) =>
   getRevisions({
     apiKey,
-    payload: undefined,
-    headers: undefined,
     urlParams: {
       namespace,
       path,

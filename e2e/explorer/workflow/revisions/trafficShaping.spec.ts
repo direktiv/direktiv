@@ -22,7 +22,6 @@ test("by default, traffic shaping is not configured", async ({ page }) => {
 
   await createWorkflow({
     payload: basicWorkflow.data,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -66,7 +65,6 @@ test("it is not possible to save traffic shaping when the same revision is selec
 
   await createWorkflow({
     payload: basicWorkflow.data,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,

@@ -6,7 +6,7 @@ import {
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { secretKeys } from "..";
 import { sortByName } from "~/api/tree/utils";
 import { useApiKey } from "~/util/store/apiKey";
@@ -67,7 +67,6 @@ export const useCreateSecret = ({
           namespace,
           name,
         },
-        headers: undefined,
       }),
     onSuccess: (secret) => {
       queryClient.setQueryData<SecretListSchemaType>(

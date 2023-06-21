@@ -1,6 +1,6 @@
 import "cross-fetch/polyfill";
 
-import { ResponseParser, apiFactory } from "../utils";
+import { ResponseParser, apiFactory } from "../apiFactory";
 import {
   afterAll,
   afterEach,
@@ -181,8 +181,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: API_KEY,
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -203,8 +201,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApi({
             apiKey: "wrong-api-key",
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -229,8 +225,6 @@ describe("processApiResponse", () => {
         queryKey: ["emptyresponse"],
         queryFn: () =>
           emptyResponse({
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -250,8 +244,6 @@ describe("processApiResponse", () => {
         queryKey: ["textResponse"],
         queryFn: () =>
           textResponse({
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -274,8 +266,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           getMyApiWrongSchema({
             apiKey: API_KEY,
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -301,8 +291,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           api404({
             apiKey: API_KEY,
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -333,8 +321,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           apiJSONError({
             apiKey: API_KEY,
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
         onError,
@@ -367,8 +353,6 @@ describe("processApiResponse", () => {
         queryFn: () =>
           apiWithDynamicSegment({
             apiKey: API_KEY,
-            payload: undefined,
-            headers: undefined,
             urlParams: pathParams,
           }),
       });
@@ -392,7 +376,6 @@ describe("processApiResponse", () => {
           apiPost({
             apiKey: API_KEY,
             payload: params,
-            headers: undefined,
             urlParams: undefined,
           }),
       });
@@ -431,7 +414,6 @@ describe("processApiResponse", () => {
       useMutation({
         mutationFn: () =>
           apiThatReturnsHeader({
-            payload: undefined,
             headers,
             urlParams: undefined,
           }),
@@ -456,8 +438,6 @@ describe("processApiResponse", () => {
         queryKey: ["textResponseWithHeader"],
         queryFn: () =>
           apiWithHeadersAndCustomResponseParser({
-            payload: undefined,
-            headers: undefined,
             urlParams: undefined,
           }),
       });

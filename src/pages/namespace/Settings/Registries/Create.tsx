@@ -57,10 +57,11 @@ const Create = ({ onSuccess }: CreateProps) => {
         <FormErrors errors={errors} className="mb-5" />
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="url">
             {t("pages.settings.registries.create.url")}
           </label>
           <Input
+            id="url"
             data-testid="new-registry-url"
             placeholder="https://example.com/registry"
             {...register("url")}
@@ -68,10 +69,11 @@ const Create = ({ onSuccess }: CreateProps) => {
         </fieldset>
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="user">
             {t("pages.settings.registries.create.user")}
           </label>
           <Input
+            id="user"
             data-testid="new-registry-user"
             placeholder="user-name"
             {...register("user")}
@@ -79,10 +81,11 @@ const Create = ({ onSuccess }: CreateProps) => {
         </fieldset>
 
         <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="name">
+          <label className="w-[150px] text-right" htmlFor="password">
             {t("pages.settings.registries.create.password")}
           </label>
           <Input
+            id="password"
             data-testid="new-registry-pwd"
             type="password"
             placeholder="password"

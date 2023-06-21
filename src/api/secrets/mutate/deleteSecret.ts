@@ -5,7 +5,7 @@ import {
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "../../utils";
+import { apiFactory } from "../../apiFactory";
 import { secretKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
@@ -57,12 +57,10 @@ export const useDeleteSecret = ({
     mutationFn: ({ secret }: { secret: SecretSchemaType }) =>
       deleteSecret({
         apiKey: apiKey ?? undefined,
-        payload: undefined,
         urlParams: {
           name: secret.name,
           namespace,
         },
-        headers: undefined,
       }),
     onSuccess(_, variables) {
       const deletedItem = variables.secret;

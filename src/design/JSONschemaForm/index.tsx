@@ -111,7 +111,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
     } else {
       return undefined;
     }
-  }, [props.type, props.schema.type]);
+  }, [props.schema.type, props.type]);
 
   return (
     <Input
@@ -120,16 +120,16 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
       required={props.required}
       id={props.id}
       onChange={(e) => {
-        if (
-          props.type === "file" &&
-          e.target.files &&
-          e.target.files.length > 0
-        ) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            props.onChange(reader.result);
-          };
-          reader.readAsDataURL(e.target.files[0] as Blob);
+        if (type === "file") {
+          if (e.target.files && e.target.files.length > 0) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              props.onChange(reader.result);
+            };
+            reader.readAsDataURL(e.target.files[0] as Blob);
+          } else {
+            props.onChange(e.target.files);
+          }
         } else {
           props.onChange(e.target.value);
         }

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { TagCreatedSchema } from "../schema";
-import { apiFactory } from "~/api/utils";
+import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -50,7 +50,6 @@ export const useCreateTag = ({ onSuccess }: { onSuccess?: () => void }) => {
       createTag({
         apiKey: apiKey ?? undefined,
         payload: { tag },
-        headers: undefined,
         urlParams: {
           namespace,
           path,
