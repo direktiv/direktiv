@@ -48,9 +48,8 @@ const RunWorkflow = ({ path }: { path: string }) => {
     isFormAvailable ? "form" : "json"
   );
 
-  // it is possible that no data (or stale cache data) is available when this component
-  // mounts and the initial value of activeTab is out of synch with the actual isFormAvailable
-  // value
+  // it is possible that no data (or stale cache data) is available when this component mounts
+  // and the initial value of activeTab is out of synch with the actual isFormAvailable value
   useEffect(() => {
     setActiveTab(isFormAvailable ? "form" : "json");
   }, [isFormAvailable]);
