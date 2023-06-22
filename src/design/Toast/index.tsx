@@ -3,7 +3,7 @@ import * as ToastPrimitives from "@radix-ui/react-toast";
 import { X } from "lucide-react";
 
 import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -13,11 +13,9 @@ const ToastViewport = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Viewport
     ref={ref}
-    className={twMerge(
-      clsx(
-        "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:top-auto sm:bottom-0 sm:right-0 sm:flex-col md:max-w-[420px]",
-        className
-      )
+    className={twMergeClsx(
+      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:top-auto sm:bottom-0 sm:right-0 sm:flex-col md:max-w-[420px]",
+      className
     )}
     {...props}
   />
@@ -59,7 +57,7 @@ const Toast = React.forwardRef<
   return (
     <ToastPrimitives.Root
       ref={ref}
-      className={twMerge(clsx(toastVariants, className))}
+      className={twMergeClsx(toastVariants, className)}
       data-testid={`toast-${variant || "default"}`}
       {...props}
     />
@@ -73,11 +71,9 @@ const ToastAction = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Action
     ref={ref}
-    className={twMerge(
-      clsx(
-        "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        className
-      )
+    className={twMergeClsx(
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      className
     )}
     {...props}
   />
@@ -90,11 +86,9 @@ const ToastClose = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Close
     ref={ref}
-    className={twMerge(
-      clsx(
-        "absolute top-2 right-2 rounded-md p-1 opacity-0 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 group-hover:opacity-100",
-        className
-      )
+    className={twMergeClsx(
+      "absolute top-2 right-2 rounded-md p-1 opacity-0 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 group-hover:opacity-100",
+      className
     )}
     toast-close=""
     data-testid="toast-close"
@@ -111,7 +105,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={twMerge(clsx("text-sm font-semibold", className))}
+    className={twMergeClsx("text-sm font-semibold", className)}
     {...props}
   />
 ));
@@ -123,7 +117,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={twMerge(clsx("text-sm opacity-90", className))}
+    className={twMergeClsx("text-sm opacity-90", className)}
     {...props}
   />
 ));
