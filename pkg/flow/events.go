@@ -312,10 +312,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = &grpc.PageInfo{Total: int32(totalListeners)}
 
-	err = bytedata.ConvertDataForOutput(resListeners, &resp.Results)
-	if err != nil {
-		return nil, err
-	}
+	resp.Results = bytedata.ConvertEventListeners(resListeners)
 
 	return resp, nil
 }
@@ -355,10 +352,7 @@ resend:
 	resp.Namespace = cached.Namespace.Name
 	resp.PageInfo = &grpc.PageInfo{Total: int32(totalListeners)}
 
-	err = bytedata.ConvertDataForOutput(resListeners, &resp.Results)
-	if err != nil {
-		return err
-	}
+	resp.Results = bytedata.ConvertEventListeners(resListeners)
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {

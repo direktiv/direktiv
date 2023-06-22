@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -214,4 +215,23 @@ func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 		results = append(results, &r)
 	}
 	return results, nil
+}
+
+func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
+	res := make([]*grpc.EventListener, 0, len(in))
+	for _, el := range in {
+		types := []*grpc.EventDef{}
+		for _, v := range el.ListeningForEventTypes {
+			types = append(types, &grpc.EventDef{Type: v})
+		}
+		res = append(res, &grpc.EventListener{
+			Workflow:  el.TriggerWorkflow.String(),
+			Instance:  el.TriggerInstance.String(),
+			UpdatedAt: timestamppb.New(el.UpdatedAt),
+			Mode:      "todo",
+			Events:    types,
+			CreatedAt: timestamppb.New(el.CreatedAt),
+		})
+	}
+	return res
 }

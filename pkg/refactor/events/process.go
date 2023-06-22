@@ -91,7 +91,7 @@ func (ee EventEngine) getEventHandlers(ctx context.Context,
 	for _, l := range listeners {
 		handlers = append(handlers, ee.createEventHandler(l))
 	}
-	
+
 	return handlers
 }
 
@@ -166,10 +166,11 @@ func (EventEngine) handleEvents(ctx context.Context,
 	events := make([]*Event, 0, len(cloudevents))
 
 	for _, e := range cloudevents {
+		eCopy := e.Clone()
 		events = append(events, &Event{
 			Namespace:  namespace,
 			ReceivedAt: time.Now(),
-			Event:      &e,
+			Event:      &eCopy,
 		})
 	}
 	// panic(len(h))
