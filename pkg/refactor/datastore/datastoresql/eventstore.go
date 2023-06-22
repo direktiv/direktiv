@@ -223,7 +223,7 @@ type triggerInfo struct {
 func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
-	FROM event_listeners E WHERE E.deleted = 0 and E.id in 
+	FROM event_listeners E WHERE E.deleted = false and E.id in 
 	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
 
 	res := make([]*gormEventListener, 0)
@@ -251,7 +251,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      strings.Split(l.EventType, " "),
+			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
@@ -353,13 +353,13 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
 	FROM event_listeners WHERE namespace_id = $1 `
+	q += " ORDER BY created_at DESC " //nolint:goconst
 	if limit > 0 {
 		q += fmt.Sprintf("LIMIT %v", limit)
 	}
 	if offet > 0 {
 		q += fmt.Sprintf("OFFSET %v", offet)
 	}
-	q += " ORDER BY updated_at DESC;" //nolint:goconst
 	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 ;`
 	var count int
 	tx := s.db.WithContext(ctx).Raw(qCount, namespace).Scan(&count)
@@ -393,7 +393,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      strings.Split(l.EventType, " "),
+			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
@@ -410,7 +410,7 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
 	FROM event_listeners `
-	q += " ORDER BY updated_at DESC;"
+	q += " ORDER BY created_at DESC;"
 	res := make([]*gormEventListener, 0)
 	tx := s.db.WithContext(ctx).Raw(q).Scan(&res)
 	if tx.Error != nil {
@@ -436,7 +436,7 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      strings.Split(l.EventType, " "),
+			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
@@ -457,7 +457,7 @@ type gormEventListener struct {
 	NamespaceID    uuid.UUID
 	Deleted        bool
 	TriggerType    int
-	EventType      string
+	EventTypes     string
 	TriggerInfo    string
 	EventsLifespan int
 	ReceivedEvents []byte
@@ -481,14 +481,13 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	if err != nil {
 		return nil, err
 	}
-
 	return &events.EventListener{
 		ID:                          l.ID,
 		UpdatedAt:                   l.UpdatedAt,
 		CreatedAt:                   l.CreatedAt,
 		Deleted:                     l.Deleted,
 		NamespaceID:                 l.NamespaceID,
-		ListeningForEventTypes:      strings.Split(l.EventType, " "),
+		ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
 		LifespanOfReceivedEvents:    l.EventsLifespan,
 		TriggerType:                 events.TriggerType(l.TriggerType),
 		TriggerWorkflow:             trigger.WorkflowID,
@@ -569,13 +568,13 @@ func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID,
 	if count == 0 {
 		return make([]*events.NamespaceCloudEventFilter, 0), 0, nil
 	}
+	q += " ORDER BY created_at DESC;"
 	if limit > 0 {
 		q += fmt.Sprintf("LIMIT %v", limit)
 	}
 	if offset > 0 {
 		q += fmt.Sprintf("OFFSET %v", offset)
 	}
-	q += " ORDER BY updated_at DESC;"
 	res := make([]*events.NamespaceCloudEventFilter, 0)
 	tx = sf.db.WithContext(ctx).Exec(
 		q, nsID).Scan(&res)

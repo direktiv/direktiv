@@ -37,12 +37,20 @@ func (ee EventEngine) ProcessEvents(
 	cloudevents []cloudevents.Event,
 ) {
 	topics := ee.getTopics(ctx, namespace, cloudevents)
-	listeners, _ := ee.getListeners(ctx, topics...)
+	listeners, err := ee.getListeners(ctx, topics...)
+	if err != nil {
+		_ = err
+		// panic(err)
+	}
 	// TODO log err
 	h := ee.getEventHandlers(ctx, listeners)
 	// TODO log errors
 	ee.handleEvents(ctx, namespace, cloudevents, h)
-	_ = ee.usePostProcessingEvents(ctx, listeners)
+	err = ee.usePostProcessingEvents(ctx, listeners)
+	if err != nil {
+		_ = err
+		// panic(err)
+	}
 }
 
 func (ee EventEngine) getListeners(ctx context.Context, topics ...string) ([]*EventListener, error) {
@@ -83,7 +91,6 @@ func (ee EventEngine) getEventHandlers(ctx context.Context,
 	for _, l := range listeners {
 		handlers = append(handlers, ee.createEventHandler(l))
 	}
-
 	return handlers
 }
 
@@ -156,14 +163,15 @@ func (EventEngine) handleEvents(ctx context.Context,
 	cloudevents []cloudevents.Event, h []eventHandler,
 ) {
 	events := make([]*Event, 0, len(cloudevents))
-	for i := range cloudevents {
-		e := &cloudevents[i]
+
+	for _, e := range cloudevents {
 		events = append(events, &Event{
 			Namespace:  namespace,
 			ReceivedAt: time.Now(),
-			Event:      e,
+			Event:      &e,
 		})
 	}
+	// panic(len(h))
 	for _, eh := range h {
 		eh(ctx, events...)
 	}

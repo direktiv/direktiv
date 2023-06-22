@@ -205,9 +205,13 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *databa
 func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event) error {
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
+			// events.metrics.InsertRecord
+			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "invoking workflow")
 			events.engine.EventsInvoke(wf, ev...)
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
+			// events.metrics.InsertRecord
+			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "invoking instance %v", instanceID)
 			events.engine.wakeEventsWaiter(instanceID, step, ev) // TODO
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
@@ -226,6 +230,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
+			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "update listener")
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				errs := tx.DataStore().EventListener().Update(ctx, listener)
 				for _, err2 := range errs {

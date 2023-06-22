@@ -51,6 +51,15 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 	if err != nil {
 		return err
 	}
+	// TODO
+	// for _, t := range fEv.ListeningForEventTypes {
+	// 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	// 		return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, t)
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
@@ -63,7 +72,15 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	if err != nil {
 		return err
 	}
-
+	// TODO
+	// for _, t := range fEv.ListeningForEventTypes {
+	// 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	// 		return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, t)
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
@@ -180,7 +197,14 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 	if err != nil {
 		return err
 	}
-
+	for _, t := range fEv.ListeningForEventTypes {
+		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t)
+		})
+		if err != nil {
+			return err
+		}
+	}
 	events.pubsub.NotifyEventListeners(namespace)
 
 	return nil
