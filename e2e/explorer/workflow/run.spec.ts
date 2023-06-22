@@ -82,7 +82,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
   expect(
     await page.getByTestId("run-workflow-form-input-hint"),
     "it shows a hint that no form could be generated"
-  ).not.toBeVisible();
+  ).toBeVisible();
 
   await page.getByTestId("run-workflow-cancel-btn").click();
   expect(await page.getByTestId("run-workflow-dialog")).not.toBeVisible();
