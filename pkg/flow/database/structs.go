@@ -79,15 +79,6 @@ type CreateWorkflowArgs struct {
 	Inode *Inode `json:"parent,omitempty"`
 }
 
-type CreateCompleteWorkflowArgs struct {
-	Name     string                 `json:"name,omitempty"`
-	ReadOnly bool                   `json:"readOnly,omitempty"`
-	Parent   *CacheData             `json:"parent,omitempty"`
-	Hash     string                 `json:"hash,omitempty"`
-	Source   []byte                 `json:"source,omitempty"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-}
-
 type UpdateWorkflowArgs struct {
 	ID       uuid.UUID `json:"id,omitempty"`
 	ReadOnly *bool     `json:"readOnly,omitempty"`
