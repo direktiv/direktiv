@@ -161,7 +161,7 @@
         "runBtn": "Run",
         "editor": {
           "unsavedNote": "unsaved changes",
-          "theresOneIssue": "There is one issue",
+          "theresOneIssue": "There is an issue",
           "revisionsBtn": "Revisions",
           "makeRevision": "Make Revision",
           "revertToPrevious": "Revert to previous revision",
