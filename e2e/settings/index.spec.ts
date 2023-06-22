@@ -196,6 +196,11 @@ test("it is possible to edit variables", async ({ page }) => {
     "the variable's content is loaded into the editor"
   ).toContainText(subject.content);
 
+  await expect(
+    page.locator("select"),
+    "MimeTypeSelect is set to the subject's mimeType"
+  ).toHaveValue(subject.mimeType);
+
   // This was needed previously to make sure the editor is initialized
   // before updating the value, but it should no longer be needed.
   // await page.getByTestId("variable-editor-card").click();
