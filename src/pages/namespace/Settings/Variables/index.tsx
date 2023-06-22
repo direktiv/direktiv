@@ -22,8 +22,8 @@ const VariablesList: FC = () => {
   const [editItem, setEditItem] = useState<VarSchemaType>();
   const [createItem, setCreateItem] = useState(false);
 
-  const data = useVars();
-  const items = data.data?.variables?.results ?? null;
+  const { data, isFetched } = useVars();
+  const items = data?.variables?.results ?? null;
 
   const { mutate: deleteVarMutation } = useDeleteVar({
     onSuccess: () => {
@@ -38,6 +38,8 @@ const VariablesList: FC = () => {
       setEditItem(undefined);
     }
   }, [dialogOpen]);
+
+  if (!isFetched) return null;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

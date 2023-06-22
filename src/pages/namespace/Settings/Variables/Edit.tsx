@@ -42,7 +42,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const varContent = useVarContent(item.name);
+  const { data, isFetched } = useVarContent(item.name);
 
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
@@ -64,10 +64,10 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   });
 
   useEffect(() => {
-    if (!isInitialized && varContent.isFetched) {
-      setBody(varContent.data?.body);
+    if (!isInitialized && isFetched) {
+      setBody(data?.body);
 
-      const contentType = varContent.data?.headers["content-type"];
+      const contentType = data?.headers["content-type"];
 
       const safeParsedContentType = MimeTypeSchema.safeParse(contentType);
       if (!safeParsedContentType.success) {
@@ -79,7 +79,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
       setEditorLanguage(mimeTypeToLanguageDict[safeParsedContentType.data]);
       setIsInitialized(true);
     }
-  }, [varContent, isInitialized]);
+  }, [data, isFetched, isInitialized]);
 
   const { mutate: updateVarMutation } = useUpdateVar({
     onSuccess,
@@ -91,41 +91,42 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
   return (
     <DialogContent>
-      {varContent.isFetched && (
-        <form
-          id="edit-variable"
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col space-y-5"
-        >
-          <DialogHeader>
-            <DialogTitle>
-              <Trash />
-              <Trans
-                i18nKey="pages.settings.variables.edit.title"
-                values={{ name: item.name }}
-              />
-            </DialogTitle>
-          </DialogHeader>
-
-          <FormErrors errors={errors} className="mb-5" />
-
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[150px] text-right" htmlFor="mimetype">
-              {t("pages.settings.variables.edit.mimeType.label")}
-            </label>
-            <MimeTypeSelect
-              id="mimetype"
-              mimeType={mimeType}
-              onChange={setMimeType}
+      <form
+        id="edit-variable"
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col space-y-5"
+      >
+        <DialogHeader>
+          <DialogTitle>
+            <Trash />
+            <Trans
+              i18nKey="pages.settings.variables.edit.title"
+              values={{ name: item.name }}
             />
-          </fieldset>
+          </DialogTitle>
+        </DialogHeader>
 
-          <Card
-            className="grow p-4 pl-0"
-            background="weight-1"
-            data-testid="variable-editor-card"
-          >
-            <div className="h-[500px]">
+        <FormErrors errors={errors} className="mb-5" />
+
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[150px] text-right" htmlFor="mimetype">
+            {t("pages.settings.variables.edit.mimeType.label")}
+          </label>
+          <MimeTypeSelect
+            id="mimetype"
+            loading={!isFetched}
+            mimeType={mimeType}
+            onChange={setMimeType}
+          />
+        </fieldset>
+
+        <Card
+          className="grow p-4 pl-0"
+          background="weight-1"
+          data-testid="variable-editor-card"
+        >
+          <div className="h-[500px]">
+            {isFetched && (
               <Editor
                 value={body}
                 onChange={(newData) => {
@@ -135,25 +136,21 @@ const Edit = ({ item, onSuccess }: EditProps) => {
                 data-testid="variable-editor"
                 language={editorLanguage}
               />
-            </div>
-          </Card>
+            )}
+          </div>
+        </Card>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="ghost">
-                {t("components.button.label.cancel")}
-              </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              data-testid="var-edit-submit"
-              variant="primary"
-            >
-              {t("components.button.label.save")}
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost">
+              {t("components.button.label.cancel")}
             </Button>
-          </DialogFooter>
-        </form>
-      )}
+          </DialogClose>
+          <Button type="submit" data-testid="var-edit-submit" variant="primary">
+            {t("components.button.label.save")}
+          </Button>
+        </DialogFooter>
+      </form>
     </DialogContent>
   );
 };
