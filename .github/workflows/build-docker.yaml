@@ -7,6 +7,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DEPLOYMENT_NAME: review-${GITHUB_REF////-}
+  DEPLOYMENT_URL: https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev
 
 jobs:
   build-and-push-image:
@@ -57,8 +59,8 @@ jobs:
       NOMAD_VAR_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
 
     environment:
-      name: review-${GITHUB_REF////-}
-      url: https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev
+      name: ${env.DEPLOYMENT_NAME}
+      url: ${env.DEPLOYMENT_URL}
 
     steps:
       - uses: actions/checkout@v2
