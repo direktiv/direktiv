@@ -7,19 +7,15 @@ import (
 	"strings"
 )
 
-var (
-	direktivNamespace = os.Getenv("DIREKTIV_NAMESPACE")
-)
+var direktivNamespace = os.Getenv("DIREKTIV_NAMESPACE")
 
-type NodefinderKube struct {
-}
+type NodefinderKube struct{}
 
 func NewNodefinderKube() *NodefinderKube {
 	return &NodefinderKube{}
 }
 
 func (nfk *NodefinderKube) GetNodes() ([]string, error) {
-
 	nodes := make([]string, 0)
 	ips, err := net.LookupIP(fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace))
 	if err != nil {
@@ -36,5 +32,3 @@ func (nfk *NodefinderKube) GetNodes() ([]string, error) {
 func (nfk *NodefinderKube) GetAddr() (string, error) {
 	return os.Hostname()
 }
-
-// kubectl exec -i -t dnsutils -- nslookup 10-43-88-225.default.pod

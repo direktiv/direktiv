@@ -232,7 +232,6 @@ func DefaultConfig() Config {
 }
 
 func (node *Node) Stop() error {
-
 	node.logger.Infof("stopping node: %v", node.serfServer.LocalMember().Addr)
 
 	if node.bus != nil {

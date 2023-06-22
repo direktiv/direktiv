@@ -132,7 +132,6 @@ func newBus(config Config) (*bus, error) {
 }
 
 func (b *bus) stop() {
-
 	b.logger.Info("stopping nsqd")
 	if b.nsqd != nil {
 		b.nsqd.Exit()

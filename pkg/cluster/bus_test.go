@@ -83,7 +83,6 @@ func closePorts(rp []randomPort) {
 }
 
 func getPorts(t *testing.T) []randomPort {
-
 	ports := make([]randomPort, 5)
 
 	for i := 0; i < 5; i++ {
@@ -225,7 +224,6 @@ func TestBusCluster(t *testing.T) {
 
 		return status
 	}, 60*time.Second, time.Second, "one channel does not work")
-
 }
 
 type messageHandler struct {

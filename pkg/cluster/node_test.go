@@ -98,7 +98,6 @@ func createConfig(t *testing.T, topics []string, change bool) (Config, []randomP
 }
 
 func createCluster(t *testing.T, count int, topics []string, change bool) ([]*Node, error) {
-
 	nfNodes := make([]string, 0)
 	finalNodes := make([]*Node, 0)
 
@@ -265,7 +264,6 @@ func TestClusterSubscribe(t *testing.T) {
 		t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
 		return counter1.cc+counter2.cc+counter3.cc == 10
 	}, 30*time.Second, time.Second, "did not get recieved events")
-
 }
 
 type counterHandler struct {

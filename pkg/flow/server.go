@@ -405,7 +405,10 @@ func (srv *server) start(ctx context.Context) error {
 
 	// stop inidiviual components here
 	go func(n *cluster.Node) {
-		node.Stop()
+		err = node.Stop()
+		if err != nil {
+			srv.sugar.Error("could not stop cluster node")
+		}
 	}(node)
 
 	wg.Wait()
