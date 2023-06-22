@@ -427,19 +427,18 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	eid := in.GetId()
-	id, err := uuid.Parse(eid)
-	if err != nil {
-		return nil, err
+	if eid == "" {
+		eid = uuid.NewString()
 	}
 	cached := new(database.CacheData)
 
-	err = flow.database.NamespaceByName(ctx, cached, in.GetNamespace())
+	err := flow.database.NamespaceByName(ctx, cached, in.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 	var cevent *pkgevents.Event
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		evs, err := tx.DataStore().EventHistory().GetByID(ctx, id)
+		evs, err := tx.DataStore().EventHistory().GetByID(ctx, eid)
 		if err != nil {
 			return err
 		}
@@ -600,13 +599,15 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	}
 
 	eid := req.GetId()
-	id, err := uuid.Parse(eid)
+	if eid == "" {
+		eid = uuid.NewString()
+	}
 	if err != nil {
 		return nil, err
 	}
 	var cevent *pkgevents.Event
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		evs, err := tx.DataStore().EventHistory().GetByID(ctx, id)
+		evs, err := tx.DataStore().EventHistory().GetByID(ctx, eid)
 		if err != nil {
 			return err
 		}

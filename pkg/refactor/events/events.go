@@ -20,7 +20,7 @@ type EventHistoryStore interface {
 	// adds at least one and optionally multiple events to the storage.
 	// returns the events that where successfully appended
 	Append(ctx context.Context, event []*Event) ([]*Event, []error)
-	GetByID(ctx context.Context, id uuid.UUID) (*Event, error)
+	GetByID(ctx context.Context, id string) (*Event, error)
 	// the result will be sorted by the AcceptedAt value.
 	// pass 0 for limit or offset to get all events.
 	// The total row count is also returned for pagination.

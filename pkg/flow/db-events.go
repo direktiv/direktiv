@@ -20,8 +20,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	// processed := delay == 0 //TODO:
 
 	li := make([]*pkgevents.Event, 0)
-	_, err := uuid.Parse(eventin.ID())
-	if err != nil {
+	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
 	}
 	li = append(li, &pkgevents.Event{
@@ -29,7 +28,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		Namespace:  ns.ID,
 		ReceivedAt: time.Now(),
 	})
-	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
+	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {

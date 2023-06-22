@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 );
 
 CREATE TABLE IF NOT EXISTS "events_history" (
-    "id" uuid,
+    "id" text UNIQUE,
     "type" text NOT NULL,
     "source" text NOT NULL,
     "cloudevent" text NOT NULL,
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS "events_history" (
 CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespace_id", "created_at" DESC);
 
 CREATE TABLE IF NOT EXISTS "event_listeners" (
-    "id" uuid,
+    "id" uuid UNIQUE,
     "namespace_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -180,7 +180,7 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, er
 	return conv, nil
 }
 
-func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id uuid.UUID) (*events.Event, error) {
+func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*events.Event, error) {
 	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE id = $1 ;"
 
 	e := gormEventHistoryEntry{}
