@@ -13,7 +13,10 @@ import (
 // application data, there is a Store responsible for doing all the reading and writing database operations.
 
 // Store object wraps all different direktiv application stores.
+// nolint:interfacebloat
 type Store interface {
+	Namespaces() core.NamespacesStore
+
 	// Mirror returns mirror.Store, is responsible for reading and writing mirrors information.
 	Mirror() mirror.Store
 	// FileAnnotations returns core.FileAnnotationsStore, is responsible for reading and writing file annotations

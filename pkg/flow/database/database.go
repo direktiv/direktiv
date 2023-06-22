@@ -2,11 +2,9 @@ package database
 
 import (
 	"context"
-	"path/filepath"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
@@ -24,17 +22,6 @@ type Database interface {
 	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
 }
 
-type CacheData struct {
-	Namespace *Namespace
-	Ref       *Ref
-	Revision  *filestore.Revision
-	File      *filestore.File
-}
-
-func (cached *CacheData) Dir() string {
-	return filepath.Dir(cached.File.Path)
-}
-
 type HasAttributes interface {
 	GetAttributes() map[string]string
 }
@@ -49,35 +36,6 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 		}
 	}
 	return m
-}
-
-func (cached *CacheData) GetAttributes(recipientType recipient.RecipientType) map[string]string {
-	tags := make(map[string]string)
-	tags["recipientType"] = string(recipientType)
-
-	if cached.File != nil {
-		tags["workflow-id"] = cached.File.ID.String()
-	}
-
-	if cached.Namespace != nil {
-		tags["namespace"] = cached.Namespace.Name
-		tags["namespace-id"] = cached.Namespace.ID.String()
-	}
-	return tags
-}
-
-func (cached *CacheData) GetAttributesMirror(m *Mirror) map[string]string {
-	tags := cached.GetAttributes(recipient.Namespace)
-	tags["mirror-id"] = m.ID.String()
-	tags["recipientType"] = "mirror"
-	return tags
-}
-
-func (cached *CacheData) SentLogs(m *Mirror) map[string]string {
-	tags := cached.GetAttributes(recipient.Namespace)
-	tags["mirror-id"] = m.ID.String()
-	tags["recipientType"] = "mirror"
-	return tags
 }
 
 func GetWorkflow(path string) string {

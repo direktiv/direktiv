@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -187,15 +186,10 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		return nil, err
 	}
 
-	cached := new(database.CacheData)
-	cached.Namespace = ns
-	cached.File = file
-	cached.Revision = rev
-
 	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
-		Namespace: cached.Namespace.Name,
-		Workflow:  cached.File.Path,
-		Revision:  cached.Revision.ID.String(),
+		Namespace: ns.Name,
+		Workflow:  file.Path,
+		Revision:  rev.ID.String(),
 		Since:     req.SinceTimestamp.AsTime(),
 	})
 	if err != nil {
