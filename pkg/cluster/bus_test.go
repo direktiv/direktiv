@@ -11,7 +11,6 @@ import (
 )
 
 func TestBusConfig(t *testing.T) {
-
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
@@ -32,11 +31,9 @@ func TestBusConfig(t *testing.T) {
 
 	require.NotNil(t, b2)
 	assert.Equal(t, "/tmp/test", b2.dataDir)
-
 }
 
 func TestBusFunctions(t *testing.T) {
-
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
@@ -65,11 +62,9 @@ func TestBusFunctions(t *testing.T) {
 
 	err = b.updateBusNodes([]string{"server1:5555"})
 	assert.NoError(t, err)
-
 }
 
 func TestBusCluster(t *testing.T) {
-
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
@@ -183,7 +178,6 @@ func TestBusCluster(t *testing.T) {
 
 		return status
 	}, 10*time.Second, time.Second)
-
 }
 
 type messageHandler struct {

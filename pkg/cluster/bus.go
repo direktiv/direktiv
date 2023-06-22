@@ -2,9 +2,11 @@ package cluster
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -15,6 +17,11 @@ import (
 	"github.com/nsqio/nsq/nsqd"
 	"github.com/nsqio/nsq/nsqlookupd"
 	"go.uber.org/zap"
+)
+
+var (
+	busStartTimeout   = 60 * time.Second
+	dataDirPermission = 0o700
 )
 
 type bus struct {
@@ -35,15 +42,15 @@ type busLogger struct {
 	debug  bool
 }
 
-func (bl *busLogger) Output(maxdepth int, s string) error {
+func (bl *busLogger) Output(_ int, s string) error {
 	if bl.debug {
 		bl.logger.Infof(s)
 	}
+
 	return nil
 }
 
 func newBus(config Config) (*bus, error) {
-
 	logger, err := dlog.ApplicationLogger("bus")
 	if err != nil {
 		return nil, err
@@ -63,7 +70,7 @@ func newBus(config Config) (*bus, error) {
 	logger.Infof("using %s as nsq data dir", dataDir)
 
 	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		err := os.MkdirAll(dataDir, 0700)
+		err := os.MkdirAll(dataDir, fs.FileMode(dataDirPermission))
 		if err != nil {
 			return nil, err
 		}
@@ -121,7 +128,6 @@ func newBus(config Config) (*bus, error) {
 	}
 
 	return bus, nil
-
 }
 
 func (b *bus) stop() {
@@ -146,10 +152,16 @@ type ProducerList struct {
 	} `json:"producers"`
 }
 
+//lint:ignore U1000 Ignore unused function for testing
 func (b *bus) nodes() (*ProducerList, error) {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
+		fmt.Sprintf("http://127.0.0.1:%d/nodes",
+			b.config.NSQLookupListenHTTPPort), nil)
+	if err != nil {
+		return nil, err
+	}
 
-	url := fmt.Sprintf("http://127.0.0.1:%d/nodes", b.config.NSQLookupListenHTTPPort)
-	resp, err := http.Get(url)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -167,11 +179,9 @@ func (b *bus) nodes() (*ProducerList, error) {
 	}
 
 	return &pl, nil
-
 }
 
 func (b *bus) updateBusNodes(nodes []string) error {
-
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -182,7 +192,7 @@ func (b *bus) updateBusNodes(nodes []string) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
@@ -196,12 +206,11 @@ func (b *bus) updateBusNodes(nodes []string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("can not set newe bus members")
 	}
 
 	return nil
-
 }
 
 func (b *bus) start() error {
@@ -218,8 +227,8 @@ func (b *bus) start() error {
 	}()
 
 	err := <-errChan
-	return err
 
+	return err
 }
 
 func (b *bus) waitTillConnected() error {
@@ -227,14 +236,19 @@ func (b *bus) waitTillConnected() error {
 	ticker := time.NewTicker(1 * time.Second)
 
 	ping := func(port int) bool {
-		url := fmt.Sprintf("http://127.0.0.1:%d/ping", port)
-		resp, err := http.Get(url)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
+			fmt.Sprintf("http://127.0.0.1:%d/ping", port), nil)
+		if err != nil {
+			return false
+		}
+
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return false
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			return false
 		}
 
@@ -264,10 +278,12 @@ func (b *bus) waitTillConnected() error {
 				}
 
 				startCh <- true
+
 				return
 
-			case <-time.After(60 * time.Second):
+			case <-time.After(busStartTimeout):
 				startCh <- false
+
 				return
 			}
 		}
@@ -277,14 +293,14 @@ func (b *bus) waitTillConnected() error {
 	if !success {
 		return fmt.Errorf("could not start nsq bus")
 	}
+
 	return nil
 }
 
 func (b *bus) createTopic(topic string) error {
-
 	url := fmt.Sprintf("http://127.0.0.1:%d/topic/create?topic=%s", b.config.NSQDListenHTTPPort, topic)
 
-	req, err := http.NewRequest(http.MethodPost, url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
@@ -296,7 +312,7 @@ func (b *bus) createTopic(topic string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("create channel failed")
 	}
 
@@ -304,7 +320,6 @@ func (b *bus) createTopic(topic string) error {
 }
 
 func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
-
 	action := "delete"
 	if create {
 		action = "create"
@@ -312,7 +327,7 @@ func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/channel/%s?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, action, topic, channel)
 
-	req, err := http.NewRequest(http.MethodPost, url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
@@ -324,7 +339,7 @@ func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("create channel failed")
 	}
 

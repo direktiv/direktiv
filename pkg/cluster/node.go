@@ -1,6 +1,6 @@
 // Package cluster manages serf nodes as a cluster in Direktiv.
 // In particular it manages the underlying nsq cluster and is used
-// to add and remove nodes dynamically.
+// to add and remove nodes dynamically in particular in Kubernetes environments.
 package cluster
 
 import (
@@ -33,15 +33,19 @@ const (
 	nsqLookupAddress = "NSQD_LOOKUP_ADDRESS"
 
 	sharedChannel = "shared"
+
+	concurrencyHandlers = 50
+	writeTimeout        = 5 * time.Second
 )
 
-var busClientLogEnabled = true
-var busLogEnabled = false
-var serfLogEnabled = false
+var (
+	busClientLogEnabled = true
+	busLogEnabled       = false
+	serfLogEnabled      = false
+)
 
-// Config is the configuration structure for one node
+// Config is the configuration structure for one node.
 type Config struct {
-
 	// Port for the serf server.
 	SerfPort int
 
@@ -63,12 +67,13 @@ type Config struct {
 	NSQInactiveTimeout  time.Duration
 	NSQTombstoneTimeout time.Duration
 
-	// topics to handle
+	// Topics to handle. They are getting created on startup.
 	NSQTopics []string
 
 	NSQDataDir string
 }
 
+// Node is configured per host in the cluster.
 type Node struct {
 	logger *zap.SugaredLogger
 
@@ -86,15 +91,14 @@ type Node struct {
 	producer       *nsq.Producer
 }
 
-// nodefinders have to return all ips/addr of the serf nodes available on startup
-// the minimum is to return one ip/addr for serf to form a cluster
+// Nodefinders have to return all ips/addr of the serf nodes available on startup
+// the minimum is to return one ip/addr for serf to form a cluster.
 type Nodefinder interface {
 	GetNodes() ([]string, error)
 	GetAddr() (string, error)
 }
 
 func NewNode(config Config) (*Node, error) {
-
 	logger, err := dlog.ApplicationLogger("node")
 	if err != nil {
 		return nil, err
@@ -110,12 +114,22 @@ func NewNode(config Config) (*Node, error) {
 		upCh:       make(chan bool),
 	}
 
+	// starting the underlying bus. if it does not start, we can panic
 	node.bus, err = newBus(config)
 	if err != nil {
 		return nil, err
 	}
-	go node.bus.start()
-	node.bus.waitTillConnected()
+	go func() {
+		e := node.bus.start()
+		if e != nil {
+			panic("can not start nsq bus")
+		}
+	}()
+
+	err = node.bus.waitTillConnected()
+	if err != nil {
+		panic("can not start nsq bus")
+	}
 
 	producerConfig := nsq.NewConfig()
 	node.producer, err = nsq.NewProducer(fmt.Sprintf("127.0.0.1:%d", config.NSQDPort), producerConfig)
@@ -217,7 +231,6 @@ func DefaultConfig() Config {
 }
 
 func (node *Node) Stop() error {
-
 	node.bus.stop()
 
 	// stop serf
@@ -233,22 +246,24 @@ func (node *Node) Stop() error {
 // a shared channel for one receiver and the other one to be used to share the message
 // across the cluster.
 func (node *Node) prepareBus() error {
-
 	for i := range node.bus.config.NSQTopics {
 		topic := node.bus.config.NSQTopics[i]
 		err := node.bus.createTopic(topic)
 		if err != nil {
 			node.logger.Errorf("can not create topic %s: %s", topic, err.Error())
+
 			return err
 		}
 		err = node.bus.createDeleteChannel(topic, sharedChannel, true)
 		if err != nil {
 			node.logger.Errorf("can not create channel shared: %s", err.Error())
+
 			return err
 		}
 		err = node.bus.createDeleteChannel(topic, node.BusChannelName, true)
 		if err != nil {
 			node.logger.Errorf("can not create channel individual: %s", err.Error())
+
 			return err
 		}
 	}
@@ -257,7 +272,6 @@ func (node *Node) prepareBus() error {
 }
 
 func (node *Node) updateBusMember() error {
-
 	members := node.serfServer.Members()
 	updateBusMember := make([]string, 0)
 	for i := range members {
@@ -273,76 +287,59 @@ func (node *Node) updateBusMember() error {
 	return nil
 }
 
-func (node *Node) eventHandler() {
-
-	for e := range node.events {
-
-		switch e.EventType() {
-		default:
-		case serf.EventMemberJoin:
-			if memberEvent, ok := e.(serf.MemberEvent); ok {
-				for _, member := range memberEvent.Members {
-
-					if node.serfServer.LocalMember().Name == member.Name {
-
-						err := node.prepareBus()
-						if err != nil {
-							node.logger.Errorf("can not prepare bus: %s", err.Error())
-							panic("can not handle member join (prepare)")
-						}
-						node.upCh <- true
-
-						continue
-					}
-
-					node.logger.Infof("member %s joined", member.Name)
-					err := node.updateBusMember()
-					if err != nil {
-						node.logger.Errorf("can not prepare bus: %s", err.Error())
-						panic("can not handle member join (update)")
-					}
-
-				}
-			}
-		case serf.EventMemberFailed:
-			for _, member := range e.(serf.MemberEvent).Members {
-				if node.serfServer.LocalMember().Name == member.Name {
-					continue
-				}
-				node.logger.Warnf("member %s failed", member.Name)
-			}
-		case serf.EventMemberLeave:
-			for _, member := range e.(serf.MemberEvent).Members {
-				if node.serfServer.LocalMember().Name == member.Name {
-					continue
-				}
-				node.logger.Warnf("member %s left", member.Name)
-			}
-		case serf.EventMemberReap:
-			for _, member := range e.(serf.MemberEvent).Members {
-				if node.serfServer.LocalMember().Name == member.Name {
-					continue
-				}
-				node.logger.Warnf("member %s reaped", member.Name)
-				err := node.updateBusMember()
+func (node *Node) handleMember(memberEvent serf.MemberEvent, join bool) {
+	for _, member := range memberEvent.Members {
+		if node.serfServer.LocalMember().Name == member.Name {
+			if join {
+				err := node.prepareBus()
 				if err != nil {
 					node.logger.Errorf("can not prepare bus: %s", err.Error())
-					panic("can not handle member join (reaped)")
+					panic("can not handle member join (prepare)")
 				}
+				node.upCh <- true
+			}
+
+			continue
+		}
+
+		node.logger.Infof("member %s: %s", member.Name, memberEvent.String())
+		err := node.updateBusMember()
+		if err != nil {
+			node.logger.Errorf("can not prepare bus: %s", err.Error())
+			panic("can not handle member join (update)")
+		}
+	}
+}
+
+func (node *Node) eventHandler() {
+	for e := range node.events {
+		switch e.EventType() {
+		default:
+		case serf.EventMemberUpdate, serf.EventUser, serf.EventQuery,
+			serf.EventMemberLeave, serf.EventMemberFailed:
+			if memberEvent, ok := e.(serf.MemberEvent); ok {
+				node.logger.Infof("member event: %s", memberEvent.String())
+			}
+		case serf.EventMemberJoin:
+			if memberEvent, ok := e.(serf.MemberEvent); ok {
+				node.handleMember(memberEvent, true)
+			}
+		case serf.EventMemberReap:
+			if memberEvent, ok := e.(serf.MemberEvent); ok {
+				node.handleMember(memberEvent, false)
 			}
 		}
 	}
-
 }
 
 func (node *Node) doSubscribe(topic, channel string,
-	handler func(m []byte) error) (*MessageConsumer, error) {
-
+	handler func(m []byte) error,
+) (*MessageConsumer, error) {
 	config := nsq.NewConfig()
 	config.MaxInFlight = 100
-	config.MsgTimeout = 1 * time.Minute
-	config.OutputBufferTimeout = 1 * time.Second
-	config.WriteTimeout = 3 * time.Second
+	config.MsgTimeout = time.Minute
+	config.OutputBufferTimeout = time.Second
+	config.WriteTimeout = writeTimeout
 
 	consumer, err := nsq.NewConsumer(topic, channel, config)
 	if err != nil {
@@ -361,7 +358,7 @@ func (node *Node) doSubscribe(topic, channel string,
 		executor: handler,
 	}
 
-	consumer.AddConcurrentHandlers(mh, 50)
+	consumer.AddConcurrentHandlers(mh, concurrencyHandlers)
 
 	err = consumer.ConnectToNSQLookupd(fmt.Sprintf("127.0.0.1:%d",
 		node.bus.config.NSQLookupListenHTTPPort))
@@ -370,7 +367,6 @@ func (node *Node) doSubscribe(topic, channel string,
 	}
 
 	return mh, nil
-
 }
 
 func (node *Node) Subscribe(topic string, handler func(m []byte) error) (*MessageConsumer, error) {

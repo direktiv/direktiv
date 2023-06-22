@@ -11,7 +11,6 @@ import (
 )
 
 func TestNodeConfig(t *testing.T) {
-
 	newPort := 3333
 	newTimeout := time.Minute
 
@@ -35,11 +34,9 @@ func TestNodeConfig(t *testing.T) {
 	config.Nodefinder = nil
 	_, err := NewNode(config)
 	require.Error(t, err)
-
 }
 
 func TestNewNode(t *testing.T) {
-
 	config := DefaultConfig()
 
 	node, err := NewNode(config)
@@ -48,11 +45,9 @@ func TestNewNode(t *testing.T) {
 
 	nodes := node.serfServer.NumNodes()
 	assert.Equal(t, nodes, 1)
-
 }
 
 func rightNumber(nodes []*Node) bool {
-
 	for i := 0; i < len(nodes); i++ {
 		if nodes[i].serfServer.NumNodes() != len(nodes) {
 			return false
@@ -70,7 +65,6 @@ func rightNumber(nodes []*Node) bool {
 }
 
 func createConfig(topics []string, i int, change bool) Config {
-
 	config := DefaultConfig()
 	config.SerfReapTimeout = 3 * time.Second
 	config.SerfReapInterval = 1 * time.Second
@@ -90,11 +84,9 @@ func createConfig(topics []string, i int, change bool) Config {
 	config.NSQLookupListenHTTPPort = 4253 + (100 * i)
 
 	return config
-
 }
 
 func createCluster(count int, topics []string, change bool) ([]*Node, error) {
-
 	nfNodes := make([]string, 0)
 	finalNodes := make([]*Node, 0)
 
@@ -121,7 +113,6 @@ func createCluster(count int, topics []string, change bool) ([]*Node, error) {
 }
 
 func TestCluster(t *testing.T) {
-
 	count := 3
 	nodes, err := createCluster(count, []string{"topic1"}, true)
 	require.NoError(t, err)
@@ -132,9 +123,7 @@ func TestCluster(t *testing.T) {
 
 	// check three node cluster
 	require.Eventually(t, func() bool {
-
 		return rightNumber(nodes)
-
 	}, 10*time.Second, time.Second)
 
 	// // stop one node
@@ -181,11 +170,9 @@ func TestCluster(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
 	}, 60*time.Second, time.Second)
-
 }
 
 func TestClusterSubscribe(t *testing.T) {
-
 	count := 3
 	nodes, err := createCluster(count, []string{"topic1", "topic2"}, false)
 	require.NoError(t, err)
@@ -261,7 +248,6 @@ func TestClusterSubscribe(t *testing.T) {
 		t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
 		return counter1.cc+counter2.cc+counter3.cc == 10
 	}, 30*time.Second, time.Second)
-
 }
 
 type counterHandler struct {
