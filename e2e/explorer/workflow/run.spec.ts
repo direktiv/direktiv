@@ -28,11 +28,11 @@ test("it is possible to open and use the run workflow modal from the editor and 
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflow,
+      name: workflowName,
     },
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
 
   // open modal via editor button
   await page.getByTestId("workflow-editor-btn-run").click();
@@ -99,11 +99,11 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflow,
+      name: workflowName,
     },
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -183,11 +183,11 @@ test("it is possible to provide the input via generated form", async ({
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflow,
+      name: workflowName,
     },
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
