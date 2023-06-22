@@ -62,8 +62,8 @@ const testSaveWorkflow = async (page: Page) => {
   // check the text at the bottom left
   await expect(
     page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 };
 
 const testMakeRevision = async (page: Page) => {
@@ -158,8 +158,8 @@ test("it is possible to revert the revision", async ({ page }) => {
   // check the bottom left
   await expect(
     page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 
   // check both after page reload
   await page.reload({ waitUntil: "load" });
@@ -171,6 +171,6 @@ test("it is possible to revert the revision", async ({ page }) => {
 
   await expect(
     page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 });

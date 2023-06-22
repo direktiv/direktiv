@@ -27,13 +27,13 @@ const WorkflowRevisionsPage = () => {
   const { data } = useNodeContent({ path, revision: selectedRevision });
   const { data: tags } = useNodeTags({ path });
 
-  const workflowData = data?.revision?.source && atob(data?.revision?.source);
+  const workflowData = atob(data?.revision?.source ?? "");
   const isTag =
     tags?.results?.some((tag) => tag.name === selectedRevision) ?? false;
   const Icon = isTag ? Tag : GitMerge;
   const isLatest = selectedRevision === "latest";
 
-  if (!path || !namespace || !selectedRevision || !workflowData) return null;
+  if (!path || !namespace || !selectedRevision) return null;
 
   return (
     <div className="flex grow flex-col space-y-4">

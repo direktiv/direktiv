@@ -137,6 +137,15 @@
                 "revertBtn": "Revert"
               }
             }
+          },
+          "runWorkflow": {
+            "title": "Run Workflow",
+            "jsonInput": "JSON Input",
+            "formInput": "Form Input",
+            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
+            "learnMoreBtn": "Learn more",
+            "cancelBtn": "Cancel",
+            "runBtn": "Run"
           }
         }
       },
@@ -148,11 +157,11 @@
           "settings": "Settings"
         },
         "headline": "Latest",
-        "updated": "Updated {{relativeTime}}",
-        "actionsBtn": "Actions",
+        "updated": "Updated {{relativeTime}} ago",
+        "runBtn": "Run",
         "editor": {
-          "unsavedNote": "you have unsaved changes",
-          "theresOneIssue": "There is one issue",
+          "unsavedNote": "unsaved changes",
+          "theresOneIssue": "There is an issue",
           "revisionsBtn": "Revisions",
           "makeRevision": "Make Revision",
           "revertToPrevious": "Revert to previous revision",

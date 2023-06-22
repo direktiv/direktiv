@@ -1,4 +1,5 @@
 import { Bug, GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -31,7 +33,7 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
-  const workflowData = data.revision?.source && atob(data?.revision?.source);
+  const workflowData = atob(data?.revision?.source ?? "");
   const updatedAt = useUpdatedAt(data.revision?.createdAt);
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
@@ -40,7 +42,7 @@ const WorkflowEditor: FC<{
     },
   });
 
-  const [value, setValue] = useState<string | undefined>(workflowData);
+  const [value, setValue] = useState(workflowData);
   const theme = useTheme();
 
   const { mutate: createRevision } = useCreateRevision();
@@ -66,49 +68,55 @@ const WorkflowEditor: FC<{
         <Tag className="h-5" />
         {t("pages.explorer.workflow.headline")}
       </h3>
-      <Card className="grow p-4" data-testid="workflow-editor">
-        <Editor
-          value={workflowData}
-          onChange={(newData) => {
-            setValue(newData);
-          }}
-          theme={theme ?? undefined}
-          onSave={onSave}
-        />
-      </Card>
-      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+      <Card className="flex grow flex-col p-4" data-testid="workflow-editor">
+        <div className="grow">
+          <Editor
+            value={workflowData}
+            onMount={(editor) => {
+              editor.focus();
+            }}
+            onChange={(newData) => {
+              setValue(newData ?? "");
+            }}
+            theme={theme ?? undefined}
+            onSave={onSave}
+          />
+        </div>
         <div
+          className="flex justify-between gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8"
           data-testid="workflow-txt-updated"
-          className="flex grow items-center justify-between gap-2 text-sm text-gray-8 dark:text-gray-dark-8"
         >
-          {data.revision?.createdAt && (
+          {data.revision?.createdAt && !error && (
             <>
               {t("pages.explorer.workflow.updated", {
                 relativeTime: updatedAt,
               })}
             </>
           )}
+          {error && (
+            <Popover defaultOpen>
+              <PopoverTrigger asChild>
+                <span className="flex items-center gap-x-1 text-danger-11 dark:text-danger-dark-11">
+                  <Bug className="h-5" />
+                  {t("pages.explorer.workflow.editor.theresOneIssue")}
+                </span>
+              </PopoverTrigger>
+              <PopoverContent asChild>
+                <div className="flex p-4">
+                  <div className="grow">{error}</div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+
           {hasUnsavedChanged && (
             <span className="text-center">
               {t("pages.explorer.workflow.editor.unsavedNote")}
             </span>
           )}
         </div>
-        {error && (
-          <Popover defaultOpen>
-            <PopoverTrigger asChild>
-              <Button variant="destructive">
-                <Bug />
-                {t("pages.explorer.workflow.editor.theresOneIssue")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent asChild>
-              <div className="flex p-4">
-                <div className="grow">{error}</div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
+      </Card>
+      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <DropdownMenu>
           <ButtonBar>
             <Button
@@ -119,6 +127,7 @@ const WorkflowEditor: FC<{
                   path,
                 });
               }}
+              className="grow"
               data-testid="workflow-editor-btn-make-revision"
             >
               <GitBranchPlus />
@@ -148,10 +157,17 @@ const WorkflowEditor: FC<{
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="outline">
-          <Play />
-          {t("pages.explorer.workflow.editor.runBtn")}
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" data-testid="workflow-editor-btn-run">
+              <Play />
+              {t("pages.explorer.workflow.editor.runBtn")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-2xl">
+            <RunWorkflow path={path} />
+          </DialogContent>
+        </Dialog>
         <Button
           variant="outline"
           disabled={isLoading}
