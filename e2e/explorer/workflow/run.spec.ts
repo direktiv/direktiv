@@ -21,7 +21,7 @@ test.afterEach(async () => {
 test("it is possible to open and use the run workflow modal from the editor and the header of the workflow page", async ({
   page,
 }) => {
-  const workflow = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: basicWorkflow.data,
     headers: undefined,
