@@ -7,8 +7,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  DEPLOYMENT_NAME: review-${GITHUB_REF////-}
-  DEPLOYMENT_URL: https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev
 
 jobs:
   build-and-push-image:
@@ -58,10 +56,6 @@ jobs:
       NOMAD_ADDR: https://noamd.direktiv.dev:4646
       NOMAD_VAR_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
 
-    environment:
-      name: ${{ github.ref }}
-      url: ${{ env.DEPLOYMENT_URL }}
-
     steps:
       - uses: actions/checkout@v2
       - uses: lucasmelin/setup-nomad@v1
@@ -74,3 +68,8 @@ jobs:
           sed -i "s/DEPLOYMENT_NAME/${GITHUB_REF////-}/g" deploy.nomad
           nomad validate deploy.nomad
           nomad run deploy.nomad
+
+      - name: Adding markdown
+        run: |
+          echo '### Review App 🚀' >> $GITHUB_STEP_SUMMARY
+          echo '[${GITHUB_REF////-}](https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev)' >> $GITHUB_STEP_SUMMARY
