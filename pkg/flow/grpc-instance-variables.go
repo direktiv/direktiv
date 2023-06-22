@@ -10,6 +10,7 @@ import (
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
 	// TODO: Alan, need fix here.
+	// nolint:nilnil
 	return nil, nil
 }
 
