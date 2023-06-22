@@ -5,10 +5,6 @@ package ent
 import (
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
-	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/direktiv/direktiv/pkg/flow/ent/events"
-	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
 	"github.com/google/uuid"
@@ -18,56 +14,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	cloudeventfiltersFields := schema.CloudEventFilters{}.Fields()
-	_ = cloudeventfiltersFields
-	// cloudeventfiltersDescName is the schema descriptor for name field.
-	cloudeventfiltersDescName := cloudeventfiltersFields[0].Descriptor()
-	// cloudeventfilters.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	cloudeventfilters.NameValidator = cloudeventfiltersDescName.Validators[0].(func(string) error)
-	// cloudeventfiltersDescJscode is the schema descriptor for jscode field.
-	cloudeventfiltersDescJscode := cloudeventfiltersFields[1].Descriptor()
-	// cloudeventfilters.JscodeValidator is a validator for the "jscode" field. It is called by the builders before save.
-	cloudeventfilters.JscodeValidator = cloudeventfiltersDescJscode.Validators[0].(func(string) error)
-	cloudeventsFields := schema.CloudEvents{}.Fields()
-	_ = cloudeventsFields
-	// cloudeventsDescEventId is the schema descriptor for eventId field.
-	cloudeventsDescEventId := cloudeventsFields[1].Descriptor()
-	// cloudevents.EventIdValidator is a validator for the "eventId" field. It is called by the builders before save.
-	cloudevents.EventIdValidator = cloudeventsDescEventId.Validators[0].(func(string) error)
-	// cloudeventsDescFire is the schema descriptor for fire field.
-	cloudeventsDescFire := cloudeventsFields[3].Descriptor()
-	// cloudevents.DefaultFire holds the default value on creation for the fire field.
-	cloudevents.DefaultFire = cloudeventsDescFire.Default.(func() time.Time)
-	// cloudeventsDescCreated is the schema descriptor for created field.
-	cloudeventsDescCreated := cloudeventsFields[4].Descriptor()
-	// cloudevents.DefaultCreated holds the default value on creation for the created field.
-	cloudevents.DefaultCreated = cloudeventsDescCreated.Default.(func() time.Time)
-	// cloudeventsDescID is the schema descriptor for id field.
-	cloudeventsDescID := cloudeventsFields[0].Descriptor()
-	// cloudevents.DefaultID holds the default value on creation for the id field.
-	cloudevents.DefaultID = cloudeventsDescID.Default.(func() uuid.UUID)
-	eventsFields := schema.Events{}.Fields()
-	_ = eventsFields
-	// eventsDescCreatedAt is the schema descriptor for created_at field.
-	eventsDescCreatedAt := eventsFields[5].Descriptor()
-	// events.DefaultCreatedAt holds the default value on creation for the created_at field.
-	events.DefaultCreatedAt = eventsDescCreatedAt.Default.(func() time.Time)
-	// eventsDescUpdatedAt is the schema descriptor for updated_at field.
-	eventsDescUpdatedAt := eventsFields[6].Descriptor()
-	// events.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	events.DefaultUpdatedAt = eventsDescUpdatedAt.Default.(func() time.Time)
-	// events.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	events.UpdateDefaultUpdatedAt = eventsDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// eventsDescID is the schema descriptor for id field.
-	eventsDescID := eventsFields[0].Descriptor()
-	// events.DefaultID holds the default value on creation for the id field.
-	events.DefaultID = eventsDescID.Default.(func() uuid.UUID)
-	eventswaitFields := schema.EventsWait{}.Fields()
-	_ = eventswaitFields
-	// eventswaitDescID is the schema descriptor for id field.
-	eventswaitDescID := eventswaitFields[0].Descriptor()
-	// eventswait.DefaultID holds the default value on creation for the id field.
-	eventswait.DefaultID = eventswaitDescID.Default.(func() uuid.UUID)
 	namespaceFields := schema.Namespace{}.Fields()
 	_ = namespaceFields
 	// namespaceDescCreatedAt is the schema descriptor for created_at field.

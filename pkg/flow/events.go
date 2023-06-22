@@ -3,8 +3,6 @@ package flow
 import (
 	"bytes"
 	"context"
-	"database/sql"
-	"encoding/base64"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
@@ -18,18 +16,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/ent"
-	enteventsfilter "github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
-	cevents "github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
-	entevents "github.com/direktiv/direktiv/pkg/flow/ent/events"
-	entns "github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
-	hash "github.com/mitchellh/hashstructure/v2"
 	"github.com/ryanuber/go-glob"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -126,73 +119,74 @@ func (events *events) sendEvent(data []byte) {
 var syncMtx sync.Mutex
 
 func (events *events) syncEventDelays() {
-	syncMtx.Lock()
-	defer syncMtx.Unlock()
+	// syncMtx.Lock()
+	// defer syncMtx.Unlock()
 
-	// disable old timer
-	events.timers.mtx.Lock()
-	for i := range events.timers.timers {
-		ti := events.timers.timers[i]
-		if ti.name == "sendEventTimer" {
-			events.timers.disableTimer(ti)
-			break
-		}
-	}
-	events.timers.mtx.Unlock()
+	// // disable old timer
+	// events.timers.mtx.Lock()
+	// for i := range events.timers.timers {
+	// 	ti := events.timers.timers[i]
+	// 	if ti.name == "sendEventTimer" {
+	// 		events.timers.disableTimer(ti)
+	// 		break
+	// 	}
+	// }
+	// events.timers.mtx.Unlock()
+	// TODO:
+	// ctx := context.Background()
 
-	ctx := context.Background()
+	// for {
+	// 	e, err := events.getEarliestEvent(ctx)
+	// 	if err != nil {
+	// 		if derrors.IsNotFound(err) {
+	// 			return
+	// 		}
 
-	for {
-		e, err := events.getEarliestEvent(ctx)
-		if err != nil {
-			if derrors.IsNotFound(err) {
-				return
-			}
+	// 		events.sugar.Errorf("can not sync event delays: %v", err)
+	// 		return
+	// 	}
 
-			events.sugar.Errorf("can not sync event delays: %v", err)
-			return
-		}
+	// 	cached := new(database.CacheData)
+	// 	err = events.database.Namespace(ctx, cached, e.Edges.Namespace.ID)
+	// 	if err != nil {
+	// 		return
+	// 	}
 
-		cached := new(database.CacheData)
-		err = events.database.Namespace(ctx, cached, e.Edges.Namespace.ID)
-		if err != nil {
-			return
-		}
+	// 	if e.Fire.Before(time.Now()) {
+	// 		err = events.flushEvent(ctx, e.EventId, cached.Namespace, false)
+	// 		if err != nil {
+	// 			events.sugar.Errorf("can not flush event %s: %v", e.ID, err)
+	// 		}
+	// 		continue
+	// 	}
 
-		if e.Fire.Before(time.Now()) {
-			err = events.flushEvent(ctx, e.EventId, cached.Namespace, false)
-			if err != nil {
-				events.sugar.Errorf("can not flush event %s: %v", e.ID, err)
-			}
-			continue
-		}
+	// 	err = events.timers.addOneShot("sendEventTimer", sendEventFunction,
+	// 		e.Fire, []byte(fmt.Sprintf("%s/%s", e.ID, e.Edges.Namespace.ID.String())))
+	// 	if err != nil {
+	// 		events.sugar.Errorf("can not reschedule event timer: %v", err)
+	// 	}
 
-		err = events.timers.addOneShot("sendEventTimer", sendEventFunction,
-			e.Fire, []byte(fmt.Sprintf("%s/%s", e.ID, e.Edges.Namespace.ID.String())))
-		if err != nil {
-			events.sugar.Errorf("can not reschedule event timer: %v", err)
-		}
-
-		break
-	}
+	// 	break
+	// }
 }
 
 func (events *events) flushEvent(ctx context.Context, eventID string, ns *database.Namespace, rearm bool) error {
-	tctx, tx, err := events.database.Tx(ctx)
-	if err != nil {
-		return err
-	}
-	defer rollback(tx)
+	// tctx, tx, err := events.database.Tx(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer rollback(tx)
 
-	e, err := events.markEventAsProcessed(tctx, ns, eventID)
-	if err != nil {
-		return err
-	}
+	// e, err := events.markEventAsProcessed(tctx, ns, eventID)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
+	// err = tx.Commit()
+	// if err != nil {
+	// 	return err
+	// }
+	// TODO is this needed?
 
 	defer func(r bool) {
 		if r {
@@ -200,206 +194,55 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *databa
 		}
 	}(rearm)
 
-	err = events.handleEvent(ns, e)
-	if err != nil {
-		return err
-	}
+	// err = events.handleEvent(ns, e)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
-func (events *events) handleEventLoopLogic(ctx context.Context, rows *sql.Rows, ce *cloudevents.Event) {
-	var (
-		id                                uuid.UUID
-		count                             int
-		singleEvent, allEvents, signature []byte
-		wf                                string
-	)
-
-	err := rows.Scan(&id, &signature, &count, &allEvents, &wf, &singleEvent)
-	if err != nil {
-		events.sugar.Errorf("process row error: %v", err)
-		return
-	}
-
-	hash, err := hash.Hash(fmt.Sprintf("%d%v%v", id, allEvents, wf), hash.FormatV2, nil)
-	if err != nil {
-		events.sugar.Errorf("failed to generate hash: %v", err)
-		return
-	}
-
-	conn, err := events.locks.lockDB(hash, int(defaultLockWait.Seconds()))
-	if err != nil {
-		events.sugar.Errorf("can not lock event row: %d, %v", id, err)
-		return
-	}
-
-	unlock := func(conn *sql.Conn, hash uint64) {
-		err = events.locks.unlockDB(hash, conn)
-		if err != nil {
-			events.sugar.Errorf("events mutex unlock error: %v", err)
-		}
-	}
-	defer unlock(conn, hash)
-
-	events.sugar.Debugf("event listener %s is candidate", id.String())
-
-	var eventMap map[string]interface{}
-	err = json.Unmarshal(singleEvent, &eventMap)
-	if err != nil {
-		events.sugar.Errorf("can not marshall event map: %v", err)
-		return
-	}
-
-	// adding source for comparison
-	m := ce.Context.GetExtensions()
-
-	// if there is none, we need to create one for source
-	if m == nil {
-		m = make(map[string]interface{})
-	}
-
-	m["source"] = ce.Context.GetSource()
-
-	// check filters
-	if !matchesExtensions(eventMap, m) {
-		events.sugar.Debugf("event listener %s does not match", id.String())
-		return
-	}
-
-	// deleteEventListener = append(deleteEventListener, id)
-
-	var ae []map[string]interface{}
-	err = json.Unmarshal(allEvents, &ae)
-	if err != nil {
-		events.sugar.Errorf("failed to unmarshal events: %v", err)
-		return
-	}
-
-	var retEvents []*cloudevents.Event
-
-	if count == 1 {
-		retEvents = append(retEvents, ce)
-	} else {
-		var eventMapAll []map[string]interface{}
-		err = json.Unmarshal(allEvents, &eventMapAll) // why are we doing this again?
-		if err != nil {
-			events.sugar.Errorf("failed to unmarshal events: %v", err)
-			return
-		}
-
-		// set value
-		updateItem := eventMapAll[int(eventMap["idx"].(float64))]
-
-		data, err := eventToBytes(*ce)
-		if err != nil {
-			events.sugar.Errorf("can not update convert event: %v", err)
-			return
-		}
-
-		updateItem["time"] = time.Now().Unix()
-		updateItem["value"] = base64.StdEncoding.EncodeToString(data)
-
-		needsUpdate := false
-		for _, v := range eventMapAll {
-			// if there is one entry without value we can skip this instance
-			// won't fire anyways
-			if v["value"] == "" {
-				needsUpdate = true
-				break
-			} else {
-				d, err := base64.StdEncoding.DecodeString(v["value"].(string))
-				if err != nil {
-					events.sugar.Errorf("cannot decode eventmap base64: %v", err)
-					// continue // suspicious
-					return
-				}
-
-				ce, err := bytesToEvent(d)
-				if err != nil {
-					events.sugar.Errorf("cannot unmarshal bytes to event: %v", err)
-					// continue // suspicious
-					return
-				}
-
-				retEvents = append(retEvents, ce)
-			}
-		}
-
-		if needsUpdate {
-			err = events.updateInstanceEventListener(ctx, id, eventMapAll)
-			if err != nil {
-				events.sugar.Errorf("can not update multi event: %v", err)
-			}
-			return
-		}
-	}
-
-	// if single or multiple added events we fire
-	if len(retEvents) > 0 {
-		if len(signature) == 0 {
-			go events.engine.EventsInvoke(wf, retEvents...)
-		} else {
-			id, err := uuid.Parse(wf)
-			if err != nil {
-				events.engine.sugar.Error(err)
-				return
-			}
-
-			tx, err := events.flow.beginSqlTx(ctx)
-			if err != nil {
-				events.engine.sugar.Error(err)
-				return
-			}
-			defer tx.Rollback()
-
-			file, err := tx.FileStore().GetFile(ctx, id)
-			if err != nil {
-				events.engine.sugar.Error(err)
-				return
-			}
-			tx.Rollback()
-
-			err = events.deleteEventListeners(ctx, file.RootID, id)
-			if err != nil {
-				events.engine.sugar.Error(err)
-				return
-			}
-
-			go events.engine.wakeEventsWaiter(signature, retEvents)
-		}
-	}
-}
-
 func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event) error {
-	db := events.edb.DB()
-
-	// we have to select first because of the glob feature
-	// this gives a basic list of eligible workflow instances waiting
-	// we get all
-	rows, err := db.Query(`select
-	we.oid, signature, count, we.events, workflow_id, v
-	from events we
-	inner join filesystem_files w
-		on w.id = workflow_id
-	inner join namespaces n
-		on n.oid = w.root_id,
-	jsonb_array_elements(events) as v
-	where v::json->>'type' = $1 and v::json->>'value' = ''
-	and n.oid = $2`, ce.Type(), ns.ID.String())
-	if err != nil {
-		return err
+	e := pkgevents.EventEngine{
+		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
+			events.engine.EventsInvoke(wf, ev...)
+		},
+		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
+			events.engine.wakeEventsWaiter(instanceID, step, ev) // TODO
+		},
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
+			res := make([]*pkgevents.EventListener, 0)
+			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
+				if err != nil {
+					return err
+				}
+				res = r
+				return nil
+			})
+			if err != nil {
+				return nil, err
+			}
+			return res, nil
+		},
+		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
+			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+				errs := tx.DataStore().EventListener().Update(ctx, listener)
+				for _, err2 := range errs {
+					if err2 != nil {
+						return err2
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return nil
+			}
+			return nil
+		},
 	}
-	defer rows.Close()
-
-	ctx := context.Background()
-
-	for rows.Next() {
-		events.handleEventLoopLogic(ctx, rows, ce)
-	}
-
+	e.ProcessEvents(context.TODO(), ns.ID, []event.Event{*ce})
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
-
 	return nil
 }
 
@@ -427,15 +270,15 @@ func bytesToEvent(b []byte) (*cloudevents.Event, error) {
 	return ev, nil
 }
 
-var eventListenersOrderings = []*orderingInfo{
-	{
-		db:           entevents.FieldUpdatedAt,
-		req:          "UPDATED",
-		defaultOrder: ent.Asc,
-	},
-}
+// var eventListenersOrderings = []*orderingInfo{
+// 	{
+// 		db:           entevents.FieldUpdatedAt,
+// 		req:          "UPDATED",
+// 		defaultOrder: ent.Asc,
+// 	},
+// }
 
-var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
+// var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -446,84 +289,27 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	if err != nil {
 		return nil, err
 	}
-
-	clients := flow.edb.Clients(ctx)
-	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
+	var resListeners []*pkgevents.EventListener
+	totalListeners := 0
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		li, t, err := tx.DataStore().EventListener().Get(ctx, cached.Namespace.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
+		}
+		resListeners = li
+		totalListeners = t
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-
 	resp := new(grpc.EventListenersResponse)
 	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
+	resp.PageInfo = &grpc.PageInfo{Total: int32(totalListeners)}
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(resListeners, &resp.Results)
 	if err != nil {
 		return nil, err
-	}
-
-	m := make(map[string]string)
-
-	for idx, result := range results {
-		if result.InstanceID.String() != uuid.Nil.String() {
-			resp.Results[idx].Instance = result.InstanceID.String()
-		} else {
-			wfID := result.WorkflowID
-			path, exists := m[wfID.String()]
-			if !exists {
-				tx, err := flow.beginSqlTx(ctx)
-				if err != nil {
-					return nil, err
-				}
-				defer tx.Rollback()
-
-				file, err := tx.FileStore().GetFile(ctx, wfID)
-				if err != nil {
-					return nil, err
-				}
-				tx.Rollback()
-
-				path = file.Path
-				m[wfID.String()] = path
-			}
-
-			resp.Results[idx].Workflow = path
-		}
-
-		resp.Results[idx].Mode = "or"
-		if result.Count > 1 {
-			resp.Results[idx].Mode = "and"
-		}
-
-		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range result.Events {
-			var et string
-			if v, ok := ev["type"]; ok {
-				et, _ = v.(string)
-			}
-
-			delete(ev, "type")
-
-			filters := make(map[string]string)
-
-			for k, v := range ev {
-				if !strings.HasPrefix(k, "filter-") {
-					continue
-				}
-				k = strings.TrimPrefix(k, "filter-")
-				if s, ok := v.(string); ok {
-					filters[k] = s
-				}
-			}
-
-			edefs = append(edefs, &grpc.EventDef{
-				Type:    et,
-				Filters: filters,
-			})
-		}
-
-		resp.Results[idx].Events = edefs
 	}
 
 	return resp, nil
@@ -545,88 +331,28 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 
 	sub := flow.pubsub.SubscribeEventListeners(cached.Namespace)
 	defer flow.cleanup(sub.Close)
-
-	clients := flow.edb.Clients(ctx)
-
 resend:
-
-	query := clients.Events.Query().Where(entevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.EventsQuery, *ent.Events](ctx, req.Pagination, query, eventListenersOrderings, eventListenersFilters)
+	var resListeners []*pkgevents.EventListener
+	totalListeners := 0
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		li, t, err := tx.DataStore().EventListener().Get(ctx, cached.Namespace.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
+		}
+		resListeners = li
+		totalListeners = t
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-
 	resp := new(grpc.EventListenersResponse)
 	resp.Namespace = cached.Namespace.Name
-	resp.PageInfo = pi
+	resp.PageInfo = &grpc.PageInfo{Total: int32(totalListeners)}
 
-	err = bytedata.ConvertDataForOutput(results, &resp.Results)
+	err = bytedata.ConvertDataForOutput(resListeners, &resp.Results)
 	if err != nil {
 		return err
-	}
-
-	m := make(map[string]string)
-
-	for idx, result := range results {
-		if result.InstanceID.String() != uuid.Nil.String() {
-			resp.Results[idx].Instance = result.InstanceID.String()
-		} else {
-			wfID := result.WorkflowID
-			path, exists := m[wfID.String()]
-			if !exists {
-				tx, err := flow.beginSqlTx(ctx)
-				if err != nil {
-					return err
-				}
-				defer tx.Rollback()
-
-				file, err := tx.FileStore().GetFile(ctx, wfID)
-				if err != nil {
-					return err
-				}
-				tx.Rollback()
-
-				path = file.Path
-				m[wfID.String()] = path
-			}
-
-			resp.Results[idx].Workflow = path
-		}
-
-		resp.Results[idx].Mode = "or"
-		if result.Count > 1 {
-			resp.Results[idx].Mode = "and"
-		}
-
-		edefs := make([]*grpc.EventDef, 0)
-		for _, ev := range result.Events {
-			var et string
-			if v, ok := ev["type"]; ok {
-				et, _ = v.(string)
-			}
-
-			delete(ev, "type")
-
-			filters := make(map[string]string)
-
-			for k, v := range ev {
-				if !strings.HasPrefix(k, "filter-") {
-					continue
-				}
-				k = strings.TrimPrefix(k, "filter-")
-				if s, ok := v.(string); ok {
-					filters[k] = s
-				}
-			}
-
-			edefs = append(edefs, &grpc.EventDef{
-				Type:    et,
-				Filters: filters,
-			})
-		}
-
-		resp.Results[idx].Events = edefs
 	}
 
 	nhash = bytedata.Checksum(resp)
@@ -702,26 +428,33 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	eid := in.GetId()
-
+	id, err := uuid.Parse(eid)
+	if err != nil {
+		return nil, err
+	}
 	cached := new(database.CacheData)
 
-	err := flow.database.NamespaceByName(ctx, cached, in.GetNamespace())
+	err = flow.database.NamespaceByName(ctx, cached, in.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-
-	clients := flow.edb.Clients(ctx)
-
-	cevent, err := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(cevents.EventIdEQ(eid)).Only(ctx)
+	var cevent *pkgevents.Event
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		evs, err := tx.DataStore().EventHistory().GetByID(ctx, id)
+		if err != nil {
+			return err
+		}
+		cevent = evs
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-
 	var resp grpc.HistoricalEventResponse
 
 	resp.Id = eid
 	resp.Namespace = cached.Namespace.Name
-	resp.ReceivedAt = timestamppb.New(cevent.Created)
+	resp.ReceivedAt = timestamppb.New(cevent.ReceivedAt)
 
 	resp.Source = cevent.Event.Source()
 	resp.Type = cevent.Event.Type()
@@ -733,18 +466,23 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 
 var cloudeventsOrderings = []*orderingInfo{
 	{
-		db:           cevents.FieldCreated,
+		db:           "ReceivedAt",
 		req:          "RECEIVED",
 		defaultOrder: ent.Desc,
 	},
 	{
-		db:           cevents.FieldEventId,
+		db:           "id",
 		req:          "ID",
 		defaultOrder: ent.Asc,
 	},
 }
 
-var cloudeventsFilters = map[*filteringInfo]func(query *ent.CloudEventsQuery, v string) (*ent.CloudEventsQuery, error){}
+const (
+	contains = "CONTAINS"
+	cr       = "CREATED"
+	after    = "AFTER"
+	before   = "BEFORE"
+)
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
@@ -755,31 +493,34 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	if err != nil {
 		return nil, err
 	}
-
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
+	count := 0
+	var res []*pkgevents.Event
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), cached.Namespace.ID)
+		if err != nil {
+			return err
+		}
+		count = t
+		res = re
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = pi
-
-	for _, x := range results {
-		e := new(grpc.Event)
-		resp.Events.Results = append(resp.Events.Results, e)
-
-		e.Id = x.EventId
-		e.ReceivedAt = timestamppb.New(x.Created)
-		e.Source = x.Event.Source()
-		e.Type = x.Event.Type()
-		e.Cloudevent = []byte(x.Event.String())
+	finalResults := make([]*grpc.Event, 0, len(res))
+	for _, e := range res {
+		finalResults = append(finalResults, &grpc.Event{
+			ReceivedAt: timestamppb.New(e.ReceivedAt),
+			Id:         e.Event.ID(),
+			Source:     e.Event.Source(),
+			Type:       e.Event.Type(),
+		})
 	}
+	resp.Events.Results = finalResults
+	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
 
 	return resp, nil
 }
@@ -803,30 +544,34 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 
 resend:
 
-	clients := flow.edb.Clients(ctx)
-
-	query := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID)))
-
-	results, pi, err := paginate[*ent.CloudEventsQuery, *ent.CloudEvents](ctx, req.Pagination, query, cloudeventsOrderings, cloudeventsFilters)
+	count := 0
+	var res []*pkgevents.Event
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), cached.Namespace.ID)
+		if err != nil {
+			return err
+		}
+		count = t
+		res = re
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = cached.Namespace.Name
 	resp.Events = new(grpc.Events)
-	resp.Events.PageInfo = pi
-
-	for _, x := range results {
-		e := new(grpc.Event)
-		resp.Events.Results = append(resp.Events.Results, e)
-
-		e.Id = x.EventId
-		e.ReceivedAt = timestamppb.New(x.Created)
-		e.Source = x.Event.Source()
-		e.Type = x.Event.Type()
-		e.Cloudevent = []byte(x.Event.String())
+	finalResults := make([]*grpc.Event, 0, len(res))
+	for _, e := range res {
+		finalResults = append(finalResults, &grpc.Event{
+			ReceivedAt: timestamppb.New(e.ReceivedAt),
+			Id:         e.Event.ID(),
+			Source:     e.Event.Source(),
+			Type:       e.Event.Type(),
+		})
 	}
+	resp.Events.Results = finalResults
+	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
@@ -856,14 +601,22 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	}
 
 	eid := req.GetId()
-
-	clients := flow.edb.Clients(ctx)
-
-	cevent, err := clients.CloudEvents.Query().Where(cevents.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(cevents.EventIdEQ(eid)).Only(ctx)
+	id, err := uuid.Parse(eid)
 	if err != nil {
 		return nil, err
 	}
-
+	var cevent *pkgevents.Event
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		evs, err := tx.DataStore().EventHistory().GetByID(ctx, id)
+		if err != nil {
+			return err
+		}
+		cevent = evs
+		return nil
+	})
+	if err != nil {
+		return &emptypb.Empty{}, err
+	}
 	err = flow.events.ReplayCloudevent(ctx, cached, cevent)
 	if err != nil {
 		return nil, err
@@ -874,12 +627,12 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	return &resp, nil
 }
 
-func (events *events) ReplayCloudevent(ctx context.Context, cached *database.CacheData, cevent *ent.CloudEvents) error {
+func (events *events) ReplayCloudevent(ctx context.Context, cached *database.CacheData, cevent *pkgevents.Event) error {
 	event := cevent.Event
 
 	events.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
-	err := events.handleEvent(cached.Namespace, &event)
+	err := events.handleEvent(cached.Namespace, event)
 	if err != nil {
 		return err
 	}
@@ -887,7 +640,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, cached *database.Cac
 	// if eventing is configured, event goes to knative event service
 	// if it is from knative sink not
 	if events.server.conf.Eventing && ctx.Value(EventingCtxKeySource) == nil {
-		PublishKnativeEvent(&event)
+		PublishKnativeEvent(event)
 	}
 
 	return nil
@@ -931,27 +684,14 @@ func (events *events) updateEventDelaysHandler(req *pubsub.PubsubUpdate) {
 	events.syncEventDelays()
 }
 
-type eventsWaiterSignature struct {
-	InstanceID string
-	Step       int
-}
-
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
-	signature, err := json.Marshal(&eventsWaiterSignature{
-		InstanceID: im.instance.Instance.ID.String(),
-		Step:       im.Step(),
-	})
-	if err != nil {
-		return err
-	}
-
 	var transformedEvents []*model.ConsumeEventDefinition
 
 	for i := range ceds {
 		ev := new(model.ConsumeEventDefinition)
 		ev.Context = make(map[string]interface{})
 
-		err = copier.Copy(ev, ceds[i])
+		err := copier.Copy(ev, ceds[i])
 		if err != nil {
 			return err
 		}
@@ -966,7 +706,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		transformedEvents = append(transformedEvents, ev)
 	}
 
-	err = events.addInstanceEventListener(ctx, im, transformedEvents, signature, all)
+	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.GetInstanceID(), transformedEvents, im.Step(), all)
 	if err != nil {
 		return err
 	}
@@ -992,18 +732,29 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 	if jsCode, ok := eventFilterCache.get(key); ok {
 		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
 	} else {
-		clients := flow.edb.Clients(ctx)
-
-		ceventfilter, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+		var filters []*pkgevents.NamespaceCloudEventFilter
+		err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+			f, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID, 0, 0)
+			if err != nil {
+				return err
+			}
+			filters = f
+			return nil
+		})
 		if err != nil {
-			err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
-			return newBytesEvent, err
+			return nil, err
+		}
+		var ceventfilter pkgevents.NamespaceCloudEventFilter
+		for _, ncef := range filters {
+			if ncef.Name == filterName {
+				ceventfilter = *ncef
+			}
 		}
 
-		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.Jscode)
+		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.JSCode)
 
 		flow.sugar.Debugf("adding filter cache key: %v\n", key)
-		eventFilterCache.put(key, ceventfilter.Jscode)
+		eventFilterCache.put(key, ceventfilter.JSCode)
 	}
 
 	var mapEvent map[string]interface{}
@@ -1119,23 +870,9 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 	if err != nil {
 		return nil, err
 	}
-
-	clients := flow.edb.Clients(ctx)
-
-	_, err = clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
-	if err != nil {
-		err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
-		return &resp, err
-	}
-
-	_, err = clients.CloudEventFilters.
-		Delete().
-		Where(
-			enteventsfilter.And(
-				enteventsfilter.NameEQ(filterName),
-			)).
-		Exec(ctx)
-
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		return tx.DataStore().EventFilter().Delete(ctx, cached.Namespace.ID, filterName)
+	})
 	if err != nil {
 		return &resp, err
 	}
@@ -1197,20 +934,9 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 	if err != nil {
 		return nil, err
 	}
-
-	clients := flow.edb.Clients(ctx)
-
-	k, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Count(ctx)
-	if err != nil {
-		return &resp, err
-	}
-
-	if k != 0 {
-		err = status.Error(codes.AlreadyExists, fmt.Sprintf("CloudEvent filter %s already exists", filterName))
-		return &resp, err
-	}
-
-	_, err = clients.CloudEventFilters.Create().SetName(filterName).SetNamespaceID(cached.Namespace.ID).SetJscode(script).Save(ctx)
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		return tx.DataStore().EventFilter().Create(ctx, cached.Namespace.ID, filterName, script)
+	})
 	if err != nil {
 		return &resp, err
 	}
@@ -1234,15 +960,21 @@ func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEve
 	if err != nil {
 		return nil, err
 	}
+	var res []*pkgevents.NamespaceCloudEventFilter
 
-	clients := flow.edb.Clients(ctx)
-
-	dbs, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).All(ctx)
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		le, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID, 0, 0)
+		if err != nil {
+			return err
+		}
+		res = le
+		return nil
+	})
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
-	for _, s := range dbs {
+	for _, s := range res {
 		name := s.Name
 		ls = append(ls, &grpc.GetCloudEventFiltersResponse_EventFilter{
 			Name: name,
@@ -1266,15 +998,26 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 		return nil, err
 	}
 
-	clients := flow.edb.Clients(ctx)
-
-	script, err := clients.CloudEventFilters.Query().Where(enteventsfilter.HasNamespaceWith(entns.ID(cached.Namespace.ID))).Where(enteventsfilter.NameEQ(filterName)).Only(ctx)
+	var filters []*pkgevents.NamespaceCloudEventFilter
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		f, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID, 0, 0)
+		if err != nil {
+			return err
+		}
+		filters = f
+		return nil
+	})
 	if err != nil {
-		err = status.Error(codes.NotFound, fmt.Sprintf("cloudEvent filter %s does not exist", filterName))
-		return resp, err
+		return nil, err
+	}
+	var ceventfilter pkgevents.NamespaceCloudEventFilter
+	for _, ncef := range filters {
+		if ncef.Name == filterName {
+			ceventfilter = *ncef
+		}
 	}
 
-	resp.JsCode = script.Jscode
+	resp.JsCode = ceventfilter.JSCode
 
 	return resp, err
 }

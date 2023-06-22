@@ -14,11 +14,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/direktiv/direktiv/pkg/flow/ent/cloudeventfilters"
-	"github.com/direktiv/direktiv/pkg/flow/ent/cloudevents"
-	"github.com/direktiv/direktiv/pkg/flow/ent/events"
-	"github.com/direktiv/direktiv/pkg/flow/ent/eventswait"
 	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
 
 	stdsql "database/sql"
@@ -29,14 +24,6 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// CloudEventFilters is the client for interacting with the CloudEventFilters builders.
-	CloudEventFilters *CloudEventFiltersClient
-	// CloudEvents is the client for interacting with the CloudEvents builders.
-	CloudEvents *CloudEventsClient
-	// Events is the client for interacting with the Events builders.
-	Events *EventsClient
-	// EventsWait is the client for interacting with the EventsWait builders.
-	EventsWait *EventsWaitClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 }
@@ -52,10 +39,6 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.CloudEventFilters = NewCloudEventFiltersClient(c.config)
-	c.CloudEvents = NewCloudEventsClient(c.config)
-	c.Events = NewEventsClient(c.config)
-	c.EventsWait = NewEventsWaitClient(c.config)
 	c.Namespace = NewNamespaceClient(c.config)
 }
 
@@ -137,13 +120,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:               ctx,
-		config:            cfg,
-		CloudEventFilters: NewCloudEventFiltersClient(cfg),
-		CloudEvents:       NewCloudEventsClient(cfg),
-		Events:            NewEventsClient(cfg),
-		EventsWait:        NewEventsWaitClient(cfg),
-		Namespace:         NewNamespaceClient(cfg),
+		ctx:       ctx,
+		config:    cfg,
+		Namespace: NewNamespaceClient(cfg),
 	}, nil
 }
 
@@ -161,20 +140,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:               ctx,
-		config:            cfg,
-		CloudEventFilters: NewCloudEventFiltersClient(cfg),
-		CloudEvents:       NewCloudEventsClient(cfg),
-		Events:            NewEventsClient(cfg),
-		EventsWait:        NewEventsWaitClient(cfg),
-		Namespace:         NewNamespaceClient(cfg),
+		ctx:       ctx,
+		config:    cfg,
+		Namespace: NewNamespaceClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		CloudEventFilters.
+//		Namespace.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -196,590 +171,22 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.CloudEventFilters.Use(hooks...)
-	c.CloudEvents.Use(hooks...)
-	c.Events.Use(hooks...)
-	c.EventsWait.Use(hooks...)
 	c.Namespace.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.CloudEventFilters.Intercept(interceptors...)
-	c.CloudEvents.Intercept(interceptors...)
-	c.Events.Intercept(interceptors...)
-	c.EventsWait.Intercept(interceptors...)
 	c.Namespace.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *CloudEventFiltersMutation:
-		return c.CloudEventFilters.mutate(ctx, m)
-	case *CloudEventsMutation:
-		return c.CloudEvents.mutate(ctx, m)
-	case *EventsMutation:
-		return c.Events.mutate(ctx, m)
-	case *EventsWaitMutation:
-		return c.EventsWait.mutate(ctx, m)
 	case *NamespaceMutation:
 		return c.Namespace.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
-	}
-}
-
-// CloudEventFiltersClient is a client for the CloudEventFilters schema.
-type CloudEventFiltersClient struct {
-	config
-}
-
-// NewCloudEventFiltersClient returns a client for the CloudEventFilters from the given config.
-func NewCloudEventFiltersClient(c config) *CloudEventFiltersClient {
-	return &CloudEventFiltersClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `cloudeventfilters.Hooks(f(g(h())))`.
-func (c *CloudEventFiltersClient) Use(hooks ...Hook) {
-	c.hooks.CloudEventFilters = append(c.hooks.CloudEventFilters, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `cloudeventfilters.Intercept(f(g(h())))`.
-func (c *CloudEventFiltersClient) Intercept(interceptors ...Interceptor) {
-	c.inters.CloudEventFilters = append(c.inters.CloudEventFilters, interceptors...)
-}
-
-// Create returns a builder for creating a CloudEventFilters entity.
-func (c *CloudEventFiltersClient) Create() *CloudEventFiltersCreate {
-	mutation := newCloudEventFiltersMutation(c.config, OpCreate)
-	return &CloudEventFiltersCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of CloudEventFilters entities.
-func (c *CloudEventFiltersClient) CreateBulk(builders ...*CloudEventFiltersCreate) *CloudEventFiltersCreateBulk {
-	return &CloudEventFiltersCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for CloudEventFilters.
-func (c *CloudEventFiltersClient) Update() *CloudEventFiltersUpdate {
-	mutation := newCloudEventFiltersMutation(c.config, OpUpdate)
-	return &CloudEventFiltersUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *CloudEventFiltersClient) UpdateOne(cef *CloudEventFilters) *CloudEventFiltersUpdateOne {
-	mutation := newCloudEventFiltersMutation(c.config, OpUpdateOne, withCloudEventFilters(cef))
-	return &CloudEventFiltersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *CloudEventFiltersClient) UpdateOneID(id int) *CloudEventFiltersUpdateOne {
-	mutation := newCloudEventFiltersMutation(c.config, OpUpdateOne, withCloudEventFiltersID(id))
-	return &CloudEventFiltersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for CloudEventFilters.
-func (c *CloudEventFiltersClient) Delete() *CloudEventFiltersDelete {
-	mutation := newCloudEventFiltersMutation(c.config, OpDelete)
-	return &CloudEventFiltersDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *CloudEventFiltersClient) DeleteOne(cef *CloudEventFilters) *CloudEventFiltersDeleteOne {
-	return c.DeleteOneID(cef.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CloudEventFiltersClient) DeleteOneID(id int) *CloudEventFiltersDeleteOne {
-	builder := c.Delete().Where(cloudeventfilters.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &CloudEventFiltersDeleteOne{builder}
-}
-
-// Query returns a query builder for CloudEventFilters.
-func (c *CloudEventFiltersClient) Query() *CloudEventFiltersQuery {
-	return &CloudEventFiltersQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeCloudEventFilters},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a CloudEventFilters entity by its id.
-func (c *CloudEventFiltersClient) Get(ctx context.Context, id int) (*CloudEventFilters, error) {
-	return c.Query().Where(cloudeventfilters.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *CloudEventFiltersClient) GetX(ctx context.Context, id int) *CloudEventFilters {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a CloudEventFilters.
-func (c *CloudEventFiltersClient) QueryNamespace(cef *CloudEventFilters) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := cef.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(cloudeventfilters.Table, cloudeventfilters.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, cloudeventfilters.NamespaceTable, cloudeventfilters.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(cef.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *CloudEventFiltersClient) Hooks() []Hook {
-	return c.hooks.CloudEventFilters
-}
-
-// Interceptors returns the client interceptors.
-func (c *CloudEventFiltersClient) Interceptors() []Interceptor {
-	return c.inters.CloudEventFilters
-}
-
-func (c *CloudEventFiltersClient) mutate(ctx context.Context, m *CloudEventFiltersMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&CloudEventFiltersCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&CloudEventFiltersUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&CloudEventFiltersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&CloudEventFiltersDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown CloudEventFilters mutation op: %q", m.Op())
-	}
-}
-
-// CloudEventsClient is a client for the CloudEvents schema.
-type CloudEventsClient struct {
-	config
-}
-
-// NewCloudEventsClient returns a client for the CloudEvents from the given config.
-func NewCloudEventsClient(c config) *CloudEventsClient {
-	return &CloudEventsClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `cloudevents.Hooks(f(g(h())))`.
-func (c *CloudEventsClient) Use(hooks ...Hook) {
-	c.hooks.CloudEvents = append(c.hooks.CloudEvents, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `cloudevents.Intercept(f(g(h())))`.
-func (c *CloudEventsClient) Intercept(interceptors ...Interceptor) {
-	c.inters.CloudEvents = append(c.inters.CloudEvents, interceptors...)
-}
-
-// Create returns a builder for creating a CloudEvents entity.
-func (c *CloudEventsClient) Create() *CloudEventsCreate {
-	mutation := newCloudEventsMutation(c.config, OpCreate)
-	return &CloudEventsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of CloudEvents entities.
-func (c *CloudEventsClient) CreateBulk(builders ...*CloudEventsCreate) *CloudEventsCreateBulk {
-	return &CloudEventsCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for CloudEvents.
-func (c *CloudEventsClient) Update() *CloudEventsUpdate {
-	mutation := newCloudEventsMutation(c.config, OpUpdate)
-	return &CloudEventsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *CloudEventsClient) UpdateOne(ce *CloudEvents) *CloudEventsUpdateOne {
-	mutation := newCloudEventsMutation(c.config, OpUpdateOne, withCloudEvents(ce))
-	return &CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *CloudEventsClient) UpdateOneID(id uuid.UUID) *CloudEventsUpdateOne {
-	mutation := newCloudEventsMutation(c.config, OpUpdateOne, withCloudEventsID(id))
-	return &CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for CloudEvents.
-func (c *CloudEventsClient) Delete() *CloudEventsDelete {
-	mutation := newCloudEventsMutation(c.config, OpDelete)
-	return &CloudEventsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *CloudEventsClient) DeleteOne(ce *CloudEvents) *CloudEventsDeleteOne {
-	return c.DeleteOneID(ce.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CloudEventsClient) DeleteOneID(id uuid.UUID) *CloudEventsDeleteOne {
-	builder := c.Delete().Where(cloudevents.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &CloudEventsDeleteOne{builder}
-}
-
-// Query returns a query builder for CloudEvents.
-func (c *CloudEventsClient) Query() *CloudEventsQuery {
-	return &CloudEventsQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeCloudEvents},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a CloudEvents entity by its id.
-func (c *CloudEventsClient) Get(ctx context.Context, id uuid.UUID) (*CloudEvents, error) {
-	return c.Query().Where(cloudevents.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *CloudEventsClient) GetX(ctx context.Context, id uuid.UUID) *CloudEvents {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryNamespace queries the namespace edge of a CloudEvents.
-func (c *CloudEventsClient) QueryNamespace(ce *CloudEvents) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ce.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(cloudevents.Table, cloudevents.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, cloudevents.NamespaceTable, cloudevents.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(ce.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *CloudEventsClient) Hooks() []Hook {
-	return c.hooks.CloudEvents
-}
-
-// Interceptors returns the client interceptors.
-func (c *CloudEventsClient) Interceptors() []Interceptor {
-	return c.inters.CloudEvents
-}
-
-func (c *CloudEventsClient) mutate(ctx context.Context, m *CloudEventsMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&CloudEventsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&CloudEventsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&CloudEventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&CloudEventsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown CloudEvents mutation op: %q", m.Op())
-	}
-}
-
-// EventsClient is a client for the Events schema.
-type EventsClient struct {
-	config
-}
-
-// NewEventsClient returns a client for the Events from the given config.
-func NewEventsClient(c config) *EventsClient {
-	return &EventsClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `events.Hooks(f(g(h())))`.
-func (c *EventsClient) Use(hooks ...Hook) {
-	c.hooks.Events = append(c.hooks.Events, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `events.Intercept(f(g(h())))`.
-func (c *EventsClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Events = append(c.inters.Events, interceptors...)
-}
-
-// Create returns a builder for creating a Events entity.
-func (c *EventsClient) Create() *EventsCreate {
-	mutation := newEventsMutation(c.config, OpCreate)
-	return &EventsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Events entities.
-func (c *EventsClient) CreateBulk(builders ...*EventsCreate) *EventsCreateBulk {
-	return &EventsCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Events.
-func (c *EventsClient) Update() *EventsUpdate {
-	mutation := newEventsMutation(c.config, OpUpdate)
-	return &EventsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *EventsClient) UpdateOne(e *Events) *EventsUpdateOne {
-	mutation := newEventsMutation(c.config, OpUpdateOne, withEvents(e))
-	return &EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *EventsClient) UpdateOneID(id uuid.UUID) *EventsUpdateOne {
-	mutation := newEventsMutation(c.config, OpUpdateOne, withEventsID(id))
-	return &EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Events.
-func (c *EventsClient) Delete() *EventsDelete {
-	mutation := newEventsMutation(c.config, OpDelete)
-	return &EventsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *EventsClient) DeleteOne(e *Events) *EventsDeleteOne {
-	return c.DeleteOneID(e.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *EventsClient) DeleteOneID(id uuid.UUID) *EventsDeleteOne {
-	builder := c.Delete().Where(events.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &EventsDeleteOne{builder}
-}
-
-// Query returns a query builder for Events.
-func (c *EventsClient) Query() *EventsQuery {
-	return &EventsQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeEvents},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Events entity by its id.
-func (c *EventsClient) Get(ctx context.Context, id uuid.UUID) (*Events, error) {
-	return c.Query().Where(events.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *EventsClient) GetX(ctx context.Context, id uuid.UUID) *Events {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryWfeventswait queries the wfeventswait edge of a Events.
-func (c *EventsClient) QueryWfeventswait(e *Events) *EventsWaitQuery {
-	query := (&EventsWaitClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(events.Table, events.FieldID, id),
-			sqlgraph.To(eventswait.Table, eventswait.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, events.WfeventswaitTable, events.WfeventswaitColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNamespace queries the namespace edge of a Events.
-func (c *EventsClient) QueryNamespace(e *Events) *NamespaceQuery {
-	query := (&NamespaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(events.Table, events.FieldID, id),
-			sqlgraph.To(namespace.Table, namespace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, events.NamespaceTable, events.NamespaceColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *EventsClient) Hooks() []Hook {
-	return c.hooks.Events
-}
-
-// Interceptors returns the client interceptors.
-func (c *EventsClient) Interceptors() []Interceptor {
-	return c.inters.Events
-}
-
-func (c *EventsClient) mutate(ctx context.Context, m *EventsMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&EventsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&EventsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&EventsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Events mutation op: %q", m.Op())
-	}
-}
-
-// EventsWaitClient is a client for the EventsWait schema.
-type EventsWaitClient struct {
-	config
-}
-
-// NewEventsWaitClient returns a client for the EventsWait from the given config.
-func NewEventsWaitClient(c config) *EventsWaitClient {
-	return &EventsWaitClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `eventswait.Hooks(f(g(h())))`.
-func (c *EventsWaitClient) Use(hooks ...Hook) {
-	c.hooks.EventsWait = append(c.hooks.EventsWait, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `eventswait.Intercept(f(g(h())))`.
-func (c *EventsWaitClient) Intercept(interceptors ...Interceptor) {
-	c.inters.EventsWait = append(c.inters.EventsWait, interceptors...)
-}
-
-// Create returns a builder for creating a EventsWait entity.
-func (c *EventsWaitClient) Create() *EventsWaitCreate {
-	mutation := newEventsWaitMutation(c.config, OpCreate)
-	return &EventsWaitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of EventsWait entities.
-func (c *EventsWaitClient) CreateBulk(builders ...*EventsWaitCreate) *EventsWaitCreateBulk {
-	return &EventsWaitCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for EventsWait.
-func (c *EventsWaitClient) Update() *EventsWaitUpdate {
-	mutation := newEventsWaitMutation(c.config, OpUpdate)
-	return &EventsWaitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *EventsWaitClient) UpdateOne(ew *EventsWait) *EventsWaitUpdateOne {
-	mutation := newEventsWaitMutation(c.config, OpUpdateOne, withEventsWait(ew))
-	return &EventsWaitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *EventsWaitClient) UpdateOneID(id uuid.UUID) *EventsWaitUpdateOne {
-	mutation := newEventsWaitMutation(c.config, OpUpdateOne, withEventsWaitID(id))
-	return &EventsWaitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for EventsWait.
-func (c *EventsWaitClient) Delete() *EventsWaitDelete {
-	mutation := newEventsWaitMutation(c.config, OpDelete)
-	return &EventsWaitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *EventsWaitClient) DeleteOne(ew *EventsWait) *EventsWaitDeleteOne {
-	return c.DeleteOneID(ew.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *EventsWaitClient) DeleteOneID(id uuid.UUID) *EventsWaitDeleteOne {
-	builder := c.Delete().Where(eventswait.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &EventsWaitDeleteOne{builder}
-}
-
-// Query returns a query builder for EventsWait.
-func (c *EventsWaitClient) Query() *EventsWaitQuery {
-	return &EventsWaitQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeEventsWait},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a EventsWait entity by its id.
-func (c *EventsWaitClient) Get(ctx context.Context, id uuid.UUID) (*EventsWait, error) {
-	return c.Query().Where(eventswait.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *EventsWaitClient) GetX(ctx context.Context, id uuid.UUID) *EventsWait {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryWorkflowevent queries the workflowevent edge of a EventsWait.
-func (c *EventsWaitClient) QueryWorkflowevent(ew *EventsWait) *EventsQuery {
-	query := (&EventsClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ew.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(eventswait.Table, eventswait.FieldID, id),
-			sqlgraph.To(events.Table, events.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, eventswait.WorkfloweventTable, eventswait.WorkfloweventColumn),
-		)
-		fromV = sqlgraph.Neighbors(ew.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *EventsWaitClient) Hooks() []Hook {
-	return c.hooks.EventsWait
-}
-
-// Interceptors returns the client interceptors.
-func (c *EventsWaitClient) Interceptors() []Interceptor {
-	return c.inters.EventsWait
-}
-
-func (c *EventsWaitClient) mutate(ctx context.Context, m *EventsWaitMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&EventsWaitCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&EventsWaitUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&EventsWaitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&EventsWaitDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown EventsWait mutation op: %q", m.Op())
 	}
 }
 
@@ -876,54 +283,6 @@ func (c *NamespaceClient) GetX(ctx context.Context, id uuid.UUID) *Namespace {
 	return obj
 }
 
-// QueryCloudevents queries the cloudevents edge of a Namespace.
-func (c *NamespaceClient) QueryCloudevents(n *Namespace) *CloudEventsQuery {
-	query := (&CloudEventsClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(cloudevents.Table, cloudevents.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.CloudeventsTable, namespace.CloudeventsColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNamespacelisteners queries the namespacelisteners edge of a Namespace.
-func (c *NamespaceClient) QueryNamespacelisteners(n *Namespace) *EventsQuery {
-	query := (&EventsClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(events.Table, events.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.NamespacelistenersTable, namespace.NamespacelistenersColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCloudeventfilters queries the cloudeventfilters edge of a Namespace.
-func (c *NamespaceClient) QueryCloudeventfilters(n *Namespace) *CloudEventFiltersQuery {
-	query := (&CloudEventFiltersClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(namespace.Table, namespace.FieldID, id),
-			sqlgraph.To(cloudeventfilters.Table, cloudeventfilters.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, namespace.CloudeventfiltersTable, namespace.CloudeventfiltersColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *NamespaceClient) Hooks() []Hook {
 	return c.hooks.Namespace
@@ -952,10 +311,10 @@ func (c *NamespaceClient) mutate(ctx context.Context, m *NamespaceMutation) (Val
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		CloudEventFilters, CloudEvents, Events, EventsWait, Namespace []ent.Hook
+		Namespace []ent.Hook
 	}
 	inters struct {
-		CloudEventFilters, CloudEvents, Events, EventsWait, Namespace []ent.Interceptor
+		Namespace []ent.Interceptor
 	}
 )
 

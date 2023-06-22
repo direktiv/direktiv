@@ -6,17 +6,5 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// CloudEventFilters is the predicate function for cloudeventfilters builders.
-type CloudEventFilters func(*sql.Selector)
-
-// CloudEvents is the predicate function for cloudevents builders.
-type CloudEvents func(*sql.Selector)
-
-// Events is the predicate function for events builders.
-type Events func(*sql.Selector)
-
-// EventsWait is the predicate function for eventswait builders.
-type EventsWait func(*sql.Selector)
-
 // Namespace is the predicate function for namespace builders.
 type Namespace func(*sql.Selector)

@@ -14,14 +14,6 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// CloudEventFilters is the client for interacting with the CloudEventFilters builders.
-	CloudEventFilters *CloudEventFiltersClient
-	// CloudEvents is the client for interacting with the CloudEvents builders.
-	CloudEvents *CloudEventsClient
-	// Events is the client for interacting with the Events builders.
-	Events *EventsClient
-	// EventsWait is the client for interacting with the EventsWait builders.
-	EventsWait *EventsWaitClient
 	// Namespace is the client for interacting with the Namespace builders.
 	Namespace *NamespaceClient
 
@@ -155,10 +147,6 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.CloudEventFilters = NewCloudEventFiltersClient(tx.config)
-	tx.CloudEvents = NewCloudEventsClient(tx.config)
-	tx.Events = NewEventsClient(tx.config)
-	tx.EventsWait = NewEventsWaitClient(tx.config)
 	tx.Namespace = NewNamespaceClient(tx.config)
 }
 
@@ -169,7 +157,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: CloudEventFilters.QueryXXX(), the query will be executed
+// applies a query, for example: Namespace.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

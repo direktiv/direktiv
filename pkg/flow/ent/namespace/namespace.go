@@ -21,37 +21,8 @@ const (
 	FieldConfig = "config"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// EdgeCloudevents holds the string denoting the cloudevents edge name in mutations.
-	EdgeCloudevents = "cloudevents"
-	// EdgeNamespacelisteners holds the string denoting the namespacelisteners edge name in mutations.
-	EdgeNamespacelisteners = "namespacelisteners"
-	// EdgeCloudeventfilters holds the string denoting the cloudeventfilters edge name in mutations.
-	EdgeCloudeventfilters = "cloudeventfilters"
-	// CloudEventFiltersFieldID holds the string denoting the ID field of the CloudEventFilters.
-	CloudEventFiltersFieldID = "id"
 	// Table holds the table name of the namespace in the database.
 	Table = "namespaces"
-	// CloudeventsTable is the table that holds the cloudevents relation/edge.
-	CloudeventsTable = "cloud_events"
-	// CloudeventsInverseTable is the table name for the CloudEvents entity.
-	// It exists in this package in order to avoid circular dependency with the "cloudevents" package.
-	CloudeventsInverseTable = "cloud_events"
-	// CloudeventsColumn is the table column denoting the cloudevents relation/edge.
-	CloudeventsColumn = "namespace_cloudevents"
-	// NamespacelistenersTable is the table that holds the namespacelisteners relation/edge.
-	NamespacelistenersTable = "events"
-	// NamespacelistenersInverseTable is the table name for the Events entity.
-	// It exists in this package in order to avoid circular dependency with the "events" package.
-	NamespacelistenersInverseTable = "events"
-	// NamespacelistenersColumn is the table column denoting the namespacelisteners relation/edge.
-	NamespacelistenersColumn = "namespace_namespacelisteners"
-	// CloudeventfiltersTable is the table that holds the cloudeventfilters relation/edge.
-	CloudeventfiltersTable = "cloud_event_filters"
-	// CloudeventfiltersInverseTable is the table name for the CloudEventFilters entity.
-	// It exists in this package in order to avoid circular dependency with the "cloudeventfilters" package.
-	CloudeventfiltersInverseTable = "cloud_event_filters"
-	// CloudeventfiltersColumn is the table column denoting the cloudeventfilters relation/edge.
-	CloudeventfiltersColumn = "namespace_cloudeventfilters"
 )
 
 // Columns holds all SQL columns for namespace fields.

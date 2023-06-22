@@ -8,112 +8,6 @@ import (
 )
 
 var (
-	// CloudEventFiltersColumns holds the columns for the "cloud_event_filters" table.
-	CloudEventFiltersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "jscode", Type: field.TypeString},
-		{Name: "namespace_cloudeventfilters", Type: field.TypeUUID},
-	}
-	// CloudEventFiltersTable holds the schema information for the "cloud_event_filters" table.
-	CloudEventFiltersTable = &schema.Table{
-		Name:       "cloud_event_filters",
-		Columns:    CloudEventFiltersColumns,
-		PrimaryKey: []*schema.Column{CloudEventFiltersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "cloud_event_filters_namespaces_cloudeventfilters",
-				Columns:    []*schema.Column{CloudEventFiltersColumns[3]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "cloudeventfilters_name_namespace_cloudeventfilters",
-				Unique:  true,
-				Columns: []*schema.Column{CloudEventFiltersColumns[1], CloudEventFiltersColumns[3]},
-			},
-		},
-	}
-	// CloudEventsColumns holds the columns for the "cloud_events" table.
-	CloudEventsColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "event_id", Type: field.TypeString},
-		{Name: "event", Type: field.TypeJSON},
-		{Name: "fire", Type: field.TypeTime},
-		{Name: "created", Type: field.TypeTime},
-		{Name: "processed", Type: field.TypeBool},
-		{Name: "namespace_cloudevents", Type: field.TypeUUID},
-	}
-	// CloudEventsTable holds the schema information for the "cloud_events" table.
-	CloudEventsTable = &schema.Table{
-		Name:       "cloud_events",
-		Columns:    CloudEventsColumns,
-		PrimaryKey: []*schema.Column{CloudEventsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "cloud_events_namespaces_cloudevents",
-				Columns:    []*schema.Column{CloudEventsColumns[6]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "cloudevents_event_id_namespace_cloudevents",
-				Unique:  true,
-				Columns: []*schema.Column{CloudEventsColumns[1], CloudEventsColumns[6]},
-			},
-		},
-	}
-	// EventsColumns holds the columns for the "events" table.
-	EventsColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "events", Type: field.TypeJSON},
-		{Name: "correlations", Type: field.TypeJSON},
-		{Name: "signature", Type: field.TypeBytes, Nullable: true},
-		{Name: "count", Type: field.TypeInt},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "workflow_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "instance_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "namespace_namespacelisteners", Type: field.TypeUUID},
-	}
-	// EventsTable holds the schema information for the "events" table.
-	EventsTable = &schema.Table{
-		Name:       "events",
-		Columns:    EventsColumns,
-		PrimaryKey: []*schema.Column{EventsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "events_namespaces_namespacelisteners",
-				Columns:    []*schema.Column{EventsColumns[9]},
-				RefColumns: []*schema.Column{NamespacesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// EventsWaitsColumns holds the columns for the "events_waits" table.
-	EventsWaitsColumns = []*schema.Column{
-		{Name: "oid", Type: field.TypeUUID},
-		{Name: "events", Type: field.TypeJSON},
-		{Name: "events_wfeventswait", Type: field.TypeUUID},
-	}
-	// EventsWaitsTable holds the schema information for the "events_waits" table.
-	EventsWaitsTable = &schema.Table{
-		Name:       "events_waits",
-		Columns:    EventsWaitsColumns,
-		PrimaryKey: []*schema.Column{EventsWaitsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "events_waits_events_wfeventswait",
-				Columns:    []*schema.Column{EventsWaitsColumns[2]},
-				RefColumns: []*schema.Column{EventsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// NamespacesColumns holds the columns for the "namespaces" table.
 	NamespacesColumns = []*schema.Column{
 		{Name: "oid", Type: field.TypeUUID},
@@ -130,17 +24,9 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		CloudEventFiltersTable,
-		CloudEventsTable,
-		EventsTable,
-		EventsWaitsTable,
 		NamespacesTable,
 	}
 )
 
 func init() {
-	CloudEventFiltersTable.ForeignKeys[0].RefTable = NamespacesTable
-	CloudEventsTable.ForeignKeys[0].RefTable = NamespacesTable
-	EventsTable.ForeignKeys[0].RefTable = NamespacesTable
-	EventsWaitsTable.ForeignKeys[0].RefTable = EventsTable
 }

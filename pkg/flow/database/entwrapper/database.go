@@ -22,10 +22,7 @@ const (
 
 // TODO: un-export EntClients.
 type EntClients struct {
-	Namespace         *ent.NamespaceClient
-	Events            *ent.EventsClient
-	CloudEvents       *ent.CloudEventsClient
-	CloudEventFilters *ent.CloudEventFiltersClient
+	Namespace *ent.NamespaceClient
 }
 
 // TODO: delete.
@@ -38,20 +35,14 @@ func (db *Database) clients(ctx context.Context) *EntClients {
 
 	if a == nil {
 		return &EntClients{
-			Namespace:         db.Client.Namespace,
-			Events:            db.Client.Events,
-			CloudEvents:       db.Client.CloudEvents,
-			CloudEventFilters: db.Client.CloudEventFilters,
+			Namespace: db.Client.Namespace,
 		}
 	}
 
 	x := a.(*ent.Tx)
 
 	return &EntClients{
-		Namespace:         x.Namespace,
-		Events:            x.Events,
-		CloudEvents:       x.CloudEvents,
-		CloudEventFilters: x.CloudEventFilters,
+		Namespace: x.Namespace,
 	}
 }
 

@@ -25,49 +25,6 @@ type Namespace struct {
 	Config string `json:"config,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the NamespaceQuery when eager-loading is set.
-	Edges NamespaceEdges `json:"edges"`
-}
-
-// NamespaceEdges holds the relations/edges for other nodes in the graph.
-type NamespaceEdges struct {
-	// Cloudevents holds the value of the cloudevents edge.
-	Cloudevents []*CloudEvents `json:"cloudevents,omitempty"`
-	// Namespacelisteners holds the value of the namespacelisteners edge.
-	Namespacelisteners []*Events `json:"namespacelisteners,omitempty"`
-	// Cloudeventfilters holds the value of the cloudeventfilters edge.
-	Cloudeventfilters []*CloudEventFilters `json:"cloudeventfilters,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
-}
-
-// CloudeventsOrErr returns the Cloudevents value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) CloudeventsOrErr() ([]*CloudEvents, error) {
-	if e.loadedTypes[0] {
-		return e.Cloudevents, nil
-	}
-	return nil, &NotLoadedError{edge: "cloudevents"}
-}
-
-// NamespacelistenersOrErr returns the Namespacelisteners value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) NamespacelistenersOrErr() ([]*Events, error) {
-	if e.loadedTypes[1] {
-		return e.Namespacelisteners, nil
-	}
-	return nil, &NotLoadedError{edge: "namespacelisteners"}
-}
-
-// CloudeventfiltersOrErr returns the Cloudeventfilters value or an error if the edge
-// was not loaded in eager-loading.
-func (e NamespaceEdges) CloudeventfiltersOrErr() ([]*CloudEventFilters, error) {
-	if e.loadedTypes[2] {
-		return e.Cloudeventfilters, nil
-	}
-	return nil, &NotLoadedError{edge: "cloudeventfilters"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -129,21 +86,6 @@ func (n *Namespace) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryCloudevents queries the "cloudevents" edge of the Namespace entity.
-func (n *Namespace) QueryCloudevents() *CloudEventsQuery {
-	return NewNamespaceClient(n.config).QueryCloudevents(n)
-}
-
-// QueryNamespacelisteners queries the "namespacelisteners" edge of the Namespace entity.
-func (n *Namespace) QueryNamespacelisteners() *EventsQuery {
-	return NewNamespaceClient(n.config).QueryNamespacelisteners(n)
-}
-
-// QueryCloudeventfilters queries the "cloudeventfilters" edge of the Namespace entity.
-func (n *Namespace) QueryCloudeventfilters() *CloudEventFiltersQuery {
-	return NewNamespaceClient(n.config).QueryCloudeventfilters(n)
 }
 
 // Update returns a builder for updating this Namespace.
