@@ -8,7 +8,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   DEPLOYMENT_NAME: review-${GITHUB_REF////-}
-  DEPLOYMENT_URL: https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev
+  DEPLOYMENT_URL: https://direktiv-ui-${{GITHUB_REF////-}}.direktiv.dev
 
 jobs:
   build-and-push-image:
