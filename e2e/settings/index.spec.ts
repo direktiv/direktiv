@@ -178,15 +178,28 @@ test("it is possible to create and delete variables", async ({ page }) => {
 });
 
 test("it is possible to edit variables", async ({ page }) => {
-  await createVariables(namespace, 3);
+  const variables = await createVariables(namespace, 3);
+  const subject = variables[2];
+
+  if (!subject) throw "There was an error setting up test data";
+
+  const subjectDropdownSelector = `dropdown-trg-item-${subject.key}`;
+
   await page.goto(`/${namespace}/settings`);
-  await page
-    .getByTestId(/dropdown-trg-item/)
-    .nth(2)
-    .click();
+  await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
+
   const textArea = page.getByRole("textbox");
-  await page.getByTestId("variable-editor-card").click();
+
+  await expect(
+    page.getByTestId("variable-editor-card"),
+    "the variable's content is loaded into the editor"
+  ).toContainText(subject.content);
+
+  // This was needed previously to make sure the editor is initialized
+  // before updating the value, but it should no longer be needed.
+  // await page.getByTestId("variable-editor-card").click();
+
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
   await page.getByTestId("var-edit-submit").click();
@@ -194,10 +207,8 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.reload({
     waitUntil: "networkidle",
   });
-  await page
-    .getByTestId(/dropdown-trg-item/)
-    .nth(2)
-    .click();
+
+  await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
   await page.getByTestId("variable-editor-card").click();
   const afterReloadValue = await textArea.inputValue();

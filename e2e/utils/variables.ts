@@ -25,7 +25,10 @@ export const createVariables = async (namespace: string, amount = 5) => {
         headers: {
           "content-type": variable.mimeType,
         },
-      })
+      }).then((result) => ({
+        ...result,
+        content: variable.content,
+      }))
     )
   );
 };
