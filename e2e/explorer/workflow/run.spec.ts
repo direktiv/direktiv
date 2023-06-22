@@ -176,7 +176,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
 test("it is possible to provide the input via generated form", async ({
   page,
 }) => {
-  const workflow = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: jsonSchemaFormWorkflow,
     headers: undefined,
