@@ -49,12 +49,15 @@ func TestNewNode(t *testing.T) {
 
 func rightNumber(nodes []*Node) bool {
 	for i := 0; i < len(nodes); i++ {
+
+		fmt.Printf("compare nodes: %d - %d\n", len(nodes), nodes[i].serfServer.NumNodes())
 		if nodes[i].serfServer.NumNodes() != len(nodes) {
 			return false
 		}
 
 		nn, _ := nodes[i].bus.nodes()
 
+		fmt.Printf("compare producers: %d - %d\n", len(nn.Producers), len(nodes))
 		if len(nn.Producers) != len(nodes) {
 			return false
 		}
@@ -64,45 +67,69 @@ func rightNumber(nodes []*Node) bool {
 	return true
 }
 
-func createConfig(topics []string, i int, change bool) Config {
+func createConfig(t *testing.T, topics []string, change bool) (Config, []randomPort) {
 	config := DefaultConfig()
-	config.SerfReapTimeout = 3 * time.Second
-	config.SerfReapInterval = 1 * time.Second
-	config.SerfTombstoneTimeout = 5 * time.Second
 
 	if change {
 		config.NSQInactiveTimeout = 10 * time.Second
 		config.NSQTombstoneTimeout = 5 * time.Second
+
+		config.SerfReapTimeout = 3 * time.Second
+		config.SerfReapInterval = 1 * time.Second
+		config.SerfTombstoneTimeout = 5 * time.Second
 	}
 
 	config.NSQTopics = topics
 
-	config.SerfPort = 5223 + (100 * i)
-	config.NSQDPort = 4250 + (100 * i)
-	config.NSQDListenHTTPPort = 4251 + (100 * i)
-	config.NSQLookupPort = 4252 + (100 * i)
-	config.NSQLookupListenHTTPPort = 4253 + (100 * i)
+	ports := getPorts(t)
+	config.SerfPort = ports[0].port
+	config.NSQDPort = ports[1].port
+	config.NSQDListenHTTPPort = ports[2].port
+	config.NSQLookupPort = ports[3].port
+	config.NSQLookupListenHTTPPort = ports[4].port
 
-	return config
+	// config.SerfPort = port11
+	// config.NSQDPort = port12
+	// config.NSQDListenHTTPPort = port13
+	// config.NSQLookupPort = port14
+	// config.NSQLookupListenHTTPPort = portSerf
+
+	return config, ports
 }
 
-func createCluster(count int, topics []string, change bool) ([]*Node, error) {
+func createCluster(t *testing.T, count int, topics []string, change bool) ([]*Node, error) {
+
 	nfNodes := make([]string, 0)
 	finalNodes := make([]*Node, 0)
+
+	configs := make([]Config, 0)
+	ports := make([][]randomPort, count)
 
 	hn, _ := os.Hostname()
 
 	for i := 0; i < count; i++ {
-		nfNodes = append(nfNodes, fmt.Sprintf("%s:%d", hn, 5223+(100*i)))
+		config, ports1 := createConfig(t, topics, change)
+		nfNodes = append(nfNodes, fmt.Sprintf("%s:%d", hn, config.SerfPort))
+		configs = append(configs, config)
+		ports[i] = ports1
+		t.Logf("serf port: %+v\n", config.SerfPort)
+		t.Logf("nsq port: %+v\n", config.NSQDPort)
+		t.Logf("nsq http port: %+v\n", config.NSQDListenHTTPPort)
+		t.Logf("nsq lookup port: %+v\n", config.NSQLookupPort)
+		t.Logf("nsq lookup http port: %+v\n", config.NSQLookupListenHTTPPort)
+		t.Logf("----------------------")
+	}
+
+	for i := 0; i < count; i++ {
+		closePorts(ports[i])
 	}
 
 	nf := NewNodefinderStatic(nfNodes)
 
 	for i := 0; i < count; i++ {
-		config := createConfig(topics, i, change)
-		config.Nodefinder = nf
-
-		node, err := NewNode(config)
+		c := configs[i]
+		c.Nodefinder = nf
+		node, err := NewNode(c)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +141,7 @@ func createCluster(count int, topics []string, change bool) ([]*Node, error) {
 
 func TestCluster(t *testing.T) {
 	count := 3
-	nodes, err := createCluster(count, []string{"topic1"}, true)
+	nodes, err := createCluster(t, count, []string{"topic1"}, true)
 	require.NoError(t, err)
 
 	for i := 0; i < count; i++ {
@@ -124,7 +151,7 @@ func TestCluster(t *testing.T) {
 	// check three node cluster
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
-	}, 10*time.Second, time.Second)
+	}, 10*time.Second, time.Second, "node count failed")
 
 	// // stop one node
 	err = nodes[count-1].Stop()
@@ -137,34 +164,24 @@ func TestCluster(t *testing.T) {
 		return rightNumber(nodes)
 	}, 60*time.Second, time.Second)
 
-	config := DefaultConfig()
-	config.SerfReapTimeout = 3 * time.Second
-	config.SerfReapInterval = 1 * time.Second
-	config.SerfTombstoneTimeout = 5 * time.Second
-	config.NSQInactiveTimeout = 60 * time.Second
-	config.NSQTombstoneTimeout = 10 * time.Second
-
-	config.NSQTopics = []string{"topic1"}
-
-	config.SerfPort = 7777
-	config.NSQDPort = 7800
-	config.NSQDListenHTTPPort = 7801
-	config.NSQLookupPort = 7802
-	config.NSQLookupListenHTTPPort = 7803
-
+	conf, ports1 := createConfig(t, []string{"topic1"}, false)
 	nfNodes := []string{
-		"127.0.0.1:5223",
-		"127.0.0.1:5323",
-		"127.0.0.1:7777",
+		fmt.Sprintf("127.0.0.1:%d", conf.SerfPort),
 	}
 
+	for i := range nodes {
+		nfNodes = append(nfNodes, fmt.Sprintf("127.0.0.1:%d",
+			nodes[i].serfServer.LocalMember().Port))
+	}
 	// add a node again
 	nf := NewNodefinderStatic(nfNodes)
-	// config := createConfig([]string{"topic1"}, 2)
-	config.Nodefinder = nf
+	conf.Nodefinder = nf
 
-	newNode, err := NewNode(config)
+	closePorts(ports1)
+
+	newNode, err := NewNode(conf)
 	require.NoError(t, err)
+	defer newNode.Stop()
 	nodes = append(nodes, newNode)
 
 	require.Eventually(t, func() bool {
@@ -174,7 +191,7 @@ func TestCluster(t *testing.T) {
 
 func TestClusterSubscribe(t *testing.T) {
 	count := 3
-	nodes, err := createCluster(count, []string{"topic1", "topic2"}, false)
+	nodes, err := createCluster(t, count, []string{"topic1", "topic2"}, false)
 	require.NoError(t, err)
 
 	for i := 0; i < count; i++ {
@@ -247,7 +264,8 @@ func TestClusterSubscribe(t *testing.T) {
 	require.Eventually(t, func() bool {
 		t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
 		return counter1.cc+counter2.cc+counter3.cc == 10
-	}, 30*time.Second, time.Second)
+	}, 30*time.Second, time.Second, "did not get recieved events")
+
 }
 
 type counterHandler struct {
@@ -258,7 +276,6 @@ var j int
 
 func (ch *counterHandler) counter(msg []byte) error {
 	j += 1
-	// fmt.Printf("COUNT %v\n", j)
 	ch.cc += 1
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -131,9 +132,12 @@ func newBus(config Config) (*bus, error) {
 }
 
 func (b *bus) stop() {
+
+	b.logger.Info("stopping nsqd")
 	if b.nsqd != nil {
 		b.nsqd.Exit()
 	}
+	b.logger.Info("stopping nsqd lookup")
 	if b.lookup != nil {
 		b.lookup.Exit()
 	}
@@ -184,6 +188,8 @@ func (b *bus) nodes() (*ProducerList, error) {
 func (b *bus) updateBusNodes(nodes []string) error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
+
+	b.logger.Infof("updating bus nodes: %s", strings.Join(nodes, ", "))
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/config/nsqlookupd_tcp_addresses", b.config.NSQDListenHTTPPort)
 
