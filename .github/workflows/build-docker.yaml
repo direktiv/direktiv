@@ -3,6 +3,8 @@ name: Create and push PR Docker image
 on:
   pull_request:
     branches: [ "main", "feature/redesign" ]
+  push:
+    branches: [ "feature/redesign" ]
 
 env:
   REGISTRY: ghcr.io
