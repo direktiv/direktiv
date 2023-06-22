@@ -13,7 +13,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/dlog"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
@@ -70,9 +69,7 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 		return err
 	}
 
-	cached := new(database.CacheData)
-
-	err = rcv.flow.database.NamespaceByName(ctx, cached, name)
+	ns, err := rcv.flow.edb.NamespaceByName(ctx, name)
 	if err != nil {
 		rcv.logger.Errorf("error getting namespace: %s", err.Error())
 		return err
@@ -103,7 +100,7 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 		}
 	}
 
-	return rcv.events.BroadcastCloudevent(c, cached.Namespace, ev, 0)
+	return rcv.events.BroadcastCloudevent(c, ns, ev, 0)
 }
 
 func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Request) {
