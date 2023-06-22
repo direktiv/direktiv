@@ -22,22 +22,21 @@ import Button from "~/design/Button";
 import { NavigationLink } from "~/design/NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+import { useTranslation } from "react-i18next";
 
+const hasAccount = true;
+const username = "admin";
 interface UserMenuProps {
-  hasAccount?: boolean;
-  username?: string;
   className?: string;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({
-  hasAccount = true,
-  username = "admin",
-  className,
-}) => {
+const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   const { setTheme } = useThemeActions();
   const theme = useTheme();
+  const { t } = useTranslation();
   return (
-    <div className={clsx("flex space-x-2", className)}>
+    <div className={twMerge(clsx("flex space-x-2", className))}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {hasAccount ? (
@@ -61,15 +60,21 @@ const UserMenu: React.FC<UserMenuProps> = ({
         <DropdownMenuContent className="w-56">
           {hasAccount && (
             <>
-              <DropdownMenuLabel>You are logged in as admin</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {t("components.userMenu.loggedInAs", { name: username })}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
+                <span>{t("components.userMenu.logout")}</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
             </>
           )}
-          <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+
+          <DropdownMenuLabel>
+            {t("components.userMenu.appearance")}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             data-testid="dropdown-item-switch-mode"
@@ -78,12 +83,12 @@ const UserMenu: React.FC<UserMenuProps> = ({
             {theme === "dark" ? (
               <>
                 <Sun className="mr-2 h-4 w-4" />
-                switch to Light mode
+                {t("components.userMenu.switchToLight")}
               </>
             ) : (
               <>
                 <Moon className="mr-2 h-4 w-4" />
-                switch to Dark mode
+                {t("components.userMenu.switchToDark")}
               </>
             )}
           </DropdownMenuItem>
@@ -91,17 +96,20 @@ const UserMenu: React.FC<UserMenuProps> = ({
           <DropdownMenuLabel>Help</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <Terminal className="mr-2 h-4 w-4" /> Show API Commands
+            <Terminal className="mr-2 h-4 w-4" />{" "}
+            {t("components.userMenu.showApiCommands")}
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <CurlyBraces className="mr-2 h-4 w-4" /> Open JQ Playground
+            <CurlyBraces className="mr-2 h-4 w-4" />
+            {t("components.userMenu.openJQPlayground")}
           </DropdownMenuItem>
           <DropdownMenuItem>
             <NavigationLink
               className="p-0"
               href="https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g"
             >
-              <Slack className="mr-2 h-4 w-4" /> Support Channel on Slack
+              <Slack className="mr-2 h-4 w-4" />{" "}
+              {t("components.userMenu.supportChannelOnSlack")}
             </NavigationLink>
           </DropdownMenuItem>
         </DropdownMenuContent>
