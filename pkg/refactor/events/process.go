@@ -91,6 +91,7 @@ func (ee EventEngine) getEventHandlers(ctx context.Context,
 	for _, l := range listeners {
 		handlers = append(handlers, ee.createEventHandler(l))
 	}
+	
 	return handlers
 }
 

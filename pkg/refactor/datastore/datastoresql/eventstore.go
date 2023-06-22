@@ -481,6 +481,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	if err != nil {
 		return nil, err
 	}
+
 	return &events.EventListener{
 		ID:                          l.ID,
 		UpdatedAt:                   l.UpdatedAt,
