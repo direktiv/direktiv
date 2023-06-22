@@ -72,4 +72,4 @@ jobs:
       - name: Adding markdown
         run: |
           echo '### Review App 🚀' >> $GITHUB_STEP_SUMMARY
-          echo '[${GITHUB_REF////-}](https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev)' >> $GITHUB_STEP_SUMMARY
+          echo "[${GITHUB_REF////-}](https://direktiv-ui-${GITHUB_REF////-}.direktiv.dev)" >> $GITHUB_STEP_SUMMARY
