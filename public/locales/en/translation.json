@@ -142,7 +142,7 @@
             "title": "Run Workflow",
             "jsonInput": "JSON Input",
             "formInput": "Form Input",
-            "formInputHint": "The first state of this Workflow must be a validate state to generate a form.",
+            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
             "runBtn": "Run"
