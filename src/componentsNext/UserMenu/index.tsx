@@ -107,6 +107,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
             <NavigationLink
               className="p-0"
               href="https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <Slack className="mr-2 h-4 w-4" />{" "}
               {t("components.userMenu.supportChannelOnSlack")}
