@@ -2,10 +2,10 @@ import {
   ArraySchemaSample,
   CustomArraySample,
   SimpleSample,
+  basicExample,
 } from "./jsonSchemaExamples";
 import type { Meta, StoryObj } from "@storybook/react";
 import { JSONSchemaForm } from "../JSONschemaForm";
-import { RJSFSchema } from "@rjsf/utils";
 
 const meta = {
   title: "Components/JSONSchemaForm",
@@ -15,42 +15,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const defSchema: RJSFSchema = {
-  title: "A registration form",
-  type: "object",
-  required: ["firstName", "lastName"],
-  properties: {
-    password: {
-      type: "string",
-      title: "Password",
-    },
-    lastName: {
-      type: "string",
-      title: "Last name",
-    },
-    bio: {
-      type: "string",
-      title: "Bio",
-    },
-    firstName: {
-      type: "string",
-      title: "First name",
-    },
-    age: {
-      type: "integer",
-      title: "Age",
-    },
-    occupation: {
-      type: "string",
-      enum: ["foo", "bar", "fuzz", "qux"],
-    },
-  },
-};
-
 export const Default: Story = {
   render: ({ ...args }) => <JSONSchemaForm {...args} />,
   args: {
-    schema: defSchema,
+    schema: basicExample,
   },
   tags: ["autodocs"],
 };

@@ -1,5 +1,37 @@
 import { RJSFSchema } from "@rjsf/utils";
 
+export const basicExample: RJSFSchema = {
+  title: "A registration form",
+  type: "object",
+  required: ["firstName", "lastName"],
+  properties: {
+    password: {
+      type: "string",
+      title: "Password",
+    },
+    lastName: {
+      type: "string",
+      title: "Last name",
+    },
+    bio: {
+      type: "string",
+      title: "Bio",
+    },
+    firstName: {
+      type: "string",
+      title: "First name",
+    },
+    age: {
+      type: "integer",
+      title: "Age",
+    },
+    occupation: {
+      type: "string",
+      enum: ["foo", "bar", "fuzz", "qux"],
+    },
+  },
+};
+
 export const ArraySchemaSample: RJSFSchema = {
   definitions: {
     Thing: {
