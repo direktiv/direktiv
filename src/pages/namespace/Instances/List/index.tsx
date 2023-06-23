@@ -1,6 +1,3 @@
-const Instances = () => {
-  console.log("🚀🚀🚀🚀🚀");
-  return <h1>Instances List</h1>;
-};
+const InstancesListPage = () => <h1>Instances list view</h1>;
 
-export default Instances;
+export default InstancesListPage;

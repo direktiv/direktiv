@@ -8,15 +8,11 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import {
-  Outlet,
-  useMatches,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
-import InstancesPageDetail from "~/pages/namespace/_instances/Detail";
-import InstancesPageList from "~/pages/namespace/_instances/List";
+import InstancesPage from "~/pages/namespace/Instances";
+import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
+import InstancesPageList from "~/pages/namespace/Instances/List";
 import React from "react";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -232,7 +228,7 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup =
       },
       route: {
         path: "instances",
-        element: <Outlet />,
+        element: <InstancesPage />,
         children: [
           {
             path: "",
