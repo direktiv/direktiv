@@ -76,7 +76,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            data-testid="dropdown-item-switch-mode"
+            data-testid="dropdown-item-switch-theme"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
             {theme === "dark" ? (
