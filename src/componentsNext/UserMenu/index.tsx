@@ -94,17 +94,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuSeparator />
           <DropdownMenuLabel>{t("components.userMenu.help")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <a href="">
-              <Terminal className="mr-2 h-4 w-4" />
-              {t("components.userMenu.showApiCommands")}
-            </a>
+          <DropdownMenuItem>
+            <Terminal className="mr-2 h-4 w-4" />
+            {t("components.userMenu.showApiCommands")}
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <a href="">
-              <CurlyBraces className="mr-2 h-4 w-4" />
-              {t("components.userMenu.openJQPlayground")}
-            </a>
+          <DropdownMenuItem>
+            <CurlyBraces className="mr-2 h-4 w-4" />
+            {t("components.userMenu.openJQPlayground")}
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <a
