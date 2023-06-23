@@ -274,6 +274,17 @@
     },
     "formErrors": {
       "fieldInvalid": "this field is invalid"
+    },
+    "userMenu": {
+      "loggedInAs": "You are logged in as {{name}}",
+      "logout": "Logout",
+      "appearance": "Appearance",
+      "switchToLight": "switch to Light mode",
+      "switchToDark": "switch to Dark mode",
+      "help": "Help",
+      "showApiCommands": "Show API Commands",
+      "openJQPlayground": "Open JQ Playground",
+      "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
   "api": {
