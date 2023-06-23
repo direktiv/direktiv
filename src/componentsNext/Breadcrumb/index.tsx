@@ -25,10 +25,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import React, { useState } from "react";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
-import BreadcrumbSegment from "./BreadcrumbSegment";
 import Button from "~/design/Button";
+import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
 import NamespaceCreate from "../NamespaceCreate";
-import { analyzePath } from "~/util/router/utils";
 import clsx from "clsx";
 import { pages } from "~/util/router/pages";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -46,14 +45,13 @@ const Breadcrumb = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const { path: pathParams } = pages.explorer.useParams();
+  const { isExplorerPage } = pages.explorer.useParams();
 
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
 
   if (!namespace) return null;
 
-  const path = analyzePath(pathParams);
   const hasResults = isSuccess && availableNamespaces?.results.length > 0;
 
   const onNameSpaceChange = (namespace: string) => {
@@ -139,14 +137,7 @@ const Breadcrumb = () => {
           </DialogContent>
         </Dialog>
       </BreadcrumbLink>
-      {path.segments.map((x, i) => (
-        <BreadcrumbSegment
-          key={x.absolute}
-          absolute={x.absolute}
-          relative={x.relative}
-          isLast={i === path.segments.length - 1}
-        />
-      ))}
+      {isExplorerPage && <ExplorerBreadcrumb />}
     </BreadcrumbRoot>
   );
 };
