@@ -63,7 +63,8 @@ func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Ti
 }
 
 type gormEventHistoryEntry struct {
-	ID, NamespaceID          uuid.UUID
+	ID                       string
+	NamespaceID              uuid.UUID
 	Type, Source, Cloudevent string
 	CreatedAt, ReceivedAt    time.Time
 }

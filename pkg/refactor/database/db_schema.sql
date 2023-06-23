@@ -177,14 +177,15 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 );
 
 CREATE TABLE IF NOT EXISTS "events_history" (
-    "id" text UNIQUE,
+    "id" text,
     "type" text NOT NULL,
     "source" text NOT NULL,
     "cloudevent" text NOT NULL,
     "namespace_id" uuid NOT NULL,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
-    PRIMARY KEY ("id")
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "no_dup_check" UNIQUE ("source","id")
 );
 
 -- for cursor style pagination

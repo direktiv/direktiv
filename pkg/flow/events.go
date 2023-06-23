@@ -382,7 +382,12 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
-
+	if event.SpecVersion() == "" {
+		event.SetSpecVersion("1.0")
+	}
+	if event.ID() == "" {
+		event.SetID(uuid.NewString())
+	}
 	// NOTE: this validate check added to sanitize Azure's dodgy cloudevents.
 	err = event.Validate()
 	if err != nil && strings.Contains(err.Error(), "dataschema") {
@@ -515,6 +520,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 			Id:         e.Event.ID(),
 			Source:     e.Event.Source(),
 			Type:       e.Event.Type(),
+			Cloudevent: []byte(e.Event.String()),
 		})
 	}
 	resp.Events.Results = finalResults
