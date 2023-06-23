@@ -128,6 +128,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
                 onChange={(newData) => {
                   setBody(newData);
                 }}
+                onMount={(editor) => editor.focus()}
                 theme={theme ?? undefined}
                 data-testid="variable-editor"
                 language={editorLanguage}
