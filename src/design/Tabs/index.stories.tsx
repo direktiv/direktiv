@@ -1,6 +1,7 @@
 import { GitCommit, GitMerge, PieChart, Settings } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./index";
+import { Card } from "../Card";
 
 const meta = {
   title: "Components/Tabs",
@@ -41,15 +42,15 @@ export const Boxed = () => (
         Password
       </TabsTrigger>
     </TabsList>
-    <TabsContent value="account">
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+    <TabsContent value="account" asChild>
+      <Card className="p-4 text-sm text-gray-8 dark:text-gray-dark-8" noShadow>
         Make changes to your account here. Click save when you&apos;re done.
-      </p>
+      </Card>
     </TabsContent>
-    <TabsContent value="password">
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
+    <TabsContent value="password" asChild>
+      <Card className="p-4 text-sm text-gray-8 dark:text-gray-dark-8" noShadow>
         Change your password here. After saving, you&apos;ll be logged out.
-      </p>
+      </Card>
     </TabsContent>
   </Tabs>
 );
@@ -88,35 +89,4 @@ export const TabsWithIcons = () => (
       This example also shows that you can use Links for the tabs.
     </div>
   </div>
-);
-
-export const ContentNoBorder = () => (
-  <Tabs defaultValue="account" className="w-[400px]">
-    <TabsList>
-      <TabsTrigger value="account">Account</TabsTrigger>
-      <TabsTrigger value="password">Password</TabsTrigger>
-      <TabsTrigger value="third">Third</TabsTrigger>
-      <TabsTrigger value="fourth">Fourth</TabsTrigger>
-    </TabsList>
-    <TabsContent value="account" noBorder>
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        Make changes to your account here. Click save when you&apos;re done.
-      </p>
-    </TabsContent>
-    <TabsContent value="password" noBorder>
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        Change your password here. After saving, you&apos;ll be logged out.
-      </p>
-    </TabsContent>
-    <TabsContent value="third" noBorder>
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        Your third content here
-      </p>
-    </TabsContent>
-    <TabsContent value="fourth" noBorder>
-      <p className="text-sm text-gray-8 dark:text-gray-dark-8">
-        The fourth content comes here
-      </p>
-    </TabsContent>
-  </Tabs>
 );

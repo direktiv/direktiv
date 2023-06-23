@@ -72,6 +72,11 @@ export const WorkflowCreatedSchema = z.object({
   revision: RevisionSchema,
 });
 
+export const WorkflowStartedSchema = z.object({
+  namespace: z.string(),
+  instance: z.string(),
+});
+
 export const NodeDeletedSchema = z.null();
 
 export const NodeRenameSchema = z.object({
