@@ -1,4 +1,4 @@
-import { FC, HTMLAttributeAnchorTarget, PropsWithChildren } from "react";
+import { FC, PropsWithChildren } from "react";
 
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -14,20 +14,20 @@ export const createClassNames = (active: boolean, className?: string) =>
     )
   );
 
-export const NavigationLink: FC<
-  PropsWithChildren<{
-    href: string;
+type ATagProps = JSX.IntrinsicElements["a"];
+type NavigationLinkProps = PropsWithChildren<
+  ATagProps & {
     active?: boolean;
-    className?: string;
-    target?: HTMLAttributeAnchorTarget;
-  }>
-> = ({ children, href, active, className, target }) => (
-  <a
-    href={href}
-    className={createClassNames(active ?? false, className)}
-    target={target}
-    rel={target === "_blank" ? "noopener noreferrer" : ""}
-  >
+  }
+>;
+
+export const NavigationLink: FC<NavigationLinkProps> = ({
+  children,
+  active,
+  className,
+  ...props
+}) => (
+  <a className={createClassNames(active ?? false, className)} {...props}>
     {children}
   </a>
 );
