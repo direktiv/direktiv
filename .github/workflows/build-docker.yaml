@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "main", "feature/redesign" ]
   push:
-    branches: [ "feature/**" ]
+    branches: [ "feature/redesign", "**/dir-**" ]
 
 env:
   REGISTRY: ghcr.io
