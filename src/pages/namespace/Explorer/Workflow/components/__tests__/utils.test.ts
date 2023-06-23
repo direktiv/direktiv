@@ -106,7 +106,7 @@ describe("getValidationSchemaFromYaml", () => {
     });
   });
 
-  describe("it returns null when the for any invalid yaml input", () => {
+  describe("it returns null for any invalid yaml input", () => {
     test("undefined input", () => {
       expect(getValidationSchemaFromYaml(undefined)).toBe(null);
     });

@@ -39,7 +39,6 @@ export const useRunWorkflow = ({
       runWorkflow({
         apiKey: apiKey ?? undefined,
         payload,
-        headers: undefined,
         urlParams: {
           namespace,
           path,

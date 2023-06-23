@@ -142,7 +142,7 @@
             "title": "Run Workflow",
             "jsonInput": "JSON Input",
             "formInput": "Form Input",
-            "formInputHint": "The first state of this Workflow must be a validate state to generate a form.",
+            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
             "runBtn": "Run"
@@ -161,7 +161,7 @@
         "runBtn": "Run",
         "editor": {
           "unsavedNote": "unsaved changes",
-          "theresOneIssue": "There is one issue",
+          "theresOneIssue": "There is an issue",
           "revisionsBtn": "Revisions",
           "makeRevision": "Make Revision",
           "revertToPrevious": "Revert to previous revision",
@@ -274,6 +274,17 @@
     },
     "formErrors": {
       "fieldInvalid": "this field is invalid"
+    },
+    "userMenu": {
+      "loggedInAs": "You are logged in as {{name}}",
+      "logout": "Logout",
+      "appearance": "Appearance",
+      "switchToLight": "switch to Light mode",
+      "switchToDark": "switch to Dark mode",
+      "help": "Help",
+      "showApiCommands": "Show API Commands",
+      "openJQPlayground": "Open JQ Playground",
+      "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
   "api": {

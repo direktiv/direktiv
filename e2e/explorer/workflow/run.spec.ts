@@ -21,18 +21,18 @@ test.afterEach(async () => {
 test("it is possible to open and use the run workflow modal from the editor and the header of the workflow page", async ({
   page,
 }) => {
-  const workflow = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: basicWorkflow.data,
     headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflow,
+      name: workflowName,
     },
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
 
   // open modal via editor button
   await page.getByTestId("workflow-editor-btn-run").click();
@@ -82,7 +82,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
   expect(
     await page.getByTestId("run-workflow-form-input-hint"),
     "it shows a hint that no form could be generated"
-  ).not.toBeVisible();
+  ).toBeVisible();
 
   await page.getByTestId("run-workflow-cancel-btn").click();
   expect(await page.getByTestId("run-workflow-dialog")).not.toBeVisible();
@@ -92,18 +92,18 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   page,
   browserName,
 }) => {
-  const workflow = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: basicWorkflow.data,
     headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflow,
+      name: workflowName,
     },
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -176,18 +176,18 @@ test("it is possible to run the workflow by setting an input JSON via the editor
 test("it is possible to provide the input via generated form", async ({
   page,
 }) => {
-  const workflow = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: jsonSchemaFormWorkflow,
     headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflow,
+      name: workflowName,
     },
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(

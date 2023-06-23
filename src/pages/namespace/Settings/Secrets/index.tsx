@@ -21,7 +21,7 @@ const SecretsList: FC = () => {
   const [deleteSecret, setDeleteSecret] = useState<SecretSchemaType>();
   const [createSecret, setCreateSecret] = useState(false);
 
-  const secrets = useSecrets();
+  const { data, isFetched } = useSecrets();
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
@@ -36,6 +36,8 @@ const SecretsList: FC = () => {
       setCreateSecret(false);
     }
   }, [dialogOpen]);
+
+  if (!isFetched) return null;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -52,10 +54,10 @@ const SecretsList: FC = () => {
       </div>
 
       <Card>
-        {secrets.data?.secrets.results.length ? (
+        {data?.secrets.results.length ? (
           <Table>
             <TableBody>
-              {secrets.data?.secrets.results.map((item, i) => (
+              {data?.secrets.results.map((item, i) => (
                 <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
               ))}
             </TableBody>
