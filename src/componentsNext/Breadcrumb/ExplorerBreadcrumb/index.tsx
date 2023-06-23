@@ -3,8 +3,10 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 
 const ExplorerBreadcrumb = () => {
-  const { path: pathParams } = pages.explorer.useParams();
+  const { isExplorerPage, path: pathParams } = pages.explorer.useParams();
   const path = analyzePath(pathParams);
+
+  if (!isExplorerPage) return null;
 
   return (
     <>
