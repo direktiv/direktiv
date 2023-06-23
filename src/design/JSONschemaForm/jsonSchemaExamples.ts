@@ -32,7 +32,7 @@ export const basicExample: RJSFSchema = {
   },
 };
 
-export const ArraySchemaSample: RJSFSchema = {
+export const arraySchemaSample: RJSFSchema = {
   definitions: {
     Thing: {
       type: "object",
@@ -67,14 +67,14 @@ export const ArraySchemaSample: RJSFSchema = {
   },
 };
 
-export const CustomArraySample: RJSFSchema = {
+export const customArraySample: RJSFSchema = {
   title: "Custom array of strings",
   type: "array",
   items: {
     type: "string",
   },
 };
-export const SimpleSample: RJSFSchema = {
+export const simpleSample: RJSFSchema = {
   title: "A registration form",
   description: "A simple form example description.",
   type: "object",

@@ -24,13 +24,13 @@ export const Default: Story = {
 };
 
 export const ArraySchemaSampleForm = () => (
-  <JSONSchemaForm schema={ArraySchemaSample} />
+  <JSONSchemaForm schema={arraySchemaSample} />
 );
 
 export const CustomArraySampleForm = () => (
-  <JSONSchemaForm schema={CustomArraySample} />
+  <JSONSchemaForm schema={customArraySample} />
 );
 
 export const SampleFormWithFileInput = () => (
-  <JSONSchemaForm schema={SimpleSample} />
+  <JSONSchemaForm schema={simpleSample} />
 );
