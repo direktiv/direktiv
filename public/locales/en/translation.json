@@ -272,7 +272,8 @@
       "appearance": "Appearance",
       "switchToLight": "switch to Light mode",
       "switchToDark": "switch to Dark mode",
-      "showApiCommands":"Show API Commands",
+      "help": "Help",
+      "showApiCommands": "Show API Commands",
       "openJQPlayground": "Open JQ Playground",
       "supportChannelOnSlack": "Support Channel on Slack"
     }

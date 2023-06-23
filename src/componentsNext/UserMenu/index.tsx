@@ -92,7 +92,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
             )}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel>Help</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("components.userMenu.help")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <a href="">
