@@ -65,10 +65,9 @@ type server struct {
 	events          *events
 	functionsClient igrpc.FunctionsClient
 
-	metrics  *metrics.Client
-	logger   logengine.BetterLogger
-	edb      *entwrapper.Database // TODO: remove
-	database *database.CachedDatabase
+	metrics *metrics.Client
+	logger  logengine.BetterLogger
+	edb     *entwrapper.Database // TODO: remove
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -145,9 +144,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	srv.edb = edb
-
-	srv.database = database.NewCachedDatabase(srv.sugar, edb, srv)
-	defer srv.cleanup(srv.database.Close)
 
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
@@ -441,7 +437,8 @@ func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
 		return
 	}
 
-	srv.database.HandleNotification(req.Key)
+	// TODO: Alan, needfix.
+	// srv.database.HandleNotification(req.Key)
 }
 
 func (srv *server) registerFunctions() {

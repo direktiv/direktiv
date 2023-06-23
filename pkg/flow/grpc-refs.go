@@ -13,10 +13,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func loadSource(rev *database.Revision) (*model.Workflow, error) {
+func loadSource(rev *filestore.Revision) (*model.Workflow, error) {
 	workflow := new(model.Workflow)
 
-	err := workflow.Load(rev.Source)
+	err := workflow.Load(rev.Data)
 	if err != nil {
 		return nil, err
 	}
