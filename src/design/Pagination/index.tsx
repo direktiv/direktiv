@@ -41,7 +41,7 @@ export const PaginationLink = React.forwardRef<
       ref={ref}
       key={key}
       onClick={onClick}
-      className={clsx(
+      className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center ring-1 ring-inset focus:z-20 focus:outline-offset-0",
         "bg-gray-1 p-2 text-gray-9 ring-gray-7 hover:bg-gray-2 focus-visible:outline-gray-9",
         "dark:bg-gray-dark-1 dark:text-gray-dark-9 dark:ring-gray-dark-7 dark:hover:bg-gray-dark-2 dark:focus-visible:outline-gray-dark-9",
@@ -61,7 +61,7 @@ export const PaginationLink = React.forwardRef<
       key={key}
       onClick={onClick}
       aria-current="page"
-      className={clsx(
+      className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold focus:z-20",
         "ring-1 ring-inset focus:outline-offset-0 focus-visible:outline-gray-9 dark:focus-visible:outline-gray-dark-9",
         active &&
