@@ -4,6 +4,7 @@ import { twMergeClsx } from "~/util/helpers";
 
 export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
   children,
+  className,
   ...props
 }) => (
   <div
@@ -16,7 +17,8 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       "[&_button]:active:ring-0 [&_button]:active:ring-offset-0",
       "[&>*:first-child]:rounded-l-md",
       "[&>*:last-child]:rounded-r-md",
-      "flex items-end"
+      "flex items-end",
+      className
     )}
   >
     {children}
