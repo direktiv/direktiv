@@ -1,6 +1,5 @@
 import React from "react";
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 
 export const Table = React.forwardRef<
   HTMLTableElement,
@@ -8,13 +7,11 @@ export const Table = React.forwardRef<
 >(({ children, className, ...props }, ref) => (
   <table
     ref={ref}
-    className={twMerge(
-      clsx(
-        "min-w-full divide-y",
-        "divide-gray-3",
-        "dark:divide-gray-dark-3",
-        className
-      )
+    className={twMergeClsx(
+      "min-w-full divide-y",
+      "divide-gray-3",
+      "dark:divide-gray-dark-3",
+      className
     )}
     {...props}
   >
@@ -27,7 +24,7 @@ export const TableHead = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLProps<HTMLTableSectionElement>
 >(({ children, className, ...props }, ref) => (
-  <thead ref={ref} {...props} className={clsx(className)}>
+  <thead ref={ref} {...props} className={twMergeClsx(className)}>
     {children}
   </thead>
 ));
@@ -39,8 +36,11 @@ export const TableBody = React.forwardRef<
 >(({ children, className, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={twMerge(
-      clsx("divide-y", "divide-gray-3", "dark:divide-gray-dark-3", className)
+    className={twMergeClsx(
+      "divide-y",
+      "divide-gray-3",
+      "dark:divide-gray-dark-3",
+      className
     )}
     {...props}
   >
@@ -56,8 +56,9 @@ export const TableCell = React.forwardRef<
   <td
     ref={ref}
     {...props}
-    className={twMerge(
-      clsx("h-10 whitespace-nowrap px-3 py-2 text-sm", className)
+    className={twMergeClsx(
+      "h-10 whitespace-nowrap px-3 py-2 text-sm",
+      className
     )}
   >
     {children}
@@ -76,16 +77,14 @@ export const TableHeaderCell = React.forwardRef<
   <th
     ref={ref}
     {...props}
-    className={twMerge(
-      clsx(
-        "px-3 py-3.5 text-left text-sm font-semibold",
-        "text-gray-12",
-        "dark:text-gray-dark-12",
-        sticky && "sticky top-0 z-10 border-b backdrop-blur",
-        sticky && " border-gray-3 bg-white/75",
-        sticky && " dark:border-gray-dark-3 dark:bg-black/75",
-        className
-      )
+    className={twMergeClsx(
+      "px-3 py-3.5 text-left text-sm font-semibold",
+      "text-gray-12",
+      "dark:text-gray-dark-12",
+      sticky && "sticky top-0 z-10 border-b backdrop-blur",
+      sticky && " border-gray-3 bg-white/75",
+      sticky && " dark:border-gray-dark-3 dark:bg-black/75",
+      className
     )}
   >
     {children}
@@ -100,8 +99,9 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     {...props}
-    className={twMerge(
-      clsx("hover:bg-gray-2 dark:hover:bg-gray-dark-2", className)
+    className={twMergeClsx(
+      "hover:bg-gray-2 dark:hover:bg-gray-dark-2",
+      className
     )}
   >
     {children}

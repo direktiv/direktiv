@@ -1,8 +1,7 @@
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
@@ -10,25 +9,23 @@ const Slider = React.forwardRef<
 >(({ className, disabled, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
-    className={twMerge(
-      clsx(
-        "relative flex w-full touch-none select-none items-center",
-        disabled && "cursor-not-allowed opacity-40",
-        className
-      )
+    className={twMergeClsx(
+      "relative flex w-full touch-none select-none items-center",
+      disabled && "cursor-not-allowed opacity-40",
+      className
     )}
     disabled={disabled}
     {...props}
   >
     <SliderPrimitive.Track
-      className={clsx(
+      className={twMergeClsx(
         "relative h-2 w-full grow overflow-hidden rounded-full",
         "bg-gray-3",
         "dark:bg-gray-dark-3"
       )}
     >
       <SliderPrimitive.Range
-        className={clsx(
+        className={twMergeClsx(
           "absolute h-full",
           "bg-gray-12",
           "dark:bg-gray-dark-12"
@@ -36,7 +33,7 @@ const Slider = React.forwardRef<
       />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb
-      className={clsx(
+      className={twMergeClsx(
         "block h-5 w-5 rounded-full ",
         "transition-colors focus:outline-none",
         "border-2 focus:ring-2 focus:ring-offset-2",

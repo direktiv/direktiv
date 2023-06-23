@@ -1,7 +1,7 @@
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 import * as React from "react";
 
-import clsx from "clsx";
+import { twMergeClsx } from "~/util/helpers";
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
@@ -9,7 +9,7 @@ const Progress = React.forwardRef<
 >(({ className, value, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
-    className={clsx(
+    className={twMergeClsx(
       "relative h-4 w-full overflow-hidden rounded-full bg-gray-2 dark:bg-gray-dark-2",
       className
     )}

@@ -20,8 +20,7 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
 import { RxChevronDown } from "react-icons/rx";
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 const hasAccount = true;
@@ -35,7 +34,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   return (
-    <div className={twMerge(clsx("flex space-x-2", className))}>
+    <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {hasAccount ? (
