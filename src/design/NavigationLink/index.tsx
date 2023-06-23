@@ -10,10 +10,20 @@ export const createClassNames = (active: boolean) =>
     "[&>svg]:group group flex items-center rounded-md p-2 text-sm font-medium [&>svg]:mr-3"
   );
 
-export const NavigationLink: FC<
-  PropsWithChildren<{ href: string; active?: boolean }>
-> = ({ children, href, active }) => (
-  <a href={href} className={createClassNames(active ?? false)}>
+type ATagProps = JSX.IntrinsicElements["a"];
+type NavigationLinkProps = PropsWithChildren<
+  ATagProps & {
+    active?: boolean;
+  }
+>;
+
+export const NavigationLink: FC<NavigationLinkProps> = ({
+  children,
+  active,
+  className,
+  ...props
+}) => (
+  <a className={createClassNames(active ?? false, className)} {...props}>
     {children}
   </a>
 );

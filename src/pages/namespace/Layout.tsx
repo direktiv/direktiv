@@ -1,23 +1,4 @@
-import {
-  CurlyBraces,
-  LogOut,
-  Menu,
-  Moon,
-  Settings2,
-  Slack,
-  Sun,
-  Terminal,
-} from "lucide-react";
 import { Drawer, DrawerContent, DrawerTrigger } from "~/design/Drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
-import { FC, useEffect } from "react";
 import {
   Main,
   MainContent,
@@ -31,87 +12,14 @@ import {
 } from "~/design/Appshell";
 import { Outlet, useParams } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
-import { useTheme, useThemeActions } from "~/util/store/theme";
 
-import Avatar from "~/design/Avatar";
 import Breadcrumb from "~/componentsNext/Breadcrumb";
-import Button from "~/design/Button";
 import Logo from "~/design/Logo";
+import { Menu } from "lucide-react";
 import Navigation from "~/componentsNext/Navigation";
-import { RxChevronDown } from "react-icons/rx";
-import { twMergeClsx } from "~/util/helpers";
+import UserMenu from "~/componentsNext/UserMenu";
+import { useEffect } from "react";
 import { useVersion } from "~/api/version";
-
-// TODO: move to own file
-const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
-  const { setTheme } = useThemeActions();
-  const theme = useTheme();
-  return (
-    <div className={twMergeClsx("flex space-x-2", className)}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" icon data-testid="dropdown-trg-appearance">
-            <Settings2 />
-            <RxChevronDown />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? (
-              <>
-                <Sun className="mr-2 h-4 w-4" />
-                switch to Light mode
-              </>
-            ) : (
-              <>
-                <Moon className="mr-2 h-4 w-4" />
-                switch to dark mode
-              </>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel>Help</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Terminal className="mr-2 h-4 w-4" /> Show API Commands
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CurlyBraces className="mr-2 h-4 w-4" /> Open JQ Playground
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Slack className="mr-2 h-4 w-4" /> Support Channel on Slack
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="items-center px-1"
-            role="button"
-            icon
-            data-testid="dropdown-trg-user"
-          >
-            <Avatar>Ad</Avatar>
-            <RxChevronDown />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>You are logged in as admin</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Logout</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-};
 
 const Layout = () => {
   const { data: version } = useVersion();
@@ -145,7 +53,7 @@ const Layout = () => {
               className="h-8 w-auto justify-self-center sm:hidden"
             />
             <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
-            <TopRightComponent className="justify-self-end lg:hidden" />
+            <UserMenu className="justify-self-end lg:hidden" />
           </SidebarTop>
           <SidebarMain>
             <Navigation />
@@ -157,7 +65,7 @@ const Layout = () => {
               <Breadcrumb />
             </MainTopLeft>
             <MainTopRight>
-              <TopRightComponent className="max-lg:hidden" />
+              <UserMenu className="max-lg:hidden" />
             </MainTopRight>
           </MainTop>
           <MainContent>
