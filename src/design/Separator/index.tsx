@@ -1,8 +1,7 @@
 import * as React from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 
 type Props = typeof SeparatorPrimitive.Root;
 
@@ -15,13 +14,11 @@ const Separator = React.forwardRef<
   <SeparatorPrimitive.Root
     ref={ref}
     orientation={vertical ? "vertical" : "horizontal"}
-    className={twMerge(
-      clsx(
-        "bg-gray-4",
-        " dark:bg-gray-dark-4",
-        vertical ? "h-full w-[1px]" : "h-[1px] w-full",
-        className
-      )
+    className={twMergeClsx(
+      "bg-gray-4",
+      " dark:bg-gray-dark-4",
+      vertical ? "h-full w-[1px]" : "h-[1px] w-full",
+      className
     )}
     {...props}
   />

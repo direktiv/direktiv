@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
 import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
-import clsx from "clsx";
+import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 // use props of our button but overwrite some onSelect and defaultValue
@@ -108,7 +108,7 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
                   }}
                 >
                   <Circle
-                    className={clsx(
+                    className={twMergeClsx(
                       "mr-2 h-2 w-2 fill-current",
                       value === tag.name ? "opacity-100" : "opacity-0"
                     )}
@@ -137,7 +137,7 @@ const RevisionSelector: FC<RevisionSelectorProps> = ({
                   }}
                 >
                   <Circle
-                    className={clsx(
+                    className={twMergeClsx(
                       "mr-2 h-2 w-2 fill-current",
                       value === revision.name ? "opacity-100" : "opacity-0"
                     )}

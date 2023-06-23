@@ -52,7 +52,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
 import Badge from "../Badge";
 import Button from "../Button";
 import { Card } from "../Card";
-import clsx from "clsx";
+import { twMergeClsx } from "~/util/helpers";
 
 const meta = {
   title: "Components/Command",
@@ -254,7 +254,7 @@ export function CommandCombobox() {
                 }}
               >
                 <Check
-                  className={clsx(
+                  className={twMergeClsx(
                     "mr-2 h-auto w-4",
                     value === framework.value ? "opacity-100" : "opacity-0"
                   )}
@@ -345,7 +345,7 @@ export function CommandPopover() {
                       setOpen(false);
                     }}
                   >
-                    <status.icon className={clsx("mr-2 h-auto w-4")} />
+                    <status.icon className={twMergeClsx("mr-2 h-auto w-4")} />
                     <span>{status.label}</span>
                   </CommandItem>
                 ))}

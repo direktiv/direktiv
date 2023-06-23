@@ -1,8 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -15,7 +14,7 @@ const DialogPortal = ({
   children,
   ...props
 }: DialogPrimitive.DialogPortalProps) => (
-  <DialogPrimitive.Portal className={clsx(className)} {...props}>
+  <DialogPrimitive.Portal className={twMergeClsx(className)} {...props}>
     <div className="fixed inset-0 z-40 flex items-start justify-center sm:items-center">
       {children}
     </div>
@@ -28,11 +27,9 @@ const DialogOverlay = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
-    className={twMerge(
-      clsx(
-        "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
-        className
-      )
+    className={twMergeClsx(
+      "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out",
+      className
     )}
     {...props}
     ref={ref}
@@ -48,12 +45,10 @@ const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
-      className={twMerge(
-        clsx(
-          "fixed z-40 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
-          "dark:bg-gray-dark-1",
-          className
-        )
+      className={twMergeClsx(
+        "fixed z-40 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+        "dark:bg-gray-dark-1",
+        className
       )}
       {...props}
     >
@@ -68,8 +63,9 @@ const DialogHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={twMerge(
-      clsx("flex flex-col space-y-2 text-center sm:text-left", className)
+    className={twMergeClsx(
+      "flex flex-col space-y-2 text-center sm:text-left",
+      className
     )}
     {...props}
   />
@@ -81,11 +77,9 @@ const DialogFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={twMerge(
-      clsx(
-        "flex flex-col-reverse gap-4 sm:flex-row sm:justify-end sm:space-x-2",
-        className
-      )
+    className={twMergeClsx(
+      "flex flex-col-reverse gap-4 sm:flex-row sm:justify-end sm:space-x-2",
+      className
     )}
     {...props}
   />
@@ -98,12 +92,10 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={twMerge(
-      clsx(
-        "flex items-center gap-2 text-lg font-semibold text-gray-12",
-        "dark:text-gray-dark-12",
-        className
-      )
+    className={twMergeClsx(
+      "flex items-center gap-2 text-lg font-semibold text-gray-12",
+      "dark:text-gray-dark-12",
+      className
     )}
     {...props}
   />
@@ -116,8 +108,10 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={twMerge(
-      clsx("text-sm text-gray-10", "dark:text-gray-dark-10", className)
+    className={twMergeClsx(
+      "text-sm text-gray-10",
+      "dark:text-gray-dark-10",
+      className
     )}
     {...props}
   />
