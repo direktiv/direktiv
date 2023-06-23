@@ -19,7 +19,6 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
-import { NavigationLink } from "~/design/NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -95,24 +94,27 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Help</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Terminal className="mr-2 h-4 w-4" />{" "}
-            {t("components.userMenu.showApiCommands")}
+          <DropdownMenuItem asChild>
+            <a href="">
+              <Terminal className="mr-2 h-4 w-4" />
+              {t("components.userMenu.showApiCommands")}
+            </a>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CurlyBraces className="mr-2 h-4 w-4" />
-            {t("components.userMenu.openJQPlayground")}
+          <DropdownMenuItem asChild>
+            <a href="">
+              <CurlyBraces className="mr-2 h-4 w-4" />
+              {t("components.userMenu.openJQPlayground")}
+            </a>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <NavigationLink
-              className="p-0"
+          <DropdownMenuItem asChild>
+            <a
               href="https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Slack className="mr-2 h-4 w-4" />{" "}
+              <Slack className="mr-2 h-4 w-4" />
               {t("components.userMenu.supportChannelOnSlack")}
-            </NavigationLink>
+            </a>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
