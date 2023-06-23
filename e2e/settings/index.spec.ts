@@ -148,13 +148,39 @@ test("it is possible to create and delete variables", async ({ page }) => {
   await page.getByTestId("new-variable-name").type(newVariable.name);
   await page.getByTestId("variable-create-card").click();
   await page.type("textarea", newVariable.value);
+  await page.getByTestId("variable-trg-mimetype").click();
+  await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
   await page.getByTestId("variable-create-submit").click();
   await actionWaitForSuccessToast(page);
 
+  //reload page after create variable
+  await page.reload({
+    waitUntil: "networkidle",
+  });
+
+  //click on edit and confirm the created variable
+  const subjectDropdownSelector = `dropdown-trg-item-${newVariable.name}`;
+  await page.getByTestId(subjectDropdownSelector).click();
+  await page.getByTestId("dropdown-actions-edit").click();
+  const textArea = page.getByRole("textbox");
+
+  const initialValue = await textArea.inputValue();
+  expect(
+    initialValue,
+    "initial textarea value should be the variable's content"
+  ).toBe(newVariable.value);
+  await expect(
+    page.locator("select"),
+    "MimeTypeSelect is set to the subject's mimeType"
+  ).toHaveValue(newVariable.mimeType || "");
+  await page.getByTestId("var-edit-cancel").click();
+
+  //delete one item
   const menuButtons = page.getByTestId(/dropdown-trg-item-/);
   await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
   const itemName = page.getByTestId("item-name");
   const removedItemName = await itemName.nth(2).innerText();
+
   await page
     .getByTestId(/dropdown-trg-item/)
     .nth(2)
@@ -191,11 +217,15 @@ test("it is possible to edit variables", async ({ page }) => {
 
   const textArea = page.getByRole("textbox");
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(subject.content);
-
+  // await expect(
+  //   page.getByTestId("variable-editor-card"),
+  //   "the variable's content is loaded into the editor"
+  // ).toContainText(subject.content);
+  const initialValue = await textArea.inputValue();
+  expect(
+    initialValue,
+    "initial textarea value should be the variable's content"
+  ).toBe(subject.content);
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
@@ -207,6 +237,10 @@ test("it is possible to edit variables", async ({ page }) => {
 
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
+  const updatedType = options[Math.floor(Math.random() * 5)];
+  await page.getByTestId("variable-trg-mimetype").click();
+  await page.getByTestId(`var-mimetype-${updatedType}`).click();
+
   await page.getByTestId("var-edit-submit").click();
   await actionWaitForSuccessToast(page);
   await page.reload({
@@ -221,4 +255,8 @@ test("it is possible to edit variables", async ({ page }) => {
     updatedValue,
     "after reload, the edited value should be the same"
   ).toBe(afterReloadValue);
+  await expect(
+    page.locator("select"),
+    "MimeTypeSelect is set to the subject's mimeType"
+  ).toHaveValue(updatedType || "");
 });

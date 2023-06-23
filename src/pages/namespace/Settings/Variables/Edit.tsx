@@ -142,7 +142,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">
+            <Button variant="ghost" data-testid="var-edit-cancel">
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
