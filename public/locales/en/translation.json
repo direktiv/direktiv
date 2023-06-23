@@ -249,7 +249,8 @@
       "searchPlaceholder": "Search namespace...",
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
-      "loading": "loading..."
+      "loading": "loading...",
+      "instances": "Instances"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
