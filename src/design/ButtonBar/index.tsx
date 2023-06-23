@@ -1,6 +1,5 @@
 import React, { HTMLAttributes } from "react";
 
-import { twMerge } from "tailwind-merge";
 import { twMergeClsx } from "~/util/helpers";
 
 export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
