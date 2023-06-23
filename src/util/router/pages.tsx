@@ -92,6 +92,8 @@ type InstancesPageSetup = Record<
       namespace: string | undefined;
       instance: string | undefined;
       isInstancePage: boolean;
+      isInstanceListPage: boolean;
+      isInstanceDetailPage: boolean;
     };
   }
 >;
@@ -220,10 +222,23 @@ export const pages: DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup =
         }`,
       useParams: () => {
         const { namespace, instance } = useParams();
+
+        const [, , thirdLvl] = useMatches(); // first level is namespace level
+
+        const isInstanceListPage = checkHandler(thirdLvl, "isInstanceListPage");
+        const isInstanceDetailPage = checkHandler(
+          thirdLvl,
+          "isInstanceDetailPage"
+        );
+
+        const isInstancePage = isInstanceListPage || isInstanceDetailPage;
+
         return {
-          namespace,
-          instance,
-          isInstancePage: true,
+          namespace: isInstancePage ? namespace : undefined,
+          instance: isInstancePage ? instance : undefined,
+          isInstancePage,
+          isInstanceListPage,
+          isInstanceDetailPage,
         };
       },
       route: {
