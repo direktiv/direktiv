@@ -1,7 +1,6 @@
 import * as DrawerPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 const Drawer = DrawerPrimitive.Root;
@@ -18,9 +17,9 @@ const DrawerPortal = ({
   children,
   ...props
 }: DrawerPortalProps) => (
-  <DrawerPrimitive.Portal className={clsx(className)} {...props}>
+  <DrawerPrimitive.Portal className={twMergeClsx(className)} {...props}>
     <div
-      className={clsx(
+      className={twMergeClsx(
         position === "top" && "items-start",
         position === "bottom" && "items-end",
         position === "left" && "justify-start",

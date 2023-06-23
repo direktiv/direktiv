@@ -5,7 +5,6 @@ import { Dialog, DialogContent } from "../Dialog";
 
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 const Command = React.forwardRef<
@@ -156,7 +155,7 @@ const CommandStaticItem = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
-    className={clsx(
+    className={twMergeClsx(
       "overflow-hidden p-1",
       "text-gray-11",
       "dark:text-gray-dark-11"

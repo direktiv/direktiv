@@ -2,7 +2,6 @@ import { FC, HTMLAttributes } from "react";
 
 import { RxChevronRight } from "react-icons/rx";
 import { ScrollArea } from "../ScrollArea";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
@@ -15,7 +14,7 @@ export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
       className={twMergeClsx("cursor-pointer py-4 text-sm", className)}
       {...props}
     >
-      <ul className={clsx("flex flex-row items-center")}>{children}</ul>
+      <ul className={twMergeClsx("flex flex-row items-center")}>{children}</ul>
     </div>
   </ScrollArea>
 );
@@ -39,7 +38,7 @@ export const Breadcrumb: FC<
       />
     )}
     <div
-      className={clsx(
+      className={twMergeClsx(
         "flex w-max items-center gap-2",
         "[&_a]:flex [&_a]:items-center [&_a]:gap-2",
         "[&_svg]:h-4 [&_svg]:w-auto"

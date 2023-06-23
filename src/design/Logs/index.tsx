@@ -1,5 +1,4 @@
 import React from "react";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 interface LogEntryProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -16,7 +15,7 @@ export const Logs = React.forwardRef<
     <div
       ref={ref}
       {...props}
-      className={clsx(
+      className={twMergeClsx(
         !linewrap && "w-max",
         !linewrap && "[&>div>div>pre]:whitespace-pre",
         linewrap && "[&>div>div>pre]:whitespace-pre-wrap",
@@ -50,7 +49,7 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
       )}
     >
       <div className="w-32 shrink-0 pr-2 font-menlo">{time}</div>
-      <div className={clsx("font-menlo", "leading-5")}>
+      <div className={twMergeClsx("font-menlo", "leading-5")}>
         <pre>{children}</pre>
       </div>
     </div>

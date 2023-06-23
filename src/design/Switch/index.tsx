@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 const Switch = React.forwardRef<
@@ -19,7 +18,7 @@ const Switch = React.forwardRef<
     ref={ref}
   >
     <SwitchPrimitives.Thumb
-      className={clsx(
+      className={twMergeClsx(
         "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-5",
         "bg-gray-1",
         "dark:bg-gray-dark-1"

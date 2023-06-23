@@ -1,6 +1,6 @@
 import React, { HTMLAttributes } from "react";
 
-import clsx from "clsx";
+import { twMergeClsx } from "~/util/helpers";
 
 export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
   children,
@@ -8,7 +8,7 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <div
     {...props}
-    className={clsx(
+    className={twMergeClsx(
       "[&_button]:rounded-none",
       "[&_button]:mr-[-1px]",
       "[&_button]:active:outline-none",

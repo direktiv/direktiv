@@ -54,7 +54,6 @@ import Button from "../Button";
 import Logo from "../Logo";
 import { NavigationLink } from "../NavigationLink";
 import { RxChevronDown } from "react-icons/rx";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 export default {
@@ -313,7 +312,7 @@ export const MoreDetailedShell = () => {
                     <a
                       key={tab.name}
                       href={tab.href}
-                      className={clsx(
+                      className={twMergeClsx(
                         tab.current
                           ? "border-primary-500 text-primary-500"
                           : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",

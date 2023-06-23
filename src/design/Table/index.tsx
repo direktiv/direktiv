@@ -1,5 +1,4 @@
 import React from "react";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 export const Table = React.forwardRef<
@@ -25,7 +24,7 @@ export const TableHead = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLProps<HTMLTableSectionElement>
 >(({ children, className, ...props }, ref) => (
-  <thead ref={ref} {...props} className={clsx(className)}>
+  <thead ref={ref} {...props} className={twMergeClsx(className)}>
     {children}
   </thead>
 ));

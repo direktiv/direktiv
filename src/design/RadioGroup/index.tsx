@@ -2,7 +2,6 @@ import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import * as React from "react";
 
 import { Circle } from "lucide-react";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 const RadioGroup = React.forwardRef<
@@ -33,7 +32,7 @@ const RadioGroupItem = React.forwardRef<
   >
     <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
       <Circle
-        className={clsx(
+        className={twMergeClsx(
           "h-2.5 w-2.5",
           " fill-gray-12",
           " dark:fill-gray-dark-12"

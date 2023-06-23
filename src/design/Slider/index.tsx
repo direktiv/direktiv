@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 const Slider = React.forwardRef<
@@ -19,14 +18,14 @@ const Slider = React.forwardRef<
     {...props}
   >
     <SliderPrimitive.Track
-      className={clsx(
+      className={twMergeClsx(
         "relative h-2 w-full grow overflow-hidden rounded-full",
         "bg-gray-3",
         "dark:bg-gray-dark-3"
       )}
     >
       <SliderPrimitive.Range
-        className={clsx(
+        className={twMergeClsx(
           "absolute h-full",
           "bg-gray-12",
           "dark:bg-gray-dark-12"
@@ -34,7 +33,7 @@ const Slider = React.forwardRef<
       />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb
-      className={clsx(
+      className={twMergeClsx(
         "block h-5 w-5 rounded-full ",
         "transition-colors focus:outline-none",
         "border-2 focus:ring-2 focus:ring-offset-2",

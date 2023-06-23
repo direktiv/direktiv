@@ -2,7 +2,6 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import * as React from "react";
 
 import { Check } from "lucide-react";
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 interface CustomCheckboxProps {
@@ -28,10 +27,10 @@ const Checkbox = React.forwardRef<
     {...props}
   >
     <CheckboxPrimitive.Indicator
-      className={clsx("flex items-center justify-center")}
+      className={twMergeClsx("flex items-center justify-center")}
     >
       <Check
-        className={clsx(
+        className={twMergeClsx(
           size === "lg" && "h-5 w-5",
           size === "sm" && "h-3 w-3",
           !size && "h-4 w-4"

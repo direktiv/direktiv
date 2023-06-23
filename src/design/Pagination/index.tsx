@@ -1,7 +1,7 @@
 import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
 
 import React from "react";
-import clsx from "clsx";
+import { twMergeClsx } from "~/util/helpers";
 
 interface PaginationProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ interface PaginationProps {
 
 export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
   <div
-    className={clsx(
+    className={twMergeClsx(
       "flex",
       align === "center" && "justify-center",
       align === "left" && "justify-start",

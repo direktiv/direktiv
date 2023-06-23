@@ -39,7 +39,6 @@ import Button from "~/design/Button";
 import Logo from "~/design/Logo";
 import Navigation from "~/componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
-import clsx from "clsx";
 import { useVersion } from "~/api/version";
 
 // TODO: move to own file
@@ -47,7 +46,7 @@ const TopRightComponent: FC<{ className?: string }> = ({ className }) => {
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   return (
-    <div className={clsx("flex space-x-2", className)}>
+    <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" icon data-testid="dropdown-trg-appearance">

@@ -1,7 +1,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
-import clsx from "clsx";
 import { twMergeClsx } from "~/util/helpers";
 
 const Dialog = DialogPrimitive.Root;
@@ -15,7 +14,7 @@ const DialogPortal = ({
   children,
   ...props
 }: DialogPrimitive.DialogPortalProps) => (
-  <DialogPrimitive.Portal className={clsx(className)} {...props}>
+  <DialogPrimitive.Portal className={twMergeClsx(className)} {...props}>
     <div className="fixed inset-0 z-40 flex items-start justify-center sm:items-center">
       {children}
     </div>
