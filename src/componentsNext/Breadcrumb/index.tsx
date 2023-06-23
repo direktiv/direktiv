@@ -13,7 +13,7 @@ const Breadcrumb = () => {
   if (!namespace) return null;
 
   return (
-    <BreadcrumbRoot>
+    <BreadcrumbRoot className="group">
       <NamespaceSelector />
       {isExplorerPage && <ExplorerBreadcrumb />}
       {isInstancePage && <InstancesBreadcrumb />}

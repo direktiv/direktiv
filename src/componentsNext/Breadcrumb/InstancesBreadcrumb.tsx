@@ -1,4 +1,5 @@
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
+import CopyButton from "~/design/CopyButton";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
@@ -28,11 +29,33 @@ const InstancesBreadcrumb = () => {
       {isInstanceDetailPage && instance ? (
         <BreadcrumbLink>
           <Icon aria-hidden="true" />
-          <a>{instance.slice(0.8)}</a>
+          <a>{instance.slice(0, 8)}</a>
+          <CopyButton
+            value={instance}
+            buttonProps={{
+              variant: "outline",
+              className: "hidden group-hover:inline-flex",
+              size: "sm",
+            }}
+          >
+            {(copied) =>
+              copied
+                ? t(
+                    "pages.explorer.tree.workflow.revisions.overview.detail.copied"
+                  )
+                : t(
+                    "pages.explorer.tree.workflow.revisions.overview.detail.copy"
+                  )
+            }
+          </CopyButton>
         </BreadcrumbLink>
       ) : null}
     </>
   );
 };
+
+// TODO: check breadcrumb design and margin with > (might also be broken in file browser)
+// TODO: link
+// TODO: update icon for instances (maybe none=)
 
 export default InstancesBreadcrumb;
