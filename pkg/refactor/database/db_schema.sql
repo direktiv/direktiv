@@ -213,6 +213,7 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
     "namespace_id" uuid NOT NULL,
     "topic" text NOT NULL,
     PRIMARY KEY ("id"),
+    CONSTRAINT "no_dup_topics_check" UNIQUE ("event_listener_id","topic"),
     FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
