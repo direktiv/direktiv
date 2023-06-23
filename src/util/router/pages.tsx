@@ -15,8 +15,8 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import InstancesPageDetail from "~/pages/namespace/instances/Detail/";
-import InstancesPageList from "~/pages/namespace/instances/List";
+import InstancesPageDetail from "~/pages/namespace/_instances/Detail";
+import InstancesPageList from "~/pages/namespace/_instances/List";
 import React from "react";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
