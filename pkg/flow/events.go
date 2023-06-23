@@ -1,7 +1,6 @@
 package flow
 
 import (
-	"bytes"
 	"context"
 	"encoding/gob"
 	"encoding/json"
@@ -23,7 +22,6 @@ import (
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
-	"github.com/ryanuber/go-glob"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -61,28 +59,6 @@ func initEvents(srv *server) (*events, error) {
 
 func (events *events) Close() error {
 	return nil
-}
-
-func matchesExtensions(eventMap, extensions map[string]interface{}) bool {
-	for k, f := range eventMap {
-		if strings.HasPrefix(k, filterPrefix) {
-			kt := strings.TrimPrefix(k, filterPrefix)
-
-			if v, ok := extensions[kt]; ok {
-				fs, ok := f.(string)
-				vs, ok2 := v.(string)
-
-				// if both are strings we can glob
-				if ok && ok2 && !glob.Glob(fs, vs) {
-					return false
-				}
-			} else {
-				return false
-			}
-		}
-	}
-
-	return true
 }
 
 func (events *events) sendEvent(data []byte) {
@@ -250,40 +226,6 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
 	return nil
 }
-
-func eventToBytes(cevent cloudevents.Event) ([]byte, error) {
-	var ev bytes.Buffer
-
-	enc := gob.NewEncoder(&ev)
-	err := enc.Encode(cevent)
-	if err != nil {
-		return nil, fmt.Errorf("can not convert event to bytes: %w", err)
-	}
-
-	return ev.Bytes(), nil
-}
-
-func bytesToEvent(b []byte) (*cloudevents.Event, error) {
-	ev := new(cloudevents.Event)
-
-	enc := gob.NewDecoder(bytes.NewReader(b))
-	err := enc.Decode(ev)
-	if err != nil {
-		return nil, fmt.Errorf("can not convert bytes to event: %w", err)
-	}
-
-	return ev, nil
-}
-
-// var eventListenersOrderings = []*orderingInfo{
-// 	{
-// 		db:           entevents.FieldUpdatedAt,
-// 		req:          "UPDATED",
-// 		defaultOrder: ent.Asc,
-// 	},
-// }
-
-// var eventListenersFilters = map[*filteringInfo]func(query *ent.EventsQuery, v string) (*ent.EventsQuery, error){}
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
