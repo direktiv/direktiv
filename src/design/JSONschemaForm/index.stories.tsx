@@ -1,10 +1,12 @@
-import {
-  ArraySchemaSample,
-  CustomArraySample,
-  SimpleSample,
-  basicExample,
-} from "./jsonSchemaExamples";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  arraySchemaSample,
+  basicExample,
+  customArraySample,
+  exampleThatThrowsAnError,
+  simpleSample,
+} from "./jsonSchemaExamples";
+import Button from "../Button";
 import { JSONSchemaForm } from "../JSONschemaForm";
 
 const meta = {
@@ -33,4 +35,10 @@ export const CustomArraySampleForm = () => (
 
 export const SampleFormWithFileInput = () => (
   <JSONSchemaForm schema={simpleSample} />
+);
+
+export const SampleFormWithAnError = () => (
+  <JSONSchemaForm schema={exampleThatThrowsAnError}>
+    <Button type="submit">Submit</Button>
+  </JSONSchemaForm>
 );

@@ -110,3 +110,18 @@ export const simpleSample: RJSFSchema = {
     },
   },
 };
+
+export const exampleThatThrowsAnError: RJSFSchema = {
+  title: "Selecting anything from the select field will show an error",
+  type: "object",
+  properties: {
+    firstName: {
+      type: "string",
+      title: "First name",
+    },
+    select: {
+      type: "integer",
+      enum: ["foo", "bar", "fuzz", "qux"],
+    },
+  },
+};
