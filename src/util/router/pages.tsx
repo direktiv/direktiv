@@ -26,7 +26,7 @@ import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
   name?: string;
-  icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
   route: RouteObject;
 }
 
