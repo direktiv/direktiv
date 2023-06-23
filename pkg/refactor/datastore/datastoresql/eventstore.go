@@ -25,7 +25,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Eve
 	for i := range events {
 		v := events[i]
 		if v.Event == nil {
-			panic("event was nil")
+			panic("event was nil") // TODO hadle by logging
 		}
 		eventByte, err := json.Marshal(v.Event)
 		if err != nil {
@@ -223,7 +223,7 @@ type triggerInfo struct {
 
 func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
 	FROM event_listeners E WHERE E.deleted = false and E.id in 
 	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
 
@@ -259,6 +259,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 			TriggerInstance:             trigger.InstanceID,
 			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
+			Metadata:                    l.Metadata,
 		})
 	}
 
@@ -283,8 +284,8 @@ type sqlEventListenerStore struct {
 
 func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
 	q := `INSERT INTO event_listeners
-	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info) 
-	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 );`
+	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata) 
+	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11);`
 	trigger := triggerInfo{
 		WorkflowID: listener.TriggerWorkflow,
 		InstanceID: listener.TriggerInstance,
@@ -310,7 +311,8 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		listener.TriggerType,
 		listener.LifespanOfReceivedEvents,
 		strings.Join(listener.ListeningForEventTypes, " "),
-		string(b))
+		string(b),
+		listener.Metadata)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -352,7 +354,7 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 
 func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
 	FROM event_listeners WHERE namespace_id = $1 `
 	q += " ORDER BY created_at DESC " //nolint:goconst
 	if limit > 0 {
@@ -401,6 +403,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 			TriggerInstance:             trigger.InstanceID,
 			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
+			Metadata:                    l.Metadata,
 		})
 	}
 
@@ -409,7 +412,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 
 func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
 	FROM event_listeners `
 	q += " ORDER BY created_at DESC;"
 	res := make([]*gormEventListener, 0)
@@ -444,6 +447,7 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 			TriggerInstance:             trigger.InstanceID,
 			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
+			Metadata:                    l.Metadata,
 		})
 	}
 
@@ -462,6 +466,7 @@ type gormEventListener struct {
 	TriggerInfo    string
 	EventsLifespan int
 	ReceivedEvents []byte
+	Metadata       string
 }
 
 func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
@@ -496,6 +501,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		TriggerInstance:             trigger.InstanceID,
 		TriggerInstanceStep:         trigger.Step,
 		ReceivedEventsForAndTrigger: ev,
+		Metadata:                    l.Metadata,
 	}, nil
 }
 

@@ -99,7 +99,7 @@ describe('Test workflow events', () => {
 
         expect(getEventListenerResponse.body.results[0]).toMatchObject({
             workflow: "/start.yaml",
-            "mode": "or",
+            "mode": "simple",
             "instance": "",
             "createdAt": expect.stringMatching(common.regex.timestampRegex),
             "updatedAt": expect.stringMatching(common.regex.timestampRegex),
@@ -133,7 +133,7 @@ describe('Test workflow events', () => {
 
         expect(result).toMatchObject({
             workflow: "",
-            "mode": "or",
+            "mode": "simple",
             "instance": expect.stringMatching(common.regex.uuidRegex),
             "createdAt": expect.stringMatching(common.regex.timestampRegex),
             "updatedAt": expect.stringMatching(common.regex.timestampRegex),

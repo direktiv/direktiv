@@ -118,6 +118,8 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			TriggerType:            pkgevents.StartSimple,
 			ListeningForEventTypes: []string{},
 			TriggerWorkflow:        file.ID,
+			Metadata:               file.Name(),
+			// LifespanOfReceivedEvents: ms.Lifespan, ???
 			// LifespanOfReceivedEvents: , TODO?
 			// GlobGatekeepers: , TODO
 		}

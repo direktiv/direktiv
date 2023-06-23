@@ -57,6 +57,7 @@ type EventListener struct {
 	TriggerInstance             uuid.UUID   // optional fill for instance-waiting trigger.
 	TriggerInstanceStep         int         // optional fill for instance-waiting trigger.
 	GlobGatekeepers             []string
+	Metadata                    string
 }
 
 type TriggerType int
