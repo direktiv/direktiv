@@ -24,8 +24,8 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
 import NamespaceCreate from "../NamespaceCreate";
-import clsx from "clsx";
 import { pages } from "~/util/router/pages";
+import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -94,7 +94,7 @@ const NamespaceSelector = () => {
                         }}
                       >
                         <Circle
-                          className={clsx(
+                          className={twMergeClsx(
                             "mr-2 h-2 w-2 fill-current",
                             namespace === ns.name ? "opacity-100" : "opacity-0"
                           )}
