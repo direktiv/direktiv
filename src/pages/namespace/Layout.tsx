@@ -39,6 +39,7 @@ import Button from "~/design/Button";
 import Logo from "~/design/Logo";
 import Navigation from "~/componentsNext/Navigation";
 import { RxChevronDown } from "react-icons/rx";
+import { twMergeClsx } from "~/util/helpers";
 import { useVersion } from "~/api/version";
 
 // TODO: move to own file
