@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { pages } from "~/util/router/pages";
 import { useInstances } from "~/api/instances/query/get";
 
 const InstancesListPage = () => {
@@ -7,9 +9,15 @@ const InstancesListPage = () => {
     <div>
       <h1>List</h1>
       {data?.instances.results.map((instance) => (
-        <div key={instance.id}>
+        <Link
+          to={pages.instances.createHref({
+            namespace: data.namespace,
+            instance: instance.id,
+          })}
+          key={instance.id}
+        >
           {instance.as} <i>{instance.id}</i>
-        </div>
+        </Link>
       ))}
     </div>
   );
