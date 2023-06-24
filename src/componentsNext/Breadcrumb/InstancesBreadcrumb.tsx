@@ -1,6 +1,7 @@
 import { Box } from "lucide-react";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import CopyButton from "~/design/CopyButton";
+import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
@@ -18,26 +19,26 @@ const InstancesBreadcrumb = () => {
   return (
     <>
       <BreadcrumbLink>
-        <a
-          href={pages.instances.createHref({
+        <Link
+          to={pages.instances.createHref({
             namespace,
           })}
         >
           <Icon aria-hidden="true" />
           {t("components.breadcrumb.instances")}
-        </a>
+        </Link>
       </BreadcrumbLink>
       {isInstanceDetailPage && instance ? (
         <BreadcrumbLink>
           <Box aria-hidden="true" />
-          <a
-            href={pages.instances.createHref({
+          <Link
+            to={pages.instances.createHref({
               namespace,
               instance,
             })}
           >
             {instance.slice(0, 8)}
-          </a>
+          </Link>
           <CopyButton
             value={instance}
             buttonProps={{
