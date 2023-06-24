@@ -1,3 +1,4 @@
+import { Box } from "lucide-react";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import CopyButton from "~/design/CopyButton";
 import { pages } from "~/util/router/pages";
@@ -28,7 +29,7 @@ const InstancesBreadcrumb = () => {
       </BreadcrumbLink>
       {isInstanceDetailPage && instance ? (
         <BreadcrumbLink>
-          <Icon aria-hidden="true" />
+          <Box aria-hidden="true" />
           <a>{instance.slice(0, 8)}</a>
           <CopyButton
             value={instance}

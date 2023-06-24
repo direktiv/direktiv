@@ -1,5 +1,5 @@
 import {
-  Box,
+  Boxes,
   Bug,
   Calendar,
   FolderTree,
@@ -210,7 +210,7 @@ export const pages: PageType = {
   },
   instances: {
     name: "instances",
-    icon: Box,
+    icon: Boxes,
     createHref: (params) =>
       `/${params.namespace}/instances${
         params.instance ? `/${params.instance}` : ""
