@@ -38,25 +38,11 @@ const InstancesBreadcrumb = () => {
               className: "hidden group-hover:inline-flex",
               size: "sm",
             }}
-          >
-            {(copied) =>
-              copied
-                ? t(
-                    "pages.explorer.tree.workflow.revisions.overview.detail.copied"
-                  )
-                : t(
-                    "pages.explorer.tree.workflow.revisions.overview.detail.copy"
-                  )
-            }
-          </CopyButton>
+          />
         </BreadcrumbLink>
       ) : null}
     </>
   );
 };
-
-// TODO: check breadcrumb design and margin with > (might also be broken in file browser)
-// TODO: link
-// TODO: update icon for instances (maybe none=)
 
 export default InstancesBreadcrumb;

@@ -90,8 +90,6 @@
               "list": {
                 "title": "Revisions",
                 "distribution": "{{count}} % of traffic distribution",
-                "copy": "copy",
-                "copied": "copied",
                 "contextMenu": {
                   "title": "Actions",
                   "delete": "Delete",
@@ -130,8 +128,6 @@
                 }
               },
               "detail": {
-                "copy": "copy",
-                "copied": "copied",
                 "backBtn": "Revisions List",
                 "readOnlyNote": "You cannot edit an old revision",
                 "revertBtn": "Revert"
