@@ -30,7 +30,14 @@ const InstancesBreadcrumb = () => {
       {isInstanceDetailPage && instance ? (
         <BreadcrumbLink>
           <Box aria-hidden="true" />
-          <a>{instance.slice(0, 8)}</a>
+          <a
+            href={pages.instances.createHref({
+              namespace,
+              instance,
+            })}
+          >
+            {instance.slice(0, 8)}
+          </a>
           <CopyButton
             value={instance}
             buttonProps={{
