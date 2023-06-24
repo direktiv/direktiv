@@ -1,6 +1,7 @@
+import { PageinfoSchema } from "../schema";
 import { z } from "zod";
 
-const instanceSchema = z.object({
+const InstanceSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   id: z.string(),
@@ -11,8 +12,16 @@ const instanceSchema = z.object({
   invoker: z.string(), // "api", "cron", "cloudevent", "complete" (if it's created as a subflow from another instance it's something like instance:%v, where %v is the instance ID of its parent
 });
 
+export const InstancesListSchema = z.object({
+  namespace: z.string(),
+  instances: z.object({
+    pageInfo: PageinfoSchema,
+    results: z.array(InstanceSchema),
+  }),
+});
+
 export const InstancesInputSchema = z.object({
   namespace: z.string(),
-  instance: instanceSchema,
+  instance: InstanceSchema,
   data: z.string(),
 });
