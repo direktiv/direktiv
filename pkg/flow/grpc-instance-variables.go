@@ -1,100 +1,22 @@
 package flow
 
 import (
-	"bytes"
 	"context"
-	"errors"
-	"io"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (srv *server) traverseToInstanceVariable(ctx context.Context, namespace, instance, key string, load bool) (*database.CacheData, *enginerefactor.Instance, *database.VarRef, *database.VarData, error) {
-	return nil, nil, nil, nil, nil
-}
-
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.InstanceVariableResponse
-
-	resp.Namespace = cached.Namespace.Name
-	resp.Instance = instance.Instance.ID.String()
-	resp.Key = vref.Name
-	resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
-	resp.Checksum = vdata.Hash
-	resp.TotalSize = int64(vdata.Size)
-	resp.MimeType = vdata.MimeType
-
-	if resp.TotalSize > parcelSize {
-		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
-	}
-
-	resp.Data = vdata.Data
-
-	return &resp, nil
+	// TODO: Alan, need fix here.
+	// nolint:nilnil
+	return nil, nil
 }
 
 func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv grpc.Flow_InstanceVariableParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	ctx := srv.Context()
-
-	cached, instance, vref, vdata, err := flow.traverseToInstanceVariable(ctx, req.GetNamespace(), req.GetInstance(), req.GetKey(), true)
-	if err != nil {
-		return err
-	}
-
-	rdr := bytes.NewReader(vdata.Data)
-
-	for {
-		resp := new(grpc.InstanceVariableResponse)
-
-		resp.Namespace = cached.Namespace.Name
-		resp.Instance = instance.Instance.ID.String()
-		resp.Key = vref.Name
-		resp.CreatedAt = timestamppb.New(vdata.CreatedAt)
-		resp.UpdatedAt = timestamppb.New(vdata.UpdatedAt)
-		resp.Checksum = vdata.Hash
-		resp.TotalSize = int64(vdata.Size)
-		resp.MimeType = vdata.MimeType
-
-		buf := new(bytes.Buffer)
-		k, err := io.CopyN(buf, rdr, parcelSize)
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				err = nil
-			}
-
-			if err == nil && k == 0 {
-				return nil
-			}
-
-			if err != nil {
-				return err
-			}
-		}
-
-		resp.Data = buf.Bytes()
-
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-	}
+	// TODO: Alan, need fix here.
+	return nil
 }
 
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {

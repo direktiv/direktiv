@@ -453,7 +453,8 @@ func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType recipient.
 	case recipient.Mirror:
 		pubsub.Publish(pubsubNotify(pubsub.activityLogs(recipientID)))
 	default:
-		panic("how?")
+		pubsub.Publish(pubsubNotify(""))
+		// panic("how?")
 	}
 }
 

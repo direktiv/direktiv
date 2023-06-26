@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -52,15 +51,7 @@ func (flow *flow) functionsHeartbeat() {
 			}
 
 			for _, rev := range revs {
-				x := &database.Revision{
-					ID:        rev.ID,
-					CreatedAt: rev.CreatedAt,
-					Hash:      rev.Checksum,
-					Source:    rev.Data,
-					Workflow:  file.ID,
-				}
-
-				w, err := loadSource(x)
+				w, err := loadSource(rev)
 				if err != nil {
 					continue
 				}
