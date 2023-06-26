@@ -59,7 +59,9 @@ const InstanceTableRow: FC<{
                 {name}
               </Link>
             </TooltipTrigger>
-            <TooltipContent>click to open workflow</TooltipContent>
+            <TooltipContent>
+              {t("pages.instances.list.tableRow.openWorkflowTooltip")}
+            </TooltipContent>
           </Tooltip>
         </TableCell>
         <TableCell className="w-32">
@@ -75,13 +77,21 @@ const InstanceTableRow: FC<{
         </TableCell>
         <TableCell className="w-40">
           <Tooltip>
-            <TooltipTrigger>{createdAt} ago</TooltipTrigger>
+            <TooltipTrigger>
+              {t("pages.instances.list.tableRow.realtiveTime", {
+                relativeTime: createdAt,
+              })}
+            </TooltipTrigger>
             <TooltipContent>{instance.createdAt}</TooltipContent>
           </Tooltip>
         </TableCell>
         <TableCell className="w-40">
           <Tooltip>
-            <TooltipTrigger>{updatedAt} ago</TooltipTrigger>
+            <TooltipTrigger>
+              {t("pages.instances.list.tableRow.realtiveTime", {
+                relativeTime: updatedAt,
+              })}
+            </TooltipTrigger>
             <TooltipContent>{instance.updatedAt}</TooltipContent>
           </Tooltip>
         </TableCell>

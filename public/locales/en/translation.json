@@ -179,6 +179,10 @@
           "state": "state",
           "startedAt": "started at",
           "updatedAt": "last updated"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago",
+          "openWorkflowTooltip": "click to open workflow"
         }
       }
     },
