@@ -25,6 +25,7 @@ const InstancesListPage = () => {
           <TableHead>
             <TableRow>
               <TableHeaderCell>name</TableHeaderCell>
+              <TableHeaderCell>id</TableHeaderCell>
               <TableHeaderCell>revision id</TableHeaderCell>
               <TableHeaderCell>state</TableHeaderCell>
               <TableHeaderCell>started at</TableHeaderCell>
