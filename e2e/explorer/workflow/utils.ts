@@ -83,3 +83,29 @@ states:
         type: string
         title: file upload
         format: data-url`;
+
+export const jsonSchemaWithRequiredEnum = `description: A workflow with a complex json schema form'
+states:
+- id: input
+  type: validate
+  schema:
+    title: some test
+    type: object
+    required:
+    - firstName
+    - lastName
+    - select
+    properties:
+      firstName:
+        type: string
+        title: First name
+      lastName:
+        type: string
+        title: Last name
+      select:
+        title: select a string
+        type: string
+        enum: 
+          - select 1
+          - select 2
+      `;

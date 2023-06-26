@@ -1,11 +1,11 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
+import { jsonSchemaFormWorkflow, jsonSchemaWithRequiredEnum } from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
-import { jsonSchemaFormWorkflow } from "./utils";
 
 let namespace = "";
 
@@ -282,6 +282,97 @@ test("it is possible to provide the input via generated form", async ({
     lastName: "McFly",
     select: "select 2",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
+  };
+  const inputResponseAsJson = JSON.parse(atob(res.data));
+  expect(inputResponseAsJson).toEqual(expectedJson);
+});
+
+test("it is possible to provide the input via generated form and resolve form errors", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createWorkflow({
+    payload: jsonSchemaWithRequiredEnum,
+    headers: undefined,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: workflowName,
+    },
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-form-tab-btn")
+      .getAttribute("aria-selected"),
+    "it detects the validate step and makes the form tab active by default"
+  ).toBe("true");
+
+  // it generated a form (first and last name are required)
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "Select a string" })
+  ).toBeVisible();
+
+  //click on submit
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // last name is required and we just tried to send the form without filling it
+  await expect(page.getByLabel("First Name")).toBeFocused();
+  await page.getByLabel("First Name").fill("Marty");
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // first name is also required and will now be focused
+  await expect(page.getByLabel("Last Name")).toBeFocused();
+  await page.getByLabel("Last Name").fill("McFly");
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  // shows the error to select option
+  await expect(
+    page.getByTestId("jsonschema-form-error"),
+    "the Error Alert should be visible"
+  ).toBeVisible();
+
+  // interact with the select input
+  await page.getByRole("combobox", { name: "Select a string" }).click();
+  await page.getByRole("option", { name: "Select 2" }).click();
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+  const instanceId = page.url().match(reg)?.[1];
+
+  if (!instanceId) {
+    throw new Error("instanceId not found");
+  }
+
+  // check the server state of the input
+  const res = await getInput({
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      instanceId,
+      namespace,
+    },
+    headers: undefined,
+    payload: undefined,
+  });
+
+  const expectedJson = {
+    firstName: "Marty",
+    lastName: "McFly",
+    select: "select 2",
   };
   const inputResponseAsJson = JSON.parse(atob(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);

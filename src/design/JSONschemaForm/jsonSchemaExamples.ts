@@ -112,7 +112,7 @@ export const simpleSample: RJSFSchema = {
 };
 
 export const exampleThatThrowsAnError: RJSFSchema = {
-  title: "Selecting anything from the select field will show an error",
+  title: "",
   type: "object",
   properties: {
     firstName: {
