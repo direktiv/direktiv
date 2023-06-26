@@ -1011,14 +1011,8 @@ func (engine *engine) wakeEventsWaiter(instance uuid.UUID, step int, events []*c
 	engine.runState(ctx, im, wakedata, nil)
 }
 
-func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
+func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
 	ctx := context.Background()
-
-	id, err := uuid.Parse(workflowID)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
 
 	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
@@ -1027,7 +1021,7 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	}
 	defer tx.Rollback()
 
-	file, err := tx.FileStore().GetFile(ctx, id)
+	file, err := tx.FileStore().GetFile(ctx, workflowID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return

@@ -87,7 +87,7 @@ func Test_EventStoreAddGet(t *testing.T) {
 		t.Error("count is off")
 	}
 
-	e, err := hist.GetByID(context.Background(), eID)
+	e, err := hist.GetByID(context.Background(), eID.String())
 	if err != nil {
 		t.Error(err)
 	}

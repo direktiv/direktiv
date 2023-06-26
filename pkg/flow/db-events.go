@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -20,8 +19,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	// processed := delay == 0 //TODO:
 
 	li := make([]*pkgevents.Event, 0)
-	_, err := uuid.Parse(eventin.ID())
-	if err != nil {
+	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
 	}
 	li = append(li, &pkgevents.Event{
@@ -29,7 +27,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		Namespace:  ns.ID,
 		ReceivedAt: time.Now(),
 	})
-	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
+	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {
@@ -51,6 +49,15 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 	if err != nil {
 		return err
 	}
+	// TODO
+	// for _, t := range fEv.ListeningForEventTypes {
+	// 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	// 		return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, t)
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
@@ -63,7 +70,15 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	if err != nil {
 		return err
 	}
-
+	// TODO
+	// for _, t := range fEv.ListeningForEventTypes {
+	// 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	// 		return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, t)
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
@@ -74,25 +89,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	if err != nil {
 		return err
 	}
-
 	if len(ms.Events) > 0 && ms.Enabled {
-		// var ev []map[string]interface{}
-		for _, e := range ms.Events {
-			em := make(map[string]interface{})
-			em[eventTypeString] = e.Type
-
-			for kf, vf := range e.Context {
-				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-			}
-
-			// // these value are set when a matching event comes in
-			// em["time"] = 0
-			// em["value"] = ""
-			// em["idx"] = i
-
-			// ev = append(ev, em)
-		}
-
 		fEv := &pkgevents.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now(),
@@ -102,8 +99,10 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			TriggerType:            pkgevents.StartSimple,
 			ListeningForEventTypes: []string{},
 			TriggerWorkflow:        file.ID,
+			Metadata:               file.Name(),
+			// LifespanOfReceivedEvents: ms.Lifespan, ???
 			// LifespanOfReceivedEvents: , TODO?
-			// GlobGatekeepers: , TODO
+			GlobGatekeepers: make(map[string]string),
 		}
 		switch ms.Type {
 		case "default":
@@ -117,6 +116,9 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 		for _, sed := range ms.Events {
 			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
+			for k, v := range sed.Context {
+				fEv.GlobGatekeepers[k] = fmt.Sprintf("%v-%v", sed.Type, v)
+			}
 		}
 
 		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
@@ -124,6 +126,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		})
 		if err != nil {
 			return err
+		}
+		for _, t := range fEv.ListeningForEventTypes {
+			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+				return tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t)
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -135,21 +145,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 // called from workflow instances to create event listeners.
 func (events *events) addInstanceEventListener(ctx context.Context, namespace, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
 	// var ev []map[string]interface{}
-	for _, e := range sevents {
-		em := make(map[string]interface{})
-		em[eventTypeString] = e.Type
-
-		for kf, vf := range e.Context {
-			em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-		}
-
-		// // these value are set when a matching event comes in
-		// em["time"] = 0
-		// em["value"] = ""
-		// em["idx"] = i
-
-		// ev = append(ev, em)
-	}
 
 	fEv := &pkgevents.EventListener{
 		ID:                     uuid.New(),
@@ -162,10 +157,14 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		TriggerInstance:        instance,
 		TriggerInstanceStep:    step,
 		// LifespanOfReceivedEvents: , TODO?
-		// GlobGatekeepers: , TODO
+		GlobGatekeepers: make(map[string]string),
 	}
+
 	for _, ced := range sevents {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
+		for k, v := range ced.Context {
+			fEv.GlobGatekeepers[k] = fmt.Sprintf("%v-%v", ced.Type, v)
+		}
 	}
 	if all {
 		fEv.TriggerType = pkgevents.WaitAnd
@@ -180,7 +179,14 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 	if err != nil {
 		return err
 	}
-
+	for _, t := range fEv.ListeningForEventTypes {
+		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t)
+		})
+		if err != nil {
+			return err
+		}
+	}
 	events.pubsub.NotifyEventListeners(namespace)
 
 	return nil

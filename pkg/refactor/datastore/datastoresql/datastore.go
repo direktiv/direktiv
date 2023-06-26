@@ -78,8 +78,8 @@ func (s *sqlStore) Services() core.ServicesStore {
 	}
 }
 
-func (*sqlStore) EventFilter() events.CloudEventsFilterStore {
-	return &sqlNamespaceCloudEventFilter{}
+func (s *sqlStore) EventFilter() events.CloudEventsFilterStore {
+	return &sqlNamespaceCloudEventFilter{db: s.db}
 }
 
 func (s *sqlStore) EventHistory() events.EventHistoryStore {

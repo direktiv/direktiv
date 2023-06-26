@@ -37,12 +37,20 @@ func (ee EventEngine) ProcessEvents(
 	cloudevents []cloudevents.Event,
 ) {
 	topics := ee.getTopics(ctx, namespace, cloudevents)
-	listeners, _ := ee.getListeners(ctx, topics...)
+	listeners, err := ee.getListeners(ctx, topics...)
+	if err != nil {
+		_ = err
+		panic(err)
+	}
 	// TODO log err
 	h := ee.getEventHandlers(ctx, listeners)
 	// TODO log errors
 	ee.handleEvents(ctx, namespace, cloudevents, h)
-	_ = ee.usePostProcessingEvents(ctx, listeners)
+	err = ee.usePostProcessingEvents(ctx, listeners)
+	if err != nil {
+		_ = err
+		panic(err)
+	}
 }
 
 func (ee EventEngine) getListeners(ctx context.Context, topics ...string) ([]*EventListener, error) {
@@ -124,7 +132,7 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 	return nil // TODO
 }
 
-func eventPassedGatekeeper(globPatterns []string, event cloudevents.Event) bool {
+func eventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
 	// adding source for comparison
 	m := event.Context.GetExtensions()
 
@@ -135,12 +143,12 @@ func eventPassedGatekeeper(globPatterns []string, event cloudevents.Event) bool 
 
 	m["source"] = event.Context.GetSource()
 
-	for _, f := range globPatterns {
-		if v, ok := m[f]; ok {
+	for k, f := range globPatterns {
+		if v, ok := m[k]; ok {
 			vs, ok2 := v.(string)
 
 			// if both are strings we can glob
-			if ok && ok2 && !glob.Glob(f, vs) {
+			if ok && ok2 && !glob.Glob(f, event.Type()+"-"+vs) {
 				return false
 			}
 		} else {
@@ -156,14 +164,16 @@ func (EventEngine) handleEvents(ctx context.Context,
 	cloudevents []cloudevents.Event, h []eventHandler,
 ) {
 	events := make([]*Event, 0, len(cloudevents))
-	for i := range cloudevents {
-		e := &cloudevents[i]
+
+	for _, e := range cloudevents {
+		eCopy := e.Clone()
 		events = append(events, &Event{
 			Namespace:  namespace,
 			ReceivedAt: time.Now(),
-			Event:      e,
+			Event:      &eCopy,
 		})
 	}
+	// panic(len(h))
 	for _, eh := range h {
 		eh(ctx, events...)
 	}

@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -214,4 +216,42 @@ func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 		results = append(results, &r)
 	}
 	return results, nil
+}
+
+func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
+	res := make([]*grpc.EventListener, 0, len(in))
+	for _, el := range in {
+		types := []*grpc.EventDef{}
+		for _, v := range el.ListeningForEventTypes {
+			types = append(types, &grpc.EventDef{Type: v})
+		}
+		wf := ""
+		ins := ""
+		// step := ""
+		if el.TriggerWorkflow != uuid.Nil {
+			wf = "/" + strings.Split(el.Metadata, " ")[0]
+		}
+		if el.TriggerInstance != uuid.Nil {
+			ins = el.TriggerInstance.String()
+			// step = fmt.Sprintf("%v", el.TriggerInstanceStep)
+		}
+		mode := ""
+		switch el.TriggerType {
+		case events.StartAnd, events.WaitAnd:
+			mode = "and"
+		case events.StartOR, events.WaitOR:
+			mode = "or"
+		case events.StartSimple, events.WaitSimple:
+			mode = "simple"
+		}
+		res = append(res, &grpc.EventListener{
+			Workflow:  wf,
+			Instance:  ins,
+			UpdatedAt: timestamppb.New(el.UpdatedAt),
+			Mode:      mode,
+			Events:    types,
+			CreatedAt: timestamppb.New(el.CreatedAt),
+		})
+	}
+	return res
 }

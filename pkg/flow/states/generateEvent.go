@@ -97,10 +97,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 
 	var dd int64
 
-	if len(logic.Delay) == 0 {
-		dd = 60
-		logic.PrimeDelayedEvent(event)
-	} else if logic.Delay != "immediate" {
+	if len(logic.Delay) != 0 && logic.Delay != "immediate" {
 		d, _ := duration.ParseISO8601(logic.Delay)
 		t := d.Shift(time.Unix(0, 0).UTC())
 		dd = t.Unix()

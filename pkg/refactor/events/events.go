@@ -20,7 +20,7 @@ type EventHistoryStore interface {
 	// adds at least one and optionally multiple events to the storage.
 	// returns the events that where successfully appended
 	Append(ctx context.Context, event []*Event) ([]*Event, []error)
-	GetByID(ctx context.Context, id uuid.UUID) (*Event, error)
+	GetByID(ctx context.Context, id string) (*Event, error)
 	// the result will be sorted by the AcceptedAt value.
 	// pass 0 for limit or offset to get all events.
 	// The total row count is also returned for pagination.
@@ -56,7 +56,8 @@ type EventListener struct {
 	TriggerWorkflow             uuid.UUID   // the id of the workflow.
 	TriggerInstance             uuid.UUID   // optional fill for instance-waiting trigger.
 	TriggerInstanceStep         int         // optional fill for instance-waiting trigger.
-	GlobGatekeepers             []string
+	GlobGatekeepers             map[string]string
+	Metadata                    string
 }
 
 type TriggerType int
@@ -96,6 +97,6 @@ type NamespaceCloudEventFilter struct {
 type CloudEventsFilterStore interface {
 	Delete(ctx context.Context, nsID uuid.UUID, filterName string) error
 	Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error
-	Get(ctx context.Context, nsID uuid.UUID, limit, offset int) ([]*NamespaceCloudEventFilter, int, error)
+	Get(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, int, error)
 	GetAll(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, error)
 }

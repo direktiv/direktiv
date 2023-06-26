@@ -177,21 +177,22 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 );
 
 CREATE TABLE IF NOT EXISTS "events_history" (
-    "id" uuid,
+    "id" text,
     "type" text NOT NULL,
     "source" text NOT NULL,
     "cloudevent" text NOT NULL,
     "namespace_id" uuid NOT NULL,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
-    PRIMARY KEY ("id")
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "no_dup_check" UNIQUE ("source","id")
 );
 
 -- for cursor style pagination
 CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespace_id", "created_at" DESC);
 
 CREATE TABLE IF NOT EXISTS "event_listeners" (
-    "id" uuid,
+    "id" uuid UNIQUE,
     "namespace_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -199,8 +200,10 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "received_events" bytea,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
+    "glob_gates" text, 
     "event_types" text NOT NULL, -- lets keep it for the ui just in case
     "trigger_info" text NOT NULL,
+    "metadata" text,
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -211,6 +214,7 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
     "namespace_id" uuid NOT NULL,
     "topic" text NOT NULL,
     PRIMARY KEY ("id"),
+    CONSTRAINT "no_dup_topics_check" UNIQUE ("event_listener_id","topic"),
     FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -222,7 +226,7 @@ CREATE TABLE IF NOT EXISTS "events_filters" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
     "name" text NOT NULL,
-    "jscode" text NOT NULL,
+    "js_code" text NOT NULL,
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
