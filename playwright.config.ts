@@ -29,7 +29,9 @@ export default defineConfig({
     baseURL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry",
+    // trace: "on-first-retry",
+    /* temporary override: this is expensive, but useful for debugging tests */
+    trace: "retain-on-failure",
   },
 
   timeout: 30000, // defaults to 30000
