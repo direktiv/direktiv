@@ -244,11 +244,12 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
   await page.getByTestId("variable-editor-card").click();
-  const afterReloadValue = await textArea.inputValue();
-  expect(
-    updatedValue,
-    "after reload, the edited value should be the same"
-  ).toBe(afterReloadValue);
+
+  await expect(
+    page.getByTestId("variable-editor-card"),
+    "the variable's content is loaded into the editor"
+  ).toContainText(updatedValue);
+
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
