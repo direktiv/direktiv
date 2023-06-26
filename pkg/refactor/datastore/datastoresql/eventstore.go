@@ -284,8 +284,8 @@ type sqlEventListenerStore struct {
 
 func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
 	q := `INSERT INTO event_listeners
-	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata) 
-	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11);`
+	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates) 
+	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11, $12);`
 	trigger := triggerInfo{
 		WorkflowID: listener.TriggerWorkflow,
 		InstanceID: listener.TriggerInstance,
@@ -296,6 +296,11 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		return err
 	}
 	ceB, err := json.Marshal(listener.ReceivedEventsForAndTrigger)
+	if err != nil {
+		return err
+	}
+
+	glob, err := json.Marshal(listener.GlobGatekeepers)
 	if err != nil {
 		return err
 	}
@@ -312,7 +317,8 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		listener.LifespanOfReceivedEvents,
 		strings.Join(listener.ListeningForEventTypes, " "),
 		string(b),
-		listener.Metadata)
+		listener.Metadata,
+		string(glob))
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -354,7 +360,7 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 
 func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners WHERE namespace_id = $1 `
 	q += " ORDER BY created_at DESC " //nolint:goconst
 	if limit > 0 {
@@ -390,6 +396,11 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 		if err != nil {
 			return nil, 0, err
 		}
+		var glob map[string]string
+		err = json.Unmarshal([]byte(l.GlobGates), &glob)
+		if err != nil {
+			return nil, 0, err
+		}
 		conv = append(conv, &events.EventListener{
 			ID:                          l.ID,
 			UpdatedAt:                   l.UpdatedAt,
@@ -404,6 +415,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 			Metadata:                    l.Metadata,
+			GlobGatekeepers:             glob,
 		})
 	}
 
@@ -434,6 +446,11 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 		if err != nil {
 			return nil, err
 		}
+		var glob map[string]string
+		err = json.Unmarshal([]byte(l.GlobGates), &glob)
+		if err != nil {
+			return nil, err
+		}
 		conv = append(conv, &events.EventListener{
 			ID:                          l.ID,
 			UpdatedAt:                   l.UpdatedAt,
@@ -448,6 +465,7 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 			Metadata:                    l.Metadata,
+			GlobGatekeepers:             glob,
 		})
 	}
 
@@ -467,10 +485,11 @@ type gormEventListener struct {
 	EventsLifespan int
 	ReceivedEvents []byte
 	Metadata       string
+	GlobGates      string
 }
 
 func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
-	q := "SELECT count(id), id, namespace_id, created_at, updated_at ,received_events, trigger_type, events_lifespan, event_types, trigger_info FROM event_listeners WHERE id = $1 ;"
+	q := "SELECT count(id), id, namespace_id, created_at, updated_at, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates FROM event_listeners WHERE id = $1 ;"
 	var l gormEventListener
 	tx := s.db.WithContext(ctx).Raw(q, id).First(&l)
 	if tx.Error != nil {
@@ -478,8 +497,13 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	}
 	var trigger triggerInfo
 	var ev []*events.Event
+	var glob map[string]string
 
 	err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(l.GlobGates), &glob)
 	if err != nil {
 		return nil, err
 	}
@@ -502,6 +526,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		TriggerInstanceStep:         trigger.Step,
 		ReceivedEventsForAndTrigger: ev,
 		Metadata:                    l.Metadata,
+		GlobGatekeepers:             glob,
 	}, nil
 }
 
@@ -541,10 +566,10 @@ type sqlNamespaceCloudEventFilter struct {
 }
 
 func (sf *sqlNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error {
-	q := `INSERT INTO events_filters (id, namespace_id, name, jscode) VALUES ( $1 , $2 , $3 , $4 )`
+	q := `INSERT INTO events_filters (id, namespace_id, name, js_code) VALUES ( $1 , $2 , $3 , $4 )`
 	id := uuid.New()
 
-	tx := sf.db.WithContext(ctx).Raw(
+	tx := sf.db.WithContext(ctx).Exec(
 		q, id, nsID, filterName, script)
 	if tx.Error != nil {
 		return tx.Error
@@ -554,8 +579,8 @@ func (sf *sqlNamespaceCloudEventFilter) Create(ctx context.Context, nsID uuid.UU
 }
 
 func (sf *sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UUID, filterName string) error {
-	q := `DELETE FROM events_filters WHERE namespace_id = $1 AND name = $2`
-	tx := sf.db.WithContext(ctx).Raw(
+	q := `DELETE FROM events_filters WHERE namespace_id = $1 AND name = $2;`
+	tx := sf.db.WithContext(ctx).Exec(
 		q, nsID, filterName)
 	if tx.Error != nil {
 		return tx.Error
@@ -564,11 +589,11 @@ func (sf *sqlNamespaceCloudEventFilter) Delete(ctx context.Context, nsID uuid.UU
 	return nil
 }
 
-func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID, limit int, offset int) ([]*events.NamespaceCloudEventFilter, int, error) {
-	q := `SELECT namespace_id, name, jscode FROM events_filters WHERE namespace_id = $1 `
+func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, int, error) {
+	q := `SELECT namespace_id, name, js_code FROM events_filters WHERE namespace_id = $1 `
 	qCount := `SELECT count(id) FROM events_filters WHERE namespace_id = $1 `
 	var count int
-	tx := sf.db.WithContext(ctx).Exec(
+	tx := sf.db.WithContext(ctx).Raw(
 		qCount, nsID).Scan(&count)
 	if tx.Error != nil {
 		return nil, 0, tx.Error
@@ -576,15 +601,15 @@ func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID,
 	if count == 0 {
 		return make([]*events.NamespaceCloudEventFilter, 0), 0, nil
 	}
-	q += " ORDER BY created_at DESC;"
-	if limit > 0 {
-		q += fmt.Sprintf("LIMIT %v", limit)
-	}
-	if offset > 0 {
-		q += fmt.Sprintf("OFFSET %v", offset)
-	}
+	// q += " ORDER BY created_at DESC;"
+	// if limit > 0 {
+	// 	q += fmt.Sprintf("LIMIT %v", limit)
+	// }
+	// if offset > 0 {
+	// 	q += fmt.Sprintf("OFFSET %v", offset)
+	// }
 	res := make([]*events.NamespaceCloudEventFilter, 0)
-	tx = sf.db.WithContext(ctx).Exec(
+	tx = sf.db.WithContext(ctx).Raw(
 		q, nsID).Scan(&res)
 	if tx.Error != nil {
 		return nil, 0, tx.Error
@@ -594,7 +619,7 @@ func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID,
 }
 
 func (sf *sqlNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, error) {
-	q := `SELECT namespace_id, name, jscode FROM events_filters WHERE namespace_id = $1 `
+	q := `SELECT namespace_id, name, js_code FROM events_filters WHERE namespace_id = $1 `
 	res := make([]*events.NamespaceCloudEventFilter, 0)
 	tx := sf.db.WithContext(ctx).Exec(
 		q, nsID).Scan(&res)

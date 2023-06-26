@@ -183,7 +183,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			// events.metrics.InsertRecord
 			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "invoking workflow")
-			events.engine.EventsInvoke(wf, ev...)
+			events.engine.EventsInvoke(workflowID, ev...)
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
 			// events.metrics.InsertRecord
@@ -217,7 +217,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 				return nil
 			})
 			if err != nil {
-				return nil
+				return []error{fmt.Errorf("%w", err)}
 			}
 			return nil
 		},
@@ -682,7 +682,7 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 	} else {
 		var filters []*pkgevents.NamespaceCloudEventFilter
 		err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-			f, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID, 0, 0)
+			f, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID)
 			if err != nil {
 				return err
 			}
@@ -911,7 +911,7 @@ func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEve
 	var res []*pkgevents.NamespaceCloudEventFilter
 
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		le, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID, 0, 0)
+		le, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID)
 		if err != nil {
 			return err
 		}
@@ -945,18 +945,22 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 	if err != nil {
 		return nil, err
 	}
-
+	var total int
 	var filters []*pkgevents.NamespaceCloudEventFilter
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		f, _, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID, 0, 0)
+		f, t, err := tx.DataStore().EventFilter().Get(ctx, cached.Namespace.ID)
 		if err != nil {
 			return err
 		}
 		filters = f
+		total = t
 		return nil
 	})
 	if err != nil {
 		return nil, err
+	}
+	if total == 0 {
+		return &grpc.GetCloudEventFilterScriptResponse{}, nil
 	}
 	var ceventfilter pkgevents.NamespaceCloudEventFilter
 	for _, ncef := range filters {
@@ -964,7 +968,7 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 			ceventfilter = *ncef
 		}
 	}
-
+	resp.Filtername = ceventfilter.Name
 	resp.JsCode = ceventfilter.JSCode
 
 	return resp, err

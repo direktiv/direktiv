@@ -40,7 +40,7 @@ func (ee EventEngine) ProcessEvents(
 	listeners, err := ee.getListeners(ctx, topics...)
 	if err != nil {
 		_ = err
-		// panic(err)
+		panic(err)
 	}
 	// TODO log err
 	h := ee.getEventHandlers(ctx, listeners)
@@ -49,7 +49,7 @@ func (ee EventEngine) ProcessEvents(
 	err = ee.usePostProcessingEvents(ctx, listeners)
 	if err != nil {
 		_ = err
-		// panic(err)
+		panic(err)
 	}
 }
 
@@ -132,7 +132,7 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 	return nil // TODO
 }
 
-func eventPassedGatekeeper(globPatterns []string, event cloudevents.Event) bool {
+func eventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
 	// adding source for comparison
 	m := event.Context.GetExtensions()
 
@@ -143,12 +143,12 @@ func eventPassedGatekeeper(globPatterns []string, event cloudevents.Event) bool 
 
 	m["source"] = event.Context.GetSource()
 
-	for _, f := range globPatterns {
-		if v, ok := m[f]; ok {
+	for k, f := range globPatterns {
+		if v, ok := m[k]; ok {
 			vs, ok2 := v.(string)
 
 			// if both are strings we can glob
-			if ok && ok2 && !glob.Glob(f, vs) {
+			if ok && ok2 && !glob.Glob(f, event.Type()+"-"+vs) {
 				return false
 			}
 		} else {

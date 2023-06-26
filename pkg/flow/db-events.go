@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -90,25 +89,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	if err != nil {
 		return err
 	}
-
 	if len(ms.Events) > 0 && ms.Enabled {
-		// var ev []map[string]interface{}
-		for _, e := range ms.Events {
-			em := make(map[string]interface{})
-			em[eventTypeString] = e.Type
-
-			for kf, vf := range e.Context {
-				em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-			}
-
-			// // these value are set when a matching event comes in
-			// em["time"] = 0
-			// em["value"] = ""
-			// em["idx"] = i
-
-			// ev = append(ev, em)
-		}
-
 		fEv := &pkgevents.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now(),
@@ -121,7 +102,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			Metadata:               file.Name(),
 			// LifespanOfReceivedEvents: ms.Lifespan, ???
 			// LifespanOfReceivedEvents: , TODO?
-			// GlobGatekeepers: , TODO
+			GlobGatekeepers: make(map[string]string),
 		}
 		switch ms.Type {
 		case "default":
@@ -135,6 +116,9 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 		for _, sed := range ms.Events {
 			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
+			for k, v := range sed.Context {
+				fEv.GlobGatekeepers[k] = fmt.Sprintf("%v-%v", sed.Type, v)
+			}
 		}
 
 		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
@@ -142,6 +126,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		})
 		if err != nil {
 			return err
+		}
+		for _, t := range fEv.ListeningForEventTypes {
+			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+				return tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t)
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -153,21 +145,6 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 // called from workflow instances to create event listeners.
 func (events *events) addInstanceEventListener(ctx context.Context, namespace, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
 	// var ev []map[string]interface{}
-	for _, e := range sevents {
-		em := make(map[string]interface{})
-		em[eventTypeString] = e.Type
-
-		for kf, vf := range e.Context {
-			em[fmt.Sprintf("%s%s", filterPrefix, strings.ToLower(kf))] = vf
-		}
-
-		// // these value are set when a matching event comes in
-		// em["time"] = 0
-		// em["value"] = ""
-		// em["idx"] = i
-
-		// ev = append(ev, em)
-	}
 
 	fEv := &pkgevents.EventListener{
 		ID:                     uuid.New(),
@@ -180,10 +157,14 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		TriggerInstance:        instance,
 		TriggerInstanceStep:    step,
 		// LifespanOfReceivedEvents: , TODO?
-		// GlobGatekeepers: , TODO
+		GlobGatekeepers: make(map[string]string),
 	}
+
 	for _, ced := range sevents {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
+		for k, v := range ced.Context {
+			fEv.GlobGatekeepers[k] = fmt.Sprintf("%v-%v", ced.Type, v)
+		}
 	}
 	if all {
 		fEv.TriggerType = pkgevents.WaitAnd

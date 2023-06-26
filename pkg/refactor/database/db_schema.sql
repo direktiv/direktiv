@@ -200,6 +200,7 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "received_events" bytea,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
+    "glob_gates" text, 
     "event_types" text NOT NULL, -- lets keep it for the ui just in case
     "trigger_info" text NOT NULL,
     "metadata" text,
@@ -225,7 +226,7 @@ CREATE TABLE IF NOT EXISTS "events_filters" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
     "name" text NOT NULL,
-    "jscode" text NOT NULL,
+    "js_code" text NOT NULL,
     PRIMARY KEY ("id"),
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
 );
