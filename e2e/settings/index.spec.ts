@@ -162,13 +162,12 @@ test("it is possible to create and delete variables", async ({ page }) => {
   const subjectDropdownSelector = `dropdown-trg-item-${newVariable.name}`;
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
-  const textArea = page.getByRole("textbox");
 
-  const initialValue = await textArea.inputValue();
-  expect(
-    initialValue,
-    "initial textarea value should be the variable's content"
-  ).toBe(newVariable.value);
+  await expect(
+    page.getByTestId("variable-editor-card"),
+    "the variable's content is loaded into the editor"
+  ).toContainText(newVariable.value);
+
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
@@ -215,17 +214,11 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  const textArea = page.getByRole("textbox");
+  await expect(
+    page.getByTestId("variable-editor-card"),
+    "the variable's content is loaded into the editor"
+  ).toContainText(subject.content);
 
-  // await expect(
-  //   page.getByTestId("variable-editor-card"),
-  //   "the variable's content is loaded into the editor"
-  // ).toContainText(subject.content);
-  const initialValue = await textArea.inputValue();
-  expect(
-    initialValue,
-    "initial textarea value should be the variable's content"
-  ).toBe(subject.content);
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
@@ -235,6 +228,7 @@ test("it is possible to edit variables", async ({ page }) => {
   // before updating the value, but it should no longer be needed.
   // await page.getByTestId("variable-editor-card").click();
 
+  const textArea = page.getByRole("textbox");
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
   const updatedType = options[Math.floor(Math.random() * 5)];
