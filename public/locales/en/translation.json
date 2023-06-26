@@ -166,6 +166,22 @@
         }
       }
     },
+    "instances": {
+      "list": {
+        "title": "Recently executed instances",
+        "empty": {
+          "title": "there are no recently executed instances"
+        },
+        "tableHeader": {
+          "name": "name",
+          "id": "id",
+          "revisionId": "revision id",
+          "state": "state",
+          "startedAt": "started at",
+          "updatedAt": "last updated"
+        }
+      }
+    },
     "settings": {
       "generic": {
         "contextMenu": {
