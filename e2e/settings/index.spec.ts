@@ -143,7 +143,7 @@ test("it is possible to create and delete variables", async ({ page }) => {
   const newVariable = {
     name: faker.random.word(),
     value: faker.random.words(20),
-    mimeType: options[Math.floor(Math.random() * 5)] || options[0],
+    mimeType: options[Math.floor(Math.random() * options.length)] || options[0],
   };
   await page.getByTestId("new-variable-name").type(newVariable.name);
   await page.getByTestId("variable-create-card").click();
@@ -226,14 +226,11 @@ test("it is possible to edit variables", async ({ page }) => {
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(subject.mimeType);
 
-  // This was needed previously to make sure the editor is initialized
-  // before updating the value, but it should no longer be needed.
-  // await page.getByTestId("variable-editor-card").click();
-
   const textArea = page.getByRole("textbox");
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
-  const updatedType = options[Math.floor(Math.random() * 5)] || options[0];
+  const updatedType =
+    options[Math.floor(Math.random() * options.length)] || options[0];
   await page.getByTestId("variable-trg-mimetype").click();
   await page.getByTestId(`var-mimetype-${updatedType}`).click();
 
@@ -245,7 +242,6 @@ test("it is possible to edit variables", async ({ page }) => {
 
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
-  await page.getByTestId("variable-editor-card").click();
 
   await expect(
     page.getByTestId("variable-editor-card"),
