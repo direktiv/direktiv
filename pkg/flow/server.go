@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -28,7 +26,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -67,7 +64,6 @@ type server struct {
 
 	metrics *metrics.Client
 	logger  logengine.BetterLogger
-	edb     *entwrapper.Database // TODO: remove
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -132,19 +128,6 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
-
-	// srv.db, err = initDatabase(ctx, db)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer srv.cleanup(srv.db.Close)
-
-	edb, err := entwrapper.New(ctx, srv.sugar, db)
-	if err != nil {
-		return err
-	}
-	srv.edb = edb
-
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
@@ -374,53 +357,55 @@ func (srv *server) cleanup(closer func() error) {
 }
 
 func (srv *server) NotifyCluster(msg string) error {
-	ctx := context.Background()
-
-	conn, err := srv.edb.DB().Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
-
-	perr := new(pq.Error)
-
-	if errors.As(err, &perr) {
-		srv.sugar.Errorf("db notification failed: %v", perr)
-		if perr.Code == "57014" {
-			return fmt.Errorf("canceled query")
-		}
-
-		return err
-	}
+	// TODO: Alan, need fix.
+	//ctx := context.Background()
+	//
+	//conn, err := srv.edb.DB().Conn(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	//defer conn.Close()
+	//
+	//_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
+	//
+	//perr := new(pq.Error)
+	//
+	//if errors.As(err, &perr) {
+	//	srv.sugar.Errorf("db notification failed: %v", perr)
+	//	if perr.Code == "57014" {
+	//		return fmt.Errorf("canceled query")
+	//	}
+	//
+	//	return err
+	//}
 
 	return nil
 }
 
 func (srv *server) NotifyHostname(hostname, msg string) error {
-	ctx := context.Background()
-
-	conn, err := srv.edb.DB().Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	channel := fmt.Sprintf("hostname:%s", hostname)
-
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-
-	perr := new(pq.Error)
-
-	if errors.As(err, &perr) {
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
-		if perr.Code == "57014" {
-			return fmt.Errorf("canceled query")
-		}
-
-		return err
-	}
+	// TODO: Alan, need fix.
+	//ctx := context.Background()
+	//
+	//conn, err := srv.edb.DB().Conn(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	//defer conn.Close()
+	//
+	//channel := fmt.Sprintf("hostname:%s", hostname)
+	//
+	//_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
+	//
+	//perr := new(pq.Error)
+	//
+	//if errors.As(err, &perr) {
+	//	fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
+	//	if perr.Code == "57014" {
+	//		return fmt.Errorf("canceled query")
+	//	}
+	//
+	//	return err
+	//}
 
 	return nil
 }
