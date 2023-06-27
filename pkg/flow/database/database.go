@@ -1,6 +1,10 @@
 package database
 
-import "github.com/direktiv/direktiv/pkg/flow/database/recipient"
+import (
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"strings"
+)
 
 type HasAttributes interface {
 	GetAttributes() map[string]string
@@ -16,4 +20,10 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 		}
 	}
 	return m
+}
+
+type Namespace = core.Namespace
+
+func GetWorkflow(path string) string {
+	return strings.Split(path, ":")[0]
 }
