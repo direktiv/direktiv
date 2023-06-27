@@ -339,9 +339,13 @@ test("it is possible to provide the input via generated form and resolve form er
   // shows the error to select option
   await expect(
     page.getByTestId("jsonschema-form-error"),
-    "the Error Alert should be visible"
+    "an error should be visible"
   ).toBeVisible();
 
+  await expect(
+    page.getByTestId("jsonschema-form-error"),
+    "error message should be \"must have required property 'select a string'\""
+  ).toContainText("must have required property 'select a string'");
   // interact with the select input
   await page.getByRole("combobox", { name: "Select a string" }).click();
   await page.getByRole("option", { name: "Select 2" }).click();

@@ -38,12 +38,7 @@ export const SampleFormWithFileInput = () => (
 );
 
 export const SampleFormWithAnError = () => (
-  <>
-    <header className="mb-4 font-semibold text-gray-12 dark:text-gray-dark-12">
-      Selecting anything from the select field will show an error
-    </header>
-    <JSONSchemaForm schema={exampleThatThrowsAnError}>
-      <Button type="submit">Submit</Button>
-    </JSONSchemaForm>
-  </>
+  <JSONSchemaForm schema={exampleThatThrowsAnError}>
+    <Button type="submit">Submit</Button>
+  </JSONSchemaForm>
 );

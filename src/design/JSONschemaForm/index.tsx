@@ -187,7 +187,12 @@ const DescriptionFieldTemplate = (props: DescriptionFieldProps) => {
 const ErrorListTemplate = (props: ErrorListProps) => {
   const { errors } = props;
   return (
-    <Alert variant="error" {...props} data-testid="jsonschema-form-error">
+    <Alert
+      variant="error"
+      data-testid="jsonschema-form-error"
+      className="mb-2"
+      {...props}
+    >
       <ul>
         {errors.map((error: RJSFValidationError, i: number) => (
           <li key={i}>{`${error.stack}`}</li>
