@@ -27,7 +27,6 @@ export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
 );
 Pagination.displayName = "Pagination";
 export interface PaginationLinkProps {
-  key?: string;
   onClick?: () => void;
   active?: boolean;
   icon?: "left" | "right";
@@ -35,11 +34,11 @@ export interface PaginationLinkProps {
 export const PaginationLink = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & PaginationLinkProps
->(({ children, key, onClick, active, icon = false }, ref) =>
+>(({ children, onClick, active, icon = false, ...props }, ref) =>
   icon ? (
     <button
       ref={ref}
-      key={key}
+      {...props}
       onClick={onClick}
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center ring-1 ring-inset focus:z-20 focus:outline-offset-0",
@@ -58,7 +57,7 @@ export const PaginationLink = React.forwardRef<
   ) : (
     <button
       ref={ref}
-      key={key}
+      {...props}
       onClick={onClick}
       aria-current="page"
       className={twMergeClsx(
