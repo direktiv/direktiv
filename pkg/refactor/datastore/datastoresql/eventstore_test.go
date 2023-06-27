@@ -269,9 +269,12 @@ func Test_ListenerAddDeleteByWf(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = listeners.DeleteAllForWorkflow(context.Background(), wf)
+	ids, err := listeners.DeleteAllForWorkflow(context.Background(), wf)
 	if err != nil {
 		t.Error(err)
+	}
+	if *ids[0] != eID {
+		t.Error("listenerid Was wrong")
 	}
 	_, err = listeners.GetByID(context.Background(), eID)
 	if err == nil {
