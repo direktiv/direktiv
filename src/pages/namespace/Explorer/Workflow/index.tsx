@@ -1,10 +1,11 @@
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import Button from "~/design/Button";
 import { FC } from "react";
-import { RxChevronDown } from "react-icons/rx";
+import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -24,6 +25,7 @@ const Header: FC = () => {
   const filename = segments[segments.length - 1];
 
   if (!namespace) return null;
+  if (!path) return null;
 
   const tabs = [
     {
@@ -83,9 +85,19 @@ const Header: FC = () => {
             <Play className="h-5" />
             {filename?.relative}
           </h3>
-          <Button variant="primary">
-            {t("pages.explorer.workflow.actionsBtn")} <RxChevronDown />
-          </Button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="primary" data-testid="workflow-header-btn-run">
+                <Play />
+                {t("pages.explorer.workflow.runBtn")}
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-2xl">
+              <RunWorkflow path={path} />
+            </DialogContent>
+          </Dialog>
         </div>
         <div>
           <nav className="-mb-px flex space-x-8">

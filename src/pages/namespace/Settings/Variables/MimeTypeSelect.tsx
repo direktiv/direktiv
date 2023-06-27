@@ -42,8 +42,10 @@ const MimeTypeSelect = ({
   id,
   mimeType,
   onChange,
+  loading = false,
 }: {
   id?: string;
+  loading?: boolean;
   mimeType: string | undefined;
   onChange: (value: MimeTypeType) => void;
 }) => {
@@ -51,14 +53,24 @@ const MimeTypeSelect = ({
 
   return (
     <Select value={mimeType} onValueChange={onChange}>
-      <SelectTrigger id={id} variant="outline" block>
+      <SelectTrigger
+        id={id}
+        loading={loading}
+        variant="outline"
+        block
+        data-testid="variable-trg-mimetype"
+      >
         <SelectValue
           placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}
         />
       </SelectTrigger>
       <SelectContent>
         {mimeTypes.map((type) => (
-          <SelectItem key={type.value} value={type.value}>
+          <SelectItem
+            key={type.value}
+            value={type.value}
+            data-testid={`var-mimetype-${type.value}`}
+          >
             {type.label}
           </SelectItem>
         ))}

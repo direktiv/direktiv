@@ -14,7 +14,7 @@ import {
   MinusIcon,
   PlusIcon,
 } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { ComponentProps, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -33,8 +33,16 @@ import validator from "@rjsf/validator-ajv8";
 const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   <div className="my-4">
     <Select onValueChange={props.onChange}>
-      <SelectTrigger>
-        <SelectValue placeholder={`Select ${props.label}`} />
+      <SelectTrigger value={props.value} id={props.id}>
+        <SelectValue
+          placeholder={props.value ? props.value : `Select ${props.label}`}
+        >
+          {/* 
+          the blank space is weirdly important here, otherwise the first change
+          of this select will result in the select showing an empty text.
+           */}
+          {props.value}{" "}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -57,28 +65,36 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
     <div className="mb-2 flex w-min flex-row gap-2">
       <Button
         disabled={!props.hasMoveDown}
+        variant="outline"
         onClick={(e) => {
           props.onReorderClick(props.index, props.index + 1)(e);
         }}
+        data-testid={`json-schema-form-down-button-${props.index}`}
         icon
+        type="button"
       >
         <ChevronDownIcon />
       </Button>
       <Button
         disabled={!props.hasMoveUp}
+        variant="outline"
         onClick={(e) => {
           props.onReorderClick(props.index, props.index - 1)(e);
         }}
+        data-testid={`json-schema-form-up-button-${props.index}`}
         icon
+        type="button"
       >
         <ChevronUpIcon />
       </Button>
       <Button
-        variant="destructive"
+        variant="outline"
         onClick={(e) => {
           props.onDropIndexClick(props.index)(e);
         }}
+        data-testid={`json-schema-form-remove-button-${props.index}`}
         icon
+        type="button"
       >
         <MinusIcon />
       </Button>
@@ -87,18 +103,25 @@ const ArrayFieldTemplateItem = (props: ArrayFieldTemplateItemType) => (
 );
 
 const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => (
-  <div>
+  <div className="my-4">
+    <div className="my-2 flex items-center">
+      <div className="grow">{props.title}</div>
+    </div>
     {props.items.map((element) => (
       <ArrayFieldTemplateItem {...element} key={`array-item-${element.key}`} />
     ))}
-    {props.canAdd && (
-      <div className="inline-block w-full divide-y divide-solid">
-        <Button onClick={props.onAddClick} icon className="float-right mt-4">
-          <PlusIcon />
-        </Button>
-        <div className="mt-2 w-full" />
-      </div>
-    )}
+    <Button
+      onClick={props.onAddClick}
+      icon
+      disabled={!props.canAdd}
+      variant="outline"
+      data-testid="json-schema-form-add-button"
+      type="button"
+      block
+      className="mt-3"
+    >
+      <PlusIcon />
+    </Button>
   </div>
 );
 
@@ -115,6 +138,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
 
   return (
     <Input
+      defaultValue={props.value}
       className="mb-2 mt-1 w-full"
       type={type}
       required={props.required}
@@ -143,7 +167,7 @@ const TitleFieldTemplate = (props: TitleFieldProps) => {
   return (
     <header
       id={id}
-      className="mb-1 text-lg font-semibold text-gray-12 dark:text-gray-dark-12"
+      className="mb-4 font-semibold text-gray-12 dark:text-gray-dark-12"
     >
       {title}
       {required && <mark>*</mark>}
@@ -178,12 +202,21 @@ const widgets: RegistryWidgetsType = {
   CheckboxWidget: CustomCheckbox,
   SelectWidget: CustomSelectWidget,
 };
-export interface JSONSchemaFormProps {
+
+type JSONSchemaFormProps = Omit<
+  // copy the props from the original form, and remove the ones we want to implement ourselves
+  ComponentProps<typeof Form>,
+  "schema" | "templates" | "validator" | "widgets"
+> & {
   schema: RJSFSchema;
-}
-export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => (
+};
+
+export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
+  schema,
+  ...props
+}) => (
   <Form
-    schema={props.schema}
+    schema={schema}
     templates={{
       BaseInputTemplate,
       TitleFieldTemplate,
@@ -195,6 +228,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = (props) => (
     }}
     validator={validator}
     widgets={widgets}
+    {...props}
   />
 );
 

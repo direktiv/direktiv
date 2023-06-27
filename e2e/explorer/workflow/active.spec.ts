@@ -53,7 +53,7 @@ const testSaveWorkflow = async (page: Page) => {
     page.getByText(testText),
     "after saving, screen should have the updated text"
   ).toBeVisible();
-  await page.reload({ waitUntil: "load" });
+  await page.reload({ waitUntil: "networkidle" });
   await expect(
     page.getByText(testText),
     "after reloading, screen should have the updated text"
@@ -62,8 +62,8 @@ const testSaveWorkflow = async (page: Page) => {
   // check the text at the bottom left
   await expect(
     page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 };
 
 const testMakeRevision = async (page: Page) => {
@@ -158,11 +158,11 @@ test("it is possible to revert the revision", async ({ page }) => {
   // check the bottom left
   await expect(
     page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 
   // check both after page reload
-  await page.reload({ waitUntil: "load" });
+  await page.reload({ waitUntil: "networkidle" });
 
   await expect(
     page.getByText(defaultDescription),
@@ -171,6 +171,6 @@ test("it is possible to revert the revision", async ({ page }) => {
 
   await expect(
     page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds"
-  ).toHaveText("Updated a few seconds");
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 });

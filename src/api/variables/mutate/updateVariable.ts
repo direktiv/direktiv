@@ -12,9 +12,16 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
-const updateVar = apiFactory({
-  url: ({ namespace, name }: { namespace: string; name: string }) =>
-    `/api/namespaces/${namespace}/vars/${name}`,
+export const updateVar = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    name,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    name: string;
+  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/vars/${name}`,
   method: "PUT",
   schema: VarUpdatedSchema,
 });
@@ -69,9 +76,9 @@ export const useUpdateVar = ({
         })
       );
       toast({
-        title: t("api.variables.mutate.createVariable.success.title"),
+        title: t("api.variables.mutate.updateVariable.success.title"),
         description: t(
-          "api.variables.mutate.createVariable.success.description",
+          "api.variables.mutate.updateVariable.success.description",
           { name: data.key }
         ),
         variant: "success",
@@ -81,7 +88,7 @@ export const useUpdateVar = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.variables.mutate.createVariable.error.description"),
+        description: t("api.variables.mutate.updateVariable.error.description"),
         variant: "error",
       });
     },

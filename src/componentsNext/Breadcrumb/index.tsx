@@ -29,8 +29,8 @@ import BreadcrumbSegment from "./BreadcrumbSegment";
 import Button from "~/design/Button";
 import NamespaceCreate from "../NamespaceCreate";
 import { analyzePath } from "~/util/router/utils";
-import clsx from "clsx";
 import { pages } from "~/util/router/pages";
+import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -103,7 +103,7 @@ const Breadcrumb = () => {
                           }}
                         >
                           <Circle
-                            className={clsx(
+                            className={twMergeClsx(
                               "mr-2 h-2 w-2 fill-current",
                               namespace === ns.name
                                 ? "opacity-100"

@@ -32,7 +32,8 @@ test('it is possible to open the revision details of the "latest" revision', asy
   });
 
   await page.goto(
-    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${revision}`
+    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${revision}`,
+    { waitUntil: "networkidle" }
   );
 
   await expect(
@@ -97,7 +98,8 @@ test("it is possible to revert a revision within the details page", async ({
 
   // open the details page of the second revision
   await page.goto(
-    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`
+    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`,
+    { waitUntil: "networkidle" }
   );
   await expect(
     page.getByTestId("revisions-detail-editor"),

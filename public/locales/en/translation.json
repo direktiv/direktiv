@@ -137,6 +137,15 @@
                 "revertBtn": "Revert"
               }
             }
+          },
+          "runWorkflow": {
+            "title": "Run Workflow",
+            "jsonInput": "JSON Input",
+            "formInput": "Form Input",
+            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
+            "learnMoreBtn": "Learn more",
+            "cancelBtn": "Cancel",
+            "runBtn": "Run"
           }
         }
       },
@@ -148,11 +157,11 @@
           "settings": "Settings"
         },
         "headline": "Latest",
-        "updated": "Updated {{relativeTime}}",
-        "actionsBtn": "Actions",
+        "updated": "Updated {{relativeTime}} ago",
+        "runBtn": "Run",
         "editor": {
-          "unsavedNote": "you have unsaved changes",
-          "theresOneIssue": "There is one issue",
+          "unsavedNote": "unsaved changes",
+          "theresOneIssue": "There is an issue",
           "revisionsBtn": "Revisions",
           "makeRevision": "Make Revision",
           "revertToPrevious": "Revert to previous revision",
@@ -284,6 +293,17 @@
     },
     "formErrors": {
       "fieldInvalid": "this field is invalid"
+    },
+    "userMenu": {
+      "loggedInAs": "You are logged in as {{name}}",
+      "logout": "Logout",
+      "appearance": "Appearance",
+      "switchToLight": "switch to Light mode",
+      "switchToDark": "switch to Dark mode",
+      "help": "Help",
+      "showApiCommands": "Show API Commands",
+      "openJQPlayground": "Open JQ Playground",
+      "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
   "api": {
@@ -420,13 +440,13 @@
     },
     "variables": {
       "mutate": {
-        "createVariable": {
+        "updateVariable": {
           "success": {
-            "title": "Variable created",
-            "description": "Variable {{name}} was created."
+            "title": "Variable saved",
+            "description": "Variable {{name}} was saved."
           },
           "error": {
-            "description": "Could not create variable 😢"
+            "description": "Could not save variable 😢"
           }
         },
         "deleteVariable": {
