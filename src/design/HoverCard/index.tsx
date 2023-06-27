@@ -16,7 +16,7 @@ const HoverCardContent = React.forwardRef<
     align={align}
     sideOffset={sideOffset}
     className={twMergeClsx(
-      "z-50 w-64 rounded-md border p-4 shadow-md outline-none animate-in zoom-in-90",
+      "z-50 rounded-md border p-4 shadow-md outline-none animate-in zoom-in-90",
       "border-gray-3 bg-white",
       "dark:border-gray-dark-3 dark:bg-black",
       className
