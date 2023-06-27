@@ -45,7 +45,7 @@ const Broadcasts: FC = () => {
       <div className="mb-3 flex flex-row justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
           <Radio className="h-5" />
-          {t("pages.settings.broadcasts.list.title")}
+          {t("pages.settings.broadcasts.title")}
         </h3>
       </div>
 
@@ -55,20 +55,22 @@ const Broadcasts: FC = () => {
             <TableRow className={rowClasses}>
               <TableHeaderCell className={leftColClasses}></TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
-                Success
+                {t("pages.settings.broadcasts.columns.success")}
               </TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
-                Started
+                {t("pages.settings.broadcasts.columns.start")}
               </TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
-                Failed
+                {t("pages.settings.broadcasts.columns.fail")}
               </TableHeaderCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             <TableRow className={rowClasses}>
-              <TableCell className={leftColClasses}>Instance</TableCell>
+              <TableCell className={leftColClasses}>
+                {t("pages.settings.broadcasts.rows.instance")}
+              </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
                   checked={broadcasts["instance.success"]}
@@ -94,20 +96,22 @@ const Broadcasts: FC = () => {
             <TableRow className={rowClasses}>
               <TableHeaderCell className={leftColClasses}></TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
-                Create
+                {t("pages.settings.broadcasts.columns.create")}
               </TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
-                Update
+                {t("pages.settings.broadcasts.columns.update")}
               </TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
-                Delete
+                {t("pages.settings.broadcasts.columns.delete")}
               </TableHeaderCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             <TableRow className={rowClasses}>
-              <TableCell className={leftColClasses}>Directory</TableCell>
+              <TableCell className={leftColClasses}>
+                {t("pages.settings.broadcasts.rows.directory")}
+              </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
                   checked={broadcasts["directory.create"]}
@@ -123,7 +127,9 @@ const Broadcasts: FC = () => {
               </TableCell>
             </TableRow>
             <TableRow className={rowClasses}>
-              <TableCell className={leftColClasses}>Workflow</TableCell>
+              <TableCell className={leftColClasses}>
+                {t("pages.settings.broadcasts.rows.workflow")}
+              </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
                   checked={broadcasts["workflow.create"]}
@@ -145,7 +151,7 @@ const Broadcasts: FC = () => {
             </TableRow>
             <TableRow className={rowClasses}>
               <TableCell className={leftColClasses}>
-                Instance variable
+                {t("pages.settings.broadcasts.rows.instance-variable")}
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
@@ -168,7 +174,7 @@ const Broadcasts: FC = () => {
             </TableRow>
             <TableRow className={rowClasses}>
               <TableCell className={leftColClasses}>
-                Namespace variable
+                {t("pages.settings.broadcasts.rows.namespace-variable")}
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
@@ -191,7 +197,7 @@ const Broadcasts: FC = () => {
             </TableRow>
             <TableRow className={rowClasses}>
               <TableCell className={leftColClasses}>
-                Workflow variable
+                {t("pages.settings.broadcasts.rows.workflow-variable")}
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
