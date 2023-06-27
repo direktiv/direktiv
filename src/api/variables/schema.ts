@@ -1,3 +1,4 @@
+import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { z } from "zod";
 
 export const VarSchema = z.object({
@@ -38,7 +39,7 @@ export const VarListSchema = z.object({
 export const VarFormSchema = z.object({
   name: z.string().nonempty(),
   content: z.string().nonempty(),
-  mimeType: z.string(),
+  mimeType: MimeTypeSchema,
 });
 
 export type VarSchemaType = z.infer<typeof VarSchema>;

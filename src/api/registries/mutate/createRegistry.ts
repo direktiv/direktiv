@@ -12,9 +12,9 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createRegistry = apiFactory({
-  url: ({ namespace }: { namespace: string }) =>
-    `/api/functions/registries/namespaces/${namespace}`,
+export const createRegistry = apiFactory({
+  url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
+    `${baseUrl ?? ""}/api/functions/registries/namespaces/${namespace}`,
   method: "POST",
   schema: RegistryCreatedSchema,
 });
