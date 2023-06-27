@@ -234,6 +234,15 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 	}
 	conv := make([]*events.EventListener, 0)
 
+	conv, err := convertListeners(res, conv)
+	if err != nil {
+		return nil, err
+	}
+
+	return conv, nil
+}
+
+func convertListeners(res []*gormEventListener, conv []*events.EventListener) ([]*events.EventListener, error) {
 	for _, l := range res {
 		var trigger triggerInfo
 		var ev []*events.Event
@@ -358,6 +367,7 @@ func (s *sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID
 			return nil, err
 		}
 	}
+
 	return res, nil
 }
 
@@ -387,6 +397,7 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 			return nil, err
 		}
 	}
+
 	return res, nil
 }
 
@@ -465,40 +476,9 @@ func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventList
 		return nil, tx.Error
 	}
 	conv := make([]*events.EventListener, 0)
-
-	for _, l := range res {
-		var trigger triggerInfo
-		var ev []*events.Event
-
-		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
-		if err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal(l.ReceivedEvents, &ev)
-		if err != nil {
-			return nil, err
-		}
-		var glob map[string]string
-		err = json.Unmarshal([]byte(l.GlobGates), &glob)
-		if err != nil {
-			return nil, err
-		}
-		conv = append(conv, &events.EventListener{
-			ID:                          l.ID,
-			UpdatedAt:                   l.UpdatedAt,
-			CreatedAt:                   l.CreatedAt,
-			Deleted:                     l.Deleted,
-			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
-			LifespanOfReceivedEvents:    l.EventsLifespan,
-			TriggerType:                 events.TriggerType(l.TriggerType),
-			TriggerWorkflow:             trigger.WorkflowID,
-			TriggerInstance:             trigger.InstanceID,
-			TriggerInstanceStep:         trigger.Step,
-			ReceivedEventsForAndTrigger: ev,
-			Metadata:                    l.Metadata,
-			GlobGatekeepers:             glob,
-		})
+	conv, err := convertListeners(res, conv)
+	if err != nil {
+		return nil, err
 	}
 
 	return conv, nil
