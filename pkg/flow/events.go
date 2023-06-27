@@ -353,7 +353,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 
 	err = flow.events.BroadcastCloudevent(ctx, ns, event, timer)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Aborted, "cloudevent was not accepted: %v", err)
 	}
 
 	var resp emptypb.Empty

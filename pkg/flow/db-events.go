@@ -43,42 +43,46 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
+	deletedIds := []*uuid.UUID{}
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-		return tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
+		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
+		deletedIds = ids
+		return err
 	})
 	if err != nil {
 		return err
 	}
-	// TODO
-	// for _, t := range fEv.ListeningForEventTypes {
-	// 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-	// 		return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, t)
-	// 	})
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+	for _, id := range deletedIds {
+		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			return tx.DataStore().EventListenerTopics().Delete(ctx, *id)
+		})
+		if err != nil {
+			return err
+		}
+	}
 	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
+	deletedIds := []*uuid.UUID{}
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-		return tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
+		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
+		deletedIds = ids
+		return err
 	})
 	if err != nil {
 		return err
 	}
-	// TODO
-	// for _, t := range fEv.ListeningForEventTypes {
-	// 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-	// 		return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, t)
-	// 	})
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+	for _, id := range deletedIds {
+		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			return tx.DataStore().EventListenerTopics().Delete(ctx, *id)
+		})
+		if err != nil {
+			return err
+		}
+	}
 	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
@@ -117,7 +121,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		for _, sed := range ms.Events {
 			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
 			for k, v := range sed.Context {
-				fEv.GlobGatekeepers[k] = fmt.Sprintf("%v-%v", sed.Type, v)
+				fEv.GlobGatekeepers[sed.Type+"-"+k] = fmt.Sprintf("%v", v)
 			}
 		}
 
@@ -163,7 +167,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 	for _, ced := range sevents {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
 		for k, v := range ced.Context {
-			fEv.GlobGatekeepers[k] = fmt.Sprintf("%v-%v", ced.Type, v)
+			fEv.GlobGatekeepers[ced.Type+"-"+k] = fmt.Sprintf("%v", v)
 		}
 	}
 	if all {

@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -133,6 +134,9 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 }
 
 func eventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
+	if len(globPatterns) == 0 {
+		return true
+	}
 	// adding source for comparison
 	m := event.Context.GetExtensions()
 
@@ -142,21 +146,20 @@ func eventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Eve
 	}
 
 	m["source"] = event.Context.GetSource()
-
+	match := false
 	for k, f := range globPatterns {
-		if v, ok := m[k]; ok {
+		x := strings.TrimPrefix(k, event.Type()+"-")
+		if v, ok := m[x]; ok {
 			vs, ok2 := v.(string)
-
-			// if both are strings we can glob
-			if ok && ok2 && !glob.Glob(f, event.Type()+"-"+vs) {
-				return false
+			if !ok2 {
+				continue
 			}
-		} else {
-			return false
+			match = match || glob.Glob(f, vs)
+			// if both are strings we can glob
+			// return !glob.Glob(f, event.Type()+"-"+vs)
 		}
 	}
-
-	return true // todo
+	return match // todo
 }
 
 func (EventEngine) handleEvents(ctx context.Context,
@@ -196,7 +199,9 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			if eventTypeAlreadyPresent(l, event) {
 				continue
 			}
-
+			if !eventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
+				continue
+			}
 			l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
 			ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
 			for i := range l.ReceivedEventsForAndTrigger {

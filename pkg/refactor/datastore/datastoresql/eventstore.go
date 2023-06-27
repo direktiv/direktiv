@@ -223,7 +223,7 @@ type triggerInfo struct {
 
 func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
+	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners E WHERE E.deleted = false and E.id in 
 	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
 
@@ -246,6 +246,11 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 		if err != nil {
 			return nil, err
 		}
+		var glob map[string]string
+		err = json.Unmarshal([]byte(l.GlobGates), &glob)
+		if err != nil {
+			return nil, err
+		}
 		conv = append(conv, &events.EventListener{
 			ID:                          l.ID,
 			UpdatedAt:                   l.UpdatedAt,
@@ -260,6 +265,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 			Metadata:                    l.Metadata,
+			GlobGatekeepers:             glob,
 		})
 	}
 
@@ -268,7 +274,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 
 func (s *sqlEventTopicsStore) Delete(ctx context.Context, eventListenerID uuid.UUID) error {
 	q := "DELETE FROM event_topics WHERE eventListenerID = $1;"
-	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID)
+	tx := s.db.WithContext(ctx).Exec(q, eventListenerID)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -336,10 +342,28 @@ func (s *sqlEventListenerStore) Delete(ctx context.Context) error {
 	return nil
 }
 
-func (s *sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error {
-	q := "DELETE FROM event_listeners WHERE trigger_info like $1;"
+func (s *sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID uuid.UUID) ([]*uuid.UUID, error) {
+	res := []*uuid.UUID{}
+
+	q := "SELECT id FROM event_listeners WHERE trigger_info like $1;"
 	val := fmt.Sprintf("%%%v%%", instID)
-	tx := s.db.WithContext(ctx).Exec(q, val)
+	tx := s.db.WithContext(ctx).Exec(q, val).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	for _, u := range res {
+		err := s.DeleteByID(ctx, *u)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (s *sqlEventListenerStore) DeleteByID(ctx context.Context, id uuid.UUID) error {
+	q := "DELETE FROM event_listeners WHERE id = $1;"
+	tx := s.db.WithContext(ctx).Exec(q, id)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -347,15 +371,23 @@ func (s *sqlEventListenerStore) DeleteAllForInstance(ctx context.Context, instID
 	return nil
 }
 
-func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error {
-	q := "DELETE FROM event_listeners WHERE trigger_info like $1 ;"
+func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) ([]*uuid.UUID, error) {
+	res := []*uuid.UUID{}
+
+	q := "SELECT id FROM event_listeners WHERE trigger_info like $1;"
 	val := fmt.Sprintf("%%%v%%", workflowID)
-	tx := s.db.WithContext(ctx).Exec(q, val)
+	tx := s.db.WithContext(ctx).Raw(q, val).Scan(&res)
 	if tx.Error != nil {
-		return tx.Error
+		return nil, tx.Error
 	}
 
-	return nil
+	for _, u := range res {
+		err := s.DeleteByID(ctx, *u)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
