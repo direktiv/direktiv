@@ -2,11 +2,12 @@ package flow
 
 import (
 	"context"
+	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
@@ -20,72 +21,54 @@ import (
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ctx, tx, err := flow.edb.Tx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback(tx)
-
-	var ns *ent.Namespace
-
-	clients := flow.edb.Clients(ctx)
+	defer tx.Rollback()
 
 	settings := req.GetSettings()
 
-	if req.GetIdempotent() {
-		ns, err := flow.edb.NamespaceByName(ctx, req.GetName())
-		if err == nil {
-			var resp grpc.CreateNamespaceResponse
-			err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
-			if err != nil {
-				return nil, err
-			}
-
-			return &resp, nil
-		}
-		if !derrors.IsNotFound(err) {
-			return nil, err
-		}
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
+	if err == nil && req.GetIdempotent() {
+		var resp grpc.CreateNamespaceResponse
+		resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
+		return &resp, nil
 	}
-
-	ns, err = clients.Namespace.Create().SetName(req.GetName()).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.Commit()
-	if err != nil {
+	if !errors.Is(err, datastore.ErrNotFound) {
 		return nil, err
 	}
 
-	// create namespace filesystem root and mirror config.
-	var txErr error
-	var mirConfig *mirror.Config
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		var root *filestore.Root
-		root, txErr = tx.FileStore().CreateRoot(ctx, ns.ID)
-		if txErr != nil {
-			return txErr
-		}
-		_, _, txErr = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
-		if txErr != nil {
-			return txErr
-		}
-
-		mirConfig, txErr = tx.DataStore().Mirror().CreateConfig(ctx, &mirror.Config{
-			NamespaceID:          ns.ID,
-			GitRef:               settings.Ref,
-			URL:                  settings.Url,
-			PublicKey:            settings.PublicKey,
-			PrivateKey:           settings.PrivateKey,
-			PrivateKeyPassphrase: settings.Passphrase,
-		})
-		if txErr != nil {
-			return txErr
-		}
-
-		return nil
+	ns, err = tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
+		Name:   req.GetName(),
+		Config: core.DefaultNamespaceConfig,
 	})
 	if err != nil {
+		return nil, err
+	}
+
+	root, err := tx.FileStore().CreateRoot(ctx, ns.ID)
+	if err != nil {
+		return nil, err
+	}
+	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	mirConfig, err := tx.DataStore().Mirror().CreateConfig(ctx, &mirror.Config{
+		NamespaceID:          ns.ID,
+		GitRef:               settings.Ref,
+		URL:                  settings.Url,
+		PublicKey:            settings.PublicKey,
+		PrivateKey:           settings.PrivateKey,
+		PrivateKeyPassphrase: settings.Passphrase,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -96,10 +79,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 
 	var resp grpc.CreateNamespaceResponse
-	err = bytedata.ConvertDataForOutput(ns, &resp.Namespace)
-	if err != nil {
-		return nil, err
-	}
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 
 	return &resp, nil
 }
@@ -113,22 +93,16 @@ func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDir
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, etx, err := flow.edb.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback(etx)
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -197,15 +171,16 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -227,15 +202,16 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
 	if err != nil {
@@ -289,15 +265,16 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	mirProcess, err := tx.DataStore().Mirror().GetProcess(ctx, ns.ID)
 	if err != nil {
@@ -339,18 +316,18 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 		return err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
-	}
-
-	var tailing bool
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return err
+	}
+
+	var tailing bool
 
 	mirProcess, err := tx.DataStore().Mirror().GetProcess(ctx, mirProcessID)
 	if err != nil {
