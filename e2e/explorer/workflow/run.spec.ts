@@ -24,7 +24,6 @@ test("it is possible to open and use the run workflow modal from the editor and 
   const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: basicWorkflow.data,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -95,7 +94,6 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: basicWorkflow.data,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -155,8 +153,6 @@ test("it is possible to run the workflow by setting an input JSON via the editor
       instanceId,
       namespace,
     },
-    headers: undefined,
-    payload: undefined,
   });
 
   const inputResponseString = atob(res.data);
@@ -179,7 +175,6 @@ test("it is possible to provide the input via generated form", async ({
   const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: jsonSchemaFormWorkflow,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -271,8 +266,6 @@ test("it is possible to provide the input via generated form", async ({
       instanceId,
       namespace,
     },
-    headers: undefined,
-    payload: undefined,
   });
 
   const expectedJson = {
@@ -293,7 +286,6 @@ test("it is possible to provide the input via generated form and resolve form er
   const workflowName = faker.system.commonFileName("yaml");
   await createWorkflow({
     payload: jsonSchemaWithRequiredEnum,
-    headers: undefined,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -369,8 +361,6 @@ test("it is possible to provide the input via generated form and resolve form er
       instanceId,
       namespace,
     },
-    headers: undefined,
-    payload: undefined,
   });
 
   const expectedJson = {
