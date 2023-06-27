@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"net/http"
 	"sync"
 
@@ -69,9 +70,14 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 		return err
 	}
 
-	ns, err := rcv.flow.edb.NamespaceByName(ctx, name)
-	if err != nil {
-		rcv.logger.Errorf("error getting namespace: %s", err.Error())
+	var ns *core.Namespace
+	var txErr error
+	_ = rcv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, name)
+		return txErr
+	})
+	if txErr != nil {
+		rcv.logger.Errorf("error getting namespace: %s", txErr.Error())
 		return err
 	}
 

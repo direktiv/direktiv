@@ -21,19 +21,19 @@ import (
 func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	var file *filestore.File
 	var txErr error
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if txErr != nil {
+			return txErr
+		}
 		file, txErr = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 		return txErr
 	})
-	if err != nil {
-		return nil, err
+	if txErr != nil {
+		return nil, txErr
 	}
 	resp := &grpc.NodeResponse{}
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
@@ -45,16 +45,16 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	var node *filestore.File
 	var files []*filestore.File
 	var isMirrorNamespace bool
 	var txErr error
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if txErr != nil {
+			return txErr
+		}
 		_, txErr = tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
 		if errors.Is(txErr, mirror.ErrNotFound) {
 			isMirrorNamespace = false
@@ -74,8 +74,8 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if txErr != nil {
+		return nil, txErr
 	}
 
 	resp := new(grpc.DirectoryResponse)

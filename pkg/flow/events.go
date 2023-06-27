@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"strings"
 	"sync"
 	"time"
@@ -76,8 +77,13 @@ func (events *events) sendEvent(data []byte) {
 
 	ctx := context.Background()
 
-	ns, err := events.edb.Namespace(ctx, id)
-	if err != nil {
+	var ns *core.Namespace
+	var txErr error
+	_ = events.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByID(ctx, id)
+		return txErr
+	})
+	if txErr != nil {
 		events.sugar.Error(err)
 		return
 	}
@@ -227,23 +233,29 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	var resListeners []*pkgevents.EventListener
+	var ns *core.Namespace
+	var txErr error
+
 	totalListeners := 0
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if txErr != nil {
+			return txErr
+		}
+
+		var t int
+		var li []*pkgevents.EventListener
+		li, t, txErr = tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if txErr != nil {
+			return txErr
 		}
 		resListeners = li
 		totalListeners = t
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if txErr != nil {
+		return nil, txErr
 	}
 	resp := new(grpc.EventListenersResponse)
 	resp.Namespace = ns.Name
