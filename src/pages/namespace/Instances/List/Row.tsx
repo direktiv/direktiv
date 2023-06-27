@@ -71,16 +71,16 @@ const InstanceTableRow: FC<{
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell className="w-32">
+        <TableCell>
           <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
         </TableCell>
-        <TableCell className="w-28">
+        <TableCell>
           <Badge variant="outline">{revision}</Badge>
         </TableCell>
-        <TableCell className="w-28">
+        <TableCell>
           <Badge variant="outline">{instance.invoker}</Badge>
         </TableCell>
-        <TableCell className="w-28">
+        <TableCell>
           <ConditionalWrapper
             condition={instance.status === "failed"}
             wrapper={(children) => (
@@ -101,7 +101,7 @@ const InstanceTableRow: FC<{
             </Badge>
           </ConditionalWrapper>
         </TableCell>
-        <TableCell className="w-40">
+        <TableCell>
           <Tooltip>
             <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
@@ -111,7 +111,7 @@ const InstanceTableRow: FC<{
             <TooltipContent>{instance.createdAt}</TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell className="w-40">
+        <TableCell>
           <Tooltip>
             <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
