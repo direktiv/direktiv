@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -160,36 +161,41 @@ resend:
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	le := make([]*logengine.LogEntry, 0)
-	qu := make(map[string]interface{})
-	qu["source"] = ns.ID
-	qu["type"] = ns
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return nil, err
-	}
 	total := 0
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var txError error
+	var ns *core.Namespace
+	le := make([]*logengine.LogEntry, 0)
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txError = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if txError != nil {
+			return txError
+		}
+
+		qu := make(map[string]interface{})
+		qu["source"] = ns.ID
+		qu["type"] = ns
+		qu, txError = addFiltersToQuery(qu, req.Pagination.Filter...)
+		if txError != nil {
+			return txError
+		}
+
 		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
+		txError = err
+		if txError != nil {
+			return txError
 		}
 		total = t
 		le = append(le, res...)
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if txError != nil {
+		return nil, txError
 	}
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
 
+	var err error
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return nil, err
