@@ -2,9 +2,9 @@ package errors
 
 import (
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
@@ -17,7 +17,7 @@ func (err *NotFoundError) Error() string {
 }
 
 func IsNotFound(err error) bool {
-	if ent.IsNotFound(err) || errors.Is(err, filestore.ErrNotFound) {
+	if errors.Is(err, filestore.ErrNotFound) || errors.Is(err, datastore.ErrNotFound) {
 		return true
 	}
 
