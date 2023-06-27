@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -45,24 +44,6 @@ func translateError(err error) error {
 	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
 		err = status.Error(codes.InvalidArgument, "invalid runtime variable name")
 		return err
-	}
-
-	cerr := new(ent.ConstraintError)
-
-	if errors.As(err, &cerr) {
-		if strings.Contains(cerr.Error(), "duplicate key value violates unique constraint") {
-			err = status.Error(codes.AlreadyExists, "resource already exists")
-			return err
-		}
-	}
-
-	verr := new(ent.ValidationError)
-
-	if errors.As(err, &verr) {
-		if strings.Contains(verr.Error(), "validator failed") {
-			err = status.Error(codes.InvalidArgument, "one or more fields has an invalid value")
-			return err
-		}
 	}
 
 	if strings.Contains(err.Error(), "already exists") || errors.Is(err, filestore.ErrPathAlreadyExists) {
