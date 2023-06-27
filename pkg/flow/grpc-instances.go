@@ -23,16 +23,16 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 		return nil, err
 	}
 
-	ns, err := srv.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := srv.flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, namespace)
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(id).GetSummary(ctx)
 	if err != nil {
@@ -84,16 +84,16 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummaryWithInput(ctx)
 	if err != nil {
@@ -132,16 +132,16 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummaryWithOutput(ctx)
 	if err != nil {
@@ -180,16 +180,16 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummaryWithMetadata(ctx)
 	if err != nil {
@@ -294,16 +294,16 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 		}
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	results, err := tx.InstanceStore().GetNamespaceInstances(ctx, ns.ID, opts)
 	if err != nil {
@@ -359,16 +359,16 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummary(ctx)
 	if err != nil {

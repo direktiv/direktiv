@@ -1027,13 +1027,13 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		return
 	}
 
-	tx.Rollback()
-
-	ns, err := engine.edb.Namespace(ctx, file.RootID)
+	ns, err := tx.DataStore().Namespaces().GetByID(ctx, file.RootID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
+
+	tx.Rollback()
 
 	var input []byte
 	m := make(map[string]interface{})
