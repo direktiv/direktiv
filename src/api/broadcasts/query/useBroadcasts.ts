@@ -1,4 +1,4 @@
-import { BroadcastsSchema } from "../schema";
+import { BroadcastsResponseSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { broadcastKeys } from "..";
@@ -10,7 +10,7 @@ const getBroadcasts = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
     `/api/namespaces/${namespace}/config`,
   method: "GET",
-  schema: BroadcastsSchema,
+  schema: BroadcastsResponseSchema,
 });
 
 const fetchBroadcasts = async ({
