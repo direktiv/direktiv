@@ -120,7 +120,11 @@ const Edit = ({ item, onSuccess }: EditProps) => {
           />
         </fieldset>
 
-        <Card className="grow p-4 pl-0" background="weight-1">
+        <Card
+          className="grow p-4 pl-0"
+          background="weight-1"
+          data-testid="variable-editor-card"
+        >
           <div className="h-[500px]">
             {isFetched && (
               <Editor
@@ -139,7 +143,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">
+            <Button variant="ghost" data-testid="var-edit-cancel">
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>

@@ -438,13 +438,13 @@
     },
     "variables": {
       "mutate": {
-        "createVariable": {
+        "updateVariable": {
           "success": {
-            "title": "Variable created",
-            "description": "Variable {{name}} was created."
+            "title": "Variable saved",
+            "description": "Variable {{name}} was saved."
           },
           "error": {
-            "description": "Could not create variable 😢"
+            "description": "Could not save variable 😢"
           }
         },
         "deleteVariable": {
