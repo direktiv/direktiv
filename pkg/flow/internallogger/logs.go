@@ -175,7 +175,7 @@ func AppendInstanceID(callpath, instanceID string) string {
 
 // func (logger *Logger) SendLogMsgToDB(l *logMessage) error {
 // 	ctx := context.Background() // logs are often queued and stored after their originating requests have ended.
-// 	clients := logger.edb.Clients(ctx)
+// 	clients := logger.ed.Clients(ctx)
 // 	msg := strings.ReplaceAll(l.msg, "\u0000", "")
 // 	lc := clients.LogMsg.Create().SetMsg(msg).SetT(l.t).SetLevel(string(l.level)).SetTags(l.tags)
 

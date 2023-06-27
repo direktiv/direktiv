@@ -360,7 +360,7 @@ func (srv *server) NotifyCluster(msg string) error {
 	// TODO: Alan, need fix.
 	//ctx := context.Background()
 	//
-	//conn, err := srv.edb.DB().Conn(ctx)
+	//conn, err := srv.ed.DB().Conn(ctx)
 	//if err != nil {
 	//	return err
 	//}
@@ -386,7 +386,7 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 	// TODO: Alan, need fix.
 	//ctx := context.Background()
 	//
-	//conn, err := srv.edb.DB().Conn(ctx)
+	//conn, err := srv.ed.DB().Conn(ctx)
 	//if err != nil {
 	//	return err
 	//}
