@@ -18,7 +18,7 @@ const SettingsPage: FC = () => (
       <VariablesList />
     </section>
 
-    <section data-testid="broadcasts-list">
+    <section data-testid="broadcasts-section">
       <Broadcasts />
     </section>
   </div>
