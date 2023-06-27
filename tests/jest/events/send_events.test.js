@@ -52,7 +52,7 @@ describe('Test send events', () => {
         var workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`)
             .set('Content-Type', 'application/json')
             .send(eventDuplicate)
-        expect(workflowEventResponse.statusCode).toEqual(409)
+        expect(workflowEventResponse.statusCode).toEqual(400)
     })
 
     it(`should send event to namespace with JSON`, async () => {

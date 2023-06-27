@@ -82,10 +82,11 @@ type EventListenerStore interface {
 	Get(ctx context.Context, namespace uuid.UUID, limit, offet int) ([]*EventListener, int, error)
 	// deletes EventListeners that have the deleted flag set.
 	Delete(ctx context.Context) error
+	DeleteByID(ctx context.Context, id uuid.UUID) error
 	// deletes the entries associated with the given instance ID.
-	DeleteAllForInstance(ctx context.Context, instID uuid.UUID) error
+	DeleteAllForInstance(ctx context.Context, instID uuid.UUID) ([]*uuid.UUID, error)
 	// deletes the entries associated with the given workflow ID.
-	DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) error
+	DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) ([]*uuid.UUID, error)
 }
 
 type NamespaceCloudEventFilter struct {

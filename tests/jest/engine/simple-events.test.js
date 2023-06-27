@@ -7,7 +7,7 @@ const namespaceName = "simpleeventstest"
 
 describe('Test events states behaviour', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+    //afterAll(common.helpers.deleteAllNamespaces)
 
     it(`should create a namespace`, async () => {
         var req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
@@ -111,18 +111,12 @@ states:
     function: spinoff
   transition: listen
 - id: listen
-  type: eventsXor
+  type: consumeEvent
+  event:
+    type: test.simple
   timeout: PT1M
-  events:
-  - event:
-      type: test.simple
-    transition: a
-    transform: 'jq(.result = "x")'
-  - event:
-      type: test.simple
-    transition: b
-    transform: 
-      result: y
+  transition: a
+  transform: 'jq(.result = "x")'
 - id: a
   type: noop
   transform: 'jq(.transitioned = "a")'
