@@ -43,8 +43,8 @@ export const PaginationLink = React.forwardRef<
       onClick={onClick}
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center ring-1 ring-inset focus:z-20 focus:outline-offset-0",
-        "bg-gray-1 p-2 text-gray-9 ring-gray-7 hover:bg-gray-2 focus-visible:outline-gray-9",
-        "dark:bg-gray-dark-1 dark:text-gray-dark-9 dark:ring-gray-dark-7 dark:hover:bg-gray-dark-2 dark:focus-visible:outline-gray-dark-9",
+        "p-2 text-gray-9 ring-gray-7 hover:bg-gray-2 focus-visible:outline-gray-9",
+        "dark:text-gray-dark-9 dark:ring-gray-dark-7 dark:hover:bg-gray-dark-2 dark:focus-visible:outline-gray-dark-9",
         icon === "left" && "rounded-l-md",
         icon === "right" && "rounded-r-md"
       )}
@@ -67,7 +67,7 @@ export const PaginationLink = React.forwardRef<
         active &&
           "z-10 bg-gray-12 text-gray-1 ring-gray-12 dark:bg-gray-dark-12 dark:text-gray-dark-1 dark:ring-gray-dark-12",
         !active &&
-          "bg-gray-1 text-gray-12 ring-gray-7 hover:bg-gray-2 dark:bg-gray-dark-1 dark:text-gray-dark-12 dark:ring-gray-dark-7 dark:hover:bg-gray-dark-2"
+          "text-gray-12 ring-gray-7 hover:bg-gray-2 dark:text-gray-dark-12 dark:ring-gray-dark-7 dark:hover:bg-gray-dark-2"
       )}
     >
       {children}
