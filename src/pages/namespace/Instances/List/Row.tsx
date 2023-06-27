@@ -1,3 +1,8 @@
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "~/design/HoverCard";
 import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 import {
@@ -7,7 +12,9 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
+import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
+import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import { pages } from "~/util/router/pages";
@@ -71,9 +78,28 @@ const InstanceTableRow: FC<{
           <Badge variant="outline">{revision}</Badge>
         </TableCell>
         <TableCell className="w-28">
-          <Badge variant={statusToBadgeVariant(instance.status)}>
-            {instance.status}
-          </Badge>
+          <Badge variant="outline">{instance.invoker}</Badge>
+        </TableCell>
+        <TableCell className="w-28">
+          <ConditionalWrapper
+            condition={instance.status === "failed"}
+            wrapper={(children) => (
+              <HoverCard>
+                <HoverCardTrigger>{children}</HoverCardTrigger>
+                <HoverCardContent asChild noBackground>
+                  <Alert variant="error">
+                    <span className="font-bold">{instance.errorCode}</span>
+                    <br />
+                    {instance.errorMessage}
+                  </Alert>
+                </HoverCardContent>
+              </HoverCard>
+            )}
+          >
+            <Badge variant={statusToBadgeVariant(instance.status)}>
+              {instance.status}
+            </Badge>
+          </ConditionalWrapper>
         </TableCell>
         <TableCell className="w-40">
           <Tooltip>
