@@ -43,6 +43,9 @@ const InstancesListPage = () => {
                   {t("pages.instances.list.tableHeader.revisionId")}
                 </TableHeaderCell>
                 <TableHeaderCell>
+                  {t("pages.instances.list.tableHeader.invoker")}
+                </TableHeaderCell>
+                <TableHeaderCell>
                   {t("pages.instances.list.tableHeader.state")}
                 </TableHeaderCell>
                 <TableHeaderCell>
