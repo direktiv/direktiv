@@ -16,7 +16,6 @@ import { useBroadcasts } from "~/api/broadcasts/query/useBroadcasts";
 import { useTranslation } from "react-i18next";
 import { useUpdateBroadcasts } from "~/api/broadcasts/mutate/updateBroadcasts";
 
-// To do: instead of this, maybe make components for each cell type
 const leftColClasses = "col-span-2";
 const labelCellClasses = "place-self-center px-2";
 const switchCellClasses = "place-self-center px-2";

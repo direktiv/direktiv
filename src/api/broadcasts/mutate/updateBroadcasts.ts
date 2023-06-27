@@ -30,11 +30,7 @@ export const useUpdateBroadcasts = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = ({
-    payload,
-  }: {
-    payload: BroadcastsPatchSchemaType; // Partial<BroadcastsSchemaType>?
-  }) =>
+  const mutationFn = ({ payload }: { payload: BroadcastsPatchSchemaType }) =>
     updateBroadcasts({
       apiKey: apiKey ?? undefined,
       payload,
