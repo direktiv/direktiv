@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"os"
 	"time"
 
@@ -414,9 +415,14 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return nil
+	})
+	if txErr != nil {
+		return txErr
 	}
 
 	instID, err := uuid.Parse(req.GetInstance())
@@ -490,9 +496,14 @@ resend:
 func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return nil
+	})
+	if txErr != nil {
+		return nil, txErr
 	}
 
 	calledAs := req.GetPath()
@@ -589,9 +600,14 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return nil
+	})
+	if txErr != nil {
+		return txErr
 	}
 
 	calledAs := req.GetPath()

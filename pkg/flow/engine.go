@@ -1127,13 +1127,6 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 	}
 }
 
-func rollback(tx database.Transaction) {
-	err := tx.Rollback()
-	if err != nil && !strings.Contains(err.Error(), "already been") {
-		fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
-	}
-}
-
 // GetInodePath returns the exact path to a inode.
 func GetInodePath(path string) string {
 	path = strings.TrimSuffix(path, "/")

@@ -380,13 +380,13 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	tx.Rollback()
-
-	ns, err := flow.edb.Namespace(ctx, file.RootID)
+	ns, err := tx.DataStore().Namespaces().GetByID(ctx, file.RootID)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
+
+	tx.Rollback()
 
 	ctx, conn, err := flow.engine.lock(id.String(), defaultLockWait)
 	if err != nil {

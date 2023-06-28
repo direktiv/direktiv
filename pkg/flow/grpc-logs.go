@@ -209,9 +209,14 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 	ctx := srv.Context()
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return nil
+	})
+	if txErr != nil {
+		return txErr
 	}
 
 	var tailing bool
@@ -226,6 +231,7 @@ resend:
 	qu["source"] = ns.ID
 	qu["type"] = ns
 	total := 0
+	var err error
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
