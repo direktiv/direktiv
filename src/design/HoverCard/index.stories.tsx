@@ -1,6 +1,6 @@
-import Alert from "../Alert";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
+import Alert from "../Alert";
 
 const meta = {
   title: "Components/HoverCard",
