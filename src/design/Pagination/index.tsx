@@ -41,6 +41,7 @@ export const PaginationLink = React.forwardRef<
       {...props}
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center ring-1 ring-inset focus:z-20 focus:outline-offset-0",
+        "disabled:pointer-events-none disabled:opacity-50",
         "p-2 text-gray-9 ring-gray-7 hover:bg-gray-2 focus-visible:outline-gray-9",
         "dark:text-gray-dark-9 dark:ring-gray-dark-7 dark:hover:bg-gray-dark-2 dark:focus-visible:outline-gray-dark-9",
         icon === "left" && "rounded-l-md",
@@ -60,6 +61,7 @@ export const PaginationLink = React.forwardRef<
       aria-current="page"
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold focus:z-20",
+        "disabled:pointer-events-none disabled:opacity-50",
         "ring-1 ring-inset focus:outline-offset-0 focus-visible:outline-gray-9 dark:focus-visible:outline-gray-dark-9",
         active &&
           "z-10 bg-gray-12 text-gray-1 ring-gray-12 dark:bg-gray-dark-12 dark:text-gray-dark-1 dark:ring-gray-dark-12",
