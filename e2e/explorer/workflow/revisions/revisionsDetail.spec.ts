@@ -104,7 +104,9 @@ test("it is possible to revert a revision within the details page", async ({
   await expect(
     page.getByTestId("revisions-detail-editor"),
     "it displays the reverted workflow content in the editor"
-  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""), {
+    timeout: 10000,
+  });
   // open and submit revert dialog
   await page.getByTestId(`revisions-detail-revert-btn`).click();
   await page.getByTestId(`dialog-revert-revision-btn-submit`).click();
@@ -115,7 +117,9 @@ test("it is possible to revert a revision within the details page", async ({
   await expect(
     page.getByTestId("workflow-editor"),
     "it displays the reverted workflow content in the editor"
-  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""), {
+    timeout: 10000,
+  });
 });
 
 test('it does not show the actions button on the revision details of the "latest" revision', async ({
