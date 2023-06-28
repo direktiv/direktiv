@@ -9,7 +9,9 @@ const minutesAgo = (date: moment.MomentInput) => {
 };
 
 const useUpdatedAt = (date: moment.MomentInput): string => {
-  const [updatedString, setUpdatedString] = useState(moment(date).fromNow());
+  const [updatedString, setUpdatedString] = useState(
+    moment(date).fromNow(true)
+  );
   const [minAgo, setMinAgo] = useState(minutesAgo(date));
   const interval = useRef<ReturnType<typeof setInterval>>();
 

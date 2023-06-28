@@ -1,5 +1,6 @@
 import clsx, { ClassValue } from "clsx";
 
+import { FC } from "react";
 import { twMerge } from "tailwind-merge";
 
 /**
@@ -16,3 +17,15 @@ import { twMerge } from "tailwind-merge";
  */
 export const twMergeClsx = (...inputs: ClassValue[]) =>
   twMerge(clsx(...inputs));
+
+type ConditionalWrapperProps = {
+  condition: boolean;
+  wrapper: (children: JSX.Element) => JSX.Element;
+  children: JSX.Element;
+};
+
+export const ConditionalWrapper: FC<ConditionalWrapperProps> = ({
+  condition,
+  wrapper,
+  children,
+}) => (condition ? wrapper(children) : children);
