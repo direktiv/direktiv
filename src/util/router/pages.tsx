@@ -209,7 +209,7 @@ export const pages: PageType = {
     },
   },
   instances: {
-    name: "instances",
+    name: "Instances",
     icon: Boxes,
     createHref: (params) =>
       `/${params.namespace}/instances${
