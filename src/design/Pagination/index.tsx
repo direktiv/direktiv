@@ -34,12 +34,11 @@ export interface PaginationLinkProps {
 export const PaginationLink = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & PaginationLinkProps
->(({ children, onClick, active, icon = false, ...props }, ref) =>
+>(({ children, active, icon = false, ...props }, ref) =>
   icon ? (
     <button
       ref={ref}
       {...props}
-      onClick={onClick}
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center ring-1 ring-inset focus:z-20 focus:outline-offset-0",
         "p-2 text-gray-9 ring-gray-7 hover:bg-gray-2 focus-visible:outline-gray-9",
@@ -58,7 +57,6 @@ export const PaginationLink = React.forwardRef<
     <button
       ref={ref}
       {...props}
-      onClick={onClick}
       aria-current="page"
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold focus:z-20",
