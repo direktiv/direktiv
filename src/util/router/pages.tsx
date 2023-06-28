@@ -25,7 +25,7 @@ import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
-  name?: string;
+  name: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   route: RouteObject;
 }
