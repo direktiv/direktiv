@@ -106,7 +106,7 @@ type PageType = DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup;
 // entries with no name and icon will not be rendered in the navigation
 export const pages: PageType = {
   explorer: {
-    name: "Explorer",
+    name: "components.mainMenu.explorer",
     icon: FolderTree,
     createHref: (params) => {
       let path = "";
@@ -200,7 +200,7 @@ export const pages: PageType = {
     },
   },
   monitoring: {
-    name: "Monitoring",
+    name: "components.mainMenu.monitoring",
     icon: Bug,
     createHref: (params) => `/${params.namespace}/monitoring`,
     route: {
@@ -209,7 +209,7 @@ export const pages: PageType = {
     },
   },
   instances: {
-    name: "Instances",
+    name: "components.mainMenu.instances",
     icon: Boxes,
     createHref: (params) =>
       `/${params.namespace}/instances${
@@ -254,7 +254,7 @@ export const pages: PageType = {
     },
   },
   events: {
-    name: "Events",
+    name: "components.mainMenu.events",
     icon: Calendar,
     createHref: (params) => `/${params.namespace}/events`,
     route: {
@@ -263,7 +263,7 @@ export const pages: PageType = {
     },
   },
   gateway: {
-    name: "Gateway",
+    name: "components.mainMenu.gateway",
     icon: Network,
     createHref: (params) => `/${params.namespace}/gateway`,
     route: {
@@ -272,7 +272,7 @@ export const pages: PageType = {
     },
   },
   permissions: {
-    name: "Permissions",
+    name: "components.mainMenu.permissions",
     icon: Users,
     createHref: (params) => `/${params.namespace}/permissions`,
     route: {
@@ -281,7 +281,7 @@ export const pages: PageType = {
     },
   },
   services: {
-    name: "Services",
+    name: "components.mainMenu.services",
     icon: Layers,
     createHref: (params) => `/${params.namespace}/services`,
     route: {
@@ -290,7 +290,7 @@ export const pages: PageType = {
     },
   },
   settings: {
-    name: "Settings",
+    name: "components.mainMenu.settings",
     icon: Settings,
     createHref: (params) => `/${params.namespace}/settings`,
     route: {
