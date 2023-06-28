@@ -381,21 +381,24 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 		eid = uuid.NewString()
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, in.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	var cevent *pkgevents.Event
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var txErr error
+	var ns *core.Namespace
+	txErr = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
+		if txErr != nil {
+			return txErr
+		}
 		evs, err := tx.DataStore().EventHistory().GetByID(ctx, eid)
+		txErr = err
 		if err != nil {
 			return err
 		}
 		cevent = evs
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if txErr != nil {
+		return nil, txErr
 	}
 	var resp grpc.HistoricalEventResponse
 

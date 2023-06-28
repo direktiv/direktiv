@@ -14,20 +14,18 @@ import (
 func (flow *flow) functionsHeartbeat() {
 	ctx := context.Background()
 
-	clients := flow.edb.Clients(ctx)
-
-	nss, err := clients.Namespace.Query().All(ctx)
-	if err != nil {
-		flow.sugar.Error(err)
-		return
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
 	defer tx.Rollback()
+
+	nss, err := tx.DataStore().Namespaces().GetAll(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
 
 	for _, ns := range nss {
 		files, err := tx.FileStore().ForRootID(ns.ID).ListAllFiles(ctx)

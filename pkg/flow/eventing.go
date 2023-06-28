@@ -132,9 +132,14 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
-	clients := rcv.events.edb.Clients(context.Background())
+	ctx := context.Background()
 
-	nss, err := clients.Namespace.Query().All(context.Background())
+	var txErr error
+	var nss []*core.Namespace
+	err := rcv.flow.runSqlTx(context.Background(), func(tx *sqlTx) error {
+		nss, txErr = tx.DataStore().Namespaces().GetAll(ctx)
+		return txErr
+	})
 	if err != nil {
 		rcv.logger.Errorf("can not get namespaces: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
