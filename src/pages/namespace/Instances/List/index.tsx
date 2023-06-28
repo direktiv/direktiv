@@ -20,17 +20,17 @@ const instancesPerPage = 10;
 
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
+  const { t } = useTranslation();
   const { data, isFetched } = useInstances({
     limit: instancesPerPage,
     offset,
   });
 
-  const { total } = data?.instances?.pageInfo ?? {};
-
-  const pages = Math.ceil((total ?? 0) / instancesPerPage);
+  const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
+  const pages = Math.ceil(numberOfInstances / instancesPerPage);
   const currentPage = Math.ceil(offset / instancesPerPage) + 1;
-
-  const { t } = useTranslation();
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === pages;
 
   const noResults = isFetched && data?.instances.results.length === 0;
 
@@ -88,7 +88,11 @@ const InstancesListPage = () => {
       </Card>
       {pages > 0 && (
         <Pagination>
-          <PaginationLink icon="left" onClick={() => setOffset(0)} />
+          <PaginationLink
+            icon="left"
+            onClick={() => setOffset(0)}
+            disabled={isFirstPage}
+          />
           {[...Array(pages)].map((_, i) => {
             const pageNumber = i + 1;
             const isActive = currentPage === pageNumber;
@@ -106,9 +110,11 @@ const InstancesListPage = () => {
               </PaginationLink>
             );
           })}
+
           <PaginationLink
             icon="right"
             onClick={() => setOffset((pages - 1) * instancesPerPage)}
+            disabled={isLastPage}
           />
         </Pagination>
       )}
