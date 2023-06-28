@@ -116,8 +116,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	}
 
 	ctx := context.Background()
-
-	conn, err := flow.edb.DB().Conn(ctx)
+	conn, err := flow.gormDB.DB()
 	if err != nil {
 		flow.sugar.Error(err)
 		return

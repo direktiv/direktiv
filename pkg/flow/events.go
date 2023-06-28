@@ -273,9 +273,14 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return nil
+	})
+	if txErr != nil {
+		return txErr
 	}
 
 	sub := flow.pubsub.SubscribeEventListeners(ns)
@@ -283,17 +288,19 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 resend:
 	var resListeners []*pkgevents.EventListener
 	totalListeners := 0
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
+		txErr = err
+		if txErr != nil {
+			return txErr
 		}
 		resListeners = li
 		totalListeners = t
 		return nil
 	})
-	if err != nil {
-		return err
+	if txErr != nil {
+		return txErr
 	}
 	resp := new(grpc.EventListenersResponse)
 	resp.Namespace = ns.Name
@@ -303,7 +310,7 @@ resend:
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
-		err = srv.Send(resp)
+		err := srv.Send(resp)
 		if err != nil {
 			return err
 		}
@@ -356,9 +363,14 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return nil, err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		return nil
+	})
+	if txErr != nil {
+		return nil, txErr
 	}
 
 	timer := in.GetTimer()
@@ -437,23 +449,27 @@ const (
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	count := 0
 	var res []*pkgevents.Event
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if txErr != nil {
+			return txErr
+		}
+
 		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID)
+		txErr = err
 		if err != nil {
-			return err
+			return txErr
 		}
 		count = t
 		res = re
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if txErr != nil {
+		return nil, txErr
 	}
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = ns.Name
@@ -481,9 +497,14 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return nil
+	})
+	if txErr != nil {
+		return txErr
 	}
 
 	sub := flow.pubsub.SubscribeEvents(ns)
@@ -493,8 +514,9 @@ resend:
 
 	count := 0
 	var res []*pkgevents.Event
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID)
+		txErr = err
 		if err != nil {
 			return err
 		}
@@ -502,8 +524,8 @@ resend:
 		res = re
 		return nil
 	})
-	if err != nil {
-		return err
+	if txErr != nil {
+		return txErr
 	}
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = ns.Name
@@ -522,7 +544,7 @@ resend:
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
-		err = srv.Send(resp)
+		err := srv.Send(resp)
 		if err != nil {
 			return err
 		}
@@ -540,31 +562,32 @@ resend:
 func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	eid := req.GetId()
 	if eid == "" {
 		eid = uuid.NewString()
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	var cevent *pkgevents.Event
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var txErr error
+	var ns *core.Namespace
+	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if txErr != nil {
+			return txErr
+		}
+
 		evs, err := tx.DataStore().EventHistory().GetByID(ctx, eid)
+		txErr = err
 		if err != nil {
 			return err
 		}
 		cevent = evs
 		return nil
 	})
-	if err != nil {
-		return &emptypb.Empty{}, err
+	if txErr != nil {
+		return &emptypb.Empty{}, txErr
 	}
-	err = flow.events.ReplayCloudevent(ctx, ns, cevent)
+	err := flow.events.ReplayCloudevent(ctx, ns, cevent)
 	if err != nil {
 		return nil, err
 	}
