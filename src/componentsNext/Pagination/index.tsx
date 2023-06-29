@@ -1,7 +1,10 @@
+import { Dispatch, SetStateAction } from "react";
 import {
   PaginationLink,
   Pagination as PaginationWrapper,
 } from "~/design/Pagination";
+
+type SetState<T> = Dispatch<SetStateAction<T>>;
 
 export const Pagination = ({
   itemsPerPage,
