@@ -62,37 +62,30 @@ describe("describePagination", () => {
     test.only("increasing neighbours will eventually get rid of the ...", () => {
       const result1Neighbour = describePagination({
         pages: 10,
-        currentPage: 1,
+        currentPage: 3,
         neighbours: 1,
       });
-      expect(result1Neighbour).toStrictEqual([1, 2, "...", 9, 10]);
+      expect(result1Neighbour).toStrictEqual([1, 2, 3, 4, "...", 9, 10]);
 
       const result2Neighbour = describePagination({
         pages: 10,
-        currentPage: 1,
+        currentPage: 3,
         neighbours: 2,
       });
-      expect(result2Neighbour).toStrictEqual([1, 2, 3, "...", 8, 9, 10]);
+      expect(result2Neighbour).toStrictEqual([1, 2, 3, 4, 5, "...", 8, 9, 10]);
 
       const result3Neighbours = describePagination({
         pages: 10,
-        currentPage: 1,
+        currentPage: 3,
         neighbours: 3,
       });
-      expect(result3Neighbours).toStrictEqual([1, 2, 3, 4, "...", 7, 8, 9, 10]);
-
-      const result4Neighbours = describePagination({
-        pages: 10,
-        currentPage: 1,
-        neighbours: 4,
-      });
-      expect(result4Neighbours).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(result3Neighbours).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 
     test.only("when neighbours is very high, it will just not having any ...", () => {
       const result = describePagination({
         pages: 10,
-        currentPage: 1,
+        currentPage: 3,
         neighbours: 99,
       });
       expect(result).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
