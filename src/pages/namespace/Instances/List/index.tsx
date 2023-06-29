@@ -38,7 +38,7 @@ const InstancesListPage = () => {
       <Card>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
                 {t("pages.instances.list.tableHeader.name")}
               </TableHeaderCell>
