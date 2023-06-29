@@ -3,7 +3,9 @@ import {
   ArrayFieldTemplateProps,
   BaseInputTemplateProps,
   DescriptionFieldProps,
+  ErrorListProps,
   RJSFSchema,
+  RJSFValidationError,
   RegistryWidgetsType,
   TitleFieldProps,
   WidgetProps,
@@ -24,6 +26,7 @@ import {
   SelectValue,
 } from "../Select";
 
+import Alert from "~/design/Alert";
 import Button from "../Button";
 import { Checkbox } from "../Checkbox";
 import Form from "@rjsf/core";
@@ -181,6 +184,24 @@ const DescriptionFieldTemplate = (props: DescriptionFieldProps) => {
   );
 };
 
+const ErrorListTemplate = (props: ErrorListProps) => {
+  const { errors } = props;
+  return (
+    <Alert
+      variant="error"
+      data-testid="jsonschema-form-error"
+      className="mb-2"
+      {...props}
+    >
+      <ul>
+        {errors.map((error: RJSFValidationError, i: number) => (
+          <li key={i}>{`${error.stack}`}</li>
+        ))}
+      </ul>
+    </Alert>
+  );
+};
+
 const CustomCheckbox = (props: WidgetProps) => (
   <div className="flex space-x-2 p-2 ">
     <Checkbox
@@ -222,6 +243,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
       TitleFieldTemplate,
       ArrayFieldTemplate,
       DescriptionFieldTemplate,
+      ErrorListTemplate,
       ButtonTemplates: {
         SubmitButton,
       },
