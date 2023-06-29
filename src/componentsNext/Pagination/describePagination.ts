@@ -11,7 +11,7 @@ type PaginationShape = (number | "...")[];
 const describePagination = ({
   pages,
   currentPage: current,
-  neighbours: pageNeighbours = 1,
+  neighbours = 1,
 }: {
   pages: number;
   currentPage: number;
@@ -20,6 +20,7 @@ const describePagination = ({
   if (current < 1) return [];
   if (pages < 1) return [];
   if (current > pages) return [];
+  if (neighbours < 0) return [];
 
   /**
    * considering this pagination example
@@ -38,10 +39,10 @@ const describePagination = ({
    */
 
   // middle segment
-  const leftCurrent = current - pageNeighbours;
+  const leftCurrent = current - neighbours;
   const activeStart = leftCurrent > 0 ? leftCurrent : current;
 
-  const rightCurrent = current + pageNeighbours;
+  const rightCurrent = current + neighbours;
   const activeEnd = rightCurrent <= pages ? rightCurrent : current;
 
   const middleSegmentCount = activeEnd - activeStart + 1;
@@ -61,7 +62,7 @@ const describePagination = ({
    */
   if (activeStart > 1) {
     const startStart = 1;
-    let startEnd = startStart + pageNeighbours;
+    let startEnd = startStart + neighbours;
     // remove possible overlap
     if (startEnd >= activeStart) {
       startEnd = activeStart - 1;
@@ -88,13 +89,16 @@ const describePagination = ({
    */
   if (activeEnd < pages) {
     const endEnd = pages;
-    let endStart = endEnd - pageNeighbours;
+    let endStart = endEnd - neighbours;
     // remove possible overlap
     if (endStart <= activeEnd) {
       endStart = activeEnd + 1;
     }
 
     // dots needed?
+
+    console.log("🚀", endStart, activeEnd, endStart - activeEnd);
+
     if (endStart - activeEnd > 1) {
       rightSegment.push("...");
     }
@@ -104,6 +108,8 @@ const describePagination = ({
       rightSegment.push(endStart + index);
     }
   }
+
+  console.log("🚀", leftSegment, middleSegment, rightSegment);
 
   return [...leftSegment, ...middleSegment, ...rightSegment];
 };
