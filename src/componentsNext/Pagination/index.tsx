@@ -6,7 +6,7 @@ import {
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-const Pagination = ({
+export const Pagination = ({
   itemsPerPage,
   totalItems,
   offset,
@@ -54,5 +54,3 @@ const Pagination = ({
     </PaginationWrapper>
   );
 };
-
-export default Pagination;

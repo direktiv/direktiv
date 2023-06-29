@@ -10,7 +10,7 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import NoResult from "./NoResult";
-import Pagination from "~/componentsNext/Pagination";
+import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
 import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
