@@ -12,6 +12,7 @@ import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import { Radio } from "lucide-react";
 import { TableBody } from "@mui/material";
+import { twMergeClsx } from "~/util/helpers";
 import { useBroadcasts } from "~/api/broadcasts/query/useBroadcasts";
 import { useTranslation } from "react-i18next";
 import { useUpdateBroadcasts } from "~/api/broadcasts/mutate/updateBroadcasts";
@@ -51,7 +52,12 @@ const Broadcasts: FC = () => {
       <Card>
         <Table>
           <TableHead>
-            <TableRow className={rowClasses}>
+            <TableRow
+              className={twMergeClsx(
+                rowClasses,
+                "hover:bg-inherit dark:hover:bg-inherit"
+              )}
+            >
               <TableHeaderCell className={leftColClasses}></TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
                 {t("pages.settings.broadcasts.columns.success")}
@@ -92,7 +98,12 @@ const Broadcasts: FC = () => {
           </TableBody>
 
           <TableHead>
-            <TableRow className={rowClasses}>
+            <TableRow
+              className={twMergeClsx(
+                rowClasses,
+                "hover:bg-inherit dark:hover:bg-inherit"
+              )}
+            >
               <TableHeaderCell className={leftColClasses}></TableHeaderCell>
               <TableHeaderCell className={labelCellClasses}>
                 {t("pages.settings.broadcasts.columns.create")}
