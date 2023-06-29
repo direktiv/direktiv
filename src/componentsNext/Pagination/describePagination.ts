@@ -96,9 +96,6 @@ const describePagination = ({
     }
 
     // dots needed?
-
-    console.log("🚀", endStart, activeEnd, endStart - activeEnd);
-
     if (endStart - activeEnd > 1) {
       rightSegment.push("...");
     }
@@ -108,8 +105,6 @@ const describePagination = ({
       rightSegment.push(endStart + index);
     }
   }
-
-  console.log("🚀", leftSegment, middleSegment, rightSegment);
 
   return [...leftSegment, ...middleSegment, ...rightSegment];
 };
