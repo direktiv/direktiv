@@ -26,7 +26,7 @@ export const useBroadcasts = () => {
   const namespace = useNamespace();
 
   if (!namespace) {
-    throw new EvalError("namespace is undefined");
+    throw new Error("namespace is undefined");
   }
 
   return useQuery({
