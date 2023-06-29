@@ -244,6 +244,25 @@
           }
         }
       },
+      "broadcasts": {
+        "title": "Broadcasts",
+        "columns": {
+          "success": "Success",
+          "start": "Started",
+          "fail": "Failed",
+          "create": "Created",
+          "update": "Updated",
+          "delete": "Deleted"
+        },
+        "rows": {
+          "instance": "Instance",
+          "directory": "Directory",
+          "workflow": "Workflow",
+          "instanceVariable": "Instance Variable",
+          "namespaceVariable": "Namespace Variable",
+          "workflowVariable": "Workflow Variable"
+        }
+      },
       "theme": {
         "title": "Theme"
       },
