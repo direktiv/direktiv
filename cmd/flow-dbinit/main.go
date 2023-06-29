@@ -1,12 +1,12 @@
 package flow_dbinit
 
 import (
-	_ "github.com/lib/pq"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
 func RunApplication() {
-	log.Printf("checking database for schema updates...\n")
-
-	return
+	// TODO: rethink a db migration technique.
+	log.Printf("db migration arrangements.\n")
 }
