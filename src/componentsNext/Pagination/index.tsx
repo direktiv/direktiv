@@ -4,6 +4,8 @@ import {
   Pagination as PaginationWrapper,
 } from "~/design/Pagination";
 
+import describePagination from "./describePagination";
+
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
 export const Pagination = ({
@@ -17,38 +19,53 @@ export const Pagination = ({
   offset: number;
   setOffset: SetState<number>;
 }) => {
-  const numberOfInstances = totalItems ?? 0;
-  const pages = Math.ceil(numberOfInstances / itemsPerPage);
+  const setOffsetByPageNumber = (pageNumber: number) =>
+    (pageNumber - 1) * itemsPerPage;
+
+  const numberOfItems = totalItems ?? 0;
+  const pages = Math.ceil(numberOfItems / itemsPerPage);
   const currentPage = Math.ceil(offset / itemsPerPage) + 1;
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === pages;
 
+  const previousPage = currentPage > 1 ? currentPage - 1 : null;
+  const nextPage = currentPage < pages ? currentPage + 1 : null;
+
+  const paginationDescription = describePagination({ currentPage, pages });
+
   return (
-    <PaginationWrapper>
+    <PaginationWrapper align="center">
       <PaginationLink
         icon="left"
-        onClick={() => setOffset(0)}
+        onClick={() =>
+          previousPage && setOffset(setOffsetByPageNumber(previousPage))
+        }
         disabled={isFirstPage}
       />
-      {[...Array(pages)].map((_, i) => {
-        const pageNumber = i + 1;
-        const isActive = currentPage === pageNumber;
+      {paginationDescription.map((page) => {
+        if (page === "...")
+          return (
+            <PaginationLink key={page} disabled>
+              ...
+            </PaginationLink>
+          );
+
+        const isActive = currentPage === page;
         return (
           <PaginationLink
-            key={i}
+            key={page}
             active={isActive}
             onClick={() => {
-              isActive ? null : setOffset((pageNumber - 1) * itemsPerPage);
+              !isActive && setOffset(setOffsetByPageNumber(page));
             }}
           >
-            {pageNumber}
+            {page}
           </PaginationLink>
         );
       })}
-
       <PaginationLink
         icon="right"
-        onClick={() => setOffset((pages - 1) * itemsPerPage)}
+        onClick={() => nextPage && setOffset(setOffsetByPageNumber(nextPage))}
         disabled={isLastPage}
       />
     </PaginationWrapper>
