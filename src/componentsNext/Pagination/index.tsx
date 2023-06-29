@@ -17,7 +17,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 
 type PaginationShape = (number | "...")[];
 
-export const generatePaginationPages = ({
+export const describePagination = ({
   pages,
   currentPage: current,
   neighbours: pageNeighbours = 1,
