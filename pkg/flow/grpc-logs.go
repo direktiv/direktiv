@@ -8,6 +8,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
@@ -160,21 +161,24 @@ resend:
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	le := make([]*logengine.LogEntry, 0)
-	qu := make(map[string]interface{})
-	qu["source"] = ns.ID
-	qu["type"] = ns
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return nil, err
-	}
 	total := 0
+	var err error
+	var ns *core.Namespace
+	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
+		}
+
+		qu := make(map[string]interface{})
+		qu["source"] = ns.ID
+		qu["type"] = ns
+		qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+		if err != nil {
+			return err
+		}
+
 		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
@@ -203,7 +207,12 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 	ctx := srv.Context()
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
+	})
 	if err != nil {
 		return err
 	}

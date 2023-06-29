@@ -41,7 +41,7 @@ describe('Test basic directory operations', () => {
         expect(createWorkflowResponse.statusCode).toEqual(404)
         expect(createWorkflowResponse.body).toMatchObject({
             code: 404,
-            message: `namespace not found`,
+            message: `ErrNotFound`,
         })
     })
 

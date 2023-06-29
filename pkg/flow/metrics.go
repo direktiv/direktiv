@@ -163,16 +163,16 @@ func setupPrometheusEndpoint() error {
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

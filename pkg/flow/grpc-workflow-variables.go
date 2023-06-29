@@ -19,16 +19,16 @@ import (
 )
 
 func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *database.Namespace, f *filestore.File, err error) {
-	ns, err = flow.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return
 	}
 	defer tx.Rollback()
+
+	ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+	if err != nil {
+		return
+	}
 
 	f, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path)
 	if err != nil {
@@ -46,16 +46,16 @@ func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -114,16 +114,16 @@ func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv
 func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVariablesRequest) (*grpc.WorkflowVariablesResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -172,17 +172,16 @@ func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, sr
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
@@ -289,16 +288,16 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -342,16 +341,16 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

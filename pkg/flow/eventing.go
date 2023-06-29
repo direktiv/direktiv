@@ -14,6 +14,7 @@ import (
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -69,7 +70,11 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 		return err
 	}
 
-	ns, err := rcv.flow.edb.NamespaceByName(ctx, name)
+	var ns *core.Namespace
+	err = rcv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, name)
+		return err
+	})
 	if err != nil {
 		rcv.logger.Errorf("error getting namespace: %s", err.Error())
 		return err
@@ -126,9 +131,14 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
-	clients := rcv.events.edb.Clients(context.Background())
+	ctx := context.Background()
 
-	nss, err := clients.Namespace.Query().All(context.Background())
+	var nss []*core.Namespace
+	var err error
+	err = rcv.flow.runSqlTx(context.Background(), func(tx *sqlTx) error {
+		nss, err = tx.DataStore().Namespaces().GetAll(ctx)
+		return err
+	})
 	if err != nil {
 		rcv.logger.Errorf("can not get namespaces: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

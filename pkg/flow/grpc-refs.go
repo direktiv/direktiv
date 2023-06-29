@@ -27,16 +27,16 @@ func loadSource(rev *filestore.Revision) (*model.Workflow, error) {
 func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -100,16 +100,16 @@ func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServ
 func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -178,15 +178,16 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
@@ -215,15 +216,16 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {

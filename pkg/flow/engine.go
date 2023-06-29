@@ -1027,13 +1027,13 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		return
 	}
 
-	tx.Rollback()
-
-	ns, err := engine.edb.Namespace(ctx, file.RootID)
+	ns, err := tx.DataStore().Namespaces().GetByID(ctx, file.RootID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
+
+	tx.Rollback()
 
 	var input []byte
 	m := make(map[string]interface{})
@@ -1124,13 +1124,6 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
-	}
-}
-
-func rollback(tx database.Transaction) {
-	err := tx.Rollback()
-	if err != nil && !strings.Contains(err.Error(), "already been") {
-		fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
 	}
 }
 

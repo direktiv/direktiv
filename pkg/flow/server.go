@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -13,11 +14,11 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/entwrapper"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -58,6 +59,8 @@ type server struct {
 
 	gormDB *gorm.DB
 
+	rawDB *sql.DB
+
 	mirrorManager mirror.Manager
 
 	flow            *flow
@@ -67,7 +70,6 @@ type server struct {
 
 	metrics *metrics.Client
 	logger  logengine.BetterLogger
-	edb     *entwrapper.Database // TODO: remove
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
@@ -132,19 +134,6 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
-
-	// srv.db, err = initDatabase(ctx, db)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer srv.cleanup(srv.db.Close)
-
-	edb, err := entwrapper.New(ctx, srv.sugar, db)
-	if err != nil {
-		return err
-	}
-	srv.edb = edb
-
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
@@ -158,7 +147,12 @@ func (srv *server) start(ctx context.Context) error {
 		),
 	})
 	if err != nil {
-		return fmt.Errorf("creating filestore, err: %w", err)
+		return fmt.Errorf("creating gorm db driver, err: %w", err)
+	}
+
+	res := srv.gormDB.Exec(database2.Schema)
+	if res.Error != nil {
+		return fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
 
 	gdb, err := srv.gormDB.DB()
@@ -167,6 +161,14 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
+
+	srv.rawDB, err = sql.Open("postgres", db)
+	if err == nil {
+		err = srv.rawDB.Ping()
+	}
+	if err != nil {
+		return fmt.Errorf("creating raw db driver, err: %w", err)
+	}
 
 	fmt.Printf(">>>>>> dsn %s\n", db)
 
@@ -376,7 +378,7 @@ func (srv *server) cleanup(closer func() error) {
 func (srv *server) NotifyCluster(msg string) error {
 	ctx := context.Background()
 
-	conn, err := srv.edb.DB().Conn(ctx)
+	conn, err := srv.rawDB.Conn(ctx)
 	if err != nil {
 		return err
 	}
@@ -401,7 +403,7 @@ func (srv *server) NotifyCluster(msg string) error {
 func (srv *server) NotifyHostname(hostname, msg string) error {
 	ctx := context.Background()
 
-	conn, err := srv.edb.DB().Conn(ctx)
+	conn, err := srv.rawDB.Conn(ctx)
 	if err != nil {
 		return err
 	}

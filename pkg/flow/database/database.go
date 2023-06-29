@@ -1,26 +1,11 @@
 package database
 
 import (
-	"context"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/google/uuid"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
-
-type Transaction interface {
-	Commit() error
-	Rollback() error
-}
-
-type Database interface {
-	AddTxToCtx(ctx context.Context, tx Transaction) context.Context
-	Tx(ctx context.Context) (context.Context, Transaction, error)
-	Close() error
-
-	Namespace(ctx context.Context, id uuid.UUID) (*Namespace, error)
-	NamespaceByName(ctx context.Context, namespace string) (*Namespace, error)
-}
 
 type HasAttributes interface {
 	GetAttributes() map[string]string
@@ -37,6 +22,8 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 	}
 	return m
 }
+
+type Namespace = core.Namespace
 
 func GetWorkflow(path string) string {
 	return strings.Split(path, ":")[0]

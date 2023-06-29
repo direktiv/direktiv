@@ -1,10 +1,19 @@
+CREATE TABLE IF NOT EXISTS  "namespaces" (
+    "id" uuid,
+    "name" text NOT NULL UNIQUE,
+    "config" text NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("id")
+);
+
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
-    FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -60,7 +69,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("namespace_id"),
     CONSTRAINT "fk_namespaces_mirror_configs"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -74,7 +83,7 @@ CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_mirror_processes"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -87,7 +96,7 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_secrets"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "services" (
@@ -100,7 +109,7 @@ CREATE TABLE IF NOT EXISTS "services" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_services"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -121,7 +130,7 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     UNIQUE(namespace_id, workflow_id, instance_id, name),
 
     CONSTRAINT "fk_namespaces_runtime_variables"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
 
     CONSTRAINT "fk_filesystem_files_runtime_variables"
     FOREIGN KEY ("workflow_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -173,7 +182,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "metadata" bytea,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_instances"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "events_history" (
@@ -184,7 +193,7 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     "namespace_id" uuid NOT NULL,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "no_dup_check" UNIQUE ("source","id")
 );
 
@@ -205,7 +214,7 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "trigger_info" text NOT NULL,
     "metadata" text,
     PRIMARY KEY ("id"),
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "event_topics" (
@@ -228,7 +237,7 @@ CREATE TABLE IF NOT EXISTS "events_filters" (
     "name" text NOT NULL,
     "js_code" text NOT NULL,
     PRIMARY KEY ("id"),
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "metrics" (

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent/schema"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/jinzhu/copier"
 )
 
@@ -36,7 +36,7 @@ type ConfigBroadcast struct {
 var defaultNamespaceConfig Config
 
 func init() {
-	err := json.Unmarshal([]byte(schema.DefaultNamespaceConfig), &defaultNamespaceConfig)
+	err := json.Unmarshal([]byte(core.DefaultNamespaceConfig), &defaultNamespaceConfig)
 	if err != nil {
 		panic(fmt.Errorf("failed to unmarshal defaultNamespaceConfig: %w", err))
 	}

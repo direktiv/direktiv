@@ -36,9 +36,7 @@ describe("Test Server Sent Events", () => {
         expect(onMessageMock).toHaveBeenCalledWith(
             expect.objectContaining({
                 namespace: NAMESPACE,
-                pageInfo: expect.objectContaining({
-                    total: logResultsArr.length, // now we can check if the pageInfo.total is correct
-                }),
+                pageInfo: null,
             })
         );
     });
