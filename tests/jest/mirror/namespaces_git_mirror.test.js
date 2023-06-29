@@ -52,7 +52,7 @@ describe('Test namespace git mirroring', () => {
         expect(res.statusCode).toEqual(404)
         expect(res.body).toMatchObject({
             code: 404,
-            message: "namespace not found",
+            message: "ErrNotFound",
         })
     })
 })

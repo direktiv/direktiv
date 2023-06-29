@@ -46,7 +46,7 @@ describe('Test basic directory operations', () => {
         expect(createDirectoryResponse.statusCode).toEqual(404)
         expect(createDirectoryResponse.body).toMatchObject({
             code: 404,
-            message: `namespace not found`,
+            message: `ErrNotFound`,
         })
     })
 
