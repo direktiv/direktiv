@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -57,6 +58,8 @@ type server struct {
 	engine *engine
 
 	gormDB *gorm.DB
+
+	rawDB *sql.DB
 
 	mirrorManager mirror.Manager
 
@@ -144,7 +147,7 @@ func (srv *server) start(ctx context.Context) error {
 		),
 	})
 	if err != nil {
-		return fmt.Errorf("creating filestore, err: %w", err)
+		return fmt.Errorf("creating gorm db driver, err: %w", err)
 	}
 
 	res := srv.gormDB.Exec(database2.Schema)
@@ -158,6 +161,14 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
+
+	srv.rawDB, err = sql.Open("postgres", db)
+	if err == nil {
+		err = srv.rawDB.Ping()
+	}
+	if err != nil {
+		return fmt.Errorf("creating raw db driver, err: %w", err)
+	}
 
 	fmt.Printf(">>>>>> dsn %s\n", db)
 
@@ -367,7 +378,7 @@ func (srv *server) cleanup(closer func() error) {
 func (srv *server) NotifyCluster(msg string) error {
 	ctx := context.Background()
 
-	conn, err := srv.gormDB.DB()
+	conn, err := srv.rawDB.Conn(ctx)
 	if err != nil {
 		return err
 	}
@@ -392,7 +403,7 @@ func (srv *server) NotifyCluster(msg string) error {
 func (srv *server) NotifyHostname(hostname, msg string) error {
 	ctx := context.Background()
 
-	conn, err := srv.gormDB.DB()
+	conn, err := srv.rawDB.Conn(ctx)
 	if err != nil {
 		return err
 	}
