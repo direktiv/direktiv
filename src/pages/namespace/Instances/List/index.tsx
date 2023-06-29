@@ -1,4 +1,3 @@
-import { Pagination, PaginationLink } from "~/design/Pagination";
 import {
   Table,
   TableBody,
@@ -11,12 +10,13 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import NoResult from "./NoResult";
+import Pagination from "~/componentsNext/Pagination";
 import Row from "./Row";
 import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const instancesPerPage = 10;
+const instancesPerPage = 1;
 
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
@@ -27,11 +27,6 @@ const InstancesListPage = () => {
   });
 
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
-  const pages = Math.ceil(numberOfInstances / instancesPerPage);
-  const currentPage = Math.ceil(offset / instancesPerPage) + 1;
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === pages;
-
   const noResults = isFetched && data?.instances.results.length === 0;
 
   return (
@@ -86,38 +81,12 @@ const InstancesListPage = () => {
           </TableBody>
         </Table>
       </Card>
-      {pages > 0 && (
-        <Pagination>
-          <PaginationLink
-            icon="left"
-            onClick={() => setOffset(0)}
-            disabled={isFirstPage}
-          />
-          {[...Array(pages)].map((_, i) => {
-            const pageNumber = i + 1;
-            const isActive = currentPage === pageNumber;
-            return (
-              <PaginationLink
-                key={i}
-                active={isActive}
-                onClick={() => {
-                  isActive
-                    ? null
-                    : setOffset((pageNumber - 1) * instancesPerPage);
-                }}
-              >
-                {pageNumber}
-              </PaginationLink>
-            );
-          })}
-
-          <PaginationLink
-            icon="right"
-            onClick={() => setOffset((pages - 1) * instancesPerPage)}
-            disabled={isLastPage}
-          />
-        </Pagination>
-      )}
+      <Pagination
+        itemsPerPage={instancesPerPage}
+        offset={offset}
+        setOffset={setOffset}
+        totalItems={numberOfInstances}
+      />
     </div>
   );
 };
