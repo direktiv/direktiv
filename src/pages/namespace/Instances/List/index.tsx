@@ -16,7 +16,7 @@ import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const instancesPerPage = 20;
+const instancesPerPage = 15;
 
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
