@@ -1,12 +1,30 @@
 type PaginationShape = (number | "...")[];
 
 /**
+ *
+ * describePagination is a helper function to describe a pagination
+ * depending on the current page and the amount of pages. It will
+ * return an array of numbers and "...", where the numbers are the
+ * pages and the "..." are the dots in between.
+ *
+ * To handle a high amount of pages, it segments the pagination into
+ * three parts: the left segment, the middle segment and the right
+ * segment.
+ *
+ * here is an example of a 10 page pagination with 1 neighbour. the
+ * number wrapped in * is the current page
+ *
  * *1* 2 ... 9 10
  * 1 *2* 3 ... 9 10
  * 1 2 *3* 4 ... 9 10
  * 1 2 3 *4* 5 ... 9 10
  * 1 2 3 4 *5* 6 ... 9 10
  * 1 2 ... 5 *6* 7 ... 9 10
+ *
+ * @param pages the amount of pages
+ * @param currentPage the page we are currently on
+ * @param neighbours the amount of neighbours to the left and right of the current page, start and end defaults to 1
+ * @returns an array of numbers and "..."
  */
 const describePagination = ({
   pages,
@@ -26,87 +44,100 @@ const describePagination = ({
    * considering this pagination example
    * 1 2 ... 5 *6* 7 ... 9 10
    *
-   * activeStart = 5
-   * activeEnd = 7
-   * middleSegment = [5, 6, 7]
-   * middleSegmentCount = 3
+   * the variables will be set as follows
    *
+   * pages = 10
+   * current = 6
+   * neighbours = 1
+   *
+   * activeSegmentLeft = 5
+   * activeSegmentRight = 7
+   * activeSegment = [5, 6, 7]
+   * activeSegmentCount = 3
+   *
+   * startSegmentCount = 2
+   * startSegmentLeft = 1
+   * startSegmentRight = 2
    * startSegment = [1, 2, "..."]
+   *
+   * endSegmentLeft = 9
+   * endSegmentRight = 10
+   * endSegmentCount = 2
    * endSegment = ["...", 9, 10]
    *
    * and this this function will return
    * [1, 2, "...", 5, 6, 7, "...", 9, 10]
    */
 
-  // middle segment
-  const leftCurrent = current - neighbours;
-  const activeStart = leftCurrent > 0 ? leftCurrent : current;
+  // active segment
+  const currentLeft = current - neighbours;
+  const activeSegmentLeft = currentLeft > 0 ? currentLeft : current;
 
-  const rightCurrent = current + neighbours;
-  const activeEnd = rightCurrent <= pages ? rightCurrent : current;
+  const currentRight = current + neighbours;
+  const activeSegmentRight = currentRight <= pages ? currentRight : current;
 
-  const middleSegmentCount = activeEnd - activeStart + 1;
+  const activeSegmentCount = activeSegmentRight - activeSegmentLeft + 1;
 
-  const middleSegment: PaginationShape = [];
-  for (let index = 0; index < middleSegmentCount; index++) {
-    middleSegment.push(activeStart + index);
+  const activeSegment: PaginationShape = [];
+  for (let index = 0; index < activeSegmentCount; index++) {
+    activeSegment.push(activeSegmentLeft + index);
   }
 
-  // left segment
-  const leftSegment: PaginationShape = [];
+  // start segment
+  const startSegment: PaginationShape = [];
 
   /**
    * the active segment might also act as the start segment
-   * in this case we don't need to generate the left segment
+   * in this case we don't need to generate the start segment
    *  f.e. 1 *2* 3 ... 9 10
    */
-  if (activeStart > 1) {
-    const startStart = 1;
-    let startEnd = startStart + neighbours;
+  if (activeSegmentLeft > 1) {
+    const startSegmentLeft = 1;
+    let startSegmentRight = startSegmentLeft + neighbours;
     // remove possible overlap
-    if (startEnd >= activeStart) {
-      startEnd = activeStart - 1;
+    if (startSegmentRight >= activeSegmentLeft) {
+      startSegmentRight = activeSegmentLeft - 1;
     }
 
-    const leftSegmentCount = startEnd - startStart + 1;
-    for (let index = 0; index < leftSegmentCount; index++) {
-      leftSegment.push(startStart + index);
+    const startSegmentCount = startSegmentRight - startSegmentLeft + 1;
+    for (let index = 0; index < startSegmentCount; index++) {
+      startSegment.push(startSegmentLeft + index);
     }
 
     // dots needed?
-    if (activeStart - startEnd > 1) {
-      leftSegment.push("...");
+    if (activeSegmentLeft - startSegmentRight > 1) {
+      startSegment.push("...");
     }
   }
 
-  // right segment
-  const rightSegment: PaginationShape = [];
+  // end segment
+  const endSegment: PaginationShape = [];
 
   /**
-   * the active segment might also act as the right segment
-   * in this case we don't need to generate the rigt segment
+   * the active segment might also act as the end segment
+   * in this case we don't need to generate the end segment
    *  f.e. 1 2 ... *9* 10
    */
-  if (activeEnd < pages) {
-    const endEnd = pages;
-    let endStart = endEnd - neighbours;
+  if (activeSegmentRight < pages) {
+    const endSegmentRight = pages;
+    let endSegmentLeft = endSegmentRight - neighbours;
     // remove possible overlap
-    if (endStart <= activeEnd) {
-      endStart = activeEnd + 1;
+    if (endSegmentLeft <= activeSegmentRight) {
+      endSegmentLeft = activeSegmentRight + 1;
     }
 
     // dots needed?
-    if (endStart - activeEnd > 1) {
-      rightSegment.push("...");
+    if (endSegmentLeft - activeSegmentRight > 1) {
+      endSegment.push("...");
     }
 
-    const rightSegmentCount = endEnd - endStart + 1;
-    for (let index = 0; index < rightSegmentCount; index++) {
-      rightSegment.push(endStart + index);
+    const endSegmentCount = endSegmentRight - endSegmentLeft + 1;
+    for (let index = 0; index < endSegmentCount; index++) {
+      endSegment.push(endSegmentLeft + index);
     }
   }
 
-  return [...leftSegment, ...middleSegment, ...rightSegment];
+  return [...startSegment, ...activeSegment, ...endSegment];
 };
 
 export default describePagination;
