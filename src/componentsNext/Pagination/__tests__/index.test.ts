@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { describePagination } from "..";
+import describePagination from "../describePagination";
 
 describe("describePagination", () => {
   describe("it describes a simple 10 page pagination", () => {
