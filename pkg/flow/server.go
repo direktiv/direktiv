@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -26,6 +27,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -357,55 +359,53 @@ func (srv *server) cleanup(closer func() error) {
 }
 
 func (srv *server) NotifyCluster(msg string) error {
-	// TODO: Alan, need fix.
-	//ctx := context.Background()
-	//
-	//conn, err := srv.ed.DB().Conn(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//defer conn.Close()
-	//
-	//_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
-	//
-	//perr := new(pq.Error)
-	//
-	//if errors.As(err, &perr) {
-	//	srv.sugar.Errorf("db notification failed: %v", perr)
-	//	if perr.Code == "57014" {
-	//		return fmt.Errorf("canceled query")
-	//	}
-	//
-	//	return err
-	//}
+	ctx := context.Background()
+
+	conn, err := srv.gormDB.DB()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
+
+	perr := new(pq.Error)
+
+	if errors.As(err, &perr) {
+		srv.sugar.Errorf("db notification failed: %v", perr)
+		if perr.Code == "57014" {
+			return fmt.Errorf("canceled query")
+		}
+
+		return err
+	}
 
 	return nil
 }
 
 func (srv *server) NotifyHostname(hostname, msg string) error {
-	// TODO: Alan, need fix.
-	//ctx := context.Background()
-	//
-	//conn, err := srv.ed.DB().Conn(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//defer conn.Close()
-	//
-	//channel := fmt.Sprintf("hostname:%s", hostname)
-	//
-	//_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-	//
-	//perr := new(pq.Error)
-	//
-	//if errors.As(err, &perr) {
-	//	fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
-	//	if perr.Code == "57014" {
-	//		return fmt.Errorf("canceled query")
-	//	}
-	//
-	//	return err
-	//}
+	ctx := context.Background()
+
+	conn, err := srv.gormDB.DB()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	channel := fmt.Sprintf("hostname:%s", hostname)
+
+	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
+
+	perr := new(pq.Error)
+
+	if errors.As(err, &perr) {
+		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
+		if perr.Code == "57014" {
+			return fmt.Errorf("canceled query")
+		}
+
+		return err
+	}
 
 	return nil
 }
