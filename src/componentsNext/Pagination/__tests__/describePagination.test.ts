@@ -59,27 +59,43 @@ describe("describePagination", () => {
       expect(defaultPagination).toStrictEqual(oneNeighbourPagination);
     });
 
-    test("increasing neighbours will eventually get rid of the ...", () => {
+    test.only("increasing neighbours will eventually get rid of the ...", () => {
       const result1Neighbour = describePagination({
+        pages: 10,
+        currentPage: 1,
+        neighbours: 1,
+      });
+      expect(result1Neighbour).toStrictEqual([1, 2, "...", 9, 10]);
+
+      const result2Neighbour = describePagination({
         pages: 10,
         currentPage: 1,
         neighbours: 2,
       });
-      expect(result1Neighbour).toStrictEqual([1, 2, 3, "...", 8, 9, 10]);
-
-      const result2Neighbours = describePagination({
-        pages: 10,
-        currentPage: 1,
-        neighbours: 3,
-      });
-      expect(result2Neighbours).toStrictEqual([1, 2, 3, 4, "...", 7, 8, 9, 10]);
+      expect(result2Neighbour).toStrictEqual([1, 2, 3, "...", 8, 9, 10]);
 
       const result3Neighbours = describePagination({
         pages: 10,
         currentPage: 1,
         neighbours: 3,
       });
-      expect(result3Neighbours).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(result3Neighbours).toStrictEqual([1, 2, 3, 4, "...", 7, 8, 9, 10]);
+
+      const result4Neighbours = describePagination({
+        pages: 10,
+        currentPage: 1,
+        neighbours: 4,
+      });
+      expect(result4Neighbours).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+
+    test.only("when neighbours is very high, it will just not having any ...", () => {
+      const result = describePagination({
+        pages: 10,
+        currentPage: 1,
+        neighbours: 99,
+      });
+      expect(result).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
   });
 
@@ -109,6 +125,15 @@ describe("describePagination", () => {
     test("it will return an empty array when currentPage is bigger than pages", () => {
       const pagination = describePagination({ pages: 1, currentPage: 2 });
       expect(pagination).toStrictEqual([]);
+    });
+
+    test.only("it will return an empty array when neighbours is negative", () => {
+      const result = describePagination({
+        pages: 10,
+        currentPage: 1,
+        neighbours: -2,
+      });
+      expect(result).toStrictEqual([]);
     });
   });
 
