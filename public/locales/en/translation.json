@@ -90,8 +90,6 @@
               "list": {
                 "title": "Revisions",
                 "distribution": "{{count}} % of traffic distribution",
-                "copy": "copy",
-                "copied": "copied",
                 "contextMenu": {
                   "title": "Actions",
                   "delete": "Delete",
@@ -130,8 +128,6 @@
                 }
               },
               "detail": {
-                "copy": "copy",
-                "copied": "copied",
                 "backBtn": "Revisions List",
                 "readOnlyNote": "You cannot edit an old revision",
                 "revertBtn": "Revert"
@@ -167,6 +163,27 @@
           "revertToPrevious": "Revert to previous revision",
           "runBtn": "Run",
           "saveBtn": "Save"
+        }
+      }
+    },
+    "instances": {
+      "list": {
+        "title": "Recently executed instances",
+        "empty": {
+          "title": "there are no recently executed instances"
+        },
+        "tableHeader": {
+          "name": "name",
+          "id": "id",
+          "revisionId": "revision id",
+          "invoker": "invoker",
+          "state": "state",
+          "startedAt": "started at",
+          "updatedAt": "last updated"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago",
+          "openWorkflowTooltip": "click to open workflow"
         }
       }
     },
@@ -245,11 +262,22 @@
     }
   },
   "components": {
+    "mainMenu": {
+      "explorer": "Explorer",
+      "monitoring": "Monitoring",
+      "instances": "Instances",
+      "events": "Events",
+      "gateway": "Gateway",
+      "permissions": "Permissions",
+      "services": "Services",
+      "settings": "Settings"
+    },
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
-      "loading": "loading..."
+      "loading": "loading...",
+      "instances": "Instances"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
@@ -421,13 +449,13 @@
     },
     "variables": {
       "mutate": {
-        "createVariable": {
+        "updateVariable": {
           "success": {
-            "title": "Variable created",
-            "description": "Variable {{name}} was created."
+            "title": "Variable saved",
+            "description": "Variable {{name}} was saved."
           },
           "error": {
-            "description": "Could not create variable 😢"
+            "description": "Could not save variable 😢"
           }
         },
         "deleteVariable": {

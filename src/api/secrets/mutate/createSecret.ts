@@ -29,9 +29,16 @@ const updateCache = (
   };
 };
 
-const createSecret = apiFactory({
-  url: ({ namespace, name }: { namespace: string; name: string }) =>
-    `/api/namespaces/${namespace}/secrets/${name}`,
+export const createSecret = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    name,
+  }: {
+    namespace: string;
+    name: string;
+    baseUrl?: string;
+  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/secrets/${name}`,
   method: "PUT",
   schema: SecretCreatedSchema,
 });

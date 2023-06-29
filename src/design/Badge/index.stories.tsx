@@ -15,7 +15,7 @@ export const Default: Story = {
     variant: {
       description: "Badge Variant",
       control: "select",
-      options: [undefined, "secondary", "outline", "destructive"],
+      options: [undefined, "secondary", "outline", "destructive", "success"],
       type: { name: "string", required: false },
     },
   },
@@ -27,5 +27,6 @@ export const BadgeVariants = () => (
     <Badge variant="secondary">secondary</Badge>
     <Badge variant="outline">outline</Badge>
     <Badge variant="destructive">destructive</Badge>
+    <Badge variant="success">success</Badge>
   </div>
 );

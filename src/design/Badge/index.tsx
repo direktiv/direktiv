@@ -3,7 +3,7 @@ import * as React from "react";
 import { twMergeClsx } from "~/util/helpers";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "secondary" | "destructive" | "outline";
+  variant?: "secondary" | "destructive" | "outline" | "success";
 }
 
 function Badge({ className, variant, ...props }: BadgeProps) {
@@ -19,6 +19,9 @@ function Badge({ className, variant, ...props }: BadgeProps) {
           "border-transparent bg-danger-10 text-gray-1",
         variant === "destructive" &&
           "dark:bg-danger-dark-10 dark:text-gray-dark-1",
+        variant === "success" && "border-transparent bg-success-10 text-gray-1",
+        variant === "success" &&
+          "dark:bg-success-dark-10 dark:text-gray-dark-1",
         variant === "outline" && "border text-gray-12 dark:text-gray-dark-12",
         className
       )}
