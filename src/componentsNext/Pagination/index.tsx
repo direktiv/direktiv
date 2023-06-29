@@ -26,6 +26,10 @@ export const generatePaginationPages = ({
   currentPage: number;
   neighbours?: number;
 }): PaginationShape => {
+  if (current < 1) return [];
+  if (pages < 1) return [];
+  if (current > pages) return [];
+
   /**
    * considering this pagination example
    * 1 2 ... 5 *6* 7 ... 9 10
