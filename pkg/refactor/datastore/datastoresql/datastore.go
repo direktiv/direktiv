@@ -99,6 +99,5 @@ func (s *sqlStore) NamespaceCloudEventFilter() events.CloudEventsFilterStore {
 }
 
 func (s *sqlStore) Namespaces() core.NamespacesStore {
-	// TODO implement me
-	panic("implement me")
+	return &sqlNamespacesStore{db: s.db}
 }
