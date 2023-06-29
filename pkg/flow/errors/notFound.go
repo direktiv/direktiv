@@ -2,9 +2,9 @@ package errors
 
 import (
 	"errors"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"os"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 

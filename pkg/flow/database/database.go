@@ -1,9 +1,10 @@
 package database
 
 import (
+	"strings"
+
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"strings"
 )
 
 type HasAttributes interface {

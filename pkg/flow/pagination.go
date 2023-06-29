@@ -269,6 +269,7 @@ type filteringInfo struct {
 	ftype string
 }
 
+//nolint:dupword
 //type entQuery[T, X any] interface {
 //	Count(ctx context.Context) (int, error)
 //	Order(o ...ent.OrderFunc) T
@@ -277,6 +278,7 @@ type filteringInfo struct {
 //	All(ctx context.Context) ([]X, error)
 //}
 
+//nolint:dupword
 //func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filteringInfo]func(query Q, v string) (Q, error)) []func(query Q) (Q, error) {
 //	var filters []func(query Q) (Q, error)
 //
@@ -303,6 +305,7 @@ type filteringInfo struct {
 //	return filters
 //}
 
+//nolint:dupword
 //func paginate[T, X any, Q entQuery[T, X]](
 //	ctx context.Context,
 //	params *grpc.Pagination,

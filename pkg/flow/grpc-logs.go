@@ -3,12 +3,12 @@ package flow
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
@@ -162,40 +162,38 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	total := 0
-	var txError error
+	var err error
 	var ns *core.Namespace
 	le := make([]*logengine.LogEntry, 0)
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txError = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		if txError != nil {
-			return txError
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
 		}
 
 		qu := make(map[string]interface{})
 		qu["source"] = ns.ID
 		qu["type"] = ns
-		qu, txError = addFiltersToQuery(qu, req.Pagination.Filter...)
-		if txError != nil {
-			return txError
+		qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+		if err != nil {
+			return err
 		}
 
 		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		txError = err
-		if txError != nil {
-			return txError
+		if err != nil {
+			return err
 		}
 		total = t
 		le = append(le, res...)
 		return nil
 	})
-	if txError != nil {
-		return nil, txError
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(grpc.NamespaceLogsResponse)
 	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
 
-	var err error
 	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
 	if err != nil {
 		return nil, err
@@ -209,14 +207,14 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 
 	ctx := srv.Context()
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 
 	var tailing bool
@@ -231,7 +229,6 @@ resend:
 	qu["source"] = ns.ID
 	qu["type"] = ns
 	total := 0
-	var err error
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err

@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"strings"
 	"sync"
 	"time"
@@ -18,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
@@ -78,12 +78,11 @@ func (events *events) sendEvent(data []byte) {
 	ctx := context.Background()
 
 	var ns *core.Namespace
-	var txErr error
-	_ = events.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByID(ctx, id)
-		return txErr
+	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByID(ctx, id)
+		return err
 	})
-	if txErr != nil {
+	if err != nil {
 		events.sugar.Error(err)
 		return
 	}
@@ -235,27 +234,27 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 
 	var resListeners []*pkgevents.EventListener
 	var ns *core.Namespace
-	var txErr error
+	var err error
 
 	totalListeners := 0
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
 		}
 
 		var t int
 		var li []*pkgevents.EventListener
-		li, t, txErr = tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if txErr != nil {
-			return txErr
+		li, t, err = tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			return err
 		}
 		resListeners = li
 		totalListeners = t
 		return nil
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 	resp := new(grpc.EventListenersResponse)
 	resp.Namespace = ns.Name
@@ -273,14 +272,14 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	var txErr error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		return nil
+	var err error
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 
 	sub := flow.pubsub.SubscribeEventListeners(ns)
@@ -289,18 +288,17 @@ resend:
 	var resListeners []*pkgevents.EventListener
 	totalListeners := 0
 
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		txErr = err
-		if txErr != nil {
-			return txErr
+		if err != nil {
+			return err
 		}
 		resListeners = li
 		totalListeners = t
 		return nil
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 	resp := new(grpc.EventListenersResponse)
 	resp.Namespace = ns.Name
@@ -363,14 +361,13 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	var txErr error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		return err
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 
 	timer := in.GetTimer()
@@ -394,23 +391,22 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	}
 
 	var cevent *pkgevents.Event
-	var txErr error
 	var ns *core.Namespace
-	txErr = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
-		if txErr != nil {
-			return txErr
+	var err error
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
+		if err != nil {
+			return err
 		}
 		evs, err := tx.DataStore().EventHistory().GetByID(ctx, eid)
-		txErr = err
 		if err != nil {
 			return err
 		}
 		cevent = evs
 		return nil
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 	var resp grpc.HistoricalEventResponse
 
@@ -451,25 +447,24 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 
 	count := 0
 	var res []*pkgevents.Event
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
 		}
 
 		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID)
-		txErr = err
 		if err != nil {
-			return txErr
+			return err
 		}
 		count = t
 		res = re
 		return nil
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = ns.Name
@@ -497,14 +492,14 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	phash := ""
 	nhash := ""
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 
 	sub := flow.pubsub.SubscribeEvents(ns)
@@ -514,9 +509,8 @@ resend:
 
 	count := 0
 	var res []*pkgevents.Event
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID)
-		txErr = err
 		if err != nil {
 			return err
 		}
@@ -524,8 +518,8 @@ resend:
 		res = re
 		return nil
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 	resp := new(grpc.EventHistoryResponse)
 	resp.Namespace = ns.Name
@@ -568,26 +562,25 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	}
 
 	var cevent *pkgevents.Event
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
 		}
 
 		evs, err := tx.DataStore().EventHistory().GetByID(ctx, eid)
-		txErr = err
 		if err != nil {
 			return err
 		}
 		cevent = evs
 		return nil
 	})
-	if txErr != nil {
-		return &emptypb.Empty{}, txErr
+	if err != nil {
+		return &emptypb.Empty{}, err
 	}
-	err := flow.events.ReplayCloudevent(ctx, ns, cevent)
+	err = flow.events.ReplayCloudevent(ctx, ns, cevent)
 	if err != nil {
 		return nil, err
 	}
@@ -692,17 +685,15 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
 
-	var txErr error
-	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		return nil
-	})
-	if txErr != nil {
-		return newBytesEvent, txErr
-	}
-
 	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		return err
+	})
+	if err != nil {
+		return newBytesEvent, err
+	}
 
 	if jsCode, ok := eventFilterCache.get(key); ok {
 		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
@@ -800,14 +791,14 @@ func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloud
 	filterName := in.GetFilterName()
 	cloudevent := in.GetCloudevent()
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		return err
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 
 	b, err := flow.execFilter(ctx, namespace, filterName, cloudevent)
@@ -843,17 +834,17 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 	namespace := in.GetNamespace()
 	filterName := in.GetFilterName()
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		if err != nil {
+			return err
 		}
 		return tx.DataStore().EventFilter().Delete(ctx, ns.ID, filterName)
 	})
-	if txErr != nil {
-		return &resp, txErr
+	if err != nil {
+		return &resp, err
 	}
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
@@ -907,17 +898,16 @@ func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateClo
 		return &resp, err
 	}
 
-	var txErr error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		if err != nil {
+			return err
 		}
 		return tx.DataStore().EventFilter().Create(ctx, ns.ID, filterName, script)
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
@@ -935,24 +925,23 @@ func (flow *flow) GetCloudEventFilters(ctx context.Context, in *grpc.GetCloudEve
 
 	var res []*pkgevents.NamespaceCloudEventFilter
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		if err != nil {
+			return err
 		}
 
 		le, _, err := tx.DataStore().EventFilter().Get(ctx, ns.ID)
-		txErr = err
-		if txErr != nil {
-			return txErr
+		if err != nil {
+			return err
 		}
 		res = le
 		return nil
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 
 	for _, s := range res {
@@ -974,24 +963,23 @@ func (flow *flow) GetCloudEventFilterScript(ctx context.Context, in *grpc.GetClo
 
 	var total int
 	var filters []*pkgevents.NamespaceCloudEventFilter
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		if err != nil {
+			return err
 		}
 		f, t, err := tx.DataStore().EventFilter().Get(ctx, ns.ID)
-		txErr = err
-		if txErr != nil {
-			return txErr
+		if err != nil {
+			return err
 		}
 		filters = f
 		total = t
 		return nil
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 	if total == 0 {
 		return &grpc.GetCloudEventFilterScriptResponse{}, nil

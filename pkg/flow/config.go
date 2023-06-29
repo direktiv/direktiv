@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/jinzhu/copier"
 )
 

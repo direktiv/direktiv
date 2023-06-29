@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -415,14 +415,14 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	phash := ""
 	nhash := ""
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 
 	instID, err := uuid.Parse(req.GetInstance())
@@ -496,14 +496,14 @@ resend:
 func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 
 	calledAs := req.GetPath()
@@ -600,14 +600,14 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	phash := ""
 	nhash := ""
 
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		return nil
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
 	})
-	if txErr != nil {
-		return txErr
+	if err != nil {
+		return err
 	}
 
 	calledAs := req.GetPath()

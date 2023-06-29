@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"errors"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -13,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"

@@ -22,18 +22,18 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var file *filestore.File
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
 		}
-		file, txErr = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-		return txErr
+		file, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+		return err
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 	resp := &grpc.NodeResponse{}
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
@@ -48,34 +48,34 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	var node *filestore.File
 	var files []*filestore.File
 	var isMirrorNamespace bool
-	var txErr error
+	var err error
 	var ns *core.Namespace
-	_ = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, txErr = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-		if txErr != nil {
-			return txErr
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
 		}
-		_, txErr = tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
-		if errors.Is(txErr, mirror.ErrNotFound) {
+		_, err = tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
+		if errors.Is(err, mirror.ErrNotFound) {
 			isMirrorNamespace = false
-		} else if txErr != nil {
-			return txErr
+		} else if err != nil {
+			return err
 		} else {
 			isMirrorNamespace = true
 		}
 
-		node, txErr = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-		if txErr != nil {
-			return txErr
+		node, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+		if err != nil {
+			return err
 		}
-		files, txErr = tx.FileStore().ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
-		if txErr != nil {
-			return txErr
+		files, err = tx.FileStore().ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
+		if err != nil {
+			return err
 		}
 		return nil
 	})
-	if txErr != nil {
-		return nil, txErr
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(grpc.DirectoryResponse)
