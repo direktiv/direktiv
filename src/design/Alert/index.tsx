@@ -9,7 +9,7 @@ export type AlertProps = HTMLAttributes<HTMLDivElement> & {
   children?: React.ReactNode;
 };
 
-const Alert: FC<AlertProps> = ({ variant, className, children }) => (
+const Alert: FC<AlertProps> = ({ variant, className, children, ...props }) => (
   <div
     className={twMergeClsx(
       "rounded-md p-2 shadow-sm",
@@ -25,6 +25,7 @@ const Alert: FC<AlertProps> = ({ variant, className, children }) => (
         "bg-gray-4 text-gray-11 dark:bg-gray-dark-4 dark:text-gray-dark-11",
       className
     )}
+    {...props}
   >
     <div className="flex flex-col items-center sm:flex-row">
       {variant === "success" && <CheckCircle />}

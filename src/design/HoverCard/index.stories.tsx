@@ -1,5 +1,6 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
+import Alert from "../Alert";
 
 const meta = {
   title: "Components/HoverCard",
@@ -82,7 +83,18 @@ export const OpenCloseDelay = () => (
 
     <HoverCard openDelay={1000} closeDelay={1000}>
       <HoverCardTrigger>Hover Me, to see in 1 sec</HoverCardTrigger>
-      <HoverCardContent>Content goes here</HoverCardContent>
+      <HoverCardContent noBackground>Content goes here</HoverCardContent>
+    </HoverCard>
+  </div>
+);
+
+export const WithAlert = () => (
+  <div className="flex h-64 w-full flex-row items-center justify-around">
+    <HoverCard>
+      <HoverCardTrigger>with alert</HoverCardTrigger>
+      <HoverCardContent asChild noBackground>
+        <Alert variant="error">Some error</Alert>
+      </HoverCardContent>
     </HoverCard>
   </div>
 );

@@ -51,17 +51,7 @@ const WorkflowRevisionsPage = () => {
               className: "hidden group-hover:inline-flex",
               size: "sm",
             }}
-          >
-            {(copied) =>
-              copied
-                ? t(
-                    "pages.explorer.tree.workflow.revisions.overview.detail.copied"
-                  )
-                : t(
-                    "pages.explorer.tree.workflow.revisions.overview.detail.copy"
-                  )
-            }
-          </CopyButton>
+          />
         </h3>
 
         <Button asChild variant="outline">

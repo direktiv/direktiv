@@ -97,15 +97,7 @@ const RevisionTableRow: FC<{
               className: "hidden group-hover:inline-flex",
               size: "sm",
             }}
-          >
-            {(copied) =>
-              copied
-                ? t(
-                    "pages.explorer.tree.workflow.revisions.overview.list.copied"
-                  )
-                : t("pages.explorer.tree.workflow.revisions.overview.list.copy")
-            }
-          </CopyButton>
+          />
         )}
         {!isLatest && (
           <DropdownMenu>

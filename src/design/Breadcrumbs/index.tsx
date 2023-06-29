@@ -14,7 +14,9 @@ export const BreadcrumbRoot: FC<HTMLAttributes<HTMLDivElement>> = ({
       className={twMergeClsx("cursor-pointer py-4 text-sm", className)}
       {...props}
     >
-      <ul className={twMergeClsx("flex flex-row items-center")}>{children}</ul>
+      <ul className={twMergeClsx("flex flex-row items-center gap-2")}>
+        {children}
+      </ul>
     </div>
   </ScrollArea>
 );

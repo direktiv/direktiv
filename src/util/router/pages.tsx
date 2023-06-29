@@ -1,5 +1,5 @@
 import {
-  Box,
+  Boxes,
   Bug,
   Calendar,
   FolderTree,
@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import InstancesPage from "~/pages/namespace/Instances";
+import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
+import InstancesPageList from "~/pages/namespace/Instances/List";
 import React from "react";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -22,8 +25,8 @@ import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
-  name?: string;
-  icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+  name: string;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
   route: RouteObject;
 }
 
@@ -89,191 +92,210 @@ type InstancesPageSetup = Record<
       namespace: string | undefined;
       instance: string | undefined;
       isInstancePage: boolean;
+      isInstanceListPage: boolean;
+      isInstanceDetailPage: boolean;
     };
   }
 >;
+
+type PageType = DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
-export const pages: DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup =
-  {
-    explorer: {
-      name: "Explorer",
-      icon: FolderTree,
-      createHref: (params) => {
-        let path = "";
-        if (params.path) {
-          path = params.path.startsWith("/") ? params.path : `/${params.path}`;
-        }
+export const pages: PageType = {
+  explorer: {
+    name: "components.mainMenu.explorer",
+    icon: FolderTree,
+    createHref: (params) => {
+      let path = "";
+      if (params.path) {
+        path = params.path.startsWith("/") ? params.path : `/${params.path}`;
+      }
 
-        const subfolder: Record<ExplorerSubpages, string> = {
-          workflow: "workflow/active",
-          "workflow-revisions": "workflow/revisions",
-          "workflow-overview": "workflow/overview",
-          "workflow-settings": "workflow/settings",
-        };
+      const subfolder: Record<ExplorerSubpages, string> = {
+        workflow: "workflow/active",
+        "workflow-revisions": "workflow/revisions",
+        "workflow-overview": "workflow/overview",
+        "workflow-settings": "workflow/settings",
+      };
 
-        const searchParams = new URLSearchParams({
-          ...(params.subpage === "workflow-revisions" && params.revision
-            ? { revision: params.revision }
-            : {}),
-        });
-        const subpage = params.subpage ? subfolder[params.subpage] : "tree";
-        return `/${
-          params.namespace
-        }/explorer/${subpage}${path}?${searchParams.toString()}`;
-      },
-      useParams: () => {
-        const { "*": path, namespace } = useParams();
-        const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
-        const [searchParams] = useSearchParams();
+      const searchParams = new URLSearchParams({
+        ...(params.subpage === "workflow-revisions" && params.revision
+          ? { revision: params.revision }
+          : {}),
+      });
+      const subpage = params.subpage ? subfolder[params.subpage] : "tree";
+      return `/${
+        params.namespace
+      }/explorer/${subpage}${path}?${searchParams.toString()}`;
+    },
+    useParams: () => {
+      const { "*": path, namespace } = useParams();
+      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+      const [searchParams] = useSearchParams();
 
-        // explorer.useParams() can also be called on pages that are not
-        // the explorer page and some params might accidentally match as
-        // well (like wildcards). To prevent that we use custom handles that
-        // we injected in the route objects
-        const isTreePage = checkHandler(thirdLvl, "isTreePage");
-        const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
-        const isExplorerPage = isTreePage || isWorkflowPage;
-        const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
-        const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
-        const isWorkflowOverviewPage = checkHandler(
-          fourthLvl,
-          "isOverviewPage"
-        );
-        const isWorkflowSettingsPage = checkHandler(
-          fourthLvl,
-          "isSettingsPage"
-        );
+      // explorer.useParams() can also be called on pages that are not
+      // the explorer page and some params might accidentally match as
+      // well (like wildcards). To prevent that we use custom handles that
+      // we injected in the route objects
+      const isTreePage = checkHandler(thirdLvl, "isTreePage");
+      const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
+      const isExplorerPage = isTreePage || isWorkflowPage;
+      const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
+      const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
+      const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
+      const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
 
-        return {
-          path: isExplorerPage ? path : undefined,
-          namespace: isExplorerPage ? namespace : undefined,
-          isExplorerPage: isTreePage || isWorkflowPage,
-          revision: searchParams.get("revision") ?? undefined,
-          isTreePage,
-          isWorkflowPage,
-          isWorkflowActivePage,
-          isWorkflowRevPage,
-          isWorkflowOverviewPage,
-          isWorkflowSettingsPage,
-        };
-      },
-      route: {
-        path: "explorer/",
-        children: [
-          {
-            path: "tree/*",
-            element: <TreePage />,
-            handle: { isTreePage: true },
-          },
-          {
-            path: "workflow/",
-            element: <WorkflowPage />,
-            handle: { isWorkflowPage: true },
-            children: [
-              {
-                path: "active/*",
-                element: <WorkflowPageActive />,
-                handle: { isActivePage: true },
-              },
-              {
-                path: "revisions/*",
-                element: <WorkflowPageRevisions />,
-                handle: { isRevisionsPage: true },
-              },
-              {
-                path: "overview/*",
-                element: <WorkflowPageOverview />,
-                handle: { isOverviewPage: true },
-              },
-              {
-                path: "settings/*",
-                element: <WorkflowPageSettings />,
-                handle: { isSettingsPage: true },
-              },
-            ],
-          },
-        ],
-      },
+      return {
+        path: isExplorerPage ? path : undefined,
+        namespace: isExplorerPage ? namespace : undefined,
+        isExplorerPage: isTreePage || isWorkflowPage,
+        revision: searchParams.get("revision") ?? undefined,
+        isTreePage,
+        isWorkflowPage,
+        isWorkflowActivePage,
+        isWorkflowRevPage,
+        isWorkflowOverviewPage,
+        isWorkflowSettingsPage,
+      };
     },
-    monitoring: {
-      name: "Monitoring",
-      icon: Bug,
-      createHref: (params) => `/${params.namespace}/monitoring`,
-      route: {
-        path: "monitoring",
-        element: <div className="flex flex-col space-y-5 p-10">Monitoring</div>,
-      },
+    route: {
+      path: "explorer/",
+      children: [
+        {
+          path: "tree/*",
+          element: <TreePage />,
+          handle: { isTreePage: true },
+        },
+        {
+          path: "workflow/",
+          element: <WorkflowPage />,
+          handle: { isWorkflowPage: true },
+          children: [
+            {
+              path: "active/*",
+              element: <WorkflowPageActive />,
+              handle: { isActivePage: true },
+            },
+            {
+              path: "revisions/*",
+              element: <WorkflowPageRevisions />,
+              handle: { isRevisionsPage: true },
+            },
+            {
+              path: "overview/*",
+              element: <WorkflowPageOverview />,
+              handle: { isOverviewPage: true },
+            },
+            {
+              path: "settings/*",
+              element: <WorkflowPageSettings />,
+              handle: { isSettingsPage: true },
+            },
+          ],
+        },
+      ],
     },
-    instances: {
-      name: "instances",
-      icon: Box,
-      createHref: (params) =>
-        `/${params.namespace}/instances${
-          params.instance ? `/${params.instance}` : ""
-        }`,
-      useParams: () => {
-        const { namespace, instance } = useParams();
-        return {
-          namespace,
-          instance,
-          isInstancePage: true,
-        };
-      },
-      route: {
-        path: "instances/:instance?",
-        element: <div className="flex flex-col space-y-5 p-10">Instances</div>,
-        handle: { isInstancePage: true },
-      },
+  },
+  monitoring: {
+    name: "components.mainMenu.monitoring",
+    icon: Bug,
+    createHref: (params) => `/${params.namespace}/monitoring`,
+    route: {
+      path: "monitoring",
+      element: <div className="flex flex-col space-y-5 p-10">Monitoring</div>,
     },
-    events: {
-      name: "Events",
-      icon: Calendar,
-      createHref: (params) => `/${params.namespace}/events`,
-      route: {
-        path: "events",
-        element: <div className="flex flex-col space-y-5 p-10">Events</div>,
-      },
+  },
+  instances: {
+    name: "components.mainMenu.instances",
+    icon: Boxes,
+    createHref: (params) =>
+      `/${params.namespace}/instances${
+        params.instance ? `/${params.instance}` : ""
+      }`,
+    useParams: () => {
+      const { namespace, instance } = useParams();
+
+      const [, , thirdLvl] = useMatches(); // first level is namespace level
+
+      const isInstanceListPage = checkHandler(thirdLvl, "isInstanceListPage");
+      const isInstanceDetailPage = checkHandler(
+        thirdLvl,
+        "isInstanceDetailPage"
+      );
+
+      const isInstancePage = isInstanceListPage || isInstanceDetailPage;
+
+      return {
+        namespace: isInstancePage ? namespace : undefined,
+        instance: isInstancePage ? instance : undefined,
+        isInstancePage,
+        isInstanceListPage,
+        isInstanceDetailPage,
+      };
     },
-    gateway: {
-      name: "Gateway",
-      icon: Network,
-      createHref: (params) => `/${params.namespace}/gateway`,
-      route: {
-        path: "gateway",
-        element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
-      },
+    route: {
+      path: "instances",
+      element: <InstancesPage />,
+      children: [
+        {
+          path: "",
+          element: <InstancesPageList />,
+          handle: { isInstanceListPage: true },
+        },
+        {
+          path: ":instance",
+          element: <InstancesPageDetail />,
+          handle: { isInstanceDetailPage: true },
+        },
+      ],
     },
-    permissions: {
-      name: "Permissions",
-      icon: Users,
-      createHref: (params) => `/${params.namespace}/permissions`,
-      route: {
-        path: "permissions",
-        element: (
-          <div className="flex flex-col space-y-5 p-10">Permissions</div>
-        ),
-      },
+  },
+  events: {
+    name: "components.mainMenu.events",
+    icon: Calendar,
+    createHref: (params) => `/${params.namespace}/events`,
+    route: {
+      path: "events",
+      element: <div className="flex flex-col space-y-5 p-10">Events</div>,
     },
-    services: {
-      name: "Services",
-      icon: Layers,
-      createHref: (params) => `/${params.namespace}/services`,
-      route: {
-        path: "services",
-        element: <div className="flex flex-col space-y-5 p-10">Services</div>,
-      },
+  },
+  gateway: {
+    name: "components.mainMenu.gateway",
+    icon: Network,
+    createHref: (params) => `/${params.namespace}/gateway`,
+    route: {
+      path: "gateway",
+      element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
     },
-    settings: {
-      name: "Settings",
-      icon: Settings,
-      createHref: (params) => `/${params.namespace}/settings`,
-      route: {
-        path: "settings",
-        element: <SettingsPage />,
-      },
+  },
+  permissions: {
+    name: "components.mainMenu.permissions",
+    icon: Users,
+    createHref: (params) => `/${params.namespace}/permissions`,
+    route: {
+      path: "permissions",
+      element: <div className="flex flex-col space-y-5 p-10">Permissions</div>,
     },
-  };
+  },
+  services: {
+    name: "components.mainMenu.services",
+    icon: Layers,
+    createHref: (params) => `/${params.namespace}/services`,
+    route: {
+      path: "services",
+      element: <div className="flex flex-col space-y-5 p-10">Services</div>,
+    },
+  },
+  settings: {
+    name: "components.mainMenu.settings",
+    icon: Settings,
+    createHref: (params) => `/${params.namespace}/settings`,
+    route: {
+      path: "settings",
+      element: <SettingsPage />,
+    },
+  },
+};
