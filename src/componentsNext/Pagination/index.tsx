@@ -34,7 +34,7 @@ export const Pagination = ({
   const paginationDescription = describePagination({ currentPage, pages });
 
   return (
-    <PaginationWrapper align="center">
+    <PaginationWrapper>
       <PaginationLink
         icon="left"
         onClick={() =>
