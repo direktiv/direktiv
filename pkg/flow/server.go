@@ -17,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -144,6 +145,11 @@ func (srv *server) start(ctx context.Context) error {
 	})
 	if err != nil {
 		return fmt.Errorf("creating filestore, err: %w", err)
+	}
+
+	res := srv.gormDB.Exec(database2.Schema)
+	if res.Error != nil {
+		return fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
 
 	gdb, err := srv.gormDB.DB()
