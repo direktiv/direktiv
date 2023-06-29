@@ -241,9 +241,9 @@
           "instance": "Instance",
           "directory": "Directory",
           "workflow": "Workflow",
-          "instance-variable": "Instance Variable",
-          "namespace-variable": "Namespace Variable",
-          "workflow-variable": "Workflow Variable"
+          "instanceVariable": "Instance Variable",
+          "namespaceVariable": "Namespace Variable",
+          "workflowVariable": "Workflow Variable"
         }
       },
       "theme": {

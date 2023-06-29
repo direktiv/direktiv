@@ -150,7 +150,7 @@ const Broadcasts: FC = () => {
             </TableRow>
             <TableRow className={rowClasses}>
               <TableCell className={leftColClasses}>
-                {t("pages.settings.broadcasts.rows.instance-variable")}
+                {t("pages.settings.broadcasts.rows.instanceVariable")}
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
@@ -173,7 +173,7 @@ const Broadcasts: FC = () => {
             </TableRow>
             <TableRow className={rowClasses}>
               <TableCell className={leftColClasses}>
-                {t("pages.settings.broadcasts.rows.namespace-variable")}
+                {t("pages.settings.broadcasts.rows.namespaceVariable")}
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
@@ -196,7 +196,7 @@ const Broadcasts: FC = () => {
             </TableRow>
             <TableRow className={rowClasses}>
               <TableCell className={leftColClasses}>
-                {t("pages.settings.broadcasts.rows.workflow-variable")}
+                {t("pages.settings.broadcasts.rows.workflowVariable")}
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
