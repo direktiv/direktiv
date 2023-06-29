@@ -60,7 +60,12 @@ test("it renders secrets, variables and registries", async ({ page }) => {
 });
 
 test("it is possible to create and delete secrets", async ({ page }) => {
-  const defaultSecrets = await createSecrets(namespace, 3);
+  const secrets = await createSecrets(namespace, 3);
+  const secretToDelete = secrets[1];
+
+  // avoid typescript errors below
+  if (!secretToDelete) throw "error setting up test data";
+
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("secret-create").click();
   const newSecret = {
@@ -72,29 +77,33 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("secret-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  const menuButtons = page.getByTestId(/dropdown-trg-item-/);
-  await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
+  const secretElements = page.getByTestId("item-name");
+  await expect(secretElements, "number of secrets should be 4").toHaveCount(4);
 
-  await page.getByTestId(`dropdown-trg-item-${defaultSecrets[1]?.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${secretToDelete.key}`).click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("secret-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
-  await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
-  const itemName = page.getByTestId("item-name");
+  await expect(secretElements, "number of secrets should be 3").toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: newSecret.name }),
+    secretElements.filter({ hasText: newSecret.name }),
     "there should remain the newly created secret in the list"
   ).toBeVisible();
   await expect(
-    itemName.filter({ hasText: `${defaultSecrets[1]?.key}` }),
+    secretElements.filter({ hasText: `${secretToDelete.key}` }),
     "the deleted item shouldn't be in the list"
   ).toBeHidden();
 });
 
 test("it is possible to create and delete registries", async ({ page }) => {
-  await createRegistries(namespace, 3);
+  const registries = await createRegistries(namespace, 3);
+  const registryToDelete = registries[2];
+
+  // avoid typescript errors below
+  if (!registryToDelete) throw "error setting up test data";
+
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("registry-create").click();
 
@@ -111,32 +120,38 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await page.getByTestId("registry-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  const menuButtons = page.getByTestId(/dropdown-trg-item-/);
-  await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
-  const itemName = page.getByTestId("item-name");
-  const removedItemName = await itemName.nth(2).innerText();
-  await page
-    .getByTestId(/dropdown-trg-item/)
-    .nth(2)
-    .click();
+  const registryElements = page.getByTestId("item-name");
+  await expect(
+    registryElements,
+    "number of registry elements rendered should be 4"
+  ).toHaveCount(4);
+
+  await page.getByTestId(`dropdown-trg-item-${registryToDelete.url}`).click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
-  await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
+  await expect(
+    registryElements,
+    "number of registry elements rendered should be 3"
+  ).toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: newRegistry.url }),
-    "there should remain the newly created secret in the list"
-  ).toBeVisible();
+    registryElements.filter({ hasText: newRegistry.url }),
+    "there should remain the newly created registry in the list"
+  ).toHaveCount(1);
   await expect(
-    itemName.filter({ hasText: removedItemName }),
+    registryElements.filter({ hasText: registryToDelete.url }),
     "the deleted item shouldn't be in the list"
-  ).toBeHidden();
+  ).toHaveCount(0);
 });
 
 test("it is possible to create and delete variables", async ({ page }) => {
-  await createVariables(namespace, 3);
+  const variables = await createVariables(namespace, 3);
+  const variableToDelete = variables[2];
+  // handle error to avoid typescript errors below
+  if (!variableToDelete) throw "error setting up test data";
+
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("variable-create").click();
 
@@ -175,31 +190,30 @@ test("it is possible to create and delete variables", async ({ page }) => {
   await page.getByTestId("var-edit-cancel").click();
 
   //delete one item
-  const menuButtons = page.getByTestId(/dropdown-trg-item-/);
-  await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
-  const itemName = page.getByTestId("item-name");
-  const removedItemName = await itemName.nth(2).innerText();
+  await expect(
+    page.getByTestId("item-name"),
+    "there are 4 variables"
+  ).toHaveCount(4);
 
-  await page
-    .getByTestId(/dropdown-trg-item/)
-    .nth(2)
-    .click();
+  await page.getByTestId(`dropdown-trg-item-${variableToDelete.key}`).click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
-  await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
+  await expect(
+    page.getByTestId("item-name"),
+    "after deleting a variable, there are 3 variables left"
+  ).toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: removedItemName }),
-    "the deleted item shouldn't be in the list"
-  ).toBeHidden();
-  if (newVariable.name !== removedItemName) {
-    await expect(
-      itemName.filter({ hasText: newVariable.name }),
-      "there should remain the newly created secret in the list"
-    ).toBeVisible();
-  }
+    page.getByTestId("item-name").filter({ hasText: variableToDelete.key }),
+    "the deleted variable is no longer in the list"
+  ).toHaveCount(0);
+
+  await expect(
+    page.getByTestId("item-name").filter({ hasText: newVariable.name }),
+    "the new variable is still in the list"
+  ).toHaveCount(1);
 });
 
 test("it is possible to edit variables", async ({ page }) => {

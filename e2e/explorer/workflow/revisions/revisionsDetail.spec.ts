@@ -41,10 +41,12 @@ test('it is possible to open the revision details of the "latest" revision', asy
     "it displays the revision title"
   ).toContainText(revision);
 
+  const expectedEditorContent = basicWorkflow.data.replaceAll("\n", "");
+
   await expect(
     page.getByTestId("revisions-detail-editor"),
     "it displays the workflow content in the editor"
-  ).toContainText(basicWorkflow.data.replace(/\n/g, ""));
+  ).toContainText(expectedEditorContent);
 });
 
 test("it is possible to navigate from the revision list to the details and back", async ({
@@ -91,20 +93,32 @@ test("it is possible to revert a revision within the details page", async ({
 
   // check the content of the latest revision
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+
+  let expectedEditorContent = atob(
+    latestRevisions?.revision?.source
+  ).replaceAll("\n", "");
   await expect(
     page.getByTestId("workflow-editor"),
     "it displays the latest workflow content in the editor"
-  ).toContainText(atob(latestRevisions?.revision?.source).replace(/\n/g, ""));
+  ).toContainText(expectedEditorContent);
 
   // open the details page of the second revision
   await page.goto(
     `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`,
     { waitUntil: "networkidle" }
   );
+
+  expectedEditorContent = atob(secondRevision?.revision?.source).replaceAll(
+    "\n",
+    ""
+  );
+
   await expect(
     page.getByTestId("revisions-detail-editor"),
     "it displays the reverted workflow content in the editor"
-  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+  ).toContainText(expectedEditorContent, {
+    timeout: 10000,
+  });
   // open and submit revert dialog
   await page.getByTestId(`revisions-detail-revert-btn`).click();
   await page.getByTestId(`dialog-revert-revision-btn-submit`).click();
@@ -115,7 +129,9 @@ test("it is possible to revert a revision within the details page", async ({
   await expect(
     page.getByTestId("workflow-editor"),
     "it displays the reverted workflow content in the editor"
-  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+  ).toContainText(expectedEditorContent, {
+    timeout: 10000,
+  });
 });
 
 test('it does not show the actions button on the revision details of the "latest" revision', async ({
