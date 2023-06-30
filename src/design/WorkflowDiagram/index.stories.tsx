@@ -49,25 +49,15 @@ export default {
   },
 };
 
-const Template = (args) => {
-  return (
-    <FlexBox style={{ height: "380px" }}>
-      <WorkflowDiagram {...args} />
-    </FlexBox>
-  );
-};
+export const Workflow = () => <WorkflowDiagram workflow={exampleWorkflow} />;
 
-export const Workflow = Template.bind({});
-Workflow.args = {
-  workflow: exampleWorkflow,
-};
-
-export const WorkflowInstancePending = Template.bind({});
-WorkflowInstancePending.args = {
-  workflow: exampleWorkflow,
-  flow: ["helloworld"],
-  instanceStatus: "pending",
-};
+export const WorkflowInstancePending = () => (
+  <WorkflowDiagram
+    workflow={exampleWorkflow}
+    flow={["helloworld"]}
+    instanceStatus="pending"
+  />
+);
 
 WorkflowInstancePending.story = {
   parameters: {
@@ -80,12 +70,13 @@ WorkflowInstancePending.story = {
   },
 };
 
-export const WorkflowInstanceComplete = Template.bind({});
-WorkflowInstanceComplete.args = {
-  workflow: exampleWorkflow,
-  flow: ["helloworld", "exit"],
-  instanceStatus: "complete",
-};
+export const WorkflowInstanceComplete = () => (
+  <WorkflowDiagram
+    workflow={exampleWorkflow}
+    flow={["helloworld", "exit"]}
+    instanceStatus="complete"
+  />
+);
 
 WorkflowInstanceComplete.story = {
   parameters: {

@@ -1,18 +1,22 @@
 import "./style.css";
 
-import React, { useEffect, useMemo, useState } from "react";
 import ReactFlow, {
+  Edge,
   Handle,
   MiniMap,
   Node,
+  Position,
   ReactFlowProvider,
   isNode,
-  useZoomPanHelper,
-} from "react-flow-renderer";
+  useReactFlow,
+} from "reactflow";
+import { useEffect, useMemo, useState } from "react";
 
 import InvalidWorkflow from "~/components/invalid-workflow";
 import YAML from "js-yaml";
 import dagre from "dagre";
+
+// import 'reactflow/dist/style.css';
 
 export const position = { x: 0, y: 0 };
 
@@ -28,17 +32,53 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
  *   * instanceStatus: Status of current instance. This is used to display if flow is complete with animated connections.
  *   * disabled: Disables diagram zoom-in
  */
-interface WorkflowDiagramProps {
-  workflow: string,
-  flow: string,
-  instanceStatus: "pending" | "complete" | "failed",
-  disabled: boolean
+export interface WorkflowDiagramProps {
+  workflow: string;
+  flow?: string[];
+  instanceStatus?: "pending" | "complete" | "failed";
+  disabled?: boolean;
+}
+type NonEmptyArray<T> = [T, ...T[]];
+
+export interface Item {
+  id: number;
+  size: number;
+}
+
+export interface IState {
+  id: string;
+  type: string;
+  events: {
+    transition: string;
+  }[];
+  conditions: {
+    transition: string;
+  }[];
+  catch: {
+    x: string;
+    y: string;
+    transition: string;
+  }[];
+  transition: string;
+  defaultTransition: string;
+}
+interface IWorkflow {
+  states: NonEmptyArray<IState>;
+  start: {
+    state: string;
+  };
+  functions: object[];
 }
 export default function WorkflowDiagram(props: WorkflowDiagramProps) {
-  const { workflow, flow, instanceStatus, disabled } = props;
+  const {
+    workflow,
+    flow = [],
+    instanceStatus = "pending",
+    disabled = false,
+  } = props;
 
   const [load, setLoad] = useState(true);
-  const [elements, setElements] = useState([]);
+  const [elements, setElements] = useState<(Node | Edge)[]>([]);
   const [ostatus, setOStatus] = useState(instanceStatus);
   const [invalidWorkflow, setInvalidWorkflow] = useState<string | null>(null);
   const wf = useMemo(() => {
@@ -46,9 +86,8 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       setInvalidWorkflow(null);
       return null;
     }
-
     try {
-      const workflowObj = YAML.load(workflow);
+      const workflowObj = YAML.load(workflow) as IWorkflow;
       setInvalidWorkflow(null);
       return workflowObj;
     } catch (error: unknown) {
@@ -58,7 +97,10 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   }, [workflow]);
 
   useEffect(() => {
-    const getLayoutedElements = (incomingEles, direction = "TB") => {
+    const getLayoutedElements = (
+      incomingEles: (Edge | Node)[],
+      direction = "TB"
+    ) => {
       const isHorizontal = direction === "LR";
       dagreGraph.setGraph({ rankdir: "lr" });
 
@@ -85,8 +127,8 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       return incomingEles.map((el) => {
         if (isNode(el)) {
           const nodeWithPosition = dagreGraph.node(el.id);
-          el.targetPosition = isHorizontal ? "left" : "top";
-          el.sourcePosition = isHorizontal ? "right" : "bottom";
+          el.targetPosition = isHorizontal ? Position.Left : Position.Top;
+          el.sourcePosition = isHorizontal ? Position.Right : Position.Bottom;
 
           //hack to trigger refresh
           el.position = {
@@ -98,7 +140,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       });
     };
 
-    if (load && (wf !== null || instanceStatus !== ostatus)) {
+    if (load && (wf !== null || instanceStatus !== ostatus) && wf !== null) {
       const saveElements = generateElements(
         getLayoutedElements,
         wf,
@@ -113,7 +155,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     }
 
     // if status changes make sure to redraw
-    if (instanceStatus !== ostatus) {
+    if (instanceStatus !== ostatus && wf !== null) {
       const saveElements = generateElements(
         getLayoutedElements,
         wf,
@@ -138,17 +180,31 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     </>
   );
 }
-
-function ZoomPanDiagram(props) {
+interface ZoomPanDiagramProps {
+  elements: (Edge | Node)[];
+  disabled: boolean;
+}
+function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
-  const { fitView } = useZoomPanHelper();
+  const { fitView } = useReactFlow();
 
+  const sep: [Node[], Edge[]] = useMemo(() => {
+    const nodes: Node[] = elements.filter(
+      (ele: Node | Edge) => !!(ele as Node).position
+    ) as Node[];
+
+    const edges: Edge[] = elements.filter(
+      (ele: Node | Edge) => !!(ele as Edge).source
+    ) as Edge[];
+    return [nodes, edges];
+  }, [elements]);
   useEffect(() => {
     fitView();
   }, [fitView]);
   return (
     <ReactFlow
-      elements={elements}
+      edges={sep[1]}
+      nodes={sep[0]}
       nodeTypes={{
         state: State,
         start: Start,
@@ -157,23 +213,23 @@ function ZoomPanDiagram(props) {
       nodesDraggable={disabled}
       nodesConnectable={disabled}
       elementsSelectable={disabled}
-      paneMoveable={disabled}
     >
-      <MiniMap
-        nodeColor={() => {
-          return "#4497f5";
-        }}
-      />
+      <MiniMap nodeColor={() => "#4497f5"} />
     </ReactFlow>
   );
 }
-
-function State(props) {
+interface StateProps {
+  data: {
+    label: string;
+    type: string;
+  };
+}
+function State(props: StateProps) {
   const { data } = props;
   const { label, type } = data;
   return (
     <div className="state" style={{ width: "80px", height: "30px" }}>
-      <Handle type="target" position="left" id="default" />
+      <Handle type="target" position={Position.Left} id="default" />
       <div
         style={{
           display: "flex",
@@ -190,7 +246,7 @@ function State(props) {
       <h1 style={{ fontWeight: "300", fontSize: "7pt", marginTop: "2px" }}>
         {label}
       </h1>
-      <Handle type="source" position="right" id="default" />
+      <Handle type="source" position={Position.Right} id="default" />
     </div>
   );
 }
@@ -198,7 +254,7 @@ function State(props) {
 function Start() {
   return (
     <div className="normal">
-      <Handle type="source" position="right" />
+      <Handle type="source" position={Position.Right} />
       <div className="start" />
     </div>
   );
@@ -208,13 +264,21 @@ function End() {
   return (
     <div className="normal">
       <div className="end" />
-      <Handle type="target" position="left" />
+      <Handle type="target" position={Position.Left} />
     </div>
   );
 }
 
-function generateElements(getLayoutedElements, value, flow, status) {
-  const newElements = [];
+function generateElements(
+  getLayoutedElements: (
+    incomingEles: (Node | Edge)[],
+    direction?: string
+  ) => (Node | Edge)[],
+  value: IWorkflow,
+  flow: string[],
+  status: "pending" | "complete" | "failed"
+) {
+  const newElements: (Node | Edge)[] = [];
 
   if (value.states) {
     for (let i = 0; i < value.states.length; i++) {
@@ -228,26 +292,24 @@ function generateElements(getLayoutedElements, value, flow, status) {
             source: "startNode",
             target: value.start.state,
             type: "pathfinding",
-            arrowHeadType: "arrow",
           });
         } else {
           newElements.push({
-            id: `startNode-${value.states[i].id}`,
+            id: `startNode-${value.states[i]?.id}`,
             source: "startNode",
             target: value.states[i].id,
             type: "pathfinding",
-            arrowHeadType: "arrow",
           });
         }
       }
 
       // push new state
       newElements.push({
-        id: value.states[i].id,
-        position: position,
+        id: value.states[i]?.id || "",
+        position,
         data: {
-          label: value.states[i].id,
-          type: value.states[i].type,
+          label: value.states[i]?.id || "",
+          type: value.states[i]?.type || "",
           state: value.states[i],
           functions: value.functions,
         },
@@ -255,33 +317,31 @@ function generateElements(getLayoutedElements, value, flow, status) {
       });
 
       // check if the state has events
-      if (value.states[i].events) {
-        for (let j = 0; j < value.states[i].events.length; j++) {
-          if (value.states[i].events[j].transition) {
+      if (value.states[i]?.events) {
+        for (let j = 0; j < (value.states[i]?.events.length || 0); j++) {
+          if (value.states[i]?.events[j]?.transition) {
             transitions = true;
             newElements.push({
-              id: `${value.states[i].id}-${value.states[i].events[j].transition}`,
-              source: value.states[i].id,
-              target: value.states[i].events[j].transition,
+              id: `${value.states[i]?.id}-${value.states[i]?.events[j]?.transition}`,
+              source: value.states[i]?.id || "",
+              target: value.states[i]?.events[j]?.transition || "",
               animated: false,
               type: "pathfinding",
-              arrowHeadType: "arrow",
             });
           }
         }
       }
 
       // Check if the state has conditions
-      if (value.states[i].conditions) {
-        for (let y = 0; y < value.states[i].conditions.length; y++) {
-          if (value.states[i].conditions[y].transition) {
+      if (value.states[i]?.conditions) {
+        for (let y = 0; y < (value.states[i]?.conditions?.length || 0); y++) {
+          if (value.states[i]?.conditions[y]?.transition) {
             newElements.push({
-              id: `${value.states[i].id}-${value.states[i].conditions[y].transition}`,
-              source: value.states[i].id,
-              target: value.states[i].conditions[y].transition,
+              id: `${value.states[i]?.id}-${value.states[i]?.conditions[y]?.transition}`,
+              source: value.states[i]?.id || "",
+              target: value.states[i]?.conditions[y]?.transition || "",
               animated: false,
               type: "pathfinding",
-              arrowHeadType: "arrow",
             });
             transitions = true;
           }
@@ -289,66 +349,61 @@ function generateElements(getLayoutedElements, value, flow, status) {
       }
 
       // Check if state is catching things to transition to
-      if (value.states[i].catch) {
-        for (let x = 0; x < value.states[i].catch.length; x++) {
-          if (value.states[i].catch[x].transition) {
+      if (value.states[i]?.catch) {
+        for (let x = 0; x < (value.states[i]?.catch?.length || 0); x++) {
+          if (value.states[i]?.catch[x]?.transition) {
             transitions = true;
 
             newElements.push({
-              id: `${value.states[i].id}-${value.states[i].catch[x].transition}`,
-              source: value.states[i].id,
-              target: value.states[i].catch[x].transition,
+              id: `${value.states[i]?.id}-${value.states[i]?.catch[x]?.transition}`,
+              source: value.states[i]?.id || "",
+              target: value.states[i]?.catch[x]?.transition || "",
               animated: false,
               type: "pathfinding",
-              arrowHeadType: "arrow",
             });
           }
         }
       }
 
       // check if transition and create edge to hit new state
-      if (value.states[i].transition) {
+      if (value.states[i]?.transition) {
         transitions = true;
 
         newElements.push({
-          id: `${value.states[i].id}-${value.states[i].transition}`,
-          source: value.states[i].id,
-          target: value.states[i].transition,
+          id: `${value.states[i]?.id}-${value.states[i]?.transition}`,
+          source: value.states[i]?.id || "",
+          target: value.states[i]?.transition || "",
           animated: false,
           type: "pathfinding",
-          arrowHeadType: "arrow",
         });
-      } else if (value.states[i].defaultTransition) {
+      } else if (value.states[i]?.defaultTransition) {
         transitions = true;
 
         newElements.push({
-          id: `${value.states[i].id}-${value.states[i].defaultTransition}`,
-          source: value.states[i].id,
-          target: value.states[i].defaultTransition,
+          id: `${value.states[i]?.id}-${value.states[i]?.defaultTransition}`,
+          source: value.states[i]?.id || "",
+          target: value.states[i]?.defaultTransition || "",
           animated: false,
           type: "pathfinding",
-          arrowHeadType: "arrow",
         });
       } else {
         transitions = true;
         newElements.push({
-          id: `${value.states[i].id}-endNode`,
-          source: value.states[i].id,
+          id: `${value.states[i]?.id}-endNode`,
+          source: value.states[i]?.id || "",
           target: `endNode`,
           animated: false,
           type: "pathfinding",
-          arrowHeadType: "arrow",
         });
       }
 
       if (!transitions) {
         // no transition add end state
         newElements.push({
-          id: `${value.states[i].id}-endNode`,
-          source: value.states[i].id,
+          id: `${value.states[i]?.id}-endNode`,
+          source: value.states[i]?.id || "",
           target: `endNode`,
           type: "pathfinding",
-          arrowHeadType: "arrow",
         });
       }
     }
@@ -356,10 +411,10 @@ function generateElements(getLayoutedElements, value, flow, status) {
     // push start node
     newElements.push({
       id: "startNode",
-      position: position,
+      position,
       data: { label: "" },
       type: "start",
-      sourcePosition: "right",
+      sourcePosition: Position.Right,
     });
 
     // push end node
@@ -367,7 +422,7 @@ function generateElements(getLayoutedElements, value, flow, status) {
       id: "endNode",
       type: "end",
       data: { label: "" },
-      position: position,
+      position,
     });
 
     // Check flow array change edges to green if it passed
@@ -377,34 +432,32 @@ function generateElements(getLayoutedElements, value, flow, status) {
         let noTransition = false;
         for (let j = 0; j < newElements.length; j++) {
           // handle start node
-          if (
-            newElements[j].source === "startNode" &&
-            newElements[j].target === flow[i]
-          ) {
-            newElements[j].animated = true;
+          const item = newElements[j] && (newElements[j] as Edge);
+          if (item && item.source === "startNode" && item.target === flow[i]) {
+            (newElements[j] as Edge).animated = true;
           }
 
-          if (
-            newElements[j].target === flow[i] &&
-            newElements[j].source === flow[i - 1]
-          ) {
-            newElements[j].animated = true;
-          } else if (newElements[j].id === flow[i]) {
+          if (item && item.target === flow[i] && item.source === flow[i - 1]) {
+            (newElements[j] as Edge).animated = true;
+          } else if (item && item.id === flow[i]) {
             if (
-              !newElements[j].data.state.transition ||
-              !newElements[j].data.state.defaultTransition
+              !item.data.state.transition ||
+              !item.data.state.defaultTransition
             ) {
               noTransition = true;
 
-              if (newElements[j].data.state.catch) {
+              if (item.data.state.catch) {
                 for (
                   let y = 0;
-                  y < newElements[j].data.state.catch.length;
+                  y < (newElements[j] as Edge).data.state.catch.length;
                   y++
                 ) {
-                  if (newElements[j].data.state.catch[y].transition) {
+                  if ((newElements[j] as Edge).data.state.catch[y].transition) {
                     noTransition = false;
-                    if (newElements[j].data.label === flow[flow.length - 1]) {
+                    if (
+                      (newElements[j] as Edge).data.label ===
+                      flow[flow.length - 1]
+                    ) {
                       noTransition = true;
                     }
                   }
@@ -420,11 +473,11 @@ function generateElements(getLayoutedElements, value, flow, status) {
           if (!flow[i + 1]) {
             for (let j = 0; j < newElements.length; j++) {
               if (
-                newElements[j].source === flow[i] &&
-                newElements[j].target === "endNode" &&
+                (newElements[j] as Edge).source === flow[i] &&
+                (newElements[j] as Edge).target === "endNode" &&
                 (status === "complete" || status === "failed")
               ) {
-                newElements[j].animated = true;
+                (newElements[j] as Edge).animated = true;
               }
             }
           }
