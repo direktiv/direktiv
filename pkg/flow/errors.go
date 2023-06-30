@@ -46,7 +46,14 @@ func translateError(err error) error {
 		return err
 	}
 
-	if strings.Contains(err.Error(), "already exists") || errors.Is(err, filestore.ErrPathAlreadyExists) {
+	if errors.Is(err, core.ErrInvalidNamespaceName) {
+		err = status.Error(codes.InvalidArgument, "invalid namespace name")
+		return err
+	}
+
+	if strings.Contains(err.Error(), "already exists") ||
+		errors.Is(err, filestore.ErrPathAlreadyExists) ||
+		errors.Is(err, core.ErrDuplicatedNamespaceName) {
 		err = status.Error(codes.AlreadyExists, "resource already exists")
 		return err
 	}

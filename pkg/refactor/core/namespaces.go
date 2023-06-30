@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,6 +25,11 @@ func (ns *Namespace) GetAttributes() map[string]string {
 	}
 }
 
+var (
+	ErrInvalidNamespaceName    = errors.New("ErrInvalidNamespaceName")
+	ErrDuplicatedNamespaceName = errors.New("ErrDuplicatedNamespaceName")
+)
+
 // NamespacesStore responsible for fetching and setting namespaces from datastore.
 type NamespacesStore interface {
 	// GetByID gets a single namespace object from store. if no record found,
@@ -44,7 +50,8 @@ type NamespacesStore interface {
 	//	// it returns datastore.ErrNotFound error.
 	Delete(ctx context.Context, id uuid.UUID) error
 
-	// Create creates a new namespace.
+	// Create creates a new namespace. Returned errors could be ErrDuplicatedNamespaceName when namespace name is
+	// already exists or ErrInvalidNamespaceName or when namespace name is invalid, too short or too long.
 	Create(ctx context.Context, namespace *Namespace) (*Namespace, error)
 }
 
