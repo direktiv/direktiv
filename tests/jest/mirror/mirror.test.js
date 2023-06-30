@@ -33,7 +33,7 @@ describe('Test behaviour specific to the root node', () => {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
                 name: namespaceName,
-                oid: '', // TODO: revisit
+                oid: expect.stringMatching(common.regex.uuidRegex),
             },
         })
     })

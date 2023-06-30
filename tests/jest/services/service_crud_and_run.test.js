@@ -16,7 +16,7 @@ describe('Test services read operations', () => {
         expect(res.body).toMatchObject({
             namespace: {
                 name: testNamespace,
-                oid: "",
+                oid: expect.stringMatching(common.regex.uuidRegex),
                 // regex /^2.*Z$/ matches timestamps like 2023-03-01T14:19:52.383871512Z
                 createdAt: expect.stringMatching(/^2.*Z$/),
                 updatedAt: expect.stringMatching(/^2.*Z$/),
