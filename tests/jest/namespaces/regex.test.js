@@ -24,7 +24,7 @@ describe('Test namespace regex constraints', () => {
             expect(res.body).toMatchObject({
                 namespace: {
                     name: name,
-                    oid: "",
+                    oid: expect.stringMatching(common.regex.uuidRegex),
                     createdAt: expect.stringMatching(common.regex.timestampRegex),
                     updatedAt: expect.stringMatching(common.regex.timestampRegex),
                 }

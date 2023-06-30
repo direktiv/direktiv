@@ -179,10 +179,11 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 
 func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
 	return &grpc.Namespace{
+		Oid:  item.ID.String(),
+		Name: item.Name,
+
 		CreatedAt: timestamppb.New(item.CreatedAt),
 		UpdatedAt: timestamppb.New(item.UpdatedAt),
-
-		Name: item.Name,
 	}
 }
 
