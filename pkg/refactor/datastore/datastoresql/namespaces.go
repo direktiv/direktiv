@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -100,11 +102,20 @@ func (s *sqlNamespacesStore) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *core.Namespace) (*core.Namespace, error) {
+	const nameRegex = `^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$`
+	matched, _ := regexp.MatchString(nameRegex, namespace.Name)
+	if !matched {
+		return nil, core.ErrInvalidNamespaceName
+	}
+
 	newUUID := uuid.New()
 	res := s.db.WithContext(ctx).Exec(`
 							INSERT INTO namespaces(id, name, config) VALUES(?, ?, ?);
 							`, newUUID, namespace.Name, namespace.Config)
 
+	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
+		return nil, core.ErrDuplicatedNamespaceName
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
