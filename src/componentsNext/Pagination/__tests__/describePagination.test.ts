@@ -16,12 +16,12 @@ describe("describePagination", () => {
 
     test("page 5 / 10", () => {
       const pagination = describePagination({ pages: 10, currentPage: 5 });
-      expect(pagination).toStrictEqual([1, 2, "...", 4, 5, 6, "...", 9, 10]);
+      expect(pagination).toStrictEqual([1, 2, 3, 4, 5, 6, "...", 9, 10]);
     });
 
     test("page 6 / 10", () => {
       const pagination = describePagination({ pages: 10, currentPage: 6 });
-      expect(pagination).toStrictEqual([1, 2, "...", 5, 6, 7, "...", 9, 10]);
+      expect(pagination).toStrictEqual([1, 2, "...", 5, 6, 7, 8, 9, 10]);
     });
 
     test("page 7 / 10", () => {

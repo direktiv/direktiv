@@ -104,8 +104,19 @@ const describePagination = ({
       startSegment.push(startSegmentLeft + index);
     }
 
-    // dots needed?
-    if (activeSegmentLeft - startSegmentRight > 1) {
+    /**
+     * analyze the gap between the start segment and the active segment.
+     * when there is just one page in between, we don't need to generate
+     * the dots and just add the missing page to the start segment
+     *
+     * when there is more than one page in between, we need to generate
+     * the dots
+     */
+    if (activeSegmentLeft - startSegmentRight === 2) {
+      startSegment.push(startSegmentRight + 1);
+    }
+
+    if (activeSegmentLeft - startSegmentRight > 2) {
       startSegment.push("...");
     }
   }
@@ -126,8 +137,19 @@ const describePagination = ({
       endSegmentLeft = activeSegmentRight + 1;
     }
 
-    // dots needed?
-    if (endSegmentLeft - activeSegmentRight > 1) {
+    /**
+     * analyze the gap between the active segment and the end segment.
+     * when there is just one page in between, we don't need to generate
+     * the dots and just add the missing page to the end segment
+     *
+     * when there is more than one page in between, we need to generate
+     * the dots
+     */
+    if (endSegmentLeft - activeSegmentRight === 2) {
+      endSegment.push(endSegmentLeft - 1);
+    }
+
+    if (endSegmentLeft - activeSegmentRight > 2) {
       endSegment.push("...");
     }
 
