@@ -11,15 +11,15 @@ type PaginationShape = (number | "…")[];
  * three parts: the left segment, the middle segment and the right
  * segment.
  *
- * here is an example of a 10 page pagination with 1 neighbour. the
+ * here is an example of a 11 page pagination with 1 neighbour. the
  * number wrapped in * is the current page
  *
- * *1* 2 … 9 10
- * 1 *2* 3 … 9 10
- * 1 2 *3* 4 … 9 10
- * 1 2 3 *4* 5 … 9 10
- * 1 2 3 4 *5* 6 … 9 10
- * 1 2 … 5 *6* 7 … 9 10
+ * *1* 2 … 10 11
+ * 1 *2* 3 … 10 11
+ * 1 2 *3* 4 … 10 11
+ * 1 2 3 *4* 5 … 10 11
+ * 1 2 3 4 *5* 6 … 10 11
+ * 1 2 … 5 *6* 7 … 10 11
  *
  * @param pages the amount of pages
  * @param currentPage the page we are currently on
@@ -42,7 +42,7 @@ const describePagination = ({
 
   /**
    * considering this pagination example
-   * 1 2 … 5 *6* 7 … 9 10
+   * 1 2 … 5 *6* 7 … 10 11
    *
    * the variables will be set as follows
    *
@@ -60,13 +60,13 @@ const describePagination = ({
    * startSegmentRight = 2
    * startSegment = [1, 2, "…"]
    *
-   * endSegmentLeft = 9
-   * endSegmentRight = 10
+   * endSegmentLeft = 10
+   * endSegmentRight = 11
    * endSegmentCount = 2
-   * endSegment = ["…", 9, 10]
+   * endSegment = ["…", 10, 11]
    *
    * and this this function will return
-   * [1, 2, "…", 5, 6, 7, "…", 9, 10]
+   * [1, 2, "…", 5, 6, 7, "…", 10, 11]
    */
 
   // active segment
@@ -92,7 +92,7 @@ const describePagination = ({
   /**
    * the active segment might also act as the start segment
    * in this case we don't need to generate the start segment
-   *  f.e. 1 *2* 3 … 9 10
+   *  e.g. 1 *2* 3 … 10 11
    */
   if (leftmostNeighbour > 1) {
     const startSegmentLeft = 1;
