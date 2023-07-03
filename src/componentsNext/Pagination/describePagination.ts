@@ -70,11 +70,12 @@ const describePagination = ({
    */
 
   // active segment
-  const currentLeft = current - neighbours;
-  const activeSegmentLeft = currentLeft > 0 ? currentLeft : current;
+  const leftmostNeighbour = current - neighbours;
+  const activeSegmentLeft = leftmostNeighbour > 0 ? leftmostNeighbour : current;
 
-  const currentRight = current + neighbours;
-  const activeSegmentRight = currentRight <= pages ? currentRight : current;
+  const rightmostNeighbour = current + neighbours;
+  const activeSegmentRight =
+    rightmostNeighbour <= pages ? rightmostNeighbour : current;
 
   const activeSegmentCount = activeSegmentRight - activeSegmentLeft + 1;
 
