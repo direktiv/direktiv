@@ -3,44 +3,48 @@ import { describe, expect, test } from "vitest";
 import describePagination from "../describePagination";
 
 describe("describePagination", () => {
-  describe("it describes a simple 10 page pagination", () => {
-    test("page 1 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 1 });
-      expect(pagination).toStrictEqual([1, 2, "...", 9, 10]);
+  describe("it describes a simple 11 page pagination", () => {
+    test("page 1 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 1 });
+      expect(pagination).toStrictEqual([1, 2, "...", 10, 11]);
     });
 
-    test("page 2 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 2 });
-      expect(pagination).toStrictEqual([1, 2, 3, "...", 9, 10]);
+    test("page 2 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 2 });
+      expect(pagination).toStrictEqual([1, 2, 3, "...", 10, 11]);
     });
 
-    test("page 5 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 5 });
-      expect(pagination).toStrictEqual([1, 2, 3, 4, 5, 6, "...", 9, 10]);
+    test("page 5 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 5 });
+      expect(pagination).toStrictEqual([1, 2, 3, 4, 5, 6, "...", 10, 11]);
     });
 
-    test("page 6 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 6 });
-      expect(pagination).toStrictEqual([1, 2, "...", 5, 6, 7, 8, 9, 10]);
+    test("page 6 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 6 });
+      expect(pagination).toStrictEqual([1, 2, "...", 5, 6, 7, "...", 10, 11]);
     });
 
-    test("page 7 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 7 });
-      expect(pagination).toStrictEqual([1, 2, "...", 6, 7, 8, 9, 10]);
+    test("page 7 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 7 });
+      expect(pagination).toStrictEqual([1, 2, "...", 6, 7, 8, 9, 10, 11]);
     });
 
-    test("page 8 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 8 });
-      expect(pagination).toStrictEqual([1, 2, "...", 7, 8, 9, 10]);
+    test("page 8 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 8 });
+      expect(pagination).toStrictEqual([1, 2, "...", 7, 8, 9, 10, 11]);
     });
-    test("page 9 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 9 });
-      expect(pagination).toStrictEqual([1, 2, "...", 8, 9, 10]);
+    test("page 9 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 9 });
+      expect(pagination).toStrictEqual([1, 2, "...", 8, 9, 10, 11]);
     });
 
-    test("page 10 / 10", () => {
-      const pagination = describePagination({ pages: 10, currentPage: 10 });
-      expect(pagination).toStrictEqual([1, 2, "...", 9, 10]);
+    test("page 10 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 10 });
+      expect(pagination).toStrictEqual([1, 2, "...", 9, 10, 11]);
+    });
+    test("page 11 / 11", () => {
+      const pagination = describePagination({ pages: 11, currentPage: 11 });
+      expect(pagination).toStrictEqual([1, 2, "...", 10, 11]);
     });
   });
 
