@@ -43,7 +43,7 @@ export const Pagination = ({
         disabled={isFirstPage}
       />
       {paginationDescription.map((page, index) => {
-        if (page === "...")
+        if (page === "…")
           return (
             <PaginationLink key={index} disabled>
               ...

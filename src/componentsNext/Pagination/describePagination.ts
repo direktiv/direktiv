@@ -1,11 +1,11 @@
-type PaginationShape = (number | "...")[];
+type PaginationShape = (number | "…")[];
 
 /**
  *
  * describePagination is a helper function to describe a pagination
  * depending on the current page and the amount of pages. It will
- * return an array of numbers and "...", where the numbers are the
- * pages and the "..." are the dots in between.
+ * return an array of numbers and "…", where the numbers are the
+ * pages and the "…" are the dots in between.
  *
  * To handle a high amount of pages, it segments the pagination into
  * three parts: the left segment, the middle segment and the right
@@ -14,17 +14,17 @@ type PaginationShape = (number | "...")[];
  * here is an example of a 10 page pagination with 1 neighbour. the
  * number wrapped in * is the current page
  *
- * *1* 2 ... 9 10
- * 1 *2* 3 ... 9 10
- * 1 2 *3* 4 ... 9 10
- * 1 2 3 *4* 5 ... 9 10
- * 1 2 3 4 *5* 6 ... 9 10
- * 1 2 ... 5 *6* 7 ... 9 10
+ * *1* 2 … 9 10
+ * 1 *2* 3 … 9 10
+ * 1 2 *3* 4 … 9 10
+ * 1 2 3 *4* 5 … 9 10
+ * 1 2 3 4 *5* 6 … 9 10
+ * 1 2 … 5 *6* 7 … 9 10
  *
  * @param pages the amount of pages
  * @param currentPage the page we are currently on
  * @param neighbours the amount of neighbours to the left and right of the current page, start and end defaults to 1
- * @returns an array of numbers and "..."
+ * @returns an array of numbers and "…"
  */
 const describePagination = ({
   pages,
@@ -42,7 +42,7 @@ const describePagination = ({
 
   /**
    * considering this pagination example
-   * 1 2 ... 5 *6* 7 ... 9 10
+   * 1 2 … 5 *6* 7 … 9 10
    *
    * the variables will be set as follows
    *
@@ -58,15 +58,15 @@ const describePagination = ({
    * startSegmentCount = 2
    * startSegmentLeft = 1
    * startSegmentRight = 2
-   * startSegment = [1, 2, "..."]
+   * startSegment = [1, 2, "…"]
    *
    * endSegmentLeft = 9
    * endSegmentRight = 10
    * endSegmentCount = 2
-   * endSegment = ["...", 9, 10]
+   * endSegment = ["…", 9, 10]
    *
    * and this this function will return
-   * [1, 2, "...", 5, 6, 7, "...", 9, 10]
+   * [1, 2, "…", 5, 6, 7, "…", 9, 10]
    */
 
   // active segment
@@ -92,7 +92,7 @@ const describePagination = ({
   /**
    * the active segment might also act as the start segment
    * in this case we don't need to generate the start segment
-   *  f.e. 1 *2* 3 ... 9 10
+   *  f.e. 1 *2* 3 … 9 10
    */
   if (leftmostNeighbour > 1) {
     const startSegmentLeft = 1;
@@ -120,7 +120,7 @@ const describePagination = ({
     }
 
     if (leftmostNeighbour - startSegmentRight > 2) {
-      startSegment.push("...");
+      startSegment.push("…");
     }
   }
 
@@ -130,7 +130,7 @@ const describePagination = ({
   /**
    * the active segment might also act as the end segment
    * in this case we don't need to generate the end segment
-   *  f.e. 1 2 ... *9* 10
+   *  f.e. 1 2 … *9* 10
    */
   if (rightmostNeighbour < pages) {
     const endSegmentRight = pages;
@@ -153,7 +153,7 @@ const describePagination = ({
     }
 
     if (endSegmentLeft - rightmostNeighbour > 2) {
-      endSegment.push("...");
+      endSegment.push("…");
     }
 
     const endSegmentCount = endSegmentRight - endSegmentLeft + 1;
