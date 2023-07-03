@@ -50,8 +50,8 @@ const describePagination = ({
    * current = 6
    * neighbours = 1
    *
-   * activeSegmentLeft = 5
-   * activeSegmentRight = 7
+   * leftmostNeighbour = 5
+   * rightmostNeighbour = 7
    * activeSegment = [5, 6, 7]
    * activeSegmentCount = 3
    *
@@ -70,17 +70,20 @@ const describePagination = ({
    */
 
   // active segment
-  const currentLeft = current - neighbours;
-  const activeSegmentLeft = currentLeft > 0 ? currentLeft : current;
 
-  const currentRight = current + neighbours;
-  const activeSegmentRight = currentRight <= pages ? currentRight : current;
+  const leftDistance = current - neighbours;
 
-  const activeSegmentCount = activeSegmentRight - activeSegmentLeft + 1;
+  // activeSegmentLeft = leftmostNeighbour
+  const leftmostNeighbour = leftDistance > 0 ? leftDistance : current;
 
+  // currentLeft = rightDistance
+  const rightDistance = current + neighbours;
+  const rightmostNeighbour = rightDistance <= pages ? rightDistance : current;
+
+  const activeSegmentCount = rightmostNeighbour - leftmostNeighbour + 1;
   const activeSegment: PaginationShape = [];
   for (let index = 0; index < activeSegmentCount; index++) {
-    activeSegment.push(activeSegmentLeft + index);
+    activeSegment.push(leftmostNeighbour + index);
   }
 
   // start segment
@@ -91,12 +94,12 @@ const describePagination = ({
    * in this case we don't need to generate the start segment
    *  f.e. 1 *2* 3 ... 9 10
    */
-  if (activeSegmentLeft > 1) {
+  if (leftmostNeighbour > 1) {
     const startSegmentLeft = 1;
     let startSegmentRight = startSegmentLeft + neighbours;
     // remove possible overlap
-    if (startSegmentRight >= activeSegmentLeft) {
-      startSegmentRight = activeSegmentLeft - 1;
+    if (startSegmentRight >= leftmostNeighbour) {
+      startSegmentRight = leftmostNeighbour - 1;
     }
 
     const startSegmentCount = startSegmentRight - startSegmentLeft + 1;
@@ -112,11 +115,11 @@ const describePagination = ({
      * when there is more than one page in between, we need to generate
      * the dots
      */
-    if (activeSegmentLeft - startSegmentRight === 2) {
+    if (leftmostNeighbour - startSegmentRight === 2) {
       startSegment.push(startSegmentRight + 1);
     }
 
-    if (activeSegmentLeft - startSegmentRight > 2) {
+    if (leftmostNeighbour - startSegmentRight > 2) {
       startSegment.push("...");
     }
   }
@@ -129,12 +132,12 @@ const describePagination = ({
    * in this case we don't need to generate the end segment
    *  f.e. 1 2 ... *9* 10
    */
-  if (activeSegmentRight < pages) {
+  if (rightmostNeighbour < pages) {
     const endSegmentRight = pages;
     let endSegmentLeft = endSegmentRight - neighbours;
     // remove possible overlap
-    if (endSegmentLeft <= activeSegmentRight) {
-      endSegmentLeft = activeSegmentRight + 1;
+    if (endSegmentLeft <= rightmostNeighbour) {
+      endSegmentLeft = rightmostNeighbour + 1;
     }
 
     /**
@@ -145,11 +148,11 @@ const describePagination = ({
      * when there is more than one page in between, we need to generate
      * the dots
      */
-    if (endSegmentLeft - activeSegmentRight === 2) {
+    if (endSegmentLeft - rightmostNeighbour === 2) {
       endSegment.push(endSegmentLeft - 1);
     }
 
-    if (endSegmentLeft - activeSegmentRight > 2) {
+    if (endSegmentLeft - rightmostNeighbour > 2) {
       endSegment.push("...");
     }
 
