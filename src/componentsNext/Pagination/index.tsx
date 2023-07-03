@@ -42,10 +42,10 @@ export const Pagination = ({
         }
         disabled={isFirstPage}
       />
-      {paginationDescription.map((page) => {
+      {paginationDescription.map((page, index) => {
         if (page === "...")
           return (
-            <PaginationLink key={page} disabled>
+            <PaginationLink key={index} disabled>
               ...
             </PaginationLink>
           );
@@ -53,7 +53,7 @@ export const Pagination = ({
         const isActive = currentPage === page;
         return (
           <PaginationLink
-            key={page}
+            key={index}
             active={isActive}
             onClick={() => {
               !isActive && setOffset(setOffsetByPageNumber(page));
