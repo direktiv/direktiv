@@ -43,21 +43,18 @@ export const Pagination = ({
         disabled={isFirstPage}
       />
       {paginationDescription.map((page, index) => {
-        if (page === "…")
-          return (
-            <PaginationLink key={index} disabled>
-              ...
-            </PaginationLink>
-          );
-
         const isActive = currentPage === page;
+        const isEllipsis = page === "…";
         return (
           <PaginationLink
             key={index}
             active={isActive}
             onClick={() => {
-              !isActive && setOffset(setOffsetByPageNumber(page));
+              !isEllipsis &&
+                !isActive &&
+                setOffset(setOffsetByPageNumber(page));
             }}
+            disabled={isEllipsis}
           >
             {page}
           </PaginationLink>
