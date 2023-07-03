@@ -63,7 +63,7 @@ describe("describePagination", () => {
       expect(defaultPagination).toStrictEqual(oneNeighbourPagination);
     });
 
-    test("increasing neighbours will eventually get rid of the ...", () => {
+    test("increasing neighbours will eventually get rid of the ellipsis", () => {
       const result1Neighbour = describePagination({
         pages: 10,
         currentPage: 3,
@@ -86,7 +86,7 @@ describe("describePagination", () => {
       expect(result3Neighbours).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 
-    test("when neighbours is very high, it will just not having any ...", () => {
+    test("when neighbours is very high, it will just not having any ellipsis", () => {
       const result = describePagination({
         pages: 10,
         currentPage: 3,
