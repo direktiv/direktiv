@@ -7,7 +7,7 @@ const namespaceName = "simplesubflowtest"
 
 describe('Test subflow behaviour', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+    //afterAll(common.helpers.deleteAllNamespaces)
 
     it(`should create a namespace`, async () => {
         var req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
@@ -194,6 +194,29 @@ states:
         expect(req.body).toMatchObject({
             result: 2,
         })
+    })
+
+    it(`check if instances are present`, async () => {
+        var instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
+        expect(instances.statusCode).toEqual(200)
+        expect(instances.body.instances.results.length).not.toBeLessThan(1)
+    })
+
+
+    it(`check if instances logs are present`, async () => {
+        var instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
+        var id = instances.body.instances.results[0]["id"] //TODO test this for all element in results
+        var logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${id}/logs`)
+        expect(logsResponse.statusCode).toEqual(200)
+        expect(logsResponse.body.results.length).not.toBeLessThan(1)
+        console.log(logsResponse.body.results)
+    })
+    
+
+    it(`check if namespace logs contains some workflow operations`, async () => {
+        var logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/logs`)
+        expect(logsResponse.statusCode).toEqual(200)
+        expect(logsResponse.body.results.length).not.toBeLessThan(1)
     })
 
 })
