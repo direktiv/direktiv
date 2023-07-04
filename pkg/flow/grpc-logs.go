@@ -26,9 +26,9 @@ func (f fileAttributes) GetAttributes() map[string]string {
 }
 
 const (
-	ns  = "namespace"
-	wf  = "workflow"
-	ins = "instance"
+	namespaceType = "namespace"
+	wf            = "workflow"
+	ins           = "instance"
 )
 
 func addFiltersToQuery(query map[string]interface{}, filters ...*grpc.PageFilter) (map[string]interface{}, error) {
@@ -173,7 +173,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 		qu := make(map[string]interface{})
 		qu["source"] = ns.ID
-		qu["type"] = "namespace"
+		qu["type"] = namespaceType
 		qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
@@ -227,7 +227,7 @@ resend:
 	le := make([]*logengine.LogEntry, 0)
 	qu := make(map[string]interface{})
 	qu["source"] = ns.ID
-	qu["type"] = "namespace"
+	qu["type"] = namespaceType
 	total := 0
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
