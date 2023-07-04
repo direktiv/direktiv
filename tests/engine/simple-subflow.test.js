@@ -213,7 +213,6 @@ states:
             const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${id}/logs`)
             expect(logsResponse.statusCode).toEqual(200)
             expect(logsResponse.body.results.length).not.toBeLessThan(1)
-            console.log(logsResponse.body.results)
         }))
     })
 
