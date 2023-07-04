@@ -26,9 +26,9 @@ func (f fileAttributes) GetAttributes() map[string]string {
 }
 
 const (
-	ns  = "namespace"
-	wf  = "workflow"
-	ins = "instance"
+	namespaceType = "namespace"
+	wf            = "workflow"
+	ins           = "instance"
 )
 
 func addFiltersToQuery(query map[string]interface{}, filters ...*grpc.PageFilter) (map[string]interface{}, error) {
@@ -173,7 +173,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 		qu := make(map[string]interface{})
 		qu["source"] = ns.ID
-		qu["type"] = ns
+		qu["type"] = namespaceType
 		qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 		if err != nil {
 			return err
@@ -227,7 +227,7 @@ resend:
 	le := make([]*logengine.LogEntry, 0)
 	qu := make(map[string]interface{})
 	qu["source"] = ns.ID
-	qu["type"] = ns
+	qu["type"] = namespaceType
 	total := 0
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
@@ -383,9 +383,12 @@ func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsReques
 	if err != nil {
 		return nil, err
 	}
-
+	callpath := ""
+	for _, v := range instance.DescentInfo.Descent {
+		callpath += "/" + v.ID.String()
+	}
 	// its important to append the instanceID to the callpath since we don't do it when creating the database entry
-	prefix := internallogger.AppendInstanceID(instance.TelemetryInfo.CallPath, instance.Instance.ID.String())
+	prefix := internallogger.AppendInstanceID(callpath, instance.Instance.ID.String())
 	root, err := internallogger.GetRootinstanceID(prefix)
 	if err != nil {
 		return nil, err
@@ -458,8 +461,12 @@ func (flow *flow) InstanceLogsParcels(req *grpc.InstanceLogsRequest, srv grpc.Fl
 	sub := flow.pubsub.SubscribeInstanceLogs(instance.Instance.ID)
 	defer flow.cleanup(sub.Close)
 
-	// its important to append the intanceID to the callpath since we don't do it when creating the database entry.
-	prefix := internallogger.AppendInstanceID(instance.TelemetryInfo.CallPath, instance.Instance.ID.String())
+	callpath := ""
+	for _, v := range instance.DescentInfo.Descent {
+		callpath += "/" + v.ID.String()
+	}
+	// its important to append the instanceID to the callpath since we don't do it when creating the database entry
+	prefix := internallogger.AppendInstanceID(callpath, instance.Instance.ID.String())
 	root, err := internallogger.GetRootinstanceID(prefix)
 	if err != nil {
 		return err
