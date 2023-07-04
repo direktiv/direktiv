@@ -37,8 +37,6 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 
 // nolint
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
-	// TODO: Alan, please fix this test.
-	return
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -68,6 +66,9 @@ states:
 			TelemetryInfo: []byte(`{}`),
 			Settings:      []byte(`{}`),
 			DescentInfo:   []byte(`{}`),
+			RuntimeInfo:   []byte(`{}`),
+			ChildrenInfo:  []byte(`{}`),
+			LiveData:      []byte(`{}`),
 		},
 	})
 
@@ -104,8 +105,6 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 
 // nolint
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
-	// TODO: Alan, please fix this test.
-	return
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -135,6 +134,9 @@ states:
 			TelemetryInfo: []byte(`{}`),
 			Settings:      []byte(`{}`),
 			DescentInfo:   []byte(`{}`),
+			RuntimeInfo:   []byte(`{}`),
+			ChildrenInfo:  []byte(`{}`),
+			LiveData:      []byte(`{}`),
 		},
 	})
 
