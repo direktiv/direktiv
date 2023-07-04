@@ -984,16 +984,8 @@ func (engine *engine) createTransport() *http.Transport {
 	return tr
 }
 
-func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.Event) {
-	sig := new(eventsWaiterSignature)
-	err := json.Unmarshal(signature, sig)
-	if err != nil {
-		err = derrors.NewInternalError(err)
-		engine.sugar.Error(err)
-		return
-	}
-
-	ctx, im, err := engine.loadInstanceMemory(sig.InstanceID, sig.Step)
+func (engine *engine) wakeEventsWaiter(instance uuid.UUID, step int, events []*cloudevents.Event) {
+	ctx, im, err := engine.loadInstanceMemory(instance.String(), step)
 	if err != nil {
 		err = fmt.Errorf("cannot load workflow logic instance: %w", err)
 		engine.sugar.Error(err)
@@ -1019,14 +1011,8 @@ func (engine *engine) wakeEventsWaiter(signature []byte, events []*cloudevents.E
 	engine.runState(ctx, im, wakedata, nil)
 }
 
-func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Event) {
+func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
 	ctx := context.Background()
-
-	id, err := uuid.Parse(workflowID)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
 
 	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
@@ -1035,19 +1021,19 @@ func (engine *engine) EventsInvoke(workflowID string, events ...*cloudevents.Eve
 	}
 	defer tx.Rollback()
 
-	file, err := tx.FileStore().GetFile(ctx, id)
+	file, err := tx.FileStore().GetFile(ctx, workflowID)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	ns, err := tx.DataStore().Namespaces().GetByID(ctx, file.RootID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
 
 	tx.Rollback()
-
-	ns, err := engine.edb.Namespace(ctx, file.RootID)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
 
 	var input []byte
 	m := make(map[string]interface{})
@@ -1138,13 +1124,6 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
-	}
-}
-
-func rollback(tx database.Transaction) {
-	err := tx.Rollback()
-	if err != nil && !strings.Contains(err.Error(), "already been") {
-		fmt.Fprintf(os.Stderr, "failed to rollback transaction: %v\n", err)
 	}
 }
 

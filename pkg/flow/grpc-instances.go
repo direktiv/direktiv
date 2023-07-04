@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -23,16 +24,16 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 		return nil, err
 	}
 
-	ns, err := srv.edb.NamespaceByName(ctx, namespace)
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := srv.flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, namespace)
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(id).GetSummary(ctx)
 	if err != nil {
@@ -84,16 +85,16 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummaryWithInput(ctx)
 	if err != nil {
@@ -132,16 +133,16 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummaryWithOutput(ctx)
 	if err != nil {
@@ -180,16 +181,16 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummaryWithMetadata(ctx)
 	if err != nil {
@@ -255,7 +256,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 				fallthrough
 			case "PREFIX":
 				filter.Kind = instancestore.FilterKindPrefix
-			case "MATCH":
+			case "MATCH": //nolint:goconst
 				filter.Kind = instancestore.FilterKindMatch
 			case "AFTER":
 				filter.Kind = instancestore.FilterKindAfter
@@ -294,16 +295,16 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 		}
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	results, err := tx.InstanceStore().GetNamespaceInstances(ctx, ns.ID, opts)
 	if err != nil {
@@ -359,16 +360,16 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 		return nil, err
 	}
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
 
 	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummary(ctx)
 	if err != nil {
@@ -414,7 +415,12 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
+	})
 	if err != nil {
 		return err
 	}
@@ -490,7 +496,12 @@ resend:
 func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -589,7 +600,12 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	phash := ""
 	nhash := ""
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		return err
+	})
 	if err != nil {
 		return err
 	}

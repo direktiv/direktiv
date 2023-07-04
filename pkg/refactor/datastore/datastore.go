@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 )
@@ -12,7 +13,10 @@ import (
 // application data, there is a Store responsible for doing all the reading and writing database operations.
 
 // Store object wraps all different direktiv application stores.
+// nolint:interfacebloat
 type Store interface {
+	Namespaces() core.NamespacesStore
+
 	// Mirror returns mirror.Store, is responsible for reading and writing mirrors information.
 	Mirror() mirror.Store
 	// FileAnnotations returns core.FileAnnotationsStore, is responsible for reading and writing file annotations
@@ -26,6 +30,11 @@ type Store interface {
 	RuntimeVariables() core.RuntimeVariablesStore
 
 	Services() core.ServicesStore
+
+	EventHistory() events.EventHistoryStore
+	EventListener() events.EventListenerStore
+	EventFilter() events.CloudEventsFilterStore
+	EventListenerTopics() events.EventTopicsStore
 }
 
 // ErrNotFound is a common error type that should be returned by any store implementation

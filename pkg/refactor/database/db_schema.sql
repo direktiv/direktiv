@@ -1,10 +1,19 @@
+CREATE TABLE IF NOT EXISTS  "namespaces" (
+    "id" uuid,
+    "name" text NOT NULL UNIQUE,
+    "config" text NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("id")
+);
+
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
-    FOREIGN KEY ("id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -60,7 +69,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("namespace_id"),
     CONSTRAINT "fk_namespaces_mirror_configs"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -74,7 +83,7 @@ CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_mirror_processes"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -87,7 +96,7 @@ CREATE TABLE IF NOT EXISTS "secrets" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_secrets"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "services" (
@@ -100,7 +109,7 @@ CREATE TABLE IF NOT EXISTS "services" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_services"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -121,7 +130,7 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     UNIQUE(namespace_id, workflow_id, instance_id, name),
 
     CONSTRAINT "fk_namespaces_runtime_variables"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
 
     CONSTRAINT "fk_filesystem_files_runtime_variables"
     FOREIGN KEY ("workflow_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -130,17 +139,19 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
 );
 
 CREATE TABLE IF NOT EXISTS "log_entries" (
-    "oid" uuid,
+    "id" uuid,
     "timestamp" timestamptz NOT NULL,
     "level" integer,
     "root_instance_id" uuid,
-    "sender" uuid,
-    "sender_type" text,
+    "source" uuid,
+    "type" text,
     "log_instance_call_path" text,
-    "entry" jsonb NOT NULL,
-    PRIMARY KEY ("oid")
+    "entry" bytea NOT NULL,
+    PRIMARY KEY ("id")
 );
 
+-- speeds up pagination
+CREATE INDEX  IF NOT EXISTS "log_entries_sorted" ON log_entries ("timestamp" ASC);
 
 -- TODO: alan please fix id and other fields types for postgres.
 CREATE TABLE IF NOT EXISTS "instances_v2" (
@@ -171,5 +182,77 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "metadata" bytea,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_instances"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("oid") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "events_history" (
+    "id" text,
+    "type" text NOT NULL,
+    "source" text NOT NULL,
+    "cloudevent" text NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamptz NOT NULL,
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "no_dup_check" UNIQUE ("source","id")
+);
+
+-- for cursor style pagination
+CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespace_id", "created_at" DESC);
+
+CREATE TABLE IF NOT EXISTS "event_listeners" (
+    "id" uuid UNIQUE,
+    "namespace_id" uuid NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted" boolean NOT NULL,
+    "received_events" bytea,
+    "trigger_type" integer NOT NULL,
+    "events_lifespan" integer NOT NULL DEFAULT 0,
+    "glob_gates" text, 
+    "event_types" text NOT NULL, -- lets keep it for the ui just in case
+    "trigger_info" text NOT NULL,
+    "metadata" text,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "event_topics" (
+    "id" uuid,
+    "event_listener_id" uuid NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "topic" text NOT NULL,
+    PRIMARY KEY ("id"),
+    CONSTRAINT "no_dup_topics_check" UNIQUE ("event_listener_id","topic"),
+    FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- for processing the events with minimal latency, we assume that the topic 
+-- is a compound like this: "namespace-id:event-type"
+CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
+
+CREATE TABLE IF NOT EXISTS "events_filters" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "name" text NOT NULL,
+    "js_code" text NOT NULL,
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "metrics" (
+    "id" serial,
+    "namespace" text,
+    "workflow" text,
+    "revision" text,
+    "instance" text,
+    "state" text,
+    "timestamp" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "workflow_ms" integer,
+    "isolate_ms" integer,
+    "error_code" text,
+    "invoker" text,
+    "next" integer,
+    "transition" text,
+    PRIMARY KEY ("id")
 );

@@ -1,13 +1,11 @@
 package flow
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -214,142 +212,145 @@ func (cpds *cpdSecrets) Add(name string) {
 	cpds.list = append(cpds.list, name)
 }
 
-type orderingInfo struct {
-	db           string
-	req          string
-	defaultOrder func(fields ...string) ent.OrderFunc
-	isDefault    bool
-}
+//type orderingInfo struct {
+//	db           string
+//	req          string
+//	defaultOrder func(fields ...string) ent.OrderFunc
+//	isDefault    bool
+//}
 
-func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
-	var fns []ent.OrderFunc
-
-	for _, o := range p.order {
-		var ordering *orderingInfo
-
-		for _, x := range orderings {
-			if x.req == o.Field {
-				ordering = x
-				break
-			}
-		}
-
-		if ordering == nil {
-			continue
-		}
-
-		direction := ordering.defaultOrder
-
-		if o.Direction == "ASC" {
-			direction = ent.Asc
-		} else if o.Direction == "DESC" {
-			direction = ent.Desc
-		}
-
-		field := ordering.db
-
-		fns = append(fns, direction(field))
-	}
-
-	if len(fns) == 0 {
-		for _, x := range orderings {
-			if x.isDefault {
-				fns = append(fns, x.defaultOrder(x.db))
-			}
-		}
-
-		if len(fns) == 0 {
-			fns = append(fns, orderings[0].defaultOrder(orderings[0].db))
-		}
-	}
-
-	return fns
-}
+//func (p *pagination) orderings(orderings []*orderingInfo) []ent.OrderFunc {
+//	var fns []ent.OrderFunc
+//
+//	for _, o := range p.order {
+//		var ordering *orderingInfo
+//
+//		for _, x := range orderings {
+//			if x.req == o.Field {
+//				ordering = x
+//				break
+//			}
+//		}
+//
+//		if ordering == nil {
+//			continue
+//		}
+//
+//		direction := ordering.defaultOrder
+//
+//		if o.Direction == "ASC" {
+//			direction = ent.Asc
+//		} else if o.Direction == "DESC" {
+//			direction = ent.Desc
+//		}
+//
+//		field := ordering.db
+//
+//		fns = append(fns, direction(field))
+//	}
+//
+//	if len(fns) == 0 {
+//		for _, x := range orderings {
+//			if x.isDefault {
+//				fns = append(fns, x.defaultOrder(x.db))
+//			}
+//		}
+//
+//		if len(fns) == 0 {
+//			fns = append(fns, orderings[0].defaultOrder(orderings[0].db))
+//		}
+//	}
+//
+//	return fns
+//}
 
 type filteringInfo struct {
 	field string
 	ftype string
 }
 
-type entQuery[T, X any] interface {
-	Count(ctx context.Context) (int, error)
-	Order(o ...ent.OrderFunc) T
-	Limit(limit int) T
-	Offset(offset int) T
-	All(ctx context.Context) ([]X, error)
-}
+//nolint:dupword
+//type entQuery[T, X any] interface {
+//	Count(ctx context.Context) (int, error)
+//	Order(o ...ent.OrderFunc) T
+//	Limit(limit int) T
+//	Offset(offset int) T
+//	All(ctx context.Context) ([]X, error)
+//}
 
-func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filteringInfo]func(query Q, v string) (Q, error)) []func(query Q) (Q, error) {
-	var filters []func(query Q) (Q, error)
+//nolint:dupword
+//func entFilters[T, X any, Q entQuery[T, X]](p *pagination, filtersInfo map[*filteringInfo]func(query Q, v string) (Q, error)) []func(query Q) (Q, error) {
+//	var filters []func(query Q) (Q, error)
+//
+//	for idx := range p.filter {
+//		f := p.filter[idx]
+//		var fn func(query Q, v string) (Q, error)
+//
+//		for k, x := range filtersInfo {
+//			if k.field == f.Field && k.ftype == f.Type {
+//				fn = x
+//				break
+//			}
+//		}
+//
+//		if fn == nil {
+//			continue
+//		}
+//
+//		filters = append(filters, func(query Q) (Q, error) {
+//			return fn(query, f.Val)
+//		})
+//	}
+//
+//	return filters
+//}
 
-	for idx := range p.filter {
-		f := p.filter[idx]
-		var fn func(query Q, v string) (Q, error)
-
-		for k, x := range filtersInfo {
-			if k.field == f.Field && k.ftype == f.Type {
-				fn = x
-				break
-			}
-		}
-
-		if fn == nil {
-			continue
-		}
-
-		filters = append(filters, func(query Q) (Q, error) {
-			return fn(query, f.Val)
-		})
-	}
-
-	return filters
-}
-
-func paginate[T, X any, Q entQuery[T, X]](
-	ctx context.Context,
-	params *grpc.Pagination,
-	q Q,
-	o []*orderingInfo,
-	f map[*filteringInfo]func(Q, string) (Q, error),
-) ([]X, *grpc.PageInfo, error) {
-	var err error
-
-	p, err := getPagination(params)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	orderings := p.orderings(o)
-	filters := entFilters[T, X](p, f)
-
-	for _, filter := range filters {
-		q, err = filter(q)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	total, err := q.Count(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if len(orderings) > 0 {
-		q = any(q.Order(orderings...)).(Q)
-	}
-
-	if p.limit > 0 {
-		q = any(q.Limit(p.limit)).(Q)
-	}
-
-	if p.offset > 0 {
-		q = any(q.Offset(p.offset)).(Q)
-	}
-
-	results, err := q.All(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return results, pageInfo(p, total), nil
-}
+//nolint:dupword
+//func paginate[T, X any, Q entQuery[T, X]](
+//	ctx context.Context,
+//	params *grpc.Pagination,
+//	q Q,
+//	o []*orderingInfo,
+//	f map[*filteringInfo]func(Q, string) (Q, error),
+//) ([]X, *grpc.PageInfo, error) {
+//	var err error
+//
+//	p, err := getPagination(params)
+//	if err != nil {
+//		return nil, nil, err
+//	}
+//
+//	orderings := p.orderings(o)
+//	filters := entFilters[T, X](p, f)
+//
+//	for _, filter := range filters {
+//		q, err = filter(q)
+//		if err != nil {
+//			return nil, nil, err
+//		}
+//	}
+//
+//	total, err := q.Count(ctx)
+//	if err != nil {
+//		return nil, nil, err
+//	}
+//
+//	if len(orderings) > 0 {
+//		q = any(q.Order(orderings...)).(Q)
+//	}
+//
+//	if p.limit > 0 {
+//		q = any(q.Limit(p.limit)).(Q)
+//	}
+//
+//	if p.offset > 0 {
+//		q = any(q.Offset(p.offset)).(Q)
+//	}
+//
+//	results, err := q.All(ctx)
+//	if err != nil {
+//		return nil, nil, err
+//	}
+//
+//	return results, pageInfo(p, total), nil
+//}

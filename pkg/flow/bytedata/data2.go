@@ -176,3 +176,22 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 
 	return list
 }
+
+func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
+	return &grpc.Namespace{
+		Oid:  item.ID.String(),
+		Name: item.Name,
+
+		CreatedAt: timestamppb.New(item.CreatedAt),
+		UpdatedAt: timestamppb.New(item.UpdatedAt),
+	}
+}
+
+func ConvertNamespacesListToGrpc(list []*core.Namespace) []*grpc.Namespace {
+	var result []*grpc.Namespace
+	for _, f := range list {
+		result = append(result, ConvertNamespaceToGrpc(f))
+	}
+
+	return result
+}

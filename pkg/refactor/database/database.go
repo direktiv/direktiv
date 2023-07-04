@@ -21,6 +21,7 @@ func sqlLiteSchema() string {
 		"timestamptz": "datetime",
 		"bytea":       "blob",
 		"boolean":     "numeric",
+		"serial":      "integer",
 	}
 
 	liteSchema := Schema
@@ -29,6 +30,7 @@ func sqlLiteSchema() string {
 		liteSchema = strings.ReplaceAll(liteSchema, " "+k+",", " "+v+",")
 		liteSchema = strings.ReplaceAll(liteSchema, " "+k+" ", " "+v+" ")
 	}
+	liteSchema = strings.ReplaceAll(liteSchema, "CREATE INDEX", "--")
 
 	return liteSchema
 }

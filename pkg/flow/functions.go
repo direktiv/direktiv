@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -15,20 +14,18 @@ import (
 func (flow *flow) functionsHeartbeat() {
 	ctx := context.Background()
 
-	clients := flow.edb.Clients(ctx)
-
-	nss, err := clients.Namespace.Query().All(ctx)
-	if err != nil {
-		flow.sugar.Error(err)
-		return
-	}
-
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
 	defer tx.Rollback()
+
+	nss, err := tx.DataStore().Namespaces().GetAll(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
 
 	for _, ns := range nss {
 		files, err := tx.FileStore().ForRootID(ns.ID).ListAllFiles(ctx)
@@ -52,15 +49,7 @@ func (flow *flow) functionsHeartbeat() {
 			}
 
 			for _, rev := range revs {
-				x := &database.Revision{
-					ID:        rev.ID,
-					CreatedAt: rev.CreatedAt,
-					Hash:      rev.Checksum,
-					Source:    rev.Data,
-					Workflow:  file.ID,
-				}
-
-				w, err := loadSource(x)
+				w, err := loadSource(rev)
 				if err != nil {
 					continue
 				}
@@ -127,8 +116,7 @@ func (flow *flow) flushHeartbeatTuples(tuples []*functions.HeartbeatTuple) {
 	}
 
 	ctx := context.Background()
-
-	conn, err := flow.edb.DB().Conn(ctx)
+	conn, err := flow.rawDB.Conn(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return

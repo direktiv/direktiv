@@ -5,13 +5,16 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"reflect"
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/logengine"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -192,7 +195,7 @@ func ConvertDataForOutput(a, b interface{}) error {
 	return nil
 }
 
-func ConvertLogMsgForOutput(a []*ent.LogMsg) ([]*grpc.Log, error) {
+func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 	results := make([]*grpc.Log, 0, len(a))
 	for _, v := range a {
 		t := timestamppb.New(v.T)
@@ -200,13 +203,55 @@ func ConvertLogMsgForOutput(a []*ent.LogMsg) ([]*grpc.Log, error) {
 		if err != nil {
 			return nil, err
 		}
+		convertedFields := make(map[string]string)
+		for k, e := range v.Fields {
+			convertedFields[k] = fmt.Sprintf("%v", e)
+		}
 		r := grpc.Log{
 			T:     t,
-			Level: v.Level,
+			Level: convertedFields["level"],
 			Msg:   v.Msg,
-			Tags:  v.Tags,
+			Tags:  convertedFields,
 		}
 		results = append(results, &r)
 	}
 	return results, nil
+}
+
+func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
+	res := make([]*grpc.EventListener, 0, len(in))
+	for _, el := range in {
+		types := []*grpc.EventDef{}
+		for _, v := range el.ListeningForEventTypes {
+			types = append(types, &grpc.EventDef{Type: v})
+		}
+		wf := ""
+		ins := ""
+		// step := ""
+		if el.TriggerWorkflow != uuid.Nil {
+			wf = "/" + strings.Split(el.Metadata, " ")[0]
+		}
+		if el.TriggerInstance != uuid.Nil {
+			ins = el.TriggerInstance.String()
+			// step = fmt.Sprintf("%v", el.TriggerInstanceStep)
+		}
+		mode := ""
+		switch el.TriggerType {
+		case events.StartAnd, events.WaitAnd:
+			mode = "and"
+		case events.StartOR, events.WaitOR:
+			mode = "or"
+		case events.StartSimple, events.WaitSimple:
+			mode = "simple"
+		}
+		res = append(res, &grpc.EventListener{
+			Workflow:  wf,
+			Instance:  ins,
+			UpdatedAt: timestamppb.New(el.UpdatedAt),
+			Mode:      mode,
+			Events:    types,
+			CreatedAt: timestamppb.New(el.CreatedAt),
+		})
+	}
+	return res
 }
