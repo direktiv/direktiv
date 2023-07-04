@@ -203,15 +203,19 @@ states:
     })
 
 
-    it(`check if instances logs are present`, async () => {
+    it(`check if instance logs are present`, async () => {
         var instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
-        var id = instances.body.instances.results[0]["id"] //TODO test this for all element in results
-        var logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${id}/logs`)
-        expect(logsResponse.statusCode).toEqual(200)
-        expect(logsResponse.body.results.length).not.toBeLessThan(1)
-        console.log(logsResponse.body.results)
+        // create a new array containing the ids
+        const ids = instances.body.instances.results.map((result) => result.id)
+
+        // iterate over that array 
+        await Promise.all(ids.map(async (id) => {
+            const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${id}/logs`)
+            expect(logsResponse.statusCode).toEqual(200)
+            expect(logsResponse.body.results.length).not.toBeLessThan(1)
+            console.log(logsResponse.body.results)
+        }))
     })
-    
 
     it(`check if namespace logs contains some workflow operations`, async () => {
         var logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/logs`)
