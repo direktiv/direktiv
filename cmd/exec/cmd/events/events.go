@@ -29,8 +29,9 @@ var (
 )
 
 var eventsCmd = &cobra.Command{
-	Use:   "events",
-	Short: "Event-related commands",
+	Use:              "events",
+	Short:            "Event-related commands",
+	PersistentPreRun: root.InitConfiguration,
 }
 
 var sendEventCmd = &cobra.Command{
@@ -42,7 +43,7 @@ var sendEventCmd = &cobra.Command{
 
 		filter, err := cmd.Flags().GetString("filter")
 		if err != nil {
-			root.Fail("could not parse event filter %v", err.Error())
+			root.Fail(cmd, "could not parse event filter %v", err.Error())
 		}
 
 		if filter != "" {
@@ -51,21 +52,21 @@ var sendEventCmd = &cobra.Command{
 
 		cmd.Printf("sending events to %s\n", urlExecuteEvent)
 
-		event, err := executeEvent(urlExecuteEvent, args)
+		event, err := executeEvent(cmd, urlExecuteEvent, args)
 		if err != nil {
-			root.Fail("failed to trigger event: %s %v\n", event, err)
+			root.Fail(cmd, "failed to trigger event: %s %v\n", event, err)
 		}
 
-		cmd.PrintErrln("successfully triggered event: " + event)
+		cmd.Printf("successfully triggered event: %s\n", event)
 	},
 }
 
-func executeEvent(url string, args []string) (string, error) {
+func executeEvent(cmd *cobra.Command, url string, args []string) (string, error) {
 	event := cloudevents.NewEvent()
 
 	// read event file in if provided
 	if len(args) > 0 {
-		root.Printlog("reading cloudevent file %s", args[0])
+		cmd.Printf("reading cloudevent file %s\n", args[0])
 		e, err := os.ReadFile(args[0])
 		if err != nil {
 			return "", err
@@ -188,24 +189,24 @@ var setFilterCmd = &cobra.Command{
 		if len(args) > 1 {
 			inputData, err = root.SafeLoadFile(args[1])
 			if err != nil {
-				root.Fail("Failed to load input file: %v", err)
+				root.Fail(cmd, "Failed to load input file: %v", err)
 			}
 		} else {
 			inputData, err = root.SafeLoadStdIn()
 			if err != nil {
-				root.Fail("Failed to load stdin: %v", err)
+				root.Fail(cmd, "Failed to load stdin: %v", err)
 			}
 		}
 
 		// fail if there is nothig to create
 		if inputData.Len() == 0 {
-			root.Fail("no filter function provided")
+			root.Fail(cmd, "no filter function provided")
 		}
 
 		// set method to force if filter already exists
 		force, err := cmd.Flags().GetBool("force")
 		if err != nil {
-			root.Fail("can not read force flag: %s", err.Error())
+			root.Fail(cmd, "can not read force flag: %s", err.Error())
 		}
 
 		method := http.MethodPost
@@ -215,10 +216,10 @@ var setFilterCmd = &cobra.Command{
 
 		err = executeCreateCloudEventFilter(filterName, inputData, method)
 		if err != nil {
-			root.Fail("can not create filter: %s", err.Error())
+			root.Fail(cmd, "can not create filter: %s\n", err.Error())
 		}
 
-		cmd.PrintErrln("successfully created cloud event filter: " + filterName)
+		cmd.Printf("successfully created cloud event filter: %s\n", filterName)
 	},
 }
 
@@ -274,17 +275,17 @@ var listFilterCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		resp, err := executeListCloudEventFilter()
 		if err != nil {
-			root.Fail("can not fetch event filter: %v\n", err)
+			root.Fail(cmd, "can not fetch event filter: %v\n", err)
 		}
 
 		var eventfilter listFiltersResp
 		err = json.Unmarshal(resp, &eventfilter)
 		if err != nil {
-			root.Fail("can not unmarshall event filter response: %v\n", err)
+			root.Fail(cmd, "can not unmarshall event filter response: %v\n", err)
 		}
 
 		for i := range eventfilter.EventFilter {
-			root.Printlog(eventfilter.EventFilter[i].Name)
+			cmd.Println(eventfilter.EventFilter[i].Name)
 		}
 	},
 }
@@ -336,10 +337,10 @@ var deleteFilterCmd = &cobra.Command{
 
 		err := executeDeleteCloudEventFilter(filterName)
 		if err != nil {
-			root.Fail("error: %v\n", err)
+			root.Fail(cmd, "error: %v\n", err)
 		}
 
-		root.Printlog("successfully deleted cloud event filter: " + filterName)
+		cmd.Printf("successfully deleted cloud event filter: %s\n", filterName)
 	},
 }
 
@@ -400,17 +401,17 @@ var getFilterCmd = &cobra.Command{
 
 		resp, err := executeGetCloudEventFilter(filterName)
 		if err != nil {
-			root.Fail("error: %v\n", err)
+			root.Fail(cmd, "error: %v\n", err)
 		}
 
 		var eventfilter getFilterResp
 		err = json.Unmarshal(resp, &eventfilter)
 		if err != nil {
-			root.Fail("error: %v\n", err)
+			root.Fail(cmd, "error: %v\n", err)
 		}
 
-		root.Printlog("filtername: %s", eventfilter.Filtername)
-		root.Printlog("script: %s", eventfilter.JsCode)
+		cmd.Printf("filtername: %s\n", eventfilter.Filtername)
+		cmd.Printf("script: %s\n", eventfilter.JsCode)
 	},
 }
 

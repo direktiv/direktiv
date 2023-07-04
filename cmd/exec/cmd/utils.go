@@ -5,34 +5,32 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+const ToolName = "direktivctl"
 
 var maxSize int64 = 1073741824
 
 func ProjectFolder() (string, error) {
-	pd, err := os.Getwd()
-	if err != nil {
-		return "", err
+	projectFile := viper.GetString("projectFile")
+	if projectFile != "" {
+		return path.Dir(projectFile), nil
 	}
 
-	if config.path != "" {
-		return path.Dir(config.path), nil
-	}
-
-	return pd, nil
+	return "", fmt.Errorf("project directory not found")
 }
 
-func Fail(s string, x ...interface{}) {
-	fmt.Fprintf(os.Stderr, strings.TrimSuffix(s, "\n")+"\n", x...)
+func Fail(cmd *cobra.Command, s string, x ...interface{}) {
+	cmd.PrintErrf(strings.TrimSuffix(s, "\n")+"\n", x...)
 	os.Exit(1)
-}
-
-func Printlog(s string, x ...interface{}) {
-	fmt.Fprintf(os.Stderr, strings.TrimSuffix(s, "\n")+"\n", x...)
 }
 
 func pingNamespace() error {
@@ -130,4 +128,47 @@ func SafeLoadStdIn() (*bytes.Buffer, error) {
 	buf = bytes.NewBuffer(fData)
 
 	return buf, nil
+}
+
+func InitConfiguration(cmd *cobra.Command, args []string) {
+	err := initCLI(cmd)
+	if err != nil {
+		Fail(cmd, "Got an error while initializing: %v", err)
+	}
+
+	cmdPrepareSharedValues()
+	if err := pingNamespace(); err != nil {
+		log.Fatalf("%v", err)
+	}
+}
+
+func InitConfigurationAndProject(cmd *cobra.Command, args []string) {
+	InitConfiguration(cmd, args)
+	err := initProjectDir(cmd)
+	if err != nil {
+		Fail(cmd, "Got an error while initializing: %v", err)
+	}
+	err = InitWD()
+	if err != nil {
+		Fail(cmd, "Got an error while initializing: %v", err)
+	}
+}
+
+func InitWD() error {
+	directory := viper.GetString("directory")
+	if directory == "" {
+		pwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		viper.Set("directory", pwd)
+	}
+	return nil
+}
+
+func GetMaxSize() int64 {
+	if cfgMaxSize := viper.GetInt64("max-size"); cfgMaxSize > 0 {
+		return cfgMaxSize
+	}
+	return maxSize
 }
