@@ -112,6 +112,37 @@ CREATE TABLE IF NOT EXISTS "services" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- TODO: alan please fix id and other fields types for postgres.
+CREATE TABLE IF NOT EXISTS "instances_v2" (
+    "id" uuid,
+    "namespace_id" uuid NOT NULL,
+    "workflow_id" uuid NOT NULL,
+    "revision_id" uuid NOT NULL,
+    "root_instance_id" uuid NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "ended_at" timestamptz,
+    "deadline" timestamptz,
+    "status" integer NOT NULL,
+    "called_as" text NOT NULL,
+    "error_code" text NOT NULL,
+    "invoker" text NOT NULL,
+    "definition" bytea NOT NULL,
+    "settings" bytea NOT NULL,
+    "descent_info" bytea NOT NULL,
+    "telemetry_info" bytea NOT NULL,
+    "runtime_info" bytea NOT NULL,
+    "children_info" bytea NOT NULL,
+    "input" bytea NOT NULL,
+    "live_data" bytea NOT NULL,
+    "state_memory" bytea NOT NULL,
+    "output" bytea,
+    "error_message" bytea,
+    "metadata" bytea,
+    PRIMARY KEY ("id"),
+    CONSTRAINT "fk_namespaces_instances"
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
@@ -151,38 +182,6 @@ CREATE TABLE IF NOT EXISTS "log_entries" (
 
 -- speeds up pagination
 CREATE INDEX  IF NOT EXISTS "log_entries_sorted" ON log_entries ("timestamp" ASC);
-
--- TODO: alan please fix id and other fields types for postgres.
-CREATE TABLE IF NOT EXISTS "instances_v2" (
-    "id" uuid,
-    "namespace_id" uuid NOT NULL,
-    "workflow_id" uuid NOT NULL,
-    "revision_id" uuid NOT NULL,
-    "root_instance_id" uuid NOT NULL,
-    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "ended_at" timestamptz,
-    "deadline" timestamptz,
-    "status" integer NOT NULL,
-    "called_as" text NOT NULL,
-    "error_code" text NOT NULL,
-    "invoker" text NOT NULL,
-    "definition" bytea NOT NULL,
-    "settings" bytea NOT NULL,
-    "descent_info" bytea NOT NULL,
-    "telemetry_info" bytea NOT NULL,
-    "runtime_info" bytea NOT NULL,
-    "children_info" bytea NOT NULL,
-    "input" bytea NOT NULL,
-    "live_data" bytea NOT NULL,
-    "state_memory" bytea NOT NULL,
-    "output" bytea,
-    "error_message" bytea,
-    "metadata" bytea,
-    PRIMARY KEY ("id"),
-    CONSTRAINT "fk_namespaces_instances"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
 
 CREATE TABLE IF NOT EXISTS "events_history" (
     "id" text,
