@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -185,7 +186,6 @@ type HeartbeatTuple struct {
 	NamespaceName      string
 	NamespaceID        string
 	WorkflowPath       string
-	WorkflowID         string
 	Revision           string
 	FunctionDefinition *model.ReusableFunctionDefinition
 }
@@ -199,11 +199,13 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 		size := int32(tuple.FunctionDefinition.Size)
 		minscale := int32(0)
 
+		wf := bytedata.ShortChecksum(tuple.WorkflowPath)
+
 		in := &igrpc.FunctionsCreateFunctionRequest{
 			Info: &igrpc.FunctionsBaseInfo{
 				Name:          &tuple.FunctionDefinition.ID,
 				Namespace:     &tuple.NamespaceID,
-				Workflow:      &tuple.WorkflowID,
+				Workflow:      &wf,
 				Image:         &tuple.FunctionDefinition.Image,
 				Cmd:           &tuple.FunctionDefinition.Cmd,
 				Size:          &size,
@@ -220,13 +222,13 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
 		fServer.reusableCacheLock.Lock()
 
-		ct, exists := fServer.reusableCache[tuple.WorkflowID]
+		ct, exists := fServer.reusableCache[wf]
 		if exists {
 			ct.Add(name)
 		} else {
 			ct = new(cacheTuple)
 			ct.Add(name)
-			fServer.reusableCache[tuple.WorkflowID] = ct
+			fServer.reusableCache[wf] = ct
 		}
 		fServer.reusableCacheIndex[name] = ct
 		fServer.reusableCacheLock.Unlock()

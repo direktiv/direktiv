@@ -110,12 +110,12 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
 
-		case instancestore.FieldCalledAs:
+		case instancestore.FieldWorkflowPath:
 			if filter.Kind == instancestore.FilterKindPrefix {
-				clause = fieldCalledAs + " LIKE ?"
+				clause = fieldWorkflowPath + " LIKE ?"
 				val = fmt.Sprintf("%s", filter.Value) + "%"
 			} else if filter.Kind == instancestore.FilterKindContains {
-				clause = fieldCalledAs + " LIKE ?"
+				clause = fieldWorkflowPath + " LIKE ?"
 				val = "%" + fmt.Sprintf("%s", filter.Value) + "%"
 			} else {
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)

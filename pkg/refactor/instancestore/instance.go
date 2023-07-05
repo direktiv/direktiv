@@ -69,10 +69,10 @@ const InvokerCron = util.CallerCron
 
 // Fields defined here so drivers can handle generic order/filter arguments.
 const (
-	FieldCreatedAt = "created_at"
-	FieldCalledAs  = "called_as"
-	FieldInvoker   = "invoker"
-	FieldStatus    = "status" // The driver is responsible for converting string to enum, not the caller.
+	FieldCreatedAt    = "created_at"
+	FieldWorkflowPath = "workflow_path"
+	FieldInvoker      = "invoker"
+	FieldStatus       = "status" // The driver is responsible for converting string to enum, not the caller.
 )
 
 // Types of filters defined here. Not all types of filters are supported for all fields.
@@ -109,7 +109,6 @@ type ListOpts struct {
 type InstanceData struct {
 	ID             uuid.UUID
 	NamespaceID    uuid.UUID
-	WorkflowID     uuid.UUID
 	RevisionID     uuid.UUID
 	RootInstanceID uuid.UUID
 	CreatedAt      time.Time
@@ -117,7 +116,7 @@ type InstanceData struct {
 	EndedAt        *time.Time
 	Deadline       *time.Time
 	Status         InstanceStatus
-	CalledAs       string
+	WorkflowPath   string
 	ErrorCode      string
 	Invoker        string
 	Definition     []byte
@@ -144,11 +143,10 @@ type GetNamespaceInstancesResults struct {
 type CreateInstanceDataArgs struct {
 	ID             uuid.UUID
 	NamespaceID    uuid.UUID
-	WorkflowID     uuid.UUID
 	RevisionID     uuid.UUID
 	RootInstanceID uuid.UUID
 	Invoker        string
-	CalledAs       string
+	WorkflowPath   string
 	Definition     []byte
 	Input          []byte
 	LiveData       []byte
@@ -216,5 +214,5 @@ type Store interface {
 
 	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
 	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
-	AssertNoParallelCron(ctx context.Context, wfID uuid.UUID) error
+	AssertNoParallelCron(ctx context.Context, wfPath string) error
 }

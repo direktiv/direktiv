@@ -116,7 +116,6 @@ CREATE TABLE IF NOT EXISTS "services" (
 CREATE TABLE IF NOT EXISTS "instances_v2" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
-    "workflow_id" uuid NOT NULL,
     "revision_id" uuid NOT NULL,
     "root_instance_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -124,7 +123,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "ended_at" timestamptz,
     "deadline" timestamptz,
     "status" integer NOT NULL,
-    "called_as" text NOT NULL,
+    "workflow_path" text NOT NULL,
     "error_code" text NOT NULL,
     "invoker" text NOT NULL,
     "definition" bytea NOT NULL,

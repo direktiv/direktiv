@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -46,9 +47,9 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 				referenceID = im.instance.Instance.ID
 			}
 			if selector.Scope == util.VarScopeWorkflow {
-				// TODO: currently we need to ignore this case until we migrate workflow_id from instances.
+				// TODO: alan
+				// currently we need to ignore this case until we migrate workflow_id from instances.
 				continue
-				// referenceID = im.instance.Instance.WorkflowID
 			}
 
 			item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID.String(), selector.Key)
@@ -197,9 +198,9 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		case "instance":
 			referenceID = im.instance.Instance.ID
 		case "workflow":
-			// TODO: currently we need to ignore this case until we migrate workflow id from instances.
+			// TODO: alan
+			// currently we need to ignore this case until we migrate workflow id from instances.
 			continue
-			// referenceID = im.instance.Instance.WorkflowID
 		case "namespace":
 			referenceID = im.instance.Instance.NamespaceID
 		default:
@@ -367,11 +368,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
-	ar.Workflow.WorkflowID = im.instance.Instance.WorkflowID.String()
 	ar.Workflow.Timeout = timeout
 	ar.Workflow.Revision = im.instance.Instance.RevisionID.String()
 	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
-	ar.Workflow.Path = im.instance.Instance.CalledAs
+	ar.Workflow.Path = im.instance.Instance.WorkflowPath
 	ar.Iterator = iterator
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
@@ -384,7 +384,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	wfID := im.instance.Instance.WorkflowID.String()
+	wf := bytedata.ShortChecksum(im.instance.Instance.WorkflowPath)
 	revID := im.instance.Instance.RevisionID.String()
 	nsID := im.instance.Instance.NamespaceID.String()
 
@@ -404,7 +404,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.ID = con.ID
 		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &con.ID,
-			Workflow:      &wfID,
+			Workflow:      &wf,
 			Revision:      &revID,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,

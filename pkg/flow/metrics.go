@@ -268,7 +268,7 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 }
 
 func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemory, nextState, errCode string, retrying bool) {
-	workflow := GetInodePath(im.instance.Instance.CalledAs)
+	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	reportStateEnd(im.instance.TelemetryInfo.NamespaceName, workflow, im.logic.GetID(), im.instance.RuntimeInfo.StateBeginTime)
 
@@ -316,7 +316,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceMemory) {
 	t := im.StateBeginTime()
 	namespace := im.instance.TelemetryInfo.NamespaceName
-	workflow := GetInodePath(im.instance.Instance.CalledAs)
+	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	// Trim workflow revision until revisions are fully implemented.
 	if divider := strings.LastIndex(workflow, ":"); divider > 0 {

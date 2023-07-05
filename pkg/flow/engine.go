@@ -18,6 +18,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -114,7 +115,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	var wf model.Workflow
 	err = wf.Load(revision.Data)
 	if err != nil {
-		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", args.CalledAs, err)
+		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", file.Path, err)
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
@@ -189,11 +190,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,
 		NamespaceID:    args.Namespace.ID,
-		WorkflowID:     file.ID,
 		RevisionID:     revision.ID,
 		RootInstanceID: root,
 		Invoker:        args.Invoker,
-		CalledAs:       args.CalledAs,
+		WorkflowPath:   file.Path,
 		Definition:     revision.Data,
 		Input:          args.Input,
 		LiveData:       []byte(liveData),
@@ -240,7 +240,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	engine.pubsub.NotifyInstances(im.Namespace())
 	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
-	engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
+	// TODO: alex, do we need to restore workflow logs?
+	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
 
 	// Broadcast Event
@@ -264,9 +265,10 @@ func (engine *engine) start(im *instanceMemory) {
 	}
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
-	engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
-	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.CalledAs))
+	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	// TODO: alex, do we need to restore workflow logs?
+	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
+	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 
 	workflow, err := im.Model()
 	if err != nil {
@@ -289,7 +291,7 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	wfstates := workflow.GetStatesMap()
 	state, exists := wfstates[stateID]
 	if !exists {
-		return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.CalledAs), stateID)
+		return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
 	}
 
 	im.logic, err = states.StateLogic(im, state)
@@ -414,7 +416,7 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	}
 
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, ctx, broadcastInstanceInput{
-		WorkflowPath: GetInodePath(im.instance.Instance.CalledAs),
+		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
 	if broadcastErr != nil {
@@ -624,14 +626,14 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
 
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.CalledAs))
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.CalledAs))
+	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
 
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
-		WorkflowPath: GetInodePath(im.instance.Instance.CalledAs),
+		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
 	if broadcastErr != nil {
@@ -676,7 +678,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 	defer tx.Rollback()
 
 	if !filepath.IsAbs(args.CalledAs) {
-		dir, _ := filepath.Split(instance.Instance.CalledAs)
+		dir, _ := filepath.Split(instance.Instance.WorkflowPath)
 		if dir == "" {
 			dir = "/"
 		}
@@ -808,13 +810,15 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 
+	wf := bytedata.ShortChecksum(ar.Workflow.Path)
+
 	if ar.Container.Type == model.ReusableContainerFunctionType {
 		scale := int32(ar.Container.Scale)
 		size := int32(ar.Container.Size)
 		svn, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &ar.Container.ID,
 			Namespace:     &ar.Workflow.NamespaceID,
-			Workflow:      &ar.Workflow.WorkflowID,
+			Workflow:      &wf,
 			Revision:      &ar.Workflow.Revision,
 			NamespaceName: &ar.Workflow.NamespaceName,
 			Cmd:           &ar.Container.Cmd,
@@ -1093,7 +1097,7 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
 	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
-	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.CalledAs), im.GetInstanceID(), typ, code, err.Error())
+	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
@@ -1103,7 +1107,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 		s := fmt.Sprintf(msg, a...)
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
-		event.SetSource(im.instance.Instance.WorkflowID.String())
+		event.SetSource(im.instance.Instance.WorkflowPath)
 		event.SetType("direktiv.instanceLog")
 		event.SetExtension("logger", attr)
 		event.SetDataContentType("application/json")

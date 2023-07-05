@@ -72,7 +72,6 @@ func (flow *flow) functionsHeartbeat() {
 						NamespaceName:      ns.Name,
 						NamespaceID:        ns.ID.String(),
 						WorkflowPath:       file.Path,
-						WorkflowID:         file.ID.String(),
 						Revision:           rev.Checksum,
 						FunctionDefinition: def,
 					}
