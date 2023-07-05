@@ -48,7 +48,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			if selector.Scope == util.VarScopeWorkflow {
 				// TODO: currently we need to ignore this case until we migrate workflow_id from instances.
 				continue
-				//referenceID = im.instance.Instance.WorkflowID
+				// referenceID = im.instance.Instance.WorkflowID
 			}
 
 			item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID.String(), selector.Key)
@@ -199,7 +199,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		case "workflow":
 			// TODO: currently we need to ignore this case until we migrate workflow id from instances.
 			continue
-			//referenceID = im.instance.Instance.WorkflowID
+			// referenceID = im.instance.Instance.WorkflowID
 		case "namespace":
 			referenceID = im.instance.Instance.NamespaceID
 		default:
@@ -239,7 +239,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			case "workflow":
 				// TODO: currently we need to ignore this case until we migrate workflow id from instances.
 				continue
-				//newVar.WorkflowPath = referenceID
+				// newVar.WorkflowPath = referenceID
 			case "namespace":
 				newVar.NamespaceID = referenceID
 			}

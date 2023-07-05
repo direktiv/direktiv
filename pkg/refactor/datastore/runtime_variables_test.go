@@ -22,10 +22,10 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 	file := createFile(t, fs)
 
 	testVar := &core.RuntimeVariable{
-		WorkflowID: file.ID,
-		Name:       "myvar",
-		MimeType:   "text/json",
-		Data:       []byte("some data"),
+		WorkflowPath: file.Path,
+		Name:         "myvar",
+		MimeType:     "text/json",
+		Data:         []byte("some data"),
 	}
 	variable, err := ds.RuntimeVariables().Set(context.Background(), testVar)
 	if err != nil {
@@ -50,7 +50,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 
 		return
 	}
-	if variable.WorkflowID != testVar.WorkflowID ||
+	if variable.WorkflowPath != testVar.WorkflowPath ||
 		variable.Name != testVar.Name {
 		t.Errorf("unexpected GetByID() result: %v", variable)
 
@@ -69,10 +69,10 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 	file := createFile(t, fs)
 
 	testVar := &core.RuntimeVariable{
-		WorkflowID: file.ID,
-		Name:       "myvar$$",
-		MimeType:   "text/json",
-		Data:       []byte("some data"),
+		WorkflowPath: file.Path,
+		Name:         "myvar$$",
+		MimeType:     "text/json",
+		Data:         []byte("some data"),
 	}
 	_, err = ds.RuntimeVariables().Set(context.Background(), testVar)
 	if err == nil {
@@ -95,10 +95,10 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	// Test Set().
 	for _, i := range []int{0, 1, 2, 3} {
 		v := &core.RuntimeVariable{
-			WorkflowID: file.ID,
-			Name:       fmt.Sprintf("var_%d", i),
-			MimeType:   "text/json",
-			Data:       []byte(fmt.Sprintf("data_%d", i)),
+			WorkflowPath: file.Path,
+			Name:         fmt.Sprintf("var_%d", i),
+			MimeType:     "text/json",
+			Data:         []byte(fmt.Sprintf("data_%d", i)),
 		}
 		_, err = ds.RuntimeVariables().Set(context.Background(), v)
 		if err != nil {
@@ -109,7 +109,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	}
 
 	// Test ListByWorkflowID().
-	vars, err := ds.RuntimeVariables().ListByWorkflowID(context.Background(), file.ID)
+	vars, err := ds.RuntimeVariables().ListByWorkflowPath(context.Background(), file.Path)
 	if err != nil {
 		t.Errorf("unexpected ListByWorkflowID() error: %v", err)
 
@@ -133,7 +133,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 			return
 		}
 
-		if v.WorkflowID != file.ID ||
+		if v.WorkflowPath != file.Path ||
 			v.Name != fmt.Sprintf("var_%d", i) ||
 			string(data) != fmt.Sprintf("data_%d", i) {
 			t.Errorf("unexpected ListByWorkflowID()[%d] result: %v", i, v)
@@ -167,7 +167,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 			return
 		}
 
-		if v.WorkflowID != file.ID ||
+		if v.WorkflowPath != file.Path ||
 			v.Name != fmt.Sprintf("var_%d", i) ||
 			string(data) != fmt.Sprintf("data_%d", i) {
 			t.Errorf("unexpected ListByWorkflowID()[%d] result: %v", i, v)
