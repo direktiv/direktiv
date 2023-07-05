@@ -1,14 +1,21 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { BroadcastsSchemaKeys } from "~/api/broadcasts/schema";
 import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { actionWaitForSuccessToast } from "../explorer/workflow/utils";
+import { createBroadcasts } from "../utils/broadcasts";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
 import { faker } from "@faker-js/faker";
 
 const { options } = MimeTypeSchema;
+
+const pickRandomElements = <T>(array: T[], count: number): T[] => {
+  const shuffled = array.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+};
 
 let namespace = "";
 
@@ -266,4 +273,41 @@ test("it is possible to edit variables", async ({ page }) => {
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(updatedType);
+});
+
+test("it is possible to handle broadcasts", async ({ page }) => {
+  const { broadcast } = await createBroadcasts(namespace);
+  await page.goto(`/${namespace}/settings`);
+  expect(broadcast, "broadcast should be truthy").toBeTruthy();
+  //check the initial state
+  for (let i = 0; i < BroadcastsSchemaKeys.length; i++) {
+    const key = BroadcastsSchemaKeys[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    const isChecked = await checkbox.isChecked();
+    expect(
+      isChecked,
+      `${key}-checkbox status should be the same as in the broadcast`
+    ).toBe(broadcast[key]);
+  }
+  //update random fields and check their status
+
+  const randomElements = pickRandomElements(BroadcastsSchemaKeys, 3);
+
+  for (let i = 0; i < randomElements.length; i++) {
+    const key = randomElements[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    await checkbox.click();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
+  }
+
+  for (let i = 0; i < randomElements.length; i++) {
+    const key = randomElements[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    const isChecked = await checkbox.isChecked();
+    expect(
+      isChecked,
+      `${key}: updated checkbox status should be the invert of the one in the broadcast`
+    ).toBe(!broadcast[key]);
+  }
 });

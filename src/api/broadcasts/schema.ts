@@ -33,3 +33,22 @@ export type BroadcastsResponseSchemaType = z.infer<
   typeof BroadcastsResponseSchema
 >;
 export type BroadcastsPatchSchemaType = z.infer<typeof BroadcastsPatchSchema>;
+export const BroadcastsSchemaKeys: (keyof BroadcastsSchemaType)[] = [
+  "directory.create",
+  "directory.delete",
+  "instance.failed",
+  "instance.started",
+  "instance.success",
+  "instance.variable.create",
+  "instance.variable.delete",
+  "instance.variable.update",
+  "namespace.variable.create",
+  "namespace.variable.delete",
+  "namespace.variable.update",
+  "workflow.create",
+  "workflow.delete",
+  "workflow.update",
+  "workflow.variable.create",
+  "workflow.variable.delete",
+  "workflow.variable.update",
+];
