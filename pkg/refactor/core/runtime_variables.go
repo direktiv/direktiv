@@ -13,9 +13,9 @@ import (
 type RuntimeVariable struct {
 	ID uuid.UUID
 
-	NamespaceID uuid.UUID
-	WorkflowID  uuid.UUID
-	InstanceID  uuid.UUID
+	NamespaceID  uuid.UUID
+	WorkflowPath string
+	InstanceID   uuid.UUID
 
 	Name string
 
@@ -37,13 +37,13 @@ type RuntimeVariablesStore interface {
 	// it returns datastore.ErrNotFound error.
 	// Each runtime variable is linked to a namespace, workflow, or instance. Param referenceID specifying the id of
 	// the referencing object.
-	GetByReferenceAndName(ctx context.Context, referenceID uuid.UUID, name string) (*RuntimeVariable, error)
+	GetByReferenceAndName(ctx context.Context, reference string, name string) (*RuntimeVariable, error)
 
 	// ListByInstanceID gets all runtime variable entries from store that are linked to specific instance id
 	ListByInstanceID(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
 
-	// ListByWorkflowID gets all runtime variable entries from store that are linked to specific workflow id
-	ListByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]*RuntimeVariable, error)
+	// ListByWorkflowPath gets all runtime variable entries from store that are linked to specific workflow path
+	ListByWorkflowPath(ctx context.Context, workflowPath string) ([]*RuntimeVariable, error)
 
 	// ListByNamespaceID gets all runtime variable entries from store that are linked to specific namespace id
 	ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)

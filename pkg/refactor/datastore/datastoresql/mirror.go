@@ -23,11 +23,11 @@ type sqlMirrorStore struct {
 // nolint
 func (s sqlMirrorStore) SetVariable(ctx context.Context, variable *core.RuntimeVariable) error {
 	linkName := "namespace_id"
-	linkValue := variable.NamespaceID
+	linkValue := variable.NamespaceID.String()
 
-	if variable.WorkflowID.String() != (uuid.UUID{}).String() {
-		linkName = "workflow_id"
-		linkValue = variable.WorkflowID
+	if variable.WorkflowPath != "" {
+		linkName = "workflow_path"
+		linkValue = variable.WorkflowPath
 	}
 
 	res := s.db.WithContext(ctx).Exec(fmt.Sprintf(

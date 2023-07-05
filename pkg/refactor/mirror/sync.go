@@ -275,10 +275,10 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 		}
 		err = store.SetVariable(j.ctx,
 			&core.RuntimeVariable{
-				WorkflowID: workflowFile.ID,
-				Name:       pk[1],
-				MimeType:   mType.String(),
-				Data:       data,
+				WorkflowPath: workflowFile.Path,
+				Name:         pk[1],
+				MimeType:     mType.String(),
+				Data:         data,
 			})
 		if err != nil {
 			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)

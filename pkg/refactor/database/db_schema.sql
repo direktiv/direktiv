@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS "services" (
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
     "namespace_id" uuid,
-    "workflow_id" uuid,
+    "workflow_path" text,
     "instance_id" uuid,
 
     "name"  text NOT NULL,

@@ -16,15 +16,20 @@ type sqlRuntimeVariablesStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, referenceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, reference string, name string) (*core.RuntimeVariable, error) {
 	variable := &core.RuntimeVariable{}
+
+	if name == "" || reference == "" || reference == (uuid.UUID{}).String() {
+		return nil, datastore.ErrNotFound
+	}
+
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
-								id, namespace_id, workflow_id, instance_id, 
+								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type,
 								created_at, updated_at
-							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_id=? OR instance_id=?);`,
-		name, referenceID, referenceID, referenceID).First(variable)
+							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_path=? OR instance_id=?);`,
+		name, reference, reference, reference).First(variable)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, datastore.ErrNotFound
 	}
@@ -39,7 +44,7 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	variable := &core.RuntimeVariable{}
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
-								id, namespace_id, workflow_id, instance_id, 
+								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
@@ -54,16 +59,16 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName string, fieldID uuid.UUID) ([]*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldName string, fieldValue string) ([]*core.RuntimeVariable, error) {
 	var variables []*core.RuntimeVariable
 
 	res := s.db.WithContext(ctx).Raw(fmt.Sprintf(`
 							SELECT 
-								id, namespace_id, workflow_id, instance_id, 
+								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
 							FROM runtime_variables WHERE "%s" = ?`, fieldName),
-		fieldID).Find(&variables)
+		fieldValue).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -72,32 +77,40 @@ func (s *sqlRuntimeVariablesStore) listByFieldID(ctx context.Context, fieldName 
 }
 
 func (s *sqlRuntimeVariablesStore) ListByInstanceID(ctx context.Context, instanceID uuid.UUID) ([]*core.RuntimeVariable, error) {
-	return s.listByFieldID(ctx, "instance_id", instanceID)
+	return s.listByFieldValue(ctx, "instance_id", instanceID.String())
 }
 
-func (s *sqlRuntimeVariablesStore) ListByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]*core.RuntimeVariable, error) {
-	return s.listByFieldID(ctx, "workflow_id", workflowID)
+func (s *sqlRuntimeVariablesStore) ListByWorkflowPath(ctx context.Context, workflowPath string) ([]*core.RuntimeVariable, error) {
+	return s.listByFieldValue(ctx, "workflow_path", workflowPath)
 }
 
 func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
-	return s.listByFieldID(ctx, "namespace_id", namespaceID)
+	return s.listByFieldValue(ctx, "namespace_id", namespaceID.String())
 }
 
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
+	if variable.Name == "" {
+		return nil, core.ErrInvalidRuntimeVariableName
+	}
 	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, variable.Name); !matched {
 		return nil, core.ErrInvalidRuntimeVariableName
 	}
-	linkName := "namespace_id"
-	linkValue := variable.NamespaceID
-
-	if variable.WorkflowID.String() != (uuid.UUID{}).String() {
-		linkName = "workflow_id"
-		linkValue = variable.WorkflowID
+	zeroUUID := (uuid.UUID{}).String()
+	if variable.InstanceID.String() == zeroUUID && variable.NamespaceID.String() == zeroUUID && variable.WorkflowPath == "" {
+		return nil, core.ErrInvalidRuntimeVariableName
 	}
 
-	if variable.InstanceID.String() != (uuid.UUID{}).String() {
+	linkName := "namespace_id"
+	linkValue := variable.NamespaceID.String()
+
+	if variable.InstanceID.String() != zeroUUID {
 		linkName = "instance_id"
-		linkValue = variable.InstanceID
+		linkValue = variable.InstanceID.String()
+	}
+
+	if variable.WorkflowPath != "" {
+		linkName = "workflow_path"
+		linkValue = variable.WorkflowPath
 	}
 
 	res := s.db.WithContext(ctx).Exec(fmt.Sprintf(
@@ -175,7 +188,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 	variable := &core.RuntimeVariable{}
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
-								id, namespace_id, workflow_id, instance_id, 
+								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, data,
 								created_at, updated_at
 							FROM runtime_variables WHERE "id" = ?;`,
