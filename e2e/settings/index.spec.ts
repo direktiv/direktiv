@@ -275,39 +275,36 @@ test("it is possible to edit variables", async ({ page }) => {
   ).toHaveValue(updatedType);
 });
 
-test("it is possible to handle broadcasts", async ({ page }) => {
-  const { broadcast } = await createBroadcasts(namespace);
+test("it is possible to update broadcasts", async ({ page }) => {
+  const { broadcast: broadcasts } = await createBroadcasts(namespace);
+  expect(broadcasts, "test data has been created").toBeTruthy();
+
   await page.goto(`/${namespace}/settings`);
-  expect(broadcast, "broadcast should be truthy").toBeTruthy();
-  //check the initial state
+
+  // check the initial state
   for (let i = 0; i < BroadcastsSchemaKeys.length; i++) {
     const key = BroadcastsSchemaKeys[i] || "directory.create";
     const checkbox = page.getByTestId(`check.${key}`);
     const isChecked = await checkbox.isChecked();
-    expect(
-      isChecked,
-      `${key}-checkbox status should be the same as in the broadcast`
-    ).toBe(broadcast[key]);
+    expect(isChecked, `checkbox for ${key} has the expected value`).toBe(
+      broadcasts[key]
+    );
   }
-  //update random fields and check their status
 
+  // update random fields and check their status
   const randomElements = pickRandomElements(BroadcastsSchemaKeys, 3);
 
   for (let i = 0; i < randomElements.length; i++) {
     const key = randomElements[i] || "directory.create";
     const checkbox = page.getByTestId(`check.${key}`);
     await checkbox.click();
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
-  }
 
-  for (let i = 0; i < randomElements.length; i++) {
-    const key = randomElements[i] || "directory.create";
-    const checkbox = page.getByTestId(`check.${key}`);
-    const isChecked = await checkbox.isChecked();
-    expect(
-      isChecked,
-      `${key}: updated checkbox status should be the invert of the one in the broadcast`
-    ).toBe(!broadcast[key]);
+    // expect() without .poll() would fail, because it would not wait for the DOM to update
+    await expect
+      .poll(
+        async () => await checkbox.isChecked(),
+        `checkbox for ${key} has been toggled to the inverse value: `
+      )
+      .toBe(!broadcasts[key]);
   }
 });
