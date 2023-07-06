@@ -180,8 +180,8 @@ test("it is possible to revert a revision within the details page", async ({
   //   .toBe(expectedEditorContent);
 
   // open and submit revert dialog
-  await page.getByTestId(`revisions-detail-revert-btn`).click();
-  await page.getByTestId(`dialog-revert-revision-btn-submit`).click();
+  await page.getByTestId("revisions-detail-revert-btn").click();
+  await page.getByTestId("dialog-revert-revision-btn-submit").click();
 
   // click the toast button to open the editor
   await page.getByTestId("workflow-revert-revision-toast-action").click();
