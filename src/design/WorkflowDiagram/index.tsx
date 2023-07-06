@@ -1,4 +1,7 @@
 import "./style.css";
+import "reactflow/dist/style.css";
+// or if you just want basic styles
+import "reactflow/dist/base.css";
 
 import ReactFlow, {
   Edge,
@@ -15,8 +18,6 @@ import { useEffect, useMemo, useState } from "react";
 import InvalidWorkflow from "~/components/invalid-workflow";
 import YAML from "js-yaml";
 import dagre from "dagre";
-
-// import 'reactflow/dist/style.css';
 
 export const position = { x: 0, y: 0 };
 
@@ -184,6 +185,11 @@ interface ZoomPanDiagramProps {
   elements: (Edge | Node)[];
   disabled: boolean;
 }
+const nodeTypes = {
+  state: State,
+  start: Start,
+  end: End,
+};
 function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
   const { fitView } = useReactFlow();
@@ -205,11 +211,7 @@ function ZoomPanDiagram(props: ZoomPanDiagramProps) {
     <ReactFlow
       edges={sep[1]}
       nodes={sep[0]}
-      nodeTypes={{
-        state: State,
-        start: Start,
-        end: End,
-      }}
+      nodeTypes={nodeTypes}
       nodesDraggable={disabled}
       nodesConnectable={disabled}
       elementsSelectable={disabled}
@@ -291,14 +293,14 @@ function generateElements(
             id: `startNode-${value.start.state}`,
             source: "startNode",
             target: value.start.state,
-            type: "pathfinding",
+            type: "default",
           });
         } else {
           newElements.push({
             id: `startNode-${value.states[i]?.id}`,
             source: "startNode",
             target: value.states[i].id,
-            type: "pathfinding",
+            type: "default",
           });
         }
       }
@@ -326,7 +328,7 @@ function generateElements(
               source: value.states[i]?.id || "",
               target: value.states[i]?.events[j]?.transition || "",
               animated: false,
-              type: "pathfinding",
+              type: "default",
             });
           }
         }
@@ -341,7 +343,7 @@ function generateElements(
               source: value.states[i]?.id || "",
               target: value.states[i]?.conditions[y]?.transition || "",
               animated: false,
-              type: "pathfinding",
+              type: "default",
             });
             transitions = true;
           }
@@ -359,7 +361,7 @@ function generateElements(
               source: value.states[i]?.id || "",
               target: value.states[i]?.catch[x]?.transition || "",
               animated: false,
-              type: "pathfinding",
+              type: "default",
             });
           }
         }
@@ -374,7 +376,7 @@ function generateElements(
           source: value.states[i]?.id || "",
           target: value.states[i]?.transition || "",
           animated: false,
-          type: "pathfinding",
+          type: "default",
         });
       } else if (value.states[i]?.defaultTransition) {
         transitions = true;
@@ -384,7 +386,7 @@ function generateElements(
           source: value.states[i]?.id || "",
           target: value.states[i]?.defaultTransition || "",
           animated: false,
-          type: "pathfinding",
+          type: "default",
         });
       } else {
         transitions = true;
@@ -393,7 +395,7 @@ function generateElements(
           source: value.states[i]?.id || "",
           target: `endNode`,
           animated: false,
-          type: "pathfinding",
+          type: "default",
         });
       }
 
@@ -403,7 +405,7 @@ function generateElements(
           id: `${value.states[i]?.id}-endNode`,
           source: value.states[i]?.id || "",
           target: `endNode`,
-          type: "pathfinding",
+          type: "default",
         });
       }
     }

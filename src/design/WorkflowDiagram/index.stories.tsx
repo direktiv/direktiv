@@ -49,7 +49,11 @@ export default {
   },
 };
 
-export const Workflow = () => <WorkflowDiagram workflow={exampleWorkflow} />;
+export const Workflow = () => (
+  <div className="h-[600px] w-[600px]">
+    <WorkflowDiagram workflow={exampleWorkflow} />
+  </div>
+);
 
 export const WorkflowInstancePending = () => (
   <WorkflowDiagram
