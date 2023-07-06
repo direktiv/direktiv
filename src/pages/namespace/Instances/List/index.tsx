@@ -28,6 +28,7 @@ const InstancesListPage = () => {
 
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.instances.results.length === 0;
+  const showPagination = numberOfInstances > instancesPerPage;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -81,12 +82,14 @@ const InstancesListPage = () => {
           </TableBody>
         </Table>
       </Card>
-      <Pagination
-        itemsPerPage={instancesPerPage}
-        offset={offset}
-        setOffset={setOffset}
-        totalItems={numberOfInstances}
-      />
+      {showPagination && (
+        <Pagination
+          itemsPerPage={instancesPerPage}
+          offset={offset}
+          setOffset={setOffset}
+          totalItems={numberOfInstances}
+        />
+      )}
     </div>
   );
 };
