@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const NameRegexFragment = `(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))`
+const NameRegexFragment = `(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))`
 
 const NameRegexPattern = `^` + NameRegexFragment + `$`
 
