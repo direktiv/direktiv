@@ -51,9 +51,10 @@ test('it is possible to open the revision details of the "latest" revision', asy
     .toBe(expectedEditorContent);
 });
 
-// This test is redundant with a portion of the test below it.
-// Since loading the editor data sometimes fails, having both test cases may help us learn
-// more about the issue. Once the issue is solved, we can get rid of this separate test.
+// This test is flaky. Ideally, asserting that the editor content is loaded
+// would be one step in the longer tests below. These steps are currently commented
+// out to reduce the number of flaky tests, and this test has been added keep
+// track of the problem.
 test("it is possible to view the content of an older revision", async ({
   page,
 }) => {
@@ -107,17 +108,22 @@ test("it is possible to navigate from the revision list to the details and back"
     "it navigated to the revision details and shows the title"
   ).toContainText(secondRevisionName);
 
-  // assert that editor content is loaded
-  // this step is redundant with "it is possible to view the content of an older revision"
-  // see comments there
-  const expectedEditorContent = atob(secondRevision.revision.source);
-  const textArea = page.getByRole("textbox");
-  await expect
-    .poll(
-      async () => await textArea.inputValue(),
-      "it displays the workflow content in the editor"
-    )
-    .toBe(expectedEditorContent);
+  // The following step is commented out because it often fails in the CI.
+  // For unknown reasons, sometimes no data seems to be loaded into the editor.
+  // There is a separate test above this that only tests this step.
+
+  // Ideally, we'll find a way to fix the flaky behavior in the future, and
+  // enable the step below. But as long as this step is flaky, it is better
+  // to have it in a separate step, so it is easier to track it.
+
+  // const expectedEditorContent = atob(secondRevision.revision.source);
+  // const textArea = page.getByRole("textbox");
+  // await expect
+  //   .poll(
+  //     async () => await textArea.inputValue(),
+  //     "it displays the workflow content in the editor"
+  //   )
+  //   .toBe(expectedEditorContent);
 
   // go back to list page
   await page.getByTestId(`revisions-detail-back-link`).click();
@@ -159,12 +165,12 @@ test("it is possible to revert a revision within the details page", async ({
   expectedEditorContent = atob(secondRevision?.revision?.source);
 
   // The following step is commented out because it often fails in the CI.
-  // For unknown reasons, no data seems to be loaded into the editor).
-  // The tests above this one already make sure that the revisions detail editor
-  // works in principle, thus it is ok to skip this part for now.
-  // Ideally, we'll find a way to fix this flaky behavior in the future.
-  // Interestingly, the other editor instance that is tested further below
-  // does not have this problem.
+  // For unknown reasons, sometimes no data seems to be loaded into the editor.
+  // There is a separate test above this that only tests this step.
+
+  // Ideally, we'll find a way to fix the flaky behavior in the future, and
+  // enable the step below. But as long as this step is flaky, it is better
+  // to have it in a separate step, so it is easier to track it.
 
   // await expect
   //   .poll(
