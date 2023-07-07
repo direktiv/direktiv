@@ -66,8 +66,8 @@ const ContextMenuContent = React.forwardRef<
       ref={ref}
       className={twMergeClsx(
         "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md  animate-in fade-in-80 ",
-        "border-gray-3 bg-gray-1 ",
-        "dark:border-gray-dark-3 dark:bg-gray-dark-1",
+        "border-gray-3 bg-gray-1 text-gray-11",
+        "dark:border-gray-dark-3 dark:bg-gray-dark-1 dark:text-gray-dark-11",
         className
       )}
       {...props}
