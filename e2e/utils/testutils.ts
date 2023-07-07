@@ -13,8 +13,8 @@ export const getStyle = async (
  * This is a workaround for a problem with clicking on some elements in Webkit.
  * The .click() method should be used whenever possible. But in some cases,
  * it does not work reliably in Webkit. In these cases, dispatchEvent("click")
- * can be used. The downside is that it triggers the click even without simulating
- * a real click, so it is not a reliable test that the UI works.
+ * works. The downside is that it triggers the click event without simulating
+ * a mouse click, so it is not a reliable test that the UI works.
  *
  * It seems that this problem occurs only with or within Radix UI elements (dropdowns,
  * popups, toasts, etc.).
