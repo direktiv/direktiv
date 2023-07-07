@@ -12,11 +12,6 @@ import { faker } from "@faker-js/faker";
 
 const { options } = MimeTypeSchema;
 
-const pickRandomElements = <T>(array: T[], count: number): T[] => {
-  const shuffled = array.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-};
-
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -292,7 +287,7 @@ test("it is possible to update broadcasts", async ({ page }) => {
   }
 
   // update random fields and check their status
-  const randomElements = pickRandomElements(BroadcastsSchemaKeys, 3);
+  const randomElements = faker.helpers.arrayElements(BroadcastsSchemaKeys, 3);
 
   for (let i = 0; i < randomElements.length; i++) {
     const key = randomElements[i] || "directory.create";
