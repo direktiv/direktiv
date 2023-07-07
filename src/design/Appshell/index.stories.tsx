@@ -48,6 +48,7 @@ import {
   SidebarMain,
   SidebarTop,
 } from "./index";
+import { Tabs, TabsList, TabsTrigger } from "../Tabs";
 
 import Avatar from "../Avatar";
 import Button from "../Button";
@@ -376,22 +377,16 @@ export const MoreDetailedShell = () => {
               </div>
               <div>
                 <nav className="-mb-px flex space-x-8">
-                  {tabs.map((tab) => (
-                    <a
-                      key={tab.name}
-                      href={tab.href}
-                      className={twMergeClsx(
-                        tab.current
-                          ? "border-primary-500 text-primary-500"
-                          : "border-transparent text-gray-11 hover:border-gray-8 hover:text-gray-12 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
-                        "flex items-center gap-x-2 whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium"
-                      )}
-                      aria-current={tab.current ? "page" : undefined}
-                    >
-                      <tab.icon aria-hidden="true" className="h-4 w-auto" />{" "}
-                      {tab.name}
-                    </a>
-                  ))}
+                  <Tabs defaultValue={tabs?.[0]?.name}>
+                    <TabsList>
+                      {tabs.map((tab) => (
+                        <TabsTrigger key={tab.name} value={tab.name}>
+                          <tab.icon aria-hidden="true" className="h-4 w-auto" />{" "}
+                          {tab.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
                 </nav>
               </div>
             </div>
