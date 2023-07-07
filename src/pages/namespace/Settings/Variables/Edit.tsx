@@ -126,7 +126,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
           data-testid="variable-editor-card"
         >
           <div className="h-[500px]">
-            {isFetched && (
+            {isFetched && body && (
               <Editor
                 value={body}
                 onChange={(newData) => {
