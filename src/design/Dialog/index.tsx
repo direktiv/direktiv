@@ -108,8 +108,8 @@ const DialogDescription = React.forwardRef<
   <DialogPrimitive.Description
     ref={ref}
     className={twMergeClsx(
-      "text-sm text-gray-10",
-      "dark:text-gray-dark-10",
+      "text-sm text-gray-11",
+      "dark:text-gray-dark-11",
       className
     )}
     {...props}
