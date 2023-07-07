@@ -52,11 +52,10 @@ test('it is possible to open the revision details of the "latest" revision', asy
     .toBe(expectedEditorContent);
 });
 
-// This test is flaky. Ideally, asserting that the editor content is loaded
-// would be one step in the longer tests below. These steps are currently commented
-// out to reduce the number of flaky tests, and this test has been added keep
-// track of the problem.
-test("it is possible to view the content of an older revision", async ({
+// Skipped because it is redundant; checking the editor content is part of other
+// tests below. But in case there are problems with this step, it may be helpful
+// to reactivate this test to troubleshoot the issue in isolation.
+test.skip("it is possible to view the content of an older revision", async ({
   page,
 }) => {
   // setup test data
@@ -109,22 +108,17 @@ test("it is possible to navigate from the revision list to the details and back"
     "it navigated to the revision details and shows the title"
   ).toContainText(secondRevisionName);
 
-  // The following step is commented out because it often fails in the CI.
-  // For unknown reasons, sometimes no data seems to be loaded into the editor.
-  // There is a separate test above this that only tests this step.
+  const expectedEditorContent = atob(secondRevision.revision.source);
+  const textArea = page.getByRole("textbox");
 
-  // Ideally, we'll find a way to fix the flaky behavior in the future, and
-  // enable the step below. But as long as this step is flaky, it is better
-  // to have it in a separate step, so it is easier to track it.
-
-  // const expectedEditorContent = atob(secondRevision.revision.source);
-  // const textArea = page.getByRole("textbox");
-  // await expect
-  //   .poll(
-  //     async () => await textArea.inputValue(),
-  //     "it displays the workflow content in the editor"
-  //   )
-  //   .toBe(expectedEditorContent);
+  // if this step fails, there is a separate test (currently skipped) that you can
+  // use to troubleshoot: "it is possible to view the content of an older revision"
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
 
   // go back to list page
   await page.getByTestId(`revisions-detail-back-link`).click();
@@ -166,20 +160,14 @@ test("it is possible to revert a revision within the details page", async ({
 
   expectedEditorContent = atob(secondRevision?.revision?.source);
 
-  // The following step is commented out because it often fails in the CI.
-  // For unknown reasons, sometimes no data seems to be loaded into the editor.
-  // There is a separate test above this that only tests this step.
-
-  // Ideally, we'll find a way to fix the flaky behavior in the future, and
-  // enable the step below. But as long as this step is flaky, it is better
-  // to have it in a separate step, so it is easier to track it.
-
-  // await expect
-  //   .poll(
-  //     async () => await textArea.inputValue(),
-  //     "it displays the reverted workflow content in the editor"
-  //   )
-  //   .toBe(expectedEditorContent);
+  // if this step fails, there is a separate test (currently skipped) that you can
+  // use to troubleshoot: "it is possible to view the content of an older revision"
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the reverted workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
 
   // open and submit revert dialog
 
