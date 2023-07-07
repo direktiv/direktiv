@@ -5,6 +5,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkfl
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
+import { radixClick } from "../../../utils/testutils";
 
 let namespace = "";
 
@@ -134,9 +135,9 @@ test("it is possible to navigate from the revision list to the details and back"
   ).toBeVisible();
 });
 
-// TODO: this fails in Webkit
-test.skip("it is possible to revert a revision within the details page", async ({
+test("it is possible to revert a revision within the details page", async ({
   page,
+  browserName,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
   const {
@@ -181,11 +182,15 @@ test.skip("it is possible to revert a revision within the details page", async (
   //   .toBe(expectedEditorContent);
 
   // open and submit revert dialog
-  await page.getByTestId("revisions-detail-revert-btn").click();
-  await page.getByTestId("dialog-revert-revision-btn-submit").click();
 
-  // click the toast button to open the editor
-  await page.getByTestId("workflow-revert-revision-toast-action").click();
+  const revertButton = page.getByTestId("revisions-detail-revert-btn");
+  await radixClick(browserName, revertButton);
+
+  const submitButton = page.getByTestId("dialog-revert-revision-btn-submit");
+  await radixClick(browserName, submitButton);
+
+  const toastButton = page.getByTestId("workflow-revert-revision-toast-action");
+  await radixClick(browserName, toastButton);
 
   await expect
     .poll(
