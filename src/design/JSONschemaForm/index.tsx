@@ -177,7 +177,9 @@ const TitleFieldTemplate = (props: TitleFieldProps) => {
 const DescriptionFieldTemplate = (props: DescriptionFieldProps) => {
   const { description } = props;
   return (
-    <div className="mb-2 text-gray-8 dark:text-gray-dark-8">{description}</div>
+    <div className="mb-2 text-gray-10 dark:text-gray-dark-10">
+      {description}
+    </div>
   );
 };
 
