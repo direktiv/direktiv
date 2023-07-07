@@ -39,7 +39,7 @@ const WorkflowRevisionsPage = () => {
     <div className="flex grow flex-col space-y-4">
       <div className="flex gap-x-4">
         <h3
-          className="group flex grow items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10"
+          className="group flex grow items-center gap-x-2 font-bold"
           data-testid="revisions-detail-title"
         >
           <Icon aria-hidden="true" className="h-5" />
