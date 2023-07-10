@@ -166,14 +166,14 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   }, [load, wf, flow, instanceStatus, ostatus]);
 
   return (
-    <>
+    <div className="h-full">
       <InvalidWorkflow invalidWorkflow={invalidWorkflow} />
       {!load ? (
         <ReactFlowProvider>
           <ZoomPanDiagram disabled={disabled} elements={elements} />
         </ReactFlowProvider>
       ) : null}
-    </>
+    </div>
   );
 }
 

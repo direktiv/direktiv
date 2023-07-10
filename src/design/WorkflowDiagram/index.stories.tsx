@@ -50,45 +50,27 @@ export default {
 };
 
 export const Workflow = () => (
-  <div className="h-[600px] w-[600px]">
+  <div className="h-96">
     <WorkflowDiagram workflow={exampleWorkflow} />
   </div>
 );
 
 export const WorkflowInstancePending = () => (
-  <WorkflowDiagram
-    workflow={exampleWorkflow}
-    flow={["helloworld"]}
-    instanceStatus="pending"
-  />
+  <div className="h-96">
+    <WorkflowDiagram
+      workflow={exampleWorkflow}
+      flow={["helloworld"]}
+      instanceStatus="pending"
+    />
+  </div>
 );
-
-WorkflowInstancePending.story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Example of diagram when used in the context of an executing instance.",
-      },
-    },
-  },
-};
 
 export const WorkflowInstanceComplete = () => (
-  <WorkflowDiagram
-    workflow={exampleWorkflow}
-    flow={["helloworld", "exit"]}
-    instanceStatus="complete"
-  />
+  <div className="h-96">
+    <WorkflowDiagram
+      workflow={exampleWorkflow}
+      flow={["helloworld", "exit"]}
+      instanceStatus="complete"
+    />
+  </div>
 );
-
-WorkflowInstanceComplete.story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Example of diagram when used in the context of a completed instance.",
-      },
-    },
-  },
-};
