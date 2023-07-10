@@ -1,24 +1,37 @@
-import { z } from "zod";
+import { ZodBoolean, z } from "zod";
 
-export const BroadcastsSchema = z.object({
-  "directory.create": z.boolean(),
-  "directory.delete": z.boolean(),
-  "instance.failed": z.boolean(),
-  "instance.started": z.boolean(),
-  "instance.success": z.boolean(),
-  "instance.variable.create": z.boolean(),
-  "instance.variable.delete": z.boolean(),
-  "instance.variable.update": z.boolean(),
-  "namespace.variable.create": z.boolean(),
-  "namespace.variable.delete": z.boolean(),
-  "namespace.variable.update": z.boolean(),
-  "workflow.create": z.boolean(),
-  "workflow.delete": z.boolean(),
-  "workflow.update": z.boolean(),
-  "workflow.variable.create": z.boolean(),
-  "workflow.variable.delete": z.boolean(),
-  "workflow.variable.update": z.boolean(),
-});
+export const BroadcastsSchemaKeys = [
+  "directory.create",
+  "directory.delete",
+  "instance.failed",
+  "instance.started",
+  "instance.success",
+  "instance.variable.create",
+  "instance.variable.delete",
+  "instance.variable.update",
+  "namespace.variable.create",
+  "namespace.variable.delete",
+  "namespace.variable.update",
+  "workflow.create",
+  "workflow.delete",
+  "workflow.update",
+  "workflow.variable.create",
+  "workflow.variable.delete",
+  "workflow.variable.update",
+];
+
+// dynamically create the schema based on the keys
+type BroadcastsSchemaKeysType = (typeof BroadcastsSchemaKeys)[number];
+
+const BroadcastsSchemaDefinition: {
+  [key in BroadcastsSchemaKeysType]: ZodBoolean;
+} = {};
+
+for (const key of BroadcastsSchemaKeys) {
+  BroadcastsSchemaDefinition[key] = z.boolean();
+}
+
+export const BroadcastsSchema = z.object(BroadcastsSchemaDefinition);
 
 export const BroadcastsResponseSchema = z.object({
   broadcast: BroadcastsSchema,

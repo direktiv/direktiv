@@ -78,18 +78,21 @@ const Broadcasts: FC = () => {
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.instance.success"
                   checked={broadcasts["instance.success"]}
                   onClick={() => toggleBroadcast("instance.success")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.instance.started"
                   checked={broadcasts["instance.started"]}
                   onClick={() => toggleBroadcast("instance.started")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.instance.failed"
                   checked={broadcasts["instance.failed"]}
                   onClick={() => toggleBroadcast("instance.failed")}
                 />
@@ -124,6 +127,7 @@ const Broadcasts: FC = () => {
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.directory.create"
                   checked={broadcasts["directory.create"]}
                   onClick={() => toggleBroadcast("directory.create")}
                 />
@@ -131,6 +135,7 @@ const Broadcasts: FC = () => {
               <TableCell>{/* not implemented: directory.update */}</TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.directory.delete"
                   checked={broadcasts["directory.delete"]}
                   onClick={() => toggleBroadcast("directory.delete")}
                 />
@@ -142,18 +147,21 @@ const Broadcasts: FC = () => {
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.workflow.create"
                   checked={broadcasts["workflow.create"]}
                   onClick={() => toggleBroadcast("workflow.create")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.workflow.update"
                   checked={broadcasts["workflow.update"]}
                   onClick={() => toggleBroadcast("workflow.update")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.workflow.delete"
                   checked={broadcasts["workflow.delete"]}
                   onClick={() => toggleBroadcast("workflow.delete")}
                 />
@@ -165,18 +173,21 @@ const Broadcasts: FC = () => {
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.instance.variable.create"
                   checked={broadcasts["instance.variable.create"]}
                   onClick={() => toggleBroadcast("instance.variable.create")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.instance.variable.update"
                   checked={broadcasts["instance.variable.update"]}
                   onClick={() => toggleBroadcast("instance.variable.update")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.instance.variable.delete"
                   checked={broadcasts["instance.variable.delete"]}
                   onClick={() => toggleBroadcast("instance.variable.delete")}
                 />
@@ -188,18 +199,21 @@ const Broadcasts: FC = () => {
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.namespace.variable.create"
                   checked={broadcasts["namespace.variable.create"]}
                   onClick={() => toggleBroadcast("namespace.variable.create")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.namespace.variable.update"
                   checked={broadcasts["namespace.variable.update"]}
                   onClick={() => toggleBroadcast("namespace.variable.update")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.namespace.variable.delete"
                   checked={broadcasts["namespace.variable.delete"]}
                   onClick={() => toggleBroadcast("namespace.variable.delete")}
                 />
@@ -211,18 +225,21 @@ const Broadcasts: FC = () => {
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.workflow.variable.create"
                   checked={broadcasts["workflow.variable.create"]}
                   onClick={() => toggleBroadcast("workflow.variable.create")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.workflow.variable.update"
                   checked={broadcasts["workflow.variable.update"]}
                   onClick={() => toggleBroadcast("workflow.variable.update")}
                 />
               </TableCell>
               <TableCell className={switchCellClasses}>
                 <Checkbox
+                  data-testid="check.workflow.variable.delete"
                   checked={broadcasts["workflow.variable.delete"]}
                   onClick={() => toggleBroadcast("workflow.variable.delete")}
                 />
