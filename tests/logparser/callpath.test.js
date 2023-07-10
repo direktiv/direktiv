@@ -100,11 +100,16 @@ states:
         const idsC = instancesChild.body.instances.results.map((result) => result.id)
         const logsSourceResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${idsS}/logs`)
         expect(logsSourceResponse.statusCode).toEqual(200)
+        await Promise.all(logsSourceResponse.body.results.map(async (logEntry) => {
+            expect(logEntry["tags"]["callpath"]==`/${idsS}` || logEntry["tags"]["callpath"] == `/${idsS}/${idsC}`).toBeTruthy()
+        }))
         const logsChildResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${idsC}/logs`)
         expect(logsChildResponse.statusCode).toEqual(200)
         expect(logsChildResponse.body.results.length).toBeLessThan(logsSourceResponse.body.results.length)
         expect(logsChildResponse.body.results.length).not.toBeLessThan(1)
-
+        await Promise.all(logsChildResponse.body.results.map(async (logEntry) => {
+            expect(logEntry["tags"]["callpath"]).toEqual(`/${idsS}/${idsC}`)
+        }))
     })
 
 })
