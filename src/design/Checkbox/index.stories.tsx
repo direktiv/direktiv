@@ -36,11 +36,11 @@ export function CheckboxWithText() {
       <div className="grid gap-1.5 leading-none">
         <label
           htmlFor="terms2"
-          className="text-sm font-medium leading-none text-gray-10 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-dark-10"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           Accept terms and conditions
         </label>
-        <p className="text-sm text-gray-10 dark:text-gray-dark-10">
+        <p className="text-sm">
           You agree to our Terms of Service and Privacy Policy.
         </p>
       </div>

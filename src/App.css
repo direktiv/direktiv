@@ -8,7 +8,7 @@ html,
 .docs-story {
   @apply h-full;
   @apply bg-white dark:bg-black;
-  @apply text-gray-11 dark:text-gray-dark-11;
+  @apply text-gray-12 dark:text-gray-dark-12;
 }
 
 /**

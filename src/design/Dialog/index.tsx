@@ -93,8 +93,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={twMergeClsx(
-      "flex items-center gap-2 text-lg font-semibold text-gray-12",
-      "dark:text-gray-dark-12",
+      "flex items-center gap-2 text-lg font-semibold",
       className
     )}
     {...props}
@@ -109,8 +108,8 @@ const DialogDescription = React.forwardRef<
   <DialogPrimitive.Description
     ref={ref}
     className={twMergeClsx(
-      "text-sm text-gray-10",
-      "dark:text-gray-dark-10",
+      "text-sm text-gray-11",
+      "dark:text-gray-dark-11",
       className
     )}
     {...props}

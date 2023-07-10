@@ -18,11 +18,11 @@ export default {
       token: "string.yaml",
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "type",
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "string.key.json", // JSON Key
     },
     {
@@ -30,19 +30,19 @@ export default {
       token: "string.value.json", // JSON Value
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "tag", // HTML Tag name
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "delimiter.html", // HTML Tag <>
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "metatag.html", // HTML Meta tag
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "metatag.content.html", // HTML Meta tag content
     },
     {
@@ -50,7 +50,7 @@ export default {
       token: "delimiter", // HTML Meta tag content
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "attribute.name", // HTML Attribute Name
     },
     {
@@ -86,7 +86,7 @@ export default {
       token: "keyword", // keyword in Shell script
     },
     {
-      foreground: "858585", // gray.gray10
+      foreground: "6f6f6f", // gray.gray11
       token: "variable.predefined", // variable defined in Shell script
     },
     {
@@ -107,7 +107,7 @@ export default {
     },
   ],
   colors: {
-    "editor.foreground": "#858585", // added for HTML Tag Content
+    "editor.foreground": "#6f6f6f", // added for HTML Tag Content
     "editor.background": "#ffffff",
     "editor.selectionBackground": "#00000012", // blackA.blackA4
   },

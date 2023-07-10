@@ -168,10 +168,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
 const TitleFieldTemplate = (props: TitleFieldProps) => {
   const { id, required, title } = props;
   return (
-    <header
-      id={id}
-      className="mb-4 font-semibold text-gray-12 dark:text-gray-dark-12"
-    >
+    <header id={id} className="mb-4 font-semibold">
       {title}
       {required && <mark>*</mark>}
     </header>
@@ -180,7 +177,9 @@ const TitleFieldTemplate = (props: TitleFieldProps) => {
 const DescriptionFieldTemplate = (props: DescriptionFieldProps) => {
   const { description } = props;
   return (
-    <div className="mb-2 text-gray-8 dark:text-gray-dark-8">{description}</div>
+    <div className="mb-2 text-gray-10 dark:text-gray-dark-10">
+      {description}
+    </div>
   );
 };
 

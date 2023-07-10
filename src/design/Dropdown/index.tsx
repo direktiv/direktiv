@@ -70,8 +70,8 @@ const DropdownMenuContent = React.forwardRef<
       className={twMergeClsx(
         "z-50 min-w-[8rem] overflow-hidden animate-in data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
         "rounded-md shadow-md ring-1",
-        "bg-gray-1 ring-gray-3",
-        "dark:bg-gray-dark-1 dark:ring-gray-dark-3",
+        "bg-gray-1 text-gray-11 ring-gray-3",
+        "dark:bg-gray-dark-1 dark:text-gray-dark-11 dark:ring-gray-dark-3",
         className
       )}
       {...props}
