@@ -1,5 +1,11 @@
 import { End, Start, State } from "./nodes";
-import ReactFlow, { Edge, MiniMap, Node, useReactFlow } from "reactflow";
+import ReactFlow, {
+  Background,
+  Edge,
+  MiniMap,
+  Node,
+  useReactFlow,
+} from "reactflow";
 import { useEffect, useMemo } from "react";
 
 interface ZoomPanDiagramProps {
@@ -39,7 +45,8 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       nodesConnectable={disabled}
       elementsSelectable={disabled}
     >
-      <MiniMap nodeColor={() => "#4497f5"} />
+      <MiniMap />
+      <Background />
     </ReactFlow>
   );
 }
