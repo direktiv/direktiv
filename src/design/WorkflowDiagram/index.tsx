@@ -1,11 +1,10 @@
-// our custom styles
 import "./style.css";
 import "reactflow/dist/base.css";
 
 import { Edge, Node, Position, ReactFlowProvider, isNode } from "reactflow";
 import { useEffect, useMemo, useState } from "react";
 
-import InvalidWorkflow from "~/components/invalid-workflow";
+import Alert from "../Alert";
 import YAML from "js-yaml";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
 import dagre from "dagre";
@@ -87,7 +86,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       setInvalidWorkflow(null);
       return workflowObj;
     } catch (error: unknown) {
-      setInvalidWorkflow(error as string);
+      setInvalidWorkflow(error?.toString() ?? "Unknown error");
       return null;
     }
   }, [workflow]);
@@ -166,13 +165,13 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   }, [load, wf, flow, instanceStatus, ostatus]);
 
   return (
-    <div className="h-full">
-      <InvalidWorkflow invalidWorkflow={invalidWorkflow} />
-      {!load ? (
+    <div className="h-full w-full">
+      {invalidWorkflow && <Alert variant="error">{invalidWorkflow}</Alert>}
+      {!load && (
         <ReactFlowProvider>
           <ZoomPanDiagram disabled={disabled} elements={elements} />
         </ReactFlowProvider>
-      ) : null}
+      )}
     </div>
   );
 }
