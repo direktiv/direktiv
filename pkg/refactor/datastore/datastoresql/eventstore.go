@@ -81,19 +81,19 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 	for i := 0; i < len(keyAndValues); i += 2 {
 		v := keyAndValues[i+1]
 		if keyAndValues[i] == "created_before" {
-			qs = append(qs, " and created_at > $%v")
+			qs = append(qs, " and created_at < $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "created_after" {
-			qs = append(qs, " and created_at <= $%v")
+			qs = append(qs, " and created_at >= $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "received_before" {
-			qs = append(qs, " and received_at > $%v")
+			qs = append(qs, " and received_at < $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "received_after" {
-			qs = append(qs, " and received_at <= $%v")
+			qs = append(qs, " and received_at >= $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "event_contains" {
