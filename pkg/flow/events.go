@@ -454,8 +454,22 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		if err != nil {
 			return err
 		}
-
-		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID)
+		queryParams := []string{}
+		for _, f := range req.Pagination.Filter {
+			if f.Field == cr && f.Type == after {
+				queryParams = append(queryParams, "received_after", f.Val)
+			}
+			if f.Field == cr && f.Type == before {
+				queryParams = append(queryParams, "received_before", f.Val)
+			}
+			if f.Field == "TYPE" && f.Type == contains {
+				queryParams = append(queryParams, "type_contains", f.Val)
+			}
+			if f.Field == "TEXT" && f.Type == contains {
+				queryParams = append(queryParams, "event_contains", f.Val)
+			}
+		}
+		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
 		if err != nil {
 			return err
 		}
@@ -509,8 +523,23 @@ resend:
 
 	count := 0
 	var res []*pkgevents.Event
+	queryParams := []string{}
+	for _, f := range req.Pagination.Filter {
+		if f.Field == cr && f.Type == after {
+			queryParams = append(queryParams, "received_after", f.Val)
+		}
+		if f.Field == cr && f.Type == before {
+			queryParams = append(queryParams, "received_before", f.Val)
+		}
+		if f.Field == "TYPE" && f.Type == contains {
+			queryParams = append(queryParams, "type_contains", f.Val)
+		}
+		if f.Field == "TEXT" && f.Type == contains {
+			queryParams = append(queryParams, "event_contains", f.Val)
+		}
+	}
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID)
+		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
 		if err != nil {
 			return err
 		}
