@@ -9,6 +9,7 @@ import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
 import { faker } from "@faker-js/faker";
+import { radixClick } from "../utils/testutils";
 
 const { options } = MimeTypeSchema;
 
@@ -148,7 +149,10 @@ test("it is possible to create and delete registries", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-test("it is possible to create and delete variables", async ({ page }) => {
+test("it is possible to create and delete variables", async ({
+  page,
+  browserName,
+}) => {
   const variables = await createVariables(namespace, 3);
   const variableToDelete = variables[2];
   // handle error to avoid typescript errors below
@@ -180,16 +184,21 @@ test("it is possible to create and delete variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(newVariable.value);
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the variable's content is loaded into the editor"
+    )
+    .toBe(newVariable.value);
 
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(newVariable.mimeType);
-  await page.getByTestId("var-edit-cancel").click();
+
+  const cancelButton = page.getByTestId("var-edit-cancel");
+  await radixClick(browserName, cancelButton);
 
   //delete one item
   await expect(
@@ -230,19 +239,19 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(subject.content, {
-    timeout: 10000,
-  });
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the variable's content is loaded into the editor"
+    )
+    .toBe(subject.content);
 
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(subject.mimeType);
 
-  const textArea = page.getByRole("textbox");
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
   const updatedType =
@@ -259,14 +268,16 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(updatedValue);
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the updated variable content is loaded into the editor"
+    )
+    .toBe(updatedValue);
 
   await expect(
     page.locator("select"),
-    "MimeTypeSelect is set to the subject's mimeType"
+    "MimeTypeSelect is set to the updated mimeType"
   ).toHaveValue(updatedType);
 });
 

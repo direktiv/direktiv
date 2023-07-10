@@ -33,7 +33,7 @@ const WorkflowRevisionsPage = () => {
   const Icon = isTag ? Tag : GitMerge;
   const isLatest = selectedRevision === "latest";
 
-  if (!path || !namespace || !selectedRevision) return null;
+  if (!path || !namespace || !selectedRevision || !workflowData) return null;
 
   return (
     <div className="flex grow flex-col space-y-4">
