@@ -2,14 +2,11 @@ import { Page, expect } from "@playwright/test";
 
 export const actionWaitForSuccessToast = async (page: Page) => {
   const successToast = page.getByTestId("toast-success");
-  await expect(
-    successToast,
-    "success toast should appear after revert action button click"
-  ).toBeVisible();
+  await expect(successToast, "a success toast appears").toBeVisible();
   await page.getByTestId("toast-close").click();
   await expect(
     successToast,
-    "success toast should disappear after click toast-close"
+    "success toast disappears after clicking toast-close"
   ).toBeHidden();
 };
 
