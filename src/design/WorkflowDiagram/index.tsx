@@ -1,8 +1,5 @@
 // our custom styles
-// import "./style.css";
-
-// one of the reactflow style imports is mandatory
-// import "reactflow/dist/style.css";
+import "./style.css";
 import "reactflow/dist/base.css";
 
 import { Edge, Node, Position, ReactFlowProvider, isNode } from "reactflow";
