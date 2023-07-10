@@ -1,22 +1,16 @@
-import "./style.css";
-import "reactflow/dist/style.css";
-// or if you just want basic styles
+// our custom styles
+// import "./style.css";
+
+// one of the reactflow style imports is mandatory
+// import "reactflow/dist/style.css";
 import "reactflow/dist/base.css";
 
-import ReactFlow, {
-  Edge,
-  Handle,
-  MiniMap,
-  Node,
-  Position,
-  ReactFlowProvider,
-  isNode,
-  useReactFlow,
-} from "reactflow";
+import { Edge, Node, Position, ReactFlowProvider, isNode } from "reactflow";
 import { useEffect, useMemo, useState } from "react";
 
 import InvalidWorkflow from "~/components/invalid-workflow";
 import YAML from "js-yaml";
+import { ZoomPanDiagram } from "./ZoomPanDiagram";
 import dagre from "dagre";
 
 export const position = { x: 0, y: 0 };
@@ -39,6 +33,7 @@ export interface WorkflowDiagramProps {
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
 }
+
 type NonEmptyArray<T> = [T, ...T[]];
 
 export interface Item {
@@ -63,6 +58,7 @@ export interface IState {
   transition: string;
   defaultTransition: string;
 }
+
 interface IWorkflow {
   states: NonEmptyArray<IState>;
   start: {
@@ -70,6 +66,7 @@ interface IWorkflow {
   };
   functions: object[];
 }
+
 export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   const {
     workflow,
@@ -82,6 +79,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   const [elements, setElements] = useState<(Node | Edge)[]>([]);
   const [ostatus, setOStatus] = useState(instanceStatus);
   const [invalidWorkflow, setInvalidWorkflow] = useState<string | null>(null);
+
   const wf = useMemo(() => {
     if (!workflow) {
       setInvalidWorkflow(null);
@@ -179,95 +177,6 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
         </ReactFlowProvider>
       ) : null}
     </>
-  );
-}
-interface ZoomPanDiagramProps {
-  elements: (Edge | Node)[];
-  disabled: boolean;
-}
-const nodeTypes = {
-  state: State,
-  start: Start,
-  end: End,
-};
-function ZoomPanDiagram(props: ZoomPanDiagramProps) {
-  const { elements, disabled } = props;
-  const { fitView } = useReactFlow();
-
-  const sep: [Node[], Edge[]] = useMemo(() => {
-    const nodes: Node[] = elements.filter(
-      (ele: Node | Edge) => !!(ele as Node).position
-    ) as Node[];
-
-    const edges: Edge[] = elements.filter(
-      (ele: Node | Edge) => !!(ele as Edge).source
-    ) as Edge[];
-    return [nodes, edges];
-  }, [elements]);
-  useEffect(() => {
-    fitView();
-  }, [fitView]);
-  return (
-    <ReactFlow
-      edges={sep[1]}
-      nodes={sep[0]}
-      nodeTypes={nodeTypes}
-      nodesDraggable={disabled}
-      nodesConnectable={disabled}
-      elementsSelectable={disabled}
-    >
-      <MiniMap nodeColor={() => "#4497f5"} />
-    </ReactFlow>
-  );
-}
-interface StateProps {
-  data: {
-    label: string;
-    type: string;
-  };
-}
-function State(props: StateProps) {
-  const { data } = props;
-  const { label, type } = data;
-  return (
-    <div className="state" style={{ width: "80px", height: "30px" }}>
-      <Handle type="target" position={Position.Left} id="default" />
-      <div
-        style={{
-          display: "flex",
-          padding: "1px",
-          gap: "3px",
-          alignItems: "center",
-          fontSize: "6pt",
-          textAlign: "left",
-          borderBottom: "solid 1px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <div style={{ flex: "auto", fontWeight: "bold" }}>{type}</div>
-      </div>
-      <h1 style={{ fontWeight: "300", fontSize: "7pt", marginTop: "2px" }}>
-        {label}
-      </h1>
-      <Handle type="source" position={Position.Right} id="default" />
-    </div>
-  );
-}
-
-function Start() {
-  return (
-    <div className="normal">
-      <Handle type="source" position={Position.Right} />
-      <div className="start" />
-    </div>
-  );
-}
-
-function End() {
-  return (
-    <div className="normal">
-      <div className="end" />
-      <Handle type="target" position={Position.Left} />
-    </div>
   );
 }
 
