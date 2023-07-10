@@ -153,44 +153,48 @@ test("it is possible to create and delete variables", async ({
   page,
   browserName,
 }) => {
+  // set up test data
   const variables = await createVariables(namespace, 3);
   const variableToDelete = variables[2];
-  // handle error to avoid typescript errors below
-  if (!variableToDelete) throw "error setting up test data";
-
-  await page.goto(`/${namespace}/settings`);
-  await page.getByTestId("variable-create").click();
 
   const newVariable = {
-    name: faker.random.word(),
+    name: faker.internet.domainWord(),
     value: faker.random.words(20),
     mimeType: options[Math.floor(Math.random() * options.length)] || options[0],
   };
+
+  // handle error to avoid typescript errors below
+  if (!variableToDelete) throw "error setting up test data";
+
+  // perform test
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("variable-create").click();
+
   await page.getByTestId("new-variable-name").type(newVariable.name);
-  await page.getByTestId("variable-create-card").click();
-  await page.type("textarea", newVariable.value);
+
+  const editor = page.locator(".view-lines");
+  await editor.click();
+
+  await editor.type(newVariable.value);
   await page.getByTestId("variable-trg-mimetype").click();
   await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
   await page.getByTestId("variable-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  //reload page after create variable
+  // reload page after create variable
   await page.reload({
     waitUntil: "networkidle",
   });
 
-  //click on edit and confirm the created variable
+  // click on edit and confirm the created variable
   const subjectDropdownSelector = `dropdown-trg-item-${newVariable.name}`;
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  const textArea = page.getByRole("textbox");
-  await expect
-    .poll(
-      async () => await textArea.inputValue(),
-      "the variable's content is loaded into the editor"
-    )
-    .toBe(newVariable.value);
+  await expect(
+    editor,
+    "the variable's content is loaded into the editor"
+  ).toContainText(newVariable.value);
 
   await expect(
     page.locator("select"),
