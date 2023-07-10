@@ -74,3 +74,13 @@ export const WorkflowInstanceComplete = () => (
     />
   </div>
 );
+
+export const WorkflowInvalid = () => (
+  <div className="h-96">
+    <WorkflowDiagram
+      workflow="... /// invalid workflow"
+      flow={["helloworld", "exit"]}
+      instanceStatus="complete"
+    />
+  </div>
+);
