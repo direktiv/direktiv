@@ -71,7 +71,7 @@ const TrafficShaping: FC = () => {
   if (!isFetched) return null;
 
   return (
-    <>
+    <section className="flex flex-col gap-4">
       <h3 className="flex items-center gap-x-2 font-bold">
         <Network className="h-5" />
         {t(
@@ -161,7 +161,7 @@ const TrafficShaping: FC = () => {
           )}
         </div>
       </Card>
-    </>
+    </section>
   );
 };
 

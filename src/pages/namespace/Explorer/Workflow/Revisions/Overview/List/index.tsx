@@ -56,7 +56,7 @@ const RevisionsList: FC = () => {
   if (!isFetched) return null;
 
   return (
-    <>
+    <section className="flex flex-col gap-4">
       <h3 className="flex items-center gap-x-2 font-bold">
         <GitMerge className="h-5" />
         {t("pages.explorer.tree.workflow.revisions.overview.list.title")}
@@ -131,7 +131,7 @@ const RevisionsList: FC = () => {
           </DialogContent>
         </Dialog>
       </Card>
-    </>
+    </section>
   );
 };
 
