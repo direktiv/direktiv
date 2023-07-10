@@ -15,6 +15,7 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
+import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
@@ -68,6 +69,9 @@ const WorkflowEditor: FC<{
         <Tag className="h-5" />
         {t("pages.explorer.workflow.headline")}
       </h3>
+      <Card className="flex grow">
+        <WorkflowDiagram workflow={workflowData} />
+      </Card>
       <Card className="flex grow flex-col p-4" data-testid="workflow-editor">
         <div className="grow">
           <Editor
