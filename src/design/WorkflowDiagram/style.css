@@ -1,0 +1,33 @@
+.react-flow {
+  @apply bg-white dark:bg-black;
+}
+.react-flow__handle {
+  @apply !border-0 !bg-transparent;
+}
+
+.react-flow__node.react-flow__node-state {
+  @apply leading-8;
+}
+
+.state {
+  @apply rounded-md bg-white p-2 shadow-md shadow-gray-3 dark:bg-black dark:shadow-gray-dark-3;
+}
+
+.normal {
+  @apply h-[30px] w-[30px] rounded-[35px] bg-white p-2  shadow-md shadow-gray-3 dark:bg-black dark:shadow-gray-dark-3;
+  @apply grid place-items-center;
+}
+
+.normal .start {
+  @apply h-[30px] w-[30px] rounded-[35px];
+  @apply bg-success-10 dark:bg-success-dark-10;
+}
+
+.normal .end {
+  @apply h-[30px] w-[30px] rounded-[35px];
+  @apply bg-danger-10 dark:bg-danger-dark-10;
+}
+
+.react-flow__attribution {
+  @apply hidden;
+}
