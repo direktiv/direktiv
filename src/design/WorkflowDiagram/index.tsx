@@ -50,8 +50,12 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     }
   }, [workflow]);
 
-  if (invalidWorkflow) return <Alert variant="error">{invalidWorkflow}</Alert>;
-  if (parsedWorkflow === null) return null;
+  if (invalidWorkflow)
+    return (
+      <Alert className="flex" variant="error">
+        {invalidWorkflow}
+      </Alert>
+    );
 
   const flowElements = generateElements(
     getLayoutedElements,
@@ -59,8 +63,6 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     flow,
     instanceStatus
   );
-
-  if (flowElements.length === 0) return null;
 
   return (
     <ReactFlowProvider>

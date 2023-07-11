@@ -57,11 +57,13 @@ export function generateElements(
     incomingEles: (Node | Edge)[],
     direction?: string
   ) => (Node | Edge)[],
-  value: IWorkflow,
+  value: IWorkflow | null,
   flow: string[],
   status: "pending" | "complete" | "failed"
 ) {
   const newElements: (Node | Edge)[] = [];
+
+  if (!value) return [];
 
   if (value.states) {
     for (let i = 0; i < value.states.length; i++) {
