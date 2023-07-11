@@ -1,3 +1,4 @@
+import { ConditionalWrapper, twMergeClsx } from "~/util/helpers";
 import {
   HoverCard,
   HoverCardContent,
@@ -14,12 +15,11 @@ import {
 
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
-import { ConditionalWrapper } from "~/util/helpers";
+import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "./utils";
-import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
@@ -28,12 +28,14 @@ const InstanceTableRow: FC<{
   namespace: string;
 }> = ({ instance, namespace }) => {
   const [name, revision] = instance.as.split(":");
+  const [invoker, childInstance] = instance.invoker.split(":");
   const updatedAt = useUpdatedAt(instance.updatedAt);
   const createdAt = useUpdatedAt(instance.createdAt);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const isLatestRevision = revision === "latest";
+  const isChild = invoker === "instance" && !!childInstance;
 
   return (
     <TooltipProvider>
@@ -84,7 +86,28 @@ const InstanceTableRow: FC<{
           </Badge>
         </TableCell>
         <TableCell>
-          <Badge variant="outline">{instance.invoker}</Badge>
+          <ConditionalWrapper
+            condition={isChild}
+            wrapper={(children) => (
+              <Tooltip>
+                <TooltipTrigger>{children}</TooltipTrigger>
+                <TooltipContent className="flex gap-2 align-middle">
+                  {childInstance}
+                  <CopyButton
+                    value={childInstance ?? ""}
+                    buttonProps={{
+                      size: "sm",
+                      onClick: (e) => {
+                        e.stopPropagation();
+                      },
+                    }}
+                  />
+                </TooltipContent>
+              </Tooltip>
+            )}
+          >
+            <Badge variant="outline">{invoker}</Badge>
+          </ConditionalWrapper>
         </TableCell>
         <TableCell>
           <ConditionalWrapper
