@@ -27,3 +27,4 @@ config:
           line_format json
           labels job=fluent-bit, $log['state'], $log['state-id'], $log['namespace'], $log['workflow'], $log['trace'], $log['httppath']
           label_keys $log['level'], $log['stream'], $log['component'], $log['built'], $log['trace'], $log['log-recipient'], $log['invoker'], $log['callpath'] "
+ 
