@@ -34,8 +34,9 @@ const InstanceTableRow: FC<{
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const isLatestRevision = revision === "latest";
   const isChild = invoker === "instance" && !!childInstance;
+
+  const isLatestRevision = revision === "latest" || isChild;
 
   return (
     <TooltipProvider>
