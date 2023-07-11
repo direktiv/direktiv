@@ -49,6 +49,10 @@ func (bl *busLogger) Output(_ int, s string) error {
 }
 
 func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
+	if logger == nil {
+		logger = zap.NewNop().Sugar()
+	}
+
 	// create data dir if it does not exist
 	// if not set we use a tmp folder
 	dataDir := config.NSQDataDir

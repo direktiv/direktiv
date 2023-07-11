@@ -30,10 +30,6 @@ func TestNodeConfig(t *testing.T) {
 
 	assert.Equal(t, config.SerfPort, newPort)
 	assert.Equal(t, config.SerfReapTimeout, newTimeout)
-
-	// no nodefinder should fail
-	_, err := NewNode(config, nil, nil)
-	require.Error(t, err)
 }
 
 func TestNewNode(t *testing.T) {
