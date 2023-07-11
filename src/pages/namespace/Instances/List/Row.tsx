@@ -75,7 +75,23 @@ const InstanceTableRow: FC<{
           </Tooltip>
         </TableCell>
         <TableCell>
-          <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
+          <Tooltip>
+            <TooltipTrigger>
+              <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
+            </TooltipTrigger>
+            <TooltipContent className="flex gap-2 align-middle">
+              {instance.id}
+              <CopyButton
+                value={instance.id}
+                buttonProps={{
+                  size: "sm",
+                  onClick: (e) => {
+                    e.stopPropagation();
+                  },
+                }}
+              />
+            </TooltipContent>
+          </Tooltip>
         </TableCell>
         <TableCell>
           <Badge
