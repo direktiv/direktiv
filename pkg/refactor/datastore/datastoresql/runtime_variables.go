@@ -23,13 +23,41 @@ func (s *sqlRuntimeVariablesStore) GetByReferenceAndName(ctx context.Context, re
 		return nil, datastore.ErrNotFound
 	}
 
+	if _, err := uuid.Parse(reference); err != nil {
+		return s.GetByWorkflowPathAndName(ctx, reference, name)
+	}
+
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type,
 								created_at, updated_at
-							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR workflow_path=? OR instance_id=?);`,
-		name, reference, reference, reference).First(variable)
+							FROM runtime_variables WHERE name = ? AND (namespace_id=? OR instance_id=?)`,
+		name, reference, reference).First(variable)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, datastore.ErrNotFound
+	}
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return variable, nil
+}
+
+func (s *sqlRuntimeVariablesStore) GetByWorkflowPathAndName(ctx context.Context, reference string, name string) (*core.RuntimeVariable, error) {
+	variable := &core.RuntimeVariable{}
+
+	if name == "" || reference == "" {
+		return nil, datastore.ErrNotFound
+	}
+
+	res := s.db.WithContext(ctx).Raw(`
+							SELECT 
+								id, namespace_id, workflow_path, instance_id, 
+								name, length(data) AS size, mime_type,
+								created_at, updated_at
+							FROM runtime_variables WHERE name = ? AND (workflow_path=?)`,
+		name, reference).First(variable)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, datastore.ErrNotFound
 	}
@@ -47,7 +75,7 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type,
 								created_at, updated_at
-							FROM runtime_variables WHERE "id" = ?;`,
+							FROM runtime_variables WHERE "id" = ?`,
 		id).First(variable)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, datastore.ErrNotFound
@@ -169,7 +197,7 @@ func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, na
 
 func (s *sqlRuntimeVariablesStore) Delete(ctx context.Context, id uuid.UUID) error {
 	res := s.db.WithContext(ctx).Exec(
-		`DELETE FROM runtime_variables WHERE id = ?;`,
+		`DELETE FROM runtime_variables WHERE id = ?`,
 		id)
 	if res.Error != nil {
 		return res.Error
@@ -191,7 +219,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 								id, namespace_id, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, data,
 								created_at, updated_at
-							FROM runtime_variables WHERE "id" = ?;`,
+							FROM runtime_variables WHERE "id" = ?`,
 		id).First(variable)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, datastore.ErrNotFound
