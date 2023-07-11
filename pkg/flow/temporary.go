@@ -42,17 +42,15 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 	for _, selector := range vars {
 		if selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
-			referenceID := im.instance.Instance.NamespaceID
+			referenceID := im.instance.Instance.NamespaceID.String()
 			if selector.Scope == util.VarScopeInstance {
-				referenceID = im.instance.Instance.ID
+				referenceID = im.instance.Instance.ID.String()
 			}
 			if selector.Scope == util.VarScopeWorkflow {
-				// TODO: alan
-				// currently we need to ignore this case until we migrate workflow_id from instances.
-				continue
+				referenceID = im.instance.Instance.WorkflowPath
 			}
 
-			item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID.String(), selector.Key)
+			item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID, selector.Key)
 			if errors.Is(err, datastore.ErrNotFound) {
 				x = append(x, states.Variable{
 					Scope: selector.Scope,
@@ -193,21 +191,19 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	for idx := range vars {
 		v := vars[idx]
 
-		var referenceID uuid.UUID
+		var referenceID string
 		switch v.Scope {
 		case "instance":
-			referenceID = im.instance.Instance.ID
+			referenceID = im.instance.Instance.ID.String()
 		case "workflow":
-			// TODO: alan
-			// currently we need to ignore this case until we migrate workflow id from instances.
-			continue
+			referenceID = im.instance.Instance.WorkflowPath
 		case "namespace":
-			referenceID = im.instance.Instance.NamespaceID
+			referenceID = im.instance.Instance.NamespaceID.String()
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
 
-		item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID.String(), v.Key)
+		item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID, v.Key)
 		if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 			return err
 		}
@@ -236,13 +232,11 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 
 			switch v.Scope {
 			case "instance":
-				newVar.InstanceID = referenceID
+				newVar.InstanceID = uuid.MustParse(referenceID)
 			case "workflow":
-				// TODO: currently we need to ignore this case until we migrate workflow id from instances.
-				continue
-				// newVar.WorkflowPath = referenceID
+				newVar.WorkflowPath = referenceID
 			case "namespace":
-				newVar.NamespaceID = referenceID
+				newVar.NamespaceID = uuid.MustParse(referenceID)
 			}
 
 			_, err = tx.DataStore().RuntimeVariables().Set(ctx, newVar)
