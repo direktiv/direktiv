@@ -1,4 +1,4 @@
-package cluster
+package cache
 
 import (
 	"errors"
@@ -8,32 +8,29 @@ import (
 	"time"
 
 	badger "github.com/dgraph-io/badger/v3"
+	"github.com/direktiv/direktiv/pkg/cluster"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"go.uber.org/zap"
 )
 
 type Cache struct {
 	logger *zap.SugaredLogger
-	config CacheConfig
-
-	db *badger.DB
+	config Config
+	db     *badger.DB
+	node   *cluster.Node
 }
 
-const cacheTopic = "cache"
-
-type CacheConfig struct {
-	Prefix string
-
-	Node *Node
+type Config struct {
+	Topic string
+	TTL   time.Duration
 }
 
 var prefixList sync.Map
 
-func NewCache(config CacheConfig) (*Cache, error) {
-
-	_, exists := prefixList.LoadOrStore(config.Prefix, config.Prefix)
+func NewCache(node *cluster.Node, config Config) (*Cache, error) {
+	_, exists := prefixList.LoadOrStore(config.Topic, config.Topic)
 	if exists {
-		return nil, fmt.Errorf("prefix %s already exists", config.Prefix)
+		return nil, fmt.Errorf("prefix %s already exists", config.Topic)
 	}
 
 	logger, err := dlog.ApplicationLogger("cache")
@@ -41,7 +38,7 @@ func NewCache(config CacheConfig) (*Cache, error) {
 		return nil, err
 	}
 
-	if config.Prefix == "" || strings.Contains(config.Prefix, "-") {
+	if config.Topic == "" || strings.Contains(config.Topic, "-") {
 		return nil, fmt.Errorf("no prefix set or contains -")
 	}
 
@@ -55,50 +52,39 @@ func NewCache(config CacheConfig) (*Cache, error) {
 		db:     db,
 		logger: logger,
 		config: config,
+		node:   node,
 	}
 
-	if config.Node != nil {
-		_, err = config.Node.Subscribe(cacheTopic, cache.invalidateInternal)
+	if node != nil {
+		_, err = node.Subscribe(cache.config.Topic, node.InstanceChannel("invalidate"), cache.invalidateInternal)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// TODO: logging
-	// serfConfig.Logger = zap.NewStdLog(logger.Desugar())
-
-	// run garbage collector
 	go gc(db)
 
 	return cache, nil
-
-}
-
-func DefaultCacheConfig() CacheConfig {
-
-	return CacheConfig{
-		Prefix: "dummy",
-	}
-
 }
 
 func (c *Cache) keyForPrefix(key string) []byte {
-	return []byte(fmt.Sprintf("%s-%s", c.config.Prefix, key))
+	return []byte(fmt.Sprintf("%s-%s", c.config.Topic, key))
 }
 
-func (c *Cache) Set(key string, value []byte, ttl time.Duration) error {
-
+func (c *Cache) Set(key string, value []byte) error {
 	c.logger.Debugf("setting key %s", string(c.keyForPrefix(key)))
 
 	return c.db.Update(func(txn *badger.Txn) error {
-		e := badger.NewEntry(c.keyForPrefix(key), value).WithTTL(ttl)
-		if ttl == 0 {
-			e = badger.NewEntry(c.keyForPrefix(key), value)
+		e := badger.NewEntry(c.keyForPrefix(key), value)
+		if c.config.TTL != 0 {
+			e = e.WithTTL(c.config.TTL)
 		}
+
 		return txn.SetEntry(e)
 	})
 }
 
-func (c *Cache) GetFunction(key string, fetch func(string) ([]byte, error),
-	ttl time.Duration) ([]byte, error) {
-
+func (c *Cache) GetFunction(key string, fetch func(string) ([]byte, error)) ([]byte, error) {
 	if fetch == nil {
 		return nil, fmt.Errorf("function in cache not set")
 	}
@@ -114,11 +100,11 @@ func (c *Cache) GetFunction(key string, fetch func(string) ([]byte, error),
 		if err != nil {
 			return nil, err
 		}
-		err = c.Set(key, value, ttl)
+
+		err = c.Set(key, value)
 		if err != nil {
 			return nil, err
 		}
-
 	} else if err != nil {
 		return nil, err
 	}
@@ -127,7 +113,6 @@ func (c *Cache) GetFunction(key string, fetch func(string) ([]byte, error),
 }
 
 func (c *Cache) Get(key string) ([]byte, error) {
-
 	var value []byte
 
 	c.logger.Debugf("getting key %s", string(c.keyForPrefix(key)))
@@ -140,6 +125,7 @@ func (c *Cache) Get(key string) ([]byte, error) {
 
 		err = item.Value(func(val []byte) error {
 			value = append([]byte{}, val...)
+
 			return nil
 		})
 
@@ -151,15 +137,12 @@ func (c *Cache) Get(key string) ([]byte, error) {
 
 func (c *Cache) Invalidate(key string) error {
 	return c.db.Update(func(txn *badger.Txn) error {
-
-		// tell cluster to invalidate
-
 		c.logger.Debugf("invalidating key %s", string(c.keyForPrefix(key)))
 
 		// send to bus if set
-		if c.config.Node != nil {
+		if c.node != nil {
 			msg := fmt.Sprintf("invalidate-%s", string(c.keyForPrefix(key)))
-			err := c.config.Node.Publish(cacheTopic, []byte(msg))
+			err := c.node.Publish(c.config.Topic, []byte(msg))
 			if err != nil {
 				c.logger.Errorf("can not publish invalidate message %s", msg)
 			}
@@ -170,15 +153,14 @@ func (c *Cache) Invalidate(key string) error {
 }
 
 func (c *Cache) InvalidateAll() error {
-
 	keysToDelete := make([]string, 0)
 
-	c.logger.Debugf("invalidate all with prefix %s", c.config.Prefix)
+	c.logger.Debugf("invalidate all with prefix %s", c.config.Topic)
 
 	// send to bus if set
-	if c.config.Node != nil {
-		msg := fmt.Sprintf("invalidateAll-%s", c.config.Prefix)
-		err := c.config.Node.Publish(cacheTopic, []byte(msg))
+	if c.node != nil {
+		msg := fmt.Sprintf("invalidateAll-%s", c.config.Topic)
+		err := c.node.Publish(c.config.Topic, []byte(msg))
 		if err != nil {
 			c.logger.Errorf("can not publish invalidate message %s", msg)
 		}
@@ -196,7 +178,6 @@ func (c *Cache) InvalidateAll() error {
 
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -217,10 +198,12 @@ func (c *Cache) InvalidateAll() error {
 }
 
 func gc(db *badger.DB) {
+	//nolint:gomnd
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 	for range ticker.C {
 	again:
+		//nolint:gomnd
 		err := db.RunValueLogGC(0.7)
 		if err == nil {
 			goto again
@@ -229,17 +212,16 @@ func gc(db *badger.DB) {
 }
 
 func (c *Cache) invalidateInternal(key []byte) error {
-
 	keyIn := string(key)
 
+	//nolint:gomnd
 	split := strings.SplitN(keyIn, "-", 3)
+	//nolint:gomnd
 	if len(split) != 3 {
 		return fmt.Errorf("invalid key for cluster cache")
 	}
 
-	fmt.Printf("%s - %s - %s\n", split[0], split[1], split[2])
-
-	// // messages come in in format <cmd>-<cache-name>-<key>
+	// messages come in format <cmd>-<cache-name>-<key>
 	switch split[0] {
 	case "invalidate":
 		return c.db.Update(func(txn *badger.Txn) error {
@@ -249,7 +231,5 @@ func (c *Cache) invalidateInternal(key []byte) error {
 	default:
 	}
 
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111")
-	fmt.Println(keyIn)
 	return nil
 }

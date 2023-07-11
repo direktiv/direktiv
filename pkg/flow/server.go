@@ -360,8 +360,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	// start pub sub
 	config := cluster.DefaultConfig()
-	config.Nodefinder = cluster.NewNodefinderKube()
-	node, err := cluster.NewNode(config)
+	node, err := cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
 	if err != nil {
 		return err
 	}

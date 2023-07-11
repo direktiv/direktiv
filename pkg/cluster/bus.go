@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/nsqio/nsq/nsqd"
 	"github.com/nsqio/nsq/nsqlookupd"
 	"go.uber.org/zap"
@@ -44,19 +43,12 @@ type busLogger struct {
 }
 
 func (bl *busLogger) Output(_ int, s string) error {
-	if bl.debug {
-		bl.logger.Infof(s)
-	}
+	bl.logger.Debugf(s)
 
 	return nil
 }
 
-func newBus(config Config) (*bus, error) {
-	logger, err := dlog.ApplicationLogger("bus")
-	if err != nil {
-		return nil, err
-	}
-
+func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	// create data dir if it does not exist
 	// if not set we use a tmp folder
 	dataDir := config.NSQDataDir
@@ -104,6 +96,8 @@ func newBus(config Config) (*bus, error) {
 		debug:  busLogEnabled,
 	}
 
+	var err error
+
 	bus.nsqd, err = nsqd.New(opts)
 	if err != nil {
 		return nil, err
@@ -132,17 +126,19 @@ func newBus(config Config) (*bus, error) {
 }
 
 func (b *bus) stop() {
-	b.logger.Info("stopping nsqd")
+	b.logger.Debug("Stopping nsqd", b.nsqd == nil, b.lookup == nil)
+
 	if b.nsqd != nil {
 		b.nsqd.Exit()
 	}
-	b.logger.Info("stopping nsqd lookup")
+
+	b.logger.Debug("Stopping nsqd lookup")
 	if b.lookup != nil {
 		b.lookup.Exit()
 	}
 }
 
-type ProducerList struct {
+type producerList struct {
 	Producers []struct {
 		RemoteAddress    string `json:"remote_address"`
 		Hostname         string `json:"hostname"`
@@ -156,7 +152,7 @@ type ProducerList struct {
 }
 
 //lint:ignore U1000 Ignore unused function for testing
-func (b *bus) nodes() (*ProducerList, error) {
+func (b *bus) nodes() (*producerList, error) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
 		fmt.Sprintf("http://127.0.0.1:%d/nodes",
 			b.config.NSQLookupListenHTTPPort), nil)
@@ -175,10 +171,15 @@ func (b *bus) nodes() (*ProducerList, error) {
 		return nil, err
 	}
 
-	var pl ProducerList
+	var pl producerList
 	err = json.Unmarshal(bo, &pl)
 	if err != nil {
 		return nil, err
+	}
+
+	var s string
+	for _, n := range pl.Producers {
+		s += "," + n.Hostname + ":" + fmt.Sprintf("%v", n.TCPPort)
 	}
 
 	return &pl, nil
@@ -188,7 +189,7 @@ func (b *bus) updateBusNodes(nodes []string) error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
-	b.logger.Infof("updating bus nodes: %s", strings.Join(nodes, ", "))
+	b.logger.Debugf("Updating bus nodes: %s", strings.Join(nodes, ", "))
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/config/nsqlookupd_tcp_addresses", b.config.NSQDListenHTTPPort)
 
@@ -212,7 +213,7 @@ func (b *bus) updateBusNodes(nodes []string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("can not set newe bus members")
+		return fmt.Errorf("can not set new bus members")
 	}
 
 	return nil
@@ -238,7 +239,6 @@ func (b *bus) start() error {
 
 func (b *bus) waitTillConnected() error {
 	startCh := make(chan bool)
-	ticker := time.NewTicker(1 * time.Second)
 
 	ping := func(port int) bool {
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
@@ -270,9 +270,17 @@ func (b *bus) waitTillConnected() error {
 	}
 
 	go func() {
+		timeout := time.After(busStartTimeout)
+
+		//nolint:gomnd
+		dt := 100 * time.Millisecond
+		attempts := -1
+
 		for {
+			attempts++
+
 			select {
-			case <-ticker.C:
+			case <-time.After(dt * (1 << attempts)):
 
 				if !ping(b.config.NSQDListenHTTPPort) {
 					continue
@@ -286,7 +294,7 @@ func (b *bus) waitTillConnected() error {
 
 				return
 
-			case <-time.After(busStartTimeout):
+			case <-timeout:
 				startCh <- false
 
 				return
@@ -297,55 +305,6 @@ func (b *bus) waitTillConnected() error {
 	success := <-startCh
 	if !success {
 		return fmt.Errorf("could not start nsq bus")
-	}
-
-	return nil
-}
-
-func (b *bus) createTopic(topic string) error {
-	url := fmt.Sprintf("http://127.0.0.1:%d/topic/create?topic=%s", b.config.NSQDListenHTTPPort, topic)
-
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("create channel failed")
-	}
-
-	return nil
-}
-
-func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
-	action := "delete"
-	if create {
-		action = "create"
-	}
-
-	url := fmt.Sprintf("http://127.0.0.1:%d/channel/%s?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, action, topic, channel)
-
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("create channel failed")
 	}
 
 	return nil

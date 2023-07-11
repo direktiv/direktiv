@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/serf/serf"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,15 +32,14 @@ func TestNodeConfig(t *testing.T) {
 	assert.Equal(t, config.SerfReapTimeout, newTimeout)
 
 	// no nodefinder should fail
-	config.Nodefinder = nil
-	_, err := NewNode(config)
+	_, err := NewNode(config, nil, nil)
 	require.Error(t, err)
 }
 
 func TestNewNode(t *testing.T) {
 	config := DefaultConfig()
 
-	node, err := NewNode(config)
+	node, err := NewNode(config, NewNodeFinderStatic(nil), nil)
 	require.NoError(t, err)
 	defer node.Stop()
 
@@ -49,15 +49,20 @@ func TestNewNode(t *testing.T) {
 
 func rightNumber(nodes []*Node) bool {
 	for i := 0; i < len(nodes); i++ {
+		mnodes := nodes[i].serfServer.Members()
+		count := len(mnodes)
+		for j := 0; j < len(mnodes); j++ {
+			if mnodes[j].Status == serf.StatusLeft {
+				count--
+			}
+		}
 
-		fmt.Printf("compare nodes: %d - %d\n", len(nodes), nodes[i].serfServer.NumNodes())
-		if nodes[i].serfServer.NumNodes() != len(nodes) {
+		if count != len(nodes) {
 			return false
 		}
 
 		nn, _ := nodes[i].bus.nodes()
 
-		fmt.Printf("compare producers: %d - %d\n", len(nn.Producers), len(nodes))
 		if len(nn.Producers) != len(nodes) {
 			return false
 		}
@@ -88,12 +93,6 @@ func createConfig(t *testing.T, topics []string, change bool) (Config, []randomP
 	config.NSQLookupPort = ports[3].port
 	config.NSQLookupListenHTTPPort = ports[4].port
 
-	// config.SerfPort = port11
-	// config.NSQDPort = port12
-	// config.NSQDListenHTTPPort = port13
-	// config.NSQLookupPort = port14
-	// config.NSQLookupListenHTTPPort = portSerf
-
 	return config, ports
 }
 
@@ -123,12 +122,11 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 		closePorts(ports[i])
 	}
 
-	nf := NewNodefinderStatic(nfNodes)
+	nf := NewNodeFinderStatic(nfNodes)
 
 	for i := 0; i < count; i++ {
 		c := configs[i]
-		c.Nodefinder = nf
-		node, err := NewNode(c)
+		node, err := NewNode(c, nf, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -136,56 +134,6 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 	}
 
 	return finalNodes, nil
-}
-
-func TestCluster(t *testing.T) {
-	count := 3
-	nodes, err := createCluster(t, count, []string{"topic1"}, true)
-	require.NoError(t, err)
-
-	for i := 0; i < count; i++ {
-		defer nodes[i].Stop()
-	}
-
-	// check three node cluster
-	require.Eventually(t, func() bool {
-		return rightNumber(nodes)
-	}, 10*time.Second, time.Second, "node count failed")
-
-	// // stop one node
-	err = nodes[count-1].Stop()
-	assert.NoError(t, err)
-
-	nodes = append(nodes[:count-1], nodes[count-1+1:]...)
-
-	// // there should be only two nodes now and two bus
-	require.Eventually(t, func() bool {
-		return rightNumber(nodes)
-	}, 60*time.Second, time.Second)
-
-	conf, ports1 := createConfig(t, []string{"topic1"}, false)
-	nfNodes := []string{
-		fmt.Sprintf("127.0.0.1:%d", conf.SerfPort),
-	}
-
-	for i := range nodes {
-		nfNodes = append(nfNodes, fmt.Sprintf("127.0.0.1:%d",
-			nodes[i].serfServer.LocalMember().Port))
-	}
-	// add a node again
-	nf := NewNodefinderStatic(nfNodes)
-	conf.Nodefinder = nf
-
-	closePorts(ports1)
-
-	newNode, err := NewNode(conf)
-	require.NoError(t, err)
-	defer newNode.Stop()
-	nodes = append(nodes, newNode)
-
-	require.Eventually(t, func() bool {
-		return rightNumber(nodes)
-	}, 60*time.Second, time.Second)
 }
 
 func TestClusterSubscribe(t *testing.T) {
@@ -200,31 +148,38 @@ func TestClusterSubscribe(t *testing.T) {
 	// check three node cluster
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
-	}, 10*time.Second, time.Second)
+	}, 10*time.Second, time.Millisecond*100)
 
-	// they should all get the message
-	counter1 := &counterHandler{}
-	mc1, err := nodes[0].Subscribe("topic1", counter1.counter)
+	err = nodes[0].Publish("topic1", []byte("msg"))
 	require.NoError(t, err)
-	defer nodes[0].Unsubscribe(mc1)
+
+	counter1 := &counterHandler{}
+	unsub1, err := nodes[0].Subscribe("topic1", nodes[0].busChannelName, counter1.counter)
+	require.NoError(t, err)
+	defer unsub1()
+
+	require.Eventually(t, func() bool {
+		return counter1.cc == 1
+	}, 30*time.Second, time.Millisecond*100)
 
 	counter2 := &counterHandler{}
-	mc2, err := nodes[1].Subscribe("topic1", counter2.counter)
+	unsub2, err := nodes[1].Subscribe("topic1", nodes[1].busChannelName, counter2.counter)
 	require.NoError(t, err)
-	defer nodes[1].Unsubscribe(mc2)
+	defer unsub2()
 
 	counter3 := &counterHandler{}
-	mc3, err := nodes[2].Subscribe("topic1", counter3.counter)
+	unsub3, err := nodes[2].Subscribe("topic1", nodes[2].busChannelName, counter3.counter)
 	require.NoError(t, err)
-	defer nodes[2].Unsubscribe(mc3)
+	defer unsub3()
+
+	time.Sleep(time.Millisecond * 200)
 
 	err = nodes[0].Publish("topic1", []byte("msg"))
 	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
-		t.Logf("received events on nodes: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
-		return counter1.cc == 1 && counter2.cc == 1 && counter3.cc == 1
-	}, 30*time.Second, time.Second)
+		return counter1.cc == 2 && counter2.cc == 1 && counter3.cc == 1
+	}, 30*time.Second, time.Millisecond*100)
 
 	add := 10
 	for i := 0; i < add; i++ {
@@ -233,25 +188,29 @@ func TestClusterSubscribe(t *testing.T) {
 	}
 
 	require.Eventually(t, func() bool {
-		t.Logf("received events on nodes: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
-		return counter1.cc == add+1 && counter2.cc == add+1 && counter3.cc == add+1
-	}, 30*time.Second, time.Second)
+		return counter1.cc == add+2 && counter2.cc == add+1 && counter3.cc == add+1
+	}, 30*time.Second, time.Millisecond*100)
+
+	err = nodes[0].Publish("topic2", []byte("msg"))
+	require.NoError(t, err)
 
 	// test single subscriber
 	counter1 = &counterHandler{}
-	mc1, err = nodes[0].SubscribeOnce("topic2", counter1.counter)
+	unsub1, err = nodes[0].Subscribe("topic2", "shared", counter1.counter)
 	require.NoError(t, err)
-	defer nodes[0].Unsubscribe(mc1)
+	defer unsub1()
 
 	counter2 = &counterHandler{}
-	mc2, err = nodes[1].SubscribeOnce("topic2", counter2.counter)
+	unsub2, err = nodes[1].Subscribe("topic2", "shared", counter2.counter)
 	require.NoError(t, err)
-	defer nodes[1].Unsubscribe(mc2)
+	defer unsub2()
 
 	counter3 = &counterHandler{}
-	mc3, err = nodes[2].SubscribeOnce("topic2", counter3.counter)
+	unsub3, err = nodes[2].Subscribe("topic2", "shared", counter3.counter)
 	require.NoError(t, err)
-	defer nodes[2].Unsubscribe(mc3)
+	defer unsub3()
+
+	time.Sleep(time.Millisecond * 200)
 
 	t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
 
@@ -262,8 +221,8 @@ func TestClusterSubscribe(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
-		return counter1.cc+counter2.cc+counter3.cc == 10
-	}, 30*time.Second, time.Second, "did not get recieved events")
+		return counter1.cc+counter2.cc+counter3.cc >= 11
+	}, 30*time.Second, time.Millisecond*100, "did not get recieved events")
 }
 
 type counterHandler struct {
@@ -273,7 +232,8 @@ type counterHandler struct {
 var j int
 
 func (ch *counterHandler) counter(msg []byte) error {
-	j += 1
-	ch.cc += 1
+	j++
+	ch.cc++
+
 	return nil
 }

@@ -15,7 +15,7 @@ func TestBusConfig(t *testing.T) {
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
-	b, err := newBus(config)
+	b, err := newBus(config, nil)
 	require.NoError(t, err)
 	require.NotEmpty(t, b.dataDir)
 	defer b.stop()
@@ -31,7 +31,7 @@ func TestBusConfig(t *testing.T) {
 
 	closePorts(ports)
 
-	b2, err := newBus(config)
+	b2, err := newBus(config, nil)
 	require.NoError(t, err)
 	defer b2.stop()
 
@@ -43,7 +43,7 @@ func TestBusFunctions(t *testing.T) {
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
-	b, err := newBus(config)
+	b, err := newBus(config, nil)
 	require.NoError(t, err)
 	defer b.stop()
 
@@ -111,7 +111,7 @@ func TestBusCluster(t *testing.T) {
 	closePorts(ports1)
 
 	// setting data dir with temp folder
-	b, err := newBus(config)
+	b, err := newBus(config, nil)
 	require.NoError(t, err)
 	defer b.stop()
 	go b.start()
@@ -125,7 +125,7 @@ func TestBusCluster(t *testing.T) {
 	config.NSQLookupPort = ports2[2].port
 	config.NSQLookupListenHTTPPort = ports2[3].port
 
-	b2, err := newBus(config)
+	b2, err := newBus(config, nil)
 	require.NoError(t, err)
 	defer b2.stop()
 	go b2.start()
@@ -158,7 +158,7 @@ func TestBusCluster(t *testing.T) {
 			return true
 		}
 		return false
-	}, 10*time.Second, time.Second, "all nodes test failed")
+	}, 10*time.Second, 100*time.Millisecond, "all nodes test failed")
 
 	// add topcs to both busses
 	addTopics := func(bin *bus) {
@@ -172,6 +172,7 @@ func TestBusCluster(t *testing.T) {
 	addTopics(b2)
 
 	clientConfig := nsq.NewConfig()
+	// clientConfig.LookupdPollInterval = time.Millisecond * 100
 
 	createConsumer := func(topic, channel, connect string, mh *messageHandler) {
 		consumer, _ := nsq.NewConsumer(topic, channel, clientConfig)
@@ -223,7 +224,7 @@ func TestBusCluster(t *testing.T) {
 		}
 
 		return status
-	}, 60*time.Second, time.Second, "one channel does not work")
+	}, 60*time.Second, 100*time.Millisecond, "one channel does not work")
 }
 
 type messageHandler struct {
@@ -233,6 +234,6 @@ type messageHandler struct {
 
 func (h *messageHandler) HandleMessage(m *nsq.Message) error {
 	h.counter += 1
-	fmt.Printf("%s: %d\n", h.bus, h.counter)
+
 	return nil
 }
