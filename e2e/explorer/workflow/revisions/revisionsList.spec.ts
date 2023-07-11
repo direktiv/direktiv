@@ -130,12 +130,14 @@ test("it is possible to revert to the previous the workflow in the revisions lis
   await btnRevert.click();
   await actionWaitForSuccessToast(page);
   await page.goto(`${namespace}/explorer/workflow/active/${name}`);
+
   const textArea = page.getByRole("textbox");
-  const workflowValue = await textArea.inputValue();
-  expect(
-    workflowValue,
-    "after revert, it should be the same as the first updated workflow"
-  ).toBe(firstContent);
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the reverted workflow content in the editor"
+    )
+    .toBe(firstContent);
 });
 
 test("it is possible to delete the revision", async ({ page }) => {

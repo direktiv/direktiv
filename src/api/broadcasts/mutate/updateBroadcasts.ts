@@ -10,9 +10,9 @@ import { broadcastKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 
-const updateBroadcasts = apiFactory({
-  url: ({ namespace }: { namespace: string }) =>
-    `/api/namespaces/${namespace}/config`,
+export const updateBroadcasts = apiFactory({
+  url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
+    `${baseUrl ?? ""}/api/namespaces/${namespace}/config`,
   method: "PATCH",
   schema: BroadcastsResponseSchema,
 });
