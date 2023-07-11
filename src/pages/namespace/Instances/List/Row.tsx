@@ -19,6 +19,7 @@ import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "./utils";
+import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
@@ -75,7 +76,12 @@ const InstanceTableRow: FC<{
           <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
         </TableCell>
         <TableCell>
-          <Badge variant="outline">{revision}</Badge>
+          <Badge
+            variant="outline"
+            className={twMergeClsx(!revision && "italic")}
+          >
+            {revision ?? t("pages.instances.list.tableRow.noRevisionId")}
+          </Badge>
         </TableCell>
         <TableCell>
           <Badge variant="outline">{instance.invoker}</Badge>
