@@ -309,3 +309,54 @@ func (b *bus) waitTillConnected() error {
 
 	return nil
 }
+
+//nolint:unused
+func (b *bus) createTopic(topic string) error {
+	url := fmt.Sprintf("http://127.0.0.1:%d/topic/create?topic=%s", b.config.NSQDListenHTTPPort, topic)
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("create channel failed")
+	}
+
+	return nil
+}
+
+//nolint:unused
+func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
+	action := "delete"
+	if create {
+		action = "create"
+	}
+
+	url := fmt.Sprintf("http://127.0.0.1:%d/channel/%s?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, action, topic, channel)
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("create channel failed")
+	}
+
+	return nil
+}
