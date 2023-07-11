@@ -2,6 +2,7 @@ import "../../AppLegacy.css";
 
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
+import { Card } from "../Card";
 import WorkflowDiagram from "./index";
 import { useState } from "react";
 
@@ -108,10 +109,10 @@ export const WorkflowInstanceComplete = () => (
 );
 
 export const UpdateWorkflow = () => {
-  const [workflow, setWorkflow] = useState(exampleWorkflow2);
+  const [workflow, setWorkflow] = useState(exampleWorkflow);
 
   return (
-    <div className="flex h-96 flex-col gap-y-5">
+    <Card className="flex h-96 flex-col gap-y-5 p-5" background="weight-1">
       <ButtonBar className="">
         <Button
           onClick={() => {
@@ -127,13 +128,24 @@ export const UpdateWorkflow = () => {
         >
           Example 2
         </Button>
+        <Button
+          onClick={() => {
+            setWorkflow("");
+          }}
+        >
+          Empty Workflow
+        </Button>
       </ButtonBar>
       <WorkflowDiagram
         workflow={workflow}
         flow={["helloworld", "exit"]}
         instanceStatus="complete"
       />
-    </div>
+
+      <div>
+        <pre>{JSON.stringify(workflow)}</pre>
+      </div>
+    </Card>
   );
 };
 
