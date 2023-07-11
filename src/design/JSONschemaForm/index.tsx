@@ -3,7 +3,9 @@ import {
   ArrayFieldTemplateProps,
   BaseInputTemplateProps,
   DescriptionFieldProps,
+  ErrorListProps,
   RJSFSchema,
+  RJSFValidationError,
   RegistryWidgetsType,
   TitleFieldProps,
   WidgetProps,
@@ -24,6 +26,7 @@ import {
   SelectValue,
 } from "../Select";
 
+import Alert from "~/design/Alert";
 import Button from "../Button";
 import { Checkbox } from "../Checkbox";
 import Form from "@rjsf/core";
@@ -165,10 +168,7 @@ const BaseInputTemplate = (props: BaseInputTemplateProps) => {
 const TitleFieldTemplate = (props: TitleFieldProps) => {
   const { id, required, title } = props;
   return (
-    <header
-      id={id}
-      className="mb-4 font-semibold text-gray-12 dark:text-gray-dark-12"
-    >
+    <header id={id} className="mb-4 font-semibold">
       {title}
       {required && <mark>*</mark>}
     </header>
@@ -177,7 +177,27 @@ const TitleFieldTemplate = (props: TitleFieldProps) => {
 const DescriptionFieldTemplate = (props: DescriptionFieldProps) => {
   const { description } = props;
   return (
-    <div className="mb-2 text-gray-8 dark:text-gray-dark-8">{description}</div>
+    <div className="mb-2 text-gray-10 dark:text-gray-dark-10">
+      {description}
+    </div>
+  );
+};
+
+const ErrorListTemplate = (props: ErrorListProps) => {
+  const { errors } = props;
+  return (
+    <Alert
+      variant="error"
+      data-testid="jsonschema-form-error"
+      className="mb-2"
+      {...props}
+    >
+      <ul>
+        {errors.map((error: RJSFValidationError, i: number) => (
+          <li key={i}>{`${error.stack}`}</li>
+        ))}
+      </ul>
+    </Alert>
   );
 };
 
@@ -222,6 +242,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
       TitleFieldTemplate,
       ArrayFieldTemplate,
       DescriptionFieldTemplate,
+      ErrorListTemplate,
       ButtonTemplates: {
         SubmitButton,
       },

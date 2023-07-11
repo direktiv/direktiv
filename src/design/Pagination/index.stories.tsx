@@ -77,6 +77,16 @@ export const CenterPagination = () => (
   </Pagination>
 );
 
+export const DisabledPaginationButtons = () => (
+  <Pagination align="center">
+    <PaginationLink icon="left" disabled />
+    <PaginationLink>1</PaginationLink>
+    <PaginationLink active>2</PaginationLink>
+    <PaginationLink>3</PaginationLink>
+    <PaginationLink icon="right" />
+  </Pagination>
+);
+
 export const LeftPagination = () => (
   <Pagination align="left">
     <PaginationLink icon="left" />

@@ -33,13 +33,13 @@ const WorkflowRevisionsPage = () => {
   const Icon = isTag ? Tag : GitMerge;
   const isLatest = selectedRevision === "latest";
 
-  if (!path || !namespace || !selectedRevision) return null;
+  if (!path || !namespace || !selectedRevision || !workflowData) return null;
 
   return (
     <div className="flex grow flex-col space-y-4">
       <div className="flex gap-x-4">
         <h3
-          className="group flex grow items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10"
+          className="group flex grow items-center gap-x-2 font-bold"
           data-testid="revisions-detail-title"
         >
           <Icon aria-hidden="true" className="h-5" />
@@ -51,17 +51,7 @@ const WorkflowRevisionsPage = () => {
               className: "hidden group-hover:inline-flex",
               size: "sm",
             }}
-          >
-            {(copied) =>
-              copied
-                ? t(
-                    "pages.explorer.tree.workflow.revisions.overview.detail.copied"
-                  )
-                : t(
-                    "pages.explorer.tree.workflow.revisions.overview.detail.copy"
-                  )
-            }
-          </CopyButton>
+          />
         </h3>
 
         <Button asChild variant="outline">

@@ -1,12 +1,15 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { BroadcastsSchemaKeys } from "~/api/broadcasts/schema";
 import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { actionWaitForSuccessToast } from "../explorer/workflow/utils";
+import { createBroadcasts } from "../utils/broadcasts";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
 import { faker } from "@faker-js/faker";
+import { radixClick } from "../utils/testutils";
 
 const { options } = MimeTypeSchema;
 
@@ -60,7 +63,12 @@ test("it renders secrets, variables and registries", async ({ page }) => {
 });
 
 test("it is possible to create and delete secrets", async ({ page }) => {
-  const defaultSecrets = await createSecrets(namespace, 3);
+  const secrets = await createSecrets(namespace, 3);
+  const secretToDelete = secrets[1];
+
+  // avoid typescript errors below
+  if (!secretToDelete) throw "error setting up test data";
+
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("secret-create").click();
   const newSecret = {
@@ -72,29 +80,33 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("secret-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  const menuButtons = page.getByTestId(/dropdown-trg-item-/);
-  await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
+  const secretElements = page.getByTestId("item-name");
+  await expect(secretElements, "number of secrets should be 4").toHaveCount(4);
 
-  await page.getByTestId(`dropdown-trg-item-${defaultSecrets[1]?.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${secretToDelete.key}`).click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("secret-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
-  await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
-  const itemName = page.getByTestId("item-name");
+  await expect(secretElements, "number of secrets should be 3").toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: newSecret.name }),
+    secretElements.filter({ hasText: newSecret.name }),
     "there should remain the newly created secret in the list"
   ).toBeVisible();
   await expect(
-    itemName.filter({ hasText: `${defaultSecrets[1]?.key}` }),
+    secretElements.filter({ hasText: `${secretToDelete.key}` }),
     "the deleted item shouldn't be in the list"
   ).toBeHidden();
 });
 
 test("it is possible to create and delete registries", async ({ page }) => {
-  await createRegistries(namespace, 3);
+  const registries = await createRegistries(namespace, 3);
+  const registryToDelete = registries[2];
+
+  // avoid typescript errors below
+  if (!registryToDelete) throw "error setting up test data";
+
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("registry-create").click();
 
@@ -111,60 +123,76 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await page.getByTestId("registry-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  const menuButtons = page.getByTestId(/dropdown-trg-item-/);
-  await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
-  const itemName = page.getByTestId("item-name");
-  const removedItemName = await itemName.nth(2).innerText();
-  await page
-    .getByTestId(/dropdown-trg-item/)
-    .nth(2)
-    .click();
+  const registryElements = page.getByTestId("item-name");
+  await expect(
+    registryElements,
+    "number of registry elements rendered should be 4"
+  ).toHaveCount(4);
+
+  await page.getByTestId(`dropdown-trg-item-${registryToDelete.url}`).click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
-  await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
+  await expect(
+    registryElements,
+    "number of registry elements rendered should be 3"
+  ).toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: newRegistry.url }),
-    "there should remain the newly created secret in the list"
-  ).toBeVisible();
+    registryElements.filter({ hasText: newRegistry.url }),
+    "there should remain the newly created registry in the list"
+  ).toHaveCount(1);
   await expect(
-    itemName.filter({ hasText: removedItemName }),
+    registryElements.filter({ hasText: registryToDelete.url }),
     "the deleted item shouldn't be in the list"
-  ).toBeHidden();
+  ).toHaveCount(0);
 });
 
-test("it is possible to create and delete variables", async ({ page }) => {
-  await createVariables(namespace, 3);
-  await page.goto(`/${namespace}/settings`);
-  await page.getByTestId("variable-create").click();
+test("it is possible to create and delete variables", async ({
+  page,
+  browserName,
+}) => {
+  // set up test data
+  const variables = await createVariables(namespace, 3);
+  const variableToDelete = variables[2];
 
   const newVariable = {
-    name: faker.random.word(),
+    name: faker.internet.domainWord(),
     value: faker.random.words(20),
     mimeType: options[Math.floor(Math.random() * options.length)] || options[0],
   };
+
+  // handle error to avoid typescript errors below
+  if (!variableToDelete) throw "error setting up test data";
+
+  // perform test
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("variable-create").click();
+
   await page.getByTestId("new-variable-name").type(newVariable.name);
-  await page.getByTestId("variable-create-card").click();
-  await page.type("textarea", newVariable.value);
+
+  const editor = page.locator(".view-lines");
+  await editor.click();
+
+  await editor.type(newVariable.value);
   await page.getByTestId("variable-trg-mimetype").click();
   await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
   await page.getByTestId("variable-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  //reload page after create variable
+  // reload page after create variable
   await page.reload({
     waitUntil: "networkidle",
   });
 
-  //click on edit and confirm the created variable
+  // click on edit and confirm the created variable
   const subjectDropdownSelector = `dropdown-trg-item-${newVariable.name}`;
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
   await expect(
-    page.getByTestId("variable-editor-card"),
+    editor,
     "the variable's content is loaded into the editor"
   ).toContainText(newVariable.value);
 
@@ -172,34 +200,35 @@ test("it is possible to create and delete variables", async ({ page }) => {
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(newVariable.mimeType);
-  await page.getByTestId("var-edit-cancel").click();
+
+  const cancelButton = page.getByTestId("var-edit-cancel");
+  await radixClick(browserName, cancelButton);
 
   //delete one item
-  const menuButtons = page.getByTestId(/dropdown-trg-item-/);
-  await expect(menuButtons, "number of menuButtons should be 4").toHaveCount(4);
-  const itemName = page.getByTestId("item-name");
-  const removedItemName = await itemName.nth(2).innerText();
+  await expect(
+    page.getByTestId("item-name"),
+    "there are 4 variables"
+  ).toHaveCount(4);
 
-  await page
-    .getByTestId(/dropdown-trg-item/)
-    .nth(2)
-    .click();
+  await page.getByTestId(`dropdown-trg-item-${variableToDelete.key}`).click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
   await actionWaitForSuccessToast(page);
-  await expect(menuButtons, "number of menuButtons should be 3").toHaveCount(3);
+  await expect(
+    page.getByTestId("item-name"),
+    "after deleting a variable, there are 3 variables left"
+  ).toHaveCount(3);
 
   await expect(
-    itemName.filter({ hasText: removedItemName }),
-    "the deleted item shouldn't be in the list"
-  ).toBeHidden();
-  if (newVariable.name !== removedItemName) {
-    await expect(
-      itemName.filter({ hasText: newVariable.name }),
-      "there should remain the newly created secret in the list"
-    ).toBeVisible();
-  }
+    page.getByTestId("item-name").filter({ hasText: variableToDelete.key }),
+    "the deleted variable is no longer in the list"
+  ).toHaveCount(0);
+
+  await expect(
+    page.getByTestId("item-name").filter({ hasText: newVariable.name }),
+    "the new variable is still in the list"
+  ).toHaveCount(1);
 });
 
 test("it is possible to edit variables", async ({ page }) => {
@@ -214,19 +243,19 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(subject.content, {
-    timeout: 10000,
-  });
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the variable's content is loaded into the editor"
+    )
+    .toBe(subject.content);
 
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(subject.mimeType);
 
-  const textArea = page.getByRole("textbox");
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
   const updatedType =
@@ -243,13 +272,49 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(updatedValue);
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the updated variable content is loaded into the editor"
+    )
+    .toBe(updatedValue);
 
   await expect(
     page.locator("select"),
-    "MimeTypeSelect is set to the subject's mimeType"
+    "MimeTypeSelect is set to the updated mimeType"
   ).toHaveValue(updatedType);
+});
+
+test("it is possible to update broadcasts", async ({ page }) => {
+  const { broadcast: broadcasts } = await createBroadcasts(namespace);
+  expect(broadcasts, "test data has been created").toBeTruthy();
+
+  await page.goto(`/${namespace}/settings`);
+
+  // check the initial state
+  for (let i = 0; i < BroadcastsSchemaKeys.length; i++) {
+    const key = BroadcastsSchemaKeys[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    const isChecked = await checkbox.isChecked();
+    expect(isChecked, `checkbox for ${key} has the expected value`).toBe(
+      broadcasts[key]
+    );
+  }
+
+  // update random fields and check their status
+  const randomElements = faker.helpers.arrayElements(BroadcastsSchemaKeys, 3);
+
+  for (let i = 0; i < randomElements.length; i++) {
+    const key = randomElements[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    await checkbox.click();
+
+    // expect() without .poll() would fail, because it would not wait for the DOM to update
+    await expect
+      .poll(
+        async () => await checkbox.isChecked(),
+        `checkbox for ${key} has been toggled to the inverse value: `
+      )
+      .toBe(!broadcasts[key]);
+  }
 });

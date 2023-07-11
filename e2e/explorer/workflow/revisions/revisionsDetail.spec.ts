@@ -5,6 +5,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkfl
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
+import { radixClick } from "../../../utils/testutils";
 
 let namespace = "";
 
@@ -41,10 +42,47 @@ test('it is possible to open the revision details of the "latest" revision', asy
     "it displays the revision title"
   ).toContainText(revision);
 
+  const expectedEditorContent = basicWorkflow.data;
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
+});
+
+// Skipped because it is redundant; checking the editor content is part of other
+// tests below. But in case there are problems with this step, it may be helpful
+// to reactivate this test to troubleshoot the issue in isolation.
+test.skip("it is possible to view the content of an older revision", async ({
+  page,
+}) => {
+  // setup test data
+  const workflow = faker.system.commonFileName("yaml");
+  const {
+    revisionsReponse: [, secondRevision],
+  } = await createWorkflowWithThreeRevisions(namespace, workflow);
+  const secondRevisionName = secondRevision.revision.name;
+
+  // perform test
+  await page.goto(
+    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`
+  );
+
   await expect(
-    page.getByTestId("revisions-detail-editor"),
-    "it displays the workflow content in the editor"
-  ).toContainText(basicWorkflow.data.replace(/\n/g, ""));
+    page.getByTestId("revisions-detail-title"),
+    "it displays the revision title"
+  ).toContainText(secondRevisionName);
+
+  const expectedEditorContent = atob(secondRevision.revision.source);
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
 });
 
 test("it is possible to navigate from the revision list to the details and back", async ({
@@ -70,6 +108,18 @@ test("it is possible to navigate from the revision list to the details and back"
     "it navigated to the revision details and shows the title"
   ).toContainText(secondRevisionName);
 
+  const expectedEditorContent = atob(secondRevision.revision.source);
+  const textArea = page.getByRole("textbox");
+
+  // if this step fails, there is a separate test (currently skipped) that you can
+  // use to troubleshoot: "it is possible to view the content of an older revision"
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
+
   // go back to list page
   await page.getByTestId(`revisions-detail-back-link`).click();
 
@@ -81,6 +131,7 @@ test("it is possible to navigate from the revision list to the details and back"
 
 test("it is possible to revert a revision within the details page", async ({
   page,
+  browserName,
 }) => {
   const workflow = faker.system.commonFileName("yaml");
   const {
@@ -91,31 +142,50 @@ test("it is possible to revert a revision within the details page", async ({
 
   // check the content of the latest revision
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
-  await expect(
-    page.getByTestId("workflow-editor"),
-    "it displays the latest workflow content in the editor"
-  ).toContainText(atob(latestRevisions?.revision?.source).replace(/\n/g, ""));
+
+  let expectedEditorContent = atob(latestRevisions?.revision?.source);
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the latest workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
 
   // open the details page of the second revision
   await page.goto(
     `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${secondRevisionName}`,
     { waitUntil: "networkidle" }
   );
-  await expect(
-    page.getByTestId("revisions-detail-editor"),
-    "it displays the reverted workflow content in the editor"
-  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+
+  expectedEditorContent = atob(secondRevision?.revision?.source);
+
+  // if this step fails, there is a separate test (currently skipped) that you can
+  // use to troubleshoot: "it is possible to view the content of an older revision"
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the reverted workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
+
   // open and submit revert dialog
-  await page.getByTestId(`revisions-detail-revert-btn`).click();
-  await page.getByTestId(`dialog-revert-revision-btn-submit`).click();
 
-  // click the toast button to open the editor
-  await page.getByTestId("workflow-revert-revision-toast-action").click();
+  const revertButton = page.getByTestId("revisions-detail-revert-btn");
+  await radixClick(browserName, revertButton);
 
-  await expect(
-    page.getByTestId("workflow-editor"),
-    "it displays the reverted workflow content in the editor"
-  ).toContainText(atob(secondRevision?.revision?.source).replace(/\n/g, ""));
+  const submitButton = page.getByTestId("dialog-revert-revision-btn-submit");
+  await radixClick(browserName, submitButton);
+
+  const toastButton = page.getByTestId("workflow-revert-revision-toast-action");
+  await radixClick(browserName, toastButton);
+
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "it displays the reverted workflow content in the editor"
+    )
+    .toBe(expectedEditorContent);
 });
 
 test('it does not show the actions button on the revision details of the "latest" revision', async ({

@@ -40,9 +40,7 @@ const TabsTrigger = React.forwardRef<
         "dark:text-gray-dark-10 dark:data-[state=active]:bg-black dark:data-[state=active]:text-gray-dark-12",
       !variant &&
         "flex items-center gap-x-2 whitespace-nowrap border-b-2 border-transparent px-1 pb-4 text-sm font-medium",
-      !variant && "text-gray-11 hover:border-gray-8 hover:text-gray-12",
-      !variant &&
-        "dark:text-gray-dark-11 dark:hover:border-gray-dark-8 dark:hover:text-gray-dark-12",
+      !variant && "hover:border-current",
       !variant &&
         "data-[state=active]:border-primary-500 data-[state=active]:text-primary-500 [&>svg]:h-4 [&>svg]:w-auto",
       className

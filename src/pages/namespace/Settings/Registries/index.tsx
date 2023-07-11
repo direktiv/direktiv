@@ -1,8 +1,8 @@
 import { FC, useEffect, useState } from "react";
 import { Table, TableBody } from "~/design/Table";
 
-import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
+import { Container } from "lucide-react";
 import Create from "./Create";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
@@ -42,8 +42,8 @@ const RegistriesList: FC = () => {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="mb-3 flex flex-row justify-between">
-        <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
-          <Boxes className="h-5" />
+        <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
+          <Container className="h-5" />
           {t("pages.settings.registries.list.title")}
         </h3>
 

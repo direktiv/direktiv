@@ -44,7 +44,7 @@ const VariablesList: FC = () => {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="mb-3 flex flex-row justify-between">
-        <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+        <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
           <Braces className="h-5" />
           {t("pages.settings.variables.list.title")}
         </h3>

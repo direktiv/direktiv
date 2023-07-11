@@ -55,8 +55,8 @@ const SelectContent = React.forwardRef<
         "rounded-md ring-1",
         "ring-gray-3",
         "dark:ring-gray-dark-3",
-        "bg-gray-1",
-        "dark:bg-gray-dark-1",
+        "bg-gray-1 text-gray-11",
+        "dark:bg-gray-dark-1 dark:text-gray-dark-11",
         className
       )}
       {...props}

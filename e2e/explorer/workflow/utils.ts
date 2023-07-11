@@ -2,14 +2,11 @@ import { Page, expect } from "@playwright/test";
 
 export const actionWaitForSuccessToast = async (page: Page) => {
   const successToast = page.getByTestId("toast-success");
-  await expect(
-    successToast,
-    "success toast should appear after revert action button click"
-  ).toBeVisible();
+  await expect(successToast, "a success toast appears").toBeVisible();
   await page.getByTestId("toast-close").click();
   await expect(
     successToast,
-    "success toast should disappear after click toast-close"
+    "success toast disappears after clicking toast-close"
   ).toBeHidden();
 };
 
@@ -83,3 +80,29 @@ states:
         type: string
         title: file upload
         format: data-url`;
+
+export const jsonSchemaWithRequiredEnum = `description: A workflow with a complex json schema form'
+states:
+- id: input
+  type: validate
+  schema:
+    title: some test
+    type: object
+    required:
+    - firstName
+    - lastName
+    - select
+    properties:
+      firstName:
+        type: string
+        title: First name
+      lastName:
+        type: string
+        title: Last name
+      select:
+        title: select a string
+        type: string
+        enum: 
+          - select 1
+          - select 2
+      `;

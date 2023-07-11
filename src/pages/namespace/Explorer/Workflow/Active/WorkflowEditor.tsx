@@ -65,7 +65,7 @@ const WorkflowEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold text-gray-10 dark:text-gray-dark-10">
+      <h3 className="flex items-center gap-x-2 font-bold">
         <Tag className="h-5" />
         {t("pages.explorer.workflow.headline")}
       </h3>
