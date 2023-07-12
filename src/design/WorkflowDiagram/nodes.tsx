@@ -30,8 +30,7 @@ const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
   />
 );
 
-export const State: FC<StateProps> = (props) => {
-  const { data } = props;
+export const State: FC<StateProps> = ({ data }) => {
   const { label, type, wasExecuted } = data;
   return (
     <Card
