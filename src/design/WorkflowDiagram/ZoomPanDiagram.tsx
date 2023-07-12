@@ -57,7 +57,7 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       nodesConnectable={false}
       elementsSelectable={!disabled}
       fitView={true}
-      maxZoom={1.5}
+      maxZoom={1.2}
     >
       <ButtonBar className="absolute top-2 left-2 z-50 bg-white dark:bg-black">
         <Button
