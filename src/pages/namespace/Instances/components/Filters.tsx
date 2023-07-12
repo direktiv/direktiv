@@ -56,6 +56,7 @@ const Filters = () => {
   const [selectedField, setselectedField] = useState<FilterField | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [filters, setFilters] = useState<Filters>({});
+  const [inputValue, setInputValue] = useState<string>("");
 
   const handleOpenChange = (isOpening: boolean) => {
     if (!isOpening) {
@@ -67,6 +68,17 @@ const Filters = () => {
   const resetMenu = () => {
     setIsOpen(false);
     setselectedField(undefined);
+  };
+
+  const handleKeyDown = (event: { key: string }) => {
+    if (event.key === "Enter" && inputValue) {
+      setFilter({
+        as: { value: inputValue, type: "contain" },
+      });
+    }
+    if (event.key === "Enter" && !inputValue) {
+      clearFilter("as");
+    }
   };
 
   const setFilter = (filterObj: Filters) => {
@@ -117,7 +129,13 @@ const Filters = () => {
             <Command>
               <CommandList>
                 <CommandGroup heading="Filter by name">
-                  <Input autoFocus placeholder="filename.yaml" />
+                  <Input
+                    autoFocus
+                    placeholder="filename.yaml"
+                    value={inputValue}
+                    onChange={(event) => setInputValue(event.target.value)}
+                    onKeyUp={handleKeyDown}
+                  />
                 </CommandGroup>
               </CommandList>
             </Command>
