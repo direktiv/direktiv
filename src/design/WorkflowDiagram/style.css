@@ -1,3 +1,11 @@
+.normal .start {
+  @apply h-[30px] w-[30px];
+}
+
+.normal .end {
+  @apply h-[30px] w-[30px];
+}
+
 .react-flow__attribution {
   @apply hidden;
 }
