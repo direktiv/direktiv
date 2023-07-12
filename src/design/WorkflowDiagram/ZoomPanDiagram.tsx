@@ -51,6 +51,7 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       nodesConnectable={false}
       elementsSelectable={!disabled}
       fitView={true}
+      maxZoom={1.5}
     >
       <MiniMap />
       <Background />
