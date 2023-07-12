@@ -1,7 +1,13 @@
 import { End, Start, State } from "./nodes";
-import ReactFlow, { Background, Edge, MiniMap, Node } from "reactflow";
-
-import { useMemo } from "react";
+import ReactFlow, {
+  Background,
+  Edge,
+  MiniMap,
+  Node,
+  useNodesInitialized,
+  useReactFlow,
+} from "reactflow";
+import { useEffect, useMemo } from "react";
 
 interface ZoomPanDiagramProps {
   elements: (Edge | Node)[];
@@ -16,6 +22,8 @@ const nodeTypes = {
 
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
+  const { fitView } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
 
   const sep: [Node[], Edge[]] = useMemo(() => {
     const nodes: Node[] = elements.filter(
@@ -28,14 +36,20 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
     return [nodes, edges];
   }, [elements]);
 
+  useEffect(() => {
+    if (nodesInitialized) {
+      fitView();
+    }
+  }, [fitView, nodesInitialized]);
+
   return (
     <ReactFlow
       edges={sep[1]}
       nodes={sep[0]}
       nodeTypes={nodeTypes}
-      nodesDraggable={disabled}
-      nodesConnectable={disabled}
-      elementsSelectable={disabled}
+      nodesDraggable={!disabled}
+      nodesConnectable={!disabled}
+      elementsSelectable={!disabled}
       fitView={true}
     >
       <MiniMap />
