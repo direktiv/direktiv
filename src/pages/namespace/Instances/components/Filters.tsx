@@ -93,7 +93,7 @@ const Filters = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start">
-            <Command className="mt-1 min-w-[220px] rounded-lg border border-gray-4 shadow-md dark:border-gray-dark-4">
+            <Command>
               {param === undefined && <ParamSelect onSelect={setParam} />}
               {param === "name" && (
                 <CommandList>
