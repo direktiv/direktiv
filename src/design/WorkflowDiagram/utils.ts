@@ -1,4 +1,4 @@
-import { Edge, Node, Position, isNode } from "reactflow";
+import { ConnectionLineType, Edge, Node, Position, isNode } from "reactflow";
 
 import { IWorkflow } from "./types";
 import dagre from "dagre";
@@ -6,6 +6,8 @@ import dagre from "dagre";
 // initialize the dagre graph
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const defaultEdgeType = ConnectionLineType.SmoothStep;
 
 export const getLayoutedElements = (
   incomingEles: (Edge | Node)[],
@@ -76,14 +78,14 @@ export function generateElements(
             id: `startNode-${value.start.state}`,
             source: "startNode",
             target: value.start.state,
-            type: "default",
+            type: defaultEdgeType,
           });
         } else {
           newElements.push({
             id: `startNode-${value.states[i]?.id}`,
             source: "startNode",
             target: value.states[i].id,
-            type: "default",
+            type: defaultEdgeType,
           });
         }
       }
@@ -111,7 +113,7 @@ export function generateElements(
               source: value.states[i]?.id || "",
               target: value.states[i]?.events[j]?.transition || "",
               animated: false,
-              type: "default",
+              type: defaultEdgeType,
             });
           }
         }
@@ -126,7 +128,7 @@ export function generateElements(
               source: value.states[i]?.id || "",
               target: value.states[i]?.conditions[y]?.transition || "",
               animated: false,
-              type: "default",
+              type: defaultEdgeType,
             });
             transitions = true;
           }
@@ -144,7 +146,7 @@ export function generateElements(
               source: value.states[i]?.id || "",
               target: value.states[i]?.catch[x]?.transition || "",
               animated: false,
-              type: "default",
+              type: defaultEdgeType,
             });
           }
         }
@@ -159,7 +161,7 @@ export function generateElements(
           source: value.states[i]?.id || "",
           target: value.states[i]?.transition || "",
           animated: false,
-          type: "default",
+          type: defaultEdgeType,
         });
       } else if (value.states[i]?.defaultTransition) {
         transitions = true;
@@ -169,7 +171,7 @@ export function generateElements(
           source: value.states[i]?.id || "",
           target: value.states[i]?.defaultTransition || "",
           animated: false,
-          type: "default",
+          type: defaultEdgeType,
         });
       } else {
         transitions = true;
@@ -178,7 +180,7 @@ export function generateElements(
           source: value.states[i]?.id || "",
           target: `endNode`,
           animated: false,
-          type: "default",
+          type: defaultEdgeType,
         });
       }
 
@@ -188,7 +190,7 @@ export function generateElements(
           id: `${value.states[i]?.id}-endNode`,
           source: value.states[i]?.id || "",
           target: `endNode`,
-          type: "default",
+          type: defaultEdgeType,
         });
       }
     }
