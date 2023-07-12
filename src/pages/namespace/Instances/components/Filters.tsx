@@ -1,6 +1,7 @@
 import {
   Command,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from "~/design/Command";
@@ -22,19 +23,26 @@ const ParamSelect = ({
 }: {
   onSelect: (value: FilterParam) => void;
 }) => (
-  <CommandList>
-    <CommandGroup heading="Select filter">
-      <CommandItem onSelect={() => onSelect("name")}>by name</CommandItem>
-      <CommandItem onSelect={() => onSelect("state")}>by state</CommandItem>
-      <CommandItem onSelect={() => onSelect("invoker")}>by invoker</CommandItem>
-      <CommandItem onSelect={() => onSelect("after")}>
-        created after
-      </CommandItem>
-      <CommandItem onSelect={() => onSelect("before")}>
-        created before
-      </CommandItem>
-    </CommandGroup>
-  </CommandList>
+  <Command>
+    <CommandInput placeholder="Type a command or search..." />
+    <CommandList>
+      <CommandGroup heading="Select filter">
+        <CommandItem tabIndex={1} onSelect={() => onSelect("name")}>
+          by name
+        </CommandItem>
+        <CommandItem onSelect={() => onSelect("state")}>by state</CommandItem>
+        <CommandItem onSelect={() => onSelect("invoker")}>
+          by invoker
+        </CommandItem>
+        <CommandItem onSelect={() => onSelect("after")}>
+          created after
+        </CommandItem>
+        <CommandItem onSelect={() => onSelect("before")}>
+          created before
+        </CommandItem>
+      </CommandGroup>
+    </CommandList>
+  </Command>
 );
 
 // Mockup
@@ -93,16 +101,22 @@ const Filters = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start">
-            <Command>
-              {param === undefined && <ParamSelect onSelect={setParam} />}
-              {param === "name" && (
+            {param === undefined && <ParamSelect onSelect={setParam} />}
+            {param === "name" && (
+              <Command>
                 <CommandList>
                   <CommandGroup heading="Filter by name">
-                    <Input placeholder="filename.yaml" />
+                    <Input autoFocus placeholder="filename.yaml" />
                   </CommandGroup>
                 </CommandList>
-              )}
-              {param === "state" && (
+              </Command>
+            )}
+            {param === "state" && (
+              <Command>
+                <CommandInput
+                  autoFocus
+                  placeholder="Type a command or search..."
+                />
                 <CommandList>
                   <CommandGroup heading="Filter by state">
                     <CommandItem value="running">Running</CommandItem>
@@ -111,32 +125,42 @@ const Filters = () => {
                     <CommandItem value="failed">Failed</CommandItem>
                   </CommandGroup>
                 </CommandList>
-              )}
-              {param === "invoker" && (
+              </Command>
+            )}
+            {param === "invoker" && (
+              <Command>
+                <CommandInput
+                  autoFocus
+                  placeholder="Type a command or search..."
+                />
                 <CommandList>
                   <CommandGroup heading="Filter by invoker">
-                    <CommandItem value="running">API</CommandItem>
-                    <CommandItem value="complete">Cloud event</CommandItem>
-                    <CommandItem value="cancelled">Instance</CommandItem>
-                    <CommandItem value="failed">Cron</CommandItem>
+                    <CommandItem value="api">API</CommandItem>
+                    <CommandItem value="cloud-event">Cloud event</CommandItem>
+                    <CommandItem value="instance">Instance</CommandItem>
+                    <CommandItem value="cron">Cron</CommandItem>
                   </CommandGroup>
                 </CommandList>
-              )}
-              {param === "after" && (
+              </Command>
+            )}
+            {param === "after" && (
+              <Command>
                 <CommandList className="max-h-[460px]">
                   <CommandGroup heading="Filter created after">
                     <Datepicker />
                   </CommandGroup>
                 </CommandList>
-              )}
-              {param === "before" && (
+              </Command>
+            )}
+            {param === "before" && (
+              <Command>
                 <CommandList className="max-h-[460px]">
                   <CommandGroup heading="Filter created before">
                     <Datepicker />
                   </CommandGroup>
                 </CommandList>
-              )}
-            </Command>
+              </Command>
+            )}
           </PopoverContent>
         </Popover>
       )}
