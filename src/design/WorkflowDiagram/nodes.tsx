@@ -21,8 +21,8 @@ const CustomHandle: FC<HandleProps> = ({ type, position }) => (
     id="default"
     className={twMergeClsx(
       "h-2 w-2 rounded border",
-      "border-gray-8 !bg-white",
-      "dark:border-gray-dark-8 dark:!bg-black"
+      "!border-gray-8 !bg-white",
+      "dark:!border-gray-dark-8 dark:!bg-black"
     )}
   />
 );
