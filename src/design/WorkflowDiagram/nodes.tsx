@@ -13,6 +13,12 @@ type StateProps = {
   };
 };
 
+type StartEndProps = {
+  data: {
+    wasExecuted: boolean;
+  };
+};
+
 type HandleProps = ComponentProps<typeof Handle> & { highlight?: boolean };
 
 const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
@@ -79,12 +85,22 @@ export const State: FC<StateProps> = ({ data }) => {
   );
 };
 
-type StartEndHandleProps = PropsWithChildren & { end?: boolean };
+type StartEndHandleProps = PropsWithChildren & {
+  end?: boolean;
+  highlight?: boolean;
+};
 
-const StartEndHandle: FC<StartEndHandleProps> = ({ children, end }) => (
+const StartEndHandle: FC<StartEndHandleProps> = ({
+  children,
+  end,
+  highlight,
+}) => (
   <Card
     className={twMergeClsx(
-      "h-12 w-12 rounded-full p-2 ring-gray-8 dark:ring-gray-dark-8"
+      "h-12 w-12 rounded-full p-2",
+      highlight
+        ? "ring-success-9 dark:ring-success-dark-9"
+        : "ring-gray-8 dark:ring-gray-dark-8"
     )}
     background="weight-1"
   >
@@ -101,18 +117,22 @@ const StartEndHandle: FC<StartEndHandleProps> = ({ children, end }) => (
   </Card>
 );
 
-export function Start() {
-  return (
-    <StartEndHandle>
-      <CustomHandle type="source" position={Position.Right} />
-    </StartEndHandle>
-  );
-}
+export const Start: FC<StartEndProps> = ({ data }) => (
+  <StartEndHandle highlight={data.wasExecuted}>
+    <CustomHandle
+      type="source"
+      position={Position.Right}
+      highlight={data.wasExecuted}
+    />
+  </StartEndHandle>
+);
 
-export function End() {
-  return (
-    <StartEndHandle end>
-      <CustomHandle type="target" position={Position.Left} />
-    </StartEndHandle>
-  );
-}
+export const End: FC<StartEndProps> = ({ data }) => (
+  <StartEndHandle highlight={data.wasExecuted} end>
+    <CustomHandle
+      type="target"
+      position={Position.Left}
+      highlight={data.wasExecuted}
+    />
+  </StartEndHandle>
+);
