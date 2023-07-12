@@ -30,7 +30,7 @@ const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
   />
 );
 
-export function State(props: StateProps) {
+export const State: FC<StateProps> = (props) => {
   const { data } = props;
   const { label, type, wasExecuted } = data;
   return (
@@ -78,7 +78,7 @@ export function State(props: StateProps) {
       />
     </Card>
   );
-}
+};
 
 type StartEndHandleProps = PropsWithChildren & { end?: boolean };
 
