@@ -2,6 +2,10 @@
   @apply !stroke-gray-8 dark:!stroke-gray-dark-8;
 }
 
+.react-flow__edge.animated path {
+  @apply !stroke-success-9 dark:!stroke-gray-dark-9;
+}
+
 .react-flow__attribution {
   @apply hidden;
 }
