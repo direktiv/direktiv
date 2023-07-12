@@ -1,9 +1,9 @@
 import { Bug, Eye, Filter } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
+import { ButtonBar } from "../ButtonBar";
 import { Toggle } from "./index";
 import { useState } from "react";
-import { ButtonBar } from "../ButtonBar";
 
 const meta = {
   title: "Components/Toggle",
