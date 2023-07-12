@@ -107,9 +107,13 @@ const StartEndHandle: FC<StartEndHandleProps> = ({
     <div
       className={twMergeClsx(
         "h-full w-full rounded-full",
-        end
-          ? "bg-success-9 dark:bg-success-dark-9"
-          : "bg-gray-9 dark:bg-gray-dark-9"
+        end && "bg-success-9 dark:bg-success-dark-9",
+        !end && [
+          "ring-1",
+          highlight
+            ? "ring-success-9 dark:ring-success-dark-9"
+            : "ring-gray-8 dark:ring-gray-dark-8",
+        ]
       )}
     >
       {children}
