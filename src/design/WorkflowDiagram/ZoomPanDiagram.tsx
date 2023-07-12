@@ -1,4 +1,5 @@
 import { End, Start, State } from "./nodes";
+import { Map, View } from "lucide-react";
 import ReactFlow, {
   Background,
   Edge,
@@ -7,7 +8,11 @@ import ReactFlow, {
   useNodesInitialized,
   useReactFlow,
 } from "reactflow";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import Button from "../Button";
+import { ButtonBar } from "../ButtonBar";
+import { Toggle } from "../Toggle";
 
 interface ZoomPanDiagramProps {
   elements: (Edge | Node)[];
@@ -23,6 +28,7 @@ const nodeTypes = {
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
   const { fitView } = useReactFlow();
+  const [showMinimap, setShowMinimap] = useState(true);
   const nodesInitialized = useNodesInitialized();
 
   const sep: [Node[], Edge[]] = useMemo(() => {
@@ -53,7 +59,27 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       fitView={true}
       maxZoom={1.5}
     >
-      <MiniMap />
+      <ButtonBar className="absolute top-2 left-2 z-50 bg-white dark:bg-black">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            fitView();
+          }}
+        >
+          <View />
+        </Button>
+        <Toggle
+          size="sm"
+          onClick={() => {
+            setShowMinimap((prev) => !prev);
+          }}
+          pressed={showMinimap}
+        >
+          <Map />
+        </Toggle>
+      </ButtonBar>
+      {showMinimap && <MiniMap />}
       <Background />
     </ReactFlow>
   );
