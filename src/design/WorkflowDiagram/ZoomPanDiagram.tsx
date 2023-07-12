@@ -4,6 +4,7 @@ import ReactFlow, {
   Edge,
   MiniMap,
   Node,
+  useNodesInitialized,
   useReactFlow,
 } from "reactflow";
 import { useEffect, useMemo } from "react";
@@ -22,6 +23,7 @@ const nodeTypes = {
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
   const { fitView } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
 
   const sep: [Node[], Edge[]] = useMemo(() => {
     const nodes: Node[] = elements.filter(
@@ -33,9 +35,12 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
     ) as Edge[];
     return [nodes, edges];
   }, [elements]);
+
   useEffect(() => {
-    fitView();
-  }, [fitView]);
+    if (nodesInitialized) {
+      fitView();
+    }
+  }, [fitView, nodesInitialized]);
   return (
     <ReactFlow
       edges={sep[1]}
