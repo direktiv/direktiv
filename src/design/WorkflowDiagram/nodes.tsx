@@ -13,16 +13,19 @@ type StateProps = {
   };
 };
 
-type HandleProps = ComponentProps<typeof Handle>;
-const CustomHandle: FC<HandleProps> = ({ type, position }) => (
+type HandleProps = ComponentProps<typeof Handle> & { highlight?: boolean };
+
+const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
   <Handle
     type={type}
     position={position}
     id="default"
     className={twMergeClsx(
       "h-2 w-2 rounded border",
-      "!border-gray-8 !bg-white",
-      "dark:!border-gray-dark-8 dark:!bg-black"
+      "!bg-white dark:!bg-black",
+      highlight
+        ? "!border-success-9 dark:!border-success-dark-9"
+        : "!border-gray-8 dark:!border-gray-dark-8"
     )}
   />
 );
@@ -40,7 +43,11 @@ export function State(props: StateProps) {
       )}
       background="weight-1"
     >
-      <CustomHandle type="target" position={Position.Left} />
+      <CustomHandle
+        type="target"
+        position={Position.Left}
+        highlight={wasExecuted}
+      />
       <div
         className={twMergeClsx(
           "p-1 text-xs font-bold",
@@ -64,7 +71,11 @@ export function State(props: StateProps) {
       >
         {label}
       </div>
-      <CustomHandle type="source" position={Position.Right} />
+      <CustomHandle
+        type="source"
+        position={Position.Right}
+        highlight={wasExecuted}
+      />
     </Card>
   );
 }
