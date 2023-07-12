@@ -5,7 +5,8 @@ export const instanceKeys = {
       apiKey,
       limit,
       offset,
-    }: { apiKey?: string; limit: number; offset: number }
+      filter,
+    }: { apiKey?: string; limit: number; offset: number; filter: string }
   ) =>
     [
       {
@@ -14,6 +15,7 @@ export const instanceKeys = {
         namespace,
         limit,
         offset,
+        filter,
       },
     ] as const,
 };

@@ -14,14 +14,14 @@ import { Datepicker } from "~/design/Datepicker";
 import Input from "~/design/Input";
 import { useState } from "react";
 
-type FilterField = "as" | "status" | "trigger" | "after" | "before";
+export type FilterField = "AS" | "STATUS" | "TRIGGER" | "AFTER" | "BEFORE";
 
 type FilterItem = {
-  type: string;
+  type: "MATCH" | "CONTAINS";
   value: string;
 };
 
-type Filters = {
+export type FiltersObj = {
   [key in FilterField]?: FilterItem;
 };
 
@@ -34,17 +34,17 @@ const ParamSelect = ({
     <CommandInput placeholder="Type a command or search..." />
     <CommandList>
       <CommandGroup heading="Select filter">
-        <CommandItem tabIndex={1} onSelect={() => onSelect("as")}>
+        <CommandItem tabIndex={1} onSelect={() => onSelect("AS")}>
           by name
         </CommandItem>
-        <CommandItem onSelect={() => onSelect("status")}>by state</CommandItem>
-        <CommandItem onSelect={() => onSelect("trigger")}>
+        <CommandItem onSelect={() => onSelect("STATUS")}>by state</CommandItem>
+        <CommandItem onSelect={() => onSelect("TRIGGER")}>
           by invoker
         </CommandItem>
-        <CommandItem onSelect={() => onSelect("after")}>
+        <CommandItem onSelect={() => onSelect("AFTER")}>
           created after
         </CommandItem>
-        <CommandItem onSelect={() => onSelect("before")}>
+        <CommandItem onSelect={() => onSelect("BEFORE")}>
           created before
         </CommandItem>
       </CommandGroup>
@@ -52,10 +52,10 @@ const ParamSelect = ({
   </Command>
 );
 
-const Filters = () => {
+const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
   const [selectedField, setSelectedField] = useState<FilterField | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [filters, setFilters] = useState<Filters>({});
+  const [filters, setFilters] = useState<FiltersObj>({});
   const [inputValue, setInputValue] = useState<string>("");
 
   const handleOpenChange = (isOpening: boolean) => {
@@ -73,23 +73,26 @@ const Filters = () => {
   const handleKeyDown = (event: { key: string }) => {
     if (event.key === "Enter" && inputValue) {
       setFilter({
-        as: { value: inputValue, type: "contain" },
+        AS: { value: inputValue, type: "CONTAINS" },
       });
     }
     if (event.key === "Enter" && !inputValue) {
-      clearFilter("as");
+      clearFilter("AS");
     }
   };
 
-  const setFilter = (filterObj: Filters) => {
-    setFilters({ ...filters, ...filterObj });
+  const setFilter = (filterObj: FiltersObj) => {
+    const newFilters = { ...filters, ...filterObj };
+    setFilters(newFilters);
     resetMenu();
+    onUpdate(newFilters);
   };
 
   const clearFilter = (field: FilterField) => {
     const newFilters = { ...filters };
     delete newFilters[field];
     setFilters(newFilters);
+    onUpdate(newFilters);
   };
 
   const hasFilters = !!Object.keys(filters).length;
@@ -125,7 +128,7 @@ const Filters = () => {
           {selectedField === undefined && (
             <ParamSelect onSelect={setSelectedField} />
           )}
-          {selectedField === "as" && (
+          {selectedField === "AS" && (
             <Command>
               <CommandList>
                 <CommandGroup heading="Filter by name">
@@ -140,7 +143,7 @@ const Filters = () => {
               </CommandList>
             </Command>
           )}
-          {selectedField === "status" && (
+          {selectedField === "STATUS" && (
             <Command>
               <CommandInput
                 autoFocus
@@ -152,7 +155,7 @@ const Filters = () => {
                     value="pending"
                     onSelect={() =>
                       setFilter({
-                        status: { value: "pending", type: "match" },
+                        STATUS: { value: "pending", type: "MATCH" },
                       })
                     }
                   >
@@ -162,7 +165,7 @@ const Filters = () => {
                     value="complete"
                     onSelect={() =>
                       setFilter({
-                        status: { value: "complete", type: "match" },
+                        STATUS: { value: "complete", type: "MATCH" },
                       })
                     }
                   >
@@ -172,7 +175,7 @@ const Filters = () => {
                     value="cancelled"
                     onSelect={() =>
                       setFilter({
-                        status: { value: "cancelled", type: "match" },
+                        STATUS: { value: "cancelled", type: "MATCH" },
                       })
                     }
                   >
@@ -182,7 +185,7 @@ const Filters = () => {
                     value="failed"
                     onSelect={() =>
                       setFilter({
-                        status: { value: "failed", type: "match" },
+                        STATUS: { value: "failed", type: "MATCH" },
                       })
                     }
                   >
@@ -192,7 +195,7 @@ const Filters = () => {
               </CommandList>
             </Command>
           )}
-          {selectedField === "trigger" && (
+          {selectedField === "TRIGGER" && (
             <Command>
               <CommandInput
                 autoFocus
@@ -204,7 +207,7 @@ const Filters = () => {
                     value="api"
                     onSelect={() =>
                       setFilter({
-                        trigger: { value: "api", type: "match" },
+                        TRIGGER: { value: "api", type: "MATCH" },
                       })
                     }
                   >
@@ -214,7 +217,7 @@ const Filters = () => {
                     value="cloudevent"
                     onSelect={() =>
                       setFilter({
-                        trigger: { value: "cloudevent", type: "match" },
+                        TRIGGER: { value: "cloudevent", type: "MATCH" },
                       })
                     }
                   >
@@ -224,7 +227,7 @@ const Filters = () => {
                     value="instance"
                     onSelect={() =>
                       setFilter({
-                        trigger: { value: "instance", type: "match" },
+                        TRIGGER: { value: "instance", type: "MATCH" },
                       })
                     }
                   >
@@ -234,7 +237,7 @@ const Filters = () => {
                     value="cron"
                     onSelect={() =>
                       setFilter({
-                        trigger: { value: "cron", type: "match" },
+                        TRIGGER: { value: "cron", type: "MATCH" },
                       })
                     }
                   >
@@ -244,7 +247,7 @@ const Filters = () => {
               </CommandList>
             </Command>
           )}
-          {selectedField === "after" && (
+          {selectedField === "AFTER" && (
             <Command>
               <CommandList className="max-h-[460px]">
                 <CommandGroup heading="Filter created after">
@@ -253,7 +256,7 @@ const Filters = () => {
               </CommandList>
             </Command>
           )}
-          {selectedField === "before" && (
+          {selectedField === "BEFORE" && (
             <Command>
               <CommandList className="max-h-[460px]">
                 <CommandGroup heading="Filter created before">

@@ -1,3 +1,4 @@
+import type { FilterField, FiltersObj } from "../components/Filters";
 import {
   Table,
   TableBody,
@@ -21,11 +22,24 @@ const instancesPerPage = 15;
 
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
+  const [filterQuery, setFilterQuery] = useState<string>("");
   const { t } = useTranslation();
   const { data, isFetched } = useInstances({
     limit: instancesPerPage,
     offset,
+    filter: filterQuery,
   });
+
+  const updateFilterQuery = (filters: FiltersObj) => {
+    let query = "";
+    const filterFields = Object.keys(filters) as Array<FilterField>;
+    filterFields.forEach((field) => {
+      query = query.concat(
+        `&filter.field=${field}&filter.type=${filters[field].type}&filter.val=${filters[field].value}`
+      );
+    });
+    setFilterQuery(query);
+  };
 
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.instances.results.length === 0;
@@ -37,7 +51,7 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Filters />
+        <Filters onUpdate={updateFilterQuery} />
         <Table className="border-t">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">

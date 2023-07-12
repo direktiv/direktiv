@@ -12,33 +12,39 @@ export const getInstances = apiFactory({
     baseUrl,
     limit,
     offset,
+    filter,
   }: {
     baseUrl?: string;
     namespace: string;
     limit: number;
     offset: number;
+    filter?: string;
   }) =>
     `${
       baseUrl ?? ""
-    }/api/namespaces/${namespace}/instances?limit=${limit}&offset=${offset}`,
+    }/api/namespaces/${namespace}/instances?limit=${limit}&offset=${offset}${
+      filter ?? filter
+    }`,
   method: "GET",
   schema: InstancesListSchema,
 });
 
 const fetchInstances = async ({
-  queryKey: [{ apiKey, namespace, limit, offset }],
+  queryKey: [{ apiKey, namespace, limit, offset, filter }],
 }: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instancesList"]>>) =>
   getInstances({
     apiKey,
-    urlParams: { namespace, limit, offset },
+    urlParams: { namespace, limit, offset, filter },
   });
 
 export const useInstances = ({
   limit,
   offset,
+  filter,
 }: {
   limit: number;
   offset: number;
+  filter: string;
 }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -52,6 +58,7 @@ export const useInstances = ({
       apiKey: apiKey ?? undefined,
       limit,
       offset,
+      filter,
     }),
     queryFn: fetchInstances,
     enabled: !!namespace,
