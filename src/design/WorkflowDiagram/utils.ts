@@ -7,7 +7,7 @@ import dagre from "dagre";
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-const defaultEdgeType = ConnectionLineType.SmoothStep;
+const defaultEdgeType = ConnectionLineType.Bezier;
 
 export const getLayoutedElements = (
   incomingEles: (Edge | Node)[],
