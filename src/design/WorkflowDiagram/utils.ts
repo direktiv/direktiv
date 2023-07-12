@@ -99,6 +99,7 @@ export function generateElements(
           type: value.states[i]?.type || "",
           state: value.states[i],
           functions: value.functions,
+          wasExecuted: flow.includes(value.states[i]?.id || ""),
         },
         type: "state",
       });
