@@ -17,7 +17,8 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	// t := time.Now().Unix() + delay
 
 	// processed := delay == 0 //TODO:
-
+	ctx, end := traceAddtoEventlog(ctx)
+	defer end()
 	li := make([]*pkgevents.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
