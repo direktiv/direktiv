@@ -53,21 +53,21 @@ const ParamSelect = ({
 );
 
 const Filters = () => {
-  const [selectedField, setselectedField] = useState<FilterField | undefined>();
+  const [selectedField, setSelectedField] = useState<FilterField | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [filters, setFilters] = useState<Filters>({});
   const [inputValue, setInputValue] = useState<string>("");
 
   const handleOpenChange = (isOpening: boolean) => {
     if (!isOpening) {
-      setselectedField(undefined);
+      setSelectedField(undefined);
     }
     setIsOpen(isOpening);
   };
 
   const resetMenu = () => {
     setIsOpen(false);
-    setselectedField(undefined);
+    setSelectedField(undefined);
   };
 
   const handleKeyDown = (event: { key: string }) => {
@@ -123,7 +123,7 @@ const Filters = () => {
         </PopoverTrigger>
         <PopoverContent align="start">
           {selectedField === undefined && (
-            <ParamSelect onSelect={setselectedField} />
+            <ParamSelect onSelect={setSelectedField} />
           )}
           {selectedField === "as" && (
             <Command>
