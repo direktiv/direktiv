@@ -21,8 +21,8 @@ const CustomHandle: FC<HandleProps> = ({ type, position }) => (
     id="default"
     className={twMergeClsx(
       "h-2 w-2 rounded border",
-      "border-gray-5 !bg-white",
-      "dark:border-gray-dark-5 dark:!bg-black"
+      "border-gray-8 !bg-white",
+      "dark:border-gray-dark-8 dark:!bg-black"
     )}
   />
 );
@@ -31,10 +31,13 @@ export function State(props: StateProps) {
   const { data } = props;
   const { label, type } = data;
   return (
-    <Card className="flex flex-col" background="weight-1">
+    <Card
+      className="flex flex-col ring-gray-8 dark:ring-gray-dark-8"
+      background="weight-1"
+    >
       <CustomHandle type="target" position={Position.Left} />
       <div className="p-1 text-xs font-bold">{type}</div>
-      <Separator />
+      <Separator className="bg-gray-8 dark:bg-gray-dark-8" />
       <div className="p-1 text-xs">{label}</div>
       <CustomHandle type="source" position={Position.Right} />
     </Card>
