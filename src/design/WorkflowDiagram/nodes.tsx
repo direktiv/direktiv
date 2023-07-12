@@ -9,11 +9,11 @@ type StateProps = {
   data: {
     label: string;
     type: string;
+    wasExecuted: boolean;
   };
 };
 
 type HandleProps = ComponentProps<typeof Handle>;
-
 const CustomHandle: FC<HandleProps> = ({ type, position }) => (
   <Handle
     type={type}
@@ -29,16 +29,41 @@ const CustomHandle: FC<HandleProps> = ({ type, position }) => (
 
 export function State(props: StateProps) {
   const { data } = props;
-  const { label, type } = data;
+  const { label, type, wasExecuted } = data;
   return (
     <Card
-      className="flex flex-col ring-gray-8 dark:ring-gray-dark-8"
+      className={twMergeClsx(
+        "flex flex-col",
+        wasExecuted
+          ? "ring-success-9 dark:ring-success-dark-9"
+          : "ring-gray-8 dark:ring-gray-dark-8"
+      )}
       background="weight-1"
     >
       <CustomHandle type="target" position={Position.Left} />
-      <div className="p-1 text-xs font-bold">{type}</div>
-      <Separator className="bg-gray-8 dark:bg-gray-dark-8" />
-      <div className="p-1 text-xs">{label}</div>
+      <div
+        className={twMergeClsx(
+          "p-1 text-xs font-bold",
+          wasExecuted && "text-success-9 dark:text-success-dark-9"
+        )}
+      >
+        {type}
+      </div>
+      <Separator
+        className={twMergeClsx(
+          wasExecuted
+            ? "bg-success-9 dark:bg-success-dark-9"
+            : "bg-gray-8 dark:bg-gray-dark-8"
+        )}
+      />
+      <div
+        className={twMergeClsx(
+          "p-1 text-xs",
+          wasExecuted && "text-success-9 dark:text-success-dark-9"
+        )}
+      >
+        {label}
+      </div>
       <CustomHandle type="source" position={Position.Right} />
     </Card>
   );
