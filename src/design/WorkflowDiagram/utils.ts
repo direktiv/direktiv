@@ -196,11 +196,13 @@ export function generateElements(
       }
     }
 
+    const hasStarted = status === "pending" || status === "complete";
+
     // push start node
     newElements.push({
       id: "startNode",
       position,
-      data: { label: "" },
+      data: { label: "", wasExecuted: hasStarted },
       type: "start",
       sourcePosition: Position.Right,
     });
