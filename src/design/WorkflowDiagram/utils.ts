@@ -207,23 +207,6 @@ export function generateElements(
       sourcePosition: Position.Right,
     });
 
-    const reachedEnd = newElements.some(
-      // newElements is typed as an array of Node | Edge but this is not
-      // quite true. The attribute target is added to Edge as a helper
-      // when refactoring this should be fixed
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      (x) => x.target === "endNode" && x.animated === true
-    );
-
-    // push end node
-    newElements.push({
-      id: "endNode",
-      type: "end",
-      data: { label: "", wasExecuted: reachedEnd },
-      position,
-    });
-
     // Check flow array change edges to green if it passed
     if (flow) {
       // check flow for transitions
@@ -286,6 +269,23 @@ export function generateElements(
         }
       }
     }
+
+    const reachedEnd = newElements.some(
+      // newElements is typed as an array of Node | Edge but this is not
+      // quite true. The attribute target is added to Edge as a helper
+      // when refactoring this should be fixed
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      (x) => x.target === "endNode" && x.animated === true
+    );
+
+    // push end node
+    newElements.push({
+      id: "endNode",
+      type: "end",
+      data: { label: "", wasExecuted: reachedEnd },
+      position,
+    });
   }
   return getLayoutedElements(newElements);
 }
