@@ -1,4 +1,4 @@
-import { ComponentProps, FC } from "react";
+import { ComponentProps, FC, PropsWithChildren } from "react";
 import { Handle, Position } from "reactflow";
 
 import { Card } from "../Card";
@@ -44,20 +44,40 @@ export function State(props: StateProps) {
   );
 }
 
+type StartEndHandleProps = PropsWithChildren & { end?: boolean };
+
+const StartEndHandle: FC<StartEndHandleProps> = ({ children, end }) => (
+  <Card
+    className={twMergeClsx(
+      "h-12 w-12 rounded-full p-2 ring-gray-8 dark:ring-gray-dark-8"
+    )}
+    background="weight-1"
+  >
+    <div
+      className={twMergeClsx(
+        "h-full w-full rounded-full",
+        end
+          ? "bg-success-9 dark:bg-success-dark-9"
+          : "bg-gray-9 dark:bg-gray-dark-9"
+      )}
+    >
+      {children}
+    </div>
+  </Card>
+);
+
 export function Start() {
   return (
-    <div className="normal">
-      <Handle type="source" position={Position.Right} />
-      <div className="start" />
-    </div>
+    <StartEndHandle>
+      <CustomHandle type="source" position={Position.Right} />
+    </StartEndHandle>
   );
 }
 
 export function End() {
   return (
-    <div className="normal">
-      <div className="end" />
-      <Handle type="target" position={Position.Left} />
-    </div>
+    <StartEndHandle end>
+      <CustomHandle type="target" position={Position.Left} />
+    </StartEndHandle>
   );
 }
