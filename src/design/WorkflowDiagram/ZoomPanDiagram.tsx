@@ -48,7 +48,7 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       nodes={sep[0]}
       nodeTypes={nodeTypes}
       nodesDraggable={!disabled}
-      nodesConnectable={!disabled}
+      nodesConnectable={false}
       elementsSelectable={!disabled}
       fitView={true}
     >
