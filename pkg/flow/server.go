@@ -110,7 +110,7 @@ type gormLogger struct {
 }
 
 func (g gormLogger) Write(p []byte) (n int, err error) {
-	g.Debugw(string(p),"component","GORM")
+	g.Debugw(string(p), "component", "GORM")
 	return len(p), nil
 }
 
