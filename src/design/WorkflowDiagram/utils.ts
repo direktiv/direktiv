@@ -221,10 +221,12 @@ export function generateElements(
           // handle start node
           const item = newElements[j] && (newElements[j] as Edge);
           if (item && item.source === "startNode" && item.target === flow[i]) {
+            // connection between start and first state
             (newElements[j] as Edge).animated = true;
           }
 
           if (item && item.target === flow[i] && item.source === flow[i - 1]) {
+            // connection between two states
             (newElements[j] as Edge).animated = true;
           } else if (item && item.id === flow[i]) {
             if (
@@ -264,6 +266,7 @@ export function generateElements(
                 (newElements[j] as Edge).target === "endNode" &&
                 (status === "complete" || status === "failed")
               ) {
+                // connection between the last state and end node
                 (newElements[j] as Edge).animated = true;
               }
             }
