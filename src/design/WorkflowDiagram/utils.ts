@@ -196,7 +196,7 @@ export function generateElements(
       }
     }
 
-    const hasStarted = status === "pending" || status === "complete";
+    const hasStarted = status === "failed" || status === "complete";
 
     // push start node
     newElements.push({
