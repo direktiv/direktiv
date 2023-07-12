@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
 import { Toggle } from "./index";
 import { useState } from "react";
+import { ButtonBar } from "../ButtonBar";
 
 const meta = {
   title: "Components/Toggle",
@@ -76,7 +77,7 @@ export const DefaultPressed = () => (
 
 export const Toolbar = () => (
   <div className="flex flex-col space-y-3">
-    <div className="flex space-x-1">
+    <ButtonBar>
       <Toggle aria-label="Toggle italic" size="sm" outline>
         <Filter />
       </Toggle>
@@ -89,8 +90,8 @@ export const Toolbar = () => (
       <Button variant="outline" size="sm">
         <Eye /> Small Large Toolbar
       </Button>
-    </div>
-    <div className="flex space-x-1">
+    </ButtonBar>
+    <ButtonBar>
       <Toggle aria-label="Toggle italic" outline>
         <Filter />
       </Toggle>
@@ -103,8 +104,8 @@ export const Toolbar = () => (
       <Button variant="outline">
         <Eye /> Default Toolbar
       </Button>
-    </div>
-    <div className="flex space-x-1">
+    </ButtonBar>
+    <ButtonBar>
       <Toggle aria-label="Toggle italic" size="lg" outline>
         <Filter />
       </Toggle>
@@ -118,6 +119,6 @@ export const Toolbar = () => (
         <Eye />
         Large Toolbar
       </Button>
-    </div>
+    </ButtonBar>
   </div>
 );
