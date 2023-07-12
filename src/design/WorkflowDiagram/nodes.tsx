@@ -1,24 +1,43 @@
+import { ComponentProps, FC } from "react";
 import { Handle, Position } from "reactflow";
 
-interface StateProps {
+import { Card } from "../Card";
+import { Separator } from "../Separator";
+import { twMergeClsx } from "~/util/helpers";
+
+type StateProps = {
   data: {
     label: string;
     type: string;
   };
-}
+};
+
+type HandleProps = ComponentProps<typeof Handle>;
+
+const CustomHandle: FC<HandleProps> = ({ type, position }) => (
+  <Handle
+    type={type}
+    position={position}
+    id="default"
+    className={twMergeClsx(
+      "h-2 w-2 rounded border",
+      "border-gray-5 !bg-white",
+      "dark:border-gray-dark-5 dark:!bg-black"
+    )}
+  />
+);
 
 export function State(props: StateProps) {
   const { data } = props;
   const { label, type } = data;
   return (
-    <div className="state">
-      <Handle type="target" position={Position.Left} id="default" />
-      <div>
-        <div>{type}</div>
-      </div>
-      <h2>{label}</h2>
-      <Handle type="source" position={Position.Right} id="default" />
-    </div>
+    <Card className="flex flex-col" background="weight-1">
+      <CustomHandle type="target" position={Position.Left} />
+      <div className="p-1 text-xs font-bold">{type}</div>
+      <Separator />
+      <div className="p-1 text-xs">{label}</div>
+      <CustomHandle type="source" position={Position.Right} />
+    </Card>
   );
 }
 
