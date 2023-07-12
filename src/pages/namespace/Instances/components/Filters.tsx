@@ -14,24 +14,31 @@ import { Datepicker } from "~/design/Datepicker";
 import Input from "~/design/Input";
 import { useState } from "react";
 
-const hasFilters = false;
+type FilterField = "as" | "status" | "trigger" | "after" | "before";
 
-type FilterParam = "name" | "state" | "invoker" | "after" | "before";
+type FilterItem = {
+  type: string;
+  value: string;
+};
+
+type Filters = {
+  [key in FilterField]?: FilterItem;
+};
 
 const ParamSelect = ({
   onSelect,
 }: {
-  onSelect: (value: FilterParam) => void;
+  onSelect: (value: FilterField) => void;
 }) => (
   <Command>
     <CommandInput placeholder="Type a command or search..." />
     <CommandList>
       <CommandGroup heading="Select filter">
-        <CommandItem tabIndex={1} onSelect={() => onSelect("name")}>
+        <CommandItem tabIndex={1} onSelect={() => onSelect("as")}>
           by name
         </CommandItem>
-        <CommandItem onSelect={() => onSelect("state")}>by state</CommandItem>
-        <CommandItem onSelect={() => onSelect("invoker")}>
+        <CommandItem onSelect={() => onSelect("status")}>by state</CommandItem>
+        <CommandItem onSelect={() => onSelect("trigger")}>
           by invoker
         </CommandItem>
         <CommandItem onSelect={() => onSelect("after")}>
@@ -45,125 +52,200 @@ const ParamSelect = ({
   </Command>
 );
 
-// Mockup
-const ExistingFilters = () => (
-  <>
-    <ButtonBar>
-      <Button variant="outline">Type</Button>
-      <Button variant="outline">noop.yaml</Button>
-      <Button variant="outline" icon>
-        <X />
-      </Button>
-    </ButtonBar>
-    <ButtonBar>
-      <Button variant="outline">Started after</Button>
-      <Button variant="outline">01-Feb-2022</Button>
-      <Button variant="outline" icon>
-        <X />
-      </Button>
-    </ButtonBar>
-    <ButtonBar>
-      <Button variant="outline">Started before</Button>
-      <Button variant="outline">01-Feb-2023</Button>
-      <Button variant="outline" icon>
-        <X />
-      </Button>
-    </ButtonBar>
-  </>
-);
-
 const Filters = () => {
-  const [param, setParam] = useState<FilterParam | undefined>();
+  const [selectedField, setselectedField] = useState<FilterField | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState<Filters>({});
 
   const handleOpenChange = (isOpening: boolean) => {
     if (!isOpening) {
-      setParam(undefined);
+      setselectedField(undefined);
     }
     setIsOpen(isOpening);
   };
 
+  const resetMenu = () => {
+    setIsOpen(false);
+    setselectedField(undefined);
+  };
+
+  const setFilter = (filterObj: Filters) => {
+    setFilters({ ...filters, ...filterObj });
+    resetMenu();
+  };
+
+  const clearFilter = (field: FilterField) => {
+    const newFilters = { ...filters };
+    delete newFilters[field];
+    setFilters(newFilters);
+  };
+
+  const hasFilters = !!Object.keys(filters).length;
+
+  const definedFields = Object.keys(filters) as Array<FilterField>;
+
   return (
     <div className="m-2 flex flex-row gap-2">
-      {hasFilters ? (
-        <>
-          <ExistingFilters />
+      {definedFields.map((field) => (
+        <ButtonBar key={field}>
+          <Button variant="outline">{field}</Button>
+          <Button variant="outline">{filters[field]?.value}</Button>
           <Button variant="outline" icon>
-            <Plus />
+            <X onClick={() => clearFilter(field)} />
           </Button>
-        </>
-      ) : (
-        <Popover open={isOpen} onOpenChange={handleOpenChange}>
-          <PopoverTrigger asChild>
+        </ButtonBar>
+      ))}
+
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          {hasFilters ? (
+            <Button variant="outline" icon>
+              <Plus />
+            </Button>
+          ) : (
             <Button variant="outline">
               <Plus />
               Filter
             </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start">
-            {param === undefined && <ParamSelect onSelect={setParam} />}
-            {param === "name" && (
-              <Command>
-                <CommandList>
-                  <CommandGroup heading="Filter by name">
-                    <Input autoFocus placeholder="filename.yaml" />
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            )}
-            {param === "state" && (
-              <Command>
-                <CommandInput
-                  autoFocus
-                  placeholder="Type a command or search..."
-                />
-                <CommandList>
-                  <CommandGroup heading="Filter by state">
-                    <CommandItem value="running">Running</CommandItem>
-                    <CommandItem value="complete">Complete</CommandItem>
-                    <CommandItem value="cancelled">Cancelled</CommandItem>
-                    <CommandItem value="failed">Failed</CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            )}
-            {param === "invoker" && (
-              <Command>
-                <CommandInput
-                  autoFocus
-                  placeholder="Type a command or search..."
-                />
-                <CommandList>
-                  <CommandGroup heading="Filter by invoker">
-                    <CommandItem value="api">API</CommandItem>
-                    <CommandItem value="cloud-event">Cloud event</CommandItem>
-                    <CommandItem value="instance">Instance</CommandItem>
-                    <CommandItem value="cron">Cron</CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            )}
-            {param === "after" && (
-              <Command>
-                <CommandList className="max-h-[460px]">
-                  <CommandGroup heading="Filter created after">
-                    <Datepicker />
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            )}
-            {param === "before" && (
-              <Command>
-                <CommandList className="max-h-[460px]">
-                  <CommandGroup heading="Filter created before">
-                    <Datepicker />
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            )}
-          </PopoverContent>
-        </Popover>
-      )}
+          )}
+        </PopoverTrigger>
+        <PopoverContent align="start">
+          {selectedField === undefined && (
+            <ParamSelect onSelect={setselectedField} />
+          )}
+          {selectedField === "as" && (
+            <Command>
+              <CommandList>
+                <CommandGroup heading="Filter by name">
+                  <Input autoFocus placeholder="filename.yaml" />
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          )}
+          {selectedField === "status" && (
+            <Command>
+              <CommandInput
+                autoFocus
+                placeholder="Type a command or search..."
+              />
+              <CommandList>
+                <CommandGroup heading="Filter by state">
+                  <CommandItem
+                    value="pending"
+                    onSelect={() =>
+                      setFilter({
+                        status: { value: "pending", type: "match" },
+                      })
+                    }
+                  >
+                    Running
+                  </CommandItem>
+                  <CommandItem
+                    value="complete"
+                    onSelect={() =>
+                      setFilter({
+                        status: { value: "complete", type: "match" },
+                      })
+                    }
+                  >
+                    Complete
+                  </CommandItem>
+                  <CommandItem
+                    value="cancelled"
+                    onSelect={() =>
+                      setFilter({
+                        status: { value: "cancelled", type: "match" },
+                      })
+                    }
+                  >
+                    Cancelled
+                  </CommandItem>
+                  <CommandItem
+                    value="failed"
+                    onSelect={() =>
+                      setFilter({
+                        status: { value: "failed", type: "match" },
+                      })
+                    }
+                  >
+                    Failed
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          )}
+          {selectedField === "trigger" && (
+            <Command>
+              <CommandInput
+                autoFocus
+                placeholder="Type a command or search..."
+              />
+              <CommandList>
+                <CommandGroup heading="Filter by invoker">
+                  <CommandItem
+                    value="api"
+                    onSelect={() =>
+                      setFilter({
+                        trigger: { value: "api", type: "match" },
+                      })
+                    }
+                  >
+                    API
+                  </CommandItem>
+                  <CommandItem
+                    value="cloudevent"
+                    onSelect={() =>
+                      setFilter({
+                        trigger: { value: "cloudevent", type: "match" },
+                      })
+                    }
+                  >
+                    Cloud event
+                  </CommandItem>
+                  <CommandItem
+                    value="instance"
+                    onSelect={() =>
+                      setFilter({
+                        trigger: { value: "instance", type: "match" },
+                      })
+                    }
+                  >
+                    Instance
+                  </CommandItem>
+                  <CommandItem
+                    value="cron"
+                    onSelect={() =>
+                      setFilter({
+                        trigger: { value: "cron", type: "match" },
+                      })
+                    }
+                  >
+                    Cron
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          )}
+          {selectedField === "after" && (
+            <Command>
+              <CommandList className="max-h-[460px]">
+                <CommandGroup heading="Filter created after">
+                  <Datepicker />
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          )}
+          {selectedField === "before" && (
+            <Command>
+              <CommandList className="max-h-[460px]">
+                <CommandGroup heading="Filter created before">
+                  <Datepicker />
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };
