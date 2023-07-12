@@ -9,6 +9,7 @@ import {
 
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
+import Filters from "../components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
@@ -36,7 +37,8 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Table>
+        <Filters />
+        <Table className="border-t">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
