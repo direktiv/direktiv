@@ -25,7 +25,7 @@ export type FiltersObj = {
   [key in FilterField]?: FilterItem;
 };
 
-const ParamSelect = ({
+const FilterFieldsMenu = ({
   onSelect,
 }: {
   onSelect: (value: FilterField) => void;
@@ -289,7 +289,7 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
         </PopoverTrigger>
         <PopoverContent align="start">
           {selectedField === undefined ? (
-            <ParamSelect onSelect={setSelectedField} />
+            <FilterFieldsMenu onSelect={setSelectedField} />
           ) : (
             <FilterSubMenu
               field={selectedField}
