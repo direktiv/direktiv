@@ -1,5 +1,5 @@
 import { End, Start, State } from "./nodes";
-import { Map, View } from "lucide-react";
+import { Map, View, ZoomIn, ZoomOut } from "lucide-react";
 import ReactFlow, {
   Background,
   Edge,
@@ -25,9 +25,11 @@ const nodeTypes = {
   end: End,
 };
 
+const maxZoom = 1.2;
+
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
-  const { fitView } = useReactFlow();
+  const { fitView, zoomIn, zoomOut, getZoom } = useReactFlow();
   const [showMinimap, setShowMinimap] = useState(true);
   const nodesInitialized = useNodesInitialized();
 
@@ -57,7 +59,7 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       nodesConnectable={false}
       elementsSelectable={!disabled}
       fitView={true}
-      maxZoom={1.2}
+      maxZoom={maxZoom}
     >
       <ButtonBar className="absolute top-2 left-2 z-50 bg-white dark:bg-black">
         <Button
@@ -68,6 +70,24 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
           }}
         >
           <View />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            zoomIn();
+          }}
+        >
+          <ZoomIn />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            zoomOut();
+          }}
+        >
+          <ZoomOut />
         </Button>
         <Toggle
           size="sm"
