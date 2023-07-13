@@ -25,3 +25,5 @@ export type IWorkflow = {
   };
   functions: object[];
 };
+
+export type Orientation = "horizontal" | "vertical";

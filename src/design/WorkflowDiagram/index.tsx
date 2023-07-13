@@ -1,11 +1,11 @@
 import "./style.css";
 import "reactflow/dist/base.css";
 
+import { IWorkflow, Orientation } from "./types";
 import { generateElements, getLayoutedElements } from "./utils";
 import { useMemo, useState } from "react";
 
 import Alert from "../Alert";
-import { IWorkflow } from "./types";
 import { ReactFlowProvider } from "reactflow";
 import YAML from "js-yaml";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
@@ -21,6 +21,7 @@ import { ZoomPanDiagram } from "./ZoomPanDiagram";
 type WorkflowDiagramProps = {
   workflow: string;
   flow?: string[];
+  oriantation?: Orientation;
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
 };
@@ -31,6 +32,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     flow = [],
     instanceStatus = "pending",
     disabled = false,
+    oriantation,
   } = props;
 
   const [invalidWorkflow, setInvalidWorkflow] = useState<string | null>(null);
@@ -61,7 +63,8 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     getLayoutedElements,
     parsedWorkflow,
     flow,
-    instanceStatus
+    instanceStatus,
+    oriantation
   );
 
   return (

@@ -1,6 +1,6 @@
 import { ConnectionLineType, Edge, Node, Position, isNode } from "reactflow";
+import { IWorkflow, Orientation } from "./types";
 
-import { IWorkflow } from "./types";
 import dagre from "dagre";
 
 // initialize the dagre graph
@@ -11,10 +11,11 @@ const defaultEdgeType = ConnectionLineType.Bezier;
 
 export const getLayoutedElements = (
   incomingEles: (Edge | Node)[],
-  direction = "TB"
+  direction: Orientation = "vertical"
 ) => {
-  const isHorizontal = direction === "LR";
-  dagreGraph.setGraph({ rankdir: "lr" });
+  const isHorizontal = direction === "horizontal";
+
+  dagreGraph.setGraph({ rankdir: isHorizontal ? "lr" : "tb" });
 
   incomingEles.forEach((el) => {
     if (isNode(el)) {
@@ -57,11 +58,12 @@ const position = { x: 0, y: 0 };
 export function generateElements(
   getLayoutedElements: (
     incomingEles: (Node | Edge)[],
-    direction?: string
+    orientation?: Orientation
   ) => (Node | Edge)[],
   value: IWorkflow | null,
   flow: string[],
-  status: "pending" | "complete" | "failed"
+  status: "pending" | "complete" | "failed",
+  orientation?: Orientation
 ) {
   const newElements: (Node | Edge)[] = [];
 
@@ -287,5 +289,5 @@ export function generateElements(
       position,
     });
   }
-  return getLayoutedElements(newElements);
+  return getLayoutedElements(newElements, orientation);
 }
