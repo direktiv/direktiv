@@ -18,6 +18,12 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { FC, SVGProps, useEffect, useState } from "react";
+import {
+  LayoutsType,
+  availableLayouts,
+  useEditorActions,
+  useEditorLayout,
+} from "~/util/store/editor";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   Tooltip,
@@ -44,38 +50,23 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
-const availableLayouts = [
-  "code",
-  "diagram",
-  "splitVertically",
-  "splitHorizontally",
-] as const;
-
-type layoutIconsType = Record<
-  (typeof availableLayouts)[number],
-  FC<SVGProps<SVGSVGElement>>
->;
-
-const layoutIcons: layoutIconsType = {
+const layoutIcons: Record<LayoutsType, FC<SVGProps<SVGSVGElement>>> = {
   code: Code,
   diagram: Workflow,
   splitVertically: Columns,
   splitHorizontally: Rows,
 };
 
-type EditorLayoutType = (typeof availableLayouts)[number];
-
-const defaultLayout: EditorLayoutType = "code";
-
 const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
 }> = ({ data, path }) => {
+  const layout = useEditorLayout();
+  const { setLayout } = useEditorActions();
+
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
-  const [selectedLayout, setSelectedLayout] =
-    useState<EditorLayoutType>(defaultLayout);
 
   const workflowData = atob(data?.revision?.source ?? "");
   const updatedAt = useUpdatedAt(data.revision?.createdAt);
@@ -88,8 +79,6 @@ const WorkflowEditor: FC<{
 
   const [value, setValue] = useState(workflowData);
   const theme = useTheme();
-
-  const SelectedIcon = layoutIcons[selectedLayout];
 
   const { mutate: createRevision } = useCreateRevision();
   const { mutate: revertRevision } = useRevertRevision();
@@ -168,23 +157,22 @@ const WorkflowEditor: FC<{
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <ButtonBar>
           <TooltipProvider>
-            {availableLayouts.map((layout) => {
-              const Icon = layoutIcons[layout];
+            {availableLayouts.map((lay) => {
+              const Icon = layoutIcons[lay];
               return (
-                <Tooltip key={layout}>
-                  <TooltipTrigger asChild>
+                <Tooltip key={lay}>
+                  <TooltipTrigger>
                     <Toggle
                       onClick={() => {
-                        setSelectedLayout(layout);
+                        setLayout(lay);
                       }}
-                      pressed={layout === selectedLayout}
-                      className="w-full"
+                      pressed={lay === layout}
                     >
                       <Icon />
                     </Toggle>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${layout}`)}
+                    {t(`pages.explorer.workflow.editor.layout.${lay}`)}
                   </TooltipContent>
                 </Tooltip>
               );
