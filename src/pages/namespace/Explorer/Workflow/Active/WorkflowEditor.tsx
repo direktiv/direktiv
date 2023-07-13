@@ -8,6 +8,13 @@ import {
 } from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -27,6 +34,17 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 // get type of useNodeContent return value
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
+const availableLayouts = [
+  "code",
+  "diagram",
+  "split-vertical",
+  "split-horizontal",
+] as const;
+
+type EditorLayoutType = (typeof availableLayouts)[number];
+
+const defaultLayout: EditorLayoutType = "code";
+
 const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
@@ -34,6 +52,9 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
+  const [selectedLayout, setSelectedLayout] =
+    useState<EditorLayoutType>(defaultLayout);
+
   const workflowData = atob(data?.revision?.source ?? "");
   const updatedAt = useUpdatedAt(data.revision?.createdAt);
 
@@ -121,6 +142,28 @@ const WorkflowEditor: FC<{
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        {selectedLayout}
+        <Select
+          onValueChange={(value) => {
+            if (availableLayouts.includes(value)) {
+              setSelectedLayout(value);
+            }
+          }}
+        >
+          <SelectTrigger id="template" variant="outline">
+            <SelectValue
+              placeholder={selectedLayout}
+              defaultValue={selectedLayout}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {availableLayouts.map((layout) => (
+              <SelectItem value={layout} key={layout}>
+                {layout}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <DropdownMenu>
           <ButtonBar>
             <Button
