@@ -1,4 +1,15 @@
-import { Bug, GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
+import {
+  Bug,
+  Code,
+  Columns,
+  GitBranchPlus,
+  Play,
+  Rows,
+  Save,
+  Tag,
+  Undo,
+  Workflow,
+} from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   DropdownMenu,
@@ -6,15 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FC, useEffect, useState } from "react";
+import { FC, SVGProps, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/design/Select";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -37,9 +41,21 @@ type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 const availableLayouts = [
   "code",
   "diagram",
-  "split-vertical",
-  "split-horizontal",
+  "splitVertical",
+  "splitHorizontal",
 ] as const;
+
+type layoutIconsType = Record<
+  (typeof availableLayouts)[number],
+  FC<SVGProps<SVGSVGElement>>
+>;
+
+const layoutIcons: layoutIconsType = {
+  code: Code,
+  diagram: Workflow,
+  splitVertical: Columns,
+  splitHorizontal: Rows,
+};
 
 type EditorLayoutType = (typeof availableLayouts)[number];
 
@@ -66,6 +82,8 @@ const WorkflowEditor: FC<{
 
   const [value, setValue] = useState(workflowData);
   const theme = useTheme();
+
+  const SelectedIcon = layoutIcons[selectedLayout];
 
   const { mutate: createRevision } = useCreateRevision();
   const { mutate: revertRevision } = useRevertRevision();
@@ -142,28 +160,32 @@ const WorkflowEditor: FC<{
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        {selectedLayout}
-        <Select
-          onValueChange={(value) => {
-            if (availableLayouts.includes(value)) {
-              setSelectedLayout(value);
-            }
-          }}
-        >
-          <SelectTrigger id="template" variant="outline">
-            <SelectValue
-              placeholder={selectedLayout}
-              defaultValue={selectedLayout}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {availableLayouts.map((layout) => (
-              <SelectItem value={layout} key={layout}>
-                {layout}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-48">
+              <SelectedIcon />
+              {selectedLayout}
+              <RxChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent className="w-60">
+            {availableLayouts.map((layout) => {
+              const Icon = layoutIcons[layout];
+              return (
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedLayout(layout);
+                  }}
+                  key={layout}
+                >
+                  <Icon className="mr-2 h-4 w-4" />
+                  {layout}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <ButtonBar>
             <Button
