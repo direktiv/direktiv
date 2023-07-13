@@ -240,6 +240,7 @@ export const UpdateWorkflow = () => {
           Empty Workflow
         </Button>
         <Button
+          variant="primary"
           onClick={() => {
             setOrientation((old) =>
               old === "horizontal" ? "vertical" : "horizontal"
