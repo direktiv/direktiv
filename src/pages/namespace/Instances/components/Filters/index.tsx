@@ -6,6 +6,7 @@ import { ButtonBar } from "~/design/ButtonBar";
 import FieldSubMenu from "./FieldSubMenu";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type FilterField = "AS" | "STATUS" | "TRIGGER" | "AFTER" | "BEFORE";
 
@@ -19,6 +20,7 @@ export type FiltersObj = {
 };
 
 const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
+  const { t } = useTranslation();
   const [selectedField, setSelectedField] = useState<FilterField | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [filters, setFilters] = useState<FiltersObj>({});
@@ -86,7 +88,7 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
           ) : (
             <Button variant="outline">
               <Plus />
-              Filter
+              {t("pages.instances.list.filter.filterButton")}
             </Button>
           )}
         </PopoverTrigger>

@@ -184,6 +184,42 @@
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
           "openWorkflowTooltip": "click to open workflow"
+        },
+        "filter": {
+          "filterButton": "Filter",
+          "menuHeading": {
+            "main": "Select filter",
+            "AS": "filter by name",
+            "STATUS": "filter by status",
+            "TRIGGER": "filter by trigger",
+            "AFTER": "filter created after",
+            "BEFORE": "filter created before"
+          },
+          "field": {
+            "AS": "name",
+            "STATUS": "status",
+            "TRIGGER": "trigger",
+            "AFTER": "created after",
+            "BEFORE": "created before"
+          },
+          "placeholder": {
+            "mainMenu": "Type or select a field...",
+            "AS": "filename.yaml",
+            "STATUS": "Type or select status...",
+            "TRIGGER": "Type or select trigger type..."
+          },
+          "trigger": {
+            "api": "API",
+            "cloudevent": "cloud event",
+            "instance": "instance",
+            "cron": "cron"
+          },
+          "status": {
+            "pending": "pending",
+            "complete": "complete",
+            "cancelled": "cancelled",
+            "failed": "failed"
+          }
         }
       }
     },

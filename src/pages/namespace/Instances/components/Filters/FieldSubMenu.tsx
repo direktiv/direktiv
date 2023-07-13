@@ -10,6 +10,7 @@ import { FilterField, FiltersObj } from ".";
 import { Datepicker } from "~/design/Datepicker";
 import Input from "~/design/Input";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const FieldSubMenu = ({
   field,
@@ -23,6 +24,7 @@ const FieldSubMenu = ({
   clearFilter: (field: FilterField) => void;
 }) => {
   const [inputValue, setInputValue] = useState<string>(value || "");
+  const { t } = useTranslation();
 
   // TODO: This is currently hard coded for field "AS", but
   // should be usable for other fields
@@ -42,10 +44,12 @@ const FieldSubMenu = ({
       {field === "AS" && (
         <Command>
           <CommandList>
-            <CommandGroup heading="Filter by name">
+            <CommandGroup
+              heading={t("pages.instances.list.filter.menuHeading.AS")}
+            >
               <Input
                 autoFocus
-                placeholder="filename.yaml"
+                placeholder={t("pages.instances.list.filter.placeholder.AS")}
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
                 onKeyUp={handleKeyDown}
@@ -56,9 +60,14 @@ const FieldSubMenu = ({
       )}
       {field === "STATUS" && (
         <Command value={value}>
-          <CommandInput autoFocus placeholder="Type a command or search..." />
+          <CommandInput
+            autoFocus
+            placeholder={t("pages.instances.list.filter.placeholder.STATUS")}
+          />
           <CommandList>
-            <CommandGroup heading="Filter by state">
+            <CommandGroup
+              heading={t("pages.instances.list.filter.menuHeading.STATUS")}
+            >
               <CommandItem
                 value="pending"
                 onSelect={() =>
@@ -67,7 +76,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Running
+                {t("pages.instances.list.filter.status.pending")}
               </CommandItem>
               <CommandItem
                 value="complete"
@@ -77,7 +86,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Complete
+                {t("pages.instances.list.filter.status.complete")}
               </CommandItem>
               <CommandItem
                 value="cancelled"
@@ -87,7 +96,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Cancelled
+                {t("pages.instances.list.filter.status.cancelled")}
               </CommandItem>
               <CommandItem
                 value="failed"
@@ -97,7 +106,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Failed
+                {t("pages.instances.list.filter.status.failed")}
               </CommandItem>
             </CommandGroup>
           </CommandList>
@@ -105,9 +114,14 @@ const FieldSubMenu = ({
       )}
       {field === "TRIGGER" && (
         <Command value={value}>
-          <CommandInput autoFocus placeholder="Type a command or search..." />
+          <CommandInput
+            autoFocus
+            placeholder={t("pages.instances.list.filter.placeholder.TRIGGER")}
+          />
           <CommandList>
-            <CommandGroup heading="Filter by invoker">
+            <CommandGroup
+              heading={t("pages.instances.list.filter.menuHeading.TRIGGER")}
+            >
               <CommandItem
                 value="api"
                 onSelect={() =>
@@ -116,7 +130,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                API
+                {t("pages.instances.list.filter.trigger.api")}
               </CommandItem>
               <CommandItem
                 value="cloudevent"
@@ -126,7 +140,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Cloud event
+                {t("pages.instances.list.filter.trigger.cloudevent")}
               </CommandItem>
               <CommandItem
                 value="instance"
@@ -136,7 +150,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Instance
+                {t("pages.instances.list.filter.trigger.instance")}
               </CommandItem>
               <CommandItem
                 value="cron"
@@ -146,7 +160,7 @@ const FieldSubMenu = ({
                   })
                 }
               >
-                Cron
+                {t("pages.instances.list.filter.trigger.cron")}
               </CommandItem>
             </CommandGroup>
           </CommandList>
@@ -155,7 +169,9 @@ const FieldSubMenu = ({
       {field === "AFTER" && (
         <Command>
           <CommandList className="max-h-[460px]">
-            <CommandGroup heading="Filter created after">
+            <CommandGroup
+              heading={t("pages.instances.list.filter.menuHeading.AFTER")}
+            >
               <Datepicker />
             </CommandGroup>
           </CommandList>
@@ -164,7 +180,9 @@ const FieldSubMenu = ({
       {field === "BEFORE" && (
         <Command>
           <CommandList className="max-h-[460px]">
-            <CommandGroup heading="Filter created before">
+            <CommandGroup
+              heading={t("pages.instances.list.filter.menuHeading.BEFORE")}
+            >
               <Datepicker />
             </CommandGroup>
           </CommandList>
