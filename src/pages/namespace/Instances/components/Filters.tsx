@@ -14,7 +14,7 @@ import { Datepicker } from "~/design/Datepicker";
 import Input from "~/design/Input";
 import { useState } from "react";
 
-export type FilterField = "AS" | "STATUS" | "TRIGGER" | "AFTER" | "BEFORE";
+type FilterField = "AS" | "STATUS" | "TRIGGER" | "AFTER" | "BEFORE";
 
 type FilterItem = {
   type: "MATCH" | "CONTAINS";

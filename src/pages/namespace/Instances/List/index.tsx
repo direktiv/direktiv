@@ -1,4 +1,3 @@
-import type { FilterField, FiltersObj } from "../components/Filters";
 import {
   Table,
   TableBody,
@@ -11,6 +10,7 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
+import type { FiltersObj } from "../components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
@@ -32,10 +32,16 @@ const InstancesListPage = () => {
 
   const updateFilterQuery = (filters: FiltersObj) => {
     let query = "";
-    const filterFields = Object.keys(filters) as Array<FilterField>;
+    const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
+
     filterFields.forEach((field) => {
+      const filterItem = filters[field];
+      // guard needed because TS thinks filterItem may be undefined
+      if (!filterItem) {
+        return;
+      }
       query = query.concat(
-        `&filter.field=${field}&filter.type=${filters[field].type}&filter.val=${filters[field].value}`
+        `&filter.field=${field}&filter.type=${filterItem.type}&filter.val=${filterItem.value}`
       );
     });
     setFilterQuery(query);
