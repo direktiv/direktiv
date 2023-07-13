@@ -161,7 +161,7 @@ const WorkflowEditor: FC<{
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-52">
+            <Button variant="outline" className="">
               <SelectedIcon />
               {t(`pages.explorer.workflow.editor.layout.${selectedLayout}`)}
               <RxChevronDown />
