@@ -26,16 +26,17 @@ const FieldSubMenu = ({
   const [inputValue, setInputValue] = useState<string>(value || "");
   const { t } = useTranslation();
 
-  // TODO: This is currently hard coded for field "AS", but
-  // should be usable for other fields
   const handleKeyDown = (event: { key: string }) => {
+    // Currently API only supports CONTAINS on filter fields with text inputs
+    const type = "CONTAINS";
+
     if (event.key === "Enter" && inputValue) {
       setFilter({
-        AS: { value: inputValue, type: "CONTAINS" },
+        [field]: { value: inputValue, type },
       });
     }
     if (event.key === "Enter" && !inputValue) {
-      clearFilter("AS");
+      clearFilter(field);
     }
   };
 
