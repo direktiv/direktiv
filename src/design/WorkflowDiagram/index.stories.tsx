@@ -280,7 +280,7 @@ export const ComplexWorkflowDiagram = () => {
 
   return (
     <div className="flex h-[600px] flex-col gap-y-5">
-      <div className="flex gap-x-2">
+      <ButtonBar>
         <Button
           onClick={() => {
             setProgress((old) => {
@@ -302,7 +302,7 @@ export const ComplexWorkflowDiagram = () => {
         >
           Change Orientation
         </Button>
-      </div>
+      </ButtonBar>
       <WorkflowDiagram
         workflow={ComplexWorkflow}
         flow={allStates.slice(0, progress)}
