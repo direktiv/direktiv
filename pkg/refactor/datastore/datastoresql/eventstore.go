@@ -549,6 +549,13 @@ func (s *sqlEventListenerStore) Update(ctx context.Context, listeners []*events.
 	errs := make([]error, len(listeners))
 	for i := range listeners {
 		e := listeners[i]
+		if e.Deleted {
+			err := s.DeleteByID(ctx, e.ID)
+			if err != nil {
+				errs[i] = err
+			}
+			continue
+		}
 		b, err := json.Marshal(e.ReceivedEventsForAndTrigger)
 		if err != nil {
 			errs[i] = err
