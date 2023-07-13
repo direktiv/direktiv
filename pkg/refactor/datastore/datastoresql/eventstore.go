@@ -412,7 +412,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	if offet > 0 {
 		q += fmt.Sprintf("OFFSET %v", offet)
 	}
-	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 ;`
+	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 and deleted = false;`
 	var count int
 	tx := s.db.WithContext(ctx).Raw(qCount, namespace).Scan(&count)
 	if tx.Error != nil {
@@ -468,7 +468,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
-	FROM event_listeners `
+	FROM event_listeners Where deleted = false`
 	q += " ORDER BY created_at DESC;"
 	res := make([]*gormEventListener, 0)
 	tx := s.db.WithContext(ctx).Raw(q).Scan(&res)
