@@ -29,7 +29,7 @@ const maxZoom = 1.2;
 
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled } = props;
-  const { fitView, zoomIn, zoomOut, getZoom } = useReactFlow();
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
   const [showMinimap, setShowMinimap] = useState(true);
   const nodesInitialized = useNodesInitialized();
 
