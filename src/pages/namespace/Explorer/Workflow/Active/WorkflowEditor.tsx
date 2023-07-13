@@ -161,9 +161,9 @@ const WorkflowEditor: FC<{
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-48">
+            <Button variant="outline" className="w-52">
               <SelectedIcon />
-              {selectedLayout}
+              {t(`pages.explorer.workflow.editor.layout.${selectedLayout}`)}
               <RxChevronDown />
             </Button>
           </DropdownMenuTrigger>
@@ -179,7 +179,7 @@ const WorkflowEditor: FC<{
                   key={layout}
                 >
                   <Icon className="mr-2 h-4 w-4" />
-                  {layout}
+                  {t(`pages.explorer.workflow.editor.layout.${layout}`)}
                 </DropdownMenuItem>
               );
             })}
