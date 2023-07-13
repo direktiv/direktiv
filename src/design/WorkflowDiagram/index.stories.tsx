@@ -3,6 +3,7 @@ import "../../AppLegacy.css";
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Card } from "../Card";
+import { Orientation } from "./types";
 import WorkflowDiagram from "./index";
 import { useState } from "react";
 
@@ -212,6 +213,7 @@ export const WorkflowInstanceComplete = () => (
 
 export const UpdateWorkflow = () => {
   const [workflow, setWorkflow] = useState(exampleWorkflow);
+  const [orientation, setOrientation] = useState<Orientation>("horizontal");
 
   return (
     <Card className="flex h-96 flex-col gap-y-5 p-5" background="weight-1">
@@ -237,11 +239,21 @@ export const UpdateWorkflow = () => {
         >
           Empty Workflow
         </Button>
+        <Button
+          onClick={() => {
+            setOrientation((old) =>
+              old === "horizontal" ? "vertical" : "horizontal"
+            );
+          }}
+        >
+          Change Orientation
+        </Button>
       </ButtonBar>
       <WorkflowDiagram
         workflow={workflow}
         flow={["helloworld", "exit"]}
         instanceStatus="complete"
+        orientation={orientation}
       />
 
       <div>
@@ -263,10 +275,11 @@ export const ComplexWorkflowDiagram = () => {
   ];
 
   const [progress, setProgress] = useState(0);
+  const [orientation, setOrientation] = useState<Orientation>("horizontal");
 
   return (
     <div className="flex h-[600px] flex-col gap-y-5">
-      <div>
+      <div className="flex gap-x-2">
         <Button
           onClick={() => {
             setProgress((old) => {
@@ -279,11 +292,21 @@ export const ComplexWorkflowDiagram = () => {
         >
           Simulate Progress
         </Button>
+        <Button
+          onClick={() => {
+            setOrientation((old) =>
+              old === "horizontal" ? "vertical" : "horizontal"
+            );
+          }}
+        >
+          Change Orientation
+        </Button>
       </div>
       <WorkflowDiagram
         workflow={ComplexWorkflow}
         flow={allStates.slice(0, progress)}
         instanceStatus="complete"
+        orientation={orientation}
       />
     </div>
   );
