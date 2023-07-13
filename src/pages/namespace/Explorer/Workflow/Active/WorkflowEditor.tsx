@@ -19,6 +19,12 @@ import {
 } from "~/design/Dropdown";
 import { FC, SVGProps, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -26,6 +32,7 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
+import { Toggle } from "~/design/Toggle";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -159,32 +166,31 @@ const WorkflowEditor: FC<{
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="">
-              <SelectedIcon />
-              {t(`pages.explorer.workflow.editor.layout.${selectedLayout}`)}
-              <RxChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent className="w-60">
+        <ButtonBar className="block">
+          <TooltipProvider>
             {availableLayouts.map((layout) => {
               const Icon = layoutIcons[layout];
               return (
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedLayout(layout);
-                  }}
-                  key={layout}
-                >
-                  <Icon className="mr-2 h-4 w-4" />
-                  {t(`pages.explorer.workflow.editor.layout.${layout}`)}
-                </DropdownMenuItem>
+                <Tooltip key={layout}>
+                  <TooltipTrigger>
+                    <Toggle
+                      onClick={() => {
+                        setSelectedLayout(layout);
+                      }}
+                      pressed={layout === selectedLayout}
+                      outline
+                    >
+                      <Icon />
+                    </Toggle>
+                    <TooltipContent>
+                      {t(`pages.explorer.workflow.editor.layout.${layout}`)}
+                    </TooltipContent>
+                  </TooltipTrigger>
+                </Tooltip>
               );
             })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </TooltipProvider>
+        </ButtonBar>
         <DropdownMenu>
           <ButtonBar>
             <Button
