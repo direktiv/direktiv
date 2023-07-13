@@ -17,7 +17,7 @@ import { Toggle } from "../Toggle";
 interface ZoomPanDiagramProps {
   elements: (Edge | Node)[];
   disabled: boolean;
-  orientation?: "horizontal" | "vertical";
+  orientation: "horizontal" | "vertical";
 }
 
 const nodeTypes = {

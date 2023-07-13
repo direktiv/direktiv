@@ -32,7 +32,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     flow = [],
     instanceStatus = "pending",
     disabled = false,
-    orientation,
+    orientation = "horizontal",
   } = props;
 
   const [invalidWorkflow, setInvalidWorkflow] = useState<string | null>(null);

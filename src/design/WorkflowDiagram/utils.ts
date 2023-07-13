@@ -58,12 +58,12 @@ const position = { x: 0, y: 0 };
 export function generateElements(
   getLayoutedElements: (
     incomingEles: (Node | Edge)[],
-    orientation?: Orientation
+    orientation: Orientation
   ) => (Node | Edge)[],
   value: IWorkflow | null,
   flow: string[],
   status: "pending" | "complete" | "failed",
-  orientation?: Orientation
+  orientation: Orientation
 ) {
   const newElements: (Node | Edge)[] = [];
 
