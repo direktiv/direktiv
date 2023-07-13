@@ -54,15 +54,19 @@ const ParamSelect = ({
 
 const FilterSubMenu = ({
   field,
+  value,
   setFilter,
   clearFilter,
 }: {
   field: FilterField;
+  value?: string;
   setFilter: (filter: FiltersObj) => void;
   clearFilter: (field: FilterField) => void;
 }) => {
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>(value || "");
 
+  // TODO: This is currently hard coded for field "AS", but
+  // should be usable for other fields
   const handleKeyDown = (event: { key: string }) => {
     if (event.key === "Enter" && inputValue) {
       setFilter({
@@ -92,7 +96,7 @@ const FilterSubMenu = ({
         </Command>
       )}
       {field === "STATUS" && (
-        <Command>
+        <Command value={value}>
           <CommandInput autoFocus placeholder="Type a command or search..." />
           <CommandList>
             <CommandGroup heading="Filter by state">
@@ -141,7 +145,7 @@ const FilterSubMenu = ({
         </Command>
       )}
       {field === "TRIGGER" && (
-        <Command>
+        <Command value={value}>
           <CommandInput autoFocus placeholder="Type a command or search..." />
           <CommandList>
             <CommandGroup heading="Filter by invoker">
@@ -258,6 +262,7 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
             <PopoverContent align="start">
               <FilterSubMenu
                 field={field}
+                value={filters[field]?.value}
                 setFilter={setFilter}
                 clearFilter={clearFilter}
               />
@@ -288,6 +293,7 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
           ) : (
             <FilterSubMenu
               field={selectedField}
+              value={filters[selectedField]?.value}
               setFilter={setFilter}
               clearFilter={clearFilter}
             />
