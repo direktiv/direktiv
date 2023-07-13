@@ -105,6 +105,15 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	return srv, nil
 }
 
+type gormLogger struct {
+	*zap.SugaredLogger
+}
+
+func (g gormLogger) Write(p []byte) (n int, err error) {
+	g.Debugw(string(p), "component", "GORM")
+	return len(p), nil
+}
+
 //nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
@@ -140,7 +149,7 @@ func (srv *server) start(ctx context.Context) error {
 		// Conn:                 edb.DB(),
 	}), &gorm.Config{
 		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
 			logger.Config{
 				LogLevel: logger.Info,
 			},
