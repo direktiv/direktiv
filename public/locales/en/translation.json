@@ -164,8 +164,8 @@
           "runBtn": "Run",
           "saveBtn": "Save",
           "layout": {
-            "code": "Code",
-            "diagram": "Diagram",
+            "code": "Code View",
+            "diagram": "Diagram View",
             "splitVertically": "Split Vertically",
             "splitHorizontally": "Split Horizontally"
           }
