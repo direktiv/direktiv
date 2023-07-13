@@ -21,7 +21,7 @@ import { ZoomPanDiagram } from "./ZoomPanDiagram";
 type WorkflowDiagramProps = {
   workflow: string;
   flow?: string[];
-  oriantation?: Orientation;
+  orientation?: Orientation;
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
 };
@@ -32,7 +32,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     flow = [],
     instanceStatus = "pending",
     disabled = false,
-    oriantation,
+    orientation,
   } = props;
 
   const [invalidWorkflow, setInvalidWorkflow] = useState<string | null>(null);
@@ -64,12 +64,16 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
     parsedWorkflow,
     flow,
     instanceStatus,
-    oriantation
+    orientation
   );
 
   return (
     <ReactFlowProvider>
-      <ZoomPanDiagram disabled={disabled} elements={flowElements} />
+      <ZoomPanDiagram
+        disabled={disabled}
+        elements={flowElements}
+        orientation={orientation}
+      />
     </ReactFlowProvider>
   );
 }

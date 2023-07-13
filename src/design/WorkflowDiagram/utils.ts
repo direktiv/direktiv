@@ -11,9 +11,9 @@ const defaultEdgeType = ConnectionLineType.Bezier;
 
 export const getLayoutedElements = (
   incomingEles: (Edge | Node)[],
-  direction: Orientation = "vertical"
+  orientation: Orientation = "vertical"
 ) => {
-  const isHorizontal = direction === "horizontal";
+  const isHorizontal = orientation === "horizontal";
 
   dagreGraph.setGraph({ rankdir: isHorizontal ? "lr" : "tb" });
 

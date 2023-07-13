@@ -17,6 +17,7 @@ import { Toggle } from "../Toggle";
 interface ZoomPanDiagramProps {
   elements: (Edge | Node)[];
   disabled: boolean;
+  orientation?: "horizontal" | "vertical";
 }
 
 const nodeTypes = {
@@ -28,7 +29,7 @@ const nodeTypes = {
 const maxZoom = 1.2;
 
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
-  const { elements, disabled } = props;
+  const { elements, disabled, orientation } = props;
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   const [showMinimap, setShowMinimap] = useState(true);
   const nodesInitialized = useNodesInitialized();
@@ -49,6 +50,10 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       fitView();
     }
   }, [fitView, nodesInitialized]);
+
+  useEffect(() => {
+    fitView();
+  }, [fitView, orientation]);
 
   return (
     <ReactFlow
