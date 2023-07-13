@@ -102,6 +102,7 @@ export function generateElements(
           state: value.states[i],
           functions: value.functions,
           wasExecuted: flow.includes(value.states[i]?.id || ""),
+          orientation,
         },
         type: "state",
       });
@@ -204,7 +205,7 @@ export function generateElements(
     newElements.push({
       id: "startNode",
       position,
-      data: { label: "", wasExecuted: hasStarted },
+      data: { label: "", wasExecuted: hasStarted, orientation },
       type: "start",
       sourcePosition: Position.Right,
     });
@@ -285,7 +286,7 @@ export function generateElements(
     newElements.push({
       id: "endNode",
       type: "end",
-      data: { label: "", wasExecuted: reachedEnd },
+      data: { label: "", wasExecuted: reachedEnd, orientation },
       position,
     });
   }

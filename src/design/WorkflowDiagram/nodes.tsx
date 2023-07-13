@@ -2,6 +2,7 @@ import { ComponentProps, FC, PropsWithChildren } from "react";
 import { Handle, Position } from "reactflow";
 
 import { Card } from "../Card";
+import { Orientation } from "./types";
 import { Separator } from "../Separator";
 import { twMergeClsx } from "~/util/helpers";
 
@@ -10,16 +11,20 @@ type StateProps = {
     label: string;
     type: string;
     wasExecuted: boolean;
+    orientation: Orientation;
   };
 };
 
 type StartEndProps = {
   data: {
     wasExecuted: boolean;
+    orientation: Orientation;
   };
 };
 
-type HandleProps = ComponentProps<typeof Handle> & { highlight?: boolean };
+type HandleProps = ComponentProps<typeof Handle> & {
+  highlight?: boolean;
+};
 
 const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
   <Handle
@@ -37,7 +42,7 @@ const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
 );
 
 export const State: FC<StateProps> = ({ data }) => {
-  const { label, type, wasExecuted } = data;
+  const { label, type, wasExecuted, orientation } = data;
   return (
     <Card
       className={twMergeClsx(
@@ -50,7 +55,7 @@ export const State: FC<StateProps> = ({ data }) => {
     >
       <CustomHandle
         type="target"
-        position={Position.Left}
+        position={orientation === "horizontal" ? Position.Left : Position.Top}
         highlight={wasExecuted}
       />
       <div
@@ -78,7 +83,9 @@ export const State: FC<StateProps> = ({ data }) => {
       </div>
       <CustomHandle
         type="source"
-        position={Position.Right}
+        position={
+          orientation === "horizontal" ? Position.Right : Position.Bottom
+        }
         highlight={wasExecuted}
       />
     </Card>
@@ -125,7 +132,9 @@ export const Start: FC<StartEndProps> = ({ data }) => (
   <StartEndHandle highlight={data.wasExecuted}>
     <CustomHandle
       type="source"
-      position={Position.Right}
+      position={
+        data.orientation === "horizontal" ? Position.Right : Position.Bottom
+      }
       highlight={data.wasExecuted}
     />
   </StartEndHandle>
@@ -135,7 +144,9 @@ export const End: FC<StartEndProps> = ({ data }) => (
   <StartEndHandle highlight={data.wasExecuted} end>
     <CustomHandle
       type="target"
-      position={Position.Left}
+      position={
+        data.orientation === "horizontal" ? Position.Left : Position.Top
+      }
       highlight={data.wasExecuted}
     />
   </StartEndHandle>
