@@ -166,7 +166,7 @@ const WorkflowEditor: FC<{
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <ButtonBar className="block">
+        <ButtonBar>
           <TooltipProvider>
             {availableLayouts.map((layout) => {
               const Icon = layoutIcons[layout];
@@ -178,6 +178,7 @@ const WorkflowEditor: FC<{
                         setSelectedLayout(layout);
                       }}
                       pressed={layout === selectedLayout}
+                      className="w-full"
                     >
                       <Icon />
                     </Toggle>
