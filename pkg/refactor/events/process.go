@@ -16,6 +16,7 @@ type EventProcessing interface {
 		ctx context.Context,
 		namespace uuid.UUID,
 		cloudevents []cloudevents.Event,
+		logErrors func(template string, args ...interface{}),
 	)
 }
 
@@ -36,21 +37,18 @@ func (ee EventEngine) ProcessEvents(
 	ctx context.Context,
 	namespace uuid.UUID,
 	cloudevents []cloudevents.Event,
+	handleErrors func(template string, args ...interface{}),
 ) {
 	topics := ee.getTopics(ctx, namespace, cloudevents)
 	listeners, err := ee.getListeners(ctx, topics...)
 	if err != nil {
-		_ = err
-		panic(err)
+		handleErrors("error getListeners %v", err)
 	}
-	// TODO log err
 	h := ee.getEventHandlers(ctx, listeners)
-	// TODO log errors
 	ee.handleEvents(ctx, namespace, cloudevents, h)
 	err = ee.usePostProcessingEvents(ctx, listeners)
 	if err != nil {
-		_ = err
-		panic(err)
+		handleErrors("error usePostProcessingEvents %v", err)
 	}
 }
 

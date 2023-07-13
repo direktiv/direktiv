@@ -282,7 +282,7 @@ func convertListeners(res []*gormEventListener, conv []*events.EventListener) ([
 }
 
 func (s *sqlEventTopicsStore) Delete(ctx context.Context, eventListenerID uuid.UUID) error {
-	q := "DELETE FROM event_topics WHERE eventListenerID = $1;"
+	q := "DELETE FROM event_topics WHERE event_listener_id = $1;"
 	tx := s.db.WithContext(ctx).Exec(q, eventListenerID)
 	if tx.Error != nil {
 		return tx.Error

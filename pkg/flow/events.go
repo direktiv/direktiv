@@ -232,7 +232,12 @@ func (events *events) handleEvent(ctx context.Context, ns *database.Namespace, c
 	}
 	ctx, end := traceProcessingMessage(ctx, *ce)
 	defer end()
-	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce})
+	// tx, err := events.beginSqlTx(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce}, events.sugar.Errorf)
+	// tx.Commit(ctx)
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
 	return nil
 }
