@@ -24,7 +24,7 @@ export const useThemeState = create<ThemeState>()(
       },
     }),
     {
-      name: "directiv-store-theme",
+      name: "direktiv-store-theme",
       partialize: (state) => ({
         storedTheme: state.storedTheme, // pick all fields to persistend, and don't persist actions
       }),
