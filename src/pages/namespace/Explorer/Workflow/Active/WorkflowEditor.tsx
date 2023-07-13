@@ -35,14 +35,13 @@ import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-// get type of useNodeContent return value
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
 const availableLayouts = [
   "code",
   "diagram",
-  "splitVertical",
-  "splitHorizontal",
+  "splitVertically",
+  "splitHorizontally",
 ] as const;
 
 type layoutIconsType = Record<
@@ -53,8 +52,8 @@ type layoutIconsType = Record<
 const layoutIcons: layoutIconsType = {
   code: Code,
   diagram: Workflow,
-  splitVertical: Columns,
-  splitHorizontal: Rows,
+  splitVertically: Columns,
+  splitHorizontally: Rows,
 };
 
 type EditorLayoutType = (typeof availableLayouts)[number];
