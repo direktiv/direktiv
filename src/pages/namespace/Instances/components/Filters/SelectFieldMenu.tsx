@@ -6,13 +6,13 @@ import {
   CommandList,
 } from "~/design/Command";
 
-import type { FilterField } from ".";
+import { FiltersObj } from ".";
 import { useTranslation } from "react-i18next";
 
 export const SelectFieldMenu = ({
   onSelect,
 }: {
-  onSelect: (value: FilterField) => void;
+  onSelect: (value: keyof FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
   return (

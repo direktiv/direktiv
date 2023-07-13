@@ -8,20 +8,26 @@ import { SelectFieldMenu } from "./SelectFieldMenu";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export type FilterField = "AS" | "STATUS" | "TRIGGER" | "AFTER" | "BEFORE";
-
-type FilterItem = {
-  type: "MATCH" | "CONTAINS";
-  value: string;
-};
-
 export type FiltersObj = {
-  [key in FilterField]?: FilterItem;
+  AS?: { type: "CONTAINS"; value: string };
+  STATUS?: {
+    type: "MATCH";
+    value: "pending" | "complete" | "cancelled" | "failed";
+  };
+  TRIGGER?: {
+    type: "MATCH";
+    value: "api" | "cloudevent" | "instance" | "cron";
+  };
+  // TODO: use Date type (but display components need a string value)
+  AFTER?: { type: "AFTER"; value: string };
+  BEFORE?: { type: "BEFORE"; value: string };
 };
 
 const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
   const { t } = useTranslation();
-  const [selectedField, setSelectedField] = useState<FilterField | undefined>();
+  const [selectedField, setSelectedField] = useState<
+    keyof FiltersObj | undefined
+  >();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [filters, setFilters] = useState<FiltersObj>({});
 
@@ -44,7 +50,7 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
     onUpdate(newFilters);
   };
 
-  const clearFilter = (field: FilterField) => {
+  const clearFilter = (field: keyof FiltersObj) => {
     const newFilters = { ...filters };
     delete newFilters[field];
     setFilters(newFilters);
@@ -53,14 +59,16 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
 
   const hasFilters = !!Object.keys(filters).length;
 
-  const definedFilters = Object.keys(filters) as Array<FilterField>;
+  const definedFilters = Object.keys(filters) as Array<keyof FiltersObj>;
 
   return (
     <div className="m-2 flex flex-row gap-2">
       {definedFilters.map((field) => (
         <ButtonBar key={field}>
           <Popover>
-            <Button variant="outline">{field}</Button>
+            <Button variant="outline">
+              {t([`pages.instances.list.filter.field.${field}`])}
+            </Button>
             <PopoverTrigger asChild>
               <Button variant="outline">{filters[field]?.value}</Button>
             </PopoverTrigger>

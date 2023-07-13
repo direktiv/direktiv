@@ -40,8 +40,15 @@ const InstancesListPage = () => {
       if (!filterItem) {
         return;
       }
+
+      // FilterFields uses BEFORE and AFTER as distinct types. In the query,
+      // the format is filter.field=CREATED&filter.type=BEFORE|AFTER
+      const queryField = ["AFTER", "BEFORE"].includes(field)
+        ? "CREATED"
+        : field;
+
       query = query.concat(
-        `&filter.field=${field}&filter.type=${filterItem.type}&filter.val=${filterItem.value}`
+        `&filter.field=${queryField}&filter.type=${filterItem.type}&filter.val=${filterItem.value}`
       );
     });
     setFilterQuery(query);

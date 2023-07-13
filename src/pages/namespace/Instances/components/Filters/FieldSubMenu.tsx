@@ -5,9 +5,9 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
-import { FilterField, FiltersObj } from ".";
 
 import { Datepicker } from "~/design/Datepicker";
+import { FiltersObj } from ".";
 import Input from "~/design/Input";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,10 +18,10 @@ const FieldSubMenu = ({
   setFilter,
   clearFilter,
 }: {
-  field: FilterField;
+  field: keyof FiltersObj;
   value?: string;
   setFilter: (filter: FiltersObj) => void;
-  clearFilter: (field: FilterField) => void;
+  clearFilter: (field: keyof FiltersObj) => void;
 }) => {
   const [inputValue, setInputValue] = useState<string>(value || "");
   const { t } = useTranslation();
@@ -38,6 +38,14 @@ const FieldSubMenu = ({
     if (event.key === "Enter" && !inputValue) {
       clearFilter(field);
     }
+  };
+
+  // TODO: Handle dates with Date type (but display components need a string value)
+  const setDate = (type: "AFTER" | "BEFORE", value: Date) => {
+    const dateString = value.toISOString();
+    setFilter({
+      [type]: { type, value: dateString },
+    });
   };
 
   return (
@@ -173,7 +181,10 @@ const FieldSubMenu = ({
             <CommandGroup
               heading={t("pages.instances.list.filter.menuHeading.AFTER")}
             >
-              <Datepicker />
+              <Datepicker
+                mode="single"
+                onSelect={(value) => value && setDate("AFTER", value)}
+              />
             </CommandGroup>
           </CommandList>
         </Command>
@@ -184,7 +195,10 @@ const FieldSubMenu = ({
             <CommandGroup
               heading={t("pages.instances.list.filter.menuHeading.BEFORE")}
             >
-              <Datepicker />
+              <Datepicker
+                mode="single"
+                onSelect={(value) => value && setDate("BEFORE", value)}
+              />
             </CommandGroup>
           </CommandList>
         </Command>
