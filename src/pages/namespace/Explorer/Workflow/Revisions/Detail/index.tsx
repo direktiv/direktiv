@@ -24,7 +24,7 @@ import Editor from "~/design/Editor";
 import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
 import { Toggle } from "~/design/Toggle";
-import { WorkspaceLayout } from "../../Active/WorkspaceLayout";
+import { WorkspaceLayout } from "../../../../../../componentsNext/WorkspaceLayout";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
