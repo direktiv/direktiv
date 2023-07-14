@@ -100,7 +100,6 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
             setShowMinimap((prev) => !prev);
           }}
           pressed={showMinimap}
-          outline
         >
           <Map />
         </Toggle>

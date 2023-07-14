@@ -20,13 +20,6 @@ export const Default: Story = {
     </Toggle>
   ),
   argTypes: {
-    outline: {
-      description: "with outline",
-      type: {
-        name: "boolean",
-        required: false,
-      },
-    },
     size: {
       description: "size",
       control: "select",
@@ -36,21 +29,15 @@ export const Default: Story = {
   },
 };
 
-export const OutlineToggle = () => (
-  <Toggle aria-label="Toggle italic" outline>
-    <Filter />
-  </Toggle>
-);
-
 export const ToggleSize = () => (
   <div className="flex h-5 items-center space-x-4">
-    <Toggle aria-label="Toggle italic" size="sm" outline>
+    <Toggle aria-label="Toggle italic" size="sm">
       <Filter />
     </Toggle>
-    <Toggle aria-label="Toggle italic" outline>
+    <Toggle aria-label="Toggle italic">
       <Filter />
     </Toggle>
-    <Toggle aria-label="Toggle italic" size="lg" outline>
+    <Toggle aria-label="Toggle italic" size="lg">
       <Filter />
     </Toggle>
   </div>
@@ -78,13 +65,13 @@ export const DefaultPressed = () => (
 export const Toolbar = () => (
   <div className="flex flex-col space-y-3">
     <ButtonBar>
-      <Toggle aria-label="Toggle italic" size="sm" outline>
+      <Toggle aria-label="Toggle italic" size="sm">
         <Filter />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="sm" outline>
+      <Toggle aria-label="Toggle italic" size="sm">
         <Bug />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="sm" outline>
+      <Toggle aria-label="Toggle italic" size="sm">
         <Eye />
       </Toggle>
       <Button variant="outline" size="sm">
@@ -92,13 +79,13 @@ export const Toolbar = () => (
       </Button>
     </ButtonBar>
     <ButtonBar>
-      <Toggle aria-label="Toggle italic" outline>
+      <Toggle aria-label="Toggle italic">
         <Filter />
       </Toggle>
-      <Toggle aria-label="Toggle italic" outline>
+      <Toggle aria-label="Toggle italic">
         <Bug />
       </Toggle>
-      <Toggle aria-label="Toggle italic" outline>
+      <Toggle aria-label="Toggle italic">
         <Eye />
       </Toggle>
       <Button variant="outline">
@@ -106,13 +93,13 @@ export const Toolbar = () => (
       </Button>
     </ButtonBar>
     <ButtonBar>
-      <Toggle aria-label="Toggle italic" size="lg" outline>
+      <Toggle aria-label="Toggle italic" size="lg">
         <Filter />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="lg" outline>
+      <Toggle aria-label="Toggle italic" size="lg">
         <Bug />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="lg" outline>
+      <Toggle aria-label="Toggle italic" size="lg">
         <Eye />
       </Toggle>
       <Button variant="outline" size="lg">
