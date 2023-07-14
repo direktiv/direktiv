@@ -122,11 +122,12 @@ const WorkflowEditor: FC<{
               return (
                 <Tooltip key={lay}>
                   <TooltipTrigger asChild>
-                    <div>
+                    <div className="flex grow">
                       <Toggle
                         onClick={() => {
                           setLayout(lay);
                         }}
+                        className="grow"
                         pressed={lay === layout}
                       >
                         <Icon />
