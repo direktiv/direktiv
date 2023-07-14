@@ -19,10 +19,12 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
+import { Diagram } from "../../Active/Diagram";
 import Editor from "~/design/Editor";
 import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
 import { Toggle } from "~/design/Toggle";
+import { WorkspaceLayout } from "../../Active/WorkspaceLayout";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -70,24 +72,33 @@ const WorkflowRevisionsPage = () => {
           />
         </h3>
       </div>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Card className="grow p-4" data-testid="revisions-detail-editor">
-            <Editor
-              value={workflowData}
-              theme={theme ?? undefined}
-              options={{ readOnly: true }}
-            />
-          </Card>
-        </PopoverTrigger>
-        <PopoverContent asChild>
-          <Alert variant="info" className="min-w-max">
-            {t(
-              "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
-            )}
-          </Alert>
-        </PopoverContent>
-      </Popover>
+
+      <WorkspaceLayout
+        layout={layout}
+        diagramComponent={
+          <Diagram workflowData={workflowData} layout={layout} />
+        }
+        editorComponent={
+          <Popover>
+            <PopoverTrigger asChild>
+              <Card className="grow p-4" data-testid="revisions-detail-editor">
+                <Editor
+                  value={workflowData}
+                  theme={theme ?? undefined}
+                  options={{ readOnly: true }}
+                />
+              </Card>
+            </PopoverTrigger>
+            <PopoverContent asChild>
+              <Alert variant="info" className="min-w-max">
+                {t(
+                  "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
+                )}
+              </Alert>
+            </PopoverContent>
+          </Popover>
+        }
+      />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <ButtonBar>
