@@ -1,3 +1,6 @@
+import { Code, Columns, Rows, Workflow } from "lucide-react";
+import { FC, SVGProps } from "react";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -9,6 +12,13 @@ export const availableLayouts = [
 ] as const;
 
 export type LayoutsType = (typeof availableLayouts)[number];
+
+export const layoutIcons: Record<LayoutsType, FC<SVGProps<SVGSVGElement>>> = {
+  code: Code,
+  diagram: Workflow,
+  splitVertically: Columns,
+  splitHorizontally: Rows,
+};
 
 interface EditorState {
   layout: LayoutsType;

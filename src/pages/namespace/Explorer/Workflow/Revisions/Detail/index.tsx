@@ -1,14 +1,28 @@
 import { ArrowLeft, GitMerge, Tag, Undo } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
+import {
+  availableLayouts,
+  layoutIcons,
+  useEditorActions,
+  useEditorLayout,
+} from "~/util/store/editor";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
 import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
+import { Toggle } from "~/design/Toggle";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -22,6 +36,8 @@ const WorkflowRevisionsPage = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const layout = useEditorLayout();
+  const { setLayout } = useEditorActions();
 
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path, revision: selectedRevision });
@@ -53,7 +69,54 @@ const WorkflowRevisionsPage = () => {
             }}
           />
         </h3>
+      </div>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Card className="grow p-4" data-testid="revisions-detail-editor">
+            <Editor
+              value={workflowData}
+              theme={theme ?? undefined}
+              options={{ readOnly: true }}
+            />
+          </Card>
+        </PopoverTrigger>
+        <PopoverContent asChild>
+          <Alert variant="info" className="min-w-max">
+            {t(
+              "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
+            )}
+          </Alert>
+        </PopoverContent>
+      </Popover>
 
+      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        <ButtonBar>
+          <TooltipProvider>
+            {availableLayouts.map((lay) => {
+              const Icon = layoutIcons[lay];
+              return (
+                <Tooltip key={lay}>
+                  <TooltipTrigger asChild>
+                    <div className="flex grow">
+                      <Toggle
+                        onClick={() => {
+                          setLayout(lay);
+                        }}
+                        className="grow"
+                        pressed={lay === layout}
+                      >
+                        <Icon />
+                      </Toggle>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t(`pages.explorer.workflow.editor.layout.${lay}`)}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </TooltipProvider>
+        </ButtonBar>
         <Button asChild variant="outline">
           <Link
             data-testid="revisions-detail-back-link"
@@ -94,24 +157,6 @@ const WorkflowRevisionsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Card className="grow p-4" data-testid="revisions-detail-editor">
-            <Editor
-              value={workflowData}
-              theme={theme ?? undefined}
-              options={{ readOnly: true }}
-            />
-          </Card>
-        </PopoverTrigger>
-        <PopoverContent asChild>
-          <Alert variant="info" className="min-w-max">
-            {t(
-              "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
-            )}
-          </Alert>
-        </PopoverContent>
-      </Popover>
     </div>
   );
 };

@@ -1,14 +1,3 @@
-import {
-  Code,
-  Columns,
-  GitBranchPlus,
-  Play,
-  Rows,
-  Save,
-  Tag,
-  Undo,
-  Workflow,
-} from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   DropdownMenu,
@@ -16,19 +5,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FC, SVGProps, useEffect, useState } from "react";
-import {
-  LayoutsType,
-  availableLayouts,
-  useEditorActions,
-  useEditorLayout,
-} from "~/util/store/editor";
+import { FC, useEffect, useState } from "react";
+import { GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import {
+  availableLayouts,
+  layoutIcons,
+  useEditorActions,
+  useEditorLayout,
+} from "~/util/store/editor";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -43,13 +33,6 @@ import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
 import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
-
-const layoutIcons: Record<LayoutsType, FC<SVGProps<SVGSVGElement>>> = {
-  code: Code,
-  diagram: Workflow,
-  splitVertically: Columns,
-  splitHorizontally: Rows,
-};
 
 export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
