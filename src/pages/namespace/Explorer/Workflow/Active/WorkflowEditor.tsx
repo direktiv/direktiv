@@ -32,12 +32,11 @@ import {
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import { Card } from "~/design/Card";
 import { CodeEditor } from "./CodeEditor";
+import { Diagram } from "./Diagram";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { Toggle } from "~/design/Toggle";
-import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { WorkspaceLayout } from "./WorkspaceLayout";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -101,14 +100,7 @@ const WorkflowEditor: FC<{
       <WorkspaceLayout
         layout={layout}
         diagramComponent={
-          <Card className="flex grow">
-            <WorkflowDiagram
-              workflow={workflowData}
-              orientation={
-                layout === "splitVertically" ? "vertical" : "horizontal"
-              }
-            />
-          </Card>
+          <Diagram workflowData={workflowData} layout={layout} />
         }
         editorComponent={
           <CodeEditor
