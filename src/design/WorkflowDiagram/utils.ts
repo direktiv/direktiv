@@ -128,7 +128,7 @@ export function generateElements(
         for (let y = 0; y < (value.states[i]?.conditions?.length || 0); y++) {
           if (value.states[i]?.conditions[y]?.transition) {
             newElements.push({
-              id: `${value.states[i]?.id}-${value.states[i]?.conditions[y]?.transition}`,
+              id: `${value.states[i]?.id}-${value.states[i]?.conditions[y]?.transition}-${i}-${y}`,
               source: value.states[i]?.id || "",
               target: value.states[i]?.conditions[y]?.transition || "",
               animated: false,
