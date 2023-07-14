@@ -161,15 +161,18 @@ const WorkflowEditor: FC<{
               const Icon = layoutIcons[lay];
               return (
                 <Tooltip key={lay}>
-                  <TooltipTrigger>
-                    <Toggle
-                      onClick={() => {
-                        setLayout(lay);
-                      }}
-                      pressed={lay === layout}
-                    >
-                      <Icon />
-                    </Toggle>
+                  <TooltipTrigger asChild>
+                    {/* this div is need  */}
+                    <div>
+                      <Toggle
+                        onClick={() => {
+                          setLayout(lay);
+                        }}
+                        pressed={lay === layout}
+                      >
+                        <Icon />
+                      </Toggle>
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     {t(`pages.explorer.workflow.editor.layout.${lay}`)}
