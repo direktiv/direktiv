@@ -1,3 +1,5 @@
+/* edges  */
+
 .react-flow__edge-path {
   @apply !stroke-gray-8 dark:!stroke-gray-dark-8;
 }
