@@ -1,15 +1,15 @@
 import { Bug, Eye, Filter, HelpCircle } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
-import Button from "../Button";
-import { ButtonBar } from "../ButtonBar";
-import { Toggle } from "./index";
-import { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../Tooltip";
+import Button from "../Button";
+import { ButtonBar } from "../ButtonBar";
+import { Toggle } from "./index";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Toggle",
