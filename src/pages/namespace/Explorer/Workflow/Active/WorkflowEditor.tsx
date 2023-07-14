@@ -40,6 +40,7 @@ import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { Toggle } from "~/design/Toggle";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
+import { WorkspaceLayout } from "./WorkspaceLayout";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
@@ -103,57 +104,73 @@ const WorkflowEditor: FC<{
         <Tag className="h-5" />
         {t("pages.explorer.workflow.headline")}
       </h3>
-      <Card className="flex grow">
-        <WorkflowDiagram workflow={workflowData} />
-      </Card>
-      <Card className="flex grow flex-col p-4" data-testid="workflow-editor">
-        <div className="grow">
-          <Editor
-            value={workflowData}
-            onMount={(editor) => {
-              editor.focus();
-            }}
-            onChange={(newData) => {
-              setValue(newData ?? "");
-            }}
-            theme={theme ?? undefined}
-            onSave={onSave}
-          />
-        </div>
-        <div
-          className="flex justify-between gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8"
-          data-testid="workflow-txt-updated"
-        >
-          {data.revision?.createdAt && !error && (
-            <>
-              {t("pages.explorer.workflow.updated", {
-                relativeTime: updatedAt,
-              })}
-            </>
-          )}
-          {error && (
-            <Popover defaultOpen>
-              <PopoverTrigger asChild>
-                <span className="flex items-center gap-x-1 text-danger-11 dark:text-danger-dark-11">
-                  <Bug className="h-5" />
-                  {t("pages.explorer.workflow.editor.theresOneIssue")}
-                </span>
-              </PopoverTrigger>
-              <PopoverContent asChild>
-                <div className="flex p-4">
-                  <div className="grow">{error}</div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
+      <WorkspaceLayout
+        layout={layout}
+        diagramComponent={
+          <Card className="flex grow">
+            <WorkflowDiagram
+              workflow={workflowData}
+              orientation={
+                layout === "splitVertically" ? "vertical" : "horizontal"
+              }
+            />
+          </Card>
+        }
+        editorComponent={
+          <Card
+            className="flex grow flex-col p-4"
+            data-testid="workflow-editor"
+          >
+            <div className="grow">
+              <Editor
+                value={workflowData}
+                onMount={(editor) => {
+                  editor.focus();
+                }}
+                onChange={(newData) => {
+                  setValue(newData ?? "");
+                }}
+                theme={theme ?? undefined}
+                onSave={onSave}
+              />
+            </div>
+            <div
+              className="flex justify-between gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8"
+              data-testid="workflow-txt-updated"
+            >
+              {data.revision?.createdAt && !error && (
+                <>
+                  {t("pages.explorer.workflow.updated", {
+                    relativeTime: updatedAt,
+                  })}
+                </>
+              )}
+              {error && (
+                <Popover defaultOpen>
+                  <PopoverTrigger asChild>
+                    <span className="flex items-center gap-x-1 text-danger-11 dark:text-danger-dark-11">
+                      <Bug className="h-5" />
+                      {t("pages.explorer.workflow.editor.theresOneIssue")}
+                    </span>
+                  </PopoverTrigger>
+                  <PopoverContent asChild>
+                    <div className="flex p-4">
+                      <div className="grow">{error}</div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
 
-          {hasUnsavedChanged && (
-            <span className="text-center">
-              {t("pages.explorer.workflow.editor.unsavedNote")}
-            </span>
-          )}
-        </div>
-      </Card>
+              {hasUnsavedChanged && (
+                <span className="text-center">
+                  {t("pages.explorer.workflow.editor.unsavedNote")}
+                </span>
+              )}
+            </div>
+          </Card>
+        }
+      />
+
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <ButtonBar>
           <TooltipProvider>
@@ -162,7 +179,6 @@ const WorkflowEditor: FC<{
               return (
                 <Tooltip key={lay}>
                   <TooltipTrigger asChild>
-                    {/* this div is need  */}
                     <div>
                       <Toggle
                         onClick={() => {
