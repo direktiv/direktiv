@@ -26,7 +26,8 @@ const nodeTypes = {
   end: End,
 };
 
-const maxZoom = 1.2;
+const maxZoom = 1.5;
+const minZoom = 0.2;
 
 export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
   const { elements, disabled, orientation } = props;
@@ -65,6 +66,7 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       elementsSelectable={!disabled}
       fitView={true}
       maxZoom={maxZoom}
+      minZoom={minZoom}
     >
       <ButtonBar className="absolute top-2 left-2 z-50 bg-white dark:bg-black">
         <Button
