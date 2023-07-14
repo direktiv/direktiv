@@ -1,6 +1,3 @@
-import "./style.css";
-import "reactflow/dist/base.css";
-
 import { IWorkflow, Orientation } from "./types";
 import { generateElements, getLayoutedElements } from "./utils";
 import { useMemo, useState } from "react";
