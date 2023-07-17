@@ -42,10 +42,8 @@ export const getLayoutedElements = (
       const nodeWithPosition = dagreGraph.node(el.id);
       el.targetPosition = isHorizontal ? Position.Left : Position.Top;
       el.sourcePosition = isHorizontal ? Position.Right : Position.Bottom;
-
-      //hack to trigger refresh
       el.position = {
-        x: nodeWithPosition.x + Math.random() / 1000,
+        x: nodeWithPosition.x,
         y: nodeWithPosition.y,
       };
     }
