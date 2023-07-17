@@ -56,6 +56,15 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
     fitView();
   }, [fitView, orientation]);
 
+  // TODO: this needs to be optimized when refactoring (maybe with a ref on the reactflow component)
+  useEffect(() => {
+    // use timout to wait for orientation change to be applied to the DOM
+    const rerenderOnOrientationChange = setTimeout(fitView);
+    return () => {
+      clearTimeout(rerenderOnOrientationChange);
+    };
+  }, [orientation, fitView]);
+
   return (
     <ReactFlow
       edges={sep[1]}
