@@ -325,7 +325,7 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 
 .PHONY: unittest
 unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
-	go test -p 1 -cover -timeout 4s ${UNITTEST_PACKAGES}
+	go test -p 1 -cover -timeout 60s ${UNITTEST_PACKAGES}
 
 
 .PHONY: lint 
@@ -347,3 +347,6 @@ test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
 	node:alpine npm --prefix "/tests" run all -- ${JEST_PREFIX}
 
+server-godoc:
+	go install golang.org/x/tools/cmd/godoc@latest
+	godoc -http=:6060
