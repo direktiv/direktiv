@@ -1,3 +1,4 @@
+import { BaseSyntheticEvent, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
@@ -5,9 +6,9 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import FieldSubMenu from "./FieldSubMenu";
 import { FiltersObj } from "~/api/instances/query/get";
+import Input from "~/design/Input";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import moment from "moment";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type FiltersProps = {
@@ -46,6 +47,26 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     onUpdate(newFilters);
   };
 
+  const setTime = (event: BaseSyntheticEvent, field: "AFTER" | "BEFORE") => {
+    const [hr, min] = event.target.value.split(":");
+
+    const { [field]: filterItem, ...rest } = value;
+
+    if (!filterItem?.value) {
+      throw new Error(
+        "Trying to set time on date that doesn't exist in filters object"
+      );
+    }
+
+    filterItem.value.setHours(hr);
+    filterItem.value.setMinutes(min);
+
+    onUpdate({
+      [field]: filterItem,
+      ...rest,
+    });
+  };
+
   const hasFilters = !!Object.keys(value).length;
 
   const definedFilters = Object.keys(value) as Array<keyof FiltersObj>;
@@ -76,28 +97,43 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
             </Popover>
           )}
           {(field === "BEFORE" || field === "AFTER") && (
-            <Popover>
+            <>
               <Button variant="outline">
                 {t([`pages.instances.list.filter.field.${field}`])}
               </Button>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  {moment(value[field]?.value).format("YYYY-MM-DD, HH:mm:ss ")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start">
-                {/* TODO: Date specific component, need to pass in DATE as VALUE */}
-                <FieldSubMenu
-                  field={field}
-                  date={value[field]?.value}
-                  setFilter={setFilter}
-                  clearFilter={clearFilter}
-                />
-              </PopoverContent>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="px-2">
+                    {moment(value[field]?.value).format("YYYY-MM-DD")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start">
+                  <FieldSubMenu
+                    field={field}
+                    date={value[field]?.value}
+                    setFilter={setFilter}
+                    clearFilter={clearFilter}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="px-2">
+                    {moment(value[field]?.value).format("HH:mm:ss")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start">
+                  <Input
+                    type="time"
+                    step={1}
+                    onChange={(event) => setTime(event, field)}
+                  />
+                </PopoverContent>
+              </Popover>
               <Button variant="outline" icon>
                 <X onClick={() => clearFilter(field)} />
               </Button>
-            </Popover>
+            </>
           )}
         </ButtonBar>
       ))}
