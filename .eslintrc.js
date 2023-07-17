@@ -37,6 +37,7 @@ module.exports = {
     "dist/",
     ".eslintrc.js",
     "env.d.ts",
+    "playwright-report/",
     /**
      * 🚧
      * TODO_HOOKS_TESTS

@@ -1,12 +1,15 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { BroadcastsSchemaKeys } from "~/api/broadcasts/schema";
 import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { actionWaitForSuccessToast } from "../explorer/workflow/utils";
+import { createBroadcasts } from "../utils/broadcasts";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
 import { faker } from "@faker-js/faker";
+import { radixClick } from "../utils/testutils";
 
 const { options } = MimeTypeSchema;
 
@@ -146,40 +149,50 @@ test("it is possible to create and delete registries", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-test("it is possible to create and delete variables", async ({ page }) => {
+test("it is possible to create and delete variables", async ({
+  page,
+  browserName,
+}) => {
+  // set up test data
   const variables = await createVariables(namespace, 3);
   const variableToDelete = variables[2];
-  // handle error to avoid typescript errors below
-  if (!variableToDelete) throw "error setting up test data";
-
-  await page.goto(`/${namespace}/settings`);
-  await page.getByTestId("variable-create").click();
 
   const newVariable = {
-    name: faker.random.word(),
+    name: faker.internet.domainWord(),
     value: faker.random.words(20),
     mimeType: options[Math.floor(Math.random() * options.length)] || options[0],
   };
+
+  // handle error to avoid typescript errors below
+  if (!variableToDelete) throw "error setting up test data";
+
+  // perform test
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("variable-create").click();
+
   await page.getByTestId("new-variable-name").type(newVariable.name);
-  await page.getByTestId("variable-create-card").click();
-  await page.type("textarea", newVariable.value);
+
+  const editor = page.locator(".view-lines");
+  await editor.click();
+
+  await editor.type(newVariable.value);
   await page.getByTestId("variable-trg-mimetype").click();
   await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
   await page.getByTestId("variable-create-submit").click();
   await actionWaitForSuccessToast(page);
 
-  //reload page after create variable
+  // reload page after create variable
   await page.reload({
     waitUntil: "networkidle",
   });
 
-  //click on edit and confirm the created variable
+  // click on edit and confirm the created variable
   const subjectDropdownSelector = `dropdown-trg-item-${newVariable.name}`;
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
   await expect(
-    page.getByTestId("variable-editor-card"),
+    editor,
     "the variable's content is loaded into the editor"
   ).toContainText(newVariable.value);
 
@@ -187,7 +200,9 @@ test("it is possible to create and delete variables", async ({ page }) => {
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(newVariable.mimeType);
-  await page.getByTestId("var-edit-cancel").click();
+
+  const cancelButton = page.getByTestId("var-edit-cancel");
+  await radixClick(browserName, cancelButton);
 
   //delete one item
   await expect(
@@ -228,19 +243,19 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(subject.content, {
-    timeout: 10000,
-  });
+  const textArea = page.getByRole("textbox");
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the variable's content is loaded into the editor"
+    )
+    .toBe(subject.content);
 
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue(subject.mimeType);
 
-  const textArea = page.getByRole("textbox");
   await textArea.type(faker.random.alphaNumeric(10));
   const updatedValue = await textArea.inputValue();
   const updatedType =
@@ -257,13 +272,49 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  await expect(
-    page.getByTestId("variable-editor-card"),
-    "the variable's content is loaded into the editor"
-  ).toContainText(updatedValue);
+  await expect
+    .poll(
+      async () => await textArea.inputValue(),
+      "the updated variable content is loaded into the editor"
+    )
+    .toBe(updatedValue);
 
   await expect(
     page.locator("select"),
-    "MimeTypeSelect is set to the subject's mimeType"
+    "MimeTypeSelect is set to the updated mimeType"
   ).toHaveValue(updatedType);
+});
+
+test("it is possible to update broadcasts", async ({ page }) => {
+  const { broadcast: broadcasts } = await createBroadcasts(namespace);
+  expect(broadcasts, "test data has been created").toBeTruthy();
+
+  await page.goto(`/${namespace}/settings`);
+
+  // check the initial state
+  for (let i = 0; i < BroadcastsSchemaKeys.length; i++) {
+    const key = BroadcastsSchemaKeys[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    const isChecked = await checkbox.isChecked();
+    expect(isChecked, `checkbox for ${key} has the expected value`).toBe(
+      broadcasts[key]
+    );
+  }
+
+  // update random fields and check their status
+  const randomElements = faker.helpers.arrayElements(BroadcastsSchemaKeys, 3);
+
+  for (let i = 0; i < randomElements.length; i++) {
+    const key = randomElements[i] || "directory.create";
+    const checkbox = page.getByTestId(`check.${key}`);
+    await checkbox.click();
+
+    // expect() without .poll() would fail, because it would not wait for the DOM to update
+    await expect
+      .poll(
+        async () => await checkbox.isChecked(),
+        `checkbox for ${key} has been toggled to the inverse value: `
+      )
+      .toBe(!broadcasts[key]);
+  }
 });

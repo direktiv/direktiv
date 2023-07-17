@@ -114,7 +114,7 @@ const ExplorerPage: FC = () => {
                             >
                               {file.name}
                             </Link>
-                            <span className="text-gray-8 dark:text-gray-dark-8">
+                            <span className="text-gray-9 dark:text-gray-dark-9">
                               {moment(file.updatedAt).fromNow()}
                             </span>
                           </div>

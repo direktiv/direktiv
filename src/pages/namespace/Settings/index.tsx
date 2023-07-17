@@ -34,7 +34,7 @@ const SettingsPage: FC = () => {
   }
 
   return (
-    <div className="flex flex-col space-y-6 p-10">
+    <div className="flex flex-col space-y-10 p-5">
       <section data-testid="secrets-section">
         <SecretsList />
       </section>

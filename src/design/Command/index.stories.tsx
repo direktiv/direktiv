@@ -151,7 +151,7 @@ export function CommandDialogDemo() {
     <>
       <p className="text-sm text-gray-11 dark:text-gray-dark-11">
         Press{" "}
-        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-gray-4 bg-gray-1 px-1.5 font-mono text-[10px] font-medium text-gray-11 opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1 dark:text-gray-dark-11">
+        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-gray-4 bg-gray-1 px-1.5 font-mono text-[10px] font-medium opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1">
           <span className="text-xs">⌘</span>J
         </kbd>
       </p>
