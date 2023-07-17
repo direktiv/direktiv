@@ -21,7 +21,6 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     keyof FiltersObj | undefined
   >();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  // const [filters, setFilters] = useState<FiltersObj>({});
 
   const handleOpenChange = (isOpening: boolean) => {
     if (!isOpening) {
