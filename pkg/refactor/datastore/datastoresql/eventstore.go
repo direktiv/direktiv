@@ -554,6 +554,7 @@ func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []
 			if err != nil {
 				errs[i] = err
 			}
+
 			continue
 		}
 		b, err := json.Marshal(e.ReceivedEventsForAndTrigger)
