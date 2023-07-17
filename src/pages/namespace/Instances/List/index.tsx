@@ -1,3 +1,4 @@
+import { FiltersObj, useInstances } from "~/api/instances/query/get";
 import {
   Table,
   TableBody,
@@ -10,11 +11,9 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
-import type { FiltersObj } from "../components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
-import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -22,37 +21,13 @@ const instancesPerPage = 15;
 
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
-  const [filterQuery, setFilterQuery] = useState<string>("");
+  const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
   const { data, isFetched } = useInstances({
     limit: instancesPerPage,
     offset,
-    filter: filterQuery,
+    filters,
   });
-
-  const updateFilterQuery = (filters: FiltersObj) => {
-    let query = "";
-    const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
-
-    filterFields.forEach((field) => {
-      const filterItem = filters[field];
-      // guard needed because TS thinks filterItem may be undefined
-      if (!filterItem) {
-        return;
-      }
-
-      // FilterFields uses BEFORE and AFTER as distinct types. In the query,
-      // the format is filter.field=CREATED&filter.type=BEFORE|AFTER
-      const queryField = ["AFTER", "BEFORE"].includes(field)
-        ? "CREATED"
-        : field;
-
-      query = query.concat(
-        `&filter.field=${queryField}&filter.type=${filterItem.type}&filter.val=${filterItem.value}`
-      );
-    });
-    setFilterQuery(query);
-  };
 
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.instances.results.length === 0;
@@ -64,7 +39,7 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Filters onUpdate={updateFilterQuery} />
+        <Filters value={filters} onUpdate={setFilters} />
         <Table className="border-t">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">

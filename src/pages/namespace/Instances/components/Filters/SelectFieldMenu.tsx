@@ -6,7 +6,7 @@ import {
   CommandList,
 } from "~/design/Command";
 
-import { FiltersObj } from ".";
+import { FiltersObj } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
 export const SelectFieldMenu = ({

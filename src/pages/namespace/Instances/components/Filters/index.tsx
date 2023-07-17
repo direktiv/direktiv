@@ -4,32 +4,23 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import FieldSubMenu from "./FieldSubMenu";
+import { FiltersObj } from "~/api/instances/query/get";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export type FiltersObj = {
-  AS?: { type: "CONTAINS"; value: string };
-  STATUS?: {
-    type: "MATCH";
-    value: "pending" | "complete" | "cancelled" | "failed";
-  };
-  TRIGGER?: {
-    type: "MATCH";
-    value: "api" | "cloudevent" | "instance" | "cron";
-  };
-  // TODO: use Date type (but display components need a string value)
-  AFTER?: { type: "AFTER"; value: string };
-  BEFORE?: { type: "BEFORE"; value: string };
+type FiltersProps = {
+  value: FiltersObj;
+  onUpdate: (filters: FiltersObj) => void;
 };
 
-const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
+const Filters = ({ value, onUpdate }: FiltersProps) => {
   const { t } = useTranslation();
   const [selectedField, setSelectedField] = useState<
     keyof FiltersObj | undefined
   >();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [filters, setFilters] = useState<FiltersObj>({});
+  // const [filters, setFilters] = useState<FiltersObj>({});
 
   const handleOpenChange = (isOpening: boolean) => {
     if (!isOpening) {
@@ -44,22 +35,20 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
   };
 
   const setFilter = (filterObj: FiltersObj) => {
-    const newFilters = { ...filters, ...filterObj };
-    setFilters(newFilters);
-    resetMenu();
+    const newFilters = { ...value, ...filterObj };
     onUpdate(newFilters);
+    resetMenu();
   };
 
   const clearFilter = (field: keyof FiltersObj) => {
-    const newFilters = { ...filters };
+    const newFilters = { ...value };
     delete newFilters[field];
-    setFilters(newFilters);
     onUpdate(newFilters);
   };
 
-  const hasFilters = !!Object.keys(filters).length;
+  const hasFilters = !!Object.keys(value).length;
 
-  const definedFilters = Object.keys(filters) as Array<keyof FiltersObj>;
+  const definedFilters = Object.keys(value) as Array<keyof FiltersObj>;
 
   return (
     <div className="m-2 flex flex-row gap-2">
@@ -70,12 +59,12 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
               {t([`pages.instances.list.filter.field.${field}`])}
             </Button>
             <PopoverTrigger asChild>
-              <Button variant="outline">{filters[field]?.value}</Button>
+              <Button variant="outline">{value[field]?.value}</Button>
             </PopoverTrigger>
             <PopoverContent align="start">
               <FieldSubMenu
                 field={field}
-                value={filters[field]?.value}
+                value={value[field]?.value}
                 setFilter={setFilter}
                 clearFilter={clearFilter}
               />
@@ -106,7 +95,7 @@ const Filters = ({ onUpdate }: { onUpdate: (filters: FiltersObj) => void }) => {
           ) : (
             <FieldSubMenu
               field={selectedField}
-              value={filters[selectedField]?.value}
+              value={value[selectedField]?.value}
               setFilter={setFilter}
               clearFilter={clearFilter}
             />

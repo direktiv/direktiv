@@ -7,7 +7,7 @@ import {
 } from "~/design/Command";
 
 import { Datepicker } from "~/design/Datepicker";
-import { FiltersObj } from ".";
+import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
