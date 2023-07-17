@@ -38,7 +38,7 @@ const useEditorState = create<EditorState>()(
     {
       name: "direktiv-store-editor",
       partialize: (state) => ({
-        layout: state.layout, // pick all fields to persistend, and don't persist actions
+        layout: state.layout, // pick all fields to be persistent and don't persist actions
       }),
     }
   )
