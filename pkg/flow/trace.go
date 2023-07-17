@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"go.opentelemetry.io/otel"
@@ -171,4 +172,99 @@ func traceActionResult(ctx context.Context, results *actionResultPayload) {
 			Value: attribute.StringValue(results.ActionID),
 		},
 	)
+}
+
+func traceAddtoEventlog(ctx context.Context) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "addToEventLog", trace.WithSpanKind(trace.SpanKindInternal))
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceValidatingEvent(ctx context.Context) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "validatingEvent", trace.WithSpanKind(trace.SpanKindInternal))
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func startIncomingEvent(ctx context.Context, route string) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, route+"ToNamespaceCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceBrokerMessage(ctx context.Context, ev event.Event) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "BroadcastCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "event-registered",
+			Value: attribute.StringValue(ev.Source() + "-" + ev.ID()),
+		},
+	)
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceGetListenersByTopic(ctx context.Context, topic string) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "GetListenersByTopic", trace.WithSpanKind(trace.SpanKindInternal))
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "topic",
+			Value: attribute.StringValue(topic),
+		},
+	)
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceProcessingMessage(ctx context.Context, ev event.Event) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "processingCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
+
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceMessageTrigger(ctx context.Context, triggerDescription string) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "triggered-by-event", trace.WithSpanKind(trace.SpanKindInternal))
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "trigger-desc",
+			Value: attribute.StringValue(triggerDescription),
+		},
+	)
+	finish := func() {
+		span.End()
+	}
+	return ctx, finish
 }

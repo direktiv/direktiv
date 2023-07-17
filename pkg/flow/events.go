@@ -180,19 +180,25 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *databa
 	return nil
 }
 
-func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event) error {
+func (events *events) handleEvent(ctx context.Context, ns *database.Namespace, ce *cloudevents.Event) error {
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			// events.metrics.InsertRecord
-			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "invoking workflow")
+			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "invoking workflow")
+			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
+			defer end()
 			events.engine.EventsInvoke(workflowID, ev...)
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
 			// events.metrics.InsertRecord
-			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "invoking instance %v", instanceID)
+			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "invoking instance %v", instanceID)
+			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
+			defer end()
 			events.engine.wakeEventsWaiter(instanceID, step, ev) // TODO
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
+			ctx, end := traceGetListenersByTopic(ctx, s)
+			defer end()
 			res := make([]*pkgevents.EventListener, 0)
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
@@ -208,7 +214,7 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
-			events.logger.Debugf(context.TODO(), ns.ID, events.flow.GetAttributes(), "update listener")
+			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "update listener")
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				errs := tx.DataStore().EventListener().Update(ctx, listener)
 				for _, err2 := range errs {
@@ -224,7 +230,9 @@ func (events *events) handleEvent(ns *database.Namespace, ce *cloudevents.Event)
 			return nil
 		},
 	}
-	e.ProcessEvents(context.TODO(), ns.ID, []event.Event{*ce})
+	ctx, end := traceProcessingMessage(ctx, *ce)
+	defer end()
+	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce})
 	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
 	return nil
 }
@@ -325,13 +333,18 @@ resend:
 
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	ctx, end := startIncomingEvent(ctx, "flow")
+	defer end()
 
 	namespace := in.GetNamespace()
 	rawevent := in.GetCloudevent()
 
 	event := new(cloudevents.Event)
+	ctx, endValidation := traceValidatingEvent(ctx)
+
 	err := event.UnmarshalJSON(rawevent)
 	if err != nil {
+		endValidation()
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 	if event.SpecVersion() == "" {
@@ -346,6 +359,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		event.SetDataSchema("")
 		err = event.Validate()
 		if err != nil {
+			endValidation()
 			return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 		}
 	}
@@ -353,27 +367,32 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 	// NOTE: remarshal / unmarshal necessary to overcome issues with cloudevents library.
 	data, err := json.Marshal(event)
 	if err != nil {
+		endValidation()
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
 	err = event.UnmarshalJSON(data)
 	if err != nil {
+		endValidation()
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
 	var ns *core.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+		endValidation()
 		return err
 	})
 	if err != nil {
+		endValidation()
 		return nil, err
 	}
 
 	timer := in.GetTimer()
-
+	endValidation()
 	err = flow.events.BroadcastCloudevent(ctx, ns, event, timer)
 	if err != nil {
+		endValidation()
 		return nil, status.Errorf(codes.Aborted, "cloudevent was not accepted: %v", err)
 	}
 
@@ -624,7 +643,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 
 	events.logger.Infof(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
-	err := events.handleEvent(ns, event)
+	err := events.handleEvent(ctx, ns, event)
 	if err != nil {
 		return err
 	}
@@ -642,7 +661,8 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
-
+	ctx, end := traceBrokerMessage(ctx, *event)
+	defer end()
 	// add event to db
 	err := events.addEvent(ctx, event, ns, timer)
 	if err != nil {
@@ -653,7 +673,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 
 	// handle event
 	if timer == 0 {
-		err = events.handleEvent(ns, event)
+		err = events.handleEvent(ctx, ns, event)
 		if err != nil {
 			return err
 		}
@@ -809,52 +829,6 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 	}
 
 	return newBytesEvent, nil
-}
-
-func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	resp := new(emptypb.Empty)
-
-	namespace := in.GetNamespace()
-	filterName := in.GetFilterName()
-	cloudevent := in.GetCloudevent()
-
-	var err error
-	var ns *core.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		return err
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := flow.execFilter(ctx, namespace, filterName, cloudevent)
-	if err != nil {
-		flow.logger.Errorf(ctx, ns.ID, ns.GetAttributes(),
-			"executing filter failed: %s", err.Error())
-		return resp, err
-	}
-
-	// dropped event
-	if len(b) == 0 {
-		flow.logger.Debugf(ctx, ns.ID, ns.GetAttributes(),
-			"dropping event %s", string(cloudevent))
-		return resp, nil
-	}
-
-	flow.sugar.Debugf("event after script is %v", string(b))
-
-	br := &grpc.BroadcastCloudeventRequest{
-		Namespace:  namespace,
-		Cloudevent: b,
-		Timer:      0,
-	}
-
-	resp, err = flow.BroadcastCloudevent(ctx, br)
-
-	return resp, err
 }
 
 func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
