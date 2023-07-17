@@ -3,16 +3,14 @@ import { IWorkflow, Orientation } from "./types";
 
 import dagre from "dagre";
 
-// initialize the dagre graph
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
 const defaultEdgeType = ConnectionLineType.Bezier;
 
 export const getLayoutedElements = (
   incomingEles: (Edge | Node)[],
   orientation: Orientation = "vertical"
 ) => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
   const isHorizontal = orientation === "horizontal";
 
   dagreGraph.setGraph({ rankdir: isHorizontal ? "lr" : "tb" });
