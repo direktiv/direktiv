@@ -205,6 +205,9 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
 			for i := range l.ReceivedEventsForAndTrigger {
 				e := l.ReceivedEventsForAndTrigger[i]
+				if l.LifespanOfReceivedEvents != 0 && e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).Before(time.Now()) {
+					continue
+				}
 				ces = append(ces, e.Event)
 			}
 			// TODO metrics

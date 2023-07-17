@@ -542,7 +542,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	}, nil
 }
 
-func (s *sqlEventListenerStore) Update(ctx context.Context, listeners []*events.EventListener) []error {
+func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []*events.EventListener) []error {
 	q := `UPDATE event_listeners SET
 	 updated_at = $1 , deleted = $2, received_events = $3 WHERE id = $4;`
 

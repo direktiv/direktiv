@@ -216,7 +216,7 @@ func (events *events) handleEvent(ctx context.Context, ns *database.Namespace, c
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
 			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "update listener")
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-				errs := tx.DataStore().EventListener().Update(ctx, listener)
+				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
 						return err2
