@@ -7,11 +7,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/cluster"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -364,7 +367,25 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
+	// start pub sub
+	config := cluster.DefaultConfig()
+	node, err := cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
+	if err != nil {
+		return err
+	}
+
 	srv.sugar.Info("Flow server started.")
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	// stop inidiviual components here
+	go func(n *cluster.Node) {
+		err = node.Stop()
+		if err != nil {
+			srv.sugar.Error("could not stop cluster node")
+		}
+	}(node)
 
 	wg.Wait()
 
