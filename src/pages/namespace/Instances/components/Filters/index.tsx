@@ -49,22 +49,12 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
 
   const setTime = (event: BaseSyntheticEvent, field: "AFTER" | "BEFORE") => {
     const [hr, min] = event.target.value.split(":");
+    const newFilters = { ...value };
 
-    const { [field]: filterItem, ...rest } = value;
+    newFilters[field]?.value.setHours(hr);
+    newFilters[field]?.value.setMinutes(min);
 
-    if (!filterItem?.value) {
-      throw new Error(
-        "Trying to set time on date that doesn't exist in filters object"
-      );
-    }
-
-    filterItem.value.setHours(hr);
-    filterItem.value.setMinutes(min);
-
-    onUpdate({
-      [field]: filterItem,
-      ...rest,
-    });
+    onUpdate(newFilters);
   };
 
   const hasFilters = !!Object.keys(value).length;
