@@ -3,11 +3,12 @@ package filestore
 import (
 	"errors"
 	"path/filepath"
-	"regexp"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/util"
 )
 
-var pathRegexExp = regexp.MustCompile(`^[a-zA-Z0-9_.\-\/]*$`)
+var pathRegexExp = util.URIRegex
 
 // SanitizePath standardizes and sanitized the path, and validates it against naming requirements.
 func SanitizePath(path string) (string, error) {
