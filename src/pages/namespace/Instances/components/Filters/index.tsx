@@ -6,6 +6,7 @@ import { ButtonBar } from "~/design/ButtonBar";
 import FieldSubMenu from "./FieldSubMenu";
 import { FiltersObj } from "~/api/instances/query/get";
 import { SelectFieldMenu } from "./SelectFieldMenu";
+import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -54,25 +55,51 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     <div className="m-2 flex flex-row gap-2">
       {definedFilters.map((field) => (
         <ButtonBar key={field}>
-          <Popover>
-            <Button variant="outline">
-              {t([`pages.instances.list.filter.field.${field}`])}
-            </Button>
-            <PopoverTrigger asChild>
-              <Button variant="outline">{value[field]?.value}</Button>
-            </PopoverTrigger>
-            <PopoverContent align="start">
-              <FieldSubMenu
-                field={field}
-                value={value[field]?.value}
-                setFilter={setFilter}
-                clearFilter={clearFilter}
-              />
-            </PopoverContent>
-            <Button variant="outline" icon>
-              <X onClick={() => clearFilter(field)} />
-            </Button>
-          </Popover>
+          {(field === "AS" || field === "TRIGGER" || field === "STATUS") && (
+            <Popover>
+              <Button variant="outline">
+                {t([`pages.instances.list.filter.field.${field}`])}
+              </Button>
+              <PopoverTrigger asChild>
+                <Button variant="outline">{value[field]?.value}</Button>
+              </PopoverTrigger>
+              <PopoverContent align="start">
+                <FieldSubMenu
+                  field={field}
+                  value={value[field]?.value}
+                  setFilter={setFilter}
+                  clearFilter={clearFilter}
+                />
+              </PopoverContent>
+              <Button variant="outline" icon>
+                <X onClick={() => clearFilter(field)} />
+              </Button>
+            </Popover>
+          )}
+          {(field === "BEFORE" || field === "AFTER") && (
+            <Popover>
+              <Button variant="outline">
+                {t([`pages.instances.list.filter.field.${field}`])}
+              </Button>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  {moment(value[field]?.value).format("YYYY-MM-DD, HH:mm:ss ")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start">
+                {/* TODO: Date specific component, need to pass in DATE as VALUE */}
+                <FieldSubMenu
+                  field={field}
+                  date={value[field]?.value}
+                  setFilter={setFilter}
+                  clearFilter={clearFilter}
+                />
+              </PopoverContent>
+              <Button variant="outline" icon>
+                <X onClick={() => clearFilter(field)} />
+              </Button>
+            </Popover>
+          )}
         </ButtonBar>
       ))}
 
@@ -93,12 +120,24 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
           {selectedField === undefined ? (
             <SelectFieldMenu onSelect={setSelectedField} />
           ) : (
-            <FieldSubMenu
-              field={selectedField}
-              value={value[selectedField]?.value}
-              setFilter={setFilter}
-              clearFilter={clearFilter}
-            />
+            ((selectedField === "AS" ||
+              selectedField === "TRIGGER" ||
+              selectedField === "STATUS") && (
+              <FieldSubMenu
+                field={selectedField}
+                value={value[selectedField]?.value}
+                setFilter={setFilter}
+                clearFilter={clearFilter}
+              />
+            )) ||
+            ((selectedField === "BEFORE" || selectedField === "AFTER") && (
+              <FieldSubMenu
+                field={selectedField}
+                date={value[selectedField]?.value}
+                setFilter={setFilter}
+                clearFilter={clearFilter}
+              />
+            ))
           )}
         </PopoverContent>
       </Popover>

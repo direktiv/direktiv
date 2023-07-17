@@ -15,11 +15,13 @@ import { useTranslation } from "react-i18next";
 const FieldSubMenu = ({
   field,
   value,
+  date,
   setFilter,
   clearFilter,
 }: {
   field: keyof FiltersObj;
   value?: string;
+  date?: Date;
   setFilter: (filter: FiltersObj) => void;
   clearFilter: (field: keyof FiltersObj) => void;
 }) => {
@@ -42,9 +44,8 @@ const FieldSubMenu = ({
 
   // TODO: Handle dates with Date type (but display components need a string value)
   const setDate = (type: "AFTER" | "BEFORE", value: Date) => {
-    const dateString = value.toISOString();
     setFilter({
-      [type]: { type, value: dateString },
+      [type]: { type, value },
     });
   };
 
@@ -183,6 +184,7 @@ const FieldSubMenu = ({
             >
               <Datepicker
                 mode="single"
+                selected={date}
                 onSelect={(value) => value && setDate("AFTER", value)}
               />
             </CommandGroup>
@@ -197,6 +199,7 @@ const FieldSubMenu = ({
             >
               <Datepicker
                 mode="single"
+                selected={date}
                 onSelect={(value) => value && setDate("BEFORE", value)}
               />
             </CommandGroup>

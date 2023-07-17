@@ -17,8 +17,8 @@ export type FiltersObj = {
     value: "api" | "cloudevent" | "instance" | "cron";
   };
   // TODO: use Date type (but display components need a string value)
-  AFTER?: { type: "AFTER"; value: string };
-  BEFORE?: { type: "BEFORE"; value: string };
+  AFTER?: { type: "AFTER"; value: Date };
+  BEFORE?: { type: "BEFORE"; value: Date };
 };
 
 const getFilterQuery = (filters: FiltersObj) => {
@@ -27,17 +27,33 @@ const getFilterQuery = (filters: FiltersObj) => {
 
   filterFields.forEach((field) => {
     const filterItem = filters[field];
-    // guard needed because TS thinks filterItem may be undefined
+
+    // Without the guard, TS thinks filterItem may be undefined
     if (!filterItem) {
-      return;
+      throw new Error("filterItem is not defined");
     }
 
-    // FilterFields uses BEFORE and AFTER as distinct types. In the query,
-    // the format is filter.field=CREATED&filter.type=BEFORE|AFTER
-    const queryField = ["AFTER", "BEFORE"].includes(field) ? "CREATED" : field;
+    let queryField: string;
+    let queryValue: string;
+
+    if (field === "AFTER" || field === "BEFORE") {
+      const date = filters[field]?.value;
+      if (!date) {
+        throw new Error("date is not defined in date filter");
+      }
+      queryField = "CREATED";
+      queryValue = date.toISOString();
+    } else {
+      const value = filters[field]?.value;
+      if (!value) {
+        throw new Error("filter value is not defined");
+      }
+      queryField = field;
+      queryValue = value;
+    }
 
     query = query.concat(
-      `&filter.field=${queryField}&filter.type=${filterItem.type}&filter.val=${filterItem.value}`
+      `&filter.field=${queryField}&filter.type=${filterItem.type}&filter.val=${queryValue}`
     );
   });
   return query;
