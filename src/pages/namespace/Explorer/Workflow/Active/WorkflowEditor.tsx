@@ -112,6 +112,7 @@ const WorkflowEditor: FC<{
                         }}
                         className="grow"
                         pressed={lay === layout}
+                        data-testid={`editor-layout-btn-${lay}`}
                       >
                         <Icon />
                       </Toggle>
