@@ -16,21 +16,36 @@ type FiltersProps = {
   onUpdate: (filters: FiltersObj) => void;
 };
 
+type MenuAnchor =
+  | "main"
+  | "AS"
+  | "STATUS"
+  | "TRIGGER"
+  | "AFTER"
+  | "BEFORE"
+  | "AFTER.time"
+  | "BEFORE.time";
+
 const Filters = ({ value, onUpdate }: FiltersProps) => {
   const { t } = useTranslation();
-  const [selectedField, setSelectedField] = useState<
-    keyof FiltersObj | undefined
-  >();
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const handleOpenChange = (isOpening: boolean, menu: string) => {
+  // activeMenu controls which popover component is opened (there are
+  // separate popovers triggered by the respective buttons)
+  const [activeMenu, setActiveMenu] = useState<MenuAnchor | null>(null);
+
+  // selectedField controls which submenu is shown in the main menu
+  const [selectedField, setSelectedField] = useState<keyof FiltersObj | null>(
+    null
+  );
+
+  const handleOpenChange = (isOpening: boolean, menu: MenuAnchor) => {
     if (!isOpening) {
-      setSelectedField(undefined);
+      setSelectedField(null);
     }
     toggleMenu(menu);
   };
 
-  const toggleMenu = (value: string) => {
+  const toggleMenu = (value: MenuAnchor) => {
     if (activeMenu === value) {
       return setActiveMenu(null);
     }
@@ -39,7 +54,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
 
   const resetMenu = () => {
     setActiveMenu(null);
-    setSelectedField(undefined);
+    setSelectedField(null);
   };
 
   const setFilter = (filterObj: FiltersObj) => {
@@ -75,10 +90,8 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
         <ButtonBar key={field}>
           {(field === "AS" || field === "TRIGGER" || field === "STATUS") && (
             <Popover
-              open={activeMenu === `button.${field}`}
-              onOpenChange={(state) =>
-                handleOpenChange(state, `button.${field}`)
-              }
+              open={activeMenu === field}
+              onOpenChange={(state) => handleOpenChange(state, field)}
             >
               <Button variant="outline">
                 {t([`pages.instances.list.filter.field.${field}`])}
@@ -105,10 +118,8 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                 {t([`pages.instances.list.filter.field.${field}`])}
               </Button>
               <Popover
-                open={activeMenu === `button.${field}`}
-                onOpenChange={(state) =>
-                  handleOpenChange(state, `button.${field}`)
-                }
+                open={activeMenu === field}
+                onOpenChange={(state) => handleOpenChange(state, field)}
               >
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="px-2">
@@ -125,9 +136,9 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                 </PopoverContent>
               </Popover>
               <Popover
-                open={activeMenu === `button.${field}.time`}
+                open={activeMenu === `${field}.time`}
                 onOpenChange={(state) =>
-                  handleOpenChange(state, `button.${field}.time`)
+                  handleOpenChange(state, `${field}.time`)
                 }
               >
                 <PopoverTrigger asChild>
@@ -167,7 +178,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
           )}
         </PopoverTrigger>
         <PopoverContent align="start">
-          {selectedField === undefined ? (
+          {selectedField === null ? (
             <SelectFieldMenu onSelect={setSelectedField} />
           ) : (
             ((selectedField === "AS" ||
@@ -191,6 +202,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
           )}
         </PopoverContent>
       </Popover>
+      <div>{activeMenu}</div>
     </div>
   );
 };
