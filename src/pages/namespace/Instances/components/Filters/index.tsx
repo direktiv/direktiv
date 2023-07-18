@@ -21,17 +21,24 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
   const [selectedField, setSelectedField] = useState<
     keyof FiltersObj | undefined
   >();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const handleOpenChange = (isOpening: boolean) => {
+  const handleOpenChange = (isOpening: boolean, menu: string) => {
     if (!isOpening) {
       setSelectedField(undefined);
     }
-    setIsOpen(isOpening);
+    toggleMenu(menu);
+  };
+
+  const toggleMenu = (value: string) => {
+    if (activeMenu === value) {
+      return setActiveMenu(null);
+    }
+    setActiveMenu(value);
   };
 
   const resetMenu = () => {
-    setIsOpen(false);
+    setActiveMenu(null);
     setSelectedField(undefined);
   };
 
@@ -55,6 +62,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     newFilters[field]?.value.setMinutes(min);
 
     onUpdate(newFilters);
+    resetMenu();
   };
 
   const hasFilters = !!Object.keys(value).length;
@@ -66,7 +74,12 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
       {definedFilters.map((field) => (
         <ButtonBar key={field}>
           {(field === "AS" || field === "TRIGGER" || field === "STATUS") && (
-            <Popover>
+            <Popover
+              open={activeMenu === `button.${field}`}
+              onOpenChange={(state) =>
+                handleOpenChange(state, `button.${field}`)
+              }
+            >
               <Button variant="outline">
                 {t([`pages.instances.list.filter.field.${field}`])}
               </Button>
@@ -77,7 +90,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                 <FieldSubMenu
                   field={field}
                   value={value[field]?.value}
-                  setFilter={setFilter}
+                  setFilter={(value) => setFilter(value)}
                   clearFilter={clearFilter}
                 />
               </PopoverContent>
@@ -91,7 +104,12 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
               <Button variant="outline">
                 {t([`pages.instances.list.filter.field.${field}`])}
               </Button>
-              <Popover>
+              <Popover
+                open={activeMenu === `button.${field}`}
+                onOpenChange={(state) =>
+                  handleOpenChange(state, `button.${field}`)
+                }
+              >
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="px-2">
                     {moment(value[field]?.value).format("YYYY-MM-DD")}
@@ -101,12 +119,17 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                   <FieldSubMenu
                     field={field}
                     date={value[field]?.value}
-                    setFilter={setFilter}
+                    setFilter={(value) => setFilter(value)}
                     clearFilter={clearFilter}
                   />
                 </PopoverContent>
               </Popover>
-              <Popover>
+              <Popover
+                open={activeMenu === `button.${field}.time`}
+                onOpenChange={(state) =>
+                  handleOpenChange(state, `button.${field}.time`)
+                }
+              >
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="px-2">
                     {moment(value[field]?.value).format("HH:mm:ss")}
@@ -127,15 +150,17 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
           )}
         </ButtonBar>
       ))}
-
-      <Popover open={isOpen} onOpenChange={handleOpenChange}>
+      <Popover
+        open={activeMenu === "main"}
+        onOpenChange={(state) => handleOpenChange(state, "main")}
+      >
         <PopoverTrigger asChild>
           {hasFilters ? (
-            <Button variant="outline" icon>
+            <Button variant="outline" icon onClick={() => toggleMenu("main")}>
               <Plus />
             </Button>
           ) : (
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => toggleMenu("main")}>
               <Plus />
               {t("pages.instances.list.filter.filterButton")}
             </Button>
