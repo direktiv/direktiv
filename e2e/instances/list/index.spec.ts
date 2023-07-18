@@ -50,15 +50,14 @@ const createBasicInstance = async () => {
   });
 };
 
-const createFailedInstance = async () => {
-  return await runWorkflow({
+const createFailedInstance = async () =>
+  await runWorkflow({
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
       path: workflowThatFails,
     },
   });
-};
 
 test("this is an example test", async ({ page }) => {
   await createFailedInstance();
