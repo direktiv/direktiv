@@ -87,7 +87,7 @@ const WorkflowEditor: FC<{
         }
         editorComponent={
           <CodeEditor
-            value={value}
+            value={workflowData}
             setValue={setValue}
             createdAt={data.revision?.createdAt}
             error={error}
