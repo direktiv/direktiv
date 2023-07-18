@@ -1,4 +1,5 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { expect, test } from "@playwright/test";
 import {
   simpleWorkflow as simpleWorkflowContent,
   workflowThatFails as workflowThatFailsContent,
@@ -7,7 +8,6 @@ import {
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
-import { test } from "@playwright/test";
 
 let namespace = "";
 const simpleWorkflow = faker.system.commonFileName("yaml");
@@ -51,7 +51,7 @@ const createBasicInstance = async () => {
 };
 
 const createFailedInstance = async () => {
-  await runWorkflow({
+  return await runWorkflow({
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -67,4 +67,26 @@ test("this is an example test", async ({ page }) => {
   // { waitUntil: "networkidle" } might not be necessary, I just added
   // it so that running this example will show a nicely loaded page
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+});
+
+test("there is no result", async ({ page }) => {
+  // await createFailedInstance();
+  // await createBasicInstance();
+  // await createBasicInstance();
+  // { waitUntil: "networkidle" } might not be necessary, I just added
+  // it so that running this example will show a nicely loaded page
+  await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+  await expect(page.getByTestId("instance-no-result"), "no result message should be visible").toBeVisible();
+  await expect(page.getByTestId("instance-list-pagination"), "there is no pagination when there is no result").not.toBeVisible();
+});
+
+test("test through the instance list screen without pagination", async ({ page }) => {
+  const failedInstance = await createFailedInstance();
+  const successInstance1 = await createBasicInstance();
+  const successInstance2 = await createBasicInstance();
+  // { waitUntil: "networkidle" } might not be necessary, I just added
+  // it so that running this example will show a nicely loaded page
+  await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+  const failedItem = page.getByTestId(`instance-item-${failedInstance.instance}`)
+  await expect(failedItem, "failed Item should have the id").toContainText(failedInstance.instance);
 });
