@@ -1,11 +1,5 @@
-import { Bug, Eye, Filter, HelpCircle } from "lucide-react";
+import { Bug, Eye, Filter } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../Tooltip";
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Toggle } from "./index";
@@ -112,46 +106,6 @@ export const Toolbar = () => (
         <Eye />
         Large Toolbar
       </Button>
-    </ButtonBar>
-  </div>
-);
-
-export const ToolbarWithToolTips = () => (
-  <div className="flex flex-col space-y-3">
-    <div>
-      Please note the extra div in the between the TooltipTrigger and
-      TooltipTrigger.
-    </div>
-    <ButtonBar>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {/* 
-unfortunately this div is required. TooltipTrigger must be used with asChild, 
-to avoid having a button inside a button, which is semantically invalid and also
-causes design issues with the ButtonBar (double borders). And withtout the extra
-div, the asChild would merge the TooltipTrigger and Toggle into one button with 
-shared state. The tooltip and and the toggle both need the data-state state and
-the toggles state will get lost and it will never show as pressed.
-
-potentially solutions are discussed here by the radix-ui team:
-
-https://github.com/radix-ui/primitives/discussions/560
-TLDR; It could technically solved, but all state attributes would need to be 
-namespaced which would have a DX impact that is not worth it for now.
-             */}
-            <div>
-              <Toggle aria-label="Toggle italic">
-                <HelpCircle />
-              </Toggle>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>Hi 👋</TooltipContent>
-        </Tooltip>
-        <Toggle aria-label="Toggle italic">
-          <Bug />
-        </Toggle>
-      </TooltipProvider>
     </ButtonBar>
   </div>
 );
