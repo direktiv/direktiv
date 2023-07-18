@@ -7,6 +7,7 @@ import {
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
+import { getInstances } from "~/api/instances/query/get";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 
 let namespace = "";
@@ -60,9 +61,25 @@ const createFailedInstance = async () =>
   });
 
 test("this is an example test", async ({ page }) => {
-  await createFailedInstance();
+  const failedInstance = await createFailedInstance();
   await createBasicInstance();
   await createBasicInstance();
+
+  const instancesList = await getInstances({
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      limit: 10,
+      offset: 0,
+    },
+  });
+
+  const failedInstanceServerRes = instancesList.instances.results.find(
+    (x) => x.id === failedInstance.instance
+  );
+
+  console.log("🚀", failedInstanceServerRes);
+
   // { waitUntil: "networkidle" } might not be necessary, I just added
   // it so that running this example will show a nicely loaded page
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
