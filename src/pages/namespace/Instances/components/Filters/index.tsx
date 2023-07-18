@@ -202,7 +202,6 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
           )}
         </PopoverContent>
       </Popover>
-      <div>{activeMenu}</div>
     </div>
   );
 };
