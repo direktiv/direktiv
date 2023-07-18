@@ -76,17 +76,29 @@ test("there is no result", async ({ page }) => {
   // { waitUntil: "networkidle" } might not be necessary, I just added
   // it so that running this example will show a nicely loaded page
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
-  await expect(page.getByTestId("instance-no-result"), "no result message should be visible").toBeVisible();
-  await expect(page.getByTestId("instance-list-pagination"), "there is no pagination when there is no result").not.toBeVisible();
+  await expect(
+    page.getByTestId("instance-no-result"),
+    "no result message should be visible"
+  ).toBeVisible();
+  await expect(
+    page.getByTestId("instance-list-pagination"),
+    "there is no pagination when there is no result"
+  ).not.toBeVisible();
 });
 
-test("test through the instance list screen without pagination", async ({ page }) => {
+test("test through the instance list screen without pagination", async ({
+  page,
+}) => {
   const failedInstance = await createFailedInstance();
   const successInstance1 = await createBasicInstance();
   const successInstance2 = await createBasicInstance();
   // { waitUntil: "networkidle" } might not be necessary, I just added
   // it so that running this example will show a nicely loaded page
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
-  const failedItem = page.getByTestId(`instance-item-${failedInstance.instance}`)
-  await expect(failedItem, "failed Item should have the id").toContainText(failedInstance.instance);
+  const failedItem = page.getByTestId(
+    `instance-item-${failedInstance.instance}`
+  );
+  await expect(failedItem, "failed Item should have the id").toContainText(
+    failedInstance.instance
+  );
 });
