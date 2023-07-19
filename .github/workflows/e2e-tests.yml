@@ -58,21 +58,32 @@ jobs:
         run: |
           cat <<EOF > dev.yaml
           registry: docker.io
-          pullPolicy: Always
+          pullPolicy: IfNotPresent
           debug: "true"
+
           secrets:
             image: "direktiv/direktiv"
+            tag: "latest"
+
           flow:
             image: "direktiv/direktiv"
-          ui:
-            image: "direktiv/ui"
+            dbimage: "direktiv"
             tag: "latest"
+
+          ui:
+            image: "direktiv/direktiv"
+            tag: "latest"
+
           api:
             image: "direktiv/direktiv"
+            tag: "latest"
+
           functions:
             namespace: direktiv-services-direktiv
             image: "direktiv/direktiv"
-            initPodImage: "direktiv/direktiv-init-pod"
+            tag: "latest"
+            sidecar: "direktiv/direktiv"
+            initPodImage: "init-pod"
           database:
             host: "psql-single-postgresql"
             port: 5432
