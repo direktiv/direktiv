@@ -102,20 +102,25 @@ jobs:
 
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
+      
+      - name: Wait for Direktiv function pods to be ready
+        run: |
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-functions --timeout=800s
+          echo "Listing all pods:"
+          kubectl get all
 
       - name: List all pods
-        run: kubectl get pods 
-
-      - name: Sleep for 30 seconds
-        run: sleep 30
-
-      - name: List all pods
-        run: kubectl get pods
+        run: |
+          kubectl get pods 
+          kubectl logs direktiv-flow-56d948ccb8-s4wsr | tail -n 200
 
       - name: Run tests
         run: |
           npm --prefix "tests/jest" run all
 
+      - name: show logs
+        run: | 
+          kc logs direktiv-flow-56d948ccb8-s4wsr | tail -n 200
 
       - name: Cleanup test cache
         run: npm cache clean --force
