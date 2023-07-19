@@ -83,7 +83,7 @@ jobs:
 
       - name: Wait for Direktiv pods to be ready
         run: |
-          kubectl wait --for=condition=Ready pod -l app=direktiv --timeout=800s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=800s
           echo "Listing all pods:"
           kubectl get all
 
