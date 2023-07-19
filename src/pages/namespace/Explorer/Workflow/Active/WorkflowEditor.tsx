@@ -41,7 +41,7 @@ const WorkflowEditor: FC<{
   path: string;
 }> = ({ data, path }) => {
   const currentLayout = useEditorLayout();
-  const { setLayout } = useEditorActions();
+  const { setLayout: setCurrentLayout } = useEditorActions();
 
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
@@ -108,7 +108,7 @@ const WorkflowEditor: FC<{
                     <div className="flex grow">
                       <Toggle
                         onClick={() => {
-                          setLayout(layout);
+                          setCurrentLayout(layout);
                         }}
                         className="grow"
                         pressed={layout === currentLayout}
