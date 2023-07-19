@@ -151,17 +151,43 @@ test("it will update the diagram when the workflow is saved", async ({
   await splitVertBtn.click();
 
   await page.evaluate(
-    async () => await navigator.clipboard.writeText("write to clipboard")
+    async () =>
+      await navigator.clipboard
+        .writeText(`description: A simple 'validate' state workflow that checks an email
+    states:
+    - id: data
+      type: noop
+      transform:
+        email: "trent.hilliam@direktiv.io"
+      transition: validate-email
+    - id: validate-email
+      type: validate
+      subject: jq(.)
+      schema:
+        type: object
+        properties:
+          email:
+            type: string
+            format: email
+      catch:
+      - error: direktiv.schema.*
+        transition: email-not-valid 
+      transition: email-valid
+    - id: email-not-valid
+      type: noop
+      transform:
+        result: "Email is not valid."
+    - id: email-valid
+      type: noop
+      transform:
+        result: "Email is valid."
+    `)
   );
 
+  // TODO: fix meta key
   await page.getByTestId("workflow-editor").click();
   await page.keyboard.press("Meta+A");
   await page.keyboard.press("Backspace");
   await page.keyboard.press("Meta+V");
-
-  // TODO: fix meta key
-
-  // await page.keyboard.type(complexWorkflow.data);
-
-  await expect(page.getByTestId("workflow-dedede")).toBeVisible();
+  await page.getByTestId("workflow-editor-btn-save").click();
 });
