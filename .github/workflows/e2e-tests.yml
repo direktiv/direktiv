@@ -7,10 +7,10 @@ env:
 
 jobs:
   test:
-    container:
-      image: direktiv/direktiv:${{ github.sha }}
+    # container:
+    #   image: direktiv/direktiv:${{ github.sha }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,6 +29,10 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
+
+      - name: Start local Docker registry
+        run: |
+          docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
@@ -57,7 +61,7 @@ jobs:
       - name: Create dev.yaml file
         run: |
           cat <<EOF > dev.yaml
-          registry: docker.io
+          registry: localhost:5000
           pullPolicy: Always
           debug: "true"
           secrets:
@@ -89,7 +93,7 @@ jobs:
           EOF
 
       - name: Build images
-        run: docker build -t direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
+        run: docker build -t localhost:5000/direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
