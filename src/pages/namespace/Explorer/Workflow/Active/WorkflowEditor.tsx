@@ -40,7 +40,7 @@ const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
 }> = ({ data, path }) => {
-  const layout = useEditorLayout();
+  const currentLayout = useEditorLayout();
   const { setLayout } = useEditorActions();
 
   const { t } = useTranslation();
@@ -81,9 +81,9 @@ const WorkflowEditor: FC<{
         {t("pages.explorer.workflow.headline")}
       </h3>
       <WorkspaceLayout
-        layout={layout}
+        layout={currentLayout}
         diagramComponent={
-          <Diagram workflowData={workflowData} layout={layout} />
+          <Diagram workflowData={workflowData} layout={currentLayout} />
         }
         editorComponent={
           <CodeEditor
@@ -100,25 +100,25 @@ const WorkflowEditor: FC<{
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <ButtonBar>
           <TooltipProvider>
-            {availableLayouts.map((lay) => {
-              const Icon = layoutIcons[lay];
+            {availableLayouts.map((layout) => {
+              const Icon = layoutIcons[layout];
               return (
-                <Tooltip key={lay}>
+                <Tooltip key={layout}>
                   <TooltipTrigger asChild>
                     <div className="flex grow">
                       <Toggle
                         onClick={() => {
-                          setLayout(lay);
+                          setLayout(layout);
                         }}
                         className="grow"
-                        pressed={lay === layout}
+                        pressed={layout === currentLayout}
                       >
                         <Icon />
                       </Toggle>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${lay}`)}
+                    {t(`pages.explorer.workflow.editor.layout.${layout}`)}
                   </TooltipContent>
                 </Tooltip>
               );
