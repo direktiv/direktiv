@@ -12,8 +12,7 @@ import {
 } from "~/api/instances/query/get";
 
 import { Datepicker } from "~/design/Datepicker";
-import Input from "~/design/Input";
-import { useState } from "react";
+import TextInput from "./TextInput";
 import { useTranslation } from "react-i18next";
 
 const optionMenus = {
@@ -34,22 +33,7 @@ const FieldSubMenu = ({
   setFilter: (filter: FiltersObj) => void;
   clearFilter: (field: keyof FiltersObj) => void;
 }) => {
-  const [inputValue, setInputValue] = useState<string>(value || "");
   const { t } = useTranslation();
-
-  const handleKeyDown = (event: { key: string }) => {
-    // Currently API only supports CONTAINS on filter fields with text inputs
-    const type = "CONTAINS";
-
-    if (event.key === "Enter" && inputValue) {
-      setFilter({
-        [field]: { value: inputValue, type },
-      });
-    }
-    if (event.key === "Enter" && !inputValue) {
-      clearFilter(field);
-    }
-  };
 
   const setDate = (type: "AFTER" | "BEFORE", value: Date) => {
     setFilter({
@@ -60,21 +44,12 @@ const FieldSubMenu = ({
   return (
     <>
       {field === "AS" && (
-        <Command>
-          <CommandList>
-            <CommandGroup
-              heading={t("pages.instances.list.filter.menuHeading.AS")}
-            >
-              <Input
-                autoFocus
-                placeholder={t("pages.instances.list.filter.placeholder.AS")}
-                value={inputValue}
-                onChange={(event) => setInputValue(event.target.value)}
-                onKeyUp={handleKeyDown}
-              />
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <TextInput
+          field={field}
+          setFilter={setFilter}
+          clearFilter={clearFilter}
+          value={value}
+        />
       )}
       {(field === "STATUS" || field === "TRIGGER") && (
         <Command value={value}>
