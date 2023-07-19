@@ -96,7 +96,7 @@ jobs:
       - name: Build images
         run: |
           docker build -t direktiv/direktiv:${{ env.SRVTAG }} -f build/docker/direktiv/Dockerfile .
-          docker save --output direktiv/direktiv:${{ env.SRVTAG }} direktiv:${{ env.SRVTAG }}.tar direktiv/direktiv:${{ env.SRVTAG }}
+          docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv:${{ env.SRVTAG }}.tar
           k3s ctr images import direktiv:${{ env.SRVTAG }}.tar 
         env:
           DOCKER_BUILDKIT: 1
