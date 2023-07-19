@@ -1,8 +1,10 @@
 name: Run E2E Tests
 on:
   pull_request
+
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -46,8 +48,7 @@ jobs:
 
       - name: Wait for PostgreSQL pod to be ready
         run: |
-          while ! kubectl get secret --namespace default psql-single-postgresql
-          do
+          while ! kubectl get secret --namespace default psql-single-postgresql; do
               sleep 2
           done
 
@@ -58,23 +59,23 @@ jobs:
           pullPolicy: Always
           debug: "true"
           secrets:
-            image: "h8718/direktiv_075_ev"
-            tag: "latest"
+            image: "direktiv/direktiv"
+            tag: "${{ github.ref_slug }}-${{ github.sha }}"
           flow:
-            image: "h8718/direktiv_075_ev"
-            dbimage: "h8718/direktiv_075_ev"
-            tag: "latest"
+            image: "direktiv/direktiv"
+            dbimage: "direktiv/direktiv"
+            tag: "${{ github.ref_slug }}-${{ github.sha }}"
           ui:
             image: "direktiv/ui"
-            tag: "latest"
+            tag: "${{ github.ref_slug }}-${{ github.sha }}"
           api:
-            image: "h8718/direktiv_075_ev"
-            tag: "latest"
+            image: "direktiv/direktiv"
+            tag: "${{ github.ref_slug }}-${{ github.sha }}"
           functions:
             namespace: direktiv-services-direktiv
-            image: "h8718/direktiv_075_ev"
-            tag: "latest"
-            sidecar: "h8718/direktiv_075_ev"
+            image: "direktiv/direktiv"
+            tag: "${{ github.ref_slug }}-${{ github.sha }}"
+            sidecar: "direktiv/direktiv"
             initPodImage: "direktiv/direktiv-init-pod"
           database:
             host: "psql-single-postgresql"
@@ -84,6 +85,9 @@ jobs:
             name: "postgres"
             sslmode: "disable"
           EOF
+
+      - name: Build images
+        run: docker build -t direktiv/direktiv:${{ github.ref_slug }}-${{ github.sha }} -f build/docker/direktiv/Dockerfile .
 
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
@@ -118,11 +122,11 @@ jobs:
         run: |
           npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
         env:
-         JEST_PREFIX: errors events filesystem namespaces variables
+         JEST_PREFIX: errors/ filesystem/ namespaces/ variables/
 
-      - name: show logs
+      - name: Show logs
         run: | 
-          kc logs deployments/direktiv-flow | tail -n 200
+          kubectl logs deployments/direktiv-flow | tail -n 200
 
       - name: Cleanup test cache
         run: npm cache clean --force
