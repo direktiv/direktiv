@@ -38,7 +38,11 @@ jobs:
           helm dependency update direktiv-charts/charts/direktiv
 
       - name: Wait for PostgreSQL pod to be ready
-        run: kubectl wait --for=condition=Ready pod -l app=psql-single-postgresql --timeout=600s
+        run: |
+          while ! kubectl get secret --namespace default psql-single-postgresql
+          do
+              sleep 2
+          done
 
       - name: Create dev.yaml file
         run: |
