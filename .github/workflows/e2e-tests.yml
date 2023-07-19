@@ -60,21 +60,21 @@ jobs:
           debug: "true"
           secrets:
             image: "direktiv/direktiv"
-            tag: "${{ github.ref_slug }}-${{ github.sha }}"
+            tag: "${{ github.sha }}"
           flow:
             image: "direktiv/direktiv"
             dbimage: "direktiv/direktiv"
-            tag: "${{ github.ref_slug }}-${{ github.sha }}"
+            tag: "${{ github.sha }}"
           ui:
             image: "direktiv/ui"
-            tag: "${{ github.ref_slug }}-${{ github.sha }}"
+            tag: "${{ github.sha }}"
           api:
             image: "direktiv/direktiv"
-            tag: "${{ github.ref_slug }}-${{ github.sha }}"
+            tag: "${{ github.sha }}"
           functions:
             namespace: direktiv-services-direktiv
             image: "direktiv/direktiv"
-            tag: "${{ github.ref_slug }}-${{ github.sha }}"
+            tag: "${{ github.sha }}"
             sidecar: "direktiv/direktiv"
             initPodImage: "direktiv/direktiv-init-pod"
           database:
@@ -87,7 +87,7 @@ jobs:
           EOF
 
       - name: Build images
-        run: docker build -t direktiv/direktiv:${{ github.ref_slug }}-${{ github.sha }} -f build/docker/direktiv/Dockerfile .
+        run: docker build -t direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
 
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
