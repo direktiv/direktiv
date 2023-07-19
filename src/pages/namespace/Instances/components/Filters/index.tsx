@@ -1,4 +1,5 @@
 import { BaseSyntheticEvent, useState } from "react";
+import { Command, CommandGroup, CommandList } from "~/design/Command";
 import { Plus, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
@@ -147,11 +148,21 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  <Input
-                    type="time"
-                    step={1}
-                    onChange={(event) => setTime(event, field)}
-                  />
+                  <Command>
+                    <CommandList className="max-h-[460px]">
+                      <CommandGroup
+                        heading={t(
+                          "pages.instances.list.filter.menuHeading.time"
+                        )}
+                      >
+                        <Input
+                          type="time"
+                          step={1}
+                          onChange={(event) => setTime(event, field)}
+                        />
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
                 </PopoverContent>
               </Popover>
               <Button variant="outline" icon>
