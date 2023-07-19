@@ -70,16 +70,18 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     onUpdate(newFilters);
   };
 
-  const setTime = (event: BaseSyntheticEvent, field: "AFTER" | "BEFORE") => {
+  const setTimeOnDate = (
+    event: BaseSyntheticEvent,
+    field: "AFTER" | "BEFORE",
+    date: Date
+  ) => {
     const [hr, min, sec] = event.target.value.split(":");
-    const newFilters = { ...value };
-
-    newFilters[field]?.value.setHours(hr);
-    newFilters[field]?.value.setMinutes(min);
-    newFilters[field]?.value.setSeconds(sec);
-
-    onUpdate(newFilters);
-    resetMenu();
+    date.setHours(hr);
+    date.setMinutes(min);
+    date.setSeconds(sec);
+    setFilter({
+      [field]: { type: "MATCH", value: date },
+    });
   };
 
   const hasFilters = !!Object.keys(value).length;
@@ -159,7 +161,13 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                         <Input
                           type="time"
                           step={1}
-                          onChange={(event) => setTime(event, field)}
+                          onChange={(event) => {
+                            const date = value[field]?.value;
+                            if (!date) {
+                              return;
+                            }
+                            setTimeOnDate(event, field, date);
+                          }}
                         />
                       </CommandGroup>
                     </CommandList>
