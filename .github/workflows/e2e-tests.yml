@@ -67,7 +67,7 @@ jobs:
 
           flow:
             image: "direktiv/direktiv"
-            dbimage: "direktiv"
+            dbimage: "direktiv/direktiv"
             tag: "${{ env.SRVTAG }}"
 
           ui:
