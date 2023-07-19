@@ -30,8 +30,8 @@ export const CodeEditor: FC<EditorProps> = ({
   const updatedAt = useUpdatedAt(createdAt);
 
   return (
-    <Card className="flex grow flex-col p-4" data-testid="workflow-editor">
-      <div className="grow">
+    <Card className="flex grow flex-col p-4">
+      <div className="grow" data-testid="workflow-editor">
         <Editor
           value={value}
           onMount={(editor) => {
