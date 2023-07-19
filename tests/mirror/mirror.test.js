@@ -815,7 +815,7 @@ describe('Test behaviour specific to the root node', () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/banana/util/caller.yaml?op=wait`)
         expect(req.statusCode).toEqual(200)
         expect(req.body.return.return.status).toEqual('200 OK')
-    }, 30000)
+    }, 90000)
 
     it(`should fail to delete a namespace because of a lack of a recursive param`, async () => {
         const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)

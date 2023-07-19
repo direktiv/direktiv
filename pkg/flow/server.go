@@ -142,7 +142,8 @@ func (srv *server) start(ctx context.Context) error {
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
-				LogLevel: logger.Info,
+				LogLevel:                  logger.Warn,
+				IgnoreRecordNotFoundError: true,
 			},
 		),
 	})
@@ -300,6 +301,7 @@ func (srv *server) start(ctx context.Context) error {
 		},
 		noTx.DataStore().Mirror(),
 		noTx.FileStore(),
+		noTx.DataStore().RuntimeVariables(),
 		&mirror.GitSource{},
 		cc,
 	)

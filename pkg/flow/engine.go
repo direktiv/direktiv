@@ -101,6 +101,10 @@ func marshalInstanceInputData(input []byte) string {
 	return string(data)
 }
 
+func trim(s string) string {
+	return strings.TrimPrefix(s, "/")
+}
+
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 	file, revision, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
@@ -115,7 +119,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	var wf model.Workflow
 	err = wf.Load(revision.Data)
 	if err != nil {
-		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", file.Path, err)
+		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", trim(file.Path), err)
 	}
 
 	if len(wf.GetStartDefinition().GetEvents()) > 0 {
@@ -932,7 +936,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 			time.Sleep(1000 * time.Millisecond)
 		} else {
-			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID, err)
+			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID)
 			break
 		}
 	}

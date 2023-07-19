@@ -214,7 +214,7 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 
 // ParseDirektivVars tries to parse special direktiv files naming convention to create both namespace and workflow
 // files.
-func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, vStore core.RuntimeVariablesStore, store Store, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -235,7 +235,8 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 
 			return j
 		}
-		err = store.SetVariable(j.ctx,
+
+		_, err = vStore.Set(j.ctx,
 			&core.RuntimeVariable{
 				NamespaceID: namespaceID,
 				Name:        pk[1],
@@ -273,15 +274,16 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 
 			return j
 		}
-		err = store.SetVariable(j.ctx,
+		_, err = vStore.Set(j.ctx,
 			&core.RuntimeVariable{
+				NamespaceID:  namespaceID,
 				WorkflowPath: workflowFile.Path,
 				Name:         pk[1],
 				MimeType:     mType.String(),
 				Data:         data,
 			})
 		if err != nil {
-			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
+			j.err = fmt.Errorf("save workflow variable, path: %s, err: %w", path, err)
 
 			return j
 		}

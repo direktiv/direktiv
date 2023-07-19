@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -17,51 +16,6 @@ type sqlMirrorStore struct {
 	db *gorm.DB
 	// symmetric encryption key to encrypt and decrypt mirror data.
 	configEncryptionKey string
-}
-
-// SetVariable sets runtime variable into the database.
-// nolint
-func (s sqlMirrorStore) SetVariable(ctx context.Context, variable *core.RuntimeVariable) error {
-	linkName := "namespace_id"
-	linkValue := variable.NamespaceID.String()
-
-	if variable.WorkflowPath != "" {
-		linkName = "workflow_path"
-		linkValue = variable.WorkflowPath
-	}
-
-	res := s.db.WithContext(ctx).Exec(fmt.Sprintf(
-		`UPDATE runtime_variables SET
-						mime_type=?,
-						data=?
-					WHERE %s = ? AND name = ?;`, linkName),
-		variable.MimeType, variable.Data, linkValue, variable.Name)
-
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected > 1 {
-		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-	if res.RowsAffected == 1 {
-		return nil
-	}
-
-	newUUID := uuid.New()
-	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
-							INSERT INTO runtime_variables(
-								id, %s, name, mime_type, data) 
-							VALUES(?, ?, ?, ?, ?);`, linkName),
-		newUUID, linkValue, variable.Name, variable.MimeType, variable.Data)
-
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected runtime_variables insert count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	return nil
 }
 
 func cryptDecryptConfig(config *mirror.Config, key string, encrypt bool) (*mirror.Config, error) {
