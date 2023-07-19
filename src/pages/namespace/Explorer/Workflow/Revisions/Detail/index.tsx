@@ -38,8 +38,8 @@ const WorkflowRevisionsPage = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const layout = useEditorLayout();
-  const { setLayout } = useEditorActions();
+  const currentLayout = useEditorLayout();
+  const { setLayout: setCurrentLayout } = useEditorActions();
 
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path, revision: selectedRevision });
@@ -74,9 +74,9 @@ const WorkflowRevisionsPage = () => {
       </div>
 
       <WorkspaceLayout
-        layout={layout}
+        layout={currentLayout}
         diagramComponent={
-          <Diagram workflowData={workflowData} layout={layout} />
+          <Diagram workflowData={workflowData} layout={currentLayout} />
         }
         editorComponent={
           <Popover>
@@ -103,25 +103,25 @@ const WorkflowRevisionsPage = () => {
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <ButtonBar>
           <TooltipProvider>
-            {availableLayouts.map((lay) => {
-              const Icon = layoutIcons[lay];
+            {availableLayouts.map((layout) => {
+              const Icon = layoutIcons[layout];
               return (
-                <Tooltip key={lay}>
+                <Tooltip key={layout}>
                   <TooltipTrigger asChild>
                     <div className="flex grow">
                       <Toggle
                         onClick={() => {
-                          setLayout(lay);
+                          setCurrentLayout(layout);
                         }}
                         className="grow"
-                        pressed={lay === layout}
+                        pressed={layout === currentLayout}
                       >
                         <Icon />
                       </Toggle>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${lay}`)}
+                    {t(`pages.explorer.workflow.editor.layout.${layout}`)}
                   </TooltipContent>
                 </Tooltip>
               );
