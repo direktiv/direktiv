@@ -97,3 +97,38 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   await expect(page.getByTestId("workflow-editor")).toBeVisible();
   await expect(page.getByTestId("workflow-diagram")).not.toBeVisible();
 });
+
+test("it will persist the prefered layout selection in local storage", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+
+  const { codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
+    await getCodeLayoutButtons(page);
+
+  // code is the default view
+  expect(await codeBtn.getAttribute("aria-pressed")).toBe("true");
+  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
+  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
+  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
+  await expect(page.getByTestId("workflow-editor")).toBeVisible();
+  await expect(page.getByTestId("workflow-diagram")).not.toBeVisible();
+
+  // diagram view
+  await diagramBtn.click();
+  expect(await codeBtn.getAttribute("aria-pressed")).toBe("false");
+  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("true");
+  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
+  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
+  await expect(page.getByTestId("workflow-editor")).not.toBeVisible();
+  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+
+  // still diagram layout after reload
+  await page.reload();
+  expect(await codeBtn.getAttribute("aria-pressed")).toBe("false");
+  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("true");
+  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
+  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
+  await expect(page.getByTestId("workflow-editor")).not.toBeVisible();
+  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+});
