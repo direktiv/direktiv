@@ -1,7 +1,10 @@
 import { Page, expect, test } from "@playwright/test";
+import {
+  noop as basicWorkflow,
+  validate as complexWorkflow,
+} from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 
@@ -131,4 +134,20 @@ test("it will persist the prefered layout selection in local storage", async ({
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
   await expect(page.getByTestId("workflow-editor")).not.toBeVisible();
   await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+});
+
+test("it will update the diagram when the workflow is saved", async ({
+  page,
+  browserName,
+}) => {
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  const { splitVertBtn } = await getCodeLayoutButtons(page);
+  await splitVertBtn.click();
+
+  await page.getByTestId("workflow-editor").click();
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(complexWorkflow.data);
+
+  await expect(page.getByTestId("workflow-dedede")).toBeVisible();
 });
