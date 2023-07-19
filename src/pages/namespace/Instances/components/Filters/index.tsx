@@ -71,11 +71,12 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
   };
 
   const setTime = (event: BaseSyntheticEvent, field: "AFTER" | "BEFORE") => {
-    const [hr, min] = event.target.value.split(":");
+    const [hr, min, sec] = event.target.value.split(":");
     const newFilters = { ...value };
 
     newFilters[field]?.value.setHours(hr);
     newFilters[field]?.value.setMinutes(min);
+    newFilters[field]?.value.setSeconds(sec);
 
     onUpdate(newFilters);
     resetMenu();
