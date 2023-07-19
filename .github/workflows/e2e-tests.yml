@@ -62,21 +62,15 @@ jobs:
           debug: "true"
           secrets:
             image: "direktiv/direktiv"
-            tag: "latest"
           flow:
             image: "direktiv/direktiv"
-            image: "direktiv/direktiv"
-            tag: "latest"
           ui:
             image: "direktiv/ui"
             tag: "latest"
           api:
             image: "direktiv/direktiv"
-            tag: "latest"
           functions:
             namespace: direktiv-services-direktiv
-            image: "direktiv/direktiv"
-            tag: "latest"
             image: "direktiv/direktiv"
             initPodImage: "direktiv/direktiv-init-pod"
           database:
