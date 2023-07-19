@@ -1,0 +1,30 @@
+config: 
+  customParsers: |
+    [PARSER]
+        Name prefix_tail
+        Format regex
+        Regex ^(?<time>[^ ]+) (?<stream>\w+ \w+) (?<log>.*$)
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+        Decode_Field_As json log
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/direktiv-api*api*.log,/var/log/containers/direktiv-flow*flow*.log,/var/log/containers/direktiv-functions*functions*.log
+        parser prefix_tail
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines Off
+  outputs: |
+      [OUTPUT]
+          Name stdout
+      [OUTPUT]
+          name   loki
+          match  *
+          host  loki
+          port  3100
+          http_user   loki
+          http_passwd loki
+          line_format json
+          labels job=fluent-bit, $log['state'], $log['state-id'], $log['namespace'], $log['workflow'], $log['trace'], $log['httppath']
+          label_keys $log['level'], $log['stream'], $log['component'], $log['built'], $log['trace'], $log['log-recipient'], $log['invoker'], $log['callpath'] "
+ 
