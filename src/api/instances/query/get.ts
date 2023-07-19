@@ -6,17 +6,28 @@ import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 
+export const triggerValues = ["api", "cloudevent", "instance", "cron"] as const;
+
+export const statusValues = [
+  "pending",
+  "complete",
+  "cancelled",
+  "failed",
+] as const;
+
+type TriggerValue = (typeof triggerValues)[number];
+type StatusValue = (typeof statusValues)[number];
+
 export type FiltersObj = {
   AS?: { type: "CONTAINS"; value: string };
   STATUS?: {
     type: "MATCH";
-    value: "pending" | "complete" | "cancelled" | "failed";
+    value: StatusValue;
   };
   TRIGGER?: {
     type: "MATCH";
-    value: "api" | "cloudevent" | "instance" | "cron";
+    value: TriggerValue;
   };
-  // TODO: use Date type (but display components need a string value)
   AFTER?: { type: "AFTER"; value: Date };
   BEFORE?: { type: "BEFORE"; value: Date };
 };

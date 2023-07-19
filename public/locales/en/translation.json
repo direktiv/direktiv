@@ -193,7 +193,8 @@
             "STATUS": "filter by status",
             "TRIGGER": "filter by trigger",
             "AFTER": "filter created after",
-            "BEFORE": "filter created before"
+            "BEFORE": "filter created before",
+            "time": "Refine time"
           },
           "field": {
             "AS": "name",
@@ -208,13 +209,11 @@
             "STATUS": "Type or select status...",
             "TRIGGER": "Type or select trigger type..."
           },
-          "trigger": {
+          "option": {
             "api": "API",
             "cloudevent": "cloud event",
             "instance": "instance",
-            "cron": "cron"
-          },
-          "status": {
+            "cron": "cron",
             "pending": "pending",
             "complete": "complete",
             "cancelled": "cancelled",

@@ -5,12 +5,21 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
+import {
+  FiltersObj,
+  statusValues,
+  triggerValues,
+} from "~/api/instances/query/get";
 
 import { Datepicker } from "~/design/Datepicker";
-import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const optionMenus = {
+  STATUS: statusValues,
+  TRIGGER: triggerValues,
+};
 
 const FieldSubMenu = ({
   field,
@@ -42,7 +51,6 @@ const FieldSubMenu = ({
     }
   };
 
-  // TODO: Handle dates with Date type (but display components need a string value)
   const setDate = (type: "AFTER" | "BEFORE", value: Date) => {
     setFilter({
       [type]: { type, value },
@@ -68,7 +76,7 @@ const FieldSubMenu = ({
           </CommandList>
         </Command>
       )}
-      {field === "STATUS" && (
+      {(field === "STATUS" || field === "TRIGGER") && (
         <Command value={value}>
           <CommandInput
             autoFocus
@@ -78,129 +86,37 @@ const FieldSubMenu = ({
             <CommandGroup
               heading={t("pages.instances.list.filter.menuHeading.STATUS")}
             >
-              <CommandItem
-                value="pending"
-                onSelect={() =>
-                  setFilter({
-                    STATUS: { value: "pending", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.status.pending")}
-              </CommandItem>
-              <CommandItem
-                value="complete"
-                onSelect={() =>
-                  setFilter({
-                    STATUS: { value: "complete", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.status.complete")}
-              </CommandItem>
-              <CommandItem
-                value="cancelled"
-                onSelect={() =>
-                  setFilter({
-                    STATUS: { value: "cancelled", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.status.cancelled")}
-              </CommandItem>
-              <CommandItem
-                value="failed"
-                onSelect={() =>
-                  setFilter({
-                    STATUS: { value: "failed", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.status.failed")}
-              </CommandItem>
+              {optionMenus[field].map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={() =>
+                    setFilter({
+                      [field]: {
+                        value: option,
+                        // TODO: Move this decision to the API layer?
+                        type: field === "TRIGGER" ? "CONTAINS" : "MATCH",
+                      },
+                    })
+                  }
+                >
+                  {t(`pages.instances.list.filter.option.${option}`)}
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
         </Command>
       )}
-      {field === "TRIGGER" && (
-        <Command value={value}>
-          <CommandInput
-            autoFocus
-            placeholder={t("pages.instances.list.filter.placeholder.TRIGGER")}
-          />
-          <CommandList>
-            <CommandGroup
-              heading={t("pages.instances.list.filter.menuHeading.TRIGGER")}
-            >
-              <CommandItem
-                value="api"
-                onSelect={() =>
-                  setFilter({
-                    TRIGGER: { value: "api", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.trigger.api")}
-              </CommandItem>
-              <CommandItem
-                value="cloudevent"
-                onSelect={() =>
-                  setFilter({
-                    TRIGGER: { value: "cloudevent", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.trigger.cloudevent")}
-              </CommandItem>
-              <CommandItem
-                value="instance"
-                onSelect={() =>
-                  setFilter({
-                    TRIGGER: { value: "instance", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.trigger.instance")}
-              </CommandItem>
-              <CommandItem
-                value="cron"
-                onSelect={() =>
-                  setFilter({
-                    TRIGGER: { value: "cron", type: "MATCH" },
-                  })
-                }
-              >
-                {t("pages.instances.list.filter.trigger.cron")}
-              </CommandItem>
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      )}
-      {field === "AFTER" && (
+      {(field === "AFTER" || field === "BEFORE") && (
         <Command>
           <CommandList className="max-h-[460px]">
             <CommandGroup
-              heading={t("pages.instances.list.filter.menuHeading.AFTER")}
+              heading={t(`pages.instances.list.filter.menuHeading.${field}`)}
             >
               <Datepicker
                 mode="single"
                 selected={date}
-                onSelect={(value) => value && setDate("AFTER", value)}
-              />
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      )}
-      {field === "BEFORE" && (
-        <Command>
-          <CommandList className="max-h-[460px]">
-            <CommandGroup
-              heading={t("pages.instances.list.filter.menuHeading.BEFORE")}
-            >
-              <Datepicker
-                mode="single"
-                selected={date}
-                onSelect={(value) => value && setDate("BEFORE", value)}
+                onSelect={(value) => value && setDate(field, value)}
               />
             </CommandGroup>
           </CommandList>
