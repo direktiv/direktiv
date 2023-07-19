@@ -19,6 +19,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-apt-packages-
 
+      - name: Cache test dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -96,16 +103,19 @@ jobs:
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
 
+      - name: List all pods
+        run: kubectl get pods 
+
+      - name: Sleep for 30 seconds
+        run: sleep 30
+
+      - name: List all pods
+        run: kubectl get pods
+
       - name: Run tests
         run: |
           npm --prefix "tests/jest" run all
 
-      - name: Cache test dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
 
       - name: Cleanup test cache
         run: npm cache clean --force
