@@ -101,12 +101,9 @@ jobs:
 
       - name: List all pods
         run: |
-          sleep 1
+          sleep 30
           kubectl get pods 
           kubectl describe deployments/direktiv-flow
-          kubectl logs deployments/direktiv-flow flow
-          echo "------------"
-          kubectl logs deployments/direktiv-flow updatedb
 
       - name: Wait for Direktiv pods to be ready
         run: |
