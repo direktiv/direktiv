@@ -101,12 +101,16 @@ jobs:
 
       - name: List all pods
         run: |
+          sleep 1
           kubectl get pods 
           kubectl describe deployments/direktiv-flow
+          kubectl logs deployments/direktiv-flow flow
+          echo "------------"
+          kubectl logs deployments/direktiv-flow updatedb
 
       - name: Wait for Direktiv pods to be ready
         run: |
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=200s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
           echo "Listing all pods:"
           kubectl get all
 
