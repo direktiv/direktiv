@@ -27,6 +27,7 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
+
       - name: Cache Docker build
         id: docker-cache
         uses: actions/cache@v2
@@ -96,7 +97,7 @@ jobs:
       - name: Build images
         run: docker build -t direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
         env:
-          DOCKER_BUILDKIT:1
+          DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
 
