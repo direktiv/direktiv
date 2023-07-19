@@ -27,7 +27,7 @@ import { Diagram } from "./Diagram";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { Toggle } from "~/design/Toggle";
-import { WorkspaceLayout } from "../../../../../componentsNext/WorkspaceLayout";
+import { WorkspaceLayout } from "~/componentsNext/WorkspaceLayout";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
