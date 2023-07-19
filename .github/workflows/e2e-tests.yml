@@ -94,7 +94,7 @@ jobs:
           echo "::set-output name=internal_ip::$internal_ip"
 
       - name: Set Environment Variables
-        run: echo "DIRECTIV_INGRESS_IP=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
+        run: echo "DIREKTIV_HOST=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
 
       - name: Run tests
         run: |
