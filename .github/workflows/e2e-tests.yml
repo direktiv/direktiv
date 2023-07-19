@@ -61,20 +61,20 @@ jobs:
           debug: "true"
 
           secrets:
-            image: "direktiv"
+            image: "direktiv/direktiv"
             tag: "latest"
 
           flow:
-            image: "direktiv"
+            image: "direktiv/direktiv"
             dbimage: "direktiv"
             tag: "latest"
 
           ui:
-            image: "direktiv"
+            image: "direktiv/ui"
             tag: "latest"
 
           api:
-            image: "direktiv"
+            image: "direktiv/direktiv"
             tag: "latest"
 
           functions:
@@ -94,7 +94,7 @@ jobs:
 
       - name: Build images
       #  run: docker build -t localhost:5000/direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
-        run: docker build -t direktiv:latest -f build/docker/direktiv/Dockerfile .
+        run: docker build -t direktiv/direktiv:latest -f build/docker/direktiv/Dockerfile .
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
