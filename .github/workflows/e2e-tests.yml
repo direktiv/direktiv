@@ -98,7 +98,6 @@ jobs:
 
       - name: Run tests
         run: |
-          |
           npm --prefix "tests/jest" run all
 
       - name: Cache test dependencies
