@@ -112,15 +112,17 @@ jobs:
       - name: List all pods
         run: |
           kubectl get pods 
-          kubectl logs direktiv-flow-56d948ccb8-s4wsr | tail -n 200
+          kubectl logs deployments/direktiv-flow | tail -n 200
 
       - name: Run tests
         run: |
-          npm --prefix "tests/jest" run all
+          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: errors events filesystem namespaces variables
 
       - name: show logs
         run: | 
-          kc logs direktiv-flow-56d948ccb8-s4wsr | tail -n 200
+          kc logs deployments/direktiv-flow | tail -n 200
 
       - name: Cleanup test cache
         run: npm cache clean --force
