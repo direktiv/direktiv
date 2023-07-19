@@ -57,33 +57,32 @@ jobs:
       - name: Create dev.yaml file
         run: |
           cat <<EOF > dev.yaml
-          registry: docker.io
           pullPolicy: IfNotPresent
           debug: "true"
 
           secrets:
-            image: "direktiv/direktiv"
+            image: "direktiv"
             tag: "latest"
 
           flow:
-            image: "direktiv/direktiv"
+            image: "direktiv"
             dbimage: "direktiv"
             tag: "latest"
 
           ui:
-            image: "direktiv/direktiv"
+            image: "direktiv"
             tag: "latest"
 
           api:
-            image: "direktiv/direktiv"
+            image: "direktiv"
             tag: "latest"
 
           functions:
             namespace: direktiv-services-direktiv
-            image: "direktiv/direktiv"
+            image: "direktiv"
             tag: "latest"
-            sidecar: "direktiv/direktiv"
-            initPodImage: "init-pod"
+            sidecar: "direktiv"
+            initPodImage: "direktiv/init-pod"
           database:
             host: "psql-single-postgresql"
             port: 5432
@@ -95,7 +94,7 @@ jobs:
 
       - name: Build images
       #  run: docker build -t localhost:5000/direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
-        run: docker build -t direktiv/direktiv -f build/docker/direktiv/Dockerfile .
+        run: docker build -t direktiv:latest -f build/docker/direktiv/Dockerfile .
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
