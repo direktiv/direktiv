@@ -7,6 +7,8 @@ env:
 
 jobs:
   test:
+    container:
+      image: direktiv/direktiv:${{ github.sha }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -100,7 +102,7 @@ jobs:
 
       - name: Wait for Direktiv pods to be ready
         run: |
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=800s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=200s
           echo "Listing all pods:"
           kubectl get all
 
@@ -115,7 +117,7 @@ jobs:
       
       - name: Wait for Direktiv function pods to be ready
         run: |
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-functions --timeout=800s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-functions --timeout=200s
           echo "Listing all pods:"
           kubectl get all
 
