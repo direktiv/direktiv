@@ -94,7 +94,10 @@ jobs:
           EOF
 
       - name: Build images
-        run: docker build -t direktiv/direktiv:${{ env.SRVTAG }} -f build/docker/direktiv/Dockerfile .
+        run: |
+          docker build -t direktiv/direktiv:${{ env.SRVTAG }} -f build/docker/direktiv/Dockerfile .
+          docker save --output direktiv/direktiv:${{ env.SRVTAG }} direktiv/direktiv:${{ env.SRVTAG }}.tar direktiv/direktiv:${{ env.SRVTAG }}
+          k3s ctr images import direktiv/direktiv:${{ env.SRVTAG }}.tar 
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
