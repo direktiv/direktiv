@@ -1,11 +1,11 @@
 import { AlertTriangle, CheckCircle, Info, XCircle } from "lucide-react";
-import React, { FC, HTMLAttributes } from "react";
+import React, { ElementRef, FC, HTMLAttributes } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 
 export type AlertProps = HTMLAttributes<HTMLDivElement> & {
   variant?: "info" | "success" | "warning" | "error";
-  forwaredRef?: React.ForwardedRef<HTMLDivElement>;
+  ref?: React.ForwardedRef<HTMLDivElement>;
   children?: React.ReactNode;
 };
 
@@ -37,9 +37,10 @@ const Alert: FC<AlertProps> = ({ variant, className, children, ...props }) => (
   </div>
 );
 
-const AlertWithForwaredRef = React.forwardRef<HTMLDivElement, AlertProps>(
-  ({ ...props }, ref) => <Alert forwaredRef={ref} {...props} />
-);
+const AlertWithForwaredRef = React.forwardRef<
+  ElementRef<typeof Alert>,
+  AlertProps
+>(({ ...props }, ref) => <Alert ref={ref} {...props} />);
 
 AlertWithForwaredRef.displayName = "Alert";
 

@@ -1,4 +1,11 @@
-import { ChevronDown, GitBranchIcon, SearchIcon, Undo } from "lucide-react";
+import {
+  Bug,
+  ChevronDown,
+  GitBranchIcon,
+  HelpCircle,
+  SearchIcon,
+  Undo,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,8 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "../Dropdown";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../Tooltip";
 import Button from "../Button";
 import { ButtonBar } from "./index";
+import { Toggle } from "../Toggle";
 
 const meta = {
   title: "Components/ButtonBar",
@@ -84,6 +98,58 @@ export const ButtonSizes = () => (
       <Button size="sm">
         <SearchIcon /> Search
       </Button>
+    </ButtonBar>
+  </div>
+);
+
+export const ToolbarWithToolTips = () => (
+  <div className="flex flex-col space-y-3">
+    <div>
+      Please note the extra div in the between the TooltipTrigger and Toggle.
+    </div>
+    <ButtonBar>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* 
+unfortunately this div is required. TooltipTrigger must be used with asChild, 
+to avoid having a button inside a button, which is semantically invalid and also
+causes design issues with the ButtonBar (double borders). And withtout the extra
+div, the asChild would merge the TooltipTrigger and Toggle into one button with 
+shared state. The tooltip and and the toggle both need the data-state state and
+the toggles state will get lost and it will never show as pressed.
+
+potential solutions are discussed here by the radix-ui team:
+
+https://github.com/radix-ui/primitives/discussions/560
+TLDR; It could technically solved, but all state attributes would need to be 
+namespaced which would have a DX impact that is not worth it for now.
+             */}
+            <div>
+              <Toggle aria-label="Toggle italic">
+                <HelpCircle />
+              </Toggle>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>Hi 👋 from Toggle</TooltipContent>
+        </Tooltip>
+        <Toggle aria-label="Toggle italic">
+          <GitBranchIcon />
+        </Toggle>
+        <Button variant="outline">
+          <SearchIcon />
+        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <Button variant="outline" aria-label="Toggle italic">
+                <Bug /> Button with tooltip
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>Hi 👋 from Button</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </ButtonBar>
   </div>
 );

@@ -162,7 +162,13 @@
           "makeRevision": "Make Revision",
           "revertToPrevious": "Revert to previous revision",
           "runBtn": "Run",
-          "saveBtn": "Save"
+          "saveBtn": "Save",
+          "layout": {
+            "code": "Code View",
+            "diagram": "Diagram View",
+            "splitVertically": "Split Vertically",
+            "splitHorizontally": "Split Horizontally"
+          }
         }
       }
     },

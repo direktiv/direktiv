@@ -1,6 +1,7 @@
 import { Bug, Eye, Filter } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
+import { ButtonBar } from "../ButtonBar";
 import { Toggle } from "./index";
 import { useState } from "react";
 
@@ -19,13 +20,6 @@ export const Default: Story = {
     </Toggle>
   ),
   argTypes: {
-    outline: {
-      description: "with outline",
-      type: {
-        name: "boolean",
-        required: false,
-      },
-    },
     size: {
       description: "size",
       control: "select",
@@ -35,21 +29,15 @@ export const Default: Story = {
   },
 };
 
-export const OutlineToggle = () => (
-  <Toggle aria-label="Toggle italic" outline>
-    <Filter />
-  </Toggle>
-);
-
 export const ToggleSize = () => (
   <div className="flex h-5 items-center space-x-4">
-    <Toggle aria-label="Toggle italic" size="sm" outline>
+    <Toggle aria-label="Toggle italic" size="sm">
       <Filter />
     </Toggle>
-    <Toggle aria-label="Toggle italic" outline>
+    <Toggle aria-label="Toggle italic">
       <Filter />
     </Toggle>
-    <Toggle aria-label="Toggle italic" size="lg" outline>
+    <Toggle aria-label="Toggle italic" size="lg">
       <Filter />
     </Toggle>
   </div>
@@ -76,48 +64,48 @@ export const DefaultPressed = () => (
 
 export const Toolbar = () => (
   <div className="flex flex-col space-y-3">
-    <div className="flex space-x-1">
-      <Toggle aria-label="Toggle italic" size="sm" outline>
+    <ButtonBar>
+      <Toggle aria-label="Toggle italic" size="sm">
         <Filter />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="sm" outline>
+      <Toggle aria-label="Toggle italic" size="sm">
         <Bug />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="sm" outline>
+      <Toggle aria-label="Toggle italic" size="sm">
         <Eye />
       </Toggle>
       <Button variant="outline" size="sm">
         <Eye /> Small Large Toolbar
       </Button>
-    </div>
-    <div className="flex space-x-1">
-      <Toggle aria-label="Toggle italic" outline>
+    </ButtonBar>
+    <ButtonBar>
+      <Toggle aria-label="Toggle italic">
         <Filter />
       </Toggle>
-      <Toggle aria-label="Toggle italic" outline>
+      <Toggle aria-label="Toggle italic">
         <Bug />
       </Toggle>
-      <Toggle aria-label="Toggle italic" outline>
+      <Toggle aria-label="Toggle italic">
         <Eye />
       </Toggle>
       <Button variant="outline">
         <Eye /> Default Toolbar
       </Button>
-    </div>
-    <div className="flex space-x-1">
-      <Toggle aria-label="Toggle italic" size="lg" outline>
+    </ButtonBar>
+    <ButtonBar>
+      <Toggle aria-label="Toggle italic" size="lg">
         <Filter />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="lg" outline>
+      <Toggle aria-label="Toggle italic" size="lg">
         <Bug />
       </Toggle>
-      <Toggle aria-label="Toggle italic" size="lg" outline>
+      <Toggle aria-label="Toggle italic" size="lg">
         <Eye />
       </Toggle>
       <Button variant="outline" size="lg">
         <Eye />
         Large Toolbar
       </Button>
-    </div>
+    </ButtonBar>
   </div>
 );

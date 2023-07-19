@@ -5,7 +5,8 @@
 
 body,
 html,
-.docs-story {
+.docs-story,
+.sb-show-main {
   @apply h-full;
   @apply bg-white dark:bg-black;
   @apply text-gray-12 dark:text-gray-dark-12;
