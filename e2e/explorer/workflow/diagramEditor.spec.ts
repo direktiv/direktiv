@@ -1,14 +1,43 @@
+import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
+let workflow = "";
+
+const getCodeLayoutButtons = async (page: Page) => {
+  const codeBtn = await page.getByTestId("editor-layout-btn-code");
+  const diagramBtn = await page.getByTestId("editor-layout-btn-diagram");
+  const splitVertBtn = await page.getByTestId(
+    "editor-layout-btn-splitVertically"
+  );
+  const splitHorBtn = await page.getByTestId(
+    "editor-layout-btn-splitHorizontally"
+  );
+
+  return {
+    codeBtn,
+    diagramBtn,
+    splitVertBtn,
+    splitHorBtn,
+  };
+};
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
+
+  workflow = `${faker.system.commonFileName("yaml")}`;
+  await createWorkflow({
+    payload: basicWorkflow.data,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: workflow,
+    },
+  });
 });
 
 test.afterEach(async () => {
@@ -19,27 +48,10 @@ test.afterEach(async () => {
 test("it is possible to switch between Code View, Diagram View, Split Vertically and Split Horizontally", async ({
   page,
 }) => {
-  const workflow = `${faker.system.commonFileName("yaml")}`;
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
 
-  await createWorkflow({
-    payload: basicWorkflow.data,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflow,
-    },
-  });
-
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`, {});
-
-  const codeBtn = await page.getByTestId("editor-layout-btn-code");
-  const diagramBtn = await page.getByTestId("editor-layout-btn-diagram");
-  const splitVertBtn = await page.getByTestId(
-    "editor-layout-btn-splitVertically"
-  );
-  const splitHorBtn = await page.getByTestId(
-    "editor-layout-btn-splitHorizontally"
-  );
+  const { codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
+    await getCodeLayoutButtons(page);
 
   // code is the default view
   expect(await codeBtn.getAttribute("aria-pressed")).toBe("true");
