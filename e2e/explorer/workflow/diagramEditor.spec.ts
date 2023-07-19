@@ -139,15 +139,29 @@ test("it will persist the prefered layout selection in local storage", async ({
 test("it will update the diagram when the workflow is saved", async ({
   page,
   browserName,
+  context,
 }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.exposeFunction("writeToClipboard", async (text: string) => {
+    await navigator.clipboard.writeText(text);
+  });
+
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
   const { splitVertBtn } = await getCodeLayoutButtons(page);
   await splitVertBtn.click();
 
+  await page.evaluate(
+    async () => await navigator.clipboard.writeText("write to clipboard")
+  );
+
   await page.getByTestId("workflow-editor").click();
-  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Meta+A");
   await page.keyboard.press("Backspace");
-  await page.keyboard.type(complexWorkflow.data);
+  await page.keyboard.press("Meta+V");
+
+  // TODO: fix meta key
+
+  // await page.keyboard.type(complexWorkflow.data);
 
   await expect(page.getByTestId("workflow-dedede")).toBeVisible();
 });
