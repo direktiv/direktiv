@@ -30,10 +30,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      - name: Start local Docker registry
-        run: |
-          docker run -d -p 5000:5000 --restart=always --name registry registry:2
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -61,26 +57,26 @@ jobs:
       - name: Create dev.yaml file
         run: |
           cat <<EOF > dev.yaml
-          registry: localhost:5000
+          registry: docker.io
           pullPolicy: Always
           debug: "true"
           secrets:
             image: "direktiv/direktiv"
-            tag: "${{ github.sha }}"
+            tag: "latest"
           flow:
             image: "direktiv/direktiv"
             dbimage: "direktiv/direktiv"
-            tag: "${{ github.sha }}"
+            tag: "latest"
           ui:
             image: "direktiv/ui"
-            tag: "${{ github.sha }}"
+            tag: "latest"
           api:
             image: "direktiv/direktiv"
-            tag: "${{ github.sha }}"
+            tag: "latest"
           functions:
             namespace: direktiv-services-direktiv
             image: "direktiv/direktiv"
-            tag: "${{ github.sha }}"
+            tag: "latest"
             sidecar: "direktiv/direktiv"
             initPodImage: "direktiv/direktiv-init-pod"
           database:
@@ -93,7 +89,8 @@ jobs:
           EOF
 
       - name: Build images
-        run: docker build -t localhost:5000/direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
+      #  run: docker build -t localhost:5000/direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
+        run: docker build -t direktiv/direktiv:latest -f build/docker/direktiv/Dockerfile .
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
