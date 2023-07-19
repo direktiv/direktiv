@@ -1,31 +1,19 @@
 import { ArrowLeft, GitMerge, Tag, Undo } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
-import {
-  availableLayouts,
-  layoutIcons,
-  useEditorActions,
-  useEditorLayout,
-} from "~/util/store/editor";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
-import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { Diagram } from "../../Active/Diagram";
 import Editor from "~/design/Editor";
+import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
-import { Toggle } from "~/design/Toggle";
 import { WorkspaceLayout } from "../../../../../../componentsNext/WorkspaceLayout";
 import { pages } from "~/util/router/pages";
+import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useNodeTags } from "~/api/tree/query/tags";
@@ -39,7 +27,6 @@ const WorkflowRevisionsPage = () => {
   const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
   const currentLayout = useEditorLayout();
-  const { setLayout: setCurrentLayout } = useEditorActions();
 
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path, revision: selectedRevision });
@@ -101,33 +88,7 @@ const WorkflowRevisionsPage = () => {
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <ButtonBar>
-          <TooltipProvider>
-            {availableLayouts.map((layout) => {
-              const Icon = layoutIcons[layout];
-              return (
-                <Tooltip key={layout}>
-                  <TooltipTrigger asChild>
-                    <div className="flex grow">
-                      <Toggle
-                        onClick={() => {
-                          setCurrentLayout(layout);
-                        }}
-                        className="grow"
-                        pressed={layout === currentLayout}
-                      >
-                        <Icon />
-                      </Toggle>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${layout}`)}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </ButtonBar>
+        <EditorLayoutSwitcher />
         <Button asChild variant="outline">
           <Link
             data-testid="revisions-detail-back-link"

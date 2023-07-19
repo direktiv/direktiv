@@ -7,28 +7,17 @@ import {
 } from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
 import { GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
-import {
-  availableLayouts,
-  layoutIcons,
-  useEditorActions,
-  useEditorLayout,
-} from "~/util/store/editor";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { CodeEditor } from "./CodeEditor";
 import { Diagram } from "./Diagram";
+import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
-import { Toggle } from "~/design/Toggle";
 import { WorkspaceLayout } from "~/componentsNext/WorkspaceLayout";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
+import { useEditorLayout } from "~/util/store/editor";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
 import { useTranslation } from "react-i18next";
@@ -41,8 +30,6 @@ const WorkflowEditor: FC<{
   path: string;
 }> = ({ data, path }) => {
   const currentLayout = useEditorLayout();
-  const { setLayout: setCurrentLayout } = useEditorActions();
-
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
@@ -98,33 +85,7 @@ const WorkflowEditor: FC<{
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <ButtonBar>
-          <TooltipProvider>
-            {availableLayouts.map((layout) => {
-              const Icon = layoutIcons[layout];
-              return (
-                <Tooltip key={layout}>
-                  <TooltipTrigger asChild>
-                    <div className="flex grow">
-                      <Toggle
-                        onClick={() => {
-                          setCurrentLayout(layout);
-                        }}
-                        className="grow"
-                        pressed={layout === currentLayout}
-                      >
-                        <Icon />
-                      </Toggle>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${layout}`)}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </ButtonBar>
+        <EditorLayoutSwitcher />
         <DropdownMenu>
           <ButtonBar>
             <Button
