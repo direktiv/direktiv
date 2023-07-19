@@ -4,11 +4,12 @@ on:
 
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  SRVTAG: v0.7.5
 
 jobs:
   test:
     # container:
-    #   image: direktiv/direktiv:${{ github.sha }}
+    #   image: direktiv/direktiv:env.SRVTAG
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -62,12 +63,12 @@ jobs:
 
           secrets:
             image: "direktiv/direktiv"
-            tag: "latest"
+            tag: "${{ env.SRVTAG }}"
 
           flow:
             image: "direktiv/direktiv"
             dbimage: "direktiv"
-            tag: "latest"
+            tag: "${{ env.SRVTAG }}"
 
           ui:
             image: "direktiv/ui"
@@ -75,13 +76,13 @@ jobs:
 
           api:
             image: "direktiv/direktiv"
-            tag: "latest"
+            tag: "${{ env.SRVTAG }}"
 
           functions:
             namespace: direktiv-services-direktiv
-            image: "direktiv"
-            tag: "latest"
-            sidecar: "direktiv"
+            image: "direktiv/direktiv"
+            tag: "${{ env.SRVTAG }}"
+            sidecar: "direktiv/direktiv"
             initPodImage: "direktiv/init-pod"
           database:
             host: "psql-single-postgresql"
@@ -93,8 +94,8 @@ jobs:
           EOF
 
       - name: Build images
-      #  run: docker build -t localhost:5000/direktiv/direktiv:${{ github.sha }} -f build/docker/direktiv/Dockerfile .
-        run: docker build -t direktiv/direktiv:latest -f build/docker/direktiv/Dockerfile .
+      #  run: docker build -t localhost:5000/direktiv/direktiv:env.SRVTAG -f build/docker/direktiv/Dockerfile .
+        run: docker build -t direktiv/direktiv:${{ env.SRVTAG }} -f build/docker/direktiv/Dockerfile .
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
