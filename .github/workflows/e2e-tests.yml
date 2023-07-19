@@ -1,0 +1,107 @@
+name: Run E2E Tests
+on:
+  pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Ubuntu packages
+        uses: actions/cache@v2
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-packages-
+
+      - name: Setup k3s
+        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+
+      - name: Install Helm
+        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Install a database
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install psql-single bitnami/postgresql
+
+      - name: Add Direktiv Helm repository
+        run: helm repo add direktiv https://chart.direktiv.io
+
+      - name: Clone Direktiv-charts repository
+        run: |
+          git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
+          git -C direktiv-charts checkout one-binary
+          helm dependency update direktiv-charts/charts/direktiv
+
+      - name: Wait for PostgreSQL pod to be ready
+        run: kubectl wait --for=condition=Ready pod -l app=psql-single-postgresql --timeout=600s
+
+      - name: Create dev.yaml file
+        run: |
+          cat <<EOF > dev.yaml
+          registry: docker.io
+          pullPolicy: Always
+          debug: "true"
+          secrets:
+            image: "h8718/direktiv_075_ev"
+            tag: "latest"
+          flow:
+            image: "h8718/direktiv_075_ev"
+            dbimage: "h8718/direktiv_075_ev"
+            tag: "latest"
+          ui:
+            image: "direktiv/ui"
+            tag: "latest"
+          api:
+            image: "h8718/direktiv_075_ev"
+            tag: "latest"
+          functions:
+            namespace: direktiv-services-direktiv
+            image: "h8718/direktiv_075_ev"
+            tag: "latest"
+            sidecar: "h8718/direktiv_075_ev"
+            initPodImage: "direktiv/direktiv-init-pod"
+          database:
+            host: "psql-single-postgresql"
+            port: 5432
+            user: "postgres"
+            password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
+            name: "postgres"
+            sslmode: "disable"
+          EOF
+
+      - name: Install Direktiv chart
+        run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
+
+      - name: Wait for Direktiv pods to be ready
+        run: |
+          kubectl wait --for=condition=Ready pod -l app=direktiv --timeout=800s
+          echo "Listing all pods:"
+          kubectl get all
+
+      - name: Get Internal IP
+        id: getInternalIP
+        run: |
+          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
+          echo "::set-output name=internal_ip::$internal_ip"
+
+      - name: Set Environment Variables
+        run: echo "DIRECTIV_INGRESS_IP=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: |
+          |
+          npm --prefix "tests/jest" run all
+
+      - name: Cache test dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Cleanup test cache
+        run: npm cache clean --force
