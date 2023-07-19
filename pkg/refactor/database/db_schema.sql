@@ -206,7 +206,7 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" boolean NOT NULL,
-    "received_events" bytea,
+    "received_events" text,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
     "glob_gates" text, 
