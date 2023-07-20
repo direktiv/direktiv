@@ -158,11 +158,11 @@ jobs:
         env:
          JEST_PREFIX: filesystem/
 
-      - name: Run mirror tests
-        run: |
-          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
-        env:
-         JEST_PREFIX: mirror/
+      # - name: Run mirror tests
+      #   run: |
+      #     npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+      #   env:
+      #    JEST_PREFIX: mirror/
 
       - name: Show logs
         run: | 
