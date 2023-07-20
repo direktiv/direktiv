@@ -179,7 +179,7 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 			CreateAllDirectories(d.fStore, config.NamespaceID).
 			CopyFilesToRoot(d.fStore, config.NamespaceID).
 			ConfigureWorkflows(d.configWorkflowFunc).
-			ParseDirektivVars(d.fStore, d.vStore, d.store, config.NamespaceID).
+			ParseDirektivVars(d.fStore, d.vStore, config.NamespaceID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.NamespaceID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()

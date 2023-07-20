@@ -2,7 +2,6 @@ package functions
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -144,11 +143,6 @@ func trimRevisionSuffix(s string) string {
 	}
 
 	return s
-}
-
-func marshal(x interface{}) string {
-	data, _ := json.MarshalIndent(x, "", "  ")
-	return string(data)
 }
 
 func generateServiceMeta(svn, scope, hash string, size int, info *igrpc.FunctionsBaseInfo) metav1.ObjectMeta {

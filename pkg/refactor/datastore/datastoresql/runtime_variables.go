@@ -174,7 +174,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 
 	selectorField := ""
 
-	extra := ""
+	var extra string
 	args := []interface{}{
 		variable.MimeType, variable.Data, variable.NamespaceID.String(), variable.Name,
 	}
@@ -188,7 +188,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 		extra = fmt.Sprintf("AND %s = ?", selectorField)
 		args = append(args, variable.WorkflowPath)
 	} else {
-		extra = fmt.Sprintf("AND workflow_path IS NULL AND instance_id IS NULL")
+		extra = "AND workflow_path IS NULL AND instance_id IS NULL"
 		// args = append(args, nil, nil)
 	}
 
@@ -215,10 +215,6 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 	if selectorField != "" {
 		selectorField = ", " + selectorField
 		extraVal = ", ?"
-	} else {
-		// args = args[:len(args)-2]
-		// selectorField = fmt.Sprintf(`, workflow_path, instance_id`)
-		// extraVal = ", ?, ?"
 	}
 
 	newUUID := uuid.New()

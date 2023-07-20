@@ -43,17 +43,17 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 	for _, selector := range vars {
 		if selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
 			if selector.Scope == "" {
-				selector.Scope = "namespace"
+				selector.Scope = util.VarScopeNamespace
 			}
 
 			var item *core.RuntimeVariable
 
 			switch selector.Scope {
-			case "instance":
+			case util.VarScopeInstance:
 				item, err = tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, im.instance.Instance.ID, selector.Key)
-			case "workflow":
+			case util.VarScopeWorkflow:
 				item, err = tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, selector.Key)
-			case "namespace":
+			case util.VarScopeNamespace:
 				item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, selector.Key)
 			default:
 				return nil, derrors.NewInternalError(errors.New("invalid scope"))
@@ -201,11 +201,11 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		var item *core.RuntimeVariable
 
 		switch v.Scope {
-		case "instance":
+		case util.VarScopeInstance:
 			item, err = tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, im.instance.Instance.ID, v.Key)
-		case "workflow":
+		case util.VarScopeWorkflow:
 			item, err = tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, v.Key)
-		case "namespace":
+		case util.VarScopeNamespace:
 			item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
@@ -241,9 +241,9 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			}
 
 			switch v.Scope {
-			case "instance":
+			case util.VarScopeInstance:
 				newVar.InstanceID = im.instance.Instance.ID
-			case "workflow":
+			case util.VarScopeWorkflow:
 				newVar.WorkflowPath = im.instance.Instance.WorkflowPath
 			}
 

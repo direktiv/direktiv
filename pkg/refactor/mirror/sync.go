@@ -214,7 +214,7 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 
 // ParseDirektivVars tries to parse special direktiv files naming convention to create both namespace and workflow
 // files.
-func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, vStore core.RuntimeVariablesStore, store Store, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, vStore core.RuntimeVariablesStore, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
