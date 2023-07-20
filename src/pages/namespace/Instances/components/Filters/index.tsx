@@ -1,5 +1,3 @@
-import { BaseSyntheticEvent, useState } from "react";
-import { Command, CommandGroup, CommandList } from "~/design/Command";
 import { Plus, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
@@ -7,11 +5,12 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import DatePicker from "./DatePicker";
 import { FiltersObj } from "~/api/instances/query/get";
-import Input from "~/design/Input";
 import Options from "./Options";
+import RefineTime from "./RefineTime";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import TextInput from "./TextInput";
 import moment from "moment";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type FiltersProps = {
@@ -70,20 +69,6 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
     const newFilters = { ...filters };
     delete newFilters[field];
     onUpdate(newFilters);
-  };
-
-  const setTimeOnDate = (
-    event: BaseSyntheticEvent,
-    field: "AFTER" | "BEFORE",
-    date: Date
-  ) => {
-    const [hr, min, sec] = event.target.value.split(":");
-    date.setHours(hr);
-    date.setMinutes(min);
-    date.setSeconds(sec);
-    setFilter({
-      [field]: { type: "MATCH", value: date },
-    });
   };
 
   const hasFilters = !!Object.keys(filters).length;
@@ -170,27 +155,14 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  <Command>
-                    <CommandList className="max-h-[460px]">
-                      <CommandGroup
-                        heading={t(
-                          "pages.instances.list.filter.menuHeading.time"
-                        )}
-                      >
-                        <Input
-                          type="time"
-                          step={1}
-                          onChange={(event) => {
-                            const date = filters[field]?.value;
-                            if (!date) {
-                              return;
-                            }
-                            setTimeOnDate(event, field, date);
-                          }}
-                        />
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
+                  <RefineTime
+                    field={field}
+                    // TODO: Must be defined and of type Date, as expected
+                    // in the component. This should also always be the case,
+                    // but TS doesn't know.
+                    date={filters[field]?.value}
+                    setFilter={setFilter}
+                  />
                 </PopoverContent>
               </Popover>
               <Button variant="outline" icon>
