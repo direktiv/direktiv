@@ -112,7 +112,7 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 //nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
-	srv.sugar.Debug("!!! Using local build")
+
 	srv.sugar.Debug("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf, "direktiv/flow", "direktiv")
 	if err != nil {
