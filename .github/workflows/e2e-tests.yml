@@ -129,7 +129,12 @@ jobs:
 
       - name: Run tests
         run: |
-          make test-jest
+          	docker run --rm \
+            -v `pwd`/tests/jest:/tests/jest \
+            -v `pwd`/direktivctl:/bin/direktivctl \
+            -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
+            -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+            node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
         env:
          JEST_PREFIX: errors/ filesystem/ namespaces/ variables/
 
