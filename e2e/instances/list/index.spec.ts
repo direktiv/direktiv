@@ -278,6 +278,12 @@ test("test the pagination", async ({ page }) => {
   const btnNext = page.getByTestId("pagination-btn-right");
 
   //loop through all pages by clicking Next button
+  const testPages = [
+    Math.floor(Math.random() * 12),
+    Math.floor(Math.random() * 12),
+    Math.floor(Math.random() * 12),
+  ];
+
   for (let p = 1; p < Math.ceil(170 / 15) + 1; p++) {
     const activeBtn = page.getByTestId(`pagination-btn-page-${p}`);
     await expect(
@@ -304,6 +310,41 @@ test("test the pagination", async ({ page }) => {
         btnPrev,
         "next button should be enabled except at last page"
       ).toBeEnabled();
+    }
+
+    if (testPages.includes(p)) {
+      //test in the 3 pages the api response and ui
+      //pick the first element and compare with api response
+      const instancesListOfPage = await getInstances({
+        urlParams: {
+          baseUrl: process.env.VITE_DEV_API_DOMAIN,
+          namespace,
+          limit: 15,
+          offset: (p - 1) * 15,
+        },
+      });
+      const firstInstance = instancesListOfPage.instances.results[0];
+      const instanceItemId = page.getByTestId(
+        `instance-row-id-${firstInstance?.id}`
+      );
+      await expect(instanceItemId, "ItemId should have the id").toContainText(
+        firstInstance?.id.slice(0, 8) || ""
+      );
+
+      const invoker = page.getByTestId(
+        `instance-row-invoker-${firstInstance?.id}`
+      );
+      await expect(
+        invoker,
+        "invoker should appear in the row, to be instance for this child instance"
+      ).toContainText(firstInstance?.invoker.split(":")[0] || "");
+
+      if (p < 12) {
+        //navigate to the next page by clicking the next number, not by the nextButton
+        const nextNumberBtn = page.getByTestId(`pagination-btn-page-${p + 1}`);
+        await nextNumberBtn.click();
+        continue;
+      }
     }
     if (p !== Math.ceil(170 / 15)) {
       await btnNext.click();
@@ -341,4 +382,7 @@ test("test the pagination", async ({ page }) => {
     invoker,
     "invoker should appear in the row, to be instance for this child instance"
   ).toContainText("instance");
+
+  // click on button 2 and check if the result is correct
+  // click on prev button and check if the result is correct
 });
