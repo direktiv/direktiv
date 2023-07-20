@@ -120,6 +120,8 @@ func (g gormLogger) Write(p []byte) (n int, err error) {
 //nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
+	enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"
+	enableDeveloperMode := os.Getenv("ENABLE_DEVELOPER_MODE") == "true"
 
 	srv.sugar.Debug("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf, "direktiv/flow", "direktiv")
@@ -146,19 +148,24 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
+	gormConf := &gorm.Config{}
+	if enableDeveloperMode {
+		gormConf = &gorm.Config{
+			Logger: logger.New(
+				log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
+				logger.Config{
+					LogLevel:                  logger.Warn,
+					IgnoreRecordNotFoundError: true,
+				},
+			),
+		}
+	}
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 		// Conn:                 edb.DB(),
-	}), &gorm.Config{
-		Logger: logger.New(
-			log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
-			logger.Config{
-				LogLevel:                  logger.Warn,
-				IgnoreRecordNotFoundError: true,
-			},
-		),
-	})
+	}), gormConf)
+
 	if err != nil {
 		return fmt.Errorf("creating gorm db driver, err: %w", err)
 	}
@@ -182,8 +189,9 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
-
-	fmt.Printf(">>>>>> dsn %s\n", db)
+	if enableDeveloperMode {
+		fmt.Printf(">>>>>> dsn %s\n", db)
+	}
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -369,26 +377,28 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	// start pub sub
-	config := cluster.DefaultConfig()
-	node, err := cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
-	if err != nil {
-		return err
+	var node *cluster.Node
+	if enableExperimentalFeatures {
+		// start pub sub
+		config := cluster.DefaultConfig()
+		node, err = cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
+		if err != nil {
+			return err
+		}
 	}
-
 	srv.sugar.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	// stop inidiviual components here
-	go func(n *cluster.Node) {
-		err = node.Stop()
-		if err != nil {
-			srv.sugar.Error("could not stop cluster node")
-		}
-	}(node)
-
+	if enableExperimentalFeatures {
+		// stop inidiviual components here
+		go func(n *cluster.Node) {
+			err = node.Stop()
+			if err != nil {
+				srv.sugar.Error("could not stop cluster node")
+			}
+		}(node)
+	}
 	wg.Wait()
 
 	closelogworker()
