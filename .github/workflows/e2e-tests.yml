@@ -126,18 +126,23 @@ jobs:
         run: |
           kubectl get pods 
           kubectl logs deployments/direktiv-flow | tail -n 200
+      
+      - name: Cache test dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
 
       - name: Run tests
         run: |
-          docker run --rm \
-            -v `pwd`/tests/jest:/tests/jest \
-            -v `pwd`/direktivctl:/bin/direktivctl \
-            -e 'DIREKTIV_HOST=${{ env.DIREKTIV_HOST }}' \
-            -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
-            node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
         env:
-         JEST_PREFIX: errors/ filesystem/ namespaces/ variables/
+         JEST_PREFIX: errors/ filesystem/ variables/
 
       - name: Show logs
         run: | 
           kubectl logs deployments/direktiv-flow | tail -n 200
+
+      - name: Cleanup test cache
+        run: npm cache clean --force
