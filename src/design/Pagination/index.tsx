@@ -16,6 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
       align === "left" && "justify-start",
       !align && "justify-end"
     )}
+    data-testid="pagination-wrapper"
   >
     <nav
       className="isolate inline-flex -space-x-px rounded-md shadow-sm"

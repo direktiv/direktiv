@@ -13,3 +13,37 @@ states:
   error: i-am-an-error
   message: this is my error message
 `;
+
+export const childWorkflow = `description: This workflow will be started from the parent.yaml workflow
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!`;
+
+export const parentWorkflow = `description: I will spawn multiple instances of the child.yaml
+functions:
+- id: get
+  workflow: child.yaml
+  type: subflow
+states:
+- id: prep 
+  type: noop 
+  transform:
+    x: 169  # how many child instances should we spawn
+  transition: loop
+- id: loop
+  type: switch
+  conditions:
+  - condition: 'jq(.x > 0)'
+    transition: getter
+- id: getter 
+  type: action
+  action:
+    function: get
+    input: 
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/1"
+  transition: loop
+  transform: 
+    x: 'jq(.x - 1)'`;

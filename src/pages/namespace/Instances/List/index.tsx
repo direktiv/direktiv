@@ -76,7 +76,7 @@ const InstancesListPage = () => {
                   instance={instance}
                   key={instance.id}
                   namespace={data.namespace}
-                  data-testid={`instance-item-${instance.id}`}
+                  data-testid={`instance-row-${instance.id}`}
                 />
               ))
             )}
@@ -89,7 +89,6 @@ const InstancesListPage = () => {
           offset={offset}
           setOffset={setOffset}
           totalItems={numberOfInstances}
-          data-testid="instance-list-pagination"
         />
       )}
     </div>
