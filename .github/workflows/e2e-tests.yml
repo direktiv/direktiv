@@ -129,7 +129,7 @@ jobs:
 
       - name: Run tests
         run: |
-          	docker run --rm \
+          docker run --rm \
             -v `pwd`/tests/jest:/tests/jest \
             -v `pwd`/direktivctl:/bin/direktivctl \
             -e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
