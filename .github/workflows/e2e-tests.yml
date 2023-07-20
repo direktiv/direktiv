@@ -134,11 +134,35 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      - name: Run tests
+      - name: Run errors tests
         run: |
           npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
         env:
-         JEST_PREFIX: errors/ filesystem/ variables/
+         JEST_PREFIX: errors/
+
+      - name: Run filesystem tests
+        run: |
+          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: filesystem/
+      
+      - name: Run events tests
+        run: |
+          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: events/
+
+      - name: Run filesystem tests
+        run: |
+          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: filesystem/
+
+      - name: Run mirror tests
+        run: |
+          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: mirror/
 
       - name: Show logs
         run: | 
