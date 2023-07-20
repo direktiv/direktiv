@@ -15,7 +15,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 
 type FiltersProps = {
-  value: FiltersObj;
+  filters: FiltersObj;
   onUpdate: (filters: FiltersObj) => void;
 };
 
@@ -29,7 +29,7 @@ type MenuAnchor =
   | "AFTER.time"
   | "BEFORE.time";
 
-const Filters = ({ value, onUpdate }: FiltersProps) => {
+const Filters = ({ filters, onUpdate }: FiltersProps) => {
   const { t } = useTranslation();
 
   // activeMenu controls which popover component is opened (there are
@@ -60,14 +60,14 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     setSelectedField(null);
   };
 
-  const setFilter = (filterObj: FiltersObj) => {
-    const newFilters = { ...value, ...filterObj };
+  const setFilter = (newFilter: FiltersObj) => {
+    const newFilters = { ...filters, ...newFilter };
     onUpdate(newFilters);
     resetMenu();
   };
 
   const clearFilter = (field: keyof FiltersObj) => {
-    const newFilters = { ...value };
+    const newFilters = { ...filters };
     delete newFilters[field];
     onUpdate(newFilters);
   };
@@ -86,9 +86,9 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
     });
   };
 
-  const hasFilters = !!Object.keys(value).length;
+  const hasFilters = !!Object.keys(filters).length;
 
-  const definedFilters = Object.keys(value) as Array<keyof FiltersObj>;
+  const definedFilters = Object.keys(filters) as Array<keyof FiltersObj>;
 
   return (
     <div className="m-2 flex flex-row gap-2">
@@ -103,7 +103,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                 {t([`pages.instances.list.filter.field.${field}`])}
               </Button>
               <PopoverTrigger asChild>
-                <Button variant="outline">{value[field]?.value}</Button>
+                <Button variant="outline">{filters[field]?.value}</Button>
               </PopoverTrigger>
               <PopoverContent align="start">
                 {field === "AS" && (
@@ -111,20 +111,20 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                     field={field}
                     setFilter={setFilter}
                     clearFilter={clearFilter}
-                    value={value[field]?.value}
+                    value={filters[field]?.value}
                   />
                 )}
                 {field === "STATUS" && (
                   <Options
                     field={field}
-                    value={value[field]?.value}
+                    value={filters[field]?.value}
                     setFilter={setFilter}
                   />
                 )}
                 {field === "TRIGGER" && (
                   <Options
                     field={field}
-                    value={value[field]?.value}
+                    value={filters[field]?.value}
                     setFilter={setFilter}
                   />
                 )}
@@ -145,14 +145,14 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
               >
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="px-2">
-                    {moment(value[field]?.value).format("YYYY-MM-DD")}
+                    {moment(filters[field]?.value).format("YYYY-MM-DD")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
                   {(field === "AFTER" || field === "BEFORE") && (
                     <DatePicker
                       field={field}
-                      date={value[field]?.value}
+                      date={filters[field]?.value}
                       setFilter={setFilter}
                     />
                   )}
@@ -166,7 +166,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
               >
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="px-2">
-                    {moment(value[field]?.value).format("HH:mm:ss")}
+                    {moment(filters[field]?.value).format("HH:mm:ss")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
@@ -181,7 +181,7 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                           type="time"
                           step={1}
                           onChange={(event) => {
-                            const date = value[field]?.value;
+                            const date = filters[field]?.value;
                             if (!date) {
                               return;
                             }
@@ -225,27 +225,27 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                 field={selectedField}
                 setFilter={setFilter}
                 clearFilter={clearFilter}
-                value={value[selectedField]?.value}
+                value={filters[selectedField]?.value}
               />
             )) ||
             (selectedField === "STATUS" && (
               <Options
                 field={selectedField}
-                value={value[selectedField]?.value}
+                value={filters[selectedField]?.value}
                 setFilter={setFilter}
               />
             )) ||
             (selectedField === "TRIGGER" && (
               <Options
                 field={selectedField}
-                value={value[selectedField]?.value}
+                value={filters[selectedField]?.value}
                 setFilter={setFilter}
               />
             )) ||
             ((selectedField === "AFTER" || selectedField === "BEFORE") && (
               <DatePicker
                 field={selectedField}
-                date={value[selectedField]?.value}
+                date={filters[selectedField]?.value}
                 setFilter={setFilter}
               />
             ))}

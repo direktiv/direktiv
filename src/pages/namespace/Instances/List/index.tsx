@@ -39,7 +39,7 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Filters value={filters} onUpdate={setFilters} />
+        <Filters filters={filters} onUpdate={setFilters} />
         <Table className="border-t">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
