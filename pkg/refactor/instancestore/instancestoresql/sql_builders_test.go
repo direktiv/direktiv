@@ -190,8 +190,8 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 			{Field: instancestore.FieldCreatedAt, Kind: instancestore.FilterKindAfter, Value: t0},
 			{Field: fieldDeadline, Kind: instancestore.FilterKindBefore, Value: t0},
 			{Field: fieldDeadline, Kind: instancestore.FilterKindAfter, Value: t0},
-			{Field: instancestore.FieldCalledAs, Kind: instancestore.FilterKindPrefix, Value: "x"},
-			{Field: instancestore.FieldCalledAs, Kind: instancestore.FilterKindContains, Value: "x"},
+			{Field: instancestore.FieldWorkflowPath, Kind: instancestore.FilterKindPrefix, Value: "x"},
+			{Field: instancestore.FieldWorkflowPath, Kind: instancestore.FilterKindContains, Value: "x"},
 			{Field: instancestore.FieldStatus, Kind: instancestore.FilterKindMatch, Value: instancestore.InstanceStatusComplete},
 			{Field: instancestore.FieldStatus, Kind: "<", Value: instancestore.InstanceStatusComplete},
 			{Field: instancestore.FieldInvoker, Kind: instancestore.FilterKindMatch, Value: "x"},
@@ -209,8 +209,8 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 			`created_at > ?`,
 			`deadline < ?`,
 			`deadline > ?`,
-			`called_as LIKE ?`,
-			`called_as LIKE ?`,
+			`workflow_path LIKE ?`,
+			`workflow_path LIKE ?`,
 			`status = ?`,
 			`status < ?`,
 			`invoker = ?`,
@@ -247,8 +247,8 @@ func Test_generateInsertQuery(t *testing.T) {
 		t.Errorf("generateInsertQuery failed with one column: expected '%s', but got '%s'", expect, res)
 	}
 
-	res = generateInsertQuery([]string{fieldID, fieldNamespaceID, fieldWorkflowID})
-	expect = `INSERT INTO instances_v2(id, namespace_id, workflow_id) VALUES (?, ?, ?)`
+	res = generateInsertQuery([]string{fieldID, fieldNamespaceID, fieldWorkflowPath})
+	expect = `INSERT INTO instances_v2(id, namespace_id, workflow_path) VALUES (?, ?, ?)`
 
 	if res != expect {
 		t.Errorf("generateInsertQuery failed with multiple columns: expected '%s', but got '%s'", expect, res)

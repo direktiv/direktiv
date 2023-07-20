@@ -73,7 +73,7 @@ func GenerateWorkflowServiceName(info *igrpc.FunctionsBaseInfo) (string, string)
 		panic(err)
 	}
 
-	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, def), hash.FormatV2, nil)
+	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", info.GetNamespace(), wf, def), hash.FormatV2, nil)
 	if err != nil {
 		panic(err)
 	}

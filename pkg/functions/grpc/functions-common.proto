@@ -7,7 +7,7 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 message FunctionsBaseInfo {
 	optional string name = 1;
 	optional string namespace = 2;
-	optional string workflow = 3;
+	// optional string workflow = 3;
 	optional string image = 4;
 	optional string cmd = 5;
 

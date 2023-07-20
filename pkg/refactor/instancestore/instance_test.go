@@ -59,8 +59,8 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 		return
 	}
 
-	if idata.WorkflowID != args.WorkflowID {
-		t.Errorf("unexpected idata.WorkflowID, got: >%s<, want: >%s<", idata.WorkflowID, args.WorkflowID)
+	if idata.WorkflowPath != args.WorkflowPath {
+		t.Errorf("unexpected idata.WorkflowPath, got: >%s<, want: >%s<", idata.WorkflowPath, args.WorkflowPath)
 
 		return
 	}
@@ -73,12 +73,6 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 
 	if idata.RootInstanceID != args.RootInstanceID {
 		t.Errorf("unexpected idata.RootInstanceID, got: >%s<, want: >%s<", idata.RootInstanceID, args.RootInstanceID)
-
-		return
-	}
-
-	if idata.CalledAs != args.CalledAs {
-		t.Errorf("unexpected idata.CalledAs, got: >%s<, want: >%s<", idata.CalledAs, args.CalledAs)
 
 		return
 	}
@@ -222,11 +216,10 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
 			NamespaceID:    uuid.New(),
-			WorkflowID:     uuid.New(),
 			RevisionID:     uuid.New(),
 			RootInstanceID: id,
 			Invoker:        "api",
-			CalledAs:       "/test.yaml",
+			WorkflowPath:   "/test.yaml",
 			Definition: []byte(`
 states:
 - id: test
@@ -413,11 +406,10 @@ func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
 	var tests []assertInstanceStoreCorrectGetNamespaceInstancesTest
 
 	args := &instancestore.CreateInstanceDataArgs{
-		ID:         uuid.New(),
-		WorkflowID: uuid.New(),
-		RevisionID: uuid.New(),
-		Invoker:    "api",
-		CalledAs:   "/test.yaml",
+		ID:           uuid.New(),
+		RevisionID:   uuid.New(),
+		Invoker:      "api",
+		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:
 - id: test
@@ -537,11 +529,10 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 	id := uuid.New()
 
 	args := &instancestore.CreateInstanceDataArgs{
-		ID:         id,
-		WorkflowID: uuid.New(),
-		RevisionID: uuid.New(),
-		Invoker:    instancestore.InvokerCron,
-		CalledAs:   "/test.yaml",
+		ID:           id,
+		RevisionID:   uuid.New(),
+		Invoker:      instancestore.InvokerCron,
+		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:
 - id: test
@@ -664,11 +655,10 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 	id := uuid.New()
 
 	args := &instancestore.CreateInstanceDataArgs{
-		ID:         id,
-		WorkflowID: uuid.New(),
-		RevisionID: uuid.New(),
-		Invoker:    instancestore.InvokerCron,
-		CalledAs:   "/test.yaml",
+		ID:           id,
+		RevisionID:   uuid.New(),
+		Invoker:      instancestore.InvokerCron,
+		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:
 - id: test
@@ -749,8 +739,8 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
 	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
 
-	wfID := uuid.New()
-	err = instances.AssertNoParallelCron(context.Background(), wfID)
+	wfPath := "/test.yaml"
+	err = instances.AssertNoParallelCron(context.Background(), wfPath)
 	if err != nil {
 		t.Errorf("unexpected AssertNoParallelCron() error: %v", err)
 
@@ -758,11 +748,10 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 	}
 
 	args := &instancestore.CreateInstanceDataArgs{
-		ID:         uuid.New(),
-		WorkflowID: uuid.New(),
-		RevisionID: uuid.New(),
-		Invoker:    instancestore.InvokerCron,
-		CalledAs:   "/test.yaml",
+		ID:           uuid.New(),
+		RevisionID:   uuid.New(),
+		Invoker:      instancestore.InvokerCron,
+		WorkflowPath: "/test2.yaml",
 		Definition: []byte(`
 states:
 - id: test
@@ -779,7 +768,7 @@ type: noop
 
 	assertInstanceStoreCorrectInstanceDataCreation(t, instances, args)
 
-	err = instances.AssertNoParallelCron(context.Background(), wfID)
+	err = instances.AssertNoParallelCron(context.Background(), wfPath)
 	if err != nil {
 		t.Errorf("unexpected AssertNoParallelCron() error: %v", err)
 
@@ -787,11 +776,11 @@ type: noop
 	}
 
 	args.ID = uuid.New()
-	args.WorkflowID = wfID
+	args.WorkflowPath = wfPath
 
 	assertInstanceStoreCorrectInstanceDataCreation(t, instances, args)
 
-	err = instances.AssertNoParallelCron(context.Background(), wfID)
+	err = instances.AssertNoParallelCron(context.Background(), wfPath)
 	if !errors.Is(err, instancestore.ErrParallelCron) {
 		t.Errorf("unexpected AssertNoParallelCron() error: expected is '%v' but got '%v' ", instancestore.ErrParallelCron, err)
 

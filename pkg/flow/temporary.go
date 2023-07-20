@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -41,15 +42,22 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 	for _, selector := range vars {
 		if selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
-			referenceID := im.instance.Instance.NamespaceID
-			if selector.Scope == util.VarScopeInstance {
-				referenceID = im.instance.Instance.ID
-			}
-			if selector.Scope == util.VarScopeWorkflow {
-				referenceID = im.instance.Instance.WorkflowID
+			if selector.Scope == "" {
+				selector.Scope = util.VarScopeNamespace
 			}
 
-			item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID, selector.Key)
+			var item *core.RuntimeVariable
+
+			switch selector.Scope {
+			case util.VarScopeInstance:
+				item, err = tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, im.instance.Instance.ID, selector.Key)
+			case util.VarScopeWorkflow:
+				item, err = tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, selector.Key)
+			case util.VarScopeNamespace:
+				item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, selector.Key)
+			default:
+				return nil, derrors.NewInternalError(errors.New("invalid scope"))
+			}
 			if errors.Is(err, datastore.ErrNotFound) {
 				x = append(x, states.Variable{
 					Scope: selector.Scope,
@@ -190,19 +198,19 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	for idx := range vars {
 		v := vars[idx]
 
-		var referenceID uuid.UUID
+		var item *core.RuntimeVariable
+
 		switch v.Scope {
-		case "instance":
-			referenceID = im.instance.Instance.ID
-		case "workflow":
-			referenceID = im.instance.Instance.WorkflowID
-		case "namespace":
-			referenceID = im.instance.Instance.NamespaceID
+		case util.VarScopeInstance:
+			item, err = tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, im.instance.Instance.ID, v.Key)
+		case util.VarScopeWorkflow:
+			item, err = tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, v.Key)
+		case util.VarScopeNamespace:
+			item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
 
-		item, err := tx.DataStore().RuntimeVariables().GetByReferenceAndName(ctx, referenceID, v.Key)
 		if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 			return err
 		}
@@ -218,24 +226,25 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
-			err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
-			if err != nil && !errors.Is(err, datastore.ErrNotFound) {
-				return err
+			if item != nil {
+				err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
+				if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+					return err
+				}
 			}
 		} else {
 			newVar := &core.RuntimeVariable{
-				Name:     v.Key,
-				MimeType: v.MIMEType,
-				Data:     v.Data,
+				Name:        v.Key,
+				MimeType:    v.MIMEType,
+				Data:        v.Data,
+				NamespaceID: im.instance.Instance.NamespaceID,
 			}
 
 			switch v.Scope {
-			case "instance":
-				newVar.InstanceID = referenceID
-			case "workflow":
-				newVar.WorkflowID = referenceID
-			case "namespace":
-				newVar.NamespaceID = referenceID
+			case util.VarScopeInstance:
+				newVar.InstanceID = im.instance.Instance.ID
+			case util.VarScopeWorkflow:
+				newVar.WorkflowPath = im.instance.Instance.WorkflowPath
 			}
 
 			_, err = tx.DataStore().RuntimeVariables().Set(ctx, newVar)
@@ -361,11 +370,10 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
-	ar.Workflow.WorkflowID = im.instance.Instance.WorkflowID.String()
 	ar.Workflow.Timeout = timeout
 	ar.Workflow.Revision = im.instance.Instance.RevisionID.String()
 	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
-	ar.Workflow.Path = im.instance.Instance.CalledAs
+	ar.Workflow.Path = im.instance.Instance.WorkflowPath
 	ar.Iterator = iterator
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
@@ -378,7 +386,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	wfID := im.instance.Instance.WorkflowID.String()
+	wf := bytedata.ShortChecksum(im.instance.Instance.WorkflowPath)
 	revID := im.instance.Instance.RevisionID.String()
 	nsID := im.instance.Instance.NamespaceID.String()
 
@@ -398,7 +406,7 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.ID = con.ID
 		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
 			Name:          &con.ID,
-			Workflow:      &wfID,
+			Workflow:      &wf,
 			Revision:      &revID,
 			Namespace:     &nsID,
 			NamespaceName: &ar.Workflow.NamespaceName,

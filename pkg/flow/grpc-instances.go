@@ -268,7 +268,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 
 			switch x.Field {
 			case "AS":
-				filter.Field = instancestore.FieldCalledAs
+				filter.Field = instancestore.FieldWorkflowPath
 				filter.Value = x.Val
 			case "CREATED":
 				filter.Field = instancestore.FieldCreatedAt
@@ -667,7 +667,7 @@ resend:
 	rwf := new(grpc.InstanceWorkflow)
 	// rwf.Name = cached.File.Name()
 	// rwf.Parent = cached.Dir()
-	rwf.Path = instance.Instance.CalledAs
+	rwf.Path = instance.Instance.WorkflowPath
 	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 
