@@ -15,8 +15,8 @@ export const statusValues = [
   "failed",
 ] as const;
 
-type TriggerValue = (typeof triggerValues)[number];
-type StatusValue = (typeof statusValues)[number];
+export type TriggerValue = (typeof triggerValues)[number];
+export type StatusValue = (typeof statusValues)[number];
 
 export type FiltersObj = {
   AS?: { type: "CONTAINS"; value: string };

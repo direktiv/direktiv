@@ -5,10 +5,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import FieldSubMenu from "./FieldSubMenu";
+import DatePicker from "./DatePicker";
 import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
+import Options from "./Options";
 import { SelectFieldMenu } from "./SelectFieldMenu";
+import TextInput from "./TextInput";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 
@@ -104,12 +106,28 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                 <Button variant="outline">{value[field]?.value}</Button>
               </PopoverTrigger>
               <PopoverContent align="start">
-                <FieldSubMenu
-                  field={field}
-                  value={value[field]?.value}
-                  setFilter={(value) => setFilter(value)}
-                  clearFilter={clearFilter}
-                />
+                {field === "AS" && (
+                  <TextInput
+                    field={field}
+                    setFilter={setFilter}
+                    clearFilter={clearFilter}
+                    value={value[field]?.value}
+                  />
+                )}
+                {field === "STATUS" && (
+                  <Options
+                    field={field}
+                    value={value[field]?.value}
+                    setFilter={setFilter}
+                  />
+                )}
+                {field === "TRIGGER" && (
+                  <Options
+                    field={field}
+                    value={value[field]?.value}
+                    setFilter={setFilter}
+                  />
+                )}
               </PopoverContent>
               <Button variant="outline" icon>
                 <X onClick={() => clearFilter(field)} />
@@ -131,12 +149,13 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  <FieldSubMenu
-                    field={field}
-                    date={value[field]?.value}
-                    setFilter={(value) => setFilter(value)}
-                    clearFilter={clearFilter}
-                  />
+                  {(field === "AFTER" || field === "BEFORE") && (
+                    <DatePicker
+                      field={field}
+                      date={value[field]?.value}
+                      setFilter={setFilter}
+                    />
+                  )}
                 </PopoverContent>
               </Popover>
               <Popover
@@ -198,28 +217,38 @@ const Filters = ({ value, onUpdate }: FiltersProps) => {
           )}
         </PopoverTrigger>
         <PopoverContent align="start">
-          {selectedField === null ? (
+          {(selectedField === null && (
             <SelectFieldMenu onSelect={setSelectedField} />
-          ) : (
-            ((selectedField === "AS" ||
-              selectedField === "TRIGGER" ||
-              selectedField === "STATUS") && (
-              <FieldSubMenu
+          )) ||
+            (selectedField === "AS" && (
+              <TextInput
+                field={selectedField}
+                setFilter={setFilter}
+                clearFilter={clearFilter}
+                value={value[selectedField]?.value}
+              />
+            )) ||
+            (selectedField === "STATUS" && (
+              <Options
                 field={selectedField}
                 value={value[selectedField]?.value}
                 setFilter={setFilter}
-                clearFilter={clearFilter}
               />
             )) ||
-            ((selectedField === "BEFORE" || selectedField === "AFTER") && (
-              <FieldSubMenu
+            (selectedField === "TRIGGER" && (
+              <Options
+                field={selectedField}
+                value={value[selectedField]?.value}
+                setFilter={setFilter}
+              />
+            )) ||
+            ((selectedField === "AFTER" || selectedField === "BEFORE") && (
+              <DatePicker
                 field={selectedField}
                 date={value[selectedField]?.value}
                 setFilter={setFilter}
-                clearFilter={clearFilter}
               />
-            ))
-          )}
+            ))}
         </PopoverContent>
       </Popover>
     </div>
