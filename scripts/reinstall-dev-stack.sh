@@ -62,6 +62,8 @@ flow:
   image: "direktiv"
   dbimage: "direktiv"
   tag: "latest"
+  experimental-features: true
+  developer-mode: false
 
 ui:
   image: "ui"
