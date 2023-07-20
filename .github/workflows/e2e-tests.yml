@@ -24,13 +24,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-apt-packages-
 
-      - name: Cache test dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('tests/jest/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -136,13 +129,10 @@ jobs:
 
       - name: Run tests
         run: |
-          npm --prefix "tests/jest" run all -- ${{ env.JEST_PREFIX }}
+          make test-jest
         env:
          JEST_PREFIX: errors/ filesystem/ namespaces/ variables/
 
       - name: Show logs
         run: | 
           kubectl logs deployments/direktiv-flow | tail -n 200
-
-      - name: Cleanup test cache
-        run: npm cache clean --force
