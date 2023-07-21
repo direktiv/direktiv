@@ -10,6 +10,7 @@ import { expect, test } from "@playwright/test";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
+import moment from "moment";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 
 interface Instance {
@@ -159,13 +160,16 @@ test("it renders the instance item correctly for failed and success status", asy
       await expect(
         errorTooltip,
         "on hover the failed badge, error tooltip should appear"
-      ).toBeVisible();
+      ).toContainText(instanceDetail.errorMessage);
     }
 
     const createdReltime = page.getByTestId(
       `instance-row-relative-created-time-${instance.instance}`
     );
-    await expect(createdReltime, "createAt should be visible").toBeVisible();
+    await expect(
+      createdReltime,
+      "createAt should be the from now format of api response"
+    ).toContainText(moment(instanceDetail.createdAt).fromNow(true));
 
     await page
       .getByRole("heading", { name: "Recently executed instances" })
@@ -177,12 +181,15 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       createdAtTooltip,
       "on hover, the absolute time should appear"
-    ).toBeVisible();
+    ).toContainText(instanceDetail.createdAt);
 
     const updatedReltime = page.getByTestId(
       `instance-row-relative-updated-time-${instance.instance}`
     );
-    await expect(updatedReltime, "updateAd should be visible").toBeVisible();
+    await expect(
+      updatedReltime,
+      "updateAt should be the from-now format from api response"
+    ).toContainText(moment(instanceDetail.updatedAt).fromNow(true));
 
     await page
       .getByRole("heading", { name: "Recently executed instances" })
@@ -194,7 +201,7 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       updatedAtTooltip,
       "on hover, the absolute time should appear"
-    ).toBeVisible();
+    ).toContainText(instanceDetail.updatedAt);
 
     const workflowLink = page.getByTestId(
       `instance-row-workflow-${instance.instance}`
@@ -385,4 +392,19 @@ test("It will display child instances as well", async ({ page }) => {
     invoker,
     "invoker should appear in the row, to be instance for this child instance"
   ).toContainText("instance");
+
+  const instanceItemId = page.getByTestId(
+    `instance-row-id-${childInstanceDetail.id}`
+  );
+  await expect(instanceItemId, "ItemId should have the id").toContainText(
+    childInstanceDetail.id.slice(0, 8)
+  );
+  await instanceItemId.hover();
+  const idTooltip = page.getByTestId(
+    `instance-row-id-full-${childInstanceDetail.id}`
+  );
+  await expect(
+    idTooltip,
+    "on hover, there should be a tooltip that contains full id"
+  ).toContainText(childInstanceDetail.id);
 });
