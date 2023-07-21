@@ -269,7 +269,7 @@ test("it provides a proper pagination", async ({ page }) => {
   const activeBtn = page.getByTestId(`pagination-btn-page-1`);
   await expect(
     activeBtn,
-    "active button with the page number should have active attribute"
+    "active button with the page number should have an aria-current attribute with a value of page"
   ).toHaveAttribute("aria-current", "page");
 
   await expect(
