@@ -268,11 +268,11 @@ test("it provides a proper pagination", async ({ page }) => {
 
   const btnPrev = page.getByTestId("pagination-btn-left");
   const btnNext = page.getByTestId("pagination-btn-right");
+  const page1Btn = page.getByTestId(`pagination-btn-page-1`);
 
   // page number starts from  1
-  const activeBtn = page.getByTestId(`pagination-btn-page-1`);
   await expect(
-    activeBtn,
+    page1Btn,
     "active button with the page number should have an aria-current attribute with a value of page"
   ).toHaveAttribute("aria-current", "page");
 
@@ -283,18 +283,27 @@ test("it provides a proper pagination", async ({ page }) => {
 
   await expect(
     btnNext,
-    "next button should be disabled at last page"
+    "next button should be enabled at page 1"
   ).toBeEnabled();
 
-  // go to page 2 by nextButton
+  // go to page 2 by clicking nextButton
   await btnNext.click();
+  await expect(
+    btnPrev,
+    "prev button should be enabled at page 2"
+  ).toBeEnabled();
+
+  await expect(
+    btnNext,
+    "next button should be enabled at page 2"
+  ).toBeEnabled();
 
   // go to page 3 by clicking number 3
   const btnNumber3 = page.getByTestId(`pagination-btn-page-3`);
   await btnNumber3.click();
 
   // check with api response
-  const instancesListOfPage = await getInstances({
+  const instancesListPage3 = await getInstances({
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -303,25 +312,15 @@ test("it provides a proper pagination", async ({ page }) => {
     },
   });
 
-  const firstInstance = instancesListOfPage.instances.results[0];
+  const firstInstance = instancesListPage3.instances.results[0];
   if (!firstInstance) throw new Error("there should be at least one instance");
   const instanceItemId = page.getByTestId(
     `instance-row-id-${firstInstance.id}`
   );
-  await expect(instanceItemId, "ItemId should have the id").toContainText(
-    firstInstance.id.slice(0, 8)
-  );
-
-  const invoker = page.getByTestId(`instance-row-invoker-${firstInstance?.id}`);
-  const invokerApiRes = firstInstance.invoker.split(":")[0];
-
-  if (!invokerApiRes)
-    throw new Error("the api did not provide a proper invoker");
-
   await expect(
-    invoker,
-    "invoker should appear in the row, to be instance for this child instance"
-  ).toContainText(invokerApiRes);
+    instanceItemId,
+    "the first row on page 3 should should be same as the api response"
+  ).toContainText(firstInstance.id.slice(0, 8));
 });
 
 test("It will display child instances as well", async ({ page }) => {
