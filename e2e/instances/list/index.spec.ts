@@ -157,6 +157,7 @@ test("it renders the instance item correctly for failed and success status", asy
       const errorTooltip = page.getByTestId(
         `instance-row-state-error-tooltip-${instance.instance}`
       );
+
       await expect(
         errorTooltip,
         "on hover the failed badge, error tooltip should appear"
@@ -223,7 +224,7 @@ test("it renders the instance item correctly for failed and success status", asy
       "on click row, page should navigate to the instance detail page"
     ).toHaveURL(`/${namespace}/instances/${instance.instance}`);
 
-    //no pagination to be visibe
+    // no pagination to be visibe
     await expect(
       page.getByTestId("instance-list-pagination"),
       "there is no pagination when there aren't many instances"
