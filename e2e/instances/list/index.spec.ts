@@ -66,7 +66,7 @@ const createFailedInstance = async () =>
 test("it displays a note, when there are no instances yet.", async ({
   page,
 }) => {
-  await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+  await page.goto(`${namespace}/instances/`);
   await expect(
     page.getByTestId("instance-no-result"),
     "no result message should be visible"
@@ -96,9 +96,7 @@ test("it renders the instance item correctly for failed and success status", asy
       (x) => x.id === instance.instance
     );
 
-    // { waitUntil: "networkidle" } might not be necessary, I just added
-    // it so that running this example will show a nicely loaded page
-    await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+    await page.goto(`${namespace}/instances/`);
 
     const instanceItemRow = page.getByTestId(
       `instance-row-wrap-${instance.instance}`
@@ -168,6 +166,7 @@ test("it renders the instance item correctly for failed and success status", asy
     await page
       .getByRole("heading", { name: "Recently executed instances" })
       .click(); // click on table header to close all tooltips opened
+
     await createdReltime.hover({ force: true });
     const createdAtTooltip = page.getByTestId(
       `instance-row-absolute-created-time-${instance.instance}`
