@@ -96,7 +96,14 @@ test("it renders the instance item correctly for failed and success status", asy
       (x) => x.id === instance.instance
     );
 
-    await page.goto(`${namespace}/instances/`);
+    const workflowName = instanceDetail?.as.split(":")[0];
+
+    if (!workflowName) throw new Error("workflowName is not defined");
+
+    await expect(
+      page.getByTestId(`instance-row-workflow-${instance.instance}`),
+      "the workflow name should be visible"
+    ).toContainText(workflowName);
 
     const instanceItemRow = page.getByTestId(
       `instance-row-wrap-${instance.instance}`
@@ -104,33 +111,31 @@ test("it renders the instance item correctly for failed and success status", asy
     const instanceItemId = page.getByTestId(
       `instance-row-id-${instance.instance}`
     );
-    await expect(instanceItemId, "ItemId should have the id").toContainText(
-      instance.instance.slice(0, 8)
-    );
+    await expect(
+      instanceItemId,
+      "id column shows the first 8 digits of the id"
+    ).toContainText(instance.instance.slice(0, 8));
     await instanceItemId.hover();
     const idTooltip = page.getByTestId(
       `instance-row-id-full-${instance.instance}`
     );
     await expect(
       idTooltip,
-      "on hover, there should be a tooltip that contains full id"
+      "on hover, a tooltip reveals full id"
     ).toContainText(instance.instance);
 
     const revisionId = page.getByTestId(
       `instance-row-revision-id-${instance.instance}`
     );
-    await expect(
-      revisionId,
-      "revision id should appear in the row"
-    ).toContainText("latest");
+    await expect(revisionId, `the revision id is "latest"`).toContainText(
+      "latest"
+    );
 
     const invoker = page.getByTestId(
       `instance-row-invoker-${instance.instance}`
     );
-    await expect(
-      invoker,
-      "invoker should appear in the row, to be api for this instance"
-    ).toContainText("api");
+
+    await expect(invoker, `invoker column shows "api"`).toContainText("api");
 
     const state = page.getByTestId(`instance-row-state-${instance.instance}`);
 
@@ -140,7 +145,7 @@ test("it renders the instance item correctly for failed and success status", asy
 
     await expect(
       state,
-      "state should appear in the row, to be same status from the api response"
+      "the status columns should should be same status as the api response"
     ).toContainText(instanceDetail?.status.toString());
 
     if (instanceDetail?.status === "failed") {
@@ -151,23 +156,23 @@ test("it renders the instance item correctly for failed and success status", asy
 
       await expect(
         errorTooltip,
-        "on hover the failed badge, error tooltip should appear"
-      ).toContainText(instanceDetail.errorMessage);
+        "on hover, a tooltip reveals the error message"
+      ).toContainText("this is my error message");
     }
 
-    const createdReltime = page.getByTestId(
+    const createdRelTime = page.getByTestId(
       `instance-row-relative-created-time-${instance.instance}`
     );
     await expect(
-      createdReltime,
-      "createAt should be the from now format of api response"
+      createdRelTime,
+      `the "started at" column should display a relative time of the createdAt api response`
     ).toContainText(moment(instanceDetail.createdAt).fromNow(true));
 
     await page
       .getByRole("heading", { name: "Recently executed instances" })
       .click(); // click on table header to close all tooltips opened
 
-    await createdReltime.hover({ force: true });
+    await createdRelTime.hover({ force: true });
     const createdAtTooltip = page.getByTestId(
       `instance-row-absolute-created-time-${instance.instance}`
     );
@@ -176,18 +181,18 @@ test("it renders the instance item correctly for failed and success status", asy
       "on hover, the absolute time should appear"
     ).toContainText(instanceDetail.createdAt);
 
-    const updatedReltime = page.getByTestId(
+    const updatedRelTime = page.getByTestId(
       `instance-row-relative-updated-time-${instance.instance}`
     );
     await expect(
-      updatedReltime,
-      "updateAt should be the from-now format from api response"
+      updatedRelTime,
+      `the "last updateed" column should display a relative time of the updatedAt api response`
     ).toContainText(moment(instanceDetail.updatedAt).fromNow(true));
 
     await page
       .getByRole("heading", { name: "Recently executed instances" })
       .click(); // click on table header to close all tooltips opened
-    await updatedReltime.hover({ force: true });
+    await updatedRelTime.hover({ force: true });
     const updatedAtTooltip = page.getByTestId(
       `instance-row-absolute-updated-time-${instance.instance}`
     );
@@ -199,15 +204,12 @@ test("it renders the instance item correctly for failed and success status", asy
     const workflowLink = page.getByTestId(
       `instance-row-workflow-${instance.instance}`
     );
+
     await workflowLink.click();
     await expect(
       page,
-      "on click workflow, page should navigate to the workflow page"
-    ).toHaveURL(
-      `/${namespace}/explorer/workflow/active/${
-        instanceDetail?.as.split(":")[0]
-      }`
-    );
+      "when the workflow name is clicked, page should navigate to the workflow page"
+    ).toHaveURL(`/${namespace}/explorer/workflow/active/${workflowName}`);
 
     await page.goBack();
     await instanceItemRow.click();
@@ -215,19 +217,21 @@ test("it renders the instance item correctly for failed and success status", asy
       page,
       "on click row, page should navigate to the instance detail page"
     ).toHaveURL(`/${namespace}/instances/${instance.instance}`);
-
-    // no pagination to be visibe
-    await expect(
-      page.getByTestId("instance-list-pagination"),
-      "there is no pagination when there aren't many instances"
-    ).not.toBeVisible();
+    await page.goBack();
   };
+
+  await page.goto(`${namespace}/instances/`);
 
   for (let i = 0; i < instances.length; i++) {
     const instance = instances[i];
     if (!instance) throw new Error("instance is not created properly");
     await checkInstanceRender(instance);
   }
+
+  await expect(
+    page.getByTestId("instance-list-pagination"),
+    "no pagination is visible when there is only one page"
+  ).not.toBeVisible();
 });
 
 test("it provides a proper pagination", async ({ page }) => {
