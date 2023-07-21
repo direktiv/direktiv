@@ -1,4 +1,3 @@
-
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Tooltip,
@@ -7,10 +6,9 @@ import {
   TooltipTrigger,
 } from "../Tooltip";
 import Button from "../Button";
-import { InputWithButton } from "./index";
-import { Toggle } from "../Toggle";
+import { CopyIcon } from "lucide-react";
 import Input from "../Input";
-import { ZoomIn } from "lucide-react";
+import { InputWithButton } from "./index";
 
 const meta = {
   title: "Components/InputWithButton",
@@ -24,9 +22,32 @@ export const Default: Story = {
   render: ({ ...args }) => (
     <InputWithButton {...args}>
       <Input />
-      <Button icon >
-        <ZoomIn />
+      <Button icon variant="ghost">
+        <CopyIcon />
       </Button>
     </InputWithButton>
   ),
 };
+
+export const InputWithTextButton = () => (
+  <InputWithButton>
+    <Input />
+    <Button>Show Password</Button>
+  </InputWithButton>
+);
+
+export const IconWithToolTip = () => (
+  <TooltipProvider>
+    <InputWithButton>
+      <Input />
+      <Tooltip>
+        <TooltipTrigger>
+          <Button icon variant="ghost">
+            <CopyIcon />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Copy Value</TooltipContent>
+      </Tooltip>
+    </InputWithButton>
+  </TooltipProvider>
+);

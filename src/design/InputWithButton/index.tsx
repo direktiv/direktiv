@@ -2,30 +2,58 @@ import React, { HTMLAttributes } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 
-export const InputWithButton: React.FC<HTMLAttributes<HTMLDivElement>> = ({
-  children,
-  className,
-  ...props
-}) => (
-  <div
-    {...props}
-    className={twMergeClsx(
-      "[&_button]:rounded-none",
-      "[&_button]:mr-[-1px]",
-      "[&_button]:active:outline-none",
-      "[&_button]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
-      "[&_button]:active:ring-0 [&_button]:active:ring-offset-0",
-
-      // "[&>*:first-child]:rounded-l-md",
-      "[&>*:last-child]:m-0",
-      // if button is not the direct child of the button bar (required e.g. for the tooltip)
-      "[&>:first-child_button:first-of-type]:rounded-l-md",
-      "[&>:last-child_button:first-of-type]:rounded-r-md",
-      "flex items-end",
-      className
-    )}
-  >
-    {children}
-  </div>
-);
+export const InputWithButton: React.FC<
+  HTMLAttributes<HTMLDivElement> & {
+    icon?: boolean;
+  }
+> = ({ children, className, ...props }) => {
+  const [firstChild, secondChild] = Array.isArray(children)
+    ? children
+    : [children];
+  return (
+    <div
+      {...props}
+      className={twMergeClsx("relative flex items-end p-1", className)}
+    >
+      {firstChild}
+      <div
+        className={twMergeClsx(
+          "absolute right-1 flex h-9 items-center justify-center [&_button]:h-8"
+        )}
+      >
+        {secondChild}
+      </div>
+    </div>
+  );
+};
 InputWithButton.displayName = "InputWithButton";
+
+export const InputWithButtonWithState: React.FC<
+  HTMLAttributes<HTMLDivElement> & {
+    icon?: boolean;
+  }
+> = ({ children, className, ...props }) => {
+  const [firstChild, secondChild] = Array.isArray(children)
+    ? children
+    : [children];
+  return (
+    <div
+      {...props}
+      className={twMergeClsx(
+        "relative flex items-end p-1",
+        "[&_input]:border-0 [&_input]:outline-none [&_input]:focus:border-0 [&_input]:focus:outline-none",
+        className
+      )}
+    >
+      {firstChild}
+      <div
+        className={twMergeClsx(
+          "absolute right-1 flex h-9 items-center justify-center [&_button]:h-8"
+        )}
+      >
+        {secondChild}
+      </div>
+    </div>
+  );
+};
+InputWithButtonWithState.displayName = "InputWithButtonWithState";
