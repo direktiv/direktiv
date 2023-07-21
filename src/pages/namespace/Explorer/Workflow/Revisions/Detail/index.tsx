@@ -1,31 +1,19 @@
 import { ArrowLeft, GitMerge, Tag, Undo } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
-import {
-  availableLayouts,
-  layoutIcons,
-  useEditorActions,
-  useEditorLayout,
-} from "~/util/store/editor";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
-import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { Diagram } from "../../Active/Diagram";
 import Editor from "~/design/Editor";
+import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
-import { Toggle } from "~/design/Toggle";
 import { WorkspaceLayout } from "../../../../../../componentsNext/WorkspaceLayout";
 import { pages } from "~/util/router/pages";
+import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useNodeTags } from "~/api/tree/query/tags";
@@ -38,8 +26,7 @@ const WorkflowRevisionsPage = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const layout = useEditorLayout();
-  const { setLayout } = useEditorActions();
+  const currentLayout = useEditorLayout();
 
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path, revision: selectedRevision });
@@ -74,9 +61,9 @@ const WorkflowRevisionsPage = () => {
       </div>
 
       <WorkspaceLayout
-        layout={layout}
+        layout={currentLayout}
         diagramComponent={
-          <Diagram workflowData={workflowData} layout={layout} />
+          <Diagram workflowData={workflowData} layout={currentLayout} />
         }
         editorComponent={
           <Popover>
@@ -101,34 +88,7 @@ const WorkflowRevisionsPage = () => {
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <ButtonBar>
-          <TooltipProvider>
-            {availableLayouts.map((lay) => {
-              const Icon = layoutIcons[lay];
-              return (
-                <Tooltip key={lay}>
-                  <TooltipTrigger asChild>
-                    <div className="flex grow">
-                      <Toggle
-                        onClick={() => {
-                          setLayout(lay);
-                        }}
-                        className="grow"
-                        pressed={lay === layout}
-                        data-testid={`editor-layout-btn-${lay}`}
-                      >
-                        <Icon />
-                      </Toggle>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${lay}`)}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </ButtonBar>
+        <EditorLayoutSwitcher />
         <Button asChild variant="outline">
           <Link
             data-testid="revisions-detail-back-link"

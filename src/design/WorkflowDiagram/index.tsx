@@ -1,4 +1,4 @@
-import { IWorkflow, Orientation } from "./types";
+import { Orientation, Workflow } from "./types";
 import { generateElements, getLayoutedElements } from "./utils";
 import { useMemo, useState } from "react";
 
@@ -40,7 +40,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       return null;
     }
     try {
-      const workflowObj = YAML.load(workflow) as IWorkflow;
+      const workflowObj = YAML.load(workflow) as Workflow;
       setInvalidWorkflow(null);
       return workflowObj;
     } catch (error: unknown) {

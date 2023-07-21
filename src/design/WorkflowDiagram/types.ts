@@ -1,4 +1,4 @@
-export type IState = {
+export type State = {
   id: string;
   type: string;
   events: {
@@ -18,8 +18,8 @@ export type IState = {
 
 type NonEmptyArray<T> = [T, ...T[]];
 
-export type IWorkflow = {
-  states: NonEmptyArray<IState>;
+export type Workflow = {
+  states: NonEmptyArray<State>;
   start: {
     state: string;
   };

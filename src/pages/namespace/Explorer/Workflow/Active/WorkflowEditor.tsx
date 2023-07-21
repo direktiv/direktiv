@@ -7,28 +7,17 @@ import {
 } from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
 import { GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
-import {
-  availableLayouts,
-  layoutIcons,
-  useEditorActions,
-  useEditorLayout,
-} from "~/util/store/editor";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { CodeEditor } from "./CodeEditor";
 import { Diagram } from "./Diagram";
+import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
-import { Toggle } from "~/design/Toggle";
-import { WorkspaceLayout } from "../../../../../componentsNext/WorkspaceLayout";
+import { WorkspaceLayout } from "~/componentsNext/WorkspaceLayout";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
+import { useEditorLayout } from "~/util/store/editor";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
 import { useTranslation } from "react-i18next";
@@ -40,9 +29,7 @@ const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
 }> = ({ data, path }) => {
-  const layout = useEditorLayout();
-  const { setLayout } = useEditorActions();
-
+  const currentLayout = useEditorLayout();
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
@@ -81,9 +68,9 @@ const WorkflowEditor: FC<{
         {t("pages.explorer.workflow.headline")}
       </h3>
       <WorkspaceLayout
-        layout={layout}
+        layout={currentLayout}
         diagramComponent={
-          <Diagram workflowData={workflowData} layout={layout} />
+          <Diagram workflowData={workflowData} layout={currentLayout} />
         }
         editorComponent={
           <CodeEditor
@@ -98,34 +85,7 @@ const WorkflowEditor: FC<{
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <ButtonBar>
-          <TooltipProvider>
-            {availableLayouts.map((lay) => {
-              const Icon = layoutIcons[lay];
-              return (
-                <Tooltip key={lay}>
-                  <TooltipTrigger asChild>
-                    <div className="flex grow">
-                      <Toggle
-                        onClick={() => {
-                          setLayout(lay);
-                        }}
-                        className="grow"
-                        pressed={lay === layout}
-                        data-testid={`editor-layout-btn-${lay}`}
-                      >
-                        <Icon />
-                      </Toggle>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t(`pages.explorer.workflow.editor.layout.${lay}`)}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-        </ButtonBar>
+        <EditorLayoutSwitcher />
         <DropdownMenu>
           <ButtonBar>
             <Button

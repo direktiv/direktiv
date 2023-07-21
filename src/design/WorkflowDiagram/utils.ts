@@ -1,5 +1,5 @@
 import { ConnectionLineType, Edge, Node, Position, isNode } from "reactflow";
-import { IWorkflow, Orientation } from "./types";
+import { Orientation, Workflow } from "./types";
 
 import dagre from "dagre";
 
@@ -56,7 +56,7 @@ export function generateElements(
     incomingEles: (Node | Edge)[],
     orientation: Orientation
   ) => (Node | Edge)[],
-  value: IWorkflow | null,
+  value: Workflow | null,
   flow: string[],
   status: "pending" | "complete" | "failed",
   orientation: Orientation

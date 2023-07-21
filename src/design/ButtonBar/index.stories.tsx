@@ -119,7 +119,7 @@ div, the asChild would merge the TooltipTrigger and Toggle into one button with
 shared state. The tooltip and and the toggle both need the data-state state and
 the toggles state will get lost and it will never show as pressed.
 
-potentially solutions are discussed here by the radix-ui team:
+potential solutions are discussed here by the radix-ui team:
 
 https://github.com/radix-ui/primitives/discussions/560
 TLDR; It could technically solved, but all state attributes would need to be 
