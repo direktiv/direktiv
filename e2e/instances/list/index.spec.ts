@@ -238,8 +238,8 @@ test("it renders the instance item correctly for failed and success status", asy
 });
 
 test("it provides a proper pagination", async ({ page }) => {
-  const TOTAL_COUNT = 35;
-  const PAGE_SIZE = 15;
+  const totalCount = 35;
+  const pageSize = 15;
 
   await createWorkflow({
     payload: childWorkflowContent,
@@ -251,7 +251,7 @@ test("it provides a proper pagination", async ({ page }) => {
   });
 
   await createWorkflow({
-    payload: parentWorkflowContent(TOTAL_COUNT - 1),
+    payload: parentWorkflowContent(totalCount - 1),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -300,13 +300,13 @@ test("it provides a proper pagination", async ({ page }) => {
   const btnNumber3 = page.getByTestId(`pagination-btn-page-3`);
   await btnNumber3.click();
 
-  //check with api response
+  // check with api response
   const instancesListOfPage = await getInstances({
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      limit: PAGE_SIZE,
-      offset: 2 * PAGE_SIZE,
+      limit: pageSize,
+      offset: 2 * pageSize,
     },
   });
 
