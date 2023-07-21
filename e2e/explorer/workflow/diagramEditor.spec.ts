@@ -138,56 +138,35 @@ test("it will persist the prefered layout selection in local storage", async ({
 
 test("it will update the diagram when the workflow is saved", async ({
   page,
-  browserName,
   context,
 }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.exposeFunction("writeToClipboard", async (text: string) => {
-    await navigator.clipboard.writeText(text);
-  });
+  await page.exposeFunction(
+    "writeToClipboard",
+    async (text: string) => await navigator.clipboard.writeText(text)
+  );
 
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
   const { splitVertBtn } = await getCodeLayoutButtons(page);
   await splitVertBtn.click();
 
   await page.evaluate(
-    async () =>
-      await navigator.clipboard
-        .writeText(`description: A simple 'validate' state workflow that checks an email
-states:
-- id: data
-  type: noop
-  transform:
-    email: "trent.hilliam@direktiv.io"
-  transition: validate-email
-- id: validate-email
-  type: validate
-  subject: jq(.)
-  schema:
-    type: object
-    properties:
-      email:
-        type: string
-        format: email
-  catch:
-  - error: direktiv.schema.*
-    transition: email-not-valid 
-  transition: email-valid
-- id: email-not-valid
-  type: noop
-  transform:
-    result: "Email is not valid."
-- id: email-valid
-  type: noop
-  transform:
-    result: "Email is valid."
-  `)
+    async (workflow) => await navigator.clipboard.writeText(workflow),
+    complexWorkflow.data
   );
+
+  await expect(page.getByTestId("rf__node-helloworld")).toBeVisible();
+  await expect(page.getByTestId("rf__node-email-not-valid")).not.toBeVisible();
 
   // TODO: fix meta key
   await page.getByTestId("workflow-editor").click();
   await page.keyboard.press("Meta+A");
   await page.keyboard.press("Backspace");
   await page.keyboard.press("Meta+V");
+
+  await expect(page.getByText('"Email is not valid."')).toBeVisible();
+
   await page.getByTestId("workflow-editor-btn-save").click();
+  await expect(page.getByTestId("rf__node-email-not-valid")).toBeVisible();
+  await expect(page.getByTestId("rf__node-helloworld")).not.toBeVisible();
 });
