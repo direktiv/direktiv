@@ -368,31 +368,25 @@ test("It will display child instances as well", async ({ page }) => {
     `instance-row-revision-id-${childInstanceDetail.id}`
   );
 
-  await expect(
-    revisionId,
-    "revision id should appear as none in the row"
-  ).toContainText("none");
+  await expect(revisionId, `revision id is "none"`).toContainText("none");
 
   const invoker = page.getByTestId(
     `instance-row-invoker-${childInstanceDetail.id}`
   );
-  await expect(
-    invoker,
-    "invoker should appear in the row, to be instance for this child instance"
-  ).toContainText("instance");
+  await expect(invoker, `invoker is "instance"`).toContainText("instance");
 
   const instanceItemId = page.getByTestId(
     `instance-row-id-${childInstanceDetail.id}`
   );
-  await expect(instanceItemId, "ItemId should have the id").toContainText(
-    childInstanceDetail.id.slice(0, 8)
-  );
+  await expect(
+    instanceItemId,
+    "id column shows the first 8 digits of the id"
+  ).toContainText(childInstanceDetail.id.slice(0, 8));
   await instanceItemId.hover();
   const idTooltip = page.getByTestId(
     `instance-row-id-full-${childInstanceDetail.id}`
   );
-  await expect(
-    idTooltip,
-    "on hover, there should be a tooltip that contains full id"
-  ).toContainText(childInstanceDetail.id);
+  await expect(idTooltip, "on hover, a tooltip reveals full id").toContainText(
+    childInstanceDetail.id
+  );
 });
