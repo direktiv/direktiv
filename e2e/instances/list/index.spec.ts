@@ -80,7 +80,7 @@ test("it displays a note, when there are no instances yet.", async ({
   ).not.toBeVisible();
 });
 
-test("renders the instance item correctly for failed and success status", async ({
+test("it renders the instance item correctly for failed and success status", async ({
   page,
 }) => {
   const instances: Instance[] = [
@@ -315,9 +315,7 @@ test("it provides a proper pagination", async ({ page }) => {
   ).toContainText(firstInstance.invoker.split(":")[0] || "");
 });
 
-test("the child instance is invoked when you run the parent workflow", async ({
-  page,
-}) => {
+test("It will display child instances as well", async ({ page }) => {
   await createWorkflow({
     payload: childWorkflowContent,
     urlParams: {
