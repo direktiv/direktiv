@@ -12,10 +12,7 @@ import { getInstances } from "~/api/instances/query/get";
 import moment from "moment";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 
-interface Instance {
-  namespace: string;
-  instance: string;
-}
+type Instance = Awaited<ReturnType<typeof runWorkflow>>;
 
 let namespace = "";
 const simpleWorkflow = faker.system.commonFileName("yaml");
