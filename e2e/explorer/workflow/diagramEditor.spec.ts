@@ -140,6 +140,9 @@ test("it will update the diagram when the workflow is saved", async ({
   page,
   context,
 }) => {
+  const editor = page.getByTestId("workflow-editor");
+  const diagram = page.getByTestId("workflow-diagram");
+
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.exposeFunction(
     "writeToClipboard",
@@ -155,8 +158,14 @@ test("it will update the diagram when the workflow is saved", async ({
     complexWorkflow.data
   );
 
-  await expect(page.getByTestId("rf__node-helloworld")).toBeVisible();
-  await expect(page.getByTestId("rf__node-email-not-valid")).not.toBeVisible();
+  await expect(
+    editor.getByText("A simple 'no-op' state that returns")
+  ).toBeVisible();
+
+  await expect(diagram.getByTestId("rf__node-helloworld")).toBeVisible();
+  await expect(
+    diagram.getByTestId("rf__node-email-not-valid")
+  ).not.toBeVisible();
 
   // TODO: fix meta key
   await page.getByTestId("workflow-editor").click();
@@ -164,9 +173,8 @@ test("it will update the diagram when the workflow is saved", async ({
   await page.keyboard.press("Backspace");
   await page.keyboard.press("Meta+V");
 
-  await expect(page.getByText('"Email is not valid."')).toBeVisible();
-
+  await expect(editor.getByText('"Email is not valid."')).toBeVisible();
   await page.getByTestId("workflow-editor-btn-save").click();
-  await expect(page.getByTestId("rf__node-email-not-valid")).toBeVisible();
-  await expect(page.getByTestId("rf__node-helloworld")).not.toBeVisible();
+  await expect(diagram.getByTestId("rf__node-email-not-valid")).toBeVisible();
+  await expect(diagram.getByTestId("rf__node-helloworld")).not.toBeVisible();
 });
