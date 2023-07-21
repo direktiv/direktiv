@@ -200,7 +200,8 @@ test("renders the instance item correctly for failed and success status", async 
       page,
       "on click workflow, page should navigate to the workflow page"
     ).toHaveURL(
-      `/${namespace}/explorer/workflow/active/${instanceDetail?.as.split(":")[0]
+      `/${namespace}/explorer/workflow/active/${
+        instanceDetail?.as.split(":")[0]
       }`
     );
 
