@@ -313,10 +313,15 @@ test("it provides a proper pagination", async ({ page }) => {
   );
 
   const invoker = page.getByTestId(`instance-row-invoker-${firstInstance?.id}`);
+  const invokerApiRes = firstInstance.invoker.split(":")[0];
+
+  if (!invokerApiRes)
+    throw new Error("the api did not provide a proper invoker");
+
   await expect(
     invoker,
     "invoker should appear in the row, to be instance for this child instance"
-  ).toContainText(firstInstance.invoker.split(":")[0] || "");
+  ).toContainText(invokerApiRes);
 });
 
 test("It will display child instances as well", async ({ page }) => {
