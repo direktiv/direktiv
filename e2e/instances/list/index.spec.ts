@@ -142,10 +142,14 @@ test("it renders the instance item correctly for failed and success status", asy
 
     const state = page.getByTestId(`instance-row-state-${instance.instance}`);
 
+    if (!instanceDetail?.status) {
+      throw new Error("instanceDetail?.status is not defined");
+    }
+
     await expect(
       state,
       "state should appear in the row, to be same status from the api response"
-    ).toContainText(instanceDetail?.status.toString() || "pending");
+    ).toContainText(instanceDetail?.status.toString());
 
     if (instanceDetail?.status === "failed") {
       await state.hover();
