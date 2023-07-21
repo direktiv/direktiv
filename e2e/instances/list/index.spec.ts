@@ -1,11 +1,10 @@
+import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { expect, test } from "@playwright/test";
 import {
-  childWorkflow as childWorkflowContent,
   parentWorkflow as parentWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
   workflowThatFails as workflowThatFailsContent,
 } from "./utils";
-import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
@@ -242,21 +241,17 @@ test("it provides a proper pagination", async ({ page }) => {
   const totalCount = 35;
   const pageSize = 15;
 
-  await createWorkflow({
-    payload: childWorkflowContent,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "child.yaml",
-    },
-  });
+  const parentWorkflow = faker.system.commonFileName("yaml");
 
   await createWorkflow({
-    payload: parentWorkflowContent(totalCount - 1),
+    payload: parentWorkflowContent({
+      childName: simpleWorkflow,
+      children: totalCount - 1,
+    }),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "parent.yaml",
+      name: parentWorkflow,
     },
   });
 
@@ -264,7 +259,7 @@ test("it provides a proper pagination", async ({ page }) => {
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: "parent.yaml",
+      path: parentWorkflow,
     },
   });
 
@@ -333,21 +328,17 @@ test("it provides a proper pagination", async ({ page }) => {
 });
 
 test("It will display child instances as well", async ({ page }) => {
-  await createWorkflow({
-    payload: childWorkflowContent,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "child.yaml",
-    },
-  });
+  const parentWorkflow = faker.system.commonFileName("yaml");
 
   await createWorkflow({
-    payload: parentWorkflowContent(1),
+    payload: parentWorkflowContent({
+      childName: simpleWorkflow,
+      children: 1,
+    }),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "parent.yaml",
+      name: parentWorkflow,
     },
   });
 
@@ -355,7 +346,7 @@ test("It will display child instances as well", async ({ page }) => {
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: "parent.yaml",
+      path: parentWorkflow,
     },
   });
 

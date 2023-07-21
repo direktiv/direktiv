@@ -14,19 +14,16 @@ states:
   message: this is my error message
 `;
 
-export const childWorkflow = `description: This workflow will be started from the parent.yaml workflow
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!`;
-
-export const parentWorkflow = (
-  children = 1
-) => `description: I will spawn multiple instances of the child.yaml
+export const parentWorkflow = ({
+  childName,
+  children = 1,
+}: {
+  childName: string;
+  children?: number;
+}) => `description: I will spawn multiple instances of the child.yaml
 functions:
 - id: get
-  workflow: child.yaml
+  workflow: ${childName}
   type: subflow
 states:
 - id: prep 
