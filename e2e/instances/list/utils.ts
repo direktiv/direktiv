@@ -21,7 +21,9 @@ states:
   transform:
     result: Hello world!`;
 
-export const parentWorkflow = `description: I will spawn multiple instances of the child.yaml
+export const parentWorkflow = (
+  children = 1
+) => `description: I will spawn multiple instances of the child.yaml
 functions:
 - id: get
   workflow: child.yaml
@@ -30,7 +32,7 @@ states:
 - id: prep 
   type: noop 
   transform:
-    x: 169  # how many child instances should we spawn
+    x: ${children}  # how many child instances should we spawn
   transition: loop
 - id: loop
   type: switch
