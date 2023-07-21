@@ -80,10 +80,7 @@ test("it displays a note, when there are no instances yet.", async ({
 test("it renders the instance item correctly for failed and success status", async ({
   page,
 }) => {
-  const instances: Instance[] = [
-    await createFailedInstance(),
-    await createBasicInstance(),
-  ];
+  const instances = [await createFailedInstance(), await createBasicInstance()];
 
   const checkInstanceRender = async (instance: Instance) => {
     const instancesList = await getInstances({
