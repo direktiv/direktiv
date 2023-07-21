@@ -188,6 +188,7 @@
           "updatedAt": "last updated"
         },
         "tableRow": {
+          "noRevisionId": "none",
           "realtiveTime": "{{relativeTime}} ago",
           "openWorkflowTooltip": "click to open workflow"
         }

@@ -1,3 +1,4 @@
+import { ConditionalWrapper, twMergeClsx } from "~/util/helpers";
 import {
   HoverCard,
   HoverCardContent,
@@ -14,7 +15,7 @@ import {
 
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
-import { ConditionalWrapper } from "~/util/helpers";
+import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import { pages } from "~/util/router/pages";
@@ -27,16 +28,20 @@ const InstanceTableRow: FC<{
   namespace: string;
 }> = ({ instance, namespace }) => {
   const [name, revision] = instance.as.split(":");
+  const [invoker, childInstance] = instance.invoker.split(":");
   const updatedAt = useUpdatedAt(instance.updatedAt);
   const createdAt = useUpdatedAt(instance.createdAt);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const isLatestRevision = revision === "latest";
+  const isChild = invoker === "instance" && !!childInstance;
+
+  const isLatestRevision = revision === "latest" || isChild;
 
   return (
     <TooltipProvider>
       <TableRow
+        data-testid={`instance-row-wrap-${instance.id}`}
         key={instance.id}
         onClick={() => {
           navigate(
@@ -50,7 +55,9 @@ const InstanceTableRow: FC<{
       >
         <TableCell>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger
+              data-testid={`instance-row-workflow-${instance.id}`}
+            >
               <Link
                 onClick={(e) => {
                   e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
@@ -72,13 +79,64 @@ const InstanceTableRow: FC<{
           </Tooltip>
         </TableCell>
         <TableCell>
-          <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
+          <Tooltip>
+            <TooltipTrigger data-testid={`instance-row-id-${instance.id}`}>
+              <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
+            </TooltipTrigger>
+            <TooltipContent
+              data-testid={`instance-row-id-full-${instance.id}`}
+              className="flex gap-2 align-middle"
+            >
+              {instance.id}
+              <CopyButton
+                value={instance.id}
+                buttonProps={{
+                  size: "sm",
+                  onClick: (e) => {
+                    e.stopPropagation();
+                  },
+                }}
+              />
+            </TooltipContent>
+          </Tooltip>
         </TableCell>
         <TableCell>
-          <Badge variant="outline">{revision}</Badge>
+          <Badge
+            data-testid={`instance-row-revision-id-${instance.id}`}
+            variant="outline"
+            className={twMergeClsx(!revision && "italic")}
+          >
+            {revision ?? t("pages.instances.list.tableRow.noRevisionId")}
+          </Badge>
         </TableCell>
         <TableCell>
-          <Badge variant="outline">{instance.invoker}</Badge>
+          <ConditionalWrapper
+            condition={isChild}
+            wrapper={(children) => (
+              <Tooltip>
+                <TooltipTrigger>{children}</TooltipTrigger>
+                <TooltipContent className="flex gap-2 align-middle">
+                  {childInstance}
+                  <CopyButton
+                    value={childInstance ?? ""}
+                    buttonProps={{
+                      size: "sm",
+                      onClick: (e) => {
+                        e.stopPropagation();
+                      },
+                    }}
+                  />
+                </TooltipContent>
+              </Tooltip>
+            )}
+          >
+            <Badge
+              data-testid={`instance-row-invoker-${instance.id}`}
+              variant="outline"
+            >
+              {invoker}
+            </Badge>
+          </ConditionalWrapper>
         </TableCell>
         <TableCell>
           <ConditionalWrapper
@@ -86,7 +144,11 @@ const InstanceTableRow: FC<{
             wrapper={(children) => (
               <HoverCard>
                 <HoverCardTrigger>{children}</HoverCardTrigger>
-                <HoverCardContent asChild noBackground>
+                <HoverCardContent
+                  asChild
+                  noBackground
+                  data-testid={`instance-row-state-error-tooltip-${instance.id}`}
+                >
                   <Alert variant="error">
                     <span className="font-bold">{instance.errorCode}</span>
                     <br />
@@ -96,29 +158,44 @@ const InstanceTableRow: FC<{
               </HoverCard>
             )}
           >
-            <Badge variant={statusToBadgeVariant(instance.status)}>
+            <Badge
+              data-testid={`instance-row-state-${instance.id}`}
+              variant={statusToBadgeVariant(instance.status)}
+            >
               {instance.status}
             </Badge>
           </ConditionalWrapper>
         </TableCell>
         <TableCell>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger
+              data-testid={`instance-row-relative-created-time-${instance.id}`}
+            >
               {t("pages.instances.list.tableRow.realtiveTime", {
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>
-            <TooltipContent>{instance.createdAt}</TooltipContent>
+            <TooltipContent
+              data-testid={`instance-row-absolute-created-time-${instance.id}`}
+            >
+              {instance.createdAt}
+            </TooltipContent>
           </Tooltip>
         </TableCell>
         <TableCell>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger
+              data-testid={`instance-row-relative-updated-time-${instance.id}`}
+            >
               {t("pages.instances.list.tableRow.realtiveTime", {
                 relativeTime: updatedAt,
               })}
             </TooltipTrigger>
-            <TooltipContent>{instance.updatedAt}</TooltipContent>
+            <TooltipContent
+              data-testid={`instance-row-absolute-updated-time-${instance.id}`}
+            >
+              {instance.updatedAt}
+            </TooltipContent>
           </Tooltip>
         </TableCell>
       </TableRow>

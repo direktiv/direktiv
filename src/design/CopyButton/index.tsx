@@ -9,7 +9,7 @@ const CopyButton: FC<{
   value: string;
   buttonProps?: ButtonPropsType;
   children?: (copied: boolean) => React.ReactNode;
-}> = ({ value, buttonProps, children }) => {
+}> = ({ value, buttonProps: { onClick, ...buttonProps } = {}, children }) => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -25,9 +25,10 @@ const CopyButton: FC<{
   return (
     <Button
       variant="ghost"
-      onClick={() => {
+      onClick={(e) => {
         navigator.clipboard.writeText(value);
         setCopied(true);
+        onClick?.(e);
       }}
       {...buttonProps}
     >

@@ -16,6 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
       align === "left" && "justify-start",
       !align && "justify-end"
     )}
+    data-testid="pagination-wrapper"
   >
     <nav
       className="isolate inline-flex -space-x-px rounded-md shadow-sm"
@@ -58,7 +59,7 @@ export const PaginationLink = React.forwardRef<
     <button
       ref={ref}
       {...props}
-      aria-current="page"
+      aria-current={active ? "page" : undefined}
       className={twMergeClsx(
         "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset focus:z-20 ",
         "disabled:pointer-events-none disabled:opacity-50",
