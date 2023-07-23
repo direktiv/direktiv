@@ -77,50 +77,90 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
 
   return (
     <div className="m-2 flex flex-row gap-2">
-      {definedFilters.map((field) => (
-        <ButtonBar key={field}>
-          {(field === "AS" || field === "TRIGGER" || field === "STATUS") && (
-            <Popover
-              open={activeMenu === field}
-              onOpenChange={(state) => handleOpenChange(state, field)}
-            >
-              <Button variant="outline">
-                {t([`pages.instances.list.filter.field.${field}`])}
-              </Button>
-              <PopoverTrigger asChild>
-                <Button variant="outline">{filters[field]?.value}</Button>
-              </PopoverTrigger>
-              <PopoverContent align="start">
-                {field === "AS" && (
-                  <TextInput
-                    field={field}
-                    setFilter={setFilter}
-                    clearFilter={clearFilter}
-                    value={filters[field]?.value}
-                  />
-                )}
-                {field === "STATUS" && (
-                  <Options
-                    field={field}
-                    value={filters[field]?.value}
-                    setFilter={setFilter}
-                  />
-                )}
-                {field === "TRIGGER" && (
-                  <Options
-                    field={field}
-                    value={filters[field]?.value}
-                    setFilter={setFilter}
-                  />
-                )}
-              </PopoverContent>
-              <Button variant="outline" icon>
-                <X onClick={() => clearFilter(field)} />
-              </Button>
-            </Popover>
-          )}
-          {(field === "BEFORE" || field === "AFTER") && (
-            <>
+      {definedFilters.map((field) => {
+        const fieldValue = filters[field]?.value;
+        if (!fieldValue) {
+          console.error(
+            "Early return: Filter item without value prop encountered"
+          );
+          return <></>;
+        }
+
+        if (field === "AS") {
+          return (
+            <ButtonBar key={field}>
+              <Popover
+                open={activeMenu === field}
+                onOpenChange={(state) => handleOpenChange(state, field)}
+              >
+                <Button variant="outline">
+                  {t([`pages.instances.list.filter.field.${field}`])}
+                </Button>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">{filters[field]?.value}</Button>
+                </PopoverTrigger>
+                <PopoverContent align="start">
+                  {field === "AS" && (
+                    <TextInput
+                      field={field}
+                      setFilter={setFilter}
+                      clearFilter={clearFilter}
+                      value={filters[field]?.value}
+                    />
+                  )}
+                </PopoverContent>
+                <Button variant="outline" icon>
+                  <X onClick={() => clearFilter(field)} />
+                </Button>
+              </Popover>
+            </ButtonBar>
+          );
+        }
+
+        if (field === "STATUS" || field === "TRIGGER") {
+          return (
+            <ButtonBar key={field}>
+              <Popover
+                open={activeMenu === field}
+                onOpenChange={(state) => handleOpenChange(state, field)}
+              >
+                <Button variant="outline">
+                  {t([`pages.instances.list.filter.field.${field}`])}
+                </Button>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">{filters[field]?.value}</Button>
+                </PopoverTrigger>
+                <PopoverContent align="start">
+                  {field === "STATUS" && (
+                    <Options
+                      field={field}
+                      value={filters[field]?.value}
+                      setFilter={setFilter}
+                    />
+                  )}
+                  {field === "TRIGGER" && (
+                    <Options
+                      field={field}
+                      value={filters[field]?.value}
+                      setFilter={setFilter}
+                    />
+                  )}
+                </PopoverContent>
+                <Button variant="outline" icon>
+                  <X onClick={() => clearFilter(field)} />
+                </Button>
+              </Popover>
+            </ButtonBar>
+          );
+        }
+
+        if (field === "AFTER" || field == "BEFORE") {
+          const dateValue = filters[field]?.value;
+          if (!dateValue) {
+            return <></>;
+          }
+          return (
+            <ButtonBar key={field}>
               <Button variant="outline">
                 {t([`pages.instances.list.filter.field.${field}`])}
               </Button>
@@ -157,10 +197,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 <PopoverContent align="start">
                   <RefineTime
                     field={field}
-                    // TODO: Must be defined and of type Date, as expected
-                    // in the component. This should also always be the case,
-                    // but TS doesn't know.
-                    date={filters[field]?.value}
+                    date={dateValue}
                     setFilter={setFilter}
                   />
                 </PopoverContent>
@@ -168,10 +205,11 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
               <Button variant="outline" icon>
                 <X onClick={() => clearFilter(field)} />
               </Button>
-            </>
-          )}
-        </ButtonBar>
-      ))}
+            </ButtonBar>
+          );
+        }
+      })}
+
       <Popover
         open={activeMenu === "main"}
         onOpenChange={(state) => handleOpenChange(state, "main")}
