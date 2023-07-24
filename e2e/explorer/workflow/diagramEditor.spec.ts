@@ -199,45 +199,54 @@ test("it will update the diagram when the workflow is saved", async ({
   await splitVertBtn.click();
 
   await expect(
-    editor.getByText("A simple 'consumeEvent' state that")
+    editor.getByText(
+      "A simple 'consumeEvent' state that listens for the greetingcloudevent generated from the template 'generate-event'."
+    ),
+    "the description of the workflow is visible in the code editor"
   ).toBeVisible();
 
-  await expect(diagram.getByTestId("rf__node-ce")).toBeVisible();
-  await expect(diagram.getByTestId("rf__node-greet")).toBeVisible();
+  await expect(
+    diagram.getByTestId("rf__node-ce"),
+    "the first state 'id' is shown in the diagram"
+  ).toBeVisible();
+  await expect(
+    diagram.getByTestId("rf__node-greet"),
+    "the second state 'greet' is shown in the diagram"
+  ).toBeVisible();
+
+  const outcommentNextLine = async () => {
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("#");
+  };
 
   // outcomment all states expect the first one to force the diagram to update
   await page.getByTestId("workflow-editor").click();
+  // cursor is at the end of line 8, use right arrow to go to the first column of line 9
   await page.keyboard.press("ArrowRight");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown"); // line 10, column 1
+  await page.keyboard.press("ArrowDown"); // line 11, column 1
+  await page.keyboard.press("ArrowDown"); // line 12, column 1
   await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("#");
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
+  await outcommentNextLine();
 
+  // save changes
   await page.getByTestId("workflow-editor-btn-save").click();
-  await expect(diagram.getByTestId("rf__node-ce")).toBeVisible();
-  await expect(diagram.getByTestId("rf__node-greet")).not.toBeVisible();
+
+  await expect(
+    diagram.getByTestId("rf__node-ce"),
+    "the first state 'id' is still shown in the diagram"
+  ).toBeVisible();
+  await expect(
+    diagram.getByTestId("rf__node-greet"),
+    "the second state 'greet' was outcommented and the diagram updated to not show it anymore"
+  ).not.toBeVisible();
 });
