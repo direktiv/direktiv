@@ -1,0 +1,33 @@
+/* edges  */
+
+.react-flow__edge-path {
+  @apply !stroke-gray-8 dark:!stroke-gray-dark-8;
+}
+
+.react-flow__edge.animated path {
+  @apply !stroke-success-9 dark:!stroke-gray-dark-9;
+}
+
+/* minimap  */
+
+.react-flow__minimap svg {
+  @apply h-28 w-28;
+}
+
+.react-flow__minimap {
+  @apply bg-white dark:!bg-black;
+}
+
+.react-flow__minimap-node {
+  @apply fill-gray-6 dark:!fill-gray-dark-6;
+}
+
+.react-flow__minimap-mask {
+  @apply fill-black-alpha-3 dark:!fill-white-alpha-5;
+}
+
+/* remove attribution */
+
+.react-flow__attribution {
+  @apply hidden;
+}

@@ -41,6 +41,7 @@ export const Pagination = ({
           previousPage && setOffset(setOffsetByPageNumber(previousPage))
         }
         disabled={isFirstPage}
+        data-testid="pagination-btn-left"
       />
       {paginationDescription.map((page, index) => {
         const isActive = currentPage === page;
@@ -55,6 +56,7 @@ export const Pagination = ({
                 setOffset(setOffsetByPageNumber(page));
             }}
             disabled={isEllipsis}
+            data-testid={`pagination-btn-page-${page}`}
           >
             {page}
           </PaginationLink>
@@ -64,6 +66,7 @@ export const Pagination = ({
         icon="right"
         onClick={() => nextPage && setOffset(setOffsetByPageNumber(nextPage))}
         disabled={isLastPage}
+        data-testid="pagination-btn-right"
       />
     </PaginationWrapper>
   );

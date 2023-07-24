@@ -17,9 +17,9 @@ const useApiKeyState = create<ApiKeyState>()(
       },
     }),
     {
-      name: "directiv-store-api-key",
+      name: "direktiv-store-api-key",
       partialize: (state) => ({
-        apiKey: state.apiKey, // pick all fields to persistend, and don't persist actions
+        apiKey: state.apiKey, // pick all fields to be persistent and don't persist actions
       }),
     }
   )

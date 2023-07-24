@@ -1,4 +1,6 @@
 import "./App.css";
+import "reactflow/dist/base.css";
+import "./design/WorkflowDiagram/style.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTheme, useThemeActions } from "~/util/store/theme";

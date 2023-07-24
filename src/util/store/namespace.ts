@@ -18,9 +18,9 @@ const useNamespaceState = create<NamespaceState>()(
       },
     }),
     {
-      name: "directiv-store-namespace",
+      name: "direktiv-store-namespace",
       partialize: (state) => ({
-        namespace: state.namespace, // pick all fields to persistend, and don't persist actions
+        namespace: state.namespace, // pick all fields to be persistent and don't persist actions
       }),
     }
   )

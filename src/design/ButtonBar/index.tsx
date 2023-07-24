@@ -17,6 +17,9 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       "[&_button]:active:ring-0 [&_button]:active:ring-offset-0",
       "[&>*:first-child]:rounded-l-md",
       "[&>*:last-child]:rounded-r-md",
+      // if button is not the direct child of the button bar (required e.g. for the tooltip)
+      "[&>:first-child_button:first-of-type]:rounded-l-md",
+      "[&>:last-child_button:first-of-type]:rounded-r-md",
       "flex items-end",
       className
     )}

@@ -6,10 +6,14 @@ import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
+import { Diagram } from "../../Active/Diagram";
 import Editor from "~/design/Editor";
+import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import { Link } from "react-router-dom";
 import Revert from "../components/Revert";
+import { WorkspaceLayout } from "../../../../../../componentsNext/WorkspaceLayout";
 import { pages } from "~/util/router/pages";
+import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useNodeTags } from "~/api/tree/query/tags";
@@ -22,6 +26,7 @@ const WorkflowRevisionsPage = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const currentLayout = useEditorLayout();
 
   const { revision: selectedRevision, path } = pages.explorer.useParams();
   const { data } = useNodeContent({ path, revision: selectedRevision });
@@ -53,7 +58,37 @@ const WorkflowRevisionsPage = () => {
             }}
           />
         </h3>
+      </div>
 
+      <WorkspaceLayout
+        layout={currentLayout}
+        diagramComponent={
+          <Diagram workflowData={workflowData} layout={currentLayout} />
+        }
+        editorComponent={
+          <Popover>
+            <PopoverTrigger asChild>
+              <Card className="grow p-4" data-testid="revisions-detail-editor">
+                <Editor
+                  value={workflowData}
+                  theme={theme ?? undefined}
+                  options={{ readOnly: true }}
+                />
+              </Card>
+            </PopoverTrigger>
+            <PopoverContent asChild>
+              <Alert variant="info" className="min-w-max">
+                {t(
+                  "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
+                )}
+              </Alert>
+            </PopoverContent>
+          </Popover>
+        }
+      />
+
+      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        <EditorLayoutSwitcher />
         <Button asChild variant="outline">
           <Link
             data-testid="revisions-detail-back-link"
@@ -94,24 +129,6 @@ const WorkflowRevisionsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Card className="grow p-4" data-testid="revisions-detail-editor">
-            <Editor
-              value={workflowData}
-              theme={theme ?? undefined}
-              options={{ readOnly: true }}
-            />
-          </Card>
-        </PopoverTrigger>
-        <PopoverContent asChild>
-          <Alert variant="info" className="min-w-max">
-            {t(
-              "pages.explorer.tree.workflow.revisions.overview.detail.readOnlyNote"
-            )}
-          </Alert>
-        </PopoverContent>
-      </Popover>
     </div>
   );
 };
