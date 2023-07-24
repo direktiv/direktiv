@@ -78,14 +78,6 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
   return (
     <div className="m-2 flex flex-row gap-2">
       {definedFilters.map((field) => {
-        const fieldValue = filters[field]?.value;
-        if (!fieldValue) {
-          console.error(
-            "Early return: Filter item without value prop encountered"
-          );
-          return <></>;
-        }
-
         if (field === "AS") {
           return (
             <ButtonBar key={field}>
@@ -157,6 +149,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         if (field === "AFTER" || field == "BEFORE") {
           const dateValue = filters[field]?.value;
           if (!dateValue) {
+            console.error("Early return: dateValue is not defined");
             return <></>;
           }
           return (
