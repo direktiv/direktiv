@@ -38,12 +38,12 @@ type BetterLogger interface {
 	Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
 }
 
-type SugarBetterLogger struct {
+type SugarBetterJSONLogger struct {
 	Sugar        *zap.SugaredLogger
 	AddTraceFrom func(ctx context.Context, toTags map[string]string) map[string]string
 }
 
-func (s SugarBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (s SugarBetterJSONLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
 	appendInstanceInheritanceInfo(tags)
 	msg = fmt.Sprintf(msg, a...)
@@ -52,7 +52,7 @@ func (s SugarBetterLogger) Debugf(ctx context.Context, recipientID uuid.UUID, ta
 	s.log(Debug, tags, msg)
 }
 
-func (s SugarBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (s SugarBetterJSONLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
 	appendInstanceInheritanceInfo(tags)
 	msg = fmt.Sprintf(msg, a...)
@@ -61,7 +61,7 @@ func (s SugarBetterLogger) Infof(ctx context.Context, recipientID uuid.UUID, tag
 	s.log(Info, tags, msg)
 }
 
-func (s SugarBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+func (s SugarBetterJSONLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
 	appendInstanceInheritanceInfo(tags)
 	msg = fmt.Sprintf(msg, a...)
@@ -70,7 +70,7 @@ func (s SugarBetterLogger) Errorf(ctx context.Context, recipientID uuid.UUID, ta
 	s.log(Error, tags, msg)
 }
 
-func (s SugarBetterLogger) log(level LogLevel, tags map[string]string, msg string) {
+func (s SugarBetterJSONLogger) log(level LogLevel, tags map[string]string, msg string) {
 	logToSuggar := s.Sugar.Debugw
 	switch level {
 	case Debug:
@@ -82,6 +82,59 @@ func (s SugarBetterLogger) log(level LogLevel, tags map[string]string, msg strin
 	ar := make([]interface{}, len(tags)+len(tags))
 	i := 0
 	for k, v := range tags {
+		ar[i] = k
+		ar[i+1] = v
+		i += 2
+	}
+	logToSuggar(msg, ar...)
+}
+
+type SugarBetterConsoleLogger struct {
+	Sugar        *zap.SugaredLogger
+	AddTraceFrom func(ctx context.Context, toTags map[string]string) map[string]string
+	RetainTags   []string
+}
+
+func (s SugarBetterConsoleLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	_ = ctx
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	s.log(Debug, tags, msg)
+}
+
+func (s SugarBetterConsoleLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	_ = ctx
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	s.log(Info, tags, msg)
+}
+
+func (s SugarBetterConsoleLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	_ = ctx
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	s.log(Error, tags, msg)
+}
+
+func (s SugarBetterConsoleLogger) log(level LogLevel, tags map[string]string, msg string) {
+	logToSuggar := s.Sugar.Debugw
+	switch level {
+	case Debug:
+	case Info:
+		logToSuggar = s.Sugar.Infow
+	case Error:
+		logToSuggar = s.Sugar.Errorw
+	}
+	ar := make([]interface{}, len(tags)+len(tags))
+	i := 0
+	for k, v := range tags {
+		if s.RetainTags != nil {
+			for _, consoleTag := range s.RetainTags {
+				if v != consoleTag {
+					continue
+				}
+			}
+		}
 		ar[i] = k
 		ar[i+1] = v
 		i += 2

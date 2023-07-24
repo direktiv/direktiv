@@ -52,7 +52,7 @@ if [ ! -f "$dir/dev.yaml" ]; then
 cat <<EOF > $dir/dev.yaml
 registry: localhost:5000
 pullPolicy: Always
-debug: "true"
+debug: "false"
 
 secrets:
   image: "direktiv"
@@ -79,6 +79,9 @@ functions:
   tag: "latest"
   sidecar: "direktiv"
   initPodImage: "init-pod"
+
+logging: console
+
 EOF
 fi
 

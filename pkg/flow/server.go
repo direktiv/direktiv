@@ -120,7 +120,7 @@ func (g gormLogger) Write(p []byte) (n int, err error) {
 //nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
-	enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"
+	// enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"
 	enableDeveloperMode := os.Getenv("ENABLE_DEVELOPER_MODE") == "true"
 
 	srv.sugar.Debug("Initializing telemetry.")
@@ -149,13 +149,23 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 	gormConf := &gorm.Config{}
-	if enableDeveloperMode {
+	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) == "json" {
 		gormConf = &gorm.Config{
 			Logger: logger.New(
 				log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
 				logger.Config{
 					LogLevel:                  logger.Warn,
 					IgnoreRecordNotFoundError: true,
+				},
+			),
+		}
+	}
+	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) != "json" {
+		gormConf = &gorm.Config{
+			Logger: logger.New(
+				log.New(os.Stdout, "\r\n", log.LstdFlags),
+				logger.Config{
+					LogLevel: logger.Info,
 				},
 			),
 		}
@@ -260,24 +270,41 @@ func (srv *server) start(ctx context.Context) error {
 	noTx := &sqlTx{
 		res: srv.gormDB,
 	}
-	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
+	dbLogger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		noTx.DataStore().Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
 		},
 		srv.sugar.Errorf,
 	)
+
+	addTrace := func(ctx context.Context, toTags map[string]string) map[string]string {
+		span := trace.SpanFromContext(ctx)
+		tid := span.SpanContext().TraceID()
+		toTags["trace"] = tid.String()
+		return toTags
+	}
+	if enableDeveloperMode {
+		addTrace = func(ctx context.Context, toTags map[string]string) map[string]string {
+			_ = ctx
+			return toTags
+		}
+	}
+	var sugarBetterLogger logengine.BetterLogger
+	sugarBetterLogger = logengine.SugarBetterJSONLogger{
+		Sugar:        srv.sugar,
+		AddTraceFrom: addTrace,
+	}
+	if os.Getenv(util.DirektivLogJSON) != "json" {
+		sugarBetterLogger = logengine.SugarBetterConsoleLogger{
+			Sugar:        srv.sugar,
+			AddTraceFrom: addTrace,
+			RetainTags:   []string{"caller", "Caller"}, // if set to nil all tags will be retained
+		}
+	}
 	srv.logger = logengine.ChainedBetterLogger{
-		logengine.SugarBetterLogger{
-			Sugar: srv.sugar,
-			AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
-				span := trace.SpanFromContext(ctx)
-				tid := span.SpanContext().TraceID()
-				toTags["trace"] = tid.String()
-				return toTags
-			},
-		},
-		logger,
+		sugarBetterLogger,
+		dbLogger,
 	}
 
 	go func() {
@@ -378,27 +405,23 @@ func (srv *server) start(ctx context.Context) error {
 	}()
 
 	var node *cluster.Node
-	if enableExperimentalFeatures {
-		// start pub sub
-		config := cluster.DefaultConfig()
-		node, err = cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
-		if err != nil {
-			return err
-		}
+	// start pub sub
+	config := cluster.DefaultConfig()
+	node, err = cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
+	if err != nil {
+		return err
 	}
 	srv.sugar.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	if enableExperimentalFeatures {
-		// stop inidiviual components here
-		go func(n *cluster.Node) {
-			err = node.Stop()
-			if err != nil {
-				srv.sugar.Error("could not stop cluster node")
-			}
-		}(node)
-	}
+	// stop inidiviual components here
+	go func(n *cluster.Node) {
+		err = node.Stop()
+		if err != nil {
+			srv.sugar.Error("could not stop cluster node")
+		}
+	}(node)
 	wg.Wait()
 
 	closelogworker()
