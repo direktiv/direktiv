@@ -41,7 +41,7 @@ const getFilterQuery = (filters: FiltersObj) => {
 
     // Without the guard, TS thinks filterItem may be undefined
     if (!filterItem) {
-      throw new Error("filterItem is not defined");
+      return console.error("filterItem is not defined");
     }
 
     let queryField: string;
