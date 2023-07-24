@@ -78,6 +78,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
   return (
     <div className="m-2 flex flex-row gap-2">
       {definedFilters.map((field) => {
+        // For type safety, one separate return is required below for every type
+        // so it is possible to assert filters[field]?.value is defined and TS
+        // does not merge the different possible types of filters[field]?.value
+
         if (field === "AS") {
           return (
             <ButtonBar key={field}>
