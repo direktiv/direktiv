@@ -42,7 +42,7 @@ const TextInput = ({
             placeholder={t("pages.instances.list.filter.placeholder.AS")}
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
-            onKeyUp={handleKeyDown}
+            onKeyDown={handleKeyDown}
           />
         </CommandGroup>
       </CommandList>
