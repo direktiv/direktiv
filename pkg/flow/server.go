@@ -149,7 +149,8 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Debug("Initializing database.")
 	gormConf := &gorm.Config{}
-	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) == "json" {
+	jsonV := "json"
+	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) == jsonV {
 		gormConf = &gorm.Config{
 			Logger: logger.New(
 				log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
@@ -160,7 +161,7 @@ func (srv *server) start(ctx context.Context) error {
 			),
 		}
 	}
-	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) != "json" {
+	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) != jsonV {
 		gormConf = &gorm.Config{
 			Logger: logger.New(
 				log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -292,12 +293,12 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	var sugarBetterLogger logengine.BetterLogger
 	sugarBetterLogger = logengine.SugarBetterJSONLogger{
-		Sugar:        srv.sugar,
+		Sugar:        srv.sugar.Named("userLogger"),
 		AddTraceFrom: addTrace,
 	}
 	if os.Getenv(util.DirektivLogJSON) != "json" {
 		sugarBetterLogger = logengine.SugarBetterConsoleLogger{
-			Sugar:        srv.sugar,
+			Sugar:        srv.sugar.Named("userLogger"),
 			AddTraceFrom: addTrace,
 			RetainTags:   []string{"caller", "Caller"}, // if set to nil all tags will be retained
 		}

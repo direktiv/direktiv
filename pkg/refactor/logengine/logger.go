@@ -97,6 +97,7 @@ type SugarBetterConsoleLogger struct {
 
 func (s SugarBetterConsoleLogger) Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	_ = recipientID
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
 	s.log(Debug, tags, msg)
@@ -104,6 +105,7 @@ func (s SugarBetterConsoleLogger) Debugf(ctx context.Context, recipientID uuid.U
 
 func (s SugarBetterConsoleLogger) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	_ = recipientID
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
 	s.log(Info, tags, msg)
@@ -111,6 +113,7 @@ func (s SugarBetterConsoleLogger) Infof(ctx context.Context, recipientID uuid.UU
 
 func (s SugarBetterConsoleLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
+	_ = recipientID
 	msg = fmt.Sprintf(msg, a...)
 	tags = s.AddTraceFrom(ctx, tags)
 	s.log(Error, tags, msg)
