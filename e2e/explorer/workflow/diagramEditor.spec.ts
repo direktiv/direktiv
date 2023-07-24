@@ -99,6 +99,59 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   await expect(diagram).not.toBeVisible();
 });
 
+test("it will change the direction of the diagram when the layout is set to Split Vertically", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  const startNode = page.getByTestId("rf__node-startNode");
+  const endNode = page.getByTestId("rf__node-endNode");
+
+  const { splitVertBtn, splitHorBtn } = await getCodeLayoutButtons(page);
+
+  // use split horizontally layout
+  await splitHorBtn.click();
+
+  await expect(startNode).toBeVisible();
+  await expect(endNode).toBeVisible();
+
+  const { x: startNodeXHor, y: startNodeYHor } =
+    (await startNode.boundingBox()) || {};
+  const { x: endNodeXHor, y: endNodeYHor } =
+    (await endNode.boundingBox()) || {};
+
+  if (!startNodeXHor || !startNodeYHor || !endNodeXHor || !endNodeYHor) {
+    throw new Error("one of the nodes is not visible");
+  }
+
+  expect(
+    startNodeYHor,
+    "start- and end node are on the same vertical line"
+  ).toBe(endNodeYHor);
+
+  expect(
+    endNodeXHor,
+    "the end node is on the right of the start node"
+  ).toBeGreaterThan(startNodeXHor);
+
+  await splitVertBtn.click();
+  const { x: startNodeXVert, y: startNodeYVert } =
+    (await startNode.boundingBox()) || {};
+  const { x: endNodeXVert, y: endNodeYVert } =
+    (await endNode.boundingBox()) || {};
+
+  if (!startNodeXHor || !startNodeYVert || !endNodeXVert || !endNodeYVert) {
+    throw new Error("one of the nodes is not visible");
+  }
+
+  expect(
+    startNodeXVert,
+    "start- and end node are on the same horizontal line"
+  ).toBe(endNodeXVert);
+
+  expect(
+    endNodeYVert,
+    "the end node is on the right of the start node"
+  ).toBeGreaterThan(startNodeYVert);
 });
 
 test("it will persist the prefered layout selection in local storage", async ({
