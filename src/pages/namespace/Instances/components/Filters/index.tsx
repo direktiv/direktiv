@@ -191,7 +191,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                     {moment(filters[field]?.value).format("HH:mm:ss")}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="start">
+                <PopoverContent align="start" className="w-min">
                   <RefineTime
                     field={field}
                     date={dateValue}
