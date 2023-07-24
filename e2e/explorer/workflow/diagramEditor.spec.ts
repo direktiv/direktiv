@@ -105,7 +105,7 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   await expect(diagram).not.toBeVisible();
 });
 
-test("it will change the direction of the diagram when the layout is set to Split Vertically", async ({
+test("it will change the direction of the diagram, when the layout is set to Split Vertically", async ({
   page,
 }) => {
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
@@ -160,7 +160,7 @@ test("it will change the direction of the diagram when the layout is set to Spli
   ).toBeGreaterThan(startNodeYVert);
 });
 
-test("it will persist the prefered layout selection in local storage", async ({
+test("it will persist the preferred layout selection in local storage", async ({
   page,
 }) => {
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
@@ -218,13 +218,13 @@ test("it will update the diagram when the workflow is saved", async ({
     "the second state 'greet' is shown in the diagram"
   ).toBeVisible();
 
-  const outcommentNextLine = async () => {
+  const commentOutNextLine = async () => {
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("ArrowLeft");
     await page.keyboard.press("#");
   };
 
-  // outcomment all states expect the first one to force the diagram to update
+  // comment out all states expect the first one to force the diagram to update
   await page.getByTestId("workflow-editor").click();
   // cursor is at the end of line 8, use right arrow to go to the first column of line 9
   await page.keyboard.press("ArrowRight");
@@ -232,15 +232,15 @@ test("it will update the diagram when the workflow is saved", async ({
   await page.keyboard.press("ArrowDown"); // line 11, column 1
   await page.keyboard.press("ArrowDown"); // line 12, column 1
   await page.keyboard.press("#");
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
-  await outcommentNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
+  await commentOutNextLine();
 
   // save changes
   await page.getByTestId("workflow-editor-btn-save").click();
@@ -251,7 +251,7 @@ test("it will update the diagram when the workflow is saved", async ({
   ).toBeVisible();
   await expect(
     diagram.getByTestId("rf__node-greet"),
-    "the second state 'greet' was outcommented and the diagram updated to not show it anymore"
+    "the second state 'greet' was commented out and the diagram updated to not show it anymore"
   ).not.toBeVisible();
 });
 
