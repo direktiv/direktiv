@@ -193,16 +193,10 @@ test("it will persist the prefered layout selection in local storage", async ({
 
 test("it will update the diagram when the workflow is saved", async ({
   page,
-  context,
 }) => {
   const editor = page.getByTestId("workflow-editor");
   const diagram = page.getByTestId("workflow-diagram");
 
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.exposeFunction(
-    "writeToClipboard",
-    async (text: string) => await navigator.clipboard.writeText(text)
-  );
 
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
   const { splitVertBtn } = await getCodeLayoutButtons(page);
