@@ -395,7 +395,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.ID)
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return

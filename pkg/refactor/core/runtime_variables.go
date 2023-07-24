@@ -13,9 +13,9 @@ import (
 type RuntimeVariable struct {
 	ID uuid.UUID
 
-	NamespaceID uuid.UUID
-	WorkflowID  uuid.UUID
-	InstanceID  uuid.UUID
+	NamespaceID  uuid.UUID
+	WorkflowPath string
+	InstanceID   uuid.UUID
 
 	Name string
 
@@ -28,22 +28,30 @@ type RuntimeVariable struct {
 }
 
 // RuntimeVariablesStore responsible for fetching and setting direktiv runtime variables from datastore.
+//
+//nolint:interfacebloat
 type RuntimeVariablesStore interface {
 	// GetByID gets a single runtime variable from store. if no record found,
 	// it returns datastore.ErrNotFound error.
 	GetByID(ctx context.Context, id uuid.UUID) (*RuntimeVariable, error)
 
-	// GetByReferenceAndName gets a single runtime variable from store by reference id and name. if no record found,
+	// GetByNamespaceAndName gets a single runtime variable from store by namespace ID and name. if no record found,
 	// it returns datastore.ErrNotFound error.
-	// Each runtime variable is linked to a namespace, workflow, or instance. Param referenceID specifying the id of
-	// the referencing object.
-	GetByReferenceAndName(ctx context.Context, referenceID uuid.UUID, name string) (*RuntimeVariable, error)
+	GetByNamespaceAndName(ctx context.Context, namespaceID uuid.UUID, name string) (*RuntimeVariable, error)
+
+	// GetByWorkflowAndName gets a single runtime variable from store by namespace ID, workflow path, and name. if no record found,
+	// it returns datastore.ErrNotFound error.
+	GetByWorkflowAndName(ctx context.Context, namespaceID uuid.UUID, workflowPath, name string) (*RuntimeVariable, error)
+
+	// GetByInstanceAndName gets a single runtime variable from store by instance ID and name. if no record found,
+	// it returns datastore.ErrNotFound error.
+	GetByInstanceAndName(ctx context.Context, instanceID uuid.UUID, name string) (*RuntimeVariable, error)
 
 	// ListByInstanceID gets all runtime variable entries from store that are linked to specific instance id
 	ListByInstanceID(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
 
-	// ListByWorkflowID gets all runtime variable entries from store that are linked to specific workflow id
-	ListByWorkflowID(ctx context.Context, workflowID uuid.UUID) ([]*RuntimeVariable, error)
+	// ListByWorkflowPath gets all runtime variable entries from store that are linked to specific namespace & workflow path
+	ListByWorkflowPath(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*RuntimeVariable, error)
 
 	// ListByNamespaceID gets all runtime variable entries from store that are linked to specific namespace id
 	ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)

@@ -116,7 +116,6 @@ CREATE TABLE IF NOT EXISTS "services" (
 CREATE TABLE IF NOT EXISTS "instances_v2" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
-    "workflow_id" uuid NOT NULL,
     "revision_id" uuid NOT NULL,
     "root_instance_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -124,7 +123,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "ended_at" timestamptz,
     "deadline" timestamptz,
     "status" integer NOT NULL,
-    "called_as" text NOT NULL,
+    "workflow_path" text NOT NULL,
     "error_code" text NOT NULL,
     "invoker" text NOT NULL,
     "definition" bytea NOT NULL,
@@ -147,7 +146,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
     "namespace_id" uuid,
-    "workflow_id" uuid,
+    "workflow_path" text,
     "instance_id" uuid,
 
     "name"  text NOT NULL,
@@ -158,14 +157,12 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY ("id"),
-    UNIQUE(namespace_id, workflow_id, instance_id, name),
+    UNIQUE(namespace_id, workflow_path, instance_id, name),
 
     CONSTRAINT "fk_namespaces_runtime_variables"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
 
-    CONSTRAINT "fk_filesystem_files_runtime_variables"
-    FOREIGN KEY ("workflow_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE,
-
+    -- TODO: Find a way to clean up runtime vars for workflows when they get deleted.
     CONSTRAINT "fk_instances_v2_runtime_variables"
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );

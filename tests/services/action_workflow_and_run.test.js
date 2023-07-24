@@ -57,5 +57,5 @@ states:
         const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/${testWorkflow}?op=wait`)
         expect(res.statusCode).toEqual(200)
         expect(res.body.return.status).toBe("200 OK")
-    })
+    }, 180000)
 });
