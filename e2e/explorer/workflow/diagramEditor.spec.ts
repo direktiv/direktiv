@@ -1,10 +1,7 @@
 import { Page, expect, test } from "@playwright/test";
-import {
-  noop as basicWorkflow,
-  validate as complexWorkflow,
-} from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
+import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 
@@ -31,10 +28,9 @@ const getCodeLayoutButtons = async (page: Page) => {
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
-
   workflow = `${faker.system.commonFileName("yaml")}`;
   await createWorkflow({
-    payload: basicWorkflow.data,
+    payload: consumeEventWorkflow.data,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -153,28 +149,45 @@ test("it will update the diagram when the workflow is saved", async ({
   const { splitVertBtn } = await getCodeLayoutButtons(page);
   await splitVertBtn.click();
 
-  await page.evaluate(
-    async (workflow) => await navigator.clipboard.writeText(workflow),
-    complexWorkflow.data
-  );
-
   await expect(
-    editor.getByText("A simple 'no-op' state that returns")
+    editor.getByText("A simple 'consumeEvent' state that")
   ).toBeVisible();
 
-  await expect(diagram.getByTestId("rf__node-helloworld")).toBeVisible();
-  await expect(
-    diagram.getByTestId("rf__node-email-not-valid")
-  ).not.toBeVisible();
+  await expect(diagram.getByTestId("rf__node-ce")).toBeVisible();
+  await expect(diagram.getByTestId("rf__node-greet")).toBeVisible();
 
-  // TODO: fix meta key
   await page.getByTestId("workflow-editor").click();
-  await page.keyboard.press("Meta+A");
-  await page.keyboard.press("Backspace");
-  await page.keyboard.press("Meta+V");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("#");
 
-  await expect(editor.getByText('"Email is not valid."')).toBeVisible();
   await page.getByTestId("workflow-editor-btn-save").click();
-  await expect(diagram.getByTestId("rf__node-email-not-valid")).toBeVisible();
-  await expect(diagram.getByTestId("rf__node-helloworld")).not.toBeVisible();
+  await expect(diagram.getByTestId("rf__node-ce")).toBeVisible();
+  await expect(diagram.getByTestId("rf__node-greet")).not.toBeVisible();
 });
