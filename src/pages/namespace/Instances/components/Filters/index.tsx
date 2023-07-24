@@ -81,13 +81,13 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         if (field === "AS") {
           return (
             <ButtonBar key={field}>
+              <Button variant="outline">
+                {t([`pages.instances.list.filter.field.${field}`])}
+              </Button>
               <Popover
                 open={activeMenu === field}
                 onOpenChange={(state) => handleOpenChange(state, field)}
               >
-                <Button variant="outline">
-                  {t([`pages.instances.list.filter.field.${field}`])}
-                </Button>
                 <PopoverTrigger asChild>
                   <Button variant="outline">{filters[field]?.value}</Button>
                 </PopoverTrigger>
@@ -101,10 +101,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                     />
                   )}
                 </PopoverContent>
-                <Button variant="outline" icon>
-                  <X onClick={() => clearFilter(field)} />
-                </Button>
               </Popover>
+              <Button variant="outline" icon>
+                <X onClick={() => clearFilter(field)} />
+              </Button>
             </ButtonBar>
           );
         }
@@ -112,13 +112,13 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         if (field === "STATUS" || field === "TRIGGER") {
           return (
             <ButtonBar key={field}>
+              <Button variant="outline">
+                {t([`pages.instances.list.filter.field.${field}`])}
+              </Button>
               <Popover
                 open={activeMenu === field}
                 onOpenChange={(state) => handleOpenChange(state, field)}
               >
-                <Button variant="outline">
-                  {t([`pages.instances.list.filter.field.${field}`])}
-                </Button>
                 <PopoverTrigger asChild>
                   <Button variant="outline">{filters[field]?.value}</Button>
                 </PopoverTrigger>
@@ -138,10 +138,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                     />
                   )}
                 </PopoverContent>
-                <Button variant="outline" icon>
-                  <X onClick={() => clearFilter(field)} />
-                </Button>
               </Popover>
+              <Button variant="outline" icon>
+                <X onClick={() => clearFilter(field)} />
+              </Button>
             </ButtonBar>
           );
         }
