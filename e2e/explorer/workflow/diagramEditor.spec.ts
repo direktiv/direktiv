@@ -48,6 +48,8 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   page,
 }) => {
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  const editor = page.getByTestId("workflow-editor");
+  const diagram = page.getByTestId("workflow-diagram");
 
   const { codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
     await getCodeLayoutButtons(page);
@@ -57,8 +59,8 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).not.toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(diagram).not.toBeVisible();
 
   // diagram view
   await diagramBtn.click();
@@ -66,8 +68,8 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("true");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).not.toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+  await expect(editor).not.toBeVisible();
+  await expect(diagram).toBeVisible();
 
   // split vertically
   await splitVertBtn.click();
@@ -75,8 +77,8 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("true");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(diagram).toBeVisible();
 
   // split horizontally
   await splitHorBtn.click();
@@ -84,8 +86,8 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("true");
-  await expect(page.getByTestId("workflow-editor")).toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(diagram).toBeVisible();
 
   // back to default
   await codeBtn.click();
@@ -93,14 +95,18 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).not.toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(diagram).not.toBeVisible();
+});
+
 });
 
 test("it will persist the prefered layout selection in local storage", async ({
   page,
 }) => {
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  const editor = page.getByTestId("workflow-editor");
+  const diagram = page.getByTestId("workflow-diagram");
 
   const { codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
     await getCodeLayoutButtons(page);
@@ -110,8 +116,8 @@ test("it will persist the prefered layout selection in local storage", async ({
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).not.toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(diagram).not.toBeVisible();
 
   // diagram view
   await diagramBtn.click();
@@ -119,8 +125,8 @@ test("it will persist the prefered layout selection in local storage", async ({
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("true");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).not.toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+  await expect(editor).not.toBeVisible();
+  await expect(diagram).toBeVisible();
 
   // still diagram layout after reload
   await page.reload();
@@ -128,8 +134,8 @@ test("it will persist the prefered layout selection in local storage", async ({
   expect(await diagramBtn.getAttribute("aria-pressed")).toBe("true");
   expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(page.getByTestId("workflow-editor")).not.toBeVisible();
-  await expect(page.getByTestId("workflow-diagram")).toBeVisible();
+  await expect(editor).not.toBeVisible();
+  await expect(diagram).toBeVisible();
 });
 
 test("it will update the diagram when the workflow is saved", async ({
