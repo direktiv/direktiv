@@ -205,6 +205,7 @@ test("it will update the diagram when the workflow is saved", async ({
   await expect(diagram.getByTestId("rf__node-ce")).toBeVisible();
   await expect(diagram.getByTestId("rf__node-greet")).toBeVisible();
 
+  // outcomment all states expect the first one to force the diagram to update
   await page.getByTestId("workflow-editor").click();
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowDown");
