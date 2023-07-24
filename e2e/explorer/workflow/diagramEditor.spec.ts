@@ -8,7 +8,9 @@ import { faker } from "@faker-js/faker";
 let namespace = "";
 let workflow = "";
 
-const getCodeLayoutButtons = async (page: Page) => {
+const getCommonPageElements = async (page: Page) => {
+  const editor = page.getByTestId("workflow-editor");
+  const diagram = page.getByTestId("workflow-diagram");
   const codeBtn = await page.getByTestId("editor-layout-btn-code");
   const diagramBtn = await page.getByTestId("editor-layout-btn-diagram");
   const splitVertBtn = await page.getByTestId(
@@ -19,6 +21,8 @@ const getCodeLayoutButtons = async (page: Page) => {
   );
 
   return {
+    editor,
+    diagram,
     codeBtn,
     diagramBtn,
     splitVertBtn,
@@ -48,11 +52,9 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   page,
 }) => {
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
-  const editor = page.getByTestId("workflow-editor");
-  const diagram = page.getByTestId("workflow-diagram");
 
-  const { codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
-    await getCodeLayoutButtons(page);
+  const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
+    await getCommonPageElements(page);
 
   // code is the default view
   expect(await codeBtn.getAttribute("aria-pressed")).toBe("true");
@@ -106,7 +108,7 @@ test("it will change the direction of the diagram when the layout is set to Spli
   const startNode = page.getByTestId("rf__node-startNode");
   const endNode = page.getByTestId("rf__node-endNode");
 
-  const { splitVertBtn, splitHorBtn } = await getCodeLayoutButtons(page);
+  const { splitVertBtn, splitHorBtn } = await getCommonPageElements(page);
 
   // use split horizontally layout
   await splitHorBtn.click();
@@ -158,11 +160,8 @@ test("it will persist the prefered layout selection in local storage", async ({
   page,
 }) => {
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
-  const editor = page.getByTestId("workflow-editor");
-  const diagram = page.getByTestId("workflow-diagram");
-
-  const { codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
-    await getCodeLayoutButtons(page);
+  const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
+    await getCommonPageElements(page);
 
   // code is the default view
   expect(await codeBtn.getAttribute("aria-pressed")).toBe("true");
@@ -194,12 +193,9 @@ test("it will persist the prefered layout selection in local storage", async ({
 test("it will update the diagram when the workflow is saved", async ({
   page,
 }) => {
-  const editor = page.getByTestId("workflow-editor");
-  const diagram = page.getByTestId("workflow-diagram");
-
-
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
-  const { splitVertBtn } = await getCodeLayoutButtons(page);
+  const { editor, diagram, splitVertBtn } = await getCommonPageElements(page);
+
   await splitVertBtn.click();
 
   await expect(
