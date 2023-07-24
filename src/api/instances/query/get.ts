@@ -32,7 +32,7 @@ export type FiltersObj = {
   BEFORE?: { type: "BEFORE"; value: Date };
 };
 
-const getFilterQuery = (filters: FiltersObj) => {
+export const getFilterQuery = (filters: FiltersObj) => {
   let query = "";
   const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
 
@@ -67,6 +67,7 @@ const getFilterQuery = (filters: FiltersObj) => {
       `&filter.field=${queryField}&filter.type=${filterItem.type}&filter.val=${queryValue}`
     );
   });
+
   return query;
 };
 
