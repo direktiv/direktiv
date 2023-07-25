@@ -212,7 +212,6 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 
 func convertToParseDurationFormat(iso8601Duration string) (string, error) {
 	if !strings.HasPrefix(iso8601Duration, "P") {
-		panic(iso8601Duration)
 		return "", fmt.Errorf("invalid ISO8601 duration format")
 	}
 
