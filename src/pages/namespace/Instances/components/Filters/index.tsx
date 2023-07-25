@@ -154,7 +154,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           const dateValue = filters[field]?.value;
           if (!dateValue) {
             console.error("Early return: dateValue is not defined");
-            return <></>;
+            return null;
           }
           return (
             <ButtonBar key={field}>
