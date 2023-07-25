@@ -4,7 +4,6 @@ import {
   Calendar,
   FolderTree,
   Layers,
-  Network,
   Settings,
   Users,
 } from "lucide-react";
@@ -33,7 +32,7 @@ interface PageBase {
 type KeysWithNoPathParams =
   | "monitoring"
   | "events"
-  | "gateway"
+  // | "gateway"
   | "permissions"
   | "services"
   | "settings";
@@ -262,15 +261,15 @@ export const pages: PageType = {
       element: <div className="flex flex-col space-y-5 p-10">Events</div>,
     },
   },
-  gateway: {
-    name: "components.mainMenu.gateway",
-    icon: Network,
-    createHref: (params) => `/${params.namespace}/gateway`,
-    route: {
-      path: "gateway",
-      element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
-    },
-  },
+  // gateway: {
+  //   name: "components.mainMenu.gateway",
+  //   icon: Network,
+  //   createHref: (params) => `/${params.namespace}/gateway`,
+  //   route: {
+  //     path: "gateway",
+  //     element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
+  //   },
+  // },
   permissions: {
     name: "components.mainMenu.permissions",
     icon: Users,
