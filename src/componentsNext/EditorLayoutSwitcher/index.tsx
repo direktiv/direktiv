@@ -34,6 +34,7 @@ export const EditorLayoutSwitcher = () => {
                     }}
                     className="grow"
                     pressed={layout === currentLayout}
+                    data-testid={`editor-layout-btn-${layout}`}
                   >
                     <Icon />
                   </Toggle>

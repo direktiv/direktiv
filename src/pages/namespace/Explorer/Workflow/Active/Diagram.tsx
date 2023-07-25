@@ -9,7 +9,7 @@ type DiagramProps = {
 };
 
 export const Diagram: FC<DiagramProps> = ({ layout, workflowData }) => (
-  <Card className="flex grow">
+  <Card className="flex grow" data-testid="workflow-diagram">
     <WorkflowDiagram
       workflow={workflowData}
       orientation={layout === "splitVertically" ? "vertical" : "horizontal"}
