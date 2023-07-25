@@ -9,20 +9,16 @@ import { faker } from "@faker-js/faker";
 let namespace = "";
 let workflow = "";
 
-const getCommonPageElements = async (page: Page) => {
+const getCommonPageElements = (page: Page) => {
   const isActiveWorkflowPage = page.url().includes("workflow/active/");
   const editor = page.getByTestId(
     isActiveWorkflowPage ? "workflow-editor" : "revisions-detail-editor"
   );
   const diagram = page.getByTestId("workflow-diagram");
-  const codeBtn = await page.getByTestId("editor-layout-btn-code");
-  const diagramBtn = await page.getByTestId("editor-layout-btn-diagram");
-  const splitVertBtn = await page.getByTestId(
-    "editor-layout-btn-splitVertically"
-  );
-  const splitHorBtn = await page.getByTestId(
-    "editor-layout-btn-splitHorizontally"
-  );
+  const codeBtn = page.getByTestId("editor-layout-btn-code");
+  const diagramBtn = page.getByTestId("editor-layout-btn-diagram");
+  const splitVertBtn = page.getByTestId("editor-layout-btn-splitVertically");
+  const splitHorBtn = page.getByTestId("editor-layout-btn-splitHorizontally");
 
   return {
     editor,
