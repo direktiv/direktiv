@@ -95,15 +95,17 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	if err != nil {
 		return err
 	}
-
-	p, err := convertToParseDurationFormat(ms.Lifespan)
-	if err != nil {
-		return err
-	}
-	lifespan, err := time.ParseDuration(p)
-	// lifespan, err := duration.ParseISO8601(ms.Lifespan)
-	if err != nil {
-		return err
+	var lifespan time.Duration
+	if ms.Lifespan != "" {
+		p, err := convertToParseDurationFormat(ms.Lifespan)
+		if err != nil {
+			return err
+		}
+		lifespan, err = time.ParseDuration(p)
+		// lifespan, err := duration.ParseISO8601(ms.Lifespan)
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(ms.Events) > 0 && ms.Enabled {
@@ -210,6 +212,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 
 func convertToParseDurationFormat(iso8601Duration string) (string, error) {
 	if !strings.HasPrefix(iso8601Duration, "P") {
+		panic(iso8601Duration)
 		return "", fmt.Errorf("invalid ISO8601 duration format")
 	}
 
