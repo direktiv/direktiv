@@ -5,7 +5,6 @@ import {
   FolderTree,
   Layers,
   Settings,
-  Users,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
@@ -33,7 +32,7 @@ type KeysWithNoPathParams =
   | "monitoring"
   | "events"
   // | "gateway"
-  | "permissions"
+  // | "permissions"
   | "services"
   | "settings";
 
@@ -270,15 +269,15 @@ export const pages: PageType = {
   //     element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
   //   },
   // },
-  permissions: {
-    name: "components.mainMenu.permissions",
-    icon: Users,
-    createHref: (params) => `/${params.namespace}/permissions`,
-    route: {
-      path: "permissions",
-      element: <div className="flex flex-col space-y-5 p-10">Permissions</div>,
-    },
-  },
+  // permissions: {
+  //   name: "components.mainMenu.permissions",
+  //   icon: Users,
+  //   createHref: (params) => `/${params.namespace}/permissions`,
+  //   route: {
+  //     path: "permissions",
+  //     element: <div className="flex flex-col space-y-5 p-10">Permissions</div>,
+  //   },
+  // },
   services: {
     name: "components.mainMenu.services",
     icon: Layers,
