@@ -88,7 +88,7 @@ export const getInstances = apiFactory({
     `${
       baseUrl ?? ""
     }/api/namespaces/${namespace}/instances?limit=${limit}&offset=${offset}${
-      filter ?? filter
+      filter || ""
     }`,
   method: "GET",
   schema: InstancesListSchema,
