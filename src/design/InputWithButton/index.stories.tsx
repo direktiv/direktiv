@@ -6,9 +6,11 @@ import {
   TooltipTrigger,
 } from "../Tooltip";
 import Button from "../Button";
+import CopyButton from "../CopyButton";
 import { CopyIcon } from "lucide-react";
 import Input from "../Input";
 import { InputWithButton } from "./index";
+import { useState } from "react";
 
 const meta = {
   title: "Components/InputWithButton",
@@ -29,25 +31,45 @@ export const Default: Story = {
   ),
 };
 
-export const InputWithTextButton = () => (
-  <InputWithButton>
-    <Input />
-    <Button>Show Password</Button>
-  </InputWithButton>
-);
-
-export const IconWithToolTip = () => (
-  <TooltipProvider>
+export const InputWithTextButton = () => {
+  const [showPassword, setshowPassword] = useState(false);
+  return (
     <InputWithButton>
-      <Input />
-      <Tooltip>
-        <TooltipTrigger>
-          <Button icon variant="ghost">
-            <CopyIcon />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Copy Value</TooltipContent>
-      </Tooltip>
+      <Input
+        value="my-secret-password"
+        type={showPassword ? "text" : "password"}
+      />
+      <Button className="w-40" onClick={() => setshowPassword((old) => !old)}>
+        {showPassword ? "Hide" : "Show"} Password
+      </Button>
     </InputWithButton>
-  </TooltipProvider>
-);
+  );
+};
+
+export const IconWithToolTip = () => {
+  const [value, setValue] = useState("some value");
+  return (
+    <TooltipProvider>
+      <InputWithButton>
+        <Input
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+          }}
+        />
+        <Tooltip>
+          <TooltipTrigger>
+            <CopyButton
+              value={value}
+              buttonProps={{
+                icon: true,
+                variant: "ghost",
+              }}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Copy Value</TooltipContent>
+        </Tooltip>
+      </InputWithButton>
+    </TooltipProvider>
+  );
+};
