@@ -1,3 +1,5 @@
+import { FiltersObj } from "./query/get";
+
 export const instanceKeys = {
   instancesList: (
     namespace: string,
@@ -5,8 +7,8 @@ export const instanceKeys = {
       apiKey,
       limit,
       offset,
-      filter,
-    }: { apiKey?: string; limit: number; offset: number; filter: string }
+      filters,
+    }: { apiKey?: string; limit: number; offset: number; filters: FiltersObj }
   ) =>
     [
       {
@@ -15,7 +17,7 @@ export const instanceKeys = {
         namespace,
         limit,
         offset,
-        filter,
+        filters,
       },
     ] as const,
 };

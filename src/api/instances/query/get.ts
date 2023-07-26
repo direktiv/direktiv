@@ -71,35 +71,41 @@ export const getFilterQuery = (filters: FiltersObj) => {
   return query;
 };
 
+const getUrl = ({
+  namespace,
+  baseUrl,
+  limit,
+  offset,
+  filters,
+}: {
+  baseUrl?: string;
+  namespace: string;
+  limit: number;
+  offset: number;
+  filters?: FiltersObj;
+}) => {
+  const url = `${
+    baseUrl ?? ""
+  }/api/namespaces/${namespace}/instances?limit=${limit}&offset=${offset}`;
+
+  if (filters) {
+    url.concat(getFilterQuery(filters));
+  }
+  return url;
+};
+
 export const getInstances = apiFactory({
-  url: ({
-    namespace,
-    baseUrl,
-    limit,
-    offset,
-    filter,
-  }: {
-    baseUrl?: string;
-    namespace: string;
-    limit: number;
-    offset: number;
-    filter?: string;
-  }) =>
-    `${
-      baseUrl ?? ""
-    }/api/namespaces/${namespace}/instances?limit=${limit}&offset=${offset}${
-      filter || ""
-    }`,
+  url: getUrl,
   method: "GET",
   schema: InstancesListSchema,
 });
 
 const fetchInstances = async ({
-  queryKey: [{ apiKey, namespace, limit, offset, filter }],
+  queryKey: [{ apiKey, namespace, limit, offset, filters }],
 }: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instancesList"]>>) =>
   getInstances({
     apiKey,
-    urlParams: { namespace, limit, offset, filter },
+    urlParams: { namespace, limit, offset, filters },
   });
 
 export const useInstances = ({
@@ -123,7 +129,7 @@ export const useInstances = ({
       apiKey: apiKey ?? undefined,
       limit,
       offset,
-      filter: getFilterQuery(filters),
+      filters,
     }),
     queryFn: fetchInstances,
     enabled: !!namespace,
