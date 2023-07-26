@@ -37,6 +37,7 @@ const InstancesListPage = () => {
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.instances.results.length === 0;
   const showPagination = numberOfInstances > instancesPerPage;
+  const hasFilters = !!Object.keys(filters).length;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -76,7 +77,13 @@ const InstancesListPage = () => {
             {noResults ? (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={7}>
-                  <NoResult />
+                  <NoResult
+                    message={
+                      hasFilters
+                        ? t("pages.instances.list.empty.noFilterResults")
+                        : t("pages.instances.list.empty.noInstances")
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (

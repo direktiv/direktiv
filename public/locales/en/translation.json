@@ -176,7 +176,8 @@
       "list": {
         "title": "Recently executed instances",
         "empty": {
-          "title": "there are no recently executed instances"
+          "noInstances": "There are no recently executed instances",
+          "noFilterResults": "No recently executed instances found with these filter criteria"
         },
         "tableHeader": {
           "name": "name",
