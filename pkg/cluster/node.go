@@ -33,7 +33,7 @@ type Node struct {
 	producer       *nsq.Producer
 }
 
-func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*Node, error) {
+func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, timeout time.Duration, logger *zap.SugaredLogger) (*Node, error) {
 	var err error
 
 	if nodeFinder == nil {
@@ -66,7 +66,7 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, logger *
 		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
 	default:
 		// Check if the bus has started successfully
-		if err := node.bus.waitTillConnected(); err != nil {
+		if err := node.bus.waitTillConnected(timeout); err != nil {
 			return nil, fmt.Errorf("failed to start nsq bus: %w", err)
 		}
 	}
@@ -130,7 +130,7 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, logger *
 		return nil, fmt.Errorf("failed to create serf node: %w", err)
 	}
 
-	go node.eventHandler()
+	go node.eventHandler(ctx)
 	<-node.upCh
 
 	clusterNodes, err := node.nodefinder.GetNodes()
@@ -151,8 +151,10 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, logger *
 func startBusAsync(node *Node) error {
 	if err := node.bus.start(); err != nil {
 		node.logger.Error("can not start nsq bus:", err)
+
 		return err
 	}
+
 	return nil
 }
 
@@ -186,7 +188,8 @@ func (node *Node) Stop() error {
 	return nil
 }
 
-func (node *Node) updateBusMember() error {
+func (node *Node) updateBusMember(ctx context.Context) error {
+	_ = ctx
 	members := node.serfServer.Members()
 	updateBusMember := make([]string, 0)
 	for i := range members {
@@ -194,7 +197,7 @@ func (node *Node) updateBusMember() error {
 		updateBusMember = append(updateBusMember, m.Tags[nsqLookupAddress])
 	}
 
-	err := node.bus.updateBusNodes(updateBusMember)
+	err := node.bus.updateBusNodes(ctx, updateBusMember)
 	if err != nil {
 		return err
 	}
@@ -202,7 +205,8 @@ func (node *Node) updateBusMember() error {
 	return nil
 }
 
-func (node *Node) handleMember(memberEvent serf.MemberEvent, join bool) {
+func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent, join bool) {
+	_ = ctx
 	for _, member := range memberEvent.Members {
 		if node.serfServer.LocalMember().Name == member.Name {
 			if join {
@@ -212,14 +216,14 @@ func (node *Node) handleMember(memberEvent serf.MemberEvent, join bool) {
 			continue
 		}
 
-		err := node.updateBusMember()
+		err := node.updateBusMember(ctx)
 		if err != nil {
 			panic(fmt.Errorf("can not handle member join (update): %w", err))
 		}
 	}
 }
 
-func (node *Node) eventHandler() {
+func (node *Node) eventHandler(ctx context.Context) {
 	for e := range node.events {
 		switch e.EventType() {
 		default:
@@ -229,7 +233,7 @@ func (node *Node) eventHandler() {
 			}
 		case serf.EventMemberJoin:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
-				node.handleMember(memberEvent, true)
+				node.handleMember(ctx, memberEvent, true)
 				node.logger.Infof("A node has joined the cluster: %v.", memberEvent.Members)
 			}
 		case serf.EventMemberReap:
@@ -243,7 +247,7 @@ func (node *Node) eventHandler() {
 		case serf.EventMemberLeave:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Debugf("A node has left the cluster: %v.", memberEvent.Members)
-				node.handleMember(memberEvent, false)
+				node.handleMember(ctx, memberEvent, false)
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"testing"
@@ -51,7 +52,7 @@ func TestBusFunctions(t *testing.T) {
 	defer b.stop()
 
 	go b.start()
-	err = b.waitTillConnected()
+	err = b.waitTillConnected(100)
 	require.NoError(t, err)
 
 	err = b.createTopic("topic1")
@@ -69,7 +70,7 @@ func TestBusFunctions(t *testing.T) {
 	err = b.createDeleteChannel("unknown", "channel1", true)
 	assert.Error(t, err)
 
-	err = b.updateBusNodes([]string{"server1:5555"})
+	err = b.updateBusNodes(context.TODO(), []string{"server1:5555"})
 	assert.NoError(t, err)
 }
 
@@ -119,7 +120,7 @@ func TestBusCluster(t *testing.T) {
 	require.NoError(t, err)
 	defer b.stop()
 	go b.start()
-	b.waitTillConnected()
+	b.waitTillConnected(100)
 
 	ports2 := getPorts(t)
 	closePorts(ports2)
@@ -133,15 +134,16 @@ func TestBusCluster(t *testing.T) {
 	require.NoError(t, err)
 	defer b2.stop()
 	go b2.start()
-	b.waitTillConnected()
+	b.waitTillConnected(100)
 
 	// update cluster
-	err = b.updateBusNodes([]string{
-		fmt.Sprintf("127.0.0.1:%d", ports1[2].port),
-		fmt.Sprintf("127.0.0.1:%d", ports2[2].port),
-	})
+	err = b.updateBusNodes(
+		context.TODO(), []string{
+			fmt.Sprintf("127.0.0.1:%d", ports1[2].port),
+			fmt.Sprintf("127.0.0.1:%d", ports2[2].port),
+		})
 	require.NoError(t, err)
-	err = b2.updateBusNodes([]string{
+	err = b2.updateBusNodes(context.TODO(), []string{
 		fmt.Sprintf("127.0.0.1:%d", ports1[2].port),
 		fmt.Sprintf("127.0.0.1:%d", ports2[2].port),
 	})
