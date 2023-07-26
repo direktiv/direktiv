@@ -219,60 +219,62 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         }
       })}
 
-      <Popover
-        open={activeMenu === "main"}
-        onOpenChange={(state) => handleOpenChange(state, "main")}
-      >
-        <PopoverTrigger asChild>
-          {hasFilters ? (
-            <Button variant="outline" icon onClick={() => toggleMenu("main")}>
-              <Plus />
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={() => toggleMenu("main")}>
-              <Plus />
-              {t("pages.instances.list.filter.filterButton")}
-            </Button>
-          )}
-        </PopoverTrigger>
-        <PopoverContent align="start">
-          {(selectedField === null && (
-            <SelectFieldMenu
-              options={undefinedFilters}
-              onSelect={setSelectedField}
-            />
-          )) ||
-            (selectedField === "AS" && (
-              <TextInput
-                field={selectedField}
-                setFilter={setFilter}
-                clearFilter={clearFilter}
-                value={filters[selectedField]?.value}
+      {!!undefinedFilters.length && (
+        <Popover
+          open={activeMenu === "main"}
+          onOpenChange={(state) => handleOpenChange(state, "main")}
+        >
+          <PopoverTrigger asChild>
+            {hasFilters ? (
+              <Button variant="outline" icon onClick={() => toggleMenu("main")}>
+                <Plus />
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => toggleMenu("main")}>
+                <Plus />
+                {t("pages.instances.list.filter.filterButton")}
+              </Button>
+            )}
+          </PopoverTrigger>
+          <PopoverContent align="start">
+            {(selectedField === null && (
+              <SelectFieldMenu
+                options={undefinedFilters}
+                onSelect={setSelectedField}
               />
             )) ||
-            (selectedField === "STATUS" && (
-              <Options
-                field={selectedField}
-                value={filters[selectedField]?.value}
-                setFilter={setFilter}
-              />
-            )) ||
-            (selectedField === "TRIGGER" && (
-              <Options
-                field={selectedField}
-                value={filters[selectedField]?.value}
-                setFilter={setFilter}
-              />
-            )) ||
-            ((selectedField === "AFTER" || selectedField === "BEFORE") && (
-              <DatePicker
-                field={selectedField}
-                date={filters[selectedField]?.value}
-                setFilter={setFilter}
-              />
-            ))}
-        </PopoverContent>
-      </Popover>
+              (selectedField === "AS" && (
+                <TextInput
+                  field={selectedField}
+                  setFilter={setFilter}
+                  clearFilter={clearFilter}
+                  value={filters[selectedField]?.value}
+                />
+              )) ||
+              (selectedField === "STATUS" && (
+                <Options
+                  field={selectedField}
+                  value={filters[selectedField]?.value}
+                  setFilter={setFilter}
+                />
+              )) ||
+              (selectedField === "TRIGGER" && (
+                <Options
+                  field={selectedField}
+                  value={filters[selectedField]?.value}
+                  setFilter={setFilter}
+                />
+              )) ||
+              ((selectedField === "AFTER" || selectedField === "BEFORE") && (
+                <DatePicker
+                  field={selectedField}
+                  date={filters[selectedField]?.value}
+                  setFilter={setFilter}
+                />
+              ))}
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 };
