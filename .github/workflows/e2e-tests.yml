@@ -85,6 +85,14 @@ jobs:
             name: "postgres"
             sslmode: "disable"
           EOF
+      - name: Cache Docker layers
+        id: docker-cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.docker
+          key: docker-${{ runner.os }}-${{ hashFiles('build/docker/direktiv/Dockerfile') }}
+          restore-keys: |
+            docker-${{ runner.os }}-
 
       - name: Build images
         run: |
