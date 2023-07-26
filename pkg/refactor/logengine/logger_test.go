@@ -110,7 +110,7 @@ func Test_ChachedSQLLogStore(t *testing.T) {
 func Test_TracingLogger(t *testing.T) {
 	traceTagsMock := false
 
-	logger := logengine.SugarBetterLogger{
+	logger := logengine.SugarBetterJSONLogger{
 		Sugar: zap.S(),
 		AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
 			traceTagsMock = true
