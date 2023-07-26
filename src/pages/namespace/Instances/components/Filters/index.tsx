@@ -88,7 +88,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
   );
 
   return (
-    <div className="m-2 flex flex-row gap-2">
+    <div className="m-2 flex flex-row flex-wrap gap-2">
       {currentFilterKeys.map((field) => {
         // For type safety, one separate return is required below for every type
         // so it is possible to assert filters[field]?.value is defined and TS
