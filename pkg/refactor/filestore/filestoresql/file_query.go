@@ -99,9 +99,11 @@ func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filesto
 	}
 
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("id", id).
-		First(rev)
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_revisions
+					WHERE id=?
+					`, id).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -180,10 +182,12 @@ func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("file_id", q.file.ID).
-		Where("is_current", true).
-		First(rev)
+
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_revisions
+					WHERE file_id=? AND is_current=true
+					`, q.file.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -199,9 +203,10 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 	}
 
 	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("file_id", q.file.ID).
-		Where("is_current", true).
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_revisions
+					WHERE file_id=? AND is_current=true`, q.file.ID).
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -49,36 +51,18 @@ func dbTrace(ctx context.Context) *Carrier {
 func traceAddWorkflowInstance(ctx context.Context, im *instanceMemory) {
 	span := trace.SpanFromContext(ctx)
 
-	span.SetAttributes(
-		attribute.KeyValue{
-			Key:   "namespace",
-			Value: attribute.StringValue(im.cached.Namespace.Name),
-		},
-		attribute.KeyValue{
-			Key:   "namespace-id",
-			Value: attribute.StringValue(im.cached.Namespace.ID.String()),
-		},
-		attribute.KeyValue{
-			Key:   "workflow",
-			Value: attribute.StringValue(im.cached.File.Path),
-		},
-		attribute.KeyValue{
-			Key:   "workflow-id",
-			Value: attribute.StringValue(im.cached.File.ID.String()),
-		},
-		attribute.KeyValue{
-			Key:   "revision",
-			Value: attribute.StringValue(fmt.Sprintf("%v", im.cached.Revision.ID.String())),
-		},
-		attribute.KeyValue{
-			Key:   "instance",
-			Value: attribute.StringValue(im.cached.Instance.ID.String()),
-		},
-		attribute.KeyValue{
-			Key:   "as",
-			Value: attribute.StringValue(im.cached.Instance.As),
-		},
-	)
+	m := im.instance.GetAttributes(recipient.Instance)
+	delete(m, "recipientType")
+
+	attrs := make([]attribute.KeyValue, 0)
+	for k, v := range m {
+		attrs = append(attrs, attribute.KeyValue{
+			Key:   attribute.Key(k),
+			Value: attribute.StringValue(v),
+		})
+	}
+
+	span.SetAttributes(attrs...)
 }
 
 func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (context.Context, error) {
@@ -92,10 +76,13 @@ func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (cont
 	x := dbTrace(ctx)
 	s := bytedata.Marshal(x)
 
-	updater := im.getRuntimeUpdater()
-	updater = updater.SetInstanceContext(s)
-	im.runtime.InstanceContext = s
-	im.runtimeUpdater = updater
+	im.instance.TelemetryInfo.TraceID = s
+	data, err := im.instance.TelemetryInfo.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	im.updateArgs.TelemetryInfo = &data
 
 	return ctx, nil
 }
@@ -127,7 +114,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 
 	carrier := new(Carrier)
 
-	err := json.Unmarshal([]byte(im.runtime.InstanceContext), carrier)
+	err := json.Unmarshal([]byte(im.instance.TelemetryInfo.TraceID), carrier)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -139,10 +126,13 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	x := dbTrace(ctx)
 	s := bytedata.Marshal(x)
 
-	updater := im.getRuntimeUpdater()
-	updater = updater.SetStateContext(s)
-	im.runtime.StateContext = s
-	im.runtimeUpdater = updater
+	im.instance.TelemetryInfo.SpanID = s
+	data, err := im.instance.TelemetryInfo.MarshalJSON()
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	im.updateArgs.TelemetryInfo = &data
 
 	finish := func() {
 		span.End()
@@ -158,7 +148,7 @@ func traceStateGenericLogicThread(ctx context.Context, im *instanceMemory) (cont
 	var span trace.Span
 
 	carrier := new(Carrier)
-	err := json.Unmarshal([]byte(im.runtime.StateContext), carrier)
+	err := json.Unmarshal([]byte(im.instance.TelemetryInfo.SpanID), carrier)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -182,4 +172,99 @@ func traceActionResult(ctx context.Context, results *actionResultPayload) {
 			Value: attribute.StringValue(results.ActionID),
 		},
 	)
+}
+
+func traceAddtoEventlog(ctx context.Context) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "addToEventLog", trace.WithSpanKind(trace.SpanKindInternal))
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceValidatingEvent(ctx context.Context) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "validatingEvent", trace.WithSpanKind(trace.SpanKindInternal))
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func startIncomingEvent(ctx context.Context, route string) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, route+"ToNamespaceCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceBrokerMessage(ctx context.Context, ev event.Event) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "BroadcastCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "event-registered",
+			Value: attribute.StringValue(ev.Source() + "-" + ev.ID()),
+		},
+	)
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceGetListenersByTopic(ctx context.Context, topic string) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "GetListenersByTopic", trace.WithSpanKind(trace.SpanKindInternal))
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "topic",
+			Value: attribute.StringValue(topic),
+		},
+	)
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceProcessingMessage(ctx context.Context, ev event.Event) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "processingCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
+
+	finish := func() {
+		span.End()
+	}
+
+	return ctx, finish
+}
+
+func traceMessageTrigger(ctx context.Context, triggerDescription string) (context.Context, func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer("direktiv/flow")
+	ctx, span := tr.Start(ctx, "triggered-by-event", trace.WithSpanKind(trace.SpanKindInternal))
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "trigger-desc",
+			Value: attribute.StringValue(triggerDescription),
+		},
+	)
+	finish := func() {
+		span.End()
+	}
+	return ctx, finish
 }

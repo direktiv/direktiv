@@ -6,10 +6,10 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message ListPodsResponse {
-	repeated PodsInfo pods = 2;
+message FunctionsListPodsResponse {
+	repeated FunctionsPodsInfo pods = 2;
 }
 
-message ListPodsRequest {
+message FunctionsListPodsRequest {
 	map<string, string> annotations = 1;
 }

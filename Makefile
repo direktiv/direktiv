@@ -101,7 +101,7 @@ ent-%: ## Manually regenerates ent database package.
 
 .PHONY: ent
 ent: ## Manually regenerates ent database packages.
-ent: ent-flow ent-secrets ent-metrics
+ent: ent-flow
 
 # Not need anymore, commented out for now to not accidentally building those
 # Cleans API client inside of pkg api
@@ -155,11 +155,17 @@ cross-build:
 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
 
+.PHONY: grpc-clean
+grpc-clean: ## Clean all generated grpc files.
+grpc-clean:
+	rm -rf pkg/*.pb.go
+	rm -rf pkg/*/*.pb.go
+	rm -rf pkg/*/*/*.pb.go
 
 BUF_VERSION:=1.18.0
-.PHONY: protoc
-protoc: ## Manually regenerates Go packages built from protobuf.
-protoc:
+.PHONY: grpc-build
+grpc-build: ## Manually regenerates Go packages built from protobuf.
+grpc-build: grpc-clean
 	docker run -v $$(pwd):/app -w /app bufbuild/buf:$(BUF_VERSION) generate
 
 
@@ -319,11 +325,11 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 
 .PHONY: unittest
 unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
-	go test -p 1 -cover -timeout 4s ${UNITTEST_PACKAGES}
+	go test -cover -timeout 60s ${UNITTEST_PACKAGES}
 
 
 .PHONY: lint 
-lint: VERSION="v1.52"
+lint: VERSION="v1.53"
 lint: ## Runs very strict linting on the project.
 	-docker rm golangci-lint-${VERSION}-direktiv
 	-docker run \
@@ -333,11 +339,14 @@ lint: ## Runs very strict linting on the project.
 	golangci/golangci-lint:${VERSION} golangci-lint run
 	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
-test-jest: ## Runs jest end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-jest [JEST_PREFIX=/tests/jest/namespaces]
+test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
 	docker run -it --rm \
-	-v `pwd`/tests/jest:/tests/jest \
+	-v `pwd`/tests:/tests \
 	-v `pwd`/direktivctl:/bin/direktivctl \
 	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
-	node:alpine npm --prefix "/tests/jest" run all -- ${JEST_PREFIX}
+	node:alpine npm --prefix "/tests" run all -- ${JEST_PREFIX}
 
+server-godoc:
+	go install golang.org/x/tools/cmd/godoc@latest
+	godoc -http=:6060

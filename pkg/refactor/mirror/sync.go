@@ -3,17 +3,15 @@ package mirror
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -216,7 +214,7 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 
 // ParseDirektivVars tries to parse special direktiv files naming convention to create both namespace and workflow
 // files.
-func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, vStore core.RuntimeVariablesStore, namespaceID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -232,13 +230,19 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 			return j
 		}
 		mType := mimetype.Detect(data)
-		hash, err := computeHash(data)
 		if err != nil {
 			j.err = fmt.Errorf("calculate hash string, path: %s, err: %w", path, err)
 
 			return j
 		}
-		err = store.SetNamespaceVariable(j.ctx, namespaceID, pk[1], data, hash, mType.String())
+
+		_, err = vStore.Set(j.ctx,
+			&core.RuntimeVariable{
+				NamespaceID: namespaceID,
+				Name:        pk[1],
+				MimeType:    mType.String(),
+				Data:        data,
+			})
 		if err != nil {
 			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
 
@@ -265,15 +269,21 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 			return j
 		}
 		mType := mimetype.Detect(data)
-		hash, err := computeHash(data)
 		if err != nil {
 			j.err = fmt.Errorf("calculate hash string, path: %s, err: %w", path, err)
 
 			return j
 		}
-		err = store.SetWorkflowVariable(j.ctx, workflowFile.ID, pk[1], data, hash, mType.String())
+		_, err = vStore.Set(j.ctx,
+			&core.RuntimeVariable{
+				NamespaceID:  namespaceID,
+				WorkflowPath: workflowFile.Path,
+				Name:         pk[1],
+				MimeType:     mType.String(),
+				Data:         data,
+			})
 		if err != nil {
-			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
+			j.err = fmt.Errorf("save workflow variable, path: %s, err: %w", path, err)
 
 			return j
 		}
@@ -512,15 +522,4 @@ func parseDirektivVars(paths []string) ([][]string, [][]string) {
 	}
 
 	return namespaceVarPathsKeys, workflowVarPathsKeys
-}
-
-// computeHash is a shortcut to calculate a hash for a byte slice.
-func computeHash(data []byte) (string, error) {
-	hasher := sha256.New()
-	_, err := io.Copy(hasher, bytes.NewReader(data))
-	if err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(hasher.Sum(nil)), nil
 }

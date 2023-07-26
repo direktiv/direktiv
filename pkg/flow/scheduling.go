@@ -31,7 +31,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
-			InstanceID: caller.InstanceID.String(),
+			InstanceID: caller.ID.String(),
 			State:      caller.State,
 			Step:       caller.Step,
 			Payload: actionResultPayload{
@@ -107,8 +107,8 @@ func (engine *engine) sleepWakeup(data []byte) {
 }
 
 func (engine *engine) queue(im *instanceMemory) {
-	namespace := im.cached.Namespace.Name
-	workflow := GetInodePath(im.cached.Instance.As)
+	namespace := im.instance.TelemetryInfo.NamespaceName
+	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()

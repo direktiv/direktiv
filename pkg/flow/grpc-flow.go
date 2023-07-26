@@ -7,11 +7,8 @@ import (
 	"net"
 	"time"
 
-	entinst "github.com/direktiv/direktiv/pkg/flow/ent/instance"
-	entirt "github.com/direktiv/direktiv/pkg/flow/ent/instanceruntime"
-	entlog "github.com/direktiv/direktiv/pkg/flow/ent/logmsg"
-	entvardata "github.com/direktiv/direktiv/pkg/flow/ent/vardata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,6 +22,8 @@ type flow struct {
 	srv      *libgrpc.Server
 	grpc.UnimplementedFlowServer
 }
+
+const srv = "server"
 
 func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	var err error
@@ -43,8 +42,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
 
-	clients := flow.edb.Clients(ctx)
-
 	go func() {
 		<-ctx.Done()
 		flow.srv.Stop()
@@ -54,31 +51,47 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		// instance garbage collector
 		ctx := context.Background()
 		<-time.After(2 * time.Minute)
+
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := clients.Instance.Delete().Where(entinst.EndAtLT(t)).Exec(ctx)
+
+			tx, err := srv.flow.beginSqlTx(ctx)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
+				flow.sugar.Error(fmt.Errorf("failed to get transaction to cleanup old instances: %w", err))
+				continue
 			}
 
-			_, err = clients.VarData.Delete().Where(entvardata.Not(entvardata.HasVarrefs())).Exec(ctx)
+			err = tx.InstanceStore().DeleteOldInstances(ctx, t)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old variables: %w", err))
+				tx.Rollback()
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
+				continue
 			}
+
+			err = tx.Commit(ctx)
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to commit tx to cleanup old instances: %w", err))
+				continue
+			}
+
+			// TODO: alan: cleanup old instance variables.
 		}
 	}()
 
 	go func() {
 		// logs garbage collector
-		ctx := context.Background()
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().Add(time.Hour * -24)
-			_, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
+			flow.sugar.Error(fmt.Sprintf("deleting all logs since %v", t))
+			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
+				return tx.DataStore().Logs().DeleteOldLogs(context.TODO(), t)
+			})
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
+				continue
 			}
 		}
 	}()
@@ -108,24 +121,29 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 func (flow *flow) kickExpiredInstances() {
 	ctx := context.Background()
 
-	t := time.Now().Add(-1 * time.Minute)
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+	defer tx.Rollback()
 
-	clients := flow.edb.Clients(ctx)
-
-	list, err := clients.InstanceRuntime.Query().
-		Select(entirt.FieldID, entirt.FieldFlow, entirt.FieldDeadline).
-		Where(entirt.DeadlineLT(t), entirt.HasInstanceWith(entinst.StatusEQ(util.InstanceStatusPending))).
-		WithInstance().
-		All(ctx)
+	list, err := tx.InstanceStore().GetHangingInstances(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
 
 	for i := range list {
+		info, err := enginerefactor.LoadInstanceRuntimeInfo(list[i].RuntimeInfo)
+		if err != nil {
+			flow.sugar.Error(err)
+			continue
+		}
+
 		data, err := json.Marshal(&retryMessage{
-			InstanceID: list[i].Edges.Instance.ID.String(),
-			Step:       len(list[i].Flow),
+			InstanceID: list[i].ID.String(),
+			Step:       len(info.Flow),
 		})
 		if err != nil {
 			panic(err)
@@ -187,6 +205,6 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 func (flow *flow) GetAttributes() map[string]string {
 	tags := make(map[string]string)
-	tags["recipientType"] = "server"
+	tags["recipientType"] = srv
 	return tags
 }

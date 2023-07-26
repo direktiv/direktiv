@@ -99,12 +99,12 @@ func listRegistriesNames(namespace string) []string {
 	return registries
 }
 
-func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.DeleteRegistryRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) DeleteRegistry(ctx context.Context, in *igrpc.FunctionsDeleteRegistryRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 	return &resp, kubernetesDeleteRegistry(ctx, in.GetName(), in.GetNamespace())
 }
 
-func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreRegistryRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.FunctionsStoreRegistryRequest) (*emptypb.Empty, error) {
 	// create secret data, needs to be attached to service account
 	userToken := strings.SplitN(string(in.Data), ":", 2)
 	if len(userToken) != 2 {
@@ -159,9 +159,9 @@ func (is *functionsServer) StoreRegistry(ctx context.Context, in *igrpc.StoreReg
 	return &empty, err
 }
 
-func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegistriesRequest) (*igrpc.GetRegistriesResponse, error) {
-	resp := &igrpc.GetRegistriesResponse{
-		Registries: []*igrpc.Registry{},
+func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.FunctionsGetRegistriesRequest) (*igrpc.FunctionsGetRegistriesResponse, error) {
+	resp := &igrpc.FunctionsGetRegistriesResponse{
+		Registries: []*igrpc.FunctionsRegistry{},
 	}
 
 	clientset, err := getClientSet()
@@ -180,7 +180,7 @@ func (is *functionsServer) GetRegistries(ctx context.Context, in *igrpc.GetRegis
 		u := s.Annotations[annotationURL]
 		h := s.Annotations[annotationURLHash]
 		user := s.Annotations[annotationRegistryObfuscatedUser]
-		resp.Registries = append(resp.Registries, &igrpc.Registry{
+		resp.Registries = append(resp.Registries, &igrpc.FunctionsRegistry{
 			Name: &u,
 			Id:   &h,
 			User: &user,

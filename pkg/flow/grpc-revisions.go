@@ -12,22 +12,22 @@ import (
 func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*grpc.RevisionsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -80,33 +80,33 @@ func (flow *flow) RevisionsStream(req *grpc.RevisionsRequest, srv grpc.Flow_Revi
 func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	rev, err := fStore.ForFile(file).GetRevision(ctx, req.GetRevision())
+	rev, err := tx.FileStore().ForFile(file).GetRevision(ctx, req.GetRevision())
 	if err != nil {
 		return nil, err
 	}
 
-	err = fStore.ForRevision(rev).Delete(ctx)
+	err = tx.FileStore().ForRevision(rev).Delete(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = commit(ctx)
+	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}

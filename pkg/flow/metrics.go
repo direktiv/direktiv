@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -164,38 +163,33 @@ func setupPrometheusEndpoint() error {
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
 	var rev *filestore.Revision
 
-	rev, err = fStore.ForFile(file).GetRevision(ctx, req.GetRef())
+	rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, req.GetRef())
 	if err != nil {
 		return nil, err
 	}
 
-	cached := new(database.CacheData)
-	cached.Namespace = ns
-	cached.File = file
-	cached.Revision = rev
-
 	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
-		Namespace: cached.Namespace.Name,
-		Workflow:  cached.File.Path,
-		Revision:  cached.Revision.ID.String(),
+		Namespace: ns.Name,
+		Workflow:  file.Path,
+		Revision:  rev.ID.String(),
 		Since:     req.SinceTimestamp.AsTime(),
 	})
 	if err != nil {
@@ -274,9 +268,9 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 }
 
 func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemory, nextState, errCode string, retrying bool) {
-	workflow := GetInodePath(im.cached.Instance.As)
+	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
 
-	reportStateEnd(im.cached.Namespace.Name, workflow, im.logic.GetID(), im.runtime.StateBeginTime)
+	reportStateEnd(im.instance.TelemetryInfo.NamespaceName, workflow, im.logic.GetID(), im.instance.RuntimeInfo.StateBeginTime)
 
 	if im.Step() == 0 {
 		return
@@ -284,14 +278,14 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 	args := new(metrics.InsertRecordArgs)
 
-	args.Namespace = im.cached.Namespace.Name
+	args.Namespace = im.instance.TelemetryInfo.NamespaceName
 	args.Workflow = workflow
-	args.Revision = im.cached.Revision.ID.String()
-	args.Instance = im.cached.Instance.ID.String()
+	args.Revision = im.instance.Instance.RevisionID.String()
+	args.Instance = im.instance.Instance.ID.String()
 
 	caller := engine.InstanceCaller(ctx, im)
 	if caller != nil {
-		args.Invoker = caller.InstanceID.String()
+		args.Invoker = caller.ID.String()
 	}
 
 	flow := im.Flow()
@@ -321,8 +315,8 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceMemory) {
 	t := im.StateBeginTime()
-	namespace := im.cached.Namespace.Name
-	workflow := GetInodePath(im.cached.Instance.As)
+	namespace := im.instance.TelemetryInfo.NamespaceName
+	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	// Trim workflow revision until revisions are fully implemented.
 	if divider := strings.LastIndex(workflow, ":"); divider > 0 {
@@ -338,7 +332,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()
 	}
 
-	metricsWfOutcome.WithLabelValues(namespace, workflow, namespace, im.cached.Instance.Status, im.cached.Instance.ErrorCode).Inc()
+	metricsWfOutcome.WithLabelValues(namespace, workflow, namespace, im.instance.Instance.Status.String(), im.instance.Instance.ErrorCode).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Dec()
 
 	if t != empty {

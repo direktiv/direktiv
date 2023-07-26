@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -82,12 +83,6 @@ type Store interface {
 
 	// GetProcessesByNamespaceID gets all processes that belong to a namespace from the store.
 	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
-
-	// TODO: this need to be refactored.
-	SetNamespaceVariable(ctx context.Context, namespaceID uuid.UUID, key string, data []byte, hash string, mType string) error
-
-	// TODO: this need to be refactored.
-	SetWorkflowVariable(ctx context.Context, workflowID uuid.UUID, key string, data []byte, hash string, mType string) error
 }
 
 // Manager launches and terminates mirroring processes.
@@ -115,6 +110,9 @@ type DefaultManager struct {
 	// fStore is to create mirrored files in the filestore.
 	fStore filestore.FileStore
 
+	// vStore is to create mirrored variables.
+	vStore core.RuntimeVariablesStore
+
 	// source is the source of the mirror. Typically, source is a git source.
 	source Source
 
@@ -127,6 +125,7 @@ func NewDefaultManager(
 	errLogFunc LogFunc,
 	store Store,
 	fStore filestore.FileStore,
+	vStore core.RuntimeVariablesStore,
 	source Source,
 	configWorkflowFunc ConfigureWorkflowFunc,
 ) *DefaultManager {
@@ -142,6 +141,7 @@ func NewDefaultManager(
 		errLogFunc:         errLogFunc,
 		store:              store,
 		fStore:             fStore,
+		vStore:             vStore,
 		source:             source,
 		configWorkflowFunc: configWorkflowFunc,
 	}
@@ -179,7 +179,7 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 			CreateAllDirectories(d.fStore, config.NamespaceID).
 			CopyFilesToRoot(d.fStore, config.NamespaceID).
 			ConfigureWorkflows(d.configWorkflowFunc).
-			ParseDirektivVars(d.fStore, d.store, config.NamespaceID).
+			ParseDirektivVars(d.fStore, d.vStore, config.NamespaceID).
 			CropFilesAndDirectoriesInRoot(d.fStore, config.NamespaceID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()

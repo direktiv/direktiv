@@ -13,10 +13,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func loadSource(rev *database.Revision) (*model.Workflow, error) {
+func loadSource(rev *filestore.Revision) (*model.Workflow, error) {
 	workflow := new(model.Workflow)
 
-	err := workflow.Load(rev.Source)
+	err := workflow.Load(rev.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -27,22 +27,22 @@ func loadSource(rev *database.Revision) (*model.Workflow, error) {
 func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,22 +100,22 @@ func (flow *flow) TagsStream(req *grpc.TagsRequest, srv grpc.Flow_TagsStreamServ
 func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, _, rollback, err := flow.beginSqlTx(ctx)
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	revs, err := fStore.ForFile(file).GetAllRevisions(ctx)
+	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -178,30 +178,31 @@ func (flow *flow) RefsStream(req *grpc.RefsRequest, srv grpc.Flow_RefsStreamServ
 func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetRef())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
+
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, req.GetRef())
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	err = tx.FileStore().ForRevision(revision).SetTags(ctx, revision.Tags.AddTag(req.GetTag()))
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -215,29 +216,30 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
-	revision, err := fStore.ForFile(file).GetRevision(ctx, req.GetTag())
+
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	err = fStore.ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, req.GetTag())
 	if err != nil {
 		return nil, err
 	}
-	if err = commit(ctx); err != nil {
+	err = tx.FileStore().ForRevision(revision).SetTags(ctx, revision.Tags.RemoveTag(req.GetTag()))
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 

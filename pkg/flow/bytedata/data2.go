@@ -4,7 +4,10 @@ import (
 	"path/filepath"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -103,6 +106,91 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) 
 	var result []*grpc.MirrorActivityInfo
 	for _, f := range list {
 		result = append(result, ConvertMirrorProcessToGrpcMirrorActivity(f))
+	}
+
+	return result
+}
+
+func ConvertSecretToGrpcSecret(secret *core.Secret) *grpc.Secret {
+	return &grpc.Secret{
+		Name: secret.Name,
+	}
+}
+
+func ConvertSecretsToGrpcSecretList(list []*core.Secret) []*grpc.Secret {
+	var result []*grpc.Secret
+	for _, f := range list {
+		result = append(result, ConvertSecretToGrpcSecret(f))
+	}
+
+	return result
+}
+
+func ConvertRuntimeVariableToGrpcVariable(variable *core.RuntimeVariable) *grpc.Variable {
+	return &grpc.Variable{
+		Name:      variable.Name,
+		Size:      int64(variable.Size),
+		MimeType:  variable.MimeType,
+		CreatedAt: timestamppb.New(variable.CreatedAt),
+		UpdatedAt: timestamppb.New(variable.UpdatedAt),
+	}
+}
+
+func ConvertRuntimeVariablesToGrpcVariableList(list []*core.RuntimeVariable) []*grpc.Variable {
+	var result []*grpc.Variable
+	for _, f := range list {
+		result = append(result, ConvertRuntimeVariableToGrpcVariable(f))
+	}
+
+	return result
+}
+
+func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Instance {
+	return &grpc.Instance{
+		CreatedAt:    timestamppb.New(instance.Instance.CreatedAt),
+		UpdatedAt:    timestamppb.New(instance.Instance.UpdatedAt),
+		Id:           instance.Instance.ID.String(),
+		As:           instance.Instance.WorkflowPath,
+		Status:       instance.Instance.Status.String(),
+		ErrorCode:    instance.Instance.ErrorCode,
+		ErrorMessage: string(instance.Instance.ErrorMessage),
+		Invoker:      instance.Instance.Invoker,
+	}
+}
+
+func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*grpc.Instance {
+	list := make([]*grpc.Instance, 0)
+	for idx := range instances {
+		instance := &instances[idx]
+		list = append(list, &grpc.Instance{
+			CreatedAt:    timestamppb.New(instance.CreatedAt),
+			UpdatedAt:    timestamppb.New(instance.UpdatedAt),
+			Id:           instance.ID.String(),
+			As:           instance.WorkflowPath,
+			Status:       instance.Status.String(),
+			ErrorCode:    instance.ErrorCode,
+			ErrorMessage: string(instance.ErrorMessage),
+			Invoker:      instance.Invoker,
+		})
+	}
+
+	return list
+}
+
+func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
+	return &grpc.Namespace{
+		Oid:  item.ID.String(),
+		Name: item.Name,
+
+		CreatedAt: timestamppb.New(item.CreatedAt),
+		UpdatedAt: timestamppb.New(item.UpdatedAt),
+	}
+}
+
+func ConvertNamespacesListToGrpc(list []*core.Namespace) []*grpc.Namespace {
+	var result []*grpc.Namespace
+	for _, f := range list {
+		result = append(result, ConvertNamespaceToGrpc(f))
 	}
 
 	return result

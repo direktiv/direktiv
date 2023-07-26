@@ -3,6 +3,7 @@ package datastoresql
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"gorm.io/gorm"
@@ -30,6 +31,12 @@ func NewSQLStore(db *gorm.DB, mirrorConfigEncryptionKey string) datastore.Store 
 	}
 }
 
+func NewServicesStore(db *gorm.DB) core.ServicesStore {
+	return &sqlServicesStore{
+		db: db,
+	}
+}
+
 // Mirror returns mirror store.
 func (s *sqlStore) Mirror() mirror.Store {
 	return &sqlMirrorStore{
@@ -50,4 +57,47 @@ func (s *sqlStore) Logs() logengine.LogStore {
 	return &sqlLogStore{
 		db: s.db,
 	}
+}
+
+// Secrets returns secrets store.
+func (s *sqlStore) Secrets() core.SecretsStore {
+	return &sqlSecretsStore{
+		db: s.db,
+	}
+}
+
+func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
+	return &sqlRuntimeVariablesStore{
+		db: s.db,
+	}
+}
+
+func (s *sqlStore) Services() core.ServicesStore {
+	return &sqlServicesStore{
+		db: s.db,
+	}
+}
+
+func (s *sqlStore) EventFilter() events.CloudEventsFilterStore {
+	return &sqlNamespaceCloudEventFilter{db: s.db}
+}
+
+func (s *sqlStore) EventHistory() events.EventHistoryStore {
+	return &sqlEventHistoryStore{db: s.db}
+}
+
+func (s *sqlStore) EventListener() events.EventListenerStore {
+	return &sqlEventListenerStore{db: s.db}
+}
+
+func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
+	return &sqlEventTopicsStore{db: s.db}
+}
+
+func (s *sqlStore) NamespaceCloudEventFilter() events.CloudEventsFilterStore {
+	return &sqlNamespaceCloudEventFilter{db: s.db}
+}
+
+func (s *sqlStore) Namespaces() core.NamespacesStore {
+	return &sqlNamespacesStore{db: s.db}
 }

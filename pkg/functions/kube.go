@@ -3,17 +3,16 @@ package functions
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/ent"
-	"github.com/direktiv/direktiv/pkg/flow/ent/namespace"
-	"github.com/direktiv/direktiv/pkg/flow/ent/predicate"
-	"github.com/direktiv/direktiv/pkg/flow/ent/services"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,7 +26,7 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-func (is *functionsServer) storeService(ctx context.Context, info *igrpc.BaseInfo) error {
+func (is *functionsServer) storeService(ctx context.Context, info *igrpc.FunctionsBaseInfo) error {
 	svcName, _, _ := GenerateServiceName(info)
 
 	uid, err := uuid.Parse(info.GetNamespace())
@@ -43,34 +42,30 @@ func (is *functionsServer) storeService(ctx context.Context, info *igrpc.BaseInf
 		return err
 	}
 
-	svc, err := is.db.Services.Query().Where(services.And(
-		services.Name(info.GetName()),
-		services.HasNamespaceWith(
-			namespace.ID(uid),
-		),
-	)).Only(ctx)
-
-	if err != nil && ent.IsNotFound(err) {
+	svc, err := is.dbStore.GetByNamespaceIDAndName(ctx, uid, info.GetName())
+	if errors.Is(err, datastore.ErrNotFound) {
 		logger.Infof("creating service %v", info.GetName())
-		return is.db.Services.Create().
-			SetNamespaceID(uid).
-			SetName(info.GetName()).
-			SetURL(svcName).
-			SetData(string(b)).
-			Exec(ctx)
-	} else if err != nil {
+		return is.dbStore.Create(ctx, &core.Service{
+			NamespaceID: uid,
+			Name:        info.GetName(),
+			URL:         svcName,
+			Data:        string(b),
+		})
+	}
+	if err != nil {
 		return err
 	}
 
 	logger.Infof("updating service %v", info.GetName())
 
-	return svc.Update().
-		SetData(string(b)).
-		SetURL(svcName).
-		Exec(ctx)
+	return is.dbStore.Update(ctx, &core.Service{
+		ID:   svc.ID,
+		URL:  svcName,
+		Data: string(b),
+	})
 }
 
-func (is *functionsServer) CreateFunction(ctx context.Context, in *igrpc.CreateFunctionRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) CreateFunction(ctx context.Context, in *igrpc.FunctionsCreateFunctionRequest) (*emptypb.Empty, error) {
 	logger.Infof("storing function %s", in.GetInfo().GetName())
 
 	err := validateLabel(in.GetInfo().GetName())
@@ -114,7 +109,7 @@ const (
 )
 
 func (is *functionsServer) DeleteRevision(ctx context.Context,
-	in *igrpc.DeleteRevisionRequest,
+	in *igrpc.FunctionsDeleteRevisionRequest,
 ) (*emptypb.Empty, error) {
 	logger.Debugf("delete revision %v", in.GetRevision())
 	cs, err := fetchServiceAPI()
@@ -134,7 +129,7 @@ func (is *functionsServer) DeleteRevision(ctx context.Context,
 }
 
 func (is *functionsServer) DeleteFunctions(ctx context.Context,
-	in *igrpc.ListFunctionsRequest,
+	in *igrpc.FunctionsListFunctionsRequest,
 ) (*emptypb.Empty, error) {
 	logger.Debugf("deleting functions %v", in.GetAnnotations())
 
@@ -147,31 +142,32 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 	// Delete Database records
 	logger.Debugf("deleting database records %v", in.GetAnnotations())
 
-	conditions := make([]predicate.Services, 0)
+	deletesCount := 0
 	for i := range svcList {
-		conditions = append(conditions, services.Name(svcList[i]))
+		err := is.dbStore.DeleteByName(ctx, svcList[i])
+		if errors.Is(err, datastore.ErrNotFound) {
+			continue
+		}
+		if err != nil {
+			logger.Errorf("error delete knative database record %s: %w", in.GetAnnotations(), err)
+			return &empty, err
+		}
+		deletesCount = deletesCount + 1
 	}
 
-	deleteRecord := is.db.Services.Delete().Where(services.Or(conditions...))
-	recordCount, err := deleteRecord.Exec(ctx)
-	if err != nil {
-		logger.Errorf("error delete knative database record %s: %w", in.GetAnnotations(), err)
-		return &empty, err
-	}
-
-	logger.Debugf("deleted %v database records", recordCount)
+	logger.Debugf("deleted %v database records", deletesCount)
 
 	return &empty, err
 }
 
 func (is *functionsServer) GetFunction(ctx context.Context,
-	in *igrpc.GetFunctionRequest,
-) (*igrpc.GetFunctionResponse, error) {
+	in *igrpc.FunctionsGetFunctionRequest,
+) (*igrpc.FunctionsGetFunctionResponse, error) {
 	name := SanitizeLabel(in.GetServiceName())
 
 	logger.Debugf("get function %v", name)
 
-	var resp *igrpc.GetFunctionResponse
+	var resp *igrpc.FunctionsGetFunctionResponse
 
 	if name == "" {
 		return resp, fmt.Errorf("service name can not be nil")
@@ -182,9 +178,9 @@ func (is *functionsServer) GetFunction(ctx context.Context,
 
 // ListPods returns pods based on label filter.
 func (is *functionsServer) ListPods(ctx context.Context,
-	in *igrpc.ListPodsRequest,
-) (*igrpc.ListPodsResponse, error) {
-	var resp igrpc.ListPodsResponse
+	in *igrpc.FunctionsListPodsRequest,
+) (*igrpc.FunctionsListPodsResponse, error) {
+	var resp igrpc.FunctionsListPodsResponse
 
 	items, err := listPods(in.GetAnnotations())
 	if err != nil {
@@ -197,9 +193,9 @@ func (is *functionsServer) ListPods(ctx context.Context,
 
 // ListFunctions returns isoaltes based on label filter.
 func (is *functionsServer) ListFunctions(ctx context.Context,
-	in *igrpc.ListFunctionsRequest,
-) (*igrpc.ListFunctionsResponse, error) {
-	var resp igrpc.ListFunctionsResponse
+	in *igrpc.FunctionsListFunctionsRequest,
+) (*igrpc.FunctionsListFunctionsResponse, error) {
+	var resp igrpc.FunctionsListFunctionsResponse
 
 	items, err := listKnativeFunctions(in.GetAnnotations())
 	if err != nil {
@@ -217,7 +213,7 @@ func (is *functionsServer) ListFunctions(ctx context.Context,
 }
 
 func (is *functionsServer) ReconstructFunction(ctx context.Context,
-	in *igrpc.ReconstructFunctionRequest,
+	in *igrpc.FunctionsReconstructFunctionRequest,
 ) (*emptypb.Empty, error) {
 	name := in.GetName()
 	logger.Infof("reconstructing functions %s", name)
@@ -231,7 +227,7 @@ func (is *functionsServer) ReconstructFunction(ctx context.Context,
 		logger.Errorf("could not recreate service: %v", err)
 
 		// Service backup record not found in database
-		if ent.IsNotFound(err) {
+		if errors.Is(err, datastore.ErrNotFound) {
 			return &empty, status.Error(codes.NotFound, "could not recreate service")
 		}
 		return &empty, fmt.Errorf("could not recreate service")
@@ -252,7 +248,7 @@ func deleteKnativeFunction(name string) error {
 }
 
 func (is *functionsServer) DeleteFunction(ctx context.Context,
-	in *igrpc.GetFunctionRequest,
+	in *igrpc.FunctionsGetFunctionRequest,
 ) (*emptypb.Empty, error) {
 	logger.Debugf("deleting function %v", in.GetServiceName())
 
@@ -263,10 +259,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 	}
 
 	if strings.HasPrefix(in.GetServiceName(), "namespace-") {
-		deleteRecord := is.db.Services.Delete().Where(services.And(
-			services.Name(in.GetServiceName()),
-		))
-		_, err := deleteRecord.Exec(ctx)
+		err = is.dbStore.DeleteByName(ctx, in.GetServiceName())
 		if err != nil {
 			logger.Errorf("successfully delete service, but could not delete backup record: %v", err)
 			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %w", err)
@@ -278,7 +271,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 }
 
 func (is *functionsServer) UpdateFunction(ctx context.Context,
-	in *igrpc.UpdateFunctionRequest,
+	in *igrpc.FunctionsUpdateFunctionRequest,
 ) (*emptypb.Empty, error) {
 	logger.Infof("updating function %s", in.GetServiceName())
 
@@ -341,8 +334,8 @@ func listKnativeFunctions(annotations map[string]string) ([]*igrpc.FunctionsInfo
 	return b, nil
 }
 
-func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
-	var b []*igrpc.PodsInfo
+func listPods(annotations map[string]string) ([]*igrpc.FunctionsPodsInfo, error) {
+	var b []*igrpc.FunctionsPodsInfo
 
 	logger.Debugf("list annotations: %s", labels.Set(annotations).String())
 
@@ -363,7 +356,7 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 		pod := l.Items[i]
 		sn := pod.Labels[ServiceKnativeHeaderName]
 		sr := pod.Labels[ServiceKnativeHeaderRevision]
-		ii := &igrpc.PodsInfo{
+		ii := &igrpc.FunctionsPodsInfo{
 			Name:            &pod.Name,
 			Status:          (*string)(&pod.Status.Phase),
 			ServiceName:     &sn,
@@ -378,12 +371,12 @@ func listPods(annotations map[string]string) ([]*igrpc.PodsInfo, error) {
 	return b, nil
 }
 
-func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
-	var revs []*igrpc.Revision
+func getKnativeFunction(name string) (*igrpc.FunctionsGetFunctionResponse, error) {
+	var revs []*igrpc.FunctionsRevision
 
 	logger.Infof("fetching knative service %s", name)
 
-	resp := &igrpc.GetFunctionResponse{}
+	resp := &igrpc.FunctionsGetFunctionResponse{}
 
 	cs, err := fetchServiceAPI()
 	if err != nil {
@@ -420,8 +413,8 @@ func getKnativeFunction(name string) (*igrpc.GetFunctionResponse, error) {
 		return resp, k8sToGRPCError(err)
 	}
 
-	fn := func(rev v1.Revision) *igrpc.Revision {
-		info := &igrpc.Revision{}
+	fn := func(rev v1.Revision) *igrpc.FunctionsRevision {
+		info := &igrpc.FunctionsRevision{}
 
 		// size and scale
 		var sz, scale int32
@@ -516,7 +509,7 @@ func deleteKnativeFunctions(annotations map[string]string) ([]string, error) {
 	return servicesToDelete, err
 }
 
-func updateKnativeFunction(svn string, info *igrpc.BaseInfo) (*v1.Service, error) {
+func updateKnativeFunction(svn string, info *igrpc.FunctionsBaseInfo) (*v1.Service, error) {
 	containers, err := makeContainers(info.GetImage(), info.GetCmd(),
 		int(info.GetSize()), info.GetEnvs())
 	if err != nil {
@@ -597,12 +590,12 @@ func createPullSecrets(namespace string) []corev1.LocalObjectReference {
 
 func (is *functionsServer) reconstructService(name string, ctx context.Context) error {
 	// Get backed up service from database
-	dbSvc, err := is.db.Services.Query().Where(services.URL(name)).First(ctx)
+	dbSvc, err := is.dbStore.GetOneByURL(ctx, name)
 	if err != nil {
 		return err
 	}
 
-	var info igrpc.BaseInfo
+	var info igrpc.FunctionsBaseInfo
 	err = json.Unmarshal([]byte(dbSvc.Data), &info)
 	if err != nil {
 		return err
@@ -620,7 +613,7 @@ func (is *functionsServer) reconstructService(name string, ctx context.Context) 
 
 // recretae all services on startup.
 func (is *functionsServer) reconstructServices(ctx context.Context) error {
-	svcs, err := is.db.Services.Query().All(ctx)
+	svcs, err := is.dbStore.GetAll(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprint("failed to get services from database: %w", err))
 		return err
@@ -629,7 +622,7 @@ func (is *functionsServer) reconstructServices(ctx context.Context) error {
 	for s := range svcs {
 		svc := svcs[s]
 
-		var info igrpc.BaseInfo
+		var info igrpc.FunctionsBaseInfo
 		err = json.Unmarshal([]byte(svc.Data), &info)
 		if err != nil {
 			logger.Errorf("could not recreate service on startup: %v", err)
@@ -647,7 +640,7 @@ func (is *functionsServer) reconstructServices(ctx context.Context) error {
 	return nil
 }
 
-func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.CancelWorkflowRequest) (*emptypb.Empty, error) {
+func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.FunctionsCancelWorkflowRequest) (*emptypb.Empty, error) {
 	label := "serving.knative.dev/service"
 
 	svn := SanitizeLabel(in.GetServiceName())

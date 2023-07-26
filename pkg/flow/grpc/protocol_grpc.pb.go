@@ -6909,8 +6909,6 @@ const (
 	Internal_SetNamespaceVariableParcels_FullMethodName = "/direktiv_flow.Internal/SetNamespaceVariableParcels"
 	Internal_WorkflowVariableParcels_FullMethodName     = "/direktiv_flow.Internal/WorkflowVariableParcels"
 	Internal_SetWorkflowVariableParcels_FullMethodName  = "/direktiv_flow.Internal/SetWorkflowVariableParcels"
-	Internal_ThreadVariableParcels_FullMethodName       = "/direktiv_flow.Internal/ThreadVariableParcels"
-	Internal_SetThreadVariableParcels_FullMethodName    = "/direktiv_flow.Internal/SetThreadVariableParcels"
 	Internal_InstanceVariableParcels_FullMethodName     = "/direktiv_flow.Internal/InstanceVariableParcels"
 	Internal_SetInstanceVariableParcels_FullMethodName  = "/direktiv_flow.Internal/SetInstanceVariableParcels"
 )
@@ -6925,8 +6923,6 @@ type InternalClient interface {
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetNamespaceVariableParcelsClient, error)
 	WorkflowVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_WorkflowVariableParcelsClient, error)
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetWorkflowVariableParcelsClient, error)
-	ThreadVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_ThreadVariableParcelsClient, error)
-	SetThreadVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetThreadVariableParcelsClient, error)
 	InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error)
 }
@@ -7089,74 +7085,8 @@ func (x *internalSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetVariableI
 	return m, nil
 }
 
-func (c *internalClient) ThreadVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_ThreadVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], Internal_ThreadVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &internalThreadVariableParcelsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Internal_ThreadVariableParcelsClient interface {
-	Recv() (*VariableInternalResponse, error)
-	grpc.ClientStream
-}
-
-type internalThreadVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *internalThreadVariableParcelsClient) Recv() (*VariableInternalResponse, error) {
-	m := new(VariableInternalResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *internalClient) SetThreadVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetThreadVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], Internal_SetThreadVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &internalSetThreadVariableParcelsClient{stream}
-	return x, nil
-}
-
-type Internal_SetThreadVariableParcelsClient interface {
-	Send(*SetVariableInternalRequest) error
-	CloseAndRecv() (*SetVariableInternalResponse, error)
-	grpc.ClientStream
-}
-
-type internalSetThreadVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *internalSetThreadVariableParcelsClient) Send(m *SetVariableInternalRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *internalSetThreadVariableParcelsClient) CloseAndRecv() (*SetVariableInternalResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(SetVariableInternalResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func (c *internalClient) InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[6], Internal_InstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[4], Internal_InstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -7188,7 +7118,7 @@ func (x *internalInstanceVariableParcelsClient) Recv() (*VariableInternalRespons
 }
 
 func (c *internalClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[7], Internal_SetInstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[5], Internal_SetInstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -7231,8 +7161,6 @@ type InternalServer interface {
 	SetNamespaceVariableParcels(Internal_SetNamespaceVariableParcelsServer) error
 	WorkflowVariableParcels(*VariableInternalRequest, Internal_WorkflowVariableParcelsServer) error
 	SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error
-	ThreadVariableParcels(*VariableInternalRequest, Internal_ThreadVariableParcelsServer) error
-	SetThreadVariableParcels(Internal_SetThreadVariableParcelsServer) error
 	InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error
 	SetInstanceVariableParcels(Internal_SetInstanceVariableParcelsServer) error
 	mustEmbedUnimplementedInternalServer()
@@ -7259,12 +7187,6 @@ func (UnimplementedInternalServer) WorkflowVariableParcels(*VariableInternalRequ
 }
 func (UnimplementedInternalServer) SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetWorkflowVariableParcels not implemented")
-}
-func (UnimplementedInternalServer) ThreadVariableParcels(*VariableInternalRequest, Internal_ThreadVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method ThreadVariableParcels not implemented")
-}
-func (UnimplementedInternalServer) SetThreadVariableParcels(Internal_SetThreadVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SetThreadVariableParcels not implemented")
 }
 func (UnimplementedInternalServer) InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method InstanceVariableParcels not implemented")
@@ -7415,53 +7337,6 @@ func (x *internalSetWorkflowVariableParcelsServer) Recv() (*SetVariableInternalR
 	return m, nil
 }
 
-func _Internal_ThreadVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(VariableInternalRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(InternalServer).ThreadVariableParcels(m, &internalThreadVariableParcelsServer{stream})
-}
-
-type Internal_ThreadVariableParcelsServer interface {
-	Send(*VariableInternalResponse) error
-	grpc.ServerStream
-}
-
-type internalThreadVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *internalThreadVariableParcelsServer) Send(m *VariableInternalResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Internal_SetThreadVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(InternalServer).SetThreadVariableParcels(&internalSetThreadVariableParcelsServer{stream})
-}
-
-type Internal_SetThreadVariableParcelsServer interface {
-	SendAndClose(*SetVariableInternalResponse) error
-	Recv() (*SetVariableInternalRequest, error)
-	grpc.ServerStream
-}
-
-type internalSetThreadVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *internalSetThreadVariableParcelsServer) SendAndClose(m *SetVariableInternalResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *internalSetThreadVariableParcelsServer) Recv() (*SetVariableInternalRequest, error) {
-	m := new(SetVariableInternalRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func _Internal_InstanceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(VariableInternalRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -7547,16 +7422,6 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "ThreadVariableParcels",
-			Handler:       _Internal_ThreadVariableParcels_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SetThreadVariableParcels",
-			Handler:       _Internal_SetThreadVariableParcels_Handler,
-			ClientStreams: true,
-		},
-		{
 			StreamName:    "InstanceVariableParcels",
 			Handler:       _Internal_InstanceVariableParcels_Handler,
 			ServerStreams: true,
@@ -7565,235 +7430,6 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SetInstanceVariableParcels",
 			Handler:       _Internal_SetInstanceVariableParcels_Handler,
 			ClientStreams: true,
-		},
-	},
-	Metadata: "pkg/flow/grpc/protocol.proto",
-}
-
-const (
-	Actions_SetNamespaceRegistry_FullMethodName      = "/direktiv_flow.Actions/SetNamespaceRegistry"
-	Actions_DeleteNamespaceRegistry_FullMethodName   = "/direktiv_flow.Actions/DeleteNamespaceRegistry"
-	Actions_NamespaceRegistries_FullMethodName       = "/direktiv_flow.Actions/NamespaceRegistries"
-	Actions_NamespaceRegistriesStream_FullMethodName = "/direktiv_flow.Actions/NamespaceRegistriesStream"
-)
-
-// ActionsClient is the client API for Actions service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ActionsClient interface {
-	SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	NamespaceRegistries(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (*NamespaceRegistriesResponse, error)
-	NamespaceRegistriesStream(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (Actions_NamespaceRegistriesStreamClient, error)
-}
-
-type actionsClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewActionsClient(cc grpc.ClientConnInterface) ActionsClient {
-	return &actionsClient{cc}
-}
-
-func (c *actionsClient) SetNamespaceRegistry(ctx context.Context, in *SetNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Actions_SetNamespaceRegistry_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *actionsClient) DeleteNamespaceRegistry(ctx context.Context, in *DeleteNamespaceRegistryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Actions_DeleteNamespaceRegistry_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *actionsClient) NamespaceRegistries(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (*NamespaceRegistriesResponse, error) {
-	out := new(NamespaceRegistriesResponse)
-	err := c.cc.Invoke(ctx, Actions_NamespaceRegistries_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *actionsClient) NamespaceRegistriesStream(ctx context.Context, in *NamespaceRegistriesRequest, opts ...grpc.CallOption) (Actions_NamespaceRegistriesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Actions_ServiceDesc.Streams[0], Actions_NamespaceRegistriesStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &actionsNamespaceRegistriesStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Actions_NamespaceRegistriesStreamClient interface {
-	Recv() (*NamespaceRegistriesResponse, error)
-	grpc.ClientStream
-}
-
-type actionsNamespaceRegistriesStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *actionsNamespaceRegistriesStreamClient) Recv() (*NamespaceRegistriesResponse, error) {
-	m := new(NamespaceRegistriesResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// ActionsServer is the server API for Actions service.
-// All implementations must embed UnimplementedActionsServer
-// for forward compatibility
-type ActionsServer interface {
-	SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*emptypb.Empty, error)
-	DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*emptypb.Empty, error)
-	NamespaceRegistries(context.Context, *NamespaceRegistriesRequest) (*NamespaceRegistriesResponse, error)
-	NamespaceRegistriesStream(*NamespaceRegistriesRequest, Actions_NamespaceRegistriesStreamServer) error
-	mustEmbedUnimplementedActionsServer()
-}
-
-// UnimplementedActionsServer must be embedded to have forward compatible implementations.
-type UnimplementedActionsServer struct {
-}
-
-func (UnimplementedActionsServer) SetNamespaceRegistry(context.Context, *SetNamespaceRegistryRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceRegistry not implemented")
-}
-func (UnimplementedActionsServer) DeleteNamespaceRegistry(context.Context, *DeleteNamespaceRegistryRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespaceRegistry not implemented")
-}
-func (UnimplementedActionsServer) NamespaceRegistries(context.Context, *NamespaceRegistriesRequest) (*NamespaceRegistriesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NamespaceRegistries not implemented")
-}
-func (UnimplementedActionsServer) NamespaceRegistriesStream(*NamespaceRegistriesRequest, Actions_NamespaceRegistriesStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method NamespaceRegistriesStream not implemented")
-}
-func (UnimplementedActionsServer) mustEmbedUnimplementedActionsServer() {}
-
-// UnsafeActionsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ActionsServer will
-// result in compilation errors.
-type UnsafeActionsServer interface {
-	mustEmbedUnimplementedActionsServer()
-}
-
-func RegisterActionsServer(s grpc.ServiceRegistrar, srv ActionsServer) {
-	s.RegisterService(&Actions_ServiceDesc, srv)
-}
-
-func _Actions_SetNamespaceRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetNamespaceRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActionsServer).SetNamespaceRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Actions_SetNamespaceRegistry_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionsServer).SetNamespaceRegistry(ctx, req.(*SetNamespaceRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Actions_DeleteNamespaceRegistry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteNamespaceRegistryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActionsServer).DeleteNamespaceRegistry(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Actions_DeleteNamespaceRegistry_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionsServer).DeleteNamespaceRegistry(ctx, req.(*DeleteNamespaceRegistryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Actions_NamespaceRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceRegistriesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActionsServer).NamespaceRegistries(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Actions_NamespaceRegistries_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActionsServer).NamespaceRegistries(ctx, req.(*NamespaceRegistriesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Actions_NamespaceRegistriesStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NamespaceRegistriesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ActionsServer).NamespaceRegistriesStream(m, &actionsNamespaceRegistriesStreamServer{stream})
-}
-
-type Actions_NamespaceRegistriesStreamServer interface {
-	Send(*NamespaceRegistriesResponse) error
-	grpc.ServerStream
-}
-
-type actionsNamespaceRegistriesStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *actionsNamespaceRegistriesStreamServer) Send(m *NamespaceRegistriesResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-// Actions_ServiceDesc is the grpc.ServiceDesc for Actions service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Actions_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "direktiv_flow.Actions",
-	HandlerType: (*ActionsServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "SetNamespaceRegistry",
-			Handler:    _Actions_SetNamespaceRegistry_Handler,
-		},
-		{
-			MethodName: "DeleteNamespaceRegistry",
-			Handler:    _Actions_DeleteNamespaceRegistry_Handler,
-		},
-		{
-			MethodName: "NamespaceRegistries",
-			Handler:    _Actions_NamespaceRegistries_Handler,
-		},
-	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "NamespaceRegistriesStream",
-			Handler:       _Actions_NamespaceRegistriesStream_Handler,
-			ServerStreams: true,
 		},
 	},
 	Metadata: "pkg/flow/grpc/protocol.proto",

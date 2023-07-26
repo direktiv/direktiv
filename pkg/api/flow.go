@@ -16,6 +16,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	grpc2 "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/dop251/goja"
@@ -27,24 +28,35 @@ import (
 )
 
 type flowHandler struct {
-	logger     *zap.SugaredLogger
-	client     grpc.FlowClient
-	prometheus prometheus.Client
+	logger          *zap.SugaredLogger
+	client          grpc.FlowClient
+	functionsClient grpc2.FunctionsClient
+	prometheus      prometheus.Client
 }
 
 func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Config) (*flowHandler, error) {
 	flowAddr := fmt.Sprintf("%s:6666", conf.FlowService)
 	logger.Infof("connecting to flow %s", flowAddr)
 
-	conn, err := util.GetEndpointTLS(flowAddr)
+	flowConn, err := util.GetEndpointTLS(flowAddr)
 	if err != nil {
 		logger.Errorf("can not connect to direktiv flows: %v", err)
 		return nil, err
 	}
 
+	funcAddr := fmt.Sprintf("%s:5555", conf.FunctionsService)
+	logger.Infof("connecting to functions %s", funcAddr)
+
+	funcConn, err := util.GetEndpointTLS(funcAddr)
+	if err != nil {
+		logger.Errorf("can not connect to direktiv function: %v", err)
+		return nil, err
+	}
+
 	h := &flowHandler{
-		logger: logger,
-		client: grpc.NewFlowClient(conn),
+		logger:          logger,
+		client:          grpc.NewFlowClient(flowConn),
+		functionsClient: grpc2.NewFunctionsClient(funcConn),
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.PrometheusBackend)
@@ -57,6 +69,7 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	}
 
 	h.initRoutes(router)
+	h.initFunctionsRoutes(router.PathPrefix("/functions").Subrouter())
 
 	return h, nil
 }

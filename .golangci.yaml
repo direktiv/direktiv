@@ -2,12 +2,26 @@ run:
   timeout: 10m
   go: 1.20.0
   issues-exit-code: 1
-  tests: true
+  tests: false
   skip-dirs: ["ent/"]
   skip-files: [".pb.go"]
 
+linters-settings:
+  tagliatelle:
+    # Check the struck tag name case.
+    case:
+      # Use the struct field name to check the name of the struct tag.
+      # Default: false
+      use-field-name: true
+      rules:
+        json: snake
+        yaml: snake
+
 linters:
   disable:
+    - depguard
+    - tagalign
+    - gocritic # must fix, currently causes panic
     - exhaustruct
     - wsl
     - prealloc
@@ -22,22 +36,6 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix
-
-
-    # Workarround to fix issue https://github.com/golangci/golangci-lint/issues/3711
-    # This workarround is mentioned here https://github.com/golangci/golangci-lint/issues/3086#issuecomment-1475232706
-    # under "current list".
-    # TODO: watch for new golangci-lint version to fix this issue.
-    - bodyclose # must fix
-    - contextcheck
-    - nilerr
-    - rowserrcheck
-    - unparam
-    - noctx
-    - sqlclosecheck
-    - tparallel
-    - wastedassign
-
 
   presets:
     - bugs
@@ -110,3 +108,6 @@ issues:
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:
       - goerr113
+    - text: "ifElseChain: rewrite if-else to switch statement"
+      linters:
+        - gocritic

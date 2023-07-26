@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/grpc/codes"
@@ -22,16 +21,16 @@ import (
 func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	var file *filestore.File
-	var txErr error
-	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		file, txErr = fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-		return txErr
+	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
+		}
+		file, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+		return err
 	})
 	if err != nil {
 		return nil, err
@@ -46,32 +45,32 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	var node *filestore.File
 	var files []*filestore.File
 	var isMirrorNamespace bool
-	var txErr error
-	err = flow.runSqlTx(ctx, func(fStore filestore.FileStore, store datastore.Store) error {
-		_, txErr = store.Mirror().GetConfig(ctx, ns.ID)
-		if errors.Is(txErr, mirror.ErrNotFound) {
+	var err error
+	var ns *core.Namespace
+	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+		if err != nil {
+			return err
+		}
+		_, err = tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
+		if errors.Is(err, mirror.ErrNotFound) {
 			isMirrorNamespace = false
-		} else if txErr != nil {
-			return txErr
+		} else if err != nil {
+			return err
 		} else {
 			isMirrorNamespace = true
 		}
 
-		node, txErr = fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
-		if txErr != nil {
-			return txErr
+		node, err = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+		if err != nil {
+			return err
 		}
-		files, txErr = fStore.ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
-		if txErr != nil {
-			return txErr
+		files, err = tx.FileStore().ForRootID(ns.ID).ReadDirectory(ctx, req.GetPath())
+		if err != nil {
+			return err
 		}
 		return nil
 	})
@@ -121,20 +120,20 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
 	var file *filestore.File
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, _, err = fStore.ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	file, _, err = tx.FileStore().ForRootID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +150,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	if err := commit(ctx); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -166,18 +165,18 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if errors.Is(err, filestore.ErrNotFound) && req.GetIdempotent() {
 		var resp emptypb.Empty
 
@@ -188,7 +187,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeDirectory {
-		isEmptyDir, err := fStore.ForRootID(ns.ID).IsEmptyDirectory(ctx, req.GetPath())
+		isEmptyDir, err := tx.FileStore().ForRootID(ns.ID).IsEmptyDirectory(ctx, req.GetPath())
 		if err != nil {
 			return nil, err
 		}
@@ -200,12 +199,12 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
 
-	err = fStore.ForFile(file).Delete(ctx, req.GetRecursive())
+	err = tx.FileStore().ForFile(file).Delete(ctx, req.GetRecursive())
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commit(ctx); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -247,18 +246,18 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (*grpc.RenameNodeResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, _, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetOld())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
@@ -272,13 +271,13 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		}
 	}
 
-	err = fStore.ForFile(file).SetPath(ctx, req.GetNew())
+	err = tx.FileStore().ForFile(file).SetPath(ctx, req.GetNew())
 	if err != nil {
 		return nil, err
 	}
 	// TODO: question if parent dir need to get updated_at change.
 
-	if err := commit(ctx); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -295,23 +294,23 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNodeAttributesRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
-
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
 
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
 
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		annotations = &core.FileAnnotations{
@@ -324,12 +323,12 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 
 	annotations.Data = annotations.Data.AppendFileUserAttributes(req.GetAttributes())
 
-	err = store.FileAnnotations().Set(ctx, annotations)
+	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commit(ctx); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	var resp emptypb.Empty
@@ -340,22 +339,23 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNodeAttributesRequest) (*emptypb.Empty, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	ns, err := flow.edb.NamespaceByName(ctx, req.GetNamespace())
+	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
 	}
-	fStore, store, commit, rollback, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollback()
+	defer tx.Rollback()
 
-	file, err := fStore.ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 
-	annotations, err := store.FileAnnotations().Get(ctx, file.ID)
+	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
+
+	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
 
 	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
 		return nil, status.Error(codes.InvalidArgument, "file annotations are not set")
@@ -365,12 +365,12 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 
 	annotations.Data = annotations.Data.ReduceFileUserAttributes(req.GetAttributes())
 
-	err = store.FileAnnotations().Set(ctx, annotations)
+	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commit(ctx); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	var resp emptypb.Empty

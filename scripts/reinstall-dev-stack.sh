@@ -18,6 +18,7 @@ helm repo add direktiv https://chart.direktiv.io
 
 if [ ! -d "$dir/direktiv-charts" ]; then
   git clone https://github.com/direktiv/direktiv-charts.git $dir/direktiv-charts;
+  git -C $dir/direktiv-charts checkout develop;
 fi
 
 cd $dir/direktiv-charts/charts/knative-instance && helm dependency update $dir/direktiv-charts/charts/knative-instance
@@ -51,7 +52,7 @@ if [ ! -f "$dir/dev.yaml" ]; then
 cat <<EOF > $dir/dev.yaml
 registry: localhost:5000
 pullPolicy: Always
-debug: "true"
+debug: "false"
 
 secrets:
   image: "direktiv"
@@ -61,6 +62,8 @@ flow:
   image: "direktiv"
   dbimage: "direktiv"
   tag: "latest"
+  experimental_features: true
+  developer_mode: false
 
 ui:
   image: "ui"
@@ -76,6 +79,9 @@ functions:
   tag: "latest"
   sidecar: "direktiv"
   initPodImage: "init-pod"
+
+logging: console
+
 EOF
 fi
 

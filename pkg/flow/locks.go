@@ -65,7 +65,7 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 	}()
 
 	ctx, cancel := context.WithTimeout(context.Background(),
-		time.Duration(wait)*time.Second)
+		time.Duration(wait)*5*time.Second)
 	defer cancel()
 
 	conn, err = locks.db.Conn(ctx)

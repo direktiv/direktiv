@@ -5,21 +5,23 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-	"github.com/direktiv/direktiv/pkg/refactor/utils"
 	"github.com/google/uuid"
 )
 
 func TestExecuteMirroringProcess(t *testing.T) {
-	db, err := utils.NewMockGorm()
+	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
-	store := datastoresql.NewSQLStore(db, "some_secret_key_").Mirror()
+
+	dStore := datastoresql.NewSQLStore(db, "some_secret_key_")
+	store := dStore.Mirror()
 
 	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
 	if err != nil {
@@ -41,7 +43,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		},
 	}
 
-	manager := mirror.NewDefaultManager(nil, nil, store, fs, source, nil)
+	manager := mirror.NewDefaultManager(nil, nil, store, fs, dStore.RuntimeVariables(), source, nil)
 
 	_, err = manager.StartInitialMirroringProcess(context.Background(), config)
 	if err != nil {
