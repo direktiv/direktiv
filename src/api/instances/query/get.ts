@@ -84,12 +84,11 @@ const getUrl = ({
   offset: number;
   filters?: FiltersObj;
 }) => {
-  const url = `${
+  let url = `${
     baseUrl ?? ""
   }/api/namespaces/${namespace}/instances?limit=${limit}&offset=${offset}`;
-
   if (filters) {
-    url.concat(getFilterQuery(filters));
+    url = url.concat(getFilterQuery(filters));
   }
   return url;
 };
