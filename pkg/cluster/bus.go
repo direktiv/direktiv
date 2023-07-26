@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -49,12 +48,7 @@ func (bl *busLogger) Output(_ int, s string) error {
 }
 
 func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
-	if logger == nil {
-		logger = zap.NewNop().Sugar()
-	}
 
-	// create data dir if it does not exist
-	// if not set we use a tmp folder
 	dataDir := config.NSQDataDir
 	if dataDir == "" {
 		dir, err := os.MkdirTemp(os.TempDir(), "nsq")
@@ -65,13 +59,6 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	}
 
 	logger.Infof("using %s as nsq data dir", dataDir)
-
-	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		err := os.MkdirAll(dataDir, fs.FileMode(dataDirPermission))
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	bus := &bus{
 		logger:  logger,
@@ -93,11 +80,12 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	}
 
 	opts.MaxRdyCount = 10000
-	opts.MemQueueSize = 10000
+	opts.MemQueueSize = 5000 // Reduce memory queue size
 
-	opts.Logger = &busLogger{
-		logger: logger,
-		debug:  busLogEnabled,
+	// Set default logger and adjust log level based on busLogEnabled
+	opts.Logger = zap.NewStdLog(logger.Desugar())
+	if !busLogEnabled {
+		opts.LogLevel = 2 // Error level
 	}
 
 	var err error
@@ -116,9 +104,10 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	lookupOptions.InactiveProducerTimeout = config.NSQInactiveTimeout
 	lookupOptions.TombstoneLifetime = config.NSQTombstoneTimeout
 
-	lookupOptions.Logger = &busLogger{
-		logger: logger,
-		debug:  busLogEnabled,
+	// Set default logger and adjust log level based on busLogEnabled
+	lookupOptions.Logger = zap.NewStdLog(logger.Desugar())
+	if !busLogEnabled {
+		lookupOptions.LogLevel = 2 // Error level
 	}
 
 	bus.lookup, err = nsqlookupd.New(lookupOptions)
@@ -242,76 +231,32 @@ func (b *bus) start() error {
 }
 
 func (b *bus) waitTillConnected() error {
-	startCh := make(chan bool)
-
-	ping := func(port int) bool {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
-			fmt.Sprintf("http://127.0.0.1:%d/ping", port), nil)
-		if err != nil {
-			return false
-		}
-
-		resp, err := http.DefaultClient.Do(req)
+	checkService := func(port int) bool {
+		url := fmt.Sprintf("http://127.0.0.1:%d/ping", port)
+		resp, err := http.Get(url)
 		if err != nil {
 			return false
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			return false
-		}
-
-		bo, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return false
-		}
-
-		if string(bo) == "OK" {
-			return true
-		}
-
-		return false
+		return resp.StatusCode == http.StatusOK
 	}
 
-	go func() {
-		timeout := time.After(busStartTimeout)
+	timeout := time.After(busStartTimeout)
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
 
-		//nolint:gomnd
-		dt := 100 * time.Millisecond
-		attempts := -1
+	for {
+		select {
+		case <-timeout:
+			return fmt.Errorf("could not start nsq bus")
 
-		for {
-			attempts++
-
-			select {
-			case <-time.After(dt * (1 << attempts)):
-
-				if !ping(b.config.NSQDListenHTTPPort) {
-					continue
-				}
-
-				if !ping(b.config.NSQLookupListenHTTPPort) {
-					continue
-				}
-
-				startCh <- true
-
-				return
-
-			case <-timeout:
-				startCh <- false
-
-				return
+		case <-ticker.C:
+			if checkService(b.config.NSQDListenHTTPPort) && checkService(b.config.NSQLookupListenHTTPPort) {
+				return nil
 			}
 		}
-	}()
-
-	success := <-startCh
-	if !success {
-		return fmt.Errorf("could not start nsq bus")
 	}
-
-	return nil
 }
 
 //nolint:unused
