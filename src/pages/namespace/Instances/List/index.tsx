@@ -41,7 +41,7 @@ const InstancesListPage = () => {
       </h3>
       <Card>
         <Filters filters={filters} onUpdate={setFilters} />
-        <Table className="border-t">
+        <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>

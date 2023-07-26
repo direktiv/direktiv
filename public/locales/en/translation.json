@@ -182,7 +182,7 @@
           "name": "name",
           "id": "id",
           "revisionId": "revision id",
-          "invoker": "invoker",
+          "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
           "updatedAt": "last updated"
