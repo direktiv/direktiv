@@ -408,7 +408,7 @@ func (srv *server) start(ctx context.Context) error {
 	var node *cluster.Node
 	// start pub sub
 	config := cluster.DefaultConfig()
-	node, err = cluster.NewNode(ctx, config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
+	node, err = cluster.NewNode(ctx, config, cluster.NewNodeFinderKube(), 100*time.Millisecond, srv.sugar.Named("cluster"))
 	if err != nil {
 		return err
 	}

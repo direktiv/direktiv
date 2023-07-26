@@ -37,7 +37,7 @@ func TestNodeConfig(t *testing.T) {
 func TestNewNode(t *testing.T) {
 	config := DefaultConfig()
 
-	node, err := NewNode(context.TODO(), config, NewNodeFinderStatic(nil), zap.NewNop().Sugar())
+	node, err := NewNode(context.TODO(), config, NewNodeFinderStatic(nil), 200*time.Millisecond, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer node.Stop()
 
@@ -120,7 +120,7 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 
 	for i := 0; i < count; i++ {
 		c := configs[i]
-		node, err := NewNode(context.TODO(), c, nf, logger)
+		node, err := NewNode(context.TODO(), c, nf, 200*time.Millisecond, logger)
 		if err != nil {
 			return nil, err
 		}

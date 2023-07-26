@@ -18,10 +18,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	busStartTimeout   = 60 * time.Second
-	dataDirPermission = 0o700
-)
+var busStartTimeout = 60 * time.Second
 
 type bus struct {
 	logger *zap.SugaredLogger
@@ -177,7 +174,8 @@ func (b *bus) nodes() (*producerList, error) {
 	return &pl, nil
 }
 
-func (b *bus) updateBusNodes(nodes []string) error {
+func (b *bus) updateBusNodes(ctx context.Context, nodes []string) error {
+	_ = ctx
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -190,7 +188,7 @@ func (b *bus) updateBusNodes(nodes []string) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
@@ -229,10 +227,9 @@ func (b *bus) start() error {
 	return err
 }
 
-func (b *bus) waitTillConnected() error {
+func (b *bus) waitTillConnected(tickerTime time.Duration) error {
 	checkService := func(port int) bool {
-		url := fmt.Sprintf("http://127.0.0.1:%d/ping", port)
-		resp, err := http.Get(url)
+		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/ping", port)) //nolint
 		if err != nil {
 			return false
 		}
@@ -242,7 +239,7 @@ func (b *bus) waitTillConnected() error {
 	}
 
 	timeout := time.After(busStartTimeout)
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(tickerTime)
 	defer ticker.Stop()
 
 	for {
