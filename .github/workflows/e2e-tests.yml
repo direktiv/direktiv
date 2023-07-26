@@ -4,7 +4,7 @@ on:
 
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  SRVTAG: v0.7.5
+  SRVTAG: v0.8.0
 
 jobs:
   test:
@@ -39,7 +39,7 @@ jobs:
       - name: Clone Direktiv-charts repository
         run: |
           git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
-          git -C direktiv-charts checkout one-binary
+          git -C direktiv-charts checkout develop
           helm dependency update direktiv-charts/charts/direktiv
 
       - name: Wait for PostgreSQL pod to be ready
@@ -98,6 +98,8 @@ jobs:
 
       - name: Wait for Direktiv pods to be ready
         run: |
+          sleep(1)
+          kubectl get all
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
           echo "Listing all pods:"
           kubectl get all
