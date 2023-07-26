@@ -4,6 +4,7 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -32,12 +33,8 @@ type Node struct {
 	producer       *nsq.Producer
 }
 
-func NewNode(config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*Node, error) {
+func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*Node, error) {
 	var err error
-
-	if logger == nil {
-		logger = zap.NewNop().Sugar()
-	}
 
 	if nodeFinder == nil {
 		panic(fmt.Errorf("nodefinder not set"))
@@ -48,21 +45,30 @@ func NewNode(config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*
 		nodefinder: nodeFinder,
 		upCh:       make(chan bool),
 	}
+	// Create a context with a timeout for bus startup
+	ctx, cancel := context.WithTimeout(ctx, busStartTimeout)
+	defer cancel()
 
 	node.bus, err = newBus(config, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create nsq bus: %w", err)
 	}
 	go func() {
-		e := node.bus.start()
-		if e != nil {
-			panic("can not start nsq bus")
+		err := startBusAsync(node)
+		if err != nil {
+			cancel() // Cancel the context if the bus fails to start
 		}
 	}()
 
-	err = node.bus.waitTillConnected()
-	if err != nil {
-		return nil, fmt.Errorf("failed to start nsq bus: %w", err)
+	// Use a select statement to wait for the bus to start or time out
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
+	default:
+		// Check if the bus has started successfully
+		if err := node.bus.waitTillConnected(); err != nil {
+			return nil, fmt.Errorf("failed to start nsq bus: %w", err)
+		}
 	}
 
 	producerConfig := nsq.NewConfig()
@@ -140,6 +146,14 @@ func NewNode(config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*
 	node.logger.Infof("Cluster with %d servers joined.", joined)
 
 	return node, err
+}
+
+func startBusAsync(node *Node) error {
+	if err := node.bus.start(); err != nil {
+		node.logger.Error("can not start nsq bus:", err)
+		return err
+	}
+	return nil
 }
 
 // Stop attempts to gracefully leave the cluster, notifying other nodes that

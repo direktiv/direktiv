@@ -9,13 +9,15 @@ import (
 	"github.com/nsqio/go-nsq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestBusConfig(t *testing.T) {
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
-	b, err := newBus(config, nil)
+	logger := zap.NewNop().Sugar()
+	b, err := newBus(config, logger)
 	require.NoError(t, err)
 	require.NotEmpty(t, b.dataDir)
 	defer b.stop()
@@ -31,7 +33,7 @@ func TestBusConfig(t *testing.T) {
 
 	closePorts(ports)
 
-	b2, err := newBus(config, nil)
+	b2, err := newBus(config, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer b2.stop()
 
@@ -43,7 +45,8 @@ func TestBusFunctions(t *testing.T) {
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
-	b, err := newBus(config, nil)
+	logger := zap.NewNop().Sugar()
+	b, err := newBus(config, logger)
 	require.NoError(t, err)
 	defer b.stop()
 
@@ -111,7 +114,8 @@ func TestBusCluster(t *testing.T) {
 	closePorts(ports1)
 
 	// setting data dir with temp folder
-	b, err := newBus(config, nil)
+	logger := zap.NewNop().Sugar()
+	b, err := newBus(config, logger)
 	require.NoError(t, err)
 	defer b.stop()
 	go b.start()
@@ -125,7 +129,7 @@ func TestBusCluster(t *testing.T) {
 	config.NSQLookupPort = ports2[2].port
 	config.NSQLookupListenHTTPPort = ports2[3].port
 
-	b2, err := newBus(config, nil)
+	b2, err := newBus(config, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer b2.stop()
 	go b2.start()
