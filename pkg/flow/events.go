@@ -836,6 +836,53 @@ func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, 
 	return newBytesEvent, nil
 }
 
+// TODO: this code block is dead
+// func (flow *flow) ApplyCloudEventFilter(ctx context.Context, in *grpc.ApplyCloudEventFilterRequest) (*emptypb.Empty, error) {
+// 	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+// 	resp := new(emptypb.Empty)
+
+// 	namespace := in.GetNamespace()
+// 	filterName := in.GetFilterName()
+// 	cloudevent := in.GetCloudevent()
+
+// 	var err error
+// 	var ns *core.Namespace
+// 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+// 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
+// 		return err
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	b, err := flow.execFilter(ctx, namespace, filterName, cloudevent)
+// 	if err != nil {
+// 		flow.logger.Errorf(ctx, ns.ID, ns.GetAttributes(),
+// 			"executing filter failed: %s", err.Error())
+// 		return resp, err
+// 	}
+
+// 	// dropped event
+// 	if len(b) == 0 {
+// 		flow.logger.Debugf(ctx, ns.ID, ns.GetAttributes(),
+// 			"dropping event %s", string(cloudevent))
+// 		return resp, nil
+// 	}
+
+// 	flow.sugar.Debugf("event after script is %v", string(b))
+
+// 	br := &grpc.BroadcastCloudeventRequest{
+// 		Namespace:  namespace,
+// 		Cloudevent: b,
+// 		Timer:      0,
+// 	}
+
+// 	resp, err = flow.BroadcastCloudevent(ctx, br)
+
+// 	return resp, err
+// }
+
 func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteCloudEventFilterRequest) (*emptypb.Empty, error) {
 	var resp emptypb.Empty
 
