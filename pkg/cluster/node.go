@@ -130,7 +130,7 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, timeout 
 		return nil, fmt.Errorf("failed to create serf node: %w", err)
 	}
 
-	go node.eventHandler(ctx)
+	go node.eventHandler(context.TODO())
 	<-node.upCh
 
 	clusterNodes, err := node.nodefinder.GetNodes()
@@ -206,7 +206,6 @@ func (node *Node) updateBusMember(ctx context.Context) error {
 }
 
 func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent, join bool) {
-	_ = ctx
 	for _, member := range memberEvent.Members {
 		if node.serfServer.LocalMember().Name == member.Name {
 			if join {
