@@ -188,7 +188,7 @@ func (b *bus) updateBusNodes(ctx context.Context, nodes []string) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, bytes.NewBuffer(data)) //nolint
 	if err != nil {
 		return err
 	}
