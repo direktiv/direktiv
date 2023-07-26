@@ -37,7 +37,7 @@ func TestNodeConfig(t *testing.T) {
 func TestNewNode(t *testing.T) {
 	config := DefaultConfig()
 
-	node, err := NewNode(context.TODO(), config, NewNodeFinderStatic(nil), nil)
+	node, err := NewNode(context.TODO(), config, NewNodeFinderStatic(nil), zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer node.Stop()
 

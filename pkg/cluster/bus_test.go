@@ -33,7 +33,7 @@ func TestBusConfig(t *testing.T) {
 
 	closePorts(ports)
 
-	b2, err := newBus(config, nil)
+	b2, err := newBus(config, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer b2.stop()
 
@@ -129,7 +129,7 @@ func TestBusCluster(t *testing.T) {
 	config.NSQLookupPort = ports2[2].port
 	config.NSQLookupListenHTTPPort = ports2[3].port
 
-	b2, err := newBus(config, nil)
+	b2, err := newBus(config, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer b2.stop()
 	go b2.start()
