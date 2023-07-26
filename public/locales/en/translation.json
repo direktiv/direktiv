@@ -215,16 +215,6 @@
             "AS": "filename.yaml",
             "STATUS": "Type or select status...",
             "TRIGGER": "Type or select trigger type..."
-          },
-          "option": {
-            "api": "API",
-            "cloudevent": "cloud event",
-            "instance": "instance",
-            "cron": "cron",
-            "pending": "pending",
-            "complete": "complete",
-            "cancelled": "cancelled",
-            "failed": "failed"
           }
         }
       }

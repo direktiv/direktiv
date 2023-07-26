@@ -59,7 +59,7 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
                 })
               }
             >
-              {t(`pages.instances.list.filter.option.${option}`)}
+              {option}
             </CommandItem>
           ))}
         </CommandGroup>
