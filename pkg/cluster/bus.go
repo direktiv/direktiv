@@ -48,7 +48,6 @@ func (bl *busLogger) Output(_ int, s string) error {
 }
 
 func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
-
 	dataDir := config.NSQDataDir
 	if dataDir == "" {
 		dir, err := os.MkdirTemp(os.TempDir(), "nsq")
@@ -80,7 +79,7 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	}
 
 	opts.MaxRdyCount = 10000
-	opts.MemQueueSize = 5000 // Reduce memory queue size
+	opts.MemQueueSize = 10000
 
 	// Set default logger and adjust log level based on busLogEnabled
 	opts.Logger = zap.NewStdLog(logger.Desugar())
