@@ -29,6 +29,11 @@ const InstancesListPage = () => {
     filters,
   });
 
+  const handleFilterChange = (filters: FiltersObj) => {
+    setFilters(filters);
+    setOffset(0);
+  };
+
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.instances.results.length === 0;
   const showPagination = numberOfInstances > instancesPerPage;
@@ -40,7 +45,7 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Filters filters={filters} onUpdate={setFilters} />
+        <Filters filters={filters} onUpdate={handleFilterChange} />
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
