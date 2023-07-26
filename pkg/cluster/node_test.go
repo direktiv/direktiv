@@ -134,12 +134,10 @@ func TestClusterSubscribe(t *testing.T) {
 	count := 3
 	nodes, err := createCluster(t, count, []string{"topic1", "topic2"}, false)
 	require.NoError(t, err)
-	defer func() {
-		for i := 0; i < count; i++ {
-			nodes[i].Stop()
-		}
-	}()
 
+	for i := 0; i < count; i++ {
+		defer nodes[i].Stop()
+	}
 	// check three node cluster
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
