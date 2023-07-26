@@ -28,6 +28,14 @@ type MenuAnchor =
   | "AFTER.time"
   | "BEFORE.time";
 
+const fieldsInMenu: Array<keyof FiltersObj> = [
+  "AS",
+  "STATUS",
+  "TRIGGER",
+  "AFTER",
+  "BEFORE",
+];
+
 const Filters = ({ filters, onUpdate }: FiltersProps) => {
   const { t } = useTranslation();
 
@@ -71,13 +79,17 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
     onUpdate(newFilters);
   };
 
-  const hasFilters = !!Object.keys(filters).length;
+  const currentFilterKeys = Object.keys(filters) as Array<keyof FiltersObj>;
 
-  const definedFilters = Object.keys(filters) as Array<keyof FiltersObj>;
+  const hasFilters = !!currentFilterKeys.length;
+
+  const undefinedFilters = fieldsInMenu.filter(
+    (field) => !currentFilterKeys.includes(field)
+  );
 
   return (
     <div className="m-2 flex flex-row gap-2">
-      {definedFilters.map((field) => {
+      {currentFilterKeys.map((field) => {
         // For type safety, one separate return is required below for every type
         // so it is possible to assert filters[field]?.value is defined and TS
         // does not merge the different possible types of filters[field]?.value
@@ -225,7 +237,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         </PopoverTrigger>
         <PopoverContent align="start">
           {(selectedField === null && (
-            <SelectFieldMenu onSelect={setSelectedField} />
+            <SelectFieldMenu
+              options={undefinedFilters}
+              onSelect={setSelectedField}
+            />
           )) ||
             (selectedField === "AS" && (
               <TextInput

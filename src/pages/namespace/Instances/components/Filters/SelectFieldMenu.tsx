@@ -10,9 +10,11 @@ import { FiltersObj } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
 export const SelectFieldMenu = ({
+  options,
   onSelect,
 }: {
   onSelect: (value: keyof FiltersObj) => void;
+  options: Array<keyof FiltersObj>;
 }) => {
   const { t } = useTranslation();
   return (
@@ -24,21 +26,11 @@ export const SelectFieldMenu = ({
         <CommandGroup
           heading={t("pages.instances.list.filter.menuHeading.main")}
         >
-          <CommandItem tabIndex={1} onSelect={() => onSelect("AS")}>
-            {t("pages.instances.list.filter.field.AS")}
-          </CommandItem>
-          <CommandItem onSelect={() => onSelect("STATUS")}>
-            {t("pages.instances.list.filter.field.STATUS")}
-          </CommandItem>
-          <CommandItem onSelect={() => onSelect("TRIGGER")}>
-            {t("pages.instances.list.filter.field.TRIGGER")}
-          </CommandItem>
-          <CommandItem onSelect={() => onSelect("AFTER")}>
-            {t("pages.instances.list.filter.field.AFTER")}
-          </CommandItem>
-          <CommandItem onSelect={() => onSelect("BEFORE")}>
-            {t("pages.instances.list.filter.field.BEFORE")}
-          </CommandItem>
+          {options.map((option) => (
+            <CommandItem key={option} onSelect={() => onSelect(option)}>
+              {t(`pages.instances.list.filter.field.${option}`)}
+            </CommandItem>
+          ))}
         </CommandGroup>
       </CommandList>
     </Command>
