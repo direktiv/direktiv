@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -10,8 +11,8 @@ import (
 // Nodefinders have to return all ips/addr of the serf nodes available on startup
 // the minimum is to return one ip/addr for serf to form a cluster.
 type NodeFinder interface {
-	GetNodes() ([]string, error)
-	GetAddr() (string, error)
+	GetNodes(ctx context.Context) ([]string, error)
+	GetAddr(ctx context.Context, nodeID string) (string, error)
 }
 
 type nodeFinderStatic struct {
@@ -30,11 +31,16 @@ func NewNodeFinderStatic(nodes []string) NodeFinder {
 	}
 }
 
-func (nfs *nodeFinderStatic) GetNodes() ([]string, error) {
+func (nfs *nodeFinderStatic) GetNodes(ctx context.Context) ([]string, error) {
+	_ = ctx
+
 	return nfs.nodes, nil
 }
 
-func (nfs *nodeFinderStatic) GetAddr() (string, error) {
+func (nfs *nodeFinderStatic) GetAddr(ctx context.Context, nodeID string) (string, error) {
+	_ = ctx
+	_ = nodeID
+
 	return os.Hostname()
 }
 
@@ -47,20 +53,44 @@ func NewNodeFinderKube() NodeFinder {
 	return &nodeFinderKube{}
 }
 
-func (nfk *nodeFinderKube) GetNodes() ([]string, error) {
+func (nfk *nodeFinderKube) GetNodes(ctx context.Context) ([]string, error) {
 	nodes := make([]string, 0)
-	ips, err := net.LookupIP(fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace))
+
+	// Use the provided context for the DNS lookup
+	ips, err := lookupIPWithContext(ctx, fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to look up IP addresses: %w", err)
 	}
+
 	for _, ip := range ips {
-		ipNew := fmt.Sprintf("%s.%s.pod:%d", strings.ReplaceAll(ip.String(), ".", "-"), direktivNamespace, defaultSerfPort)
-		nodes = append(nodes, ipNew)
+		nodeAddr := fmt.Sprintf("%s.%s.pod:%d", strings.ReplaceAll(ip.String(), ".", "-"), direktivNamespace, defaultSerfPort)
+		nodes = append(nodes, nodeAddr)
 	}
 
 	return nodes, nil
 }
 
-func (nfk *nodeFinderKube) GetAddr() (string, error) {
+// lookupIPWithContext is a helper function to perform DNS lookup with a provided context.
+func lookupIPWithContext(ctx context.Context, host string) ([]net.IP, error) {
+	// Perform the DNS lookup using the provided context
+	resolver := net.Resolver{}
+	ips, err := resolver.LookupIPAddr(ctx, host)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the IP addresses from IPAddr objects
+	result := make([]net.IP, len(ips))
+	for i, ipAddr := range ips {
+		result[i] = ipAddr.IP
+	}
+
+	return result, nil
+}
+
+func (nfk *nodeFinderKube) GetAddr(ctx context.Context, nodeID string) (string, error) {
+	_ = ctx
+	_ = nodeID
+
 	return os.Hostname()
 }

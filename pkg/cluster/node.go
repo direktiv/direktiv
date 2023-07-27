@@ -4,17 +4,22 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/serf/serf"
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/zap"
 )
+
+const eventHandlerWorkers = 10 // TODO: should this be 1?
 
 // Node is configured per host in the cluster.
 type Node struct {
@@ -23,46 +28,36 @@ type Node struct {
 	// serf settings
 	serfServer *serf.Serf
 	events     chan serf.Event
-	nodefinder NodeFinder
 	upCh       chan bool
 
 	// nsq settings
 	bus            *bus
 	busChannelName string
 	producer       *nsq.Producer
+	id             string
+	httpClient     *http.Client
 }
 
-func NewNode(config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*Node, error) {
+func NewNode(ctx context.Context,
+	config Config,
+	getAddr func(ctx context.Context, nodeID string) (string, error),
+	getNodes func(context.Context) ([]string, error),
+	timeout time.Duration,
+	logger *zap.SugaredLogger,
+	httpClient *http.Client,
+) (*Node, error) {
 	var err error
-
-	if logger == nil {
-		logger = zap.NewNop().Sugar()
-	}
-
-	if nodeFinder == nil {
-		panic(fmt.Errorf("nodefinder not set"))
-	}
 
 	node := &Node{
 		logger:     logger,
-		nodefinder: nodeFinder,
 		upCh:       make(chan bool),
+		id:         uuid.NewString(),
+		httpClient: httpClient,
 	}
 
-	node.bus, err = newBus(config, logger)
+	node.bus, err = newBus(config, node.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create nsq bus: %w", err)
-	}
-	go func() {
-		e := node.bus.start()
-		if e != nil {
-			panic("can not start nsq bus")
-		}
-	}()
-
-	err = node.bus.waitTillConnected()
-	if err != nil {
-		return nil, fmt.Errorf("failed to start nsq bus: %w", err)
 	}
 
 	producerConfig := nsq.NewConfig()
@@ -83,7 +78,7 @@ func NewNode(config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*
 
 	serfConfig.Tags = make(map[string]string)
 
-	addr, err := nodeFinder.GetAddr()
+	addr, err := getAddr(ctx, node.id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get address: %w", err)
 	}
@@ -124,10 +119,32 @@ func NewNode(config Config, nodeFinder NodeFinder, logger *zap.SugaredLogger) (*
 		return nil, fmt.Errorf("failed to create serf node: %w", err)
 	}
 
-	go node.eventHandler()
+	startBusErrCh := make(chan error)
+	go func() {
+		err := node.bus.start(ctx, busStartTimeout)
+		startBusErrCh <- err
+	}()
+	startWaitCh := make(chan struct{})
+
+	go func() {
+		err := node.bus.waitTillConnected(ctx, node.httpClient, time.Second, timeout)
+		if err == nil {
+			startWaitCh <- struct{}{}
+		} else {
+			startWaitCh <- struct{}{}
+		}
+	}()
+	select {
+	case <-startWaitCh:
+		// Bus successfully started, continue execution
+	case <-ctx.Done():
+		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
+	}
+
+	go node.eventHandler(ctx)
 	<-node.upCh
 
-	clusterNodes, err := node.nodefinder.GetNodes()
+	clusterNodes, err := getNodes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find nodes: %w", err)
 	}
@@ -155,24 +172,26 @@ func (node *Node) Stop() error {
 		node.producer.Stop()
 	}
 
-	err := node.serfServer.Leave()
-	if err != nil {
-		return err
+	if node.serfServer != nil {
+		err := node.serfServer.Leave()
+		if err != nil {
+			return err
+		}
+
+		shutdownCh := node.serfServer.ShutdownCh()
+
+		err = node.serfServer.Shutdown()
+		if err != nil {
+			return err
+		}
+
+		<-shutdownCh
 	}
-
-	shutdownCh := node.serfServer.ShutdownCh()
-
-	err = node.serfServer.Shutdown()
-	if err != nil {
-		return err
-	}
-
-	<-shutdownCh
 
 	return nil
 }
 
-func (node *Node) updateBusMember() error {
+func (node *Node) updateBusMember(ctx context.Context) error {
 	members := node.serfServer.Members()
 	updateBusMember := make([]string, 0)
 	for i := range members {
@@ -180,7 +199,7 @@ func (node *Node) updateBusMember() error {
 		updateBusMember = append(updateBusMember, m.Tags[nsqLookupAddress])
 	}
 
-	err := node.bus.updateBusNodes(updateBusMember)
+	err := node.bus.updateBusNodes(ctx, updateBusMember, node.httpClient)
 	if err != nil {
 		return err
 	}
@@ -188,7 +207,7 @@ func (node *Node) updateBusMember() error {
 	return nil
 }
 
-func (node *Node) handleMember(memberEvent serf.MemberEvent, join bool) {
+func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent, join bool) error {
 	for _, member := range memberEvent.Members {
 		if node.serfServer.LocalMember().Name == member.Name {
 			if join {
@@ -198,38 +217,65 @@ func (node *Node) handleMember(memberEvent serf.MemberEvent, join bool) {
 			continue
 		}
 
-		err := node.updateBusMember()
-		if err != nil {
-			panic(fmt.Errorf("can not handle member join (update): %w", err))
+		// Skip processing if the event is not a join event
+		if !join {
+			continue
+		}
+
+		// Only update the bus member if it's not the local node
+		if err := node.updateBusMember(ctx); err != nil {
+			return fmt.Errorf("failed to update bus member: %v", err)
+		}
+	}
+	return nil
+}
+
+func (node *Node) eventHandler(ctx context.Context) {
+	// Create a buffered channel to hold events to be processed
+	eventQueue := make(chan serf.Event, 100)
+
+	// Create a goroutine pool to process events concurrently
+	for i := 0; i < eventHandlerWorkers; i++ {
+		go node.eventWorker(ctx, eventQueue)
+	}
+
+	for e := range node.events {
+		// Put the event in the eventQueue channel to be processed by a worker
+		select {
+		case eventQueue <- e:
+		case <-ctx.Done():
+			return
 		}
 	}
 }
 
-func (node *Node) eventHandler() {
-	for e := range node.events {
+func (node *Node) eventWorker(ctx context.Context, eventQueue <-chan serf.Event) {
+	for e := range eventQueue {
 		switch e.EventType() {
-		default:
 		case serf.EventMemberUpdate, serf.EventUser, serf.EventQuery:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Debugf("member event: %s", memberEvent.String())
 			}
 		case serf.EventMemberJoin:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
-				node.handleMember(memberEvent, true)
+				if err := node.handleMember(ctx, memberEvent, true); err != nil {
+					node.logger.Errorf("Failed to handle member join: %v", err)
+					panic(err)
+				}
 				node.logger.Infof("A node has joined the cluster: %v.", memberEvent.Members)
 			}
 		case serf.EventMemberReap:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Infof("A node has left the cluster: %v.", memberEvent.Members)
 			}
-
 			fallthrough
-		case serf.EventMemberFailed:
-			fallthrough
-		case serf.EventMemberLeave:
+		case serf.EventMemberFailed, serf.EventMemberLeave:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Debugf("A node has left the cluster: %v.", memberEvent.Members)
-				node.handleMember(memberEvent, false)
+				if err := node.handleMember(ctx, memberEvent, false); err != nil {
+					node.logger.Errorf("Failed to handle member leave/fail: %v", err)
+					panic(err)
+				}
 			}
 		}
 	}
@@ -260,7 +306,7 @@ func (node *Node) doSubscribe(topic, channel string,
 		consumer: consumer,
 		executor: handler,
 	}
-
+	consumer.SetLookupdHttpClient(node.httpClient)
 	consumer.AddConcurrentHandlers(mh, concurrencyHandlers)
 
 	err = consumer.ConnectToNSQLookupd(fmt.Sprintf("127.0.0.1:%d",

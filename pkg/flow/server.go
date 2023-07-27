@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -407,8 +409,22 @@ func (srv *server) start(ctx context.Context) error {
 
 	var node *cluster.Node
 	// start pub sub
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
 	config := cluster.DefaultConfig()
-	node, err = cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
+	finder := cluster.NewNodeFinderKube()
+	node, err = cluster.NewNode(ctx, config, finder.GetAddr, finder.GetNodes, 100*time.Millisecond, srv.sugar.Named("cluster"), &http.Client{
+		Transport: transport,
+		Timeout:   5 * time.Second,
+	})
 	if err != nil {
 		return err
 	}

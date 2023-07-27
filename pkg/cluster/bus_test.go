@@ -1,21 +1,25 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/nsqio/go-nsq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestBusConfig(t *testing.T) {
 	config := DefaultConfig()
 
 	// setting data dir with temp folder
-	b, err := newBus(config, nil)
+	logger := zap.NewNop().Sugar()
+	b, err := newBus(config, logger)
 	require.NoError(t, err)
 	require.NotEmpty(t, b.dataDir)
 	defer b.stop()
@@ -31,7 +35,7 @@ func TestBusConfig(t *testing.T) {
 
 	closePorts(ports)
 
-	b2, err := newBus(config, nil)
+	b2, err := newBus(config, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer b2.stop()
 
@@ -41,32 +45,46 @@ func TestBusConfig(t *testing.T) {
 
 func TestBusFunctions(t *testing.T) {
 	config := DefaultConfig()
-
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   5 * time.Second,
+	}
 	// setting data dir with temp folder
-	b, err := newBus(config, nil)
+	logger := zap.NewNop().Sugar()
+	b, err := newBus(config, logger)
 	require.NoError(t, err)
 	defer b.stop()
 
-	go b.start()
-	err = b.waitTillConnected()
+	go b.start(context.Background(), 10*time.Second)
+	err = b.waitTillConnected(context.Background(), client, 10*time.Millisecond, 10*time.Millisecond)
 	require.NoError(t, err)
 
-	err = b.createTopic("topic1")
+	err = b.createTopic(context.Background(), "topic1", client)
 	assert.NoError(t, err)
 
-	err = b.createTopic("^%&^%&!")
+	err = b.createTopic(context.Background(), "^%&^%&!", client)
 	assert.Error(t, err)
 
-	err = b.createDeleteChannel("topic1", "channel1", true)
+	err = b.createDeleteChannel(context.Background(), client, "topic1", "channel1", true)
 	assert.NoError(t, err)
 
-	err = b.createDeleteChannel("topic1", "&^&*^%&^%&^%", true)
+	err = b.createDeleteChannel(context.Background(), client, "topic1", "&^&*^%&^%&^%", true)
 	assert.Error(t, err)
 
-	err = b.createDeleteChannel("unknown", "channel1", true)
+	err = b.createDeleteChannel(context.Background(), client, "unknown", "channel1", true)
 	assert.Error(t, err)
 
-	err = b.updateBusNodes([]string{"server1:5555"})
+	err = b.updateBusNodes(context.TODO(), []string{"server1:5555"}, client)
 	assert.NoError(t, err)
 }
 
@@ -101,7 +119,20 @@ func getPorts(t *testing.T) []randomPort {
 
 func TestBusCluster(t *testing.T) {
 	config := DefaultConfig()
-
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   5 * time.Second,
+	}
 	ports1 := getPorts(t)
 
 	config.NSQDPort = ports1[0].port
@@ -111,11 +142,12 @@ func TestBusCluster(t *testing.T) {
 	closePorts(ports1)
 
 	// setting data dir with temp folder
-	b, err := newBus(config, nil)
+	logger := zap.NewNop().Sugar()
+	b, err := newBus(config, logger)
 	require.NoError(t, err)
 	defer b.stop()
-	go b.start()
-	b.waitTillConnected()
+	go b.start(context.Background(), 10*time.Second)
+	b.waitTillConnected(context.Background(), client, 100, 100)
 
 	ports2 := getPorts(t)
 	closePorts(ports2)
@@ -125,22 +157,23 @@ func TestBusCluster(t *testing.T) {
 	config.NSQLookupPort = ports2[2].port
 	config.NSQLookupListenHTTPPort = ports2[3].port
 
-	b2, err := newBus(config, nil)
+	b2, err := newBus(config, zap.NewNop().Sugar())
 	require.NoError(t, err)
 	defer b2.stop()
-	go b2.start()
-	b.waitTillConnected()
+	go b2.start(context.Background(), 10*time.Second)
+	b.waitTillConnected(context.Background(), client, 100, 100)
 
 	// update cluster
-	err = b.updateBusNodes([]string{
-		fmt.Sprintf("127.0.0.1:%d", ports1[2].port),
-		fmt.Sprintf("127.0.0.1:%d", ports2[2].port),
-	})
+	err = b.updateBusNodes(
+		context.TODO(), []string{
+			fmt.Sprintf("127.0.0.1:%d", ports1[2].port),
+			fmt.Sprintf("127.0.0.1:%d", ports2[2].port),
+		}, client)
 	require.NoError(t, err)
-	err = b2.updateBusNodes([]string{
+	err = b2.updateBusNodes(context.TODO(), []string{
 		fmt.Sprintf("127.0.0.1:%d", ports1[2].port),
 		fmt.Sprintf("127.0.0.1:%d", ports2[2].port),
-	})
+	}, client)
 	require.NoError(t, err)
 
 	// both instances should have 2 nodes
@@ -162,11 +195,11 @@ func TestBusCluster(t *testing.T) {
 
 	// add topcs to both busses
 	addTopics := func(bin *bus) {
-		bin.createTopic("topic1")
-		bin.createTopic("topic2")
-		bin.createDeleteChannel("topic1", "ch1", true)
-		bin.createDeleteChannel("topic1", "ch2", true)
-		bin.createDeleteChannel("topic2", "ch3", true)
+		bin.createTopic(context.Background(), "topic1", client)
+		bin.createTopic(context.Background(), "topic2", client)
+		bin.createDeleteChannel(context.Background(), client, "topic1", "ch1", true)
+		bin.createDeleteChannel(context.Background(), client, "topic1", "ch2", true)
+		bin.createDeleteChannel(context.Background(), client, "topic2", "ch3", true)
 	}
 	addTopics(b)
 	addTopics(b2)
