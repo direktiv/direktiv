@@ -309,9 +309,19 @@
       "title": "Create a new namespace",
       "placeholder": "new-namespace-name",
       "createBtn": "Create",
-      "namespaceLabel": "Namespace",
+      "nameLabel": "Name",
       "nameAlreadyExists": "The name already exists",
-      "cancelBtn": "Cancel"
+      "cancelBtn": "Cancel",
+      "refLabel": "Ref",
+      "urlLabel": "Url",
+      "passphrase": "Passphrase",
+      "publicKey": "Public Key",
+      "privateKey": "Private Key",
+      "authType": {
+        "none": "none",
+        "ssh": "SSH",
+        "token": "token"
+      }
     },
     "button": {
       "label": {
