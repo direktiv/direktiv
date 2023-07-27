@@ -11,15 +11,13 @@ import { useInstanceDetails } from "~/api/instances/query/details";
 const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
   const { data } = useInstanceDetails({ instanceId });
 
-  // const isLatest = data?.instance.status === "latest";
+  if (!data) return null;
 
   const link = pages.explorer.createHref({
-    path: data?.workflow.path ?? "",
-    namespace: data?.namespace ?? "",
+    path: data.workflow.path,
+    namespace: data.namespace,
     subpage: "workflow",
   });
-
-  if (!data) return null;
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
