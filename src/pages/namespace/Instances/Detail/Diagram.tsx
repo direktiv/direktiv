@@ -10,7 +10,13 @@ const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
   if (!data) return null;
 
   const workflowData = atob(data.revision?.source ?? "");
-  return <WorkflowDiagram workflow={workflowData} flow={flow} />;
+  return (
+    <WorkflowDiagram
+      workflow={workflowData}
+      flow={flow}
+      orientation="vertical"
+    />
+  );
 };
 
 export default Diagram;
