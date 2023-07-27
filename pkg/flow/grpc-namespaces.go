@@ -176,6 +176,8 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 	}
 }
 
+const defaultRootName = "main"
+
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
@@ -193,7 +195,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ns.ID)
+	root, err := tx.FileStore().CreateRoot(ctx, ns.ID, "main")
 	if err != nil {
 		return nil, err
 	}

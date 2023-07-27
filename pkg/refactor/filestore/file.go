@@ -38,6 +38,8 @@ type File struct {
 	// belongs too.
 	RootID uuid.UUID
 
+	ApiID string
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

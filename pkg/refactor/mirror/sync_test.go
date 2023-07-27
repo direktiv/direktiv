@@ -23,7 +23,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 	dStore := datastoresql.NewSQLStore(db, "some_secret_key_")
 	store := dStore.Mirror()
 
-	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
+	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New(), "test")
 	if err != nil {
 		t.Fatalf("unepxected GetRoot() error = %v", err)
 	}

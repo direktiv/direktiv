@@ -47,7 +47,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ns.ID)
+	root, err := tx.FileStore().CreateRoot(ctx, ns.ID, "main")
 	if err != nil {
 		return nil, err
 	}

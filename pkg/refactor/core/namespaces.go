@@ -14,6 +14,8 @@ type Namespace struct {
 	Name   string
 	Config string
 
+	RootsInfo string
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

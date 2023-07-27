@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
     "id" uuid,
     "name" text NOT NULL UNIQUE,
     "config" text NOT NULL,
+    "default_root" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
@@ -9,27 +10,31 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
 
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
+    "namespace_id" uuid,
+    "name" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
+    CONSTRAINT "root_no_dup_check" UNIQUE ("namespace_id","name"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
-    FOREIGN KEY ("id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS "filesystem_files" (
     "id" uuid,
+    "root_id" uuid NOT NULL,
     "path" text NOT NULL,
     "depth" integer NOT NULL,
     "typ" text NOT NULL,
-    "root_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "api_id" text NOT NULL,
     PRIMARY KEY ("id"),
+    CONSTRAINT "file_path_no_dup_check" UNIQUE ("root_id","path"),
+    CONSTRAINT "file_api_id_no_dup_check" UNIQUE ("root_id","api_id"),
     CONSTRAINT "fk_filesystem_roots_filesystem_files"
     FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS "filesystem_revisions" (
     "id" uuid,
@@ -45,7 +50,6 @@ CREATE TABLE IF NOT EXISTS "filesystem_revisions" (
     FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
 CREATE TABLE IF NOT EXISTS "file_annotations" (
     "file_id" uuid,
     "data" text,
@@ -55,7 +59,6 @@ CREATE TABLE IF NOT EXISTS "file_annotations" (
     CONSTRAINT "fk_filesystem_files_file_annotations"
     FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "namespace_id" uuid,
@@ -72,7 +75,6 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
 CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
@@ -86,12 +88,11 @@ CREATE TABLE IF NOT EXISTS "mirror_processes" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
 CREATE TABLE IF NOT EXISTS "secrets" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
     "name" text NOT NULL,
-    "data" 	 text NOT NULL,
+    "data" 	 text,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
@@ -112,7 +113,6 @@ CREATE TABLE IF NOT EXISTS "services" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- TODO: alan please fix id and other fields types for postgres.
 CREATE TABLE IF NOT EXISTS "instances_v2" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,

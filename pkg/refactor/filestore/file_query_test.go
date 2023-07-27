@@ -43,10 +43,10 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			pathsAfterChange: []string{
 				"/",
 				"/a",
-				"/a/d",
-				"/a/d/file1.text",
 				"/a/c",
 				"/a/c/file2.text",
+				"/a/d",
+				"/a/d/file1.text",
 			},
 		},
 
@@ -68,11 +68,11 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 			pathsAfterChange: []string{
 				"/",
 				"/a",
-				"/a/d",
-				"/a/d/file1.text",
 				"/a/bfile1.text",
 				"/a/c",
 				"/a/c/file2.text",
+				"/a/d",
+				"/a/d/file1.text",
 			},
 		},
 
@@ -97,10 +97,10 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 				"/a",
 				"/a/b",
 				"/a/b/a",
-				"/a/b/a/d",
-				"/a/b/a/d/file1.text",
 				"/a/b/a/c",
 				"/a/b/a/c/file2.text",
+				"/a/b/a/d",
+				"/a/b/a/d/file1.text",
 			},
 		},
 
@@ -135,7 +135,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			root, err := fs.CreateRoot(context.Background(), uuid.New())
+			root, err := fs.CreateRoot(context.Background(), uuid.New(), "test")
 			if err != nil {
 				t.Fatalf("unepxected CreateRoot() error = %v", err)
 			}
