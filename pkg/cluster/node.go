@@ -19,6 +19,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const eventHandlerWorkers = 10 // TODO: should this be 1?
+
 // Node is configured per host in the cluster.
 type Node struct {
 	logger *zap.SugaredLogger
@@ -229,7 +231,26 @@ func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent
 }
 
 func (node *Node) eventHandler(ctx context.Context) {
+	// Create a buffered channel to hold events to be processed
+	eventQueue := make(chan serf.Event, 100)
+
+	// Create a goroutine pool to process events concurrently
+	for i := 0; i < eventHandlerWorkers; i++ {
+		go node.eventWorker(ctx, eventQueue)
+	}
+
 	for e := range node.events {
+		// Put the event in the eventQueue channel to be processed by a worker
+		select {
+		case eventQueue <- e:
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (node *Node) eventWorker(ctx context.Context, eventQueue <-chan serf.Event) {
+	for e := range eventQueue {
 		switch e.EventType() {
 		case serf.EventMemberUpdate, serf.EventUser, serf.EventQuery:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
