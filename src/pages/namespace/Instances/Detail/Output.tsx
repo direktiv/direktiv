@@ -1,4 +1,3 @@
-import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { FC } from "react";
 import { useOutput } from "~/api/instances/query/output";
