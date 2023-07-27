@@ -11,10 +11,10 @@ const InstancesDetailPage = () => {
 
   return (
     <div className="grid grow grid-cols-2 gap-5 p-5">
-      <Input instanceId={instance} />
-      <Output instanceId={instance} />
       <Logs />
       <Diagram />
+      <Input instanceId={instance} />
+      <Output instanceId={instance} />
     </div>
   );
 };
