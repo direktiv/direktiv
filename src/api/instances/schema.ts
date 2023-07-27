@@ -26,4 +26,10 @@ export const InstancesInputSchema = z.object({
   data: z.string(),
 });
 
+export const InstancesOutputSchema = z.object({
+  namespace: z.string(),
+  instance: InstanceSchema,
+  data: z.string(),
+});
+
 export type InstanceSchemaType = z.infer<typeof InstanceSchema>;
