@@ -29,7 +29,7 @@ const InstancesDetailPageWithId: FC<{ instanceId: string }> = ({
           <Logs />
         </Card>
         <Card>
-          <Diagram workflowPath={data.workflow.path} />
+          <Diagram workflowPath={data.workflow.path} flow={data.flow} />
         </Card>
         <Card className="p-5">
           <Input instanceId={instanceId} />
