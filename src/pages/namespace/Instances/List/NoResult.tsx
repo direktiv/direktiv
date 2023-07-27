@@ -1,19 +1,13 @@
 import { Boxes } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
-const NoResult = () => {
-  const { t } = useTranslation();
-  return (
-    <div
-      className="flex flex-col items-center justify-center gap-1 p-10"
-      data-testid="instance-no-result"
-    >
-      <Boxes />
-      <span className="text-center text-sm">
-        {t("pages.instances.list.empty.title")}
-      </span>
-    </div>
-  );
-};
+const NoResult = ({ message }: { message: string }) => (
+  <div
+    className="flex flex-col items-center justify-center gap-1 p-10"
+    data-testid="instance-no-result"
+  >
+    <Boxes />
+    <span className="text-center text-sm">{message}</span>
+  </div>
+);
 
 export default NoResult;

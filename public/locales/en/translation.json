@@ -176,13 +176,14 @@
       "list": {
         "title": "Recently executed instances",
         "empty": {
-          "title": "there are no recently executed instances"
+          "noInstances": "There are no recently executed instances",
+          "noFilterResults": "No recently executed instances found with these filter criteria"
         },
         "tableHeader": {
           "name": "name",
           "id": "id",
           "revisionId": "revision id",
-          "invoker": "invoker",
+          "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
           "updatedAt": "last updated"
@@ -191,6 +192,31 @@
           "noRevisionId": "none",
           "realtiveTime": "{{relativeTime}} ago",
           "openWorkflowTooltip": "click to open workflow"
+        },
+        "filter": {
+          "filterButton": "Filter",
+          "menuHeading": {
+            "main": "Select filter",
+            "AS": "filter by name",
+            "STATUS": "filter by status",
+            "TRIGGER": "filter by trigger",
+            "AFTER": "filter created after",
+            "BEFORE": "filter created before",
+            "time": "Refine time"
+          },
+          "field": {
+            "AS": "name",
+            "STATUS": "status",
+            "TRIGGER": "trigger",
+            "AFTER": "created after",
+            "BEFORE": "created before"
+          },
+          "placeholder": {
+            "mainMenu": "Type or select a field...",
+            "AS": "filename.yaml",
+            "STATUS": "Type or select status...",
+            "TRIGGER": "Type or select trigger type..."
+          }
         }
       }
     },
