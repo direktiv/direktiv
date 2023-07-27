@@ -17,7 +17,7 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
       <Header instanceId={instanceId} />
       <div className="grid grow grid-cols-2 gap-5 p-5">
         <Card className="p-5">
-          <Logs />
+          <Logs instanceId={instanceId} />
         </Card>
         <Card>
           <Diagram workflowPath={data.workflow.path} flow={data.flow} />
