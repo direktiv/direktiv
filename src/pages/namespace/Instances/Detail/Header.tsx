@@ -1,11 +1,23 @@
+import { Box, FileSymlink } from "lucide-react";
+
 import Badge from "~/design/Badge";
-import { Box } from "lucide-react";
+import Button from "~/design/Button";
 import { FC } from "react";
+import { Link } from "react-router-dom";
+import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
 
 const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
   const { data } = useInstanceDetails({ instanceId });
+
+  // const isLatest = data?.instance.status === "latest";
+
+  const link = pages.explorer.createHref({
+    path: data?.workflow.path ?? "",
+    namespace: data?.namespace ?? "",
+    subpage: "workflow",
+  });
 
   if (!data) return null;
 
@@ -14,10 +26,19 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Box className="h-5" /> {data.instance.id.slice(0, 8)}
+          <Badge
+            variant={statusToBadgeVariant(data.instance.status)}
+            className="font-normal"
+          >
+            {data.instance.status}
+          </Badge>
         </h3>
-        <Badge variant={statusToBadgeVariant(data.instance.status)}>
-          {data.instance.status}
-        </Badge>
+        <Button asChild variant="primary">
+          <Link to={link}>
+            <FileSymlink />
+            open workflow
+          </Link>
+        </Button>
       </div>
     </div>
   );
