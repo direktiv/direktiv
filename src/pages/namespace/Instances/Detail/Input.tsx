@@ -1,4 +1,3 @@
-import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { FC } from "react";
 import { useInput } from "~/api/instances/query/input";
@@ -12,14 +11,12 @@ const Input: FC<{ instanceId: string }> = ({ instanceId }) => {
   const workflowInput = atob(data.data);
 
   return (
-    <Card className="p-5">
-      <Editor
-        value={workflowInput}
-        language="json"
-        theme={theme ?? undefined}
-        options={{ readOnly: true }}
-      />
-    </Card>
+    <Editor
+      value={workflowInput}
+      language="json"
+      theme={theme ?? undefined}
+      options={{ readOnly: true }}
+    />
   );
 };
 

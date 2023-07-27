@@ -12,14 +12,12 @@ const Output: FC<{ instanceId: string }> = ({ instanceId }) => {
   const workflowOutput = atob(data.data);
 
   return (
-    <Card className="p-5">
-      <Editor
-        value={workflowOutput}
-        language="json"
-        theme={theme ?? undefined}
-        options={{ readOnly: true }}
-      />
-    </Card>
+    <Editor
+      value={workflowOutput}
+      language="json"
+      theme={theme ?? undefined}
+      options={{ readOnly: true }}
+    />
   );
 };
 
