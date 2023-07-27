@@ -227,13 +227,14 @@ func (b *bus) start() error {
 	return err
 }
 
-func (b *bus) waitTillConnected(tickerTime, timeout time.Duration) error {
+func (b *bus) waitTillConnected(ctx context.Context, client *http.Client, tickerTime, timeout time.Duration) error {
 	checkService := func(port int) bool {
-		client := http.Client{
-			Timeout: time.Second, // Set a reasonable timeout for the HTTP client
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d/ping", port), nil)
+		if err != nil {
+			return false
 		}
 
-		resp, err := client.Get(fmt.Sprintf("http://127.0.0.1:%d/ping", port))
+		resp, err := client.Do(req)
 		if err != nil {
 			return false
 		}
@@ -242,19 +243,31 @@ func (b *bus) waitTillConnected(tickerTime, timeout time.Duration) error {
 		return resp.StatusCode == http.StatusOK
 	}
 
-	ticker := time.NewTicker(tickerTime)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-time.After(timeout):
-			return fmt.Errorf("could not start nsq bus")
-
-		case <-ticker.C:
+	busStarted := make(chan struct{})
+	go func() {
+		for {
 			if checkService(b.config.NSQDListenHTTPPort) && checkService(b.config.NSQLookupListenHTTPPort) {
-				return nil
+				close(busStarted)
+
+				return
+			}
+
+			select {
+			case <-time.After(tickerTime):
+			case <-ctx.Done():
+
+				return
 			}
 		}
+	}()
+
+	select {
+	case <-time.After(timeout):
+		return fmt.Errorf("timed out waiting for nsq bus to start")
+	case <-busStarted:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 

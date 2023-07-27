@@ -33,12 +33,14 @@ func NewNodeFinderStatic(nodes []string) NodeFinder {
 
 func (nfs *nodeFinderStatic) GetNodes(ctx context.Context) ([]string, error) {
 	_ = ctx
+
 	return nfs.nodes, nil
 }
 
 func (nfs *nodeFinderStatic) GetAddr(ctx context.Context, nodeID string) (string, error) {
 	_ = ctx
 	_ = nodeID
+
 	return os.Hostname()
 }
 
@@ -89,5 +91,6 @@ func lookupIPWithContext(ctx context.Context, host string) ([]net.IP, error) {
 func (nfk *nodeFinderKube) GetAddr(ctx context.Context, nodeID string) (string, error) {
 	_ = ctx
 	_ = nodeID
+
 	return os.Hostname()
 }

@@ -147,12 +147,13 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 	}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   5 * time.Second,
+	}
 	for i := 0; i < count; i++ {
 		c := configs[i]
-		node, err := NewNode(context.TODO(), c, nf.GetAddr, nf.GetNodes, 200*time.Millisecond, logger, &http.Client{
-			Transport: transport,
-			Timeout:   5 * time.Second,
-		})
+		node, err := NewNode(context.TODO(), c, nf.GetAddr, nf.GetNodes, 200*time.Millisecond, logger, client)
 		if err != nil {
 			return nil, err
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 
@@ -44,7 +45,20 @@ func TestBusConfig(t *testing.T) {
 
 func TestBusFunctions(t *testing.T) {
 	config := DefaultConfig()
-
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   5 * time.Second,
+	}
 	// setting data dir with temp folder
 	logger := zap.NewNop().Sugar()
 	b, err := newBus(config, logger)
@@ -52,7 +66,7 @@ func TestBusFunctions(t *testing.T) {
 	defer b.stop()
 
 	go b.start()
-	err = b.waitTillConnected(100, 100)
+	err = b.waitTillConnected(context.Background(), client, 10*time.Millisecond, 10*time.Millisecond)
 	require.NoError(t, err)
 
 	err = b.createTopic("topic1")
@@ -105,7 +119,20 @@ func getPorts(t *testing.T) []randomPort {
 
 func TestBusCluster(t *testing.T) {
 	config := DefaultConfig()
-
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   5 * time.Second,
+	}
 	ports1 := getPorts(t)
 
 	config.NSQDPort = ports1[0].port
@@ -120,7 +147,7 @@ func TestBusCluster(t *testing.T) {
 	require.NoError(t, err)
 	defer b.stop()
 	go b.start()
-	b.waitTillConnected(100, 100)
+	b.waitTillConnected(context.Background(), client, 100, 100)
 
 	ports2 := getPorts(t)
 	closePorts(ports2)
@@ -134,7 +161,7 @@ func TestBusCluster(t *testing.T) {
 	require.NoError(t, err)
 	defer b2.stop()
 	go b2.start()
-	b.waitTillConnected(100, 100)
+	b.waitTillConnected(context.Background(), client, 100, 100)
 
 	// update cluster
 	err = b.updateBusNodes(

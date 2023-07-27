@@ -73,7 +73,7 @@ func NewNode(ctx context.Context,
 		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
 	default:
 		// Check if the bus has started successfully
-		if err := node.bus.waitTillConnected(timeout, timeout); err != nil {
+		if err := node.bus.waitTillConnected(ctx, node.httpClient, timeout, timeout); err != nil {
 			return nil, fmt.Errorf("failed to start nsq bus: %w", err)
 		}
 	}
