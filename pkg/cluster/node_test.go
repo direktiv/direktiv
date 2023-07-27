@@ -173,7 +173,7 @@ func TestClusterSubscribe(t *testing.T) {
 	// check three node cluster
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
-	}, 10*time.Second, time.Millisecond*100)
+	}, 10*time.Second, time.Millisecond*300)
 
 	// Test topic1 subscription
 	testTopic1Subscription(t, nodes)
