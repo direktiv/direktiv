@@ -49,15 +49,15 @@ func TestNewNode(t *testing.T) {
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 	}
-	node, err := NewNode(context.TODO(),
+	node, _, err := NewNode(context.TODO(),
 		config,
 		finder.GetAddr,
 		finder.GetNodes,
-		200*time.Millisecond,
+		2*time.Second,
 		zap.NewNop().Sugar(), &http.Client{
 			Transport: transport,
 			Timeout:   5 * time.Second,
-		})
+		}, 5)
 	require.NoError(t, err)
 	defer node.Stop()
 
@@ -79,8 +79,11 @@ func rightNumber(nodes []*Node) bool {
 			return false
 		}
 
-		nn, _ := nodes[i].bus.nodes()
-
+		nn, err := nodes[i].bus.nodes()
+		if err != nil || nn.Producers == nil {
+			fmt.Print(err.Error() + "\n")
+			return false
+		}
 		if len(nn.Producers) != len(nodes) {
 			return false
 		}
@@ -149,10 +152,10 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 	}
 	for i := 0; i < count; i++ {
 		c := configs[i]
-		node, err := NewNode(context.TODO(), c, nf.GetAddr, nf.GetNodes, 200*time.Millisecond, logger, &http.Client{
+		node, _, err := NewNode(context.Background(), c, nf.GetAddr, nf.GetNodes, 10*time.Second, logger, &http.Client{
 			Transport: transport,
 			Timeout:   5 * time.Second,
-		})
+		}, 5)
 		if err != nil {
 			return nil, err
 		}
@@ -173,7 +176,7 @@ func TestClusterSubscribe(t *testing.T) {
 	// check three node cluster
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
-	}, 10*time.Second, time.Millisecond*300)
+	}, 5*time.Second, time.Millisecond*20)
 
 	// Test topic1 subscription
 	testTopic1Subscription(t, nodes)
@@ -211,7 +214,7 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == 2 && counter2.cc == 1 && counter3.cc == 1
-	}, 35*time.Second, time.Millisecond*200)
+	}, 35*time.Second, time.Millisecond*20)
 
 	add := 10
 	for i := 0; i < add; i++ {
@@ -221,7 +224,7 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == add+2 && counter2.cc == add+1 && counter3.cc == add+1
-	}, 35*time.Second, time.Millisecond*200)
+	}, 35*time.Second, time.Millisecond*20)
 }
 
 func testTopic2Subscription(t *testing.T, nodes []*Node) {

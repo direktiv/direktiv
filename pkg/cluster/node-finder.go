@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 )
 
 // Nodefinders have to return all ips/addr of the serf nodes available on startup
@@ -46,20 +47,22 @@ func (nfs *nodeFinderStatic) GetAddr(ctx context.Context, nodeID string) (string
 
 var direktivNamespace = os.Getenv("DIREKTIV_NAMESPACE")
 
-type nodeFinderKube struct{}
+type nodeFinderKube struct {
+	maxRetries int
+}
 
 // NewNodeFinderKube returns a dynamic list of nodes found in a kubernetes environment.
-func NewNodeFinderKube() NodeFinder {
-	return &nodeFinderKube{}
+func NewNodeFinderKube(maxRetries int) NodeFinder {
+	return &nodeFinderKube{maxRetries: maxRetries}
 }
 
 func (nfk *nodeFinderKube) GetNodes(ctx context.Context) ([]string, error) {
 	nodes := make([]string, 0)
 
 	// Use the provided context for the DNS lookup
-	ips, err := lookupIPWithContext(ctx, fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace))
+	ips, err := lookupIPWithContext(ctx, fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace), nfk.maxRetries, time.Second)
 	if err != nil {
-		return nil, fmt.Errorf("failed to look up IP addresses: %w", err)
+		return nil, fmt.Errorf("failed to look up IP addresses: %v, %w", fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace), err)
 	}
 
 	for _, ip := range ips {
@@ -71,21 +74,28 @@ func (nfk *nodeFinderKube) GetNodes(ctx context.Context) ([]string, error) {
 }
 
 // lookupIPWithContext is a helper function to perform DNS lookup with a provided context.
-func lookupIPWithContext(ctx context.Context, host string) ([]net.IP, error) {
-	// Perform the DNS lookup using the provided context
-	resolver := net.Resolver{}
-	ips, err := resolver.LookupIPAddr(ctx, host)
-	if err != nil {
-		return nil, err
+func lookupIPWithContext(ctx context.Context, host string, retries int, retryDelay time.Duration) ([]net.IP, error) {
+	for i := 0; i <= retries; i++ {
+		// Perform the DNS lookup using the provided context
+		resolver := net.Resolver{}
+		ips, err := resolver.LookupIPAddr(ctx, host)
+		if err == nil {
+			// Extract the IP addresses from IPAddr objects
+			result := make([]net.IP, len(ips))
+			for i, ipAddr := range ips {
+				result[i] = ipAddr.IP
+			}
+
+			return result, nil
+		}
+
+		// If there was an error, wait for the specified retry delay before trying again
+		if i < retries {
+			time.Sleep(retryDelay)
+		}
 	}
 
-	// Extract the IP addresses from IPAddr objects
-	result := make([]net.IP, len(ips))
-	for i, ipAddr := range ips {
-		result[i] = ipAddr.IP
-	}
-
-	return result, nil
+	return nil, fmt.Errorf("failed to look up IP addresses after %d retries", retries)
 }
 
 func (nfk *nodeFinderKube) GetAddr(ctx context.Context, nodeID string) (string, error) {

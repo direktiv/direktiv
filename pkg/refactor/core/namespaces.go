@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -14,8 +15,38 @@ type Namespace struct {
 	Name   string
 	Config string
 
+	RootsInfo string
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type RootInfo struct {
+	Name   string
+	RootID uuid.UUID
+}
+
+type RootsInfo struct {
+	Default RootInfo
+}
+
+func (ri *RootsInfo) Marshal() string {
+	data, err := json.Marshal(ri)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(data)
+}
+
+func (ns *Namespace) Roots() (*RootsInfo, error) {
+	ri := new(RootsInfo)
+	err := json.Unmarshal([]byte(ns.RootsInfo), ri)
+	if err != nil {
+		return nil, err
+	}
+
+	return ri, nil
 }
 
 func (ns *Namespace) GetAttributes() map[string]string {

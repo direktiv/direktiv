@@ -22,6 +22,15 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
+func (s *sqlFileStore) ForRootNamespaceAndName(nsID uuid.UUID, rootName string) filestore.RootQuery {
+	return &RootQuery{
+		nsID:         nsID,
+		rootName:     rootName,
+		db:           s.db,
+		checksumFunc: filestore.DefaultCalculateChecksum,
+	}
+}
+
 func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	return &FileQuery{
 		file:         file,
@@ -45,8 +54,12 @@ func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
 	}
 }
 
-func (s *sqlFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
-	n := &filestore.Root{ID: id}
+func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*filestore.Root, error) {
+	n := &filestore.Root{
+		ID:          rootID,
+		NamespaceID: namespaceID,
+		Name:        name,
+	}
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
 	if res.Error != nil {
 		return nil, res.Error
@@ -59,12 +72,51 @@ func (s *sqlFileStore) CreateRoot(ctx context.Context, id uuid.UUID) (*filestore
 }
 
 //nolint:ireturn
+func (s *sqlFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
+	var list []filestore.Root
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_roots
+					WHERE id = ?
+					`, id).Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	if len(list) == 0 {
+		return nil, filestore.ErrNotFound
+	}
+
+	return &list[0], nil
+}
+
+//nolint:ireturn
 func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_roots
 					`).Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	var ns []*filestore.Root
+	for i := range list {
+		ns = append(ns, &list[i])
+	}
+
+	return ns, nil
+}
+
+//nolint:ireturn
+func (s *sqlFileStore) GetAllRootsForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*filestore.Root, error) {
+	var list []filestore.Root
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_roots
+					WHERE namespace_id = ?
+					`, namespaceID).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
 	}

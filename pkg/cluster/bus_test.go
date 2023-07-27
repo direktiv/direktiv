@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ func TestBusConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, b.dataDir)
 	defer b.stop()
-
+	os.Mkdir("/tmp/test", 0o700)
 	config.NSQDataDir = "/tmp/test"
 
 	ports := getPorts(t)

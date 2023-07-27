@@ -150,29 +150,25 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
-	gormConf := &gorm.Config{}
 	jsonV := "json"
-	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) == jsonV {
-		gormConf = &gorm.Config{
-			Logger: logger.New(
-				log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
-				logger.Config{
-					LogLevel:                  logger.Warn,
-					IgnoreRecordNotFoundError: true,
-				},
-			),
-		}
+	gormLogLevel := logger.Warn
+	if os.Getenv(util.DirektivDebug) == "true" {
+		gormLogLevel = logger.Info
 	}
-	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) != jsonV {
-		gormConf = &gorm.Config{
-			Logger: logger.New(
-				log.New(os.Stdout, "\r\n", log.LstdFlags),
-				logger.Config{
-					LogLevel: logger.Info,
-				},
-			),
-		}
+	gormLogger := log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags)
+	if os.Getenv(util.DirektivLogJSON) != jsonV {
+		gormLogger = log.New(os.Stdout, "\r\n", log.LstdFlags)
 	}
+	gormConf := &gorm.Config{
+		Logger: logger.New(
+			gormLogger,
+			logger.Config{
+				LogLevel:                  gormLogLevel,
+				IgnoreRecordNotFoundError: true,
+			},
+		),
+	}
+
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
@@ -314,13 +310,13 @@ func (srv *server) start(ctx context.Context) error {
 		logworker()
 	}()
 
-	cc := func(ctx context.Context, file *filestore.File) error {
+	cc := func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
 		_, router, err := getRouter(ctx, noTx, file)
 		if err != nil {
 			return err
 		}
 
-		err = srv.flow.configureWorkflowStarts(ctx, noTx, file.RootID, file, router, false)
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, nsID, file, router, false)
 		if err != nil {
 			return err
 		}
@@ -420,14 +416,16 @@ func (srv *server) start(ctx context.Context) error {
 		TLSHandshakeTimeout:   10 * time.Second,
 	}
 	config := cluster.DefaultConfig()
-	finder := cluster.NewNodeFinderKube()
-	node, err = cluster.NewNode(ctx, config, finder.GetAddr, finder.GetNodes, 100*time.Millisecond, srv.sugar.Named("cluster"), &http.Client{
+	finder := cluster.NewNodeFinderKube(5)
+	var stopNode func()
+	node, stopNode, err = cluster.NewNode(ctx, config, finder.GetAddr, finder.GetNodes, 100*time.Millisecond, srv.sugar.Named("cluster"), &http.Client{
 		Transport: transport,
 		Timeout:   5 * time.Second,
-	})
+	}, 5)
 	if err != nil {
 		return err
 	}
+	defer stopNode()
 	srv.sugar.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)

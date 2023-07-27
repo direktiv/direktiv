@@ -19,7 +19,10 @@ import (
 	"go.uber.org/zap"
 )
 
-const eventHandlerWorkers = 10 // TODO: should this be 1?
+const (
+	eventHandlerWorkers = 1 // TODO: should this be 1?
+	queueSize           = 100
+)
 
 // Node is configured per host in the cluster.
 type Node struct {
@@ -36,6 +39,7 @@ type Node struct {
 	producer       *nsq.Producer
 	id             string
 	httpClient     *http.Client
+	maxRetries     int
 }
 
 func NewNode(ctx context.Context,
@@ -45,7 +49,8 @@ func NewNode(ctx context.Context,
 	timeout time.Duration,
 	logger *zap.SugaredLogger,
 	httpClient *http.Client,
-) (*Node, error) {
+	maxRetries int,
+) (*Node, func(), error) {
 	var err error
 
 	node := &Node{
@@ -55,15 +60,22 @@ func NewNode(ctx context.Context,
 		httpClient: httpClient,
 	}
 
+	ctx, cancel := context.WithCancel(ctx)
+
+	node.maxRetries = maxRetries
 	node.bus, err = newBus(config, node.logger)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create nsq bus: %w", err)
+		cancel()
+
+		return nil, func() {}, fmt.Errorf("failed to create nsq bus: %w", err)
 	}
 
 	producerConfig := nsq.NewConfig()
 	node.producer, err = nsq.NewProducer(fmt.Sprintf("127.0.0.1:%d", config.NSQDPort), producerConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create nsq producer client: %w", err)
+		cancel()
+
+		return nil, func() {}, fmt.Errorf("failed to create nsq producer client: %w", err)
 	}
 
 	bl := &busLogger{
@@ -80,7 +92,9 @@ func NewNode(ctx context.Context,
 
 	addr, err := getAddr(ctx, node.id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get address: %w", err)
+		cancel()
+
+		return nil, func() {}, fmt.Errorf("failed to get address: %w", err)
 	}
 	serfConfig.NodeName = net.JoinHostPort(addr, fmt.Sprintf("%d", config.SerfPort))
 
@@ -90,7 +104,9 @@ func NewNode(ctx context.Context,
 
 	hash, err := hashstructure.Hash(serfConfig.NodeName, hashstructure.FormatV2, nil)
 	if err != nil {
-		panic(err)
+		cancel()
+
+		return nil, func() {}, fmt.Errorf("failed to generate hash structure: %w", err)
 	}
 	node.busChannelName = fmt.Sprintf("%d", hash)
 
@@ -116,7 +132,9 @@ func NewNode(ctx context.Context,
 
 	node.serfServer, err = serf.Create(serfConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create serf node: %w", err)
+		cancel()
+
+		return nil, func() {}, fmt.Errorf("failed to create serf node: %w", err)
 	}
 
 	startBusErrCh := make(chan error)
@@ -138,25 +156,54 @@ func NewNode(ctx context.Context,
 	case <-startWaitCh:
 		// Bus successfully started, continue execution
 	case <-ctx.Done():
-		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
+		cancel()
+
+		return nil, func() {}, fmt.Errorf("timed out waiting for nsq bus to start")
 	}
 
-	go node.eventHandler(ctx)
+	go node.eventHandler(ctx, queueSize)
 	<-node.upCh
 
 	clusterNodes, err := getNodes(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find nodes: %w", err)
-	}
+		cancel()
 
-	joined, err := node.serfServer.Join(clusterNodes, true)
+		return nil, func() {}, fmt.Errorf("failed to find nodes: %w", err)
+	}
+	node.logger.Infof("found nodes: %v", clusterNodes)
+
+	joined, err := node.joinSerfClusterWithRetry(ctx, clusterNodes, node.maxRetries)
 	if err != nil {
-		return nil, fmt.Errorf("failed to join serf cluster: %w", err)
-	}
+		cancel()
 
+		return nil, func() {}, fmt.Errorf("failed to join Serf cluster: %w", err)
+	}
 	node.logger.Infof("Cluster with %d servers joined.", joined)
 
-	return node, err
+	return node, cancel, nil
+}
+
+func (node *Node) joinSerfClusterWithRetry(ctx context.Context, clusterNodes []string, maxRetries int) (int, error) {
+	initialDelay := 2
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		joined, err := node.serfServer.Join(clusterNodes, true)
+		if err == nil {
+			return joined, nil
+		}
+
+		delay := time.Duration(initialDelay) * time.Second
+		initialDelay *= 2 // Double the initial delay for the next attempt
+
+		select {
+		case <-time.After(delay):
+			// Continue to the next attempt
+		case <-ctx.Done():
+			// Return if the context is canceled before the next attempt
+			return 0, ctx.Err()
+		}
+	}
+
+	return 0, fmt.Errorf("failed to join serf cluster after %d attempts", maxRetries)
 }
 
 // Stop attempts to gracefully leave the cluster, notifying other nodes that
@@ -191,23 +238,28 @@ func (node *Node) Stop() error {
 	return nil
 }
 
-func (node *Node) updateBusMember(ctx context.Context) error {
+func (node *Node) updateBusMemberWithRetry(ctx context.Context, maxRetries int) error {
 	members := node.serfServer.Members()
 	updateBusMember := make([]string, 0)
 	for i := range members {
 		m := members[i]
 		updateBusMember = append(updateBusMember, m.Tags[nsqLookupAddress])
 	}
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		err := node.bus.updateBusNodes(ctx, updateBusMember, node.httpClient)
+		if err == nil {
+			// Successfully updated the bus member
+			return nil
+		}
 
-	err := node.bus.updateBusNodes(ctx, updateBusMember, node.httpClient)
-	if err != nil {
-		return err
+		// Wait for a short delay before the next retry
+		time.Sleep(time.Second)
 	}
 
-	return nil
+	return fmt.Errorf("failed to update bus member after %d attempts", maxRetries)
 }
 
-func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent, join bool) error {
+func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent, join bool, maxRetries int) error {
 	for _, member := range memberEvent.Members {
 		if node.serfServer.LocalMember().Name == member.Name {
 			if join {
@@ -223,16 +275,19 @@ func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent
 		}
 
 		// Only update the bus member if it's not the local node
-		if err := node.updateBusMember(ctx); err != nil {
-			return fmt.Errorf("failed to update bus member: %v", err)
+		if err := node.updateBusMemberWithRetry(ctx, maxRetries); err != nil {
+			return fmt.Errorf("failed to update bus member: %w", err)
 		}
 	}
+
 	return nil
 }
 
-func (node *Node) eventHandler(ctx context.Context) {
-	// Create a buffered channel to hold events to be processed
-	eventQueue := make(chan serf.Event, 100)
+func (node *Node) eventHandler(ctx context.Context, queueSize int) {
+	eventQueue := make(chan serf.Event, queueSize)
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	// Create a goroutine pool to process events concurrently
 	for i := 0; i < eventHandlerWorkers; i++ {
@@ -240,7 +295,6 @@ func (node *Node) eventHandler(ctx context.Context) {
 	}
 
 	for e := range node.events {
-		// Put the event in the eventQueue channel to be processed by a worker
 		select {
 		case eventQueue <- e:
 		case <-ctx.Done():
@@ -258,9 +312,10 @@ func (node *Node) eventWorker(ctx context.Context, eventQueue <-chan serf.Event)
 			}
 		case serf.EventMemberJoin:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
-				if err := node.handleMember(ctx, memberEvent, true); err != nil {
+				if err := node.handleMember(ctx, memberEvent, true, node.maxRetries); err != nil {
 					node.logger.Errorf("Failed to handle member join: %v", err)
-					panic(err)
+
+					return
 				}
 				node.logger.Infof("A node has joined the cluster: %v.", memberEvent.Members)
 			}
@@ -268,13 +323,15 @@ func (node *Node) eventWorker(ctx context.Context, eventQueue <-chan serf.Event)
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Infof("A node has left the cluster: %v.", memberEvent.Members)
 			}
+
 			fallthrough
 		case serf.EventMemberFailed, serf.EventMemberLeave:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Debugf("A node has left the cluster: %v.", memberEvent.Members)
-				if err := node.handleMember(ctx, memberEvent, false); err != nil {
+				if err := node.handleMember(ctx, memberEvent, false, node.maxRetries); err != nil {
 					node.logger.Errorf("Failed to handle member leave/fail: %v", err)
-					panic(err)
+
+					return
 				}
 			}
 		}
