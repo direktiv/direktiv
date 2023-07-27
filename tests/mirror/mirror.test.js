@@ -105,7 +105,7 @@ describe('Test behaviour specific to the root node', () => {
                 pageInfo: {
                     limit: 0,
                     offset: 0,
-                    total: 18,
+                    total: 16,
                     order: [],
                     filter: [],
                 },

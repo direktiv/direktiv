@@ -13,7 +13,7 @@ import (
 func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id uuid.UUID) {
 	t.Helper()
 
-	root, err := fs.CreateRoot(context.Background(), id, "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), id, "test")
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 

@@ -79,7 +79,7 @@ func (events *events) sendEvent(data []byte) {
 
 	var ns *core.Namespace
 	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByID(ctx, id)
+		ns, err = tx.DataStore().Namespaces().GetByID(ctx, id) // TODO: Alexander, I haven't updated this but I think it's no longer in use. Is that accurate?
 		return err
 	})
 	if err != nil {

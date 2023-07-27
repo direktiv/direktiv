@@ -15,11 +15,11 @@ var pathRegexExp = regexp.MustCompile(pathRegexPattern)
 
 // SanitizePath standardizes and sanitizes the path, and validates it against naming requirements.
 func SanitizePath(path string) (string, error) {
-	path = "/" + filepath.Join("/", path)
+	path = filepath.Clean(filepath.Join("/", strings.TrimPrefix(path, "/")))
 	cleanedPath := filepath.Clean(path) // filepath.Clean() is unnecessary and can lead to potential issues,
 	// especially when dealing with URLs or paths containing dot-segments (e.g., /../ or /./).
 	if !pathRegexExp.MatchString(path) {
-		return "", fmt.Errorf("invalid path string; orig:  %v sanitized: %v", path, cleanedPath)
+		return "", fmt.Errorf("invalid path string; orig: %v sanitized: %v", path, cleanedPath)
 	}
 
 	return cleanedPath, nil

@@ -28,7 +28,10 @@ var (
 // FileStore manages different operations on files and roots.
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, namespaceID uuid.UUID, name string) (*Root, error)
+	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*Root, error)
+
+	// GetRoot gets a root.
+	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
@@ -38,6 +41,9 @@ type FileStore interface {
 
 	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
+
+	// ForRootNamespaceAndName returns a query object to do further queries on root.
+	ForRootNamespaceAndName(namespaceID uuid.UUID, rootName string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery

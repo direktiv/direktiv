@@ -22,6 +22,15 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
+func (s *sqlFileStore) ForRootNamespaceAndName(nsID uuid.UUID, rootName string) filestore.RootQuery {
+	return &RootQuery{
+		nsID:         nsID,
+		rootName:     rootName,
+		db:           s.db,
+		checksumFunc: filestore.DefaultCalculateChecksum,
+	}
+}
+
 func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	return &FileQuery{
 		file:         file,
@@ -45,9 +54,9 @@ func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
 	}
 }
 
-func (s *sqlFileStore) CreateRoot(ctx context.Context, namespaceID uuid.UUID, name string) (*filestore.Root, error) {
+func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*filestore.Root, error) {
 	n := &filestore.Root{
-		ID:          uuid.New(),
+		ID:          rootID,
 		NamespaceID: namespaceID,
 		Name:        name,
 	}
@@ -60,6 +69,25 @@ func (s *sqlFileStore) CreateRoot(ctx context.Context, namespaceID uuid.UUID, na
 	}
 
 	return n, nil
+}
+
+//nolint:ireturn
+func (s *sqlFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
+	var list []filestore.Root
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM filesystem_roots
+					WHERE id = ?
+					`, id).Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	if len(list) == 0 {
+		return nil, filestore.ErrNotFound
+	}
+
+	return &list[0], nil
 }
 
 //nolint:ireturn

@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -178,36 +179,61 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 
 const defaultRootName = "main"
 
+func standardRootsInfo() string {
+	data, err := json.Marshal(map[string]interface{}{
+		"default": defaultRootName,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return string(data)
+}
+
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
+		flow.sugar.Warnf("CreateNamespace failed to begin database transaction: %v", err)
 		return nil, err
 	}
 	defer tx.Rollback()
 
+	ri := core.RootsInfo{
+		Default: core.RootInfo{
+			Name:   defaultRootName,
+			RootID: uuid.New(),
+		},
+	}
+
 	ns, err := tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:   req.GetName(),
-		Config: core.DefaultNamespaceConfig,
+		Name:      req.GetName(),
+		Config:    core.DefaultNamespaceConfig,
+		RootsInfo: ri.Marshal(),
 	})
 	if err != nil {
+		flow.sugar.Warnf("CreateNamespace failed to create namespace: %v", err)
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ns.ID, "main")
+	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID, defaultRootName)
 	if err != nil {
+		flow.sugar.Warnf("CreateNamespace failed to create main file-system root: %v", err)
 		return nil, err
 	}
 	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
 	if err != nil {
+		flow.sugar.Warnf("CreateNamespace failed to create root directory: %v", err)
 		return nil, err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
+		flow.sugar.Warnf("CreateNamespace failed to commit database transaction: %v", err)
 		return nil, err
 	}
 
+	flow.sugar.Infof("Created namespace '%s'.", ns.Name)
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
@@ -235,7 +261,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	isEmpty, err := tx.FileStore().ForRootID(ns.ID).IsEmptyDirectory(ctx, "/")
+	isEmpty, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).IsEmptyDirectory(ctx, "/")
 	if err != nil {
 		if !errors.Is(err, filestore.ErrNotFound) {
 			// NOTE: the alternative shouldn't be possible

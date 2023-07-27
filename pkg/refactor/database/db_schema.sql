@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
     "id" uuid,
     "name" text NOT NULL UNIQUE,
     "config" text NOT NULL,
-    "default_root" text NOT NULL,
+    "roots_info" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS "file_annotations" (
 
 CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "namespace_id" uuid,
+    "root_name" text NOT NULL,
     "url" text NOT NULL,
     "git_ref" text NOT NULL,
     "git_commit_hash" text,
@@ -78,6 +79,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
 CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
+    "root_id" uuid NOT NULL,
     "status" text NOT NULL,
     "typ" 	 text NOT NULL,
     "ended_at" timestamptz,
@@ -191,7 +193,7 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "no_dup_check" UNIQUE ("source","id")
+    CONSTRAINT "no_dup_check" UNIQUE ("source","id", "namespace_id")
 );
 
 -- for cursor style pagination
