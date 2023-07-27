@@ -150,12 +150,16 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Debug("Initializing database.")
 	gormConf := &gorm.Config{}
 	jsonV := "json"
+	gormLogLevel := logger.Warn
+	if os.Getenv(util.DirektivDebug) == "true" {
+		gormLogLevel = logger.Info
+	}
 	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) == jsonV {
 		gormConf = &gorm.Config{
 			Logger: logger.New(
 				log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
 				logger.Config{
-					LogLevel:                  logger.Warn,
+					LogLevel:                  gormLogLevel,
 					IgnoreRecordNotFoundError: true,
 				},
 			),
@@ -166,7 +170,7 @@ func (srv *server) start(ctx context.Context) error {
 			Logger: logger.New(
 				log.New(os.Stdout, "\r\n", log.LstdFlags),
 				logger.Config{
-					LogLevel: logger.Info,
+					LogLevel: gormLogLevel,
 				},
 			),
 		}
