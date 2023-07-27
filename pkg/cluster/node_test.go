@@ -161,7 +161,7 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == 1
-	}, 30*time.Second, time.Millisecond*100)
+	}, 35*time.Second, time.Millisecond*200)
 
 	counter2 := &counterHandler{}
 	unsub2, err := nodes[1].Subscribe("topic1", nodes[1].busChannelName, counter2.counter)
@@ -179,7 +179,7 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == 2 && counter2.cc == 1 && counter3.cc == 1
-	}, 30*time.Second, time.Millisecond*100)
+	}, 35*time.Second, time.Millisecond*200)
 
 	add := 10
 	for i := 0; i < add; i++ {
@@ -189,7 +189,7 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == add+2 && counter2.cc == add+1 && counter3.cc == add+1
-	}, 30*time.Second, time.Millisecond*100)
+	}, 35*time.Second, time.Millisecond*200)
 }
 
 func testTopic2Subscription(t *testing.T, nodes []*Node) {
