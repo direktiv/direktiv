@@ -416,14 +416,16 @@ func (srv *server) start(ctx context.Context) error {
 		TLSHandshakeTimeout:   10 * time.Second,
 	}
 	config := cluster.DefaultConfig()
-	finder := cluster.NewNodeFinderKube()
-	node, err = cluster.NewNode(ctx, config, finder.GetAddr, finder.GetNodes, 100*time.Millisecond, srv.sugar.Named("cluster"), &http.Client{
+	finder := cluster.NewNodeFinderKube(5)
+	var stopNode func()
+	node, stopNode, err = cluster.NewNode(ctx, config, finder.GetAddr, finder.GetNodes, 100*time.Millisecond, srv.sugar.Named("cluster"), &http.Client{
 		Transport: transport,
 		Timeout:   5 * time.Second,
-	})
+	}, 5)
 	if err != nil {
 		return err
 	}
+	defer stopNode()
 	srv.sugar.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)

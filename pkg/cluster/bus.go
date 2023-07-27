@@ -143,8 +143,7 @@ type producerList struct {
 //lint:ignore U1000 Ignore unused function for testing
 func (b *bus) nodes() (*producerList, error) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
-		fmt.Sprintf("http://127.0.0.1:%d/nodes",
-			b.config.NSQLookupListenHTTPPort), nil)
+		fmt.Sprintf("http://127.0.0.1:%d/nodes", b.config.NSQLookupListenHTTPPort), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +153,10 @@ func (b *bus) nodes() (*producerList, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
 
 	bo, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -47,18 +47,20 @@ func (nfs *nodeFinderStatic) GetAddr(ctx context.Context, nodeID string) (string
 
 var direktivNamespace = os.Getenv("DIREKTIV_NAMESPACE")
 
-type nodeFinderKube struct{}
+type nodeFinderKube struct {
+	maxRetries int
+}
 
 // NewNodeFinderKube returns a dynamic list of nodes found in a kubernetes environment.
-func NewNodeFinderKube() NodeFinder {
-	return &nodeFinderKube{}
+func NewNodeFinderKube(maxRetries int) NodeFinder {
+	return &nodeFinderKube{maxRetries: maxRetries}
 }
 
 func (nfk *nodeFinderKube) GetNodes(ctx context.Context) ([]string, error) {
 	nodes := make([]string, 0)
 
 	// Use the provided context for the DNS lookup
-	ips, err := lookupIPWithContext(ctx, fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace), 4, time.Second)
+	ips, err := lookupIPWithContext(ctx, fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace), nfk.maxRetries, time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("failed to look up IP addresses: %v, %w", fmt.Sprintf("direktiv-headless.%s.svc", direktivNamespace), err)
 	}
@@ -83,6 +85,7 @@ func lookupIPWithContext(ctx context.Context, host string, retries int, retryDel
 			for i, ipAddr := range ips {
 				result[i] = ipAddr.IP
 			}
+
 			return result, nil
 		}
 
@@ -92,7 +95,6 @@ func lookupIPWithContext(ctx context.Context, host string, retries int, retryDel
 		}
 	}
 
-	// Return the last error if all retries failed
 	return nil, fmt.Errorf("failed to look up IP addresses after %d retries", retries)
 }
 
