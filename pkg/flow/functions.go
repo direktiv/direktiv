@@ -28,7 +28,7 @@ func (flow *flow) functionsHeartbeat() {
 	}
 
 	for _, ns := range nss {
-		files, err := tx.FileStore().ForRootID(ns.ID).ListAllFiles(ctx)
+		files, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).ListAllFiles(ctx)
 		if err != nil {
 			flow.sugar.Error(err)
 			return

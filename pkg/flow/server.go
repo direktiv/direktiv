@@ -148,33 +148,25 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
-	gormConf := &gorm.Config{}
 	jsonV := "json"
 	gormLogLevel := logger.Warn
 	if os.Getenv(util.DirektivDebug) == "true" {
 		gormLogLevel = logger.Info
 	}
-	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) == jsonV {
-		gormConf = &gorm.Config{
-			Logger: logger.New(
-				log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags),
-				logger.Config{
-					LogLevel:                  gormLogLevel,
-					IgnoreRecordNotFoundError: true,
-				},
-			),
-		}
+	gormLogger := log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags)
+	if os.Getenv(util.DirektivLogJSON) != jsonV {
+		gormLogger = log.New(os.Stdout, "\r\n", log.LstdFlags)
 	}
-	if enableDeveloperMode && os.Getenv(util.DirektivLogJSON) != jsonV {
-		gormConf = &gorm.Config{
-			Logger: logger.New(
-				log.New(os.Stdout, "\r\n", log.LstdFlags),
-				logger.Config{
-					LogLevel: gormLogLevel,
-				},
-			),
-		}
+	gormConf := &gorm.Config{
+		Logger: logger.New(
+			gormLogger,
+			logger.Config{
+				LogLevel:                  gormLogLevel,
+				IgnoreRecordNotFoundError: true,
+			},
+		),
 	}
+
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
@@ -316,13 +308,13 @@ func (srv *server) start(ctx context.Context) error {
 		logworker()
 	}()
 
-	cc := func(ctx context.Context, file *filestore.File) error {
+	cc := func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
 		_, router, err := getRouter(ctx, noTx, file)
 		if err != nil {
 			return err
 		}
 
-		err = srv.flow.configureWorkflowStarts(ctx, noTx, file.RootID, file, router, false)
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, nsID, file, router, false)
 		if err != nil {
 			return err
 		}
@@ -412,7 +404,7 @@ func (srv *server) start(ctx context.Context) error {
 	var node *cluster.Node
 	// start pub sub
 	config := cluster.DefaultConfig()
-	node, err = cluster.NewNode(config, cluster.NewNodeFinderKube(), srv.sugar.Named("cluster"))
+	node, err = cluster.NewNode(config, cluster.NewNodeFinderStatic(nil), srv.sugar.Named("cluster"))
 	if err != nil {
 		return err
 	}
