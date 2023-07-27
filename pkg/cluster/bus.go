@@ -174,8 +174,7 @@ func (b *bus) nodes() (*producerList, error) {
 	return &pl, nil
 }
 
-func (b *bus) updateBusNodes(ctx context.Context, nodes []string) error {
-	_ = ctx
+func (b *bus) updateBusNodes(ctx context.Context, nodes []string, client *http.Client) error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -188,14 +187,13 @@ func (b *bus) updateBusNodes(ctx context.Context, nodes []string) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, bytes.NewBuffer(data)) //nolint
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewBuffer(data)) //nolint
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -209,22 +207,40 @@ func (b *bus) updateBusNodes(ctx context.Context, nodes []string) error {
 	return nil
 }
 
-func (b *bus) start() error {
-	errChan := make(chan error, 1)
+func (b *bus) start(ctx context.Context, timeout time.Duration) error {
+	// Create a new context with a timeout of 10 seconds
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
+	errChanNsqd := make(chan error, 1)
+	errChanLookup := make(chan error, 1)
 	go func() {
 		err := b.nsqd.Main()
-		errChan <- err
+		errChanNsqd <- err
 	}()
 
 	go func() {
 		err := b.lookup.Main()
-		errChan <- err
+		errChanLookup <- err
 	}()
 
-	err := <-errChan
+	select {
+	case errNsqd := <-errChanNsqd:
+		if errNsqd != nil {
+			return errNsqd
+		}
+	case errLookup := <-errChanLookup:
+		if errLookup != nil {
+			return errLookup
+		}
+	case <-ctx.Done():
+		// Cancel both nsqd and lookup in case of timeout
+		b.nsqd.Exit()
+		b.lookup.Exit()
+		return ctx.Err()
+	}
 
-	return err
+	return nil
 }
 
 func (b *bus) waitTillConnected(ctx context.Context, client *http.Client, tickerTime, timeout time.Duration) error {
@@ -272,15 +288,14 @@ func (b *bus) waitTillConnected(ctx context.Context, client *http.Client, ticker
 }
 
 //nolint:unused
-func (b *bus) createTopic(topic string) error {
+func (b *bus) createTopic(ctx context.Context, topic string, client *http.Client) error {
 	url := fmt.Sprintf("http://127.0.0.1:%d/topic/create?topic=%s", b.config.NSQDListenHTTPPort, topic)
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -295,7 +310,7 @@ func (b *bus) createTopic(topic string) error {
 }
 
 //nolint:unused
-func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
+func (b *bus) createDeleteChannel(ctx context.Context, client *http.Client, topic, channel string, create bool) error {
 	action := "delete"
 	if create {
 		action = "create"
@@ -303,12 +318,11 @@ func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/channel/%s?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, action, topic, channel)
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
