@@ -20,6 +20,19 @@ export const InstancesListSchema = z.object({
   }),
 });
 
+export const InstancesDetailSchema = z.object({
+  namespace: z.string(),
+  instance: InstanceSchema,
+  invokedBy: z.string(), // mostly empty
+  flow: z.array(z.string()), // required for the diagram: a list of states that have been executed
+  workflow: z.object({
+    path: z.string(),
+    name: z.string(),
+    parent: z.string(),
+    revision: z.string(),
+  }),
+});
+
 export const InstancesInputSchema = z.object({
   namespace: z.string(),
   instance: InstanceSchema,
