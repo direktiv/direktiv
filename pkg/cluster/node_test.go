@@ -3,6 +3,8 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -36,8 +38,26 @@ func TestNodeConfig(t *testing.T) {
 
 func TestNewNode(t *testing.T) {
 	config := DefaultConfig()
-
-	node, err := NewNode(context.TODO(), config, NewNodeFinderStatic(nil), 200*time.Millisecond, zap.NewNop().Sugar())
+	finder := NewNodeFinderStatic(nil)
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
+	node, err := NewNode(context.TODO(),
+		config,
+		finder.GetAddr,
+		finder.GetNodes,
+		200*time.Millisecond,
+		zap.NewNop().Sugar(), &http.Client{
+			Transport: transport,
+			Timeout:   5 * time.Second,
+		})
 	require.NoError(t, err)
 	defer node.Stop()
 
@@ -117,10 +137,22 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 	}
 
 	nf := NewNodeFinderStatic(nfNodes)
-
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Minute,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ResponseHeaderTimeout: time.Minute,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+	}
 	for i := 0; i < count; i++ {
 		c := configs[i]
-		node, err := NewNode(context.TODO(), c, nf, 200*time.Millisecond, logger)
+		node, err := NewNode(context.TODO(), c, nf.GetAddr, nf.GetNodes, 200*time.Millisecond, logger, &http.Client{
+			Transport: transport,
+			Timeout:   5 * time.Second,
+		})
 		if err != nil {
 			return nil, err
 		}

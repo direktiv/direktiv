@@ -227,9 +227,13 @@ func (b *bus) start() error {
 	return err
 }
 
-func (b *bus) waitTillConnected(tickerTime time.Duration) error {
+func (b *bus) waitTillConnected(tickerTime, timeout time.Duration) error {
 	checkService := func(port int) bool {
-		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/ping", port)) //nolint
+		client := http.Client{
+			Timeout: time.Second, // Set a reasonable timeout for the HTTP client
+		}
+
+		resp, err := client.Get(fmt.Sprintf("http://127.0.0.1:%d/ping", port))
 		if err != nil {
 			return false
 		}
@@ -238,13 +242,12 @@ func (b *bus) waitTillConnected(tickerTime time.Duration) error {
 		return resp.StatusCode == http.StatusOK
 	}
 
-	timeout := time.After(busStartTimeout)
 	ticker := time.NewTicker(tickerTime)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-timeout:
+		case <-time.After(timeout):
 			return fmt.Errorf("could not start nsq bus")
 
 		case <-ticker.C:

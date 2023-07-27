@@ -52,7 +52,7 @@ func TestBusFunctions(t *testing.T) {
 	defer b.stop()
 
 	go b.start()
-	err = b.waitTillConnected(100)
+	err = b.waitTillConnected(100, 100)
 	require.NoError(t, err)
 
 	err = b.createTopic("topic1")
@@ -120,7 +120,7 @@ func TestBusCluster(t *testing.T) {
 	require.NoError(t, err)
 	defer b.stop()
 	go b.start()
-	b.waitTillConnected(100)
+	b.waitTillConnected(100, 100)
 
 	ports2 := getPorts(t)
 	closePorts(ports2)
@@ -134,7 +134,7 @@ func TestBusCluster(t *testing.T) {
 	require.NoError(t, err)
 	defer b2.stop()
 	go b2.start()
-	b.waitTillConnected(100)
+	b.waitTillConnected(100, 100)
 
 	// update cluster
 	err = b.updateBusNodes(
