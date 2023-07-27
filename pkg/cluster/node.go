@@ -9,8 +9,10 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/serf/serf"
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/nsqio/go-nsq"
@@ -24,26 +26,31 @@ type Node struct {
 	// serf settings
 	serfServer *serf.Serf
 	events     chan serf.Event
-	nodefinder NodeFinder
 	upCh       chan bool
 
 	// nsq settings
 	bus            *bus
 	busChannelName string
 	producer       *nsq.Producer
+	id             string
+	httpClient     *http.Client
 }
 
-func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, timeout time.Duration, logger *zap.SugaredLogger) (*Node, error) {
+func NewNode(ctx context.Context,
+	config Config,
+	getAddr func(ctx context.Context, nodeID string) (string, error),
+	getNodes func(context.Context) ([]string, error),
+	timeout time.Duration,
+	logger *zap.SugaredLogger,
+	httpClient *http.Client,
+) (*Node, error) {
 	var err error
-
-	if nodeFinder == nil {
-		panic(fmt.Errorf("nodefinder not set"))
-	}
 
 	node := &Node{
 		logger:     logger,
-		nodefinder: nodeFinder,
 		upCh:       make(chan bool),
+		id:         uuid.NewString(),
+		httpClient: httpClient,
 	}
 	// Create a context with a timeout for bus startup
 	ctx, cancel := context.WithTimeout(ctx, busStartTimeout)
@@ -66,7 +73,7 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, timeout 
 		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
 	default:
 		// Check if the bus has started successfully
-		if err := node.bus.waitTillConnected(timeout); err != nil {
+		if err := node.bus.waitTillConnected(timeout, timeout); err != nil {
 			return nil, fmt.Errorf("failed to start nsq bus: %w", err)
 		}
 	}
@@ -89,7 +96,7 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, timeout 
 
 	serfConfig.Tags = make(map[string]string)
 
-	addr, err := nodeFinder.GetAddr()
+	addr, err := getAddr(ctx, node.id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get address: %w", err)
 	}
@@ -133,7 +140,7 @@ func NewNode(ctx context.Context, config Config, nodeFinder NodeFinder, timeout 
 	go node.eventHandler(ctx)
 	<-node.upCh
 
-	clusterNodes, err := node.nodefinder.GetNodes()
+	clusterNodes, err := getNodes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find nodes: %w", err)
 	}
@@ -276,7 +283,7 @@ func (node *Node) doSubscribe(topic, channel string,
 		consumer: consumer,
 		executor: handler,
 	}
-
+	consumer.SetLookupdHttpClient(node.httpClient)
 	consumer.AddConcurrentHandlers(mh, concurrencyHandlers)
 
 	err = consumer.ConnectToNSQLookupd(fmt.Sprintf("127.0.0.1:%d",
