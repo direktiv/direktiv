@@ -139,7 +139,7 @@ func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 		relativePath := strings.TrimPrefix(path, j.distDirectory)
 
 		if _, err := filestore.SanitizePath(relativePath); err != nil {
-			return nil
+			return nil //nolint:nilerr
 		}
 		paths = append(paths, relativePath)
 

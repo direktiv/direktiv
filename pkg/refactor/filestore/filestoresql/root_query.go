@@ -163,7 +163,7 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
-func computeApiID(namespaceID uuid.UUID, path string) string {
+func computeAPIID(namespaceID uuid.UUID, path string) string {
 	hasher := sha256.New()
 	x := hasher.Sum([]byte(fmt.Sprintf("%s:%s", namespaceID.String(), path)))
 	s := base64.RawURLEncoding.EncodeToString(x)
@@ -211,7 +211,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		Depth:  filestore.GetPathDepth(path),
 		Typ:    typ,
 		RootID: q.rootID,
-		ApiID:  computeApiID(q.root.NamespaceID, path),
+		APIID:  computeAPIID(q.root.NamespaceID, path),
 	}
 
 	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)

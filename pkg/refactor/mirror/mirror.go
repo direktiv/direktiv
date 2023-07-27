@@ -160,6 +160,7 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 	for idx := range roots {
 		if roots[idx].Name == config.RootName {
 			root = roots[idx]
+
 			break
 		}
 	}
