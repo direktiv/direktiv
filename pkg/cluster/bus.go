@@ -237,6 +237,7 @@ func (b *bus) start(ctx context.Context, timeout time.Duration) error {
 		// Cancel both nsqd and lookup in case of timeout
 		b.nsqd.Exit()
 		b.lookup.Exit()
+
 		return ctx.Err()
 	}
 

@@ -19,7 +19,10 @@ import (
 	"go.uber.org/zap"
 )
 
-const eventHandlerWorkers = 10 // TODO: should this be 1?
+const (
+	eventHandlerWorkers = 10 // TODO: should this be 1?
+	queueSize           = 100
+)
 
 // Node is configured per host in the cluster.
 type Node struct {
@@ -141,7 +144,7 @@ func NewNode(ctx context.Context,
 		return nil, fmt.Errorf("timed out waiting for nsq bus to start")
 	}
 
-	go node.eventHandler(ctx)
+	go node.eventHandler(ctx, queueSize)
 	<-node.upCh
 
 	clusterNodes, err := getNodes(ctx)
@@ -224,15 +227,16 @@ func (node *Node) handleMember(ctx context.Context, memberEvent serf.MemberEvent
 
 		// Only update the bus member if it's not the local node
 		if err := node.updateBusMember(ctx); err != nil {
-			return fmt.Errorf("failed to update bus member: %v", err)
+			return fmt.Errorf("failed to update bus member: %w", err)
 		}
 	}
+
 	return nil
 }
 
-func (node *Node) eventHandler(ctx context.Context) {
+func (node *Node) eventHandler(ctx context.Context, queueSize int) {
 	// Create a buffered channel to hold events to be processed
-	eventQueue := make(chan serf.Event, 100)
+	eventQueue := make(chan serf.Event, queueSize)
 
 	// Create a goroutine pool to process events concurrently
 	for i := 0; i < eventHandlerWorkers; i++ {
@@ -268,6 +272,7 @@ func (node *Node) eventWorker(ctx context.Context, eventQueue <-chan serf.Event)
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
 				node.logger.Infof("A node has left the cluster: %v.", memberEvent.Members)
 			}
+
 			fallthrough
 		case serf.EventMemberFailed, serf.EventMemberLeave:
 			if memberEvent, ok := e.(serf.MemberEvent); ok {
