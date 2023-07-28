@@ -35,7 +35,7 @@ const fetchInstanceDetails = async ({
 
 export const useInstanceDetails = (
   { instanceId }: { instanceId: string },
-  { streaming }: { streaming?: boolean } = {}
+  { stream }: { stream?: boolean } = {}
 ) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -47,7 +47,7 @@ export const useInstanceDetails = (
 
   useStreaming({
     url: `/api/namespaces/${namespace}/instances/${instanceId}`,
-    enabled: !!streaming,
+    enabled: !!stream,
     schema: InstancesDetailSchema,
     onMessage: (msg) => {
       queryClient.setQueryData<InstancesDetailSchemaType>(
@@ -67,6 +67,6 @@ export const useInstanceDetails = (
     }),
     queryFn: fetchInstanceDetails,
     // disable queryFn when streaming is enabled (to avoid duplicate requests)
-    enabled: !streaming,
+    enabled: !stream,
   });
 };

@@ -16,10 +16,10 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
 
   return (
     <div className="flex grow flex-col">
-      <Header instanceId={instanceId} />
+      <Header instanceId={instanceId} stream={!instanceIsFinished} />
       <div className="grid grow grid-cols-2 gap-5 p-5">
         <Card className="p-5">
-          <Logs instanceId={instanceId} />
+          <Logs instanceId={instanceId} stream={!instanceIsFinished} />
         </Card>
         <Card>
           <Diagram workflowPath={data.workflow.path} flow={data.flow} />

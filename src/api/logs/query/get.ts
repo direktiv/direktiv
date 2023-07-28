@@ -29,7 +29,7 @@ const fetchLogs = async ({
 
 export const useLogs = (
   { instanceId }: { instanceId: string },
-  { streaming }: { streaming?: boolean } = {}
+  { stream }: { stream?: boolean } = {}
 ) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -41,7 +41,7 @@ export const useLogs = (
 
   useStreaming({
     url: `/api/namespaces/${namespace}/instances/${instanceId}/logs`,
-    enabled: !!streaming,
+    enabled: !!stream,
     schema: LogListSchema,
     onMessage: (msg) => {
       queryClient.setQueryData<LogListSchemaType>(
@@ -90,6 +90,6 @@ export const useLogs = (
       instanceId,
     }),
     queryFn: fetchLogs,
-    enabled: !streaming,
+    enabled: !stream,
   });
 };

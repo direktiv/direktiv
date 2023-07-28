@@ -8,8 +8,11 @@ import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
 
-const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
-  const { data } = useInstanceDetails({ instanceId }, { streaming: true });
+const Header: FC<{ instanceId: string; stream: boolean }> = ({
+  instanceId,
+  stream,
+}) => {
+  const { data } = useInstanceDetails({ instanceId }, { stream });
 
   if (!data) return null;
 
