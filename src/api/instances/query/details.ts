@@ -45,38 +45,17 @@ export const useInstanceDetails = (
     throw new Error("namespace is undefined");
   }
 
-  const streamingUrl = `/api/namespaces/${namespace}/instances/${instanceId}`;
   useStreaming({
-    url: streamingUrl,
-    enabled: streaming,
+    url: `/api/namespaces/${namespace}/instances/${instanceId}`,
+    enabled: !!streaming,
+    schema: InstancesDetailSchema,
     onMessage: (msg) => {
-      if (!msg.data) return null;
-
-      let msgJson = null;
-      try {
-        // try to parse the response as json
-        msgJson = JSON.parse(msg.data);
-      } catch (e) {
-        console.error(
-          `error parsing streaming result from ${streamingUrl} as json`,
-          msg.data
-        );
-        return;
-      }
-
-      const parsedResult = InstancesDetailSchema.safeParse(msgJson);
-
-      if (parsedResult.success === false) {
-        console.error(`error parsing streaming result for ${streamingUrl}`);
-        return;
-      }
-
       queryClient.setQueryData<InstancesDetailSchemaType>(
         instanceKeys.instanceDetail(namespace, {
           apiKey: apiKey ?? undefined,
           instanceId,
         }),
-        () => parsedResult.data
+        () => msg
       );
     },
   });

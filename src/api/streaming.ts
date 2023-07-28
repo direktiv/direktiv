@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
-export const useStreaming = ({
+import { z } from "zod";
+
+export const useEventSource = ({
   url,
   onOpen,
   onMessage,
@@ -40,3 +42,40 @@ export const useStreaming = ({
     };
   });
 };
+
+export const useStreaming = <T>({
+  url,
+  enabled,
+  schema,
+  onMessage,
+}: {
+  url: string;
+  enabled: boolean;
+  schema: z.ZodSchema<T>;
+  onMessage: (msg: T) => void;
+}) =>
+  useEventSource({
+    url,
+    enabled,
+    onMessage: (msg) => {
+      if (!msg.data) return null;
+      let msgJson = null;
+      try {
+        // try to parse the response as json
+        msgJson = JSON.parse(msg.data);
+      } catch (e) {
+        console.error(
+          `error parsing streaming result (${msg.data}) from ${url}} as JSON`
+        );
+        return;
+      }
+
+      const parsedResult = schema.safeParse(msgJson);
+      if (parsedResult.success === false) {
+        console.error(`error parsing streaming result for ${url}`);
+        return;
+      }
+
+      onMessage(parsedResult.data);
+    },
+  });
