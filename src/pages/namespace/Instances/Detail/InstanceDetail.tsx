@@ -12,6 +12,8 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
 
   if (!data) return null;
 
+  const instanceIsFinished = data.instance.status !== "pending";
+
   return (
     <div className="flex grow flex-col">
       <Header instanceId={instanceId} />
@@ -26,7 +28,10 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
           <Input instanceId={instanceId} />
         </Card>
         <Card className="p-5">
-          <Output instanceId={instanceId} />
+          <Output
+            instanceId={instanceId}
+            instanceIsFinished={instanceIsFinished}
+          />
         </Card>
       </div>
     </div>

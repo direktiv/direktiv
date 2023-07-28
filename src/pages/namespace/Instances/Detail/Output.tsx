@@ -3,8 +3,14 @@ import { FC } from "react";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
 
-const Output: FC<{ instanceId: string }> = ({ instanceId }) => {
-  const { data, isFetched, isError } = useOutput({ instanceId });
+const Output: FC<{ instanceId: string; instanceIsFinished: boolean }> = ({
+  instanceId,
+  instanceIsFinished,
+}) => {
+  const { data, isFetched, isError } = useOutput({
+    instanceId,
+    enabled: instanceIsFinished,
+  });
   const theme = useTheme();
 
   if (!isFetched) return null;

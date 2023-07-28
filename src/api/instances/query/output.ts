@@ -33,7 +33,13 @@ const fetchOutput = async ({
     urlParams: { namespace, instanceId },
   });
 
-export const useOutput = ({ instanceId }: { instanceId: string }) => {
+export const useOutput = ({
+  instanceId,
+  enabled = true,
+}: {
+  instanceId: string;
+  enabled?: boolean;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -47,6 +53,6 @@ export const useOutput = ({ instanceId }: { instanceId: string }) => {
       instanceId,
     }),
     queryFn: fetchOutput,
-    enabled: !!namespace,
+    enabled,
   });
 };
