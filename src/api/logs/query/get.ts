@@ -6,7 +6,7 @@ import { apiFactory } from "~/api/apiFactory";
 import { logKeys } from "../";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
-import useStreaming from "~/api/streaming";
+import { useStreaming } from "~/api/streaming";
 
 const getLogs = apiFactory({
   url: ({ namespace, instanceId }: { namespace: string; instanceId: string }) =>

@@ -40,5 +40,3 @@ export const useStreaming = ({
     };
   });
 };
-
-export default useStreaming;
