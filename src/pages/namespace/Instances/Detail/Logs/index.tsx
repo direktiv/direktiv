@@ -41,10 +41,9 @@ const LogsPanel: FC<{ instanceId: string; stream: boolean }> = ({
       }}
     >
       <div
+        className="relative w-full"
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
-          width: "100%",
-          position: "relative",
         }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualItem) => {
@@ -54,11 +53,8 @@ const LogsPanel: FC<{ instanceId: string; stream: boolean }> = ({
             <Entry
               key={virtualItem.key}
               logEntry={logEntry}
+              className="absolute top-0 left-0 w-full"
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
                 height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
               }}
