@@ -1,6 +1,10 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
+import { InstancesDetailSchema, InstancesDetailSchemaType } from "../schema";
+import {
+  QueryFunctionContext,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
-import { InstancesDetailSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -35,6 +39,7 @@ export const useInstanceDetails = (
 ) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
+  const queryClient = useQueryClient();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -44,7 +49,22 @@ export const useInstanceDetails = (
     url: `/api/namespaces/${namespace}/instances/${instanceId}`,
     enabled: streaming,
     onMessage: (msg) => {
-      console.warn("🚀 received a message", msg);
+      const parsedResult = InstancesDetailSchema.safeParse(
+        JSON.parse(msg.data)
+      );
+
+      if (parsedResult.success === false) {
+        console.error(parsedResult.error);
+        return;
+      }
+
+      queryClient.setQueryData<InstancesDetailSchemaType>(
+        instanceKeys.instanceDetail(namespace, {
+          apiKey: apiKey ?? undefined,
+          instanceId,
+        }),
+        () => parsedResult.data
+      );
     },
   });
 
@@ -54,6 +74,7 @@ export const useInstanceDetails = (
       instanceId,
     }),
     queryFn: fetchInstanceDetails,
-    enabled: !!namespace,
+    // disable queryFn when streaming is enabled (to avoid duplicate requests)
+    enabled: !streaming,
   });
 };

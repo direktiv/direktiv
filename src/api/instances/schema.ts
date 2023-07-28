@@ -46,3 +46,4 @@ export const InstancesOutputSchema = z.object({
 });
 
 export type InstanceSchemaType = z.infer<typeof InstanceSchema>;
+export type InstancesDetailSchemaType = z.infer<typeof InstancesDetailSchema>;

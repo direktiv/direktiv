@@ -1,21 +1,15 @@
 import { Box, FileSymlink } from "lucide-react";
-import { FC, useState } from "react";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
 
 const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
-  const [isStreaming, setIsStreaming] = useState(false);
-  const { data } = useInstanceDetails(
-    { instanceId },
-    {
-      streaming: isStreaming,
-    }
-  );
+  const { data } = useInstanceDetails({ instanceId }, { streaming: true });
 
   if (!data) return null;
 
@@ -37,18 +31,6 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
             {data.instance.status}
           </Badge>
         </h3>
-        <Button
-          variant={isStreaming ? "destructive" : "outline"}
-          onClick={() => {
-            if (isStreaming) {
-              setIsStreaming(false);
-            } else {
-              setIsStreaming(true);
-            }
-          }}
-        >
-          {isStreaming ? "stop" : "start"} streaming
-        </Button>
         <Button asChild variant="primary">
           <Link to={link}>
             <FileSymlink />
