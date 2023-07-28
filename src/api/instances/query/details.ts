@@ -9,7 +9,7 @@ import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
-import useStreaming from "~/api/useStreaming";
+import useStreaming from "~/api/streaming";
 
 export const getInstanceDetails = apiFactory({
   url: ({
