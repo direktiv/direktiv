@@ -4,7 +4,7 @@ import { Logs } from "~/design/Logs";
 import { useLogs } from "~/api/logs/query/get";
 
 const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
-  const { data } = useLogs({ instanceId });
+  const { data } = useLogs({ instanceId }, { streaming: true });
 
   if (!data) return null;
 
