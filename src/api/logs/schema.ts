@@ -9,7 +9,7 @@ const LogEntrySchema = z.object({
     callpath: z.string(), // "/"
     "instance-id": z.string(), // "4b833cfd-a0ef-4f4c-994b-4b63c7301778"
     invoker: z.string(), // "api", "cron", "cloudevent", "complete" (if it's created as a subflow from another instance it's something like instance:%v, where %v is the instance ID of its parent
-    "loop-index": z.string(), // ""
+    "loop-index": z.string().optional(), // ""
     namespace: z.string(), // "workflow"
     "namespace-id": z.string(), // "d1df8d21-96ce-49eb-98b7-5af7571ab28f"
     recipientType: z.string(), // "instance"
