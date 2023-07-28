@@ -22,8 +22,10 @@ export const useStreaming = ({
 
   const startSteaming = () => {
     if (enabled && eventSource.current === null) {
+      // when streaming is enabled and there is no event source yet, create one
       const listener = new EventSource(url);
       eventSource.current = listener;
+      // connect all the callbacks
       if (onOpen) listener.onopen = onOpen;
       if (onError) listener.onerror = onError;
       if (onMessage) listener.onmessage = onMessage;
@@ -33,6 +35,7 @@ export const useStreaming = ({
   useEffect(() => {
     startSteaming();
     return () => {
+      // close connection on unmount to prevent memory leaks
       stopStreaming();
     };
   });
