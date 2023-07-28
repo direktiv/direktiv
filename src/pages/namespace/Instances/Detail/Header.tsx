@@ -1,27 +1,21 @@
 import { Box, FileSymlink } from "lucide-react";
 import { FC, useState } from "react";
-import {
-  useInstanceDetails,
-  useInstanceDetailsStream,
-} from "~/api/instances/query/details";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";
+import { useInstanceDetails } from "~/api/instances/query/details";
 
 const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
-  const { data } = useInstanceDetails({ instanceId }); // stream should be a flag
   const [isStreaming, setIsStreaming] = useState(false);
-
-  useInstanceDetailsStream({
-    params: { instanceId },
-    enabled: isStreaming,
-    onMessage: (msg) => {
-      console.warn("🚀 received a message", msg);
-    },
-  });
+  const { data } = useInstanceDetails(
+    { instanceId },
+    {
+      streaming: isStreaming,
+    }
+  );
 
   if (!data) return null;
 

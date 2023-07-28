@@ -29,13 +29,24 @@ const fetchInstanceDetails = async ({
     urlParams: { namespace, instanceId },
   });
 
-export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
+export const useInstanceDetails = (
+  { instanceId }: { instanceId: string },
+  { streaming }: { streaming?: boolean } = {}
+) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
   }
+
+  useStreaming({
+    url: `/api/namespaces/${namespace}/instances/${instanceId}`,
+    enabled: streaming,
+    onMessage: (msg) => {
+      console.warn("🚀 received a message", msg);
+    },
+  });
 
   return useQuery({
     queryKey: instanceKeys.instanceDetail(namespace, {
@@ -47,21 +58,19 @@ export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
   });
 };
 
-export const useInstanceDetailsStream = ({
-  params,
+export const useStreaming = ({
+  url,
   onOpen,
   onMessage,
   onError,
   enabled,
 }: {
-  params: { instanceId: string };
+  url: string;
   onOpen?: (e: Event) => void;
   onMessage?: (e: MessageEvent) => void;
   onError?: (e: Event) => void;
   enabled?: boolean;
 }) => {
-  const namespace = useNamespace();
-  const url = `/api/namespaces/${namespace}/instances/${params.instanceId}`;
   const eventSource = useRef<EventSource | null>(null);
 
   const stopStreaming = () => {
