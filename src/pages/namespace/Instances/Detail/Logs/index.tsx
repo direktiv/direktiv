@@ -10,8 +10,8 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
 
   return (
     <Logs linewrap={true} className="grow">
-      {data.results.map((logEntry, i) => (
-        <Entry key={i} logEntry={logEntry} />
+      {data.results.map((logEntry) => (
+        <Entry key={logEntry.t} logEntry={logEntry} />
       ))}
     </Logs>
   );
