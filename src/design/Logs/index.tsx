@@ -48,8 +48,8 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
         className
       )}
     >
-      <div className="w-32 shrink-0 pr-2 font-menlo">{time}</div>
-      <div className={twMergeClsx("font-menlo", "leading-5")}>
+      <div className="w-32 shrink-0 self-center pr-2 font-menlo">{time}</div>
+      <div className="self-center font-menlo leading-5">
         <pre>{children}</pre>
       </div>
     </div>
