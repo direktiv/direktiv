@@ -1,4 +1,4 @@
-import { ComponentProps, FC } from "react";
+import { ComponentProps, ComponentPropsWithoutRef, FC } from "react";
 
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
@@ -21,13 +21,18 @@ const logLevelToLogEntryVariant = (level: logLevel): LogEntryVariant => {
   }
 };
 
-const Entry: FC<{ logEntry: LogEntryType }> = ({ logEntry }) => {
+type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
+
+const Entry: FC<{ logEntry: LogEntryType } & LogEntryProps> = ({
+  logEntry,
+  ...props
+}) => {
   const { msg, t, level } = logEntry;
 
   const time = moment(t).format("HH:mm:ss");
 
   return (
-    <LogEntry variant={logLevelToLogEntryVariant(level)} time={time}>
+    <LogEntry variant={logLevelToLogEntryVariant(level)} time={time} {...props}>
       {msg}
     </LogEntry>
   );
