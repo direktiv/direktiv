@@ -1,4 +1,4 @@
-export const instanceKeys = {
+export const logKeys = {
   detail: (
     namespace: string,
     { apiKey, instanceId }: { apiKey?: string; instanceId: string }

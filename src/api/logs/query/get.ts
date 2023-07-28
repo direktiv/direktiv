@@ -1,7 +1,7 @@
 import { LogListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
-import { instanceKeys } from "../";
+import { logKeys } from "../";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ const getLogs = apiFactory({
 
 const fetchLogs = async ({
   queryKey: [{ apiKey, instanceId, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["detail"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof logKeys)["detail"]>>) =>
   getLogs({
     apiKey,
     urlParams: {
@@ -33,7 +33,7 @@ export const useLogs = ({ instanceId }: { instanceId: string }) => {
   }
 
   return useQuery({
-    queryKey: instanceKeys.detail(namespace, {
+    queryKey: logKeys.detail(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),
