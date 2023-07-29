@@ -21,7 +21,7 @@ const LogsPanel: FC<{ instanceId: string; stream: boolean }> = ({
   const rowVirtualizer = useVirtualizer({
     count: data?.results.length ?? 0,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 35,
+    estimateSize: () => 20,
     getItemKey: (index) => data?.results[index]?.t ?? index,
   });
 
