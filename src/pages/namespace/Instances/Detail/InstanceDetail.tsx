@@ -20,19 +20,18 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
       <Header instanceId={instanceId} stream={!instanceIsFinished} />
       <div
         className={twMergeClsx(
-          "gap-5 border p-5",
-          "grid grow",
+          "grid grow gap-5 p-5",
           "grid-rows-2",
           "grid-cols-[1fr_400px]"
         )}
       >
-        <Card className="box-content p-5">
-          {/* <Logs instanceId={instanceId} stream={!instanceIsFinished} /> */}
+        <Card className="grid p-5">
+          <Logs instanceId={instanceId} stream={!instanceIsFinished} />
         </Card>
-        <Card className="grow p-5">
+        <Card className="p-5">
           <Input instanceId={instanceId} />
         </Card>
-        <Card className="box-content p-5">
+        <Card className="p-5">
           <Diagram workflowPath={data.workflow.path} flow={data.flow} />
         </Card>
         <Card className="p-5">
