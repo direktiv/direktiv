@@ -15,7 +15,7 @@ const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
     <WorkflowDiagram
       workflow={workflowData}
       flow={flow}
-      orientation="vertical"
+      orientation="horizontal"
       instanceStatus="complete"
     />
   );
