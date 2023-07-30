@@ -25,7 +25,7 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
           "grid-cols-[1fr_400px]"
         )}
       >
-        <Card className="grid p-5">
+        <Card className="relative grid p-5">
           <Logs instanceId={instanceId} />
         </Card>
         <Card className="p-5">

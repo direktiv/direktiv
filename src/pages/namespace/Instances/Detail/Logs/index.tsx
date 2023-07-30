@@ -1,5 +1,6 @@
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
+import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { useLogs } from "~/api/logs/query/get";
@@ -7,9 +8,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 
 const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
   const { data } = useLogs({ instanceId });
-
-  // The container that defines the height of the list
-  const heightContainerRef = useRef<HTMLDivElement | null>(null);
+  const [watch, setWatch] = useState(true);
 
   // The scrollable element for the list
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -30,10 +29,10 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
   });
 
   useEffect(() => {
-    if (data?.results.length) {
+    if (data?.results.length && watch) {
       rowVirtualizer.scrollToIndex(data?.results.length);
     }
-  }, [data?.results.length, rowVirtualizer]);
+  }, [data?.results.length, rowVirtualizer, watch]);
 
   // useEffect(() => {
   //   rowVirtualizer.measure();
@@ -44,7 +43,7 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
   // const height = true; // heightContainerRef.current?.clientHeight;
 
   return (
-    <div className="h-full overflow-scroll" ref={heightContainerRef}>
+    <>
       <Logs linewrap={true} className="h-full overflow-scroll" ref={parentRef}>
         <div
           className="relative w-full"
@@ -69,7 +68,17 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
           })}
         </div>
       </Logs>
-    </div>
+      <Button
+        className="absolute bottom-0 mb-10 place-self-center bg-white dark:bg-black"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          setWatch((old) => !old);
+        }}
+      >
+        {watch ? "stop following logs" : "follow logs"}
+      </Button>
+    </>
   );
 };
 
