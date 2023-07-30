@@ -23,6 +23,13 @@ const LogsPanel: FC<{ instanceId: string; stream: boolean }> = ({
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
     getItemKey: (index) => data?.results[index]?.t ?? index,
+    // observeElementRect: (a, cb) => {
+    //   cb({
+    //     width: 10,
+    //     height: 100,
+    //   });
+    //   console.log("---", a.scrollElement?.clientHeight);
+    // },
   });
 
   useEffect(() => {
@@ -31,46 +38,40 @@ const LogsPanel: FC<{ instanceId: string; stream: boolean }> = ({
     }
   }, [data?.results.length, rowVirtualizer]);
 
+  // useEffect(() => {
+  //   rowVirtualizer.measure();
+  // }, [rowVirtualizer]);
+
   if (!data) return null;
 
-  const height = heightContainerRef.current?.clientHeight;
+  // const height = true; // heightContainerRef.current?.clientHeight;
 
   return (
-    <div className="grow" ref={heightContainerRef}>
-      {height && (
-        <Logs
-          linewrap={true}
-          className="grow"
-          ref={parentRef}
+    <div className="h-full overflow-scroll" ref={heightContainerRef}>
+      <Logs linewrap={true} className="h-full overflow-scroll" ref={parentRef}>
+        <div
+          className="relative w-full"
           style={{
-            height: `${height}px`,
-            overflow: "auto", // make it scroll
+            height: `${rowVirtualizer.getTotalSize()}px`,
           }}
         >
-          <div
-            className="relative w-full"
-            style={{
-              height: `${rowVirtualizer.getTotalSize()}px`,
-            }}
-          >
-            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-              const logEntry = data.results[virtualItem.index];
-              if (!logEntry) return null;
-              return (
-                <Entry
-                  key={virtualItem.key}
-                  logEntry={logEntry}
-                  className="absolute top-0 left-0 w-full"
-                  style={{
-                    height: `${virtualItem.size}px`,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                />
-              );
-            })}
-          </div>
-        </Logs>
-      )}
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+            const logEntry = data.results[virtualItem.index];
+            if (!logEntry) return null;
+            return (
+              <Entry
+                key={virtualItem.key}
+                logEntry={logEntry}
+                className="absolute top-0 left-0 w-full"
+                style={{
+                  height: `${virtualItem.size}px`,
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              />
+            );
+          })}
+        </div>
+      </Logs>
     </div>
   );
 };

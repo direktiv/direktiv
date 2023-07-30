@@ -16,12 +16,12 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
   const instanceIsFinished = true; //  data.instance.status !== "pending";
 
   return (
-    <div className="flex grow flex-col">
+    <div className="grid grow grid-rows-[auto_1fr]">
       <Header instanceId={instanceId} stream={!instanceIsFinished} />
       <div
         className={twMergeClsx(
           "grid grow gap-5 p-5",
-          "grid-rows-2",
+          "grid-rows-[400px_1fr]",
           "grid-cols-[1fr_400px]"
         )}
       >
