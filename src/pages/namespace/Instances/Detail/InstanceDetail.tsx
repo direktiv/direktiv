@@ -26,7 +26,7 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
         )}
       >
         <Card className="grid p-5">
-          <Logs instanceId={instanceId} stream={!instanceIsFinished} />
+          <Logs instanceId={instanceId} />
         </Card>
         <Card className="p-5">
           <Input instanceId={instanceId} />

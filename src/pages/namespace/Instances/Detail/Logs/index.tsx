@@ -5,11 +5,8 @@ import { Logs } from "~/design/Logs";
 import { useLogs } from "~/api/logs/query/get";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-const LogsPanel: FC<{ instanceId: string; stream: boolean }> = ({
-  instanceId,
-  stream,
-}) => {
-  const { data } = useLogs({ instanceId }, { stream });
+const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
+  const { data } = useLogs({ instanceId });
 
   // The container that defines the height of the list
   const heightContainerRef = useRef<HTMLDivElement | null>(null);

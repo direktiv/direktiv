@@ -27,10 +27,13 @@ const fetchLogs = async ({
     },
   });
 
-export const useLogs = (
-  { instanceId }: { instanceId: string },
-  { stream }: { stream?: boolean } = {}
-) => {
+export const useLogsStream = ({
+  instanceId,
+  enabled = true,
+}: {
+  instanceId: string;
+  enabled: boolean;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
@@ -39,9 +42,9 @@ export const useLogs = (
     throw new Error("namespace is undefined");
   }
 
-  useStreaming({
+  return useStreaming({
     url: `/api/namespaces/${namespace}/instances/${instanceId}/logs`,
-    enabled: !!stream,
+    enabled,
     schema: LogListSchema,
     onMessage: (msg) => {
       queryClient.setQueryData<LogListSchemaType>(
@@ -83,6 +86,15 @@ export const useLogs = (
       );
     },
   });
+};
+
+export const useLogs = ({ instanceId }: { instanceId: string }) => {
+  const apiKey = useApiKey();
+  const namespace = useNamespace();
+
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
 
   return useQuery({
     queryKey: logKeys.detail(namespace, {
@@ -90,6 +102,6 @@ export const useLogs = (
       instanceId,
     }),
     queryFn: fetchLogs,
-    enabled: !stream,
+    enabled: !!namespace,
   });
 };
