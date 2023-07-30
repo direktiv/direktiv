@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
+import { twMergeClsx } from "~/util/helpers";
 import { useLogs } from "~/api/logs/query/get";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
@@ -44,7 +45,20 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
 
   return (
     <>
-      <Logs linewrap={true} className="h-full overflow-scroll" ref={parentRef}>
+      <Logs
+        linewrap={true}
+        className="h-full overflow-scroll"
+        ref={parentRef}
+        onScroll={(e) => {
+          const element = e.target as HTMLDivElement;
+          if (element) {
+            const { scrollHeight, scrollTop, clientHeight } = element;
+            const scrollDistanceToBottom =
+              scrollHeight - scrollTop - clientHeight;
+            setWatch(scrollDistanceToBottom < 100);
+          }
+        }}
+      >
         <div
           className="relative w-full"
           style={{
@@ -69,7 +83,15 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => {
         </div>
       </Logs>
       <Button
-        className="absolute bottom-0 mb-10 place-self-center bg-white dark:bg-black"
+        className={twMergeClsx(
+          "absolute bottom-0 mb-10 place-self-center bg-white dark:bg-black",
+          // "transition-all duration-100"
+          // "aria-[hidden=false]:fade-in",
+          "aria-[hidden=true]:hidden"
+          // "aria-[hidden=true]:animate-out"
+          // watch && "animate-out"
+        )}
+        aria-hidden={watch ? "true" : "false"}
         variant="outline"
         size="sm"
         onClick={() => {
