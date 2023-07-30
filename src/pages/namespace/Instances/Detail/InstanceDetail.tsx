@@ -13,11 +13,11 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
 
   if (!data) return null;
 
-  const instanceIsFinished = true; //  data.instance.status !== "pending";
+  const instanceIsFinished = data.instance.status !== "pending";
 
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
-      <Header instanceId={instanceId} stream={!instanceIsFinished} />
+      <Header instanceId={instanceId} />
       <div
         className={twMergeClsx(
           "grid grow gap-5 p-5",

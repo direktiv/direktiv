@@ -1,8 +1,11 @@
 import InstancesDetail from "./InstanceDetail";
 import { pages } from "~/util/router/pages";
+import { useInstanceDetailsStream } from "~/api/instances/query/details";
 
 const Instance = () => {
   const { instance } = pages.instances.useParams();
+  useInstanceDetailsStream({ instanceId: instance ?? "", enabled: !!instance });
+
   if (!instance) return null;
 
   // Details page is moved into a separate component to give us a state
