@@ -21,7 +21,7 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
       <div
         className={twMergeClsx(
           "grid grow gap-5 p-5",
-          "grid-rows-[400px_1fr]",
+          "grid-rows-[minmax(300px,50vh)_1fr]",
           "grid-cols-[1fr_400px]"
         )}
       >
