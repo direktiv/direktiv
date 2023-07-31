@@ -31,7 +31,7 @@ const InstancesDetail: FC<{ instanceId: string }> = ({ instanceId }) => {
         <Card className="p-5">
           <Input instanceId={instanceId} />
         </Card>
-        <Card className="p-5">
+        <Card>
           <Diagram workflowPath={data.workflow.path} flow={data.flow} />
         </Card>
         <Card className="p-5">
