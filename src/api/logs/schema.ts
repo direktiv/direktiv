@@ -15,6 +15,7 @@ const LogEntrySchema = z.object({
     recipientType: z.string(), // "instance"
     workflow: z.string(), // "workflow.yaml"
     "workflow-id": z.string(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
+    "state-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
   }),
 });
 
