@@ -2,6 +2,11 @@ import { useEffect, useRef } from "react";
 
 import { z } from "zod";
 
+/**
+ * a react hook that opens a connection to an event source and listens
+ * to the onopen, onerror and onmessage callback. It provides a flag to
+ * enable/disable the streaming
+ */
 export const useEventSource = ({
   url,
   onOpen,
@@ -43,6 +48,10 @@ export const useEventSource = ({
   });
 };
 
+/**
+ * react hook that acts as a proxy for useEventSource
+ * and implements schema validation and on top of it
+ */
 export const useStreaming = <T>({
   url,
   enabled,
