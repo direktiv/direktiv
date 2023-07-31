@@ -67,19 +67,21 @@ export const getInstanceDetails = apiFactory({
 });
 
 const fetchInstanceDetails = async ({
-  queryKey: [{ apiKey, namespace, instanceId }],
+  queryKey: [{ apiKey, namespace, instanceId, filters }],
 }: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instanceDetail"]>>) =>
   getInstanceDetails({
     apiKey,
-    urlParams: { namespace, instanceId },
+    urlParams: { namespace, instanceId, filters },
   });
 
 export const useInstanceDetailsStream = ({
   instanceId,
+  filters,
   enabled = true,
 }: {
   instanceId: string;
   enabled?: boolean;
+  filters: FiltersObj;
 }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -98,6 +100,7 @@ export const useInstanceDetailsStream = ({
         instanceKeys.instanceDetail(namespace, {
           apiKey: apiKey ?? undefined,
           instanceId,
+          filters,
         }),
         () => msg
       );
@@ -105,7 +108,13 @@ export const useInstanceDetailsStream = ({
   });
 };
 
-export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
+export const useInstanceDetails = ({
+  instanceId,
+  filters,
+}: {
+  instanceId: string;
+  filters: FiltersObj;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -117,6 +126,7 @@ export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
     queryKey: instanceKeys.instanceDetail(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
+      filters,
     }),
     queryFn: fetchInstanceDetails,
     enabled: !!namespace,
