@@ -12,7 +12,7 @@ const ScrollContainer: FC<{
   instanceId: string;
 }> = ({ instanceId }) => {
   const { data } = useLogs({ instanceId });
-  const [watch, setWatch] = useState(false);
+  const [watch, setWatch] = useState(true);
 
   // The scrollable element for the list
   const parentRef = useRef<HTMLDivElement | null>(null);
