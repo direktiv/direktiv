@@ -5,7 +5,14 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { Home, PlusCircle } from "lucide-react";
-import { MirrorSchema, MirrorSchemaType } from "~/api/namespaces/schema";
+import {
+  MirrorFormSchema,
+  MirrorFormSchemaType,
+  MirrorSshFormSchema,
+  MirrorSshFormSchemaType,
+  MirrorTokenFormSchema,
+  MirrorTokenFormSchemaType,
+} from "~/api/namespaces/schema";
 import {
   Select,
   SelectContent,
@@ -34,14 +41,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
-} & MirrorSchemaType;
+} & MirrorFormSchemaType &
+  MirrorTokenFormSchemaType &
+  MirrorSshFormSchemaType;
 
 const mirrorAuthTypes = ["none", "ssh", "token"] as const;
+
+type MirrorAuthType = (typeof mirrorAuthTypes)[number];
 
 const NamespaceCreate = ({ close }: { close: () => void }) => {
   const { t } = useTranslation();
   const [isMirror, setIsMirror] = useState<boolean>(false);
-  const [authType, setAuthType] = useState<string>("none");
+  const [authType, setAuthType] = useState<MirrorAuthType>("none");
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
@@ -54,18 +65,27 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     })
   );
 
-  const simpleNamespaceResolver = zodResolver(z.object({ name: nameSchema }));
+  const baseSchema = z.object({ name: nameSchema });
 
-  const mirrorResolver = zodResolver(
-    MirrorSchema.and(z.object({ name: nameSchema }))
-  );
+  const getResolver = (isMirror: boolean, authType: MirrorAuthType) => {
+    if (!isMirror) {
+      return zodResolver(baseSchema);
+    }
+    if (authType === "token") {
+      return zodResolver(baseSchema.and(MirrorTokenFormSchema));
+    }
+    if (authType === "ssh") {
+      return zodResolver(baseSchema.and(MirrorSshFormSchema));
+    }
+    return zodResolver(baseSchema.and(MirrorFormSchema));
+  };
 
   const {
     register,
     handleSubmit,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: isMirror ? mirrorResolver : simpleNamespaceResolver,
+    resolver: getResolver(isMirror, authType),
   });
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
@@ -197,7 +217,10 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                 >
                   {t("components.namespaceCreate.label.authType")}
                 </label>
-                <Select value={authType} onValueChange={setAuthType}>
+                <Select
+                  value={authType}
+                  onValueChange={(value: MirrorAuthType) => setAuthType(value)}
+                >
                   <SelectTrigger variant="outline" className="w-full">
                     <SelectValue
                       placeholder={t(
