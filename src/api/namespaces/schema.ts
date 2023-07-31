@@ -42,7 +42,9 @@ export const MirrorTokenFormSchema = z.object({
 });
 
 export const MirrorSshFormSchema = z.object({
-  url: gitUrlSchema,
+  url: gitUrlSchema.nonempty({
+    message: "format must be git@host:path when using SSH",
+  }),
   ref: z.string().nonempty(),
   passphrase: z.string().optional(),
   privateKey: z.string().nonempty({ message: "Required when using SSH" }),
