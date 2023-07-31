@@ -1,4 +1,5 @@
-import { FiltersObj } from "./query/get";
+import { FiltersObj as FiltersObjDetails } from "./query/details";
+import { FiltersObj as FiltersObjList } from "./query/get";
 
 export const instanceKeys = {
   instancesList: (
@@ -8,7 +9,12 @@ export const instanceKeys = {
       limit,
       offset,
       filters,
-    }: { apiKey?: string; limit: number; offset: number; filters: FiltersObj }
+    }: {
+      apiKey?: string;
+      limit: number;
+      offset: number;
+      filters: FiltersObjList;
+    }
   ) =>
     [
       {
@@ -22,7 +28,11 @@ export const instanceKeys = {
     ] as const,
   instanceDetail: (
     namespace: string,
-    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+    {
+      apiKey,
+      instanceId,
+      filters,
+    }: { apiKey?: string; instanceId: string; filters: FiltersObjDetails }
   ) =>
     [
       {
@@ -30,6 +40,7 @@ export const instanceKeys = {
         apiKey,
         namespace,
         instanceId,
+        filters,
       },
     ] as const,
   instancesInput: (
