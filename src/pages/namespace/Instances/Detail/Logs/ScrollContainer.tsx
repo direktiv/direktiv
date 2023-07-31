@@ -49,7 +49,7 @@ const ScrollContainer: FC<{
   return (
     <Logs
       linewrap={true}
-      className="h-full overflow-scroll border"
+      className="h-full overflow-scroll"
       ref={parentRef}
       onScroll={(e) => {
         const element = e.target as HTMLDivElement;
