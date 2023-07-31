@@ -65,13 +65,14 @@ const getLogs = apiFactory({
 });
 
 const fetchLogs = async ({
-  queryKey: [{ apiKey, instanceId, namespace }],
+  queryKey: [{ apiKey, instanceId, namespace, filters }],
 }: QueryFunctionContext<ReturnType<(typeof logKeys)["detail"]>>) =>
   getLogs({
     apiKey,
     urlParams: {
       namespace,
       instanceId,
+      filters,
     },
   });
 
