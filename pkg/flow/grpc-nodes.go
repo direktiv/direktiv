@@ -134,7 +134,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	file, _, err = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, nil)
+	file, _, err = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		return nil, err
 	}

@@ -121,7 +121,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
