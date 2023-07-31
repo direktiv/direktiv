@@ -27,12 +27,24 @@ const Entry: FC<{ logEntry: LogEntryType } & LogEntryProps> = ({
   logEntry,
   ...props
 }) => {
-  const { msg, t, level } = logEntry;
-
+  const { msg, t, level, tags } = logEntry;
   const time = moment(t).format("HH:mm:ss");
+
+  const verbose = true;
 
   return (
     <LogEntry variant={logLevelToLogEntryVariant(level)} time={time} {...props}>
+      {verbose && tags["loop-index"] && (
+        <>
+          <span className="opacity-75">{tags["loop-index"]}</span>{" "}
+        </>
+      )}
+      {verbose && tags["workflow"] && (
+        <span className="opacity-75">{tags["workflow"]}</span>
+      )}
+      {verbose && tags["workflow"] && (
+        <span className="opacity-60">/{tags["state-id"]}</span>
+      )}{" "}
       {msg}
     </LogEntry>
   );
