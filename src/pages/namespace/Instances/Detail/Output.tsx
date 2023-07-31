@@ -13,9 +13,17 @@ const Output: FC<{ instanceId: string; instanceIsFinished: boolean }> = ({
   });
   const theme = useTheme();
 
-  if (!isFetched) return null;
-
   let workflowOutput = "// no data";
+
+  if (!isFetched) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-y-5 p-10">
+        <span className="text-center text-gray-11">
+          The workflow is still running
+        </span>
+      </div>
+    );
+  }
 
   if (isError) {
     workflowOutput = "// no output data was resolved";
