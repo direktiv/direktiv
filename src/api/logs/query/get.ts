@@ -122,15 +122,23 @@ export const useLogsStream = (
            * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
            */
           const lastCachedLog = old.results[old.results.length - 1];
-          const newestIncomingLog = msg.results[0];
           let newResults: typeof old.results = [];
-          if (lastCachedLog && newestIncomingLog) {
-            const newestLogTimeFromCache = moment(lastCachedLog.t);
-            // new results are all logs that are newer than the last cached log
-            newResults = msg.results.filter((entry) =>
-              newestLogTimeFromCache.isBefore(entry.t)
-            );
+
+          if (!lastCachedLog) {
+            // there was a previous cache, but wit ne entries yet
+            newResults = msg.results;
+          } else {
+            // there was a previous cache with entries
+            const newestIncomingLog = msg.results[0];
+            if (newestIncomingLog) {
+              const newestLogTimeFromCache = moment(lastCachedLog.t);
+              // new results are all logs that are newer than the last cached log
+              newResults = msg.results.filter((entry) =>
+                newestLogTimeFromCache.isBefore(entry.t)
+              );
+            }
           }
+
           return {
             ...old,
             results: [...old.results, ...newResults],
