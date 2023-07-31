@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -316,6 +317,8 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, rootID uuid.U
 			continue
 		}
 
+		mimeType := http.DetectContentType(data)
+
 		fileReader := bytes.NewReader(data)
 
 		if !pathDoesExist {
@@ -323,7 +326,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, rootID uuid.U
 			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 				typ = filestore.FileTypeWorkflow
 			}
-			file, _, err := fStore.ForRootID(rootID).CreateFile(j.ctx, path, typ, fileReader)
+			file, _, err := fStore.ForRootID(rootID).CreateFile(j.ctx, path, typ, mimeType, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
@@ -438,7 +441,7 @@ func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, rootID u
 				continue
 			}
 
-			_, _, err := fStore.ForRootID(rootID).CreateFile(j.ctx, d, filestore.FileTypeDirectory, nil)
+			_, _, err := fStore.ForRootID(rootID).CreateFile(j.ctx, d, filestore.FileTypeDirectory, "", nil)
 
 			// check if it is a fatal error.
 			if err != nil && !errors.Is(err, filestore.ErrPathAlreadyExists) {
