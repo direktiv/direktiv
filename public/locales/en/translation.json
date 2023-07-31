@@ -310,6 +310,10 @@
       "createBtn": "Create",
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel",
+      "tab": {
+        "namespace": "Namespace",
+        "mirror": "Mirror"
+      },
       "authType": {
         "none": "none",
         "ssh": "SSH",

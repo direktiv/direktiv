@@ -114,14 +114,14 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
             value="namespace"
             onClick={() => setIsMirror(false)}
           >
-            Namespace
+            {t("components.namespaceCreate.tab.namespace")}
           </TabsTrigger>
           <TabsTrigger
             variant="boxed"
             value="mirror"
             onClick={() => setIsMirror(true)}
           >
-            Mirror
+            {t("components.namespaceCreate.tab.mirror")}
           </TabsTrigger>
         </TabsList>
       </Tabs>
