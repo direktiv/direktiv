@@ -23,13 +23,6 @@ const ScrollContainer: FC<{
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
     getItemKey: (index) => data?.results[index]?.t ?? index,
-    // observeElementRect: (a, cb) => {
-    //   cb({
-    //     width: 10,
-    //     height: 100,
-    //   });
-    //   console.log("---", a.scrollElement?.clientHeight);
-    // },
   });
 
   useEffect(() => {
@@ -38,13 +31,7 @@ const ScrollContainer: FC<{
     }
   }, [data?.results.length, rowVirtualizer, watch]);
 
-  // useEffect(() => {
-  //   rowVirtualizer.measure();
-  // }, [rowVirtualizer]);
-
   if (!data) return null;
-
-  // const height = true; // heightContainerRef.current?.clientHeight;
 
   return (
     <Logs
