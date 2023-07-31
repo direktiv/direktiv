@@ -279,51 +279,6 @@ func TestBusCluster(t *testing.T) {
 	}
 }
 
-func waitForMessageHandlers(t *testing.T, mh1, mh2, mh3, mh4 *messageHandler, expectedMsgCount int) {
-	// Create a channel to signal when the conditions are met or timeout occurs
-	status := make(chan bool)
-
-	// Start a goroutine to check the conditions
-	go func() {
-		timeout := 60 * time.Second
-		interval := 100 * time.Millisecond
-		maxAttempts := int(timeout / interval)
-
-		for attempt := 0; attempt < maxAttempts; attempt++ {
-			// Check the conditions
-			if mh1.counter == expectedMsgCount &&
-				mh2.counter == expectedMsgCount &&
-				((mh3.counter == 1 && mh4.counter == 1) || (mh3.counter == 0 && mh4.counter == 0)) {
-				status <- true // Signal that conditions are met
-				return
-			}
-
-			// Sleep for the specified interval before the next attempt
-			time.Sleep(interval)
-		}
-
-		// If the loop completes without meeting the expected conditions, signal failure
-		status <- false
-	}()
-
-	// Wait for the goroutine to signal completion or timeout
-	select {
-	case success := <-status:
-		if success {
-			// Test successful, conditions are met
-			return
-		}
-		// If status is false, it means the test failed due to the timeout
-		t.Fatalf("One channel does not work: mh1.counter=%d, mh2.counter=%d, mh3.counter=%d, mh4.counter=%d",
-			mh1.counter, mh2.counter, mh3.counter, mh4.counter)
-
-	case <-time.After(time.Minute * 2):
-		// Timeout occurred, fail the test
-		t.Fatalf("Timeout: One channel does not work: mh1.counter=%d, mh2.counter=%d, mh3.counter=%d, mh4.counter=%d",
-			mh1.counter, mh2.counter, mh3.counter, mh4.counter)
-	}
-}
-
 type messageHandler struct {
 	bus     string
 	counter int
