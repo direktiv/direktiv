@@ -1,17 +1,21 @@
 import { FC, useEffect, useRef, useState } from "react";
+import { FiltersObj, useLogs } from "~/api/logs/query/get";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
-import { useLogs } from "~/api/logs/query/get";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ScrollContainer: FC<{
   instanceId: string;
-}> = ({ instanceId }) => {
-  const { data } = useLogs({ instanceId });
+  query: FiltersObj;
+}> = ({ instanceId, query }) => {
+  const { data } = useLogs({
+    instanceId,
+    filters: query,
+  });
   const [watch, setWatch] = useState(true);
 
   // The scrollable element for the list
