@@ -11,57 +11,16 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
-export type FiltersObj = {
-  QUERY?: { type: "MATCH"; workflowName?: string; stateName?: string };
-};
-
-export const getFilterQuery = (filters: FiltersObj) => {
-  let query = "";
-  const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
-
-  filterFields.forEach((field) => {
-    const filterItem = filters[field];
-    // without the guard, TS thinks filterItem may be undefined
-    if (!filterItem) {
-      return console.error("filterItem is not defined");
-    }
-
-    if (field === "QUERY") {
-      const workflowName = filterItem?.workflowName ?? "";
-      const stateName = filterItem?.stateName ?? "";
-      query = query.concat(
-        `&filter.field=${field}&filter.type=${filterItem.type}&filter.val=${workflowName}::${stateName}::`
-      );
-    }
-  });
-
-  return query;
-};
-
-const getUrl = ({
-  namespace,
-  baseUrl,
-  instanceId,
-  filters,
-}: {
-  baseUrl?: string;
-  namespace: string;
-  instanceId: string;
-  filters?: FiltersObj;
-}) => {
-  let url = `${
-    baseUrl ?? ""
-  }/api/namespaces/${namespace}/instances/${instanceId}`;
-
-  if (filters) {
-    url = url.concat(`?${filters}`);
-  }
-
-  return url;
-};
-
 export const getInstanceDetails = apiFactory({
-  url: getUrl,
+  url: ({
+    namespace,
+    baseUrl,
+    instanceId,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    instanceId: string;
+  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/instances/${instanceId}`,
   method: "GET",
   schema: InstancesDetailSchema,
 });
