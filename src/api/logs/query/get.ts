@@ -9,9 +9,57 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
+export type FiltersObj = {
+  QUERY?: { type: "MATCH"; workflowName?: string; stateName?: string };
+};
+
+export const getFilterQuery = (filters: FiltersObj) => {
+  let query = "";
+  const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
+
+  filterFields.forEach((field) => {
+    const filterItem = filters[field];
+    // without the guard, TS thinks filterItem may be undefined
+    if (!filterItem) {
+      return console.error("filterItem is not defined");
+    }
+
+    if (field === "QUERY") {
+      const workflowName = filterItem?.workflowName ?? "";
+      const stateName = filterItem?.stateName ?? "";
+      query = query.concat(
+        `&filter.field=${field}&filter.type=${filterItem.type}&filter.val=${workflowName}::${stateName}::`
+      );
+    }
+  });
+
+  return query;
+};
+
+const getUrl = ({
+  namespace,
+  baseUrl,
+  instanceId,
+  filters,
+}: {
+  baseUrl?: string;
+  namespace: string;
+  instanceId: string;
+  filters?: FiltersObj;
+}) => {
+  let url = `${
+    baseUrl ?? ""
+  }/api/namespaces/${namespace}/instances/${instanceId}/logs`;
+
+  if (filters) {
+    url = url.concat(`?${filters}`);
+  }
+
+  return url;
+};
+
 const getLogs = apiFactory({
-  url: ({ namespace, instanceId }: { namespace: string; instanceId: string }) =>
-    `/api/namespaces/${namespace}/instances/${instanceId}/logs`,
+  url: getUrl,
   method: "GET",
   schema: LogListSchema,
 });
@@ -30,9 +78,11 @@ const fetchLogs = async ({
 export const useLogsStream = ({
   instanceId,
   enabled = true,
+  filters,
 }: {
   instanceId: string;
   enabled: boolean;
+  filters: FiltersObj;
 }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -51,6 +101,7 @@ export const useLogsStream = ({
         logKeys.detail(namespace, {
           apiKey: apiKey ?? undefined,
           instanceId,
+          filters,
         }),
         (old) => {
           if (!old) {
@@ -88,7 +139,13 @@ export const useLogsStream = ({
   });
 };
 
-export const useLogs = ({ instanceId }: { instanceId: string }) => {
+export const useLogs = ({
+  instanceId,
+  filters,
+}: {
+  instanceId: string;
+  filters: FiltersObj;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -100,6 +157,7 @@ export const useLogs = ({ instanceId }: { instanceId: string }) => {
     queryKey: logKeys.detail(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
+      filters,
     }),
     queryFn: fetchLogs,
     enabled: !!namespace,
