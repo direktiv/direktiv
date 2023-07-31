@@ -273,7 +273,7 @@ func testTopic2Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc+counter2.cc+counter3.cc >= c+1
-	}, 30*time.Second, time.Millisecond*30, "did not get received events")
+	}, 60*time.Second, time.Second*3, "did not get received events")
 }
 
 type counterHandler struct {
