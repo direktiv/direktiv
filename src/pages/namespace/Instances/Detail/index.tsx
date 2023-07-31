@@ -6,7 +6,7 @@ import { useLogsStream } from "~/api/logs/query/get";
 const Instance = () => {
   const { instance } = pages.instances.useParams();
   useInstanceDetailsStream({ instanceId: instance ?? "", enabled: !!instance });
-  useLogsStream({ instanceId: instance ?? "", enabled: !!instance });
+  useLogsStream({ instanceId: instance ?? "" }, { enabled: !!instance });
 
   if (!instance) return null;
 

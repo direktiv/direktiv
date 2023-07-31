@@ -75,15 +75,16 @@ const fetchLogs = async ({
     },
   });
 
-export const useLogsStream = ({
-  instanceId,
-  enabled = true,
-  filters,
-}: {
-  instanceId: string;
-  enabled: boolean;
-  filters: FiltersObj;
-}) => {
+export const useLogsStream = (
+  {
+    instanceId,
+    filters,
+  }: {
+    instanceId: string;
+    filters?: FiltersObj;
+  },
+  { enabled = true }: { enabled?: boolean } = {}
+) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
@@ -101,7 +102,7 @@ export const useLogsStream = ({
         logKeys.detail(namespace, {
           apiKey: apiKey ?? undefined,
           instanceId,
-          filters,
+          filters: filters ?? {},
         }),
         (old) => {
           if (!old) {
