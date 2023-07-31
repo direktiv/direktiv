@@ -144,7 +144,7 @@ export const useLogs = ({
   filters,
 }: {
   instanceId: string;
-  filters: FiltersObj;
+  filters?: FiltersObj;
 }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -157,7 +157,7 @@ export const useLogs = ({
     queryKey: logKeys.detail(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
-      filters,
+      filters: filters ?? {},
     }),
     queryFn: fetchLogs,
     enabled: !!namespace,
