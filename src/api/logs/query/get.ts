@@ -52,7 +52,7 @@ const getUrl = ({
   }/api/namespaces/${namespace}/instances/${instanceId}/logs`;
 
   if (filters) {
-    url = url.concat(`?${filters}`);
+    url = url.concat(`?${getFilterQuery(filters)}`);
   }
 
   return url;
