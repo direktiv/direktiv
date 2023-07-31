@@ -3,6 +3,7 @@ import { Bug, Copy, Filter, Maximize2, WrapText } from "lucide-react";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FC } from "react";
+import Input from "~/design/Input";
 import ScrollContainer from "./ScrollContainer";
 
 const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => (
@@ -26,6 +27,8 @@ const LogsPanel: FC<{ instanceId: string }> = ({ instanceId }) => (
           <Copy />
         </Button>
       </ButtonBar>
+      <Input className="h-6" placeholder="workflow name" />
+      <Input className="h-6" placeholder="state name" />
     </div>
 
     <ScrollContainer instanceId={instanceId} />
