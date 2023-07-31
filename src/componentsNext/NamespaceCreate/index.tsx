@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
+import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { fileNameSchema } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
@@ -124,13 +125,16 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
           className="flex flex-col gap-y-5"
         >
           <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-              {t("components.namespaceCreate.nameLabel")}
+            <label
+              className="w-[90px] overflow-hidden text-right text-[14px]"
+              htmlFor="name"
+            >
+              {t("components.namespaceCreate.label.name")}
             </label>
             <Input
               id="name"
               data-testid="new-namespace-name"
-              placeholder={t("components.namespaceCreate.placeholder")}
+              placeholder={t("components.namespaceCreate.placeholder.name")}
               {...register("name")}
             />
           </fieldset>
@@ -139,63 +143,90 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
             <>
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
-                  htmlFor="name"
+                  className="w-[90px] flex-row overflow-hidden text-right text-[14px]"
+                  htmlFor="url"
                 >
-                  {t("components.namespaceCreate.urlLabel")}
+                  {t("components.namespaceCreate.label.url")}
+                  <InfoTooltip>
+                    {t("components.namespaceCreate.tooltip.url")}
+                  </InfoTooltip>
                 </label>
                 <Input
-                  id="name"
-                  data-testid="new-namespace-name"
-                  placeholder={t("components.namespaceCreate.placeholder")}
+                  id="url"
+                  data-testid="new-namespace-url"
+                  placeholder={t(
+                    authType === "ssh"
+                      ? "components.namespaceCreate.placeholder.gitUrl"
+                      : "components.namespaceCreate.placeholder.httpUrl"
+                  )}
                   {...register("url")}
                 />
               </fieldset>
 
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
-                  htmlFor="name"
+                  className="w-[90px] overflow-hidden text-right text-[14px]"
+                  htmlFor="ref"
                 >
-                  {t("components.namespaceCreate.refLabel")}
+                  {t("components.namespaceCreate.label.ref")}
+                  <InfoTooltip>
+                    {t("components.namespaceCreate.tooltip.ref")}
+                  </InfoTooltip>
                 </label>
                 <Input
-                  id="name"
-                  data-testid="new-namespace-name"
-                  placeholder={t("components.namespaceCreate.placeholder")}
+                  id="ref"
+                  data-testid="new-namespace-ref"
+                  placeholder={t("components.namespaceCreate.placeholder.ref")}
                   {...register("ref")}
                 />
               </fieldset>
 
-              <Select value={authType} onValueChange={setAuthType}>
-                <SelectTrigger variant="outline" className="ml-[90px]">
-                  <SelectValue placeholder="Select Auth Method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mirrorAuthTypes.map((option) => (
-                    <SelectItem
-                      key={option}
-                      value={option}
-                      onClick={() => setAuthType(option)}
-                    >
-                      {t(`components.namespaceCreate.authType.${option}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <fieldset className="flex items-center gap-5">
+                <label
+                  className="w-[90px] overflow-hidden text-right text-[14px]"
+                  htmlFor="ref"
+                >
+                  {t("components.namespaceCreate.label.authType")}
+                </label>
+                <Select value={authType} onValueChange={setAuthType}>
+                  <SelectTrigger variant="outline" className="w-full">
+                    <SelectValue
+                      placeholder={t(
+                        "components.namespaceCreate.placeholder.authType"
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mirrorAuthTypes.map((option) => (
+                      <SelectItem
+                        key={option}
+                        value={option}
+                        onClick={() => setAuthType(option)}
+                      >
+                        {t(`components.namespaceCreate.authType.${option}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </fieldset>
 
-              {(authType === "token" || authType == "ssh") && (
+              {authType === "token" && (
                 <fieldset className="flex items-center gap-5">
                   <label
-                    className="w-[90px] text-right text-[14px]"
-                    htmlFor="name"
+                    className="w-[90px] overflow-hidden text-right text-[14px]"
+                    htmlFor="token"
                   >
-                    {t("components.namespaceCreate.passphrase")}
+                    {t("components.namespaceCreate.label.token")}
+                    <InfoTooltip>
+                      {t("components.namespaceCreate.tooltip.token")}
+                    </InfoTooltip>
                   </label>
                   <Input
-                    id="name"
-                    data-testid="new-namespace-name"
-                    placeholder={t("components.namespaceCreate.placeholder")}
+                    id="token"
+                    data-testid="new-namespace-token"
+                    placeholder={t(
+                      "components.namespaceCreate.placeholder.token"
+                    )}
                     {...register("passphrase")}
                   />
                 </fieldset>
@@ -205,30 +236,59 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                 <>
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[90px] text-right text-[14px]"
-                      htmlFor="name"
+                      className="w-[144px] overflow-hidden text-right text-[14px]"
+                      htmlFor="passphrase"
                     >
-                      {t("components.namespaceCreate.publicKey")}
+                      {t("components.namespaceCreate.label.passphrase")}
+                      <InfoTooltip>
+                        {t("components.namespaceCreate.tooltip.passphrase")}
+                      </InfoTooltip>
                     </label>
                     <Input
-                      id="name"
-                      data-testid="new-namespace-name"
-                      placeholder={t("components.namespaceCreate.placeholder")}
+                      id="passphrase"
+                      data-testid="new-namespace-passphrase"
+                      placeholder={t(
+                        "components.namespaceCreate.placeholder.passphrase"
+                      )}
+                      {...register("passphrase")}
+                    />
+                  </fieldset>
+                  <fieldset className="flex items-center gap-5">
+                    <label
+                      className="w-[144px] overflow-hidden text-right text-[14px]"
+                      htmlFor="public-key"
+                    >
+                      {t("components.namespaceCreate.label.publicKey")}
+                      <InfoTooltip>
+                        {t("components.namespaceCreate.tooltip.publicKey")}
+                      </InfoTooltip>
+                    </label>
+                    <Input
+                      id="public-key"
+                      data-testid="new-namespace-pubkey"
+                      placeholder={t(
+                        "components.namespaceCreate.placeholder.publicKey"
+                      )}
                       {...register("publicKey")}
                     />
                   </fieldset>
 
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[90px] text-right text-[14px]"
-                      htmlFor="name"
+                      className="w-[144px] overflow-hidden text-right text-[14px]"
+                      htmlFor="private-key"
                     >
-                      {t("components.namespaceCreate.privateKey")}
+                      {t("components.namespaceCreate.label.privateKey")}
+                      <InfoTooltip>
+                        {t("components.namespaceCreate.tooltip.privateKey")}
+                      </InfoTooltip>
                     </label>
                     <Input
-                      id="name"
-                      data-testid="new-namespace-name"
-                      placeholder={t("components.namespaceCreate.placeholder")}
+                      id="private-key"
+                      data-testid="new-namespace-privkey"
+                      placeholder={t(
+                        "components.namespaceCreate.placeholder.privateKey"
+                      )}
                       {...register("privateKey")}
                     />
                   </fieldset>
