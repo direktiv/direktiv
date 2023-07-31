@@ -31,21 +31,6 @@ export const Default: Story = {
   ),
 };
 
-export const InputWithTextButton = () => {
-  const [showPassword, setshowPassword] = useState(false);
-  return (
-    <InputWithButton>
-      <Input
-        value="my-secret-password"
-        type={showPassword ? "text" : "password"}
-      />
-      <Button className="w-40" onClick={() => setshowPassword((old) => !old)}>
-        {showPassword ? "Hide" : "Show"} Password
-      </Button>
-    </InputWithButton>
-  );
-};
-
 export const IconWithToolTip = () => {
   const [value, setValue] = useState("some value");
   return (
