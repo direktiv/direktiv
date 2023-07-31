@@ -33,13 +33,10 @@ const fetchInstanceDetails = async ({
     urlParams: { namespace, instanceId },
   });
 
-export const useInstanceDetailsStream = ({
-  instanceId,
-  enabled = true,
-}: {
-  instanceId: string;
-  enabled?: boolean;
-}) => {
+export const useInstanceDetailsStream = (
+  { instanceId }: { instanceId: string },
+  { enabled = true }: { enabled?: boolean } = {}
+) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
