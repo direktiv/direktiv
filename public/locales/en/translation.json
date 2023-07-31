@@ -333,7 +333,7 @@
         "passphrase": "Passphrase",
         "publicKey": "Public key",
         "privateKey": "Private key",
-        "token": "token",
+        "token": "Token",
         "authType": "Auth type"
       },
       "tooltip": {

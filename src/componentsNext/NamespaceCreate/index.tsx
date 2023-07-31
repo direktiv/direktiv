@@ -20,6 +20,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
+import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
@@ -107,11 +108,19 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
       </DialogHeader>
 
       <Tabs className="w-[400px]" defaultValue="namespace">
-        <TabsList>
-          <TabsTrigger value="namespace" onClick={() => setIsMirror(false)}>
+        <TabsList variant="boxed">
+          <TabsTrigger
+            variant="boxed"
+            value="namespace"
+            onClick={() => setIsMirror(false)}
+          >
             Namespace
           </TabsTrigger>
-          <TabsTrigger value="mirror" onClick={() => setIsMirror(true)}>
+          <TabsTrigger
+            variant="boxed"
+            value="mirror"
+            onClick={() => setIsMirror(true)}
+          >
             Mirror
           </TabsTrigger>
         </TabsList>
@@ -221,7 +230,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                       {t("components.namespaceCreate.tooltip.token")}
                     </InfoTooltip>
                   </label>
-                  <Input
+                  <Textarea
                     id="token"
                     data-testid="new-namespace-token"
                     placeholder={t(
