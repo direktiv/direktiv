@@ -9,11 +9,9 @@ import { SelectFieldMenu } from "./SelectFieldMenu";
 import TextInput from "./TextInput";
 import { useState } from "react";
 
-export type FilterField = "workflowName" | "stateName"; // TODO: make this dynamic?
-
-type MenuAnchor = "main" | "workflowName" | "stateName";
-
-const fieldsInMenu: Array<FilterField> = ["workflowName", "stateName"];
+const filterFields = ["workflowName", "stateName"] as const;
+export type FilterField = (typeof filterFields)[number];
+type MenuAnchor = "main" | FilterField;
 
 const Filters = () => {
   const {
@@ -50,13 +48,70 @@ const Filters = () => {
     setSelectedField(null);
   };
 
-  const undefinedFilters = fieldsInMenu; // TODO: implement filtering
+  const currentFilterKeys = filterFields.filter(
+    (items) => filters?.QUERY?.[items]
+  );
 
   const hasFilters = false; // TODO: implement
+  const undefinedFilters = filterFields; // TODO: implement filtering
 
   return (
     <ButtonBar>
-      <code>{JSON.stringify(filters)}</code>
+      {currentFilterKeys.map((field) => (
+        <ButtonBar key={field}>
+          <Button variant="outline" size="sm">
+            {field}
+          </Button>
+          <Popover
+            open={activeMenu === field}
+            onOpenChange={(state) => handleOpenChange(state, field)}
+          >
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                {filters?.["QUERY"]?.[field]}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start">
+              <TextInput
+                field={field}
+                // setFilter={setFilter}
+                // clearFilter={clearFilter}
+                // value={filters[field]?.value}
+
+                setFilter={(filter, value) => {
+                  if (filter === "workflowName") {
+                    updateFilterWorkflow(value);
+                  }
+                  if (filter === "stateName") {
+                    updateFilterStateName(value);
+                  }
+                }}
+                clearFilter={(filter) => {
+                  if (filter === "workflowName") {
+                    resetFilterWorkflow();
+                  }
+                  if (filter === "stateName") {
+                    resetFilterStateName();
+                  }
+                }}
+                value={filters?.QUERY?.[field]}
+              />
+            </PopoverContent>
+          </Popover>
+          <Button variant="outline" size="sm" icon>
+            <X
+              onClick={() => {
+                if (field === "workflowName") {
+                  resetFilterWorkflow();
+                }
+                if (field === "stateName") {
+                  resetFilterStateName();
+                }
+              }}
+            />
+          </Button>
+        </ButtonBar>
+      ))}
       <Popover
         open={activeMenu === "main"}
         onOpenChange={(state) => handleOpenChange(state, "main")}
