@@ -22,14 +22,18 @@ func TestExecuteMirroringProcess(t *testing.T) {
 
 	dStore := datastoresql.NewSQLStore(db, "some_secret_key_")
 	store := dStore.Mirror()
-
-	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New(), "test")
+	nsID := uuid.New()
+	rootID := uuid.New()
+	direktivRoot, err := fs.CreateRoot(context.Background(), rootID, nsID, "test")
 	if err != nil {
 		t.Fatalf("unepxected GetRoot() error = %v", err)
 	}
-
+	if direktivRoot.ID != rootID {
+		t.Fatal("Got wrong id back")
+	}
 	config, err := store.CreateConfig(context.Background(), &mirror.Config{
-		NamespaceID: direktivRoot.ID,
+		NamespaceID: nsID,
+		RootName:    "test",
 	})
 	if err != nil {
 		t.Fatalf("unepxected CreateConfig() error = %v", err)
