@@ -1447,6 +1447,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-workflow", h.CreateWorkflow)
 
+	// TODO: SWAGGER-SPEC
+	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-file", h.CreateFile)
+
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=update-workflow Workflows updateWorkflow
 	// ---
 	// description: |
@@ -1482,6 +1485,9 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	//     "description": "successfully updated workflow"
 	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-workflow", h.UpdateWorkflow)
+
+	// TODO: SWAGGER-SPEC
+	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-file", h.UpdateFile)
 
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_SaveWorkflow, "save-workflow", h.SaveWorkflow)
@@ -2629,6 +2635,17 @@ func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 		Path:      path,
 		Ref:       ref,
 	})
+	if err == nil {
+		respond(w, resp, err)
+
+		return
+	}
+
+	resp, err = h.client.File(ctx, &grpc.FileRequest{
+		Namespace: namespace,
+		Path:      path,
+	})
+
 	respond(w, resp, err)
 }
 
@@ -2817,6 +2834,30 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 	respond(w, resp, err)
 }
 
+func (h *flowHandler) CreateFile(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.CreateFileRequest{
+		Namespace: namespace,
+		Path:      path,
+		Source:    data,
+		MimeType:  r.Header.Get("Content-Type"),
+	}
+
+	resp, err := h.client.CreateFile(ctx, in)
+	respond(w, resp, err)
+}
+
 func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -2837,6 +2878,30 @@ func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.UpdateWorkflow(ctx, in)
+	respond(w, resp, err)
+}
+
+func (h *flowHandler) UpdateFile(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+	path, _ := pathAndRef(r)
+
+	data, err := loadRawBody(r)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	in := &grpc.UpdateFileRequest{
+		Namespace: namespace,
+		Path:      path,
+		Source:    data,
+		MimeType:  r.Header.Get("Content-Type"),
+	}
+
+	resp, err := h.client.UpdateFile(ctx, in)
 	respond(w, resp, err)
 }
 
