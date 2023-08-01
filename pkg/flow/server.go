@@ -319,6 +319,12 @@ func (srv *server) start(ctx context.Context) error {
 			return err
 		}
 
+		err = srv.flow.placeholdSecrets(ctx, noTx, nsID, file)
+		if err != nil {
+			srv.sugar.Debugf("Error setting up placeholder secrets: %v", err)
+			srv.flow.logger.Errorf(ctx, nsID, nil, "Error setting up placeholder secrets: %v", err)
+		}
+
 		return nil
 	}
 

@@ -113,7 +113,8 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) 
 
 func ConvertSecretToGrpcSecret(secret *core.Secret) *grpc.Secret {
 	return &grpc.Secret{
-		Name: secret.Name,
+		Name:        secret.Name,
+		Initialized: secret.Data != nil,
 	}
 }
 
