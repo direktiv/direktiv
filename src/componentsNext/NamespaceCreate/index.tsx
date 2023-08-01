@@ -27,7 +27,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
-import { Textarea } from "~/design/TextArea";
+import { InputWithButton } from "~/design/InputWithButton";
 import { fileNameSchema } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
@@ -176,20 +176,22 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                   htmlFor="url"
                 >
                   {t("components.namespaceCreate.label.url")}
+                </label>
+                <InputWithButton>
+                  <Input
+                    id="url"
+                    data-testid="new-namespace-url"
+                    placeholder={t(
+                      authType === "ssh"
+                        ? "components.namespaceCreate.placeholder.gitUrl"
+                        : "components.namespaceCreate.placeholder.httpUrl"
+                    )}
+                    {...register("url")}
+                  />
                   <InfoTooltip>
                     {t("components.namespaceCreate.tooltip.url")}
                   </InfoTooltip>
-                </label>
-                <Input
-                  id="url"
-                  data-testid="new-namespace-url"
-                  placeholder={t(
-                    authType === "ssh"
-                      ? "components.namespaceCreate.placeholder.gitUrl"
-                      : "components.namespaceCreate.placeholder.httpUrl"
-                  )}
-                  {...register("url")}
-                />
+                </InputWithButton>
               </fieldset>
 
               <fieldset className="flex items-center gap-5">
@@ -198,16 +200,20 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                   htmlFor="ref"
                 >
                   {t("components.namespaceCreate.label.ref")}
+                </label>
+                <InputWithButton>
+                  <Input
+                    id="ref"
+                    data-testid="new-namespace-ref"
+                    placeholder={t(
+                      "components.namespaceCreate.placeholder.ref"
+                    )}
+                    {...register("ref")}
+                  />
                   <InfoTooltip>
                     {t("components.namespaceCreate.tooltip.ref")}
                   </InfoTooltip>
-                </label>
-                <Input
-                  id="ref"
-                  data-testid="new-namespace-ref"
-                  placeholder={t("components.namespaceCreate.placeholder.ref")}
-                  {...register("ref")}
-                />
+                </InputWithButton>
               </fieldset>
 
               <fieldset className="flex items-center gap-5">
@@ -249,18 +255,20 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                     htmlFor="token"
                   >
                     {t("components.namespaceCreate.label.token")}
+                  </label>
+                  <InputWithButton>
+                    <Input
+                      id="token"
+                      data-testid="new-namespace-token"
+                      placeholder={t(
+                        "components.namespaceCreate.placeholder.token"
+                      )}
+                      {...register("passphrase")}
+                    />
                     <InfoTooltip>
                       {t("components.namespaceCreate.tooltip.token")}
                     </InfoTooltip>
-                  </label>
-                  <Textarea
-                    id="token"
-                    data-testid="new-namespace-token"
-                    placeholder={t(
-                      "components.namespaceCreate.placeholder.token"
-                    )}
-                    {...register("passphrase")}
-                  />
+                  </InputWithButton>
                 </fieldset>
               )}
 
@@ -272,18 +280,20 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                       htmlFor="passphrase"
                     >
                       {t("components.namespaceCreate.label.passphrase")}
+                    </label>
+                    <InputWithButton>
+                      <Input
+                        id="passphrase"
+                        data-testid="new-namespace-passphrase"
+                        placeholder={t(
+                          "components.namespaceCreate.placeholder.passphrase"
+                        )}
+                        {...register("passphrase")}
+                      />
                       <InfoTooltip>
                         {t("components.namespaceCreate.tooltip.passphrase")}
                       </InfoTooltip>
-                    </label>
-                    <Input
-                      id="passphrase"
-                      data-testid="new-namespace-passphrase"
-                      placeholder={t(
-                        "components.namespaceCreate.placeholder.passphrase"
-                      )}
-                      {...register("passphrase")}
-                    />
+                    </InputWithButton>
                   </fieldset>
                   <fieldset className="flex items-center gap-5">
                     <label
@@ -291,18 +301,20 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                       htmlFor="public-key"
                     >
                       {t("components.namespaceCreate.label.publicKey")}
+                    </label>
+                    <InputWithButton>
+                      <Input
+                        id="public-key"
+                        data-testid="new-namespace-pubkey"
+                        placeholder={t(
+                          "components.namespaceCreate.placeholder.publicKey"
+                        )}
+                        {...register("publicKey")}
+                      />
                       <InfoTooltip>
                         {t("components.namespaceCreate.tooltip.publicKey")}
                       </InfoTooltip>
-                    </label>
-                    <Input
-                      id="public-key"
-                      data-testid="new-namespace-pubkey"
-                      placeholder={t(
-                        "components.namespaceCreate.placeholder.publicKey"
-                      )}
-                      {...register("publicKey")}
-                    />
+                    </InputWithButton>
                   </fieldset>
 
                   <fieldset className="flex items-center gap-5">
@@ -311,18 +323,20 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                       htmlFor="private-key"
                     >
                       {t("components.namespaceCreate.label.privateKey")}
+                    </label>
+                    <InputWithButton>
+                      <Input
+                        id="private-key"
+                        data-testid="new-namespace-privkey"
+                        placeholder={t(
+                          "components.namespaceCreate.placeholder.privateKey"
+                        )}
+                        {...register("privateKey")}
+                      />
                       <InfoTooltip>
                         {t("components.namespaceCreate.tooltip.privateKey")}
                       </InfoTooltip>
-                    </label>
-                    <Input
-                      id="private-key"
-                      data-testid="new-namespace-privkey"
-                      placeholder={t(
-                        "components.namespaceCreate.placeholder.privateKey"
-                      )}
-                      {...register("privateKey")}
-                    />
+                    </InputWithButton>
                   </fieldset>
                 </>
               )}
