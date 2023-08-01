@@ -15,6 +15,26 @@ const LogsPanel: FC<{
   <>
     <div className="mb-5 flex gap-x-5">
       <h3 className="grow font-medium">Logs</h3>
+      <Input className="h-6" placeholder="filter by workflow name" />
+      <Input
+        className="h-6"
+        placeholder="filter by state name"
+        onChange={(e) => {
+          let query = {};
+          if (e.target.value) {
+            query = {
+              QUERY: {
+                type: "MATCH",
+                stateName: e.target.value,
+              },
+            };
+          }
+
+          setQuery(() => ({
+            ...query,
+          }));
+        }}
+      />
       <ButtonBar>
         <Button icon variant="outline" size="sm">
           <Bug />
@@ -32,26 +52,6 @@ const LogsPanel: FC<{
           <Copy />
         </Button>
       </ButtonBar>
-      <Input className="h-6" placeholder="workflow name" />
-      <Input
-        className="h-6"
-        placeholder="state name"
-        onChange={(e) => {
-          let query = {};
-          if (e.target.value) {
-            query = {
-              QUERY: {
-                type: "MATCH",
-                stateName: e.target.value,
-              },
-            };
-          }
-
-          setQuery(() => ({
-            ...query,
-          }));
-        }}
-      />
     </div>
 
     <ScrollContainer instanceId={instanceId} query={query} />
