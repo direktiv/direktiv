@@ -11,12 +11,7 @@ import { Actions as InstanceActions } from "./type";
 
 type StateType = {
   instanceId: string;
-  filters: FiltersObj;
-};
-
-const defaultState = {
-  // instance is not part of the default state
-  filters: {},
+  filters?: FiltersObj;
 };
 
 const InstanceStateContext = createContext<StateType | null>(null);
@@ -27,20 +22,32 @@ const InstanceDispatchContext =
 function stateReducer(state: StateType, action: InstanceActions) {
   switch (action.type) {
     case "UPDATE_FILTER_STATE_NAME": {
-      return {
+      const newState: StateType = {
         ...state,
         filters: {
           ...state.filters,
+          QUERY: {
+            type: "MATCH",
+            workflowName: state.filters?.QUERY?.workflowName ?? undefined,
+            stateName: action.payload.stateName,
+          },
         },
       };
+      return newState;
     }
     case "UPDATE_FILTER_WORKFLOW": {
-      return {
+      const newState: StateType = {
         ...state,
         filters: {
           ...state.filters,
+          QUERY: {
+            type: "MATCH",
+            workflowName: action.payload.workflowName,
+            stateName: state.filters?.QUERY?.stateName ?? undefined,
+          },
         },
       };
+      return newState;
     }
 
     default: {
@@ -49,15 +56,11 @@ function stateReducer(state: StateType, action: InstanceActions) {
   }
 }
 
-// add id here?
-const Provider: FC<PropsWithChildren & { instance: string }> = ({
+const Provider: FC<PropsWithChildren & { instanceId: string }> = ({
   children,
-  instance,
+  instanceId,
 }) => {
-  const [state, dispatch] = useReducer(stateReducer, {
-    ...defaultState,
-    instanceId: instance,
-  });
+  const [state, dispatch] = useReducer(stateReducer, { instanceId });
 
   return (
     <InstanceStateContext.Provider value={state}>
@@ -87,14 +90,14 @@ const useFilters = () => {
 };
 
 const useActions = () => {
-  const context = useContext(InstanceDispatchContext);
-  if (!context) {
+  const dispatch = useContext(InstanceDispatchContext);
+  if (!dispatch) {
     throw new Error("useActions must be used within a InstanceDispatchContext");
   }
 
   return {
     updateFilterStateName: (stateName: string) => {
-      context({
+      dispatch({
         type: "UPDATE_FILTER_STATE_NAME",
         payload: {
           stateName,
@@ -102,7 +105,7 @@ const useActions = () => {
       });
     },
     updateFilterWorkflow: (workflowName: string) => {
-      context({
+      dispatch({
         type: "UPDATE_FILTER_WORKFLOW",
         payload: {
           workflowName,
