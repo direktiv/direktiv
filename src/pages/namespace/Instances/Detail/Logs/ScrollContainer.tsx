@@ -1,21 +1,22 @@
-import { FC, useEffect, useRef, useState } from "react";
-import { FiltersObj, useLogs } from "~/api/logs/query/get";
+import { useEffect, useRef, useState } from "react";
+import { useFilters, useInstanceId } from "../state/instanceContext";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
-import { useInstanceId } from "../state/instanceContext";
+import { useLogs } from "~/api/logs/query/get";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-const ScrollContainer: FC<{
-  query: FiltersObj;
-}> = ({ query }) => {
+const ScrollContainer = () => {
   const instanceId = useInstanceId();
+
+  const filters = useFilters();
+
   const { data } = useLogs({
     instanceId,
-    filters: query,
+    filters,
   });
   const [watch, setWatch] = useState(true);
 

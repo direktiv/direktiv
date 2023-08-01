@@ -1,41 +1,34 @@
-import { FC, useState } from "react";
-import { FiltersObj, useLogsStream } from "~/api/logs/query/get";
+import {
+  InstanceStateProvider,
+  useFilters,
+  useInstanceId,
+} from "./state/instanceContext";
 
-import { InstanceStateProvider } from "./state/instanceContext";
 import InstancesDetail from "./InstanceDetail";
 import { pages } from "~/util/router/pages";
 import { useInstanceDetailsStream } from "~/api/instances/query/details";
+import { useLogsStream } from "~/api/logs/query/get";
 
-const Instance: FC<{ instance: string }> = ({ instance }) => {
-  const [query, setQuery] = useState<FiltersObj>({});
+const Instance = () => {
+  const instanceId = useInstanceId();
+  const filters = useFilters();
 
-  useInstanceDetailsStream(
-    { instanceId: instance ?? "" },
-    { enabled: !!instance }
-  );
-  useLogsStream(
-    {
-      instanceId: instance ?? "",
-      filters: query,
-    },
-    { enabled: !!instance }
-  );
-
-  if (!instance) return null;
+  useInstanceDetailsStream({ instanceId });
+  useLogsStream({ instanceId, filters });
 
   // Details page is moved into a separate component to give us a state
   // where the id alwawys defined. This is required for the data fetching
   // hook that require the id (and hooks can not be conditionally called)
-  return <InstancesDetail query={query} setQuery={setQuery} />;
+  return <InstancesDetail />;
 };
 
 const InstanceWithContextProvider = () => {
-  const { instance } = pages.instances.useParams();
-  if (!instance) return null;
+  const { instance: instanceId } = pages.instances.useParams();
+  if (!instanceId) return null;
 
   return (
-    <InstanceStateProvider instance={instance}>
-      <Instance instance={instance} />
+    <InstanceStateProvider instanceId={instanceId}>
+      <Instance />
     </InstanceStateProvider>
   );
 };

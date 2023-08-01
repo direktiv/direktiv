@@ -7,6 +7,7 @@ const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
   flow,
 }) => {
   const { data } = useNodeContent({ path: workflowPath });
+
   if (!data) return null;
 
   const workflowData = atob(data.revision?.source ?? "");

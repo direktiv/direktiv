@@ -1,21 +1,14 @@
-import { Dispatch, FC, SetStateAction } from "react";
-import { useFilters, useInstanceId } from "./state/instanceContext";
-
 import { Card } from "~/design/Card";
 import Diagram from "./Diagram";
-import { FiltersObj } from "~/api/logs/query/get";
 import Header from "./Header";
 import Input from "./Input";
 import Logs from "./Logs";
 import Output from "./Output";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceId } from "./state/instanceContext";
 
-const InstancesDetail: FC<{
-  query: FiltersObj;
-  setQuery: Dispatch<SetStateAction<FiltersObj>>;
-}> = ({ query, setQuery }) => {
-  const filters = useFilters();
+const InstancesDetail = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
 
@@ -34,7 +27,7 @@ const InstancesDetail: FC<{
         )}
       >
         <Card className="relative grid grid-rows-[auto,1fr] p-5">
-          <Logs query={query} setQuery={setQuery} />
+          <Logs />
         </Card>
         <Card className="p-5">
           <Input />
