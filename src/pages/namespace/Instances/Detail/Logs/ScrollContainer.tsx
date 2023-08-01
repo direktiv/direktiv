@@ -43,7 +43,7 @@ const ScrollContainer = () => {
 
   return (
     <Logs
-      linewrap={wordWrap}
+      wordWrap={wordWrap}
       className="h-full overflow-scroll"
       ref={parentRef}
       onScroll={(e) => {

@@ -50,7 +50,7 @@ export const LogVariants = () => (
 
 export const WrapLog = () => (
   <Card>
-    <Logs linewrap>
+    <Logs wordWrap>
       <LogEntry time="12:34:23" variant="success">
         This is going to be a very long line This is going to be a very long
         line This is going to be a very long line This is going to be a very
@@ -76,15 +76,15 @@ export const NoWrapLog = () => (
 );
 
 export const EditorVSLogsFontCompare = () => {
-  const [lineWrap, setLineWrap] = useState(true);
+  const [wordWrap, setWordWrap] = useState(true);
   return (
     <div className="flex flex-col gap-y-5">
-      <Button className="self-start" onClick={() => setLineWrap((old) => !old)}>
-        {!lineWrap && "don't"} wrap long lines
+      <Button className="self-start" onClick={() => setWordWrap((old) => !old)}>
+        {!wordWrap && "don't"} wrap long lines
       </Button>
       <div className="flex flex-row gap-5">
         <Card className="flex h-[500px] flex-1 overflow-x-auto">
-          <Logs linewrap={lineWrap} className="grow">
+          <Logs wordWrap={wordWrap} className="grow">
             <LogEntry time="12:34:23">
               Preparing workflow triggered by api.
             </LogEntry>
