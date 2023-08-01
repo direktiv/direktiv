@@ -1,4 +1,4 @@
-import { Bug, Copy, Maximize2, Plus, WrapText } from "lucide-react";
+import { Bug, Copy, Maximize2, Minimize2, Plus, WrapText } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -7,6 +7,7 @@ import {
 } from "~/design/Tooltip";
 import {
   useLogsPreferencesActions,
+  useLogsPreferencesMaximizedPanel,
   useLogsPreferencesVerboseLogs,
   useLogsPreferencesWordWrap,
 } from "~/util/store/logs";
@@ -21,8 +22,13 @@ import { useActions } from "../state/instanceContext";
 const LogsPanel = () => {
   const { updateFilterStateName, updateFilterWorkflow } = useActions();
   const wordWrap = useLogsPreferencesWordWrap();
+  const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const verboseLogs = useLogsPreferencesVerboseLogs();
-  const { setVerboseLogs, setWordWrap } = useLogsPreferencesActions();
+  const { setVerboseLogs, setWordWrap, setMaximizedPanel } =
+    useLogsPreferencesActions();
+
+  const isMaximized = maximizedPanel === "logs";
+
   return (
     <>
       <div className="mb-5 flex gap-x-5">
@@ -88,16 +94,24 @@ const LogsPanel = () => {
               </TooltipTrigger>
               <TooltipContent>Copy Logs</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
-                  <Button icon variant="outline" size="sm">
-                    <Maximize2 />
+                  <Button
+                    icon
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMaximizedPanel(isMaximized ? "none" : "logs");
+                    }}
+                  >
+                    {isMaximized ? <Minimize2 /> : <Maximize2 />}
                   </Button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent>Maximize Logs</TooltipContent>
+              <TooltipContent>
+                {isMaximized ? "Minimize Logs" : "Maximize Logs"}
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </ButtonBar>

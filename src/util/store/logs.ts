@@ -35,6 +35,9 @@ const useLogsPreferencesState = create<LogsPreferencesState>()(
   )
 );
 
+export const useLogsPreferencesMaximizedPanel = () =>
+  useLogsPreferencesState((state) => state.maximizedPanel);
+
 export const useLogsPreferencesWordWrap = () =>
   useLogsPreferencesState((state) => state.wordWrap);
 
