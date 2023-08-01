@@ -67,14 +67,30 @@ const useFilters = () => {
   return context.filters;
 };
 
-const useDispatch = () => {
+const useActions = () => {
   const context = useContext(InstanceDispatchContext);
   if (!context) {
-    throw new Error(
-      "useInstanceDispatch must be used within a InstanceDispatchContext"
-    );
+    throw new Error("useActions must be used within a InstanceDispatchContext");
   }
-  return context;
+
+  return {
+    updateFilterStateName: (stateName: string) => {
+      context({
+        type: "UPDATE_FILTER_STATE_NAME",
+        payload: {
+          stateName,
+        },
+      });
+    },
+    updateFilterWorkflow: (workflowName: string) => {
+      context({
+        type: "UPDATE_FILTER_WORKFLOW",
+        payload: {
+          workflowName,
+        },
+      });
+    },
+  };
 };
 
-export { Provider as InstanceStateProvider, useFilters, useDispatch };
+export { Provider as InstanceStateProvider, useFilters, useActions };

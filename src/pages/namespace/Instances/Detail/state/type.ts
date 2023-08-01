@@ -1,14 +1,14 @@
 export type UpdateFilterState = {
   type: "UPDATE_FILTER_STATE_NAME";
   payload: {
-    filter: string;
+    stateName: string;
   };
 };
 
 export type UpdateFilterWorkflow = {
   type: "UPDATE_FILTER_WORKFLOW";
   payload: {
-    filter: string;
+    workflowName: string;
   };
 };
 
