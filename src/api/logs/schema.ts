@@ -13,7 +13,7 @@ const LogEntrySchema = z.object({
     "namespace-id": z.string(), // "d1df8d21-96ce-49eb-98b7-5af7571ab28f"
     recipientType: z.string(), // "instance"
     workflow: z.string(), // "workflow.yaml"
-    "workflow-id": z.string(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
+    "workflow-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
     "state-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
   }),
 });
