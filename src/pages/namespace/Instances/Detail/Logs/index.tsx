@@ -5,6 +5,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import {
+  useLogsPreferencesActions,
+  useLogsPreferencesVerboseLogs,
+  useLogsPreferencesWordWrap,
+} from "~/util/store/logs";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -15,7 +20,9 @@ import { useActions } from "../state/instanceContext";
 
 const LogsPanel = () => {
   const { updateFilterStateName, updateFilterWorkflow } = useActions();
-
+  const wordWrap = useLogsPreferencesWordWrap();
+  const verboseLogs = useLogsPreferencesVerboseLogs();
+  const { setVerboseLogs, setWordWrap } = useLogsPreferencesActions();
   return (
     <>
       <div className="mb-5 flex gap-x-5">
@@ -42,7 +49,13 @@ const LogsPanel = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
-                  <Toggle size="sm">
+                  <Toggle
+                    size="sm"
+                    pressed={verboseLogs}
+                    onClick={() => {
+                      setVerboseLogs(!verboseLogs);
+                    }}
+                  >
                     <Bug />
                   </Toggle>
                 </div>
@@ -52,7 +65,13 @@ const LogsPanel = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
-                  <Toggle size="sm">
+                  <Toggle
+                    size="sm"
+                    pressed={wordWrap}
+                    onClick={() => {
+                      setWordWrap(!wordWrap);
+                    }}
+                  >
                     <WrapText />
                   </Toggle>
                 </div>
