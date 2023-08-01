@@ -1,9 +1,16 @@
 import { Bug, Copy, Maximize2, Plus, WrapText } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
 import ScrollContainer from "./ScrollContainer";
+import { Toggle } from "~/design/Toggle";
 import { useActions } from "../state/instanceContext";
 
 const LogsPanel = () => {
@@ -31,18 +38,49 @@ const LogsPanel = () => {
           <Plus /> Filter
         </Button>
         <ButtonBar>
-          <Button icon variant="outline" size="sm">
-            <Bug />
-          </Button>
-          <Button icon variant="outline" size="sm">
-            <WrapText />
-          </Button>
-          <Button icon variant="outline" size="sm">
-            <Copy />
-          </Button>
-          <Button icon variant="outline" size="sm">
-            <Maximize2 />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex grow">
+                  <Toggle size="sm">
+                    <Bug />
+                  </Toggle>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Verbose Logs</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex grow">
+                  <Toggle size="sm">
+                    <WrapText />
+                  </Toggle>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Word Wrap</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex grow">
+                  <Button icon variant="outline" size="sm">
+                    <Copy />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Copy Logs</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex grow">
+                  <Button icon variant="outline" size="sm">
+                    <Maximize2 />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Maximize Logs</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </ButtonBar>
       </div>
       <ScrollContainer />
