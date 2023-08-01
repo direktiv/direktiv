@@ -7,10 +7,12 @@ import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useLogs } from "~/api/logs/query/get";
+import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
+  const wordWrap = useLogsPreferencesWordWrap();
 
   const filters = useFilters();
 
@@ -41,7 +43,7 @@ const ScrollContainer = () => {
 
   return (
     <Logs
-      linewrap={true}
+      linewrap={wordWrap}
       className="h-full overflow-scroll"
       ref={parentRef}
       onScroll={(e) => {
