@@ -19,6 +19,7 @@ message Node {
 	string oid = 8;
 	bool readOnly = 9;
 	string expandedType = 10;
+	string mimeType = 11;
 }
 
 message DirectoryRequest {
@@ -78,4 +79,49 @@ message DeleteNodeAttributesRequest {
 	string namespace = 1; 
 	string path = 2;
 	repeated string attributes = 3;
+}
+
+message File {
+	google.protobuf.Timestamp created_at = 1;
+	string hash = 2;
+	bytes source = 3;
+	string name = 4;
+	string mimeType = 5;
+}
+
+message CreateFileRequest {
+	string namespace = 1;
+	string path = 2;
+	bytes source = 3;
+	string mimeType = 4;
+}
+
+message CreateFileResponse {
+	string namespace = 1;
+	Node node = 2;
+	File file = 3;
+}
+
+message UpdateFileRequest {
+	string namespace = 1;
+	string path = 2;
+	bytes source = 3;
+	string mimeType = 4;
+}
+
+message UpdateFileResponse {
+	string namespace = 1;
+	Node node = 2;
+	File file = 3;
+}
+
+message FileRequest {
+	string namespace = 1;
+	string path = 2;	
+}
+
+message FileResponse {
+	string namespace = 1;
+	Node node = 2;
+	File file = 3;
 }

@@ -227,6 +227,10 @@ service Flow {
 	rpc MirrorActivityLogs (MirrorActivityLogsRequest) returns (MirrorActivityLogsResponse) {}
 	rpc MirrorActivityLogsParcels (MirrorActivityLogsRequest) returns (stream MirrorActivityLogsResponse) {}
 	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
+
+	rpc File (FileRequest) returns (FileResponse) {}
+	rpc CreateFile (CreateFileRequest) returns (CreateFileResponse) {}
+	rpc UpdateFile (UpdateFileRequest) returns (UpdateFileResponse) {}	
 }
 
 service Internal {

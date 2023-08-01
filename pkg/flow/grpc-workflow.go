@@ -152,6 +152,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
@@ -235,6 +240,11 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
 	if err != nil {
 		return nil, err
 	}

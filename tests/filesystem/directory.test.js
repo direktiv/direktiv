@@ -34,6 +34,7 @@ var expectedChildNodeObject = {
     attributes: expect.anything(),
     oid: '', // TODO: revisit
     readOnly: false,
+    mimeType: expect.anything(),
 }
 
 describe('Test basic directory operations', () => {

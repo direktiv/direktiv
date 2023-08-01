@@ -2,6 +2,7 @@ package datastoresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -60,9 +61,12 @@ func (s sqlSecretsStore) Search(ctx context.Context, namespace uuid.UUID, name s
 func (s sqlSecretsStore) Get(ctx context.Context, namespace uuid.UUID, name string) (*core.Secret, error) {
 	secret := &core.Secret{}
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, namespace_id, name, data FROM secrets WHERE "namespace_id" = ? AND name = ?`,
+			SELECT id, namespace_id, name, data FROM secrets WHERE "namespace_id" = ? AND name = ?`,
 		namespace, name).
 		First(secret)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, core.ErrSecretNotFound
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -71,9 +75,16 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace uuid.UUID, name stri
 }
 
 func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
-	res := s.db.WithContext(ctx).Exec(`
-							INSERT INTO secrets(id, namespace_id, name, data) VALUES(?, ?, ?, ?);
-							`, secret.ID, secret.NamespaceID, secret.Name, secret.Data)
+	var res *gorm.DB
+	if secret.Data == nil {
+		res = s.db.WithContext(ctx).Exec(`
+			INSERT INTO secrets(id, namespace_id, name) VALUES(?, ?, ?);
+			`, secret.ID, secret.NamespaceID, secret.Name)
+	} else {
+		res = s.db.WithContext(ctx).Exec(`
+			INSERT INTO secrets(id, namespace_id, name, data) VALUES(?, ?, ?, ?);
+			`, secret.ID, secret.NamespaceID, secret.Name, secret.Data)
+	}
 
 	if res.Error != nil {
 		return res.Error
