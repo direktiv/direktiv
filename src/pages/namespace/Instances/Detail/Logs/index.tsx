@@ -1,4 +1,4 @@
-import { Bug, Maximize2, Minimize2, Plus, WrapText } from "lucide-react";
+import { Bug, Maximize2, Minimize2, WrapText } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -15,13 +15,11 @@ import {
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
-import Input from "~/design/Input";
+import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
-import { useActions } from "../state/instanceContext";
 
 const LogsPanel = () => {
-  const { updateFilterStateName, updateFilterWorkflow } = useActions();
   const wordWrap = useLogsPreferencesWordWrap();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const verboseLogs = useLogsPreferencesVerboseLogs();
@@ -34,23 +32,7 @@ const LogsPanel = () => {
     <>
       <div className="mb-5 flex gap-x-5">
         <h3 className="grow font-medium">Logs</h3>
-        <Input
-          className="h-6"
-          placeholder="filter by workflow name"
-          onChange={(e) => {
-            updateFilterWorkflow(e.target.value);
-          }}
-        />
-        <Input
-          className="h-6"
-          placeholder="filter by state name"
-          onChange={(e) => {
-            updateFilterStateName(e.target.value);
-          }}
-        />
-        <Button icon variant="outline" size="sm">
-          <Plus /> Filter
-        </Button>
+        <Filters />
         <ButtonBar>
           <TooltipProvider>
             <Tooltip>
