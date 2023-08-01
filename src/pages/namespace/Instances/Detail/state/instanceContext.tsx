@@ -112,6 +112,22 @@ const useActions = () => {
         },
       });
     },
+    resetFilterStateName: () => {
+      dispatch({
+        type: "UPDATE_FILTER_STATE_NAME",
+        payload: {
+          stateName: undefined,
+        },
+      });
+    },
+    resetFilterWorkflow: () => {
+      dispatch({
+        type: "UPDATE_FILTER_WORKFLOW",
+        payload: {
+          workflowName: undefined,
+        },
+      });
+    },
   };
 };
 
