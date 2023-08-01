@@ -1,4 +1,4 @@
-import { Bug, Copy, Filter, Maximize2, WrapText } from "lucide-react";
+import { Bug, Copy, Maximize2, WrapText } from "lucide-react";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -33,9 +33,6 @@ const LogsPanel = () => {
           </Button>
           <Button icon variant="outline" size="sm">
             <WrapText />
-          </Button>
-          <Button icon variant="outline" size="sm">
-            <Filter />
           </Button>
           <Button icon variant="outline" size="sm">
             <Maximize2 />
