@@ -1,3 +1,4 @@
+import { FiltersObj, useInstances } from "~/api/instances/query/get";
 import {
   Table,
   TableBody,
@@ -9,10 +10,10 @@ import {
 
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
+import Filters from "../components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
-import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,15 +21,23 @@ const instancesPerPage = 15;
 
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
+  const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
   const { data, isFetched } = useInstances({
     limit: instancesPerPage,
     offset,
+    filters,
   });
+
+  const handleFilterChange = (filters: FiltersObj) => {
+    setFilters(filters);
+    setOffset(0);
+  };
 
   const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.instances.results.length === 0;
   const showPagination = numberOfInstances > instancesPerPage;
+  const hasFilters = !!Object.keys(filters).length;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -37,7 +46,8 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Table>
+        <Filters filters={filters} onUpdate={handleFilterChange} />
+        <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
@@ -67,7 +77,13 @@ const InstancesListPage = () => {
             {noResults ? (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={7}>
-                  <NoResult />
+                  <NoResult
+                    message={
+                      hasFilters
+                        ? t("pages.instances.list.empty.noFilterResults")
+                        : t("pages.instances.list.empty.noInstances")
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
