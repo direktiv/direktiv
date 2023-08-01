@@ -38,10 +38,10 @@ const LogsPanel = () => {
             <WrapText />
           </Button>
           <Button icon variant="outline" size="sm">
-            <Maximize2 />
+            <Copy />
           </Button>
           <Button icon variant="outline" size="sm">
-            <Copy />
+            <Maximize2 />
           </Button>
         </ButtonBar>
       </div>
