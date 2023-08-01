@@ -1,12 +1,13 @@
 import Editor from "~/design/Editor";
 import { FC } from "react";
+import { useInstanceId } from "./state/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
 
-const Output: FC<{ instanceId: string; instanceIsFinished: boolean }> = ({
-  instanceId,
+const Output: FC<{ instanceIsFinished: boolean }> = ({
   instanceIsFinished,
 }) => {
+  const instanceId = useInstanceId();
   const { data, isFetched, isError } = useOutput({
     instanceId,
     enabled: instanceIsFinished,

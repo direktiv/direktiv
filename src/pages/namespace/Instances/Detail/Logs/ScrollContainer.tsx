@@ -6,12 +6,13 @@ import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
+import { useInstanceId } from "../state/instanceContext";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ScrollContainer: FC<{
-  instanceId: string;
   query: FiltersObj;
-}> = ({ instanceId, query }) => {
+}> = ({ query }) => {
+  const instanceId = useInstanceId();
   const { data } = useLogs({
     instanceId,
     filters: query,

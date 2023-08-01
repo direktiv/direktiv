@@ -1,9 +1,11 @@
 import Editor from "~/design/Editor";
 import { FC } from "react";
 import { useInput } from "~/api/instances/query/input";
+import { useInstanceId } from "./state/instanceContext";
 import { useTheme } from "~/util/store/theme";
 
-const Input: FC<{ instanceId: string }> = ({ instanceId }) => {
+const Input = () => {
+  const instanceId = useInstanceId();
   const { data } = useInput({ instanceId });
   const theme = useTheme();
   if (!data) return null;

@@ -10,14 +10,16 @@ import { FiltersObj } from "~/api/logs/query/get";
 import { Actions as InstanceActions } from "./type";
 
 type StateType = {
+  instanceId: string;
   filters: FiltersObj;
 };
 
 const defaultState = {
+  // instance is not part of the default state
   filters: {},
 };
 
-const InstanceStateContext = createContext<StateType>(defaultState);
+const InstanceStateContext = createContext<StateType | null>(null);
 
 const InstanceDispatchContext =
   createContext<React.Dispatch<InstanceActions> | null>(null);
@@ -47,8 +49,15 @@ function stateReducer(state: StateType, action: InstanceActions) {
   }
 }
 
-const Provider: FC<PropsWithChildren> = ({ children }) => {
-  const [state, dispatch] = useReducer(stateReducer, defaultState);
+// add id here?
+const Provider: FC<PropsWithChildren & { instance: string }> = ({
+  children,
+  instance,
+}) => {
+  const [state, dispatch] = useReducer(stateReducer, {
+    ...defaultState,
+    instanceId: instance,
+  });
 
   return (
     <InstanceStateContext.Provider value={state}>
@@ -59,11 +68,21 @@ const Provider: FC<PropsWithChildren> = ({ children }) => {
   );
 };
 
-const useFilters = () => {
+const useInstanceId = () => {
   const context = useContext(InstanceStateContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useFilter must be used within a InstanceContext");
   }
+
+  return context.instanceId;
+};
+
+const useFilters = () => {
+  const context = useContext(InstanceStateContext);
+  if (!context) {
+    throw new Error("useFilter must be used within a InstanceContext");
+  }
+
   return context.filters;
 };
 
@@ -93,4 +112,9 @@ const useActions = () => {
   };
 };
 
-export { Provider as InstanceStateProvider, useFilters, useActions };
+export {
+  Provider as InstanceStateProvider,
+  useFilters,
+  useInstanceId,
+  useActions,
+};

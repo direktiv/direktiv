@@ -8,10 +8,9 @@ import Input from "~/design/Input";
 import ScrollContainer from "./ScrollContainer";
 
 const LogsPanel: FC<{
-  instanceId: string;
   query: FiltersObj;
   setQuery: Dispatch<SetStateAction<FiltersObj>>;
-}> = ({ instanceId, query, setQuery }) => (
+}> = ({ query, setQuery }) => (
   <>
     <div className="mb-5 flex gap-x-5">
       <h3 className="grow font-medium">Logs</h3>
@@ -54,7 +53,7 @@ const LogsPanel: FC<{
       </ButtonBar>
     </div>
 
-    <ScrollContainer instanceId={instanceId} query={query} />
+    <ScrollContainer query={query} />
   </>
 );
 
