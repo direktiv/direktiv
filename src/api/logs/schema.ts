@@ -1,4 +1,3 @@
-import { PageinfoSchema } from "../schema";
 import { z } from "zod";
 
 const LogEntrySchema = z.object({
@@ -20,7 +19,6 @@ const LogEntrySchema = z.object({
 });
 
 export const LogListSchema = z.object({
-  pageInfo: PageinfoSchema,
   namespace: z.string(),
   instance: z.string(),
   results: z.array(LogEntrySchema),
