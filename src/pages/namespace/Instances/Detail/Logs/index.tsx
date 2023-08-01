@@ -1,4 +1,4 @@
-import { Bug, Copy, Maximize2, Minimize2, Plus, WrapText } from "lucide-react";
+import { Bug, Maximize2, Minimize2, Plus, WrapText } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +14,7 @@ import {
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
+import CopyButton from "~/design/CopyButton";
 import Input from "~/design/Input";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
@@ -87,9 +88,14 @@ const LogsPanel = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
-                  <Button icon variant="outline" size="sm">
-                    <Copy />
-                  </Button>
+                  <CopyButton
+                    // TODO: implement copy logs
+                    value=""
+                    buttonProps={{
+                      variant: "outline",
+                      size: "sm",
+                    }}
+                  />
                 </div>
               </TooltipTrigger>
               <TooltipContent>Copy Logs</TooltipContent>
