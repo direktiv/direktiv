@@ -128,7 +128,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         </DialogTitle>
       </DialogHeader>
 
-      <Tabs className="w-[400px]" defaultValue="namespace">
+      <Tabs className="mt-2 w-[400px]" defaultValue="namespace">
         <TabsList variant="boxed">
           <TabsTrigger
             variant="boxed"
@@ -147,7 +147,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         </TabsList>
       </Tabs>
 
-      <div className="my-3">
+      <div className="mt-1 mb-3">
         <FormErrors errors={errors} className="mb-5" />
         <form
           id={formId}
