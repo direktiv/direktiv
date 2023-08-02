@@ -4,13 +4,15 @@ import { useActions, useFilters } from "../../state/instanceContext";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
+import { FiltersObj } from "~/api/logs/query/get";
 import Input from "~/design/Input";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import TextInput from "./TextInput";
 import { useState } from "react";
 
-const filterFields = ["workflowName", "stateName"] as const;
+// keys of FilterObj
 
+const filterFields: Array<keyof FiltersObj> = ["workflowName", "stateName"];
 export type FilterField = (typeof filterFields)[number];
 type MenuAnchor = "main" | FilterField;
 
@@ -49,9 +51,7 @@ const Filters = () => {
     setSelectedField(null);
   };
 
-  const currentFilterKeys = filterFields.filter(
-    (items) => filters?.QUERY?.[items]
-  );
+  const currentFilterKeys = filterFields.filter((items) => filters?.[items]);
 
   const hasFilters = false; // TODO: implement
   const undefinedFilters = filterFields.filter((x) => x); // TODO: implement filtering
@@ -69,7 +69,7 @@ const Filters = () => {
           >
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm">
-                {filters?.["QUERY"]?.[field]}
+                {filters?.[field]}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start">
@@ -95,7 +95,7 @@ const Filters = () => {
                     resetFilterStateName();
                   }
                 }}
-                value={filters?.QUERY?.[field]}
+                value={filters?.[field]}
               />
             </PopoverContent>
           </Popover>
@@ -158,7 +158,7 @@ const Filters = () => {
                   resetFilterStateName();
                 }
               }}
-              value={filters?.QUERY?.[selectedField]}
+              value={filters?.[selectedField]}
             />
           )}
         </PopoverContent>

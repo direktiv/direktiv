@@ -26,11 +26,8 @@ function stateReducer(state: StateType, action: InstanceActions) {
         ...state,
         filters: {
           ...state.filters,
-          QUERY: {
-            type: "MATCH",
-            workflowName: state.filters?.QUERY?.workflowName ?? undefined,
-            stateName: action.payload.stateName,
-          },
+          workflowName: state.filters?.workflowName ?? undefined,
+          stateName: action.payload.stateName,
         },
       };
       return newState;
@@ -40,11 +37,8 @@ function stateReducer(state: StateType, action: InstanceActions) {
         ...state,
         filters: {
           ...state.filters,
-          QUERY: {
-            type: "MATCH",
-            workflowName: action.payload.workflowName,
-            stateName: state.filters?.QUERY?.stateName ?? undefined,
-          },
+          workflowName: action.payload.workflowName,
+          stateName: state.filters?.stateName ?? undefined,
         },
       };
       return newState;
