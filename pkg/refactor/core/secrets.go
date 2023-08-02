@@ -2,10 +2,13 @@ package core
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var ErrSecretNotFound = errors.New("secret not found")
 
 // Secret are namespace level variables that are hold sensitive data, can be used inside workflows the same namespace.
 type Secret struct {

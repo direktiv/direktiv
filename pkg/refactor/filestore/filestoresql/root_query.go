@@ -172,7 +172,7 @@ func computeAPIID(namespaceID uuid.UUID, path string) string {
 }
 
 //nolint:ireturn
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
@@ -206,12 +206,13 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// first, we need to create a file entry for this new file.
 	f := &filestore.File{
-		ID:     uuid.New(),
-		Path:   path,
-		Depth:  filestore.GetPathDepth(path),
-		Typ:    typ,
-		RootID: q.rootID,
-		APIID:  computeAPIID(q.root.NamespaceID, path),
+		ID:       uuid.New(),
+		Path:     path,
+		Depth:    filestore.GetPathDepth(path),
+		Typ:      typ,
+		RootID:   q.rootID,
+		APIID:    computeAPIID(q.root.NamespaceID, path),
+		MIMEType: mimeType,
 	}
 
 	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)

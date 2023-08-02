@@ -121,7 +121,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, bytes.NewReader(req.GetSource()))
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", bytes.NewReader(req.GetSource()))
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +148,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	}
 
 	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
 	if err != nil {
 		return nil, err
 	}
@@ -235,6 +240,11 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
 	if err != nil {
 		return nil, err
 	}

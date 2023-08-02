@@ -100,6 +100,7 @@ describe('Test behaviour specific to the root node', () => {
                 oid: "",
                 readOnly: false,
                 expandedType: common.filesystem.extendedNodeTypeMirror,
+                mimeType: "",
             },
             children: {
                 pageInfo: {
@@ -118,6 +119,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
+                        mimeType: "application/direktiv",
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -130,6 +132,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
+                        mimeType: "application/direktiv",
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -142,6 +145,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
+                        mimeType: "application/direktiv",
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -154,6 +158,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
+                        mimeType: "",
                         expandedType: common.filesystem.extendedNodeTypeDirectory,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -166,6 +171,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
+                        mimeType: "",
                         expandedType: common.filesystem.extendedNodeTypeDirectory,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -191,6 +197,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -219,6 +226,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -247,6 +255,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -275,6 +284,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "",
             },
             children: {
                 pageInfo: {
@@ -304,6 +314,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "",
             },
             children: {
                 pageInfo: {
@@ -325,6 +336,7 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/banana",
                         path: "/banana/css.yaml",
                         readOnly: false,
+                        mimeType: "application/direktiv",
                     },
                     {
                         attributes: [],
@@ -337,6 +349,7 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/banana",
                         path: "/banana/page-1.yaml.page.html",
                         readOnly: false,
+                        mimeType: expect.anything(),
                     },
                     {
                         attributes: [],
@@ -349,6 +362,7 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/banana",
                         path: "/banana/page-2.yaml.Page.HTML",
                         readOnly: false,
+                        mimeType: expect.anything(),
                     },
                     {
                         attributes: [],
@@ -361,6 +375,7 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/banana",
                         path: "/banana/util",
                         readOnly: false,
+                        mimeType: "",
                     },
                 ]),
             },
@@ -383,6 +398,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -411,6 +427,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: expect.anything(),
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -461,6 +478,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -511,6 +529,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "",
             },
             children: {
                 pageInfo: {
@@ -532,6 +551,7 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/banana/util",
                         path: "/banana/util/caller.yaml",
                         readOnly: false,
+                        mimeType: "application/direktiv",
                     },
                     {
                         attributes: [],
@@ -544,6 +564,7 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/banana/util",
                         path: "/banana/util/curler.yaml",
                         readOnly: false,
+                        mimeType: "application/direktiv",
                     },
                 ]),
             },
@@ -566,6 +587,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -594,6 +616,7 @@ describe('Test behaviour specific to the root node', () => {
                 attributes: expect.anything(),
                 oid: '',
                 readOnly: false,
+                mimeType: "application/direktiv",
             },
             revision: {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
