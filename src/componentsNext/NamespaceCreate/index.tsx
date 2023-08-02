@@ -22,6 +22,7 @@ import {
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
+import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
@@ -35,7 +36,6 @@ import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -84,6 +84,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
   const {
     register,
     handleSubmit,
+    trigger,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: getResolver(isMirror, authType),
@@ -118,6 +119,14 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
+
+  // if the form has errors, we need to re-validate when isMirror or authType
+  // has been changed, after useForm has updated the resolver.
+  useEffect(() => {
+    if (isSubmitted && !isValid) {
+      trigger();
+    }
+  }, [isMirror, authType, isSubmitted, isValid, trigger]);
 
   const formId = `new-namespace`;
   return (
