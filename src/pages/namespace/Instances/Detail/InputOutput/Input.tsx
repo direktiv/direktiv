@@ -1,6 +1,6 @@
 import Editor from "~/design/Editor";
 import { useInput } from "~/api/instances/query/input";
-import { useInstanceId } from "./state/instanceContext";
+import { useInstanceId } from "../state/instanceContext";
 import { useTheme } from "~/util/store/theme";
 
 const Input = () => {

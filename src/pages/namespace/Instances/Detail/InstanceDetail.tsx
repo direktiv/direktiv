@@ -1,8 +1,8 @@
 import { Card } from "~/design/Card";
 import Diagram from "./Diagram";
 import Header from "./Header";
+import InputOutput from "./InputOutput";
 import Logs from "./Logs";
-import Output from "./InputOutput/Output";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "./state/instanceContext";
@@ -10,11 +10,7 @@ import { useInstanceId } from "./state/instanceContext";
 const InstancesDetail = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
-
   if (!data) return null;
-
-  const instanceIsFinished = data.instance.status !== "pending";
-
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
       <Header instanceId={instanceId} />
@@ -32,8 +28,8 @@ const InstancesDetail = () => {
         <Card>
           <Diagram workflowPath={data.workflow.path} flow={data.flow} />
         </Card>
-        <Card className="p-5">
-          <Output instanceIsFinished={instanceIsFinished} />
+        <Card className="flex p-5">
+          <InputOutput />
         </Card>
       </div>
     </div>
