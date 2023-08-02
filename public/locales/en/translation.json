@@ -248,6 +248,12 @@
           }
         },
         "inputOutput": {
+          "copyInput": "Copy Input",
+          "minimizeInput": "Minimize Input",
+          "maximizeInput": "Maximize Input",
+          "copyOutput": "Copy Output",
+          "minimizeOutput": "Minimize Output",
+          "maximizeOutput": "Maximize Output",
           "tabs": {
             "input": "Input",
             "output": "Output"
