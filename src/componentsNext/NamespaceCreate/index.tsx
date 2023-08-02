@@ -128,7 +128,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         </DialogTitle>
       </DialogHeader>
 
-      <Tabs className="mt-2 w-[400px]" defaultValue="namespace">
+      <Tabs className="mt-2 sm:w-[400px]" defaultValue="namespace">
         <TabsList variant="boxed">
           <TabsTrigger
             variant="boxed"
