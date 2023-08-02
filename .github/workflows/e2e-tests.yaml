@@ -1,10 +1,11 @@
 name: Run most E2E Tests
 on:
-  workflow_dispatch:
-    inputs:
-      trigger-e2e-test:
-        description: 'Trigger E2E Tests'
-        required: true
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
 
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -184,11 +185,3 @@ jobs:
 
       - name: Cleanup test cache
         run: npm cache clean --force
-
-      - name: Trigger Build
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: false
-          tags: latest
-          labels: 'workflow_dispatch=trigger-build'

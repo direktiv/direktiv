@@ -2,10 +2,11 @@ name: Build and Publish Direktiv Docker Image
 
 on:
   workflow_dispatch:
-    inputs:
-      trigger-build:
-        description: 'Trigger Docker Image Build'
-        required: true
+  push:
+    tags:
+      - v*
+    branches:
+      - stable
 
 env:
   REGISTRY: ghcr.io
