@@ -246,6 +246,12 @@
               "stateName": "someStateName"
             }
           }
+        },
+        "inputOutput": {
+          "output": {
+            "stillRunningMsg": "The workflow is still running",
+            "noOutputMsg": "no output data was resolved"
+          }
         }
       }
     },
