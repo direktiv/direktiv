@@ -1,6 +1,10 @@
+import {
+  Event,
+  EventSourcePolyfill,
+  MessageEvent,
+} from "event-source-polyfill";
 import { useEffect, useRef } from "react";
 
-import { EventSourcePolyfill } from "event-source-polyfill";
 import { z } from "zod";
 
 /**
@@ -18,7 +22,7 @@ export const useEventSource = ({
 }: {
   url: string;
   apiKey?: string;
-  onOpen?: (e: EventSource) => void;
+  onOpen?: (e: Event) => void;
   onMessage?: (e: MessageEvent) => void;
   onError?: (e: Event) => void;
   enabled?: boolean;
