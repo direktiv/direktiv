@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface LogsPreferencesState {
-  maximizedPanel: "none" | "logs" | "diagram" | "input" | "output";
+  maximizedPanel: "none" | "logs" | "diagram" | "input-output";
   wordWrap: boolean;
   verboseLogs: boolean;
   actions: {
