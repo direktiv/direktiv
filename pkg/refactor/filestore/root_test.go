@@ -128,7 +128,7 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID 
 func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, _, err := fs.ForRootID(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), bytes.NewReader(data))
+	file, _, err := fs.ForRootID(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), "application/octet-stream", bytes.NewReader(data))
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 
@@ -181,7 +181,7 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 		typ = filestore.FileTypeFile
 	}
 
-	file, rev, gotErr := fs.ForRootID(rootID).CreateFile(context.Background(), path, typ, strings.NewReader(""))
+	file, rev, gotErr := fs.ForRootID(rootID).CreateFile(context.Background(), path, typ, "application/octet-stream", strings.NewReader(""))
 	if file != nil {
 		t.Errorf("unexpected none nil CreateFile().file")
 

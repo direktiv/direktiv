@@ -64,16 +64,16 @@ func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
 
 	id := uuid.New()
 
-	_, err := fs.CreateRoot(context.Background(), uuid.New(), id, "test")
+	_, err := fs.CreateRoot(context.Background(), id, uuid.New(), "test")
 	if err != nil {
 		t.Fatalf("unexpected CreateRoot() error: %v", err)
 	}
-	_, _, err = fs.ForRootID(id).CreateFile(context.Background(), "/", filestore.FileTypeDirectory, nil)
+	_, _, err = fs.ForRootID(id).CreateFile(context.Background(), "/", filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}
 
-	file, _, err := fs.ForRootID(id).CreateFile(context.Background(), "/my_file.text", filestore.FileTypeFile, strings.NewReader("my file"))
+	file, _, err := fs.ForRootID(id).CreateFile(context.Background(), "/my_file.text", filestore.FileTypeFile, "application/octet-stream", strings.NewReader("my file"))
 	if err != nil {
 		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}

@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "api_id" text NOT NULL,
+    "mime_type" text NOT NULL,
     PRIMARY KEY ("id"),
     CONSTRAINT "file_path_no_dup_check" UNIQUE ("root_id","path"),
     CONSTRAINT "file_api_id_no_dup_check" UNIQUE ("root_id","api_id"),
