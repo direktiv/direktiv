@@ -42,12 +42,3 @@ jobs:
             # Uncomment the next line to let the test pass even if coverage is below the threshold
             # exit 0
           fi
-
-      - name: Trigger Run most E2E Tests workflow
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: false
-          tags: latest
-          labels: 'workflow_dispatch=trigger-e2e-test'
-        
