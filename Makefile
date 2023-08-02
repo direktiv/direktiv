@@ -88,7 +88,6 @@ teardown: ## Brings down an existing cluster.
 	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 
 GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go')
-DOCKER_FILES = $(shell find build/docker/ -type f)
 
 # ENT
 
