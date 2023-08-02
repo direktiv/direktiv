@@ -18,8 +18,10 @@ import CopyButton from "~/design/CopyButton";
 import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
+import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
+  const { t } = useTranslation();
   const wordWrap = useLogsPreferencesWordWrap();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const verboseLogs = useLogsPreferencesVerboseLogs();
@@ -31,7 +33,9 @@ const LogsPanel = () => {
   return (
     <>
       <div className="mb-5 flex gap-x-5">
-        <h3 className="grow font-medium">Logs</h3>
+        <h3 className="grow font-medium">
+          {t("pages.instances.detail.logs.title")}
+        </h3>
         <Filters />
         <ButtonBar>
           <TooltipProvider>
@@ -49,7 +53,9 @@ const LogsPanel = () => {
                   </Toggle>
                 </div>
               </TooltipTrigger>
-              <TooltipContent>Verbose Logs</TooltipContent>
+              <TooltipContent>
+                {t("pages.instances.detail.logs.tooltips.verbose")}
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -65,7 +71,9 @@ const LogsPanel = () => {
                   </Toggle>
                 </div>
               </TooltipTrigger>
-              <TooltipContent>Word Wrap</TooltipContent>
+              <TooltipContent>
+                {t("pages.instances.detail.logs.tooltips.wordWrap")}
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -80,7 +88,9 @@ const LogsPanel = () => {
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>Copy Logs</TooltipContent>
+              <TooltipContent>
+                {t("pages.instances.detail.logs.tooltips.copy")}
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -98,7 +108,9 @@ const LogsPanel = () => {
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                {isMaximized ? "Minimize Logs" : "Maximize Logs"}
+                {isMaximized
+                  ? t("pages.instances.detail.logs.tooltips.minimize")
+                  : t("pages.instances.detail.logs.tooltips.maximize")}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

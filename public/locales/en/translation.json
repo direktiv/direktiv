@@ -221,6 +221,14 @@
       },
       "detail": {
         "logs": {
+          "title": "Logs",
+          "tooltips": {
+            "verbose": "Verbose Logs",
+            "wordWrap": "Word Wrap",
+            "copy": "Copy Logs",
+            "minimize": "Minimize Logs",
+            "maximize": "Maximize Logs"
+          },
           "filter": {
             "filterButton": "Filter",
             "menuHeading": {
