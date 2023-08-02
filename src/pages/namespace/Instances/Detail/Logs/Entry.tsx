@@ -42,7 +42,7 @@ const Entry: FC<{ logEntry: LogEntryType } & LogEntryProps> = ({
       {verbose && tags["workflow"] && (
         <span className="opacity-75">{tags["workflow"]}</span>
       )}
-      {verbose && tags["workflow"] && (
+      {verbose && tags["state-id"] && (
         <span className="opacity-60">/{tags["state-id"]}</span>
       )}{" "}
       {msg}
