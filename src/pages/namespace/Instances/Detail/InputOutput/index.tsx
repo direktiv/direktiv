@@ -1,10 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import Button from "~/design/Button";
-import { ButtonBar } from "~/design/ButtonBar";
-import CopyButton from "~/design/CopyButton";
 import Input from "./Input";
-import { Maximize2 } from "lucide-react";
 import Output from "./Output";
 import { t } from "i18next";
 import { useInstanceDetails } from "~/api/instances/query/details";
@@ -21,19 +17,7 @@ const InputOutput = () => {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("input");
 
   return (
-    <div className="relative flex grow">
-      <ButtonBar className="absolute right-0">
-        <CopyButton
-          value="copyValue"
-          buttonProps={{
-            variant: "outline",
-            size: "sm",
-          }}
-        />
-        <Button icon size="sm" variant="outline">
-          <Maximize2 />
-        </Button>
-      </ButtonBar>
+    <div className="flex grow">
       <Tabs
         value={activeTab}
         className="flex w-full grid-rows-[auto_1fr] flex-col"
@@ -44,15 +28,11 @@ const InputOutput = () => {
           }
         }}
       >
-        <TabsContent value={tabs[0]} className="flex h-full grow" asChild>
-          <div className="grow pt-5">
-            <Input />
-          </div>
+        <TabsContent value={tabs[0]} className="flex grow" asChild>
+          <Input />
         </TabsContent>
-        <TabsContent value={tabs[1]} className="flex h-full grow" asChild>
-          <div className="grow pt-5">
-            <Output instanceIsFinished={instanceIsFinished} />
-          </div>
+        <TabsContent value={tabs[1]} className="flex grow" asChild>
+          <Output instanceIsFinished={instanceIsFinished} />
         </TabsContent>
         <TabsList variant="boxed" className="w-max">
           <TabsTrigger variant="boxed" value={tabs[0]}>

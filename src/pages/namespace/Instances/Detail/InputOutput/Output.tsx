@@ -1,6 +1,10 @@
 import { FC, PropsWithChildren } from "react";
 
+import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
+import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
+import { Maximize2 } from "lucide-react";
 import { useInstanceId } from "../state/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
@@ -40,12 +44,26 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
   const workflowOutput = atob(data?.data ?? "");
 
   return (
-    <Editor
-      value={workflowOutput}
-      language="json"
-      theme={theme ?? undefined}
-      options={{ readOnly: true }}
-    />
+    <div className="flex grow flex-col gap-5 pb-12">
+      <ButtonBar>
+        <CopyButton
+          value={workflowOutput}
+          buttonProps={{
+            variant: "outline",
+            size: "sm",
+          }}
+        />
+        <Button icon size="sm" variant="outline">
+          <Maximize2 />
+        </Button>
+      </ButtonBar>
+      <Editor
+        value={workflowOutput}
+        language="json"
+        theme={theme ?? undefined}
+        options={{ readOnly: true }}
+      />
+    </div>
   );
 };
 
