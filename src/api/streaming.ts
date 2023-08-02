@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+import { EventSourcePolyfill } from "event-source-polyfill";
 import { z } from "zod";
 
 /**
@@ -17,7 +18,7 @@ export const useEventSource = ({
 }: {
   url: string;
   apiKey?: string;
-  onOpen?: (e: Event) => void;
+  onOpen?: (e: EventSource) => void;
   onMessage?: (e: MessageEvent) => void;
   onError?: (e: Event) => void;
   enabled?: boolean;
@@ -32,7 +33,16 @@ export const useEventSource = ({
   const startSteaming = () => {
     if (enabled && eventSource.current === null) {
       // when streaming is enabled and there is no event source yet, create one
-      const listener = new EventSource(url);
+      // polyfill is required to support sending additional headers
+      const listener = new EventSourcePolyfill(url, {
+        ...(apiKey
+          ? {
+              headers: {
+                "direktiv-token": apiKey,
+              },
+            }
+          : {}),
+      });
       eventSource.current = listener;
       // connect all the callbacks
       if (onOpen) listener.onopen = onOpen;
