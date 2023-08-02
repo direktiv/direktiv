@@ -1,9 +1,8 @@
 import { Card } from "~/design/Card";
 import Diagram from "./Diagram";
 import Header from "./Header";
-import Input from "./Input";
 import Logs from "./Logs";
-import Output from "./Output";
+import Output from "./InputOutput/Output";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "./state/instanceContext";
@@ -23,14 +22,12 @@ const InstancesDetail = () => {
         className={twMergeClsx(
           "grid grow gap-5 p-5",
           "grid-rows-[minmax(300px,50vh)_1fr]",
-          "grid-cols-[1fr_400px]"
+          "grid-cols-[1fr_400px]",
+          "grid-template"
         )}
       >
-        <Card className="relative grid grid-rows-[auto,1fr] p-5">
+        <Card className="relative col-span-2 grid grid-rows-[auto,1fr] p-5">
           <Logs />
-        </Card>
-        <Card className="p-5">
-          <Input />
         </Card>
         <Card>
           <Diagram workflowPath={data.workflow.path} flow={data.flow} />
