@@ -1,0 +1,45 @@
+name: Build and Publish Direktiv Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: direktiv
+  SRVTAG: unstable-development
+  GHCR_REGISTRY: ghcr.io
+  GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Cache Docker layers
+        id: docker-cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.docker
+          key: docker-${{ runner.os }}-${{ hashFiles('build/docker/direktiv/Dockerfile') }}
+          restore-keys: |
+            docker-${{ runner.os }}-
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: "direktiv-repo"
+
+      - name: Build and publish Docker image
+        run: |
+          docker build -t ${{ env.GHCR_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.SRVTAG }} -f direktiv-repo/build/docker/direktiv/Dockerfile direktiv-repo
+          docker push ${{ env.GHCR_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.SRVTAG }}
+        env:
+          GHCR_REGISTRY: ${{ env.GHCR_REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          SRVTAG: ${{ env.SRVTAG }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_BUILDKIT: 1
