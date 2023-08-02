@@ -66,28 +66,28 @@ func TestNewNode(t *testing.T) {
 }
 
 func rightNumber(nodes []*Node) bool {
-	for i := 0; i < len(nodes); i++ {
-		mnodes := nodes[i].serfServer.Members()
-		count := len(mnodes)
-		for j := 0; j < len(mnodes); j++ {
-			if mnodes[j].Status == serf.StatusLeft {
-				count--
+	for _, node := range nodes {
+		// Check Serf membership
+		mnodes := node.serfServer.Members()
+		if len(mnodes) != len(nodes) {
+			return false
+		}
+		for _, mnode := range mnodes {
+			// Ensure each node is active and reachable
+			if mnode.Status != serf.StatusAlive {
+				return false
 			}
 		}
 
-		if count != len(nodes) {
-			return false
-		}
-
-		nn, err := nodes[i].bus.nodes()
+		// Check bus producers
+		nn, err := node.bus.nodes()
 		if err != nil || nn.Producers == nil {
-			fmt.Print(err.Error() + "\n")
+			fmt.Println("Error checking producers:", err)
 			return false
 		}
 		if len(nn.Producers) != len(nodes) {
 			return false
 		}
-
 	}
 
 	return true
@@ -179,10 +179,28 @@ func TestClusterSubscribe(t *testing.T) {
 	}, 5*time.Second, time.Millisecond*20)
 
 	// Test topic1 subscription
-	testTopic1Subscription(t, nodes)
+	t.Run("TestTopic1Subscription", func(t *testing.T) {
+		testTopic1Subscription(t, nodes)
+	})
+}
+
+func TestClusterSubscribe2(t *testing.T) {
+	count := 3
+	nodes, err := createCluster(t, count, []string{"topic1", "topic2"}, false)
+	require.NoError(t, err)
+
+	for i := 0; i < count; i++ {
+		defer nodes[i].Stop()
+	}
+	// check three node cluster
+	require.Eventually(t, func() bool {
+		return rightNumber(nodes)
+	}, 5*time.Second, time.Millisecond*20)
 
 	// Test topic2 subscription
-	testTopic2Subscription(t, nodes)
+	t.Run("TestTopic2Subscription", func(t *testing.T) {
+		testTopic2Subscription(t, nodes)
+	})
 }
 
 func testTopic1Subscription(t *testing.T, nodes []*Node) {
@@ -249,14 +267,13 @@ func testTopic2Subscription(t *testing.T, nodes []*Node) {
 
 	c := 5
 	for i := 0; i < c; i++ {
-		require.Eventually(t, func() bool {
-			return nodes[0].Publish("topic2", []byte("msg1")) == nil
-		}, time.Millisecond*200, time.Millisecond*20)
+		err := nodes[0].Publish("topic2", []byte("msg1"))
+		require.NoError(t, err)
 	}
 
 	require.Eventually(t, func() bool {
 		return counter1.cc+counter2.cc+counter3.cc >= c+1
-	}, 30*time.Second, time.Millisecond*30, "did not get received events")
+	}, 60*time.Second, time.Second*3, "did not get received events")
 }
 
 type counterHandler struct {

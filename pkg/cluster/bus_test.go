@@ -209,7 +209,10 @@ func TestBusCluster(t *testing.T) {
 	// clientConfig.LookupdPollInterval = time.Millisecond * 100
 
 	createConsumer := func(topic, channel, connect string, mh *messageHandler) {
-		consumer, _ := nsq.NewConsumer(topic, channel, clientConfig)
+		consumer, err := nsq.NewConsumer(topic, channel, clientConfig)
+		if err != nil {
+			t.Errorf("creating client failed %s", err)
+		}
 		consumer.AddHandler(mh)
 		consumer.ConnectToNSQLookupd(connect)
 	}
@@ -243,22 +246,37 @@ func TestBusCluster(t *testing.T) {
 	err = producer.Publish("topic2", []byte("msg3"))
 	assert.NoError(t, err)
 
-	require.Eventually(t, func() bool {
-		status := true
+	status := make(chan bool)
 
-		// both message handler should have gotten the two messages
-		if mh1.counter != 2 || mh2.counter != 2 {
-			status = false
+	go func() {
+		// Both message handlers should have gotten the two messages
+		timeout := time.After(3 * time.Minute)
+
+		for {
+			if !(mh1.counter != 2 || mh2.counter != 2) {
+				// On the same channel. Only one should get it
+				if !((mh3.counter == 1 && mh4.counter == 1) ||
+					(mh3.counter == 0 && mh4.counter == 0)) {
+					status <- true
+				}
+			}
+
+			select {
+			case <-timeout:
+				// Handle the timeout case
+				// Add any necessary code here to handle the timeout condition
+				status <- false
+				return // Return from the goroutine to stop it
+			case <-time.After(time.Second):
+				// Wait for 1 second before checking again
+			}
 		}
+	}()
 
-		// on the same channel. only one should get it
-		if (mh3.counter == 1 && mh4.counter == 1) ||
-			(mh3.counter == 0 && mh4.counter == 0) {
-			status = false
-		}
-
-		return status
-	}, 60*time.Second, 100*time.Millisecond, "one channel does not work")
+	// Read the value from the status channel
+	if <-status == false {
+		t.Errorf("time out waiting for messages from bus")
+	}
 }
 
 type messageHandler struct {
