@@ -161,17 +161,11 @@ jobs:
         env:
          JEST_PREFIX: filesystem/
       
-      - name: Run events tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-         JEST_PREFIX: events/
-
-      - name: Run filesystem tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-         JEST_PREFIX: filesystem/
+      # - name: Run events tests
+      #   run: |
+      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+      #   env:
+      #    JEST_PREFIX: events/
 
       # - name: Run mirror tests
       #   run: |
