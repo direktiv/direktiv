@@ -4,12 +4,10 @@ on:
   push:
     branches:
       - develop
-  workflow_dispatch:
 
 env:
-  IMAGE_NAME: direktiv
-  SRVTAG: unstable-development
-  GHCR_REGISTRY: ghcr.io
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-image:
@@ -19,26 +17,32 @@ jobs:
       packages: write
 
     steps:
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('build/docker/direktiv/Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
-
       - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          path: "direktiv-repo"
+        uses: actions/checkout@v3
 
-      - name: Build and publish Docker image
-        run: |
-          docker build -t ${{ env.GHCR_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.SRVTAG }} -f direktiv-repo/build/docker/direktiv/Dockerfile direktiv-repo
-          docker push ${{ env.GHCR_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.SRVTAG }}
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,format=long
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: build/docker/direktiv  # Set the correct path to the Dockerfile directory
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
         env:
-          GHCR_REGISTRY: ${{ env.GHCR_REGISTRY }}
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          SRVTAG: ${{ env.SRVTAG }}
-          DOCKER_BUILDKIT: 1
+          DOCKER_BUILDKIT: 1  # Add DOCKER_BUILDKIT to enable BuildKit during the build process
