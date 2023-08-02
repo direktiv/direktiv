@@ -29,7 +29,7 @@ const Entry: FC<{ logEntry: LogEntryType } & LogEntryProps> = ({
   ...props
 }) => {
   const { msg, t, level, tags } = logEntry;
-  const time = moment(t).format("HH:mm:ss");
+  const time = moment(t).format("MM/DD HH:mm:ss");
   const verbose = useLogsPreferencesVerboseLogs();
 
   return (
