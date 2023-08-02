@@ -28,6 +28,7 @@ import FormErrors from "~/componentsNext/FormErrors";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
@@ -257,7 +258,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                     {t("components.namespaceCreate.label.token")}
                   </label>
                   <InputWithButton>
-                    <Input
+                    <Textarea
                       id="token"
                       data-testid="new-namespace-token"
                       placeholder={t(
@@ -276,13 +277,13 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                 <>
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[144px] overflow-hidden text-right text-[14px]"
+                      className="w-[90px] overflow-hidden text-right text-[14px]"
                       htmlFor="passphrase"
                     >
                       {t("components.namespaceCreate.label.passphrase")}
                     </label>
                     <InputWithButton>
-                      <Input
+                      <Textarea
                         id="passphrase"
                         data-testid="new-namespace-passphrase"
                         placeholder={t(
@@ -297,13 +298,13 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                   </fieldset>
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[144px] overflow-hidden text-right text-[14px]"
+                      className="w-[90px] overflow-hidden text-right text-[14px]"
                       htmlFor="public-key"
                     >
                       {t("components.namespaceCreate.label.publicKey")}
                     </label>
                     <InputWithButton>
-                      <Input
+                      <Textarea
                         id="public-key"
                         data-testid="new-namespace-pubkey"
                         placeholder={t(
@@ -319,13 +320,13 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
 
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[144px] overflow-hidden text-right text-[14px]"
+                      className="w-[90px] overflow-hidden text-right text-[14px]"
                       htmlFor="private-key"
                     >
                       {t("components.namespaceCreate.label.privateKey")}
                     </label>
                     <InputWithButton>
-                      <Input
+                      <Textarea
                         id="private-key"
                         data-testid="new-namespace-privkey"
                         placeholder={t(
