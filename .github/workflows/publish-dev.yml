@@ -10,7 +10,6 @@ env:
   IMAGE_NAME: direktiv
   SRVTAG: unstable-development
   GHCR_REGISTRY: ghcr.io
-  GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build-and-push-image:
@@ -20,12 +19,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache Docker layers
         id: docker-cache
         uses: actions/cache@v2
@@ -48,5 +41,4 @@ jobs:
           GHCR_REGISTRY: ${{ env.GHCR_REGISTRY }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           SRVTAG: ${{ env.SRVTAG }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_BUILDKIT: 1
