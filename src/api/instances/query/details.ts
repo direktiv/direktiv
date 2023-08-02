@@ -47,6 +47,7 @@ export const useInstanceDetailsStream = (
 
   return useStreaming({
     url: `/api/namespaces/${namespace}/instances/${instanceId}`,
+    apiKey: apiKey ?? undefined,
     enabled,
     schema: InstancesDetailSchema,
     onMessage: (msg) => {

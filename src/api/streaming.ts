@@ -9,12 +9,14 @@ import { z } from "zod";
  */
 export const useEventSource = ({
   url,
+  apiKey,
   onOpen,
   onMessage,
   onError,
   enabled,
 }: {
   url: string;
+  apiKey?: string;
   onOpen?: (e: Event) => void;
   onMessage?: (e: MessageEvent) => void;
   onError?: (e: Event) => void;
@@ -54,17 +56,20 @@ export const useEventSource = ({
  */
 export const useStreaming = <T>({
   url,
+  apiKey,
   enabled,
   schema,
   onMessage,
 }: {
   url: string;
+  apiKey?: string;
   enabled: boolean;
   schema: z.ZodSchema<T>;
   onMessage: (msg: T) => void;
 }) =>
   useEventSource({
     url,
+    apiKey,
     enabled,
     onMessage: (msg) => {
       if (!msg.data) return null;

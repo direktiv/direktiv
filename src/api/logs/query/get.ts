@@ -87,6 +87,7 @@ export const useLogsStream = (
 
   return useStreaming({
     url: getUrl({ namespace, instanceId, filters }),
+    apiKey: apiKey ?? undefined,
     enabled,
     schema: LogListSchema,
     onMessage: (msg) => {
