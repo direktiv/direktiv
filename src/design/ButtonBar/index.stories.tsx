@@ -102,6 +102,29 @@ export const ButtonSizes = () => (
   </div>
 );
 
+export const LabelButtons = () => (
+  <div className="flex flex-col gap-4">
+    <p>No Click effects on label</p>
+    <ButtonBar>
+      <Button asLabel size="lg">
+        Labels
+      </Button>
+      <Button asLabel size="lg">
+        Mid-1
+      </Button>
+      <Button asLabel size="lg">
+        Mid-2
+      </Button>
+      <Button asLabel size="lg">
+        <GitBranchIcon /> Review
+      </Button>
+      <Button asLabel size="lg">
+        <SearchIcon /> Search
+      </Button>
+    </ButtonBar>
+  </div>
+);
+
 export const ToolbarWithToolTips = () => (
   <div className="flex flex-col space-y-3">
     <div>

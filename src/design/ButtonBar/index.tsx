@@ -15,6 +15,13 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       "[&_button]:active:outline-none",
       "[&_button]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
       "[&_button]:active:ring-0 [&_button]:active:ring-offset-0",
+      //in case of label
+      "[&_label]:rounded-none",
+      "[&_label]:mr-[-1px]",
+      "[&_label]:active:outline-none",
+      "[&_label]:border [&_label]:focus:ring-0 [&_label]:focus:ring-offset-0",
+      "[&_label]:active:ring-0 [&_label]:active:ring-offset-0",
+      //
       "[&>*:first-child]:rounded-l-md",
       "[&>*:last-child]:rounded-r-md",
       // if button is not the direct child of the button bar (required e.g. for the tooltip)
