@@ -5,6 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import { useFilters, useInstanceId } from "../state/instanceContext";
 import {
   useLogsPreferencesActions,
   useLogsPreferencesMaximizedPanel,
@@ -18,6 +19,7 @@ import CopyButton from "~/design/CopyButton";
 import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
+import { useLogs } from "~/api/logs/query/get";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
@@ -28,7 +30,16 @@ const LogsPanel = () => {
   const { setVerboseLogs, setWordWrap, setMaximizedPanel } =
     useLogsPreferencesActions();
 
+  const instanceId = useInstanceId();
+  const filters = useFilters();
+  const { data } = useLogs({
+    instanceId,
+    filters,
+  });
+
   const isMaximized = maximizedPanel === "logs";
+
+  const copyValue = data?.results.map((x) => `${x.msg}`).join("\n") ?? "";
 
   return (
     <>
@@ -79,8 +90,7 @@ const LogsPanel = () => {
               <TooltipTrigger asChild>
                 <div className="flex grow">
                   <CopyButton
-                    // TODO: implement copy logs
-                    value=""
+                    value={copyValue}
                     buttonProps={{
                       variant: "outline",
                       size: "sm",
