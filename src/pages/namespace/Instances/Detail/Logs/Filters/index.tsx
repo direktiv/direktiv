@@ -10,6 +10,7 @@ import TextInput from "./TextInput";
 import { useState } from "react";
 
 const filterFields = ["workflowName", "stateName"] as const;
+
 export type FilterField = (typeof filterFields)[number];
 type MenuAnchor = "main" | FilterField;
 
@@ -53,7 +54,7 @@ const Filters = () => {
   );
 
   const hasFilters = false; // TODO: implement
-  const undefinedFilters = filterFields; // TODO: implement filtering
+  const undefinedFilters = filterFields.filter((x) => x); // TODO: implement filtering
 
   return (
     <ButtonBar>
