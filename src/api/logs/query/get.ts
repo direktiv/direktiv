@@ -10,28 +10,19 @@ import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
 export type FiltersObj = {
-  QUERY?: { type: "MATCH"; workflowName?: string; stateName?: string };
+  workflowName?: string;
+  stateName?: string;
 };
 
-export const getFilterQuery = (filters: FiltersObj) => {
+export const getFilterQuery = (filters: FiltersObj = {}) => {
   let query = "";
-  const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
-
-  filterFields.forEach((field) => {
-    const filterItem = filters[field];
-    // without the guard, TS thinks filterItem may be undefined
-    if (!filterItem) {
-      return console.error("filterItem is not defined");
-    }
-
-    if (field === "QUERY") {
-      const workflowName = filterItem?.workflowName ?? "";
-      const stateName = filterItem?.stateName ?? "";
-      query = query.concat(
-        `&filter.field=${field}&filter.type=${filterItem.type}&filter.val=${workflowName}::${stateName}::`
-      );
-    }
-  });
+  const workflowName = filters?.workflowName ?? "";
+  const stateName = filters?.stateName ?? "";
+  if (workflowName || stateName) {
+    query = query.concat(
+      `&filter.field=QUERY&filter.type=MATCH&filter.val=${workflowName}::${stateName}::`
+    );
+  }
 
   return query;
 };

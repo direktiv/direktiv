@@ -2,19 +2,16 @@ import { FiltersObj, getFilterQuery } from "../get";
 import { describe, expect, test } from "vitest";
 
 const filterByState: FiltersObj = {
-  QUERY: { type: "MATCH", stateName: "mystate" },
+  stateName: "mystate",
 };
 
 const filterByWorkflow: FiltersObj = {
-  QUERY: { type: "MATCH", workflowName: "myWorkflow.yaml" },
+  workflowName: "myWorkflow.yaml",
 };
 
 const filterByStateAndWorkflow: FiltersObj = {
-  QUERY: {
-    type: "MATCH",
-    stateName: "mystate",
-    workflowName: "myWorkflow.yaml",
-  },
+  stateName: "mystate",
+  workflowName: "myWorkflow.yaml",
 };
 
 describe("getFilterQuery", () => {
@@ -34,5 +31,8 @@ describe("getFilterQuery", () => {
     expect(getFilterQuery(filterByStateAndWorkflow)).toBe(
       "&filter.field=QUERY&filter.type=MATCH&filter.val=myWorkflow.yaml::mystate::"
     );
+  });
+  test("it returns a query string for filtering by state and workflow", () => {
+    expect(getFilterQuery()).toBe("");
   });
 });
