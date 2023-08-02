@@ -28,6 +28,7 @@ const useLogsPreferencesState = create<LogsPreferencesState>()(
       name: "direktiv-store-logspreferences",
       partialize: (state) => ({
         // pick all fields to be persistent and don't persist actions
+        maximizedPanel: state.maximizedPanel,
         wordWrap: state.wordWrap,
         verboseLogs: state.verboseLogs,
       }),
