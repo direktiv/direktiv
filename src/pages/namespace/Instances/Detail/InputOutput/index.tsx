@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
+import CopyButton from "~/design/CopyButton";
 import Input from "./Input";
 import { Maximize2 } from "lucide-react";
 import Output from "./Output";
@@ -20,9 +22,18 @@ const InputOutput = () => {
 
   return (
     <div className="relative flex grow">
-      <Button icon size="sm" variant="outline" className="absolute right-0">
-        <Maximize2 />
-      </Button>
+      <ButtonBar className="absolute right-0">
+        <CopyButton
+          value="copyValue"
+          buttonProps={{
+            variant: "outline",
+            size: "sm",
+          }}
+        />
+        <Button icon size="sm" variant="outline">
+          <Maximize2 />
+        </Button>
+      </ButtonBar>
       <Tabs
         value={activeTab}
         className="flex w-full grid-rows-[auto_1fr] flex-col"
@@ -33,14 +44,6 @@ const InputOutput = () => {
           }
         }}
       >
-        <TabsList variant="boxed" className="w-max">
-          <TabsTrigger variant="boxed" value={tabs[0]}>
-            {t("pages.instances.detail.inputOutput.tabs.input")}
-          </TabsTrigger>
-          <TabsTrigger variant="boxed" value={tabs[1]}>
-            {t("pages.instances.detail.inputOutput.tabs.output")}
-          </TabsTrigger>
-        </TabsList>
         <TabsContent value={tabs[0]} className="flex h-full grow" asChild>
           <div className="grow pt-5">
             <Input />
@@ -51,6 +54,14 @@ const InputOutput = () => {
             <Output instanceIsFinished={instanceIsFinished} />
           </div>
         </TabsContent>
+        <TabsList variant="boxed" className="w-max">
+          <TabsTrigger variant="boxed" value={tabs[0]}>
+            {t("pages.instances.detail.inputOutput.tabs.input")}
+          </TabsTrigger>
+          <TabsTrigger variant="boxed" value={tabs[1]}>
+            {t("pages.instances.detail.inputOutput.tabs.output")}
+          </TabsTrigger>
+        </TabsList>
       </Tabs>
     </div>
   );
