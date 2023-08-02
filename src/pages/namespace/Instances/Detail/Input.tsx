@@ -1,5 +1,4 @@
 import Editor from "~/design/Editor";
-import { FC } from "react";
 import { useInput } from "~/api/instances/query/input";
 import { useInstanceId } from "./state/instanceContext";
 import { useTheme } from "~/util/store/theme";
