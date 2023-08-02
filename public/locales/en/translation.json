@@ -248,6 +248,10 @@
           }
         },
         "inputOutput": {
+          "tabs": {
+            "input": "Input",
+            "output": "Output"
+          },
           "output": {
             "stillRunningMsg": "The workflow is still running",
             "noOutputMsg": "no output data was resolved"
