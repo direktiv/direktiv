@@ -89,18 +89,18 @@ teardown: ## Brings down an existing cluster.
 
 GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go')
 
-# ENT
+# # ENT
 
-.PHONY: ent-%
-ent-%: ## Manually regenerates ent database package.
-	docker run -it --rm \
-    -v `pwd`:/app \
-    -w /app \
-	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/$*/ent/schema
+# .PHONY: ent-%
+# ent-%: ## Manually regenerates ent database package.
+# 	docker run -it --rm \
+#     -v `pwd`:/app \
+#     -w /app \
+# 	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/$*/ent/schema
 
-.PHONY: ent
-ent: ## Manually regenerates ent database packages.
-ent: ent-flow
+# .PHONY: ent
+# ent: ## Manually regenerates ent database packages.
+# ent: ent-flow
 
 # Not need anymore, commented out for now to not accidentally building those
 # Cleans API client inside of pkg api
@@ -151,7 +151,7 @@ cross-build:
 		$(eval RELEASE_TAG=dev) \
     fi
 	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
 
 .PHONY: grpc-clean
@@ -178,7 +178,7 @@ scan: push
 
 .PHONY: image
 image:
-	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv -f build/docker/direktiv/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv -f Dockerfile .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push
