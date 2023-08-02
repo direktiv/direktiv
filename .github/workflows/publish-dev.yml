@@ -1,9 +1,11 @@
 name: Build and Publish Direktiv Docker Image
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch:
+    inputs:
+      trigger-build:
+        description: 'Trigger Docker Image Build'
+        required: true
 
 env:
   REGISTRY: ghcr.io
@@ -45,4 +47,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
         env:
-          DOCKER_BUILDKIT: 1  # Add DOCKER_BUILDKIT to enable BuildKit during the build process
+          DOCKER_BUILDKIT: 1
