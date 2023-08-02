@@ -5,15 +5,13 @@ import { useActions, useFilters } from "../../state/instanceContext";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FiltersObj } from "~/api/logs/query/get";
-import Input from "~/design/Input";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import TextInput from "./TextInput";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-// keys of FilterObj
-
-const filterFields: Array<keyof FiltersObj> = ["workflowName", "stateName"];
-export type FilterField = (typeof filterFields)[number];
+const availableFilters: Array<keyof FiltersObj> = ["workflowName", "stateName"];
+export type FilterField = (typeof availableFilters)[number];
 type MenuAnchor = "main" | FilterField;
 
 const Filters = () => {
@@ -24,6 +22,7 @@ const Filters = () => {
     resetFilterWorkflow,
   } = useActions();
   const filters = useFilters();
+  const { t } = useTranslation();
 
   // activeMenu controls which popover component is opened (there are
   // separate popovers triggered by the respective buttons)
@@ -51,13 +50,36 @@ const Filters = () => {
     setSelectedField(null);
   };
 
-  const currentFilterKeys = filterFields.filter((items) => filters?.[items]);
+  const setFilter = (field: FilterField, value: string) => {
+    if (field === "workflowName") {
+      updateFilterWorkflow(value);
+    }
+    if (field === "stateName") {
+      updateFilterStateName(value);
+    }
+    resetMenu();
+  };
 
-  const hasFilters = false; // TODO: implement
-  const undefinedFilters = filterFields.filter((x) => x); // TODO: implement filtering
+  const clearFilter = (field: FilterField) => {
+    if (field === "workflowName") {
+      resetFilterWorkflow();
+    }
+    if (field === "stateName") {
+      resetFilterStateName();
+    }
+  };
+
+  const currentFilterKeys = availableFilters.filter(
+    (items) => filters?.[items]
+  );
+
+  const hasFilters = !!currentFilterKeys.length;
+  const undefinedFilters = availableFilters.filter(
+    (x) => !currentFilterKeys.includes(x)
+  );
 
   return (
-    <ButtonBar>
+    <>
       {currentFilterKeys.map((field) => (
         <ButtonBar key={field}>
           <Button variant="outline" size="sm">
@@ -75,26 +97,8 @@ const Filters = () => {
             <PopoverContent align="start">
               <TextInput
                 field={field}
-                // setFilter={setFilter}
-                // clearFilter={clearFilter}
-                // value={filters[field]?.value}
-
-                setFilter={(filter, value) => {
-                  if (filter === "workflowName") {
-                    updateFilterWorkflow(value);
-                  }
-                  if (filter === "stateName") {
-                    updateFilterStateName(value);
-                  }
-                }}
-                clearFilter={(filter) => {
-                  if (filter === "workflowName") {
-                    resetFilterWorkflow();
-                  }
-                  if (filter === "stateName") {
-                    resetFilterStateName();
-                  }
-                }}
+                setFilter={setFilter}
+                clearFilter={clearFilter}
                 value={filters?.[field]}
               />
             </PopoverContent>
@@ -113,57 +117,51 @@ const Filters = () => {
           </Button>
         </ButtonBar>
       ))}
-      <Popover
-        open={activeMenu === "main"}
-        onOpenChange={(state) => handleOpenChange(state, "main")}
-      >
-        <PopoverTrigger asChild>
-          {hasFilters ? (
-            <Button variant="outline" icon onClick={() => toggleMenu("main")}>
-              <Plus />
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleMenu("main")}
-            >
-              <Plus />
-              filter
-            </Button>
-          )}
-        </PopoverTrigger>
-        <PopoverContent align="start">
-          {selectedField === null ? (
-            <SelectFieldMenu
-              options={undefinedFilters}
-              onSelect={setSelectedField}
-            />
-          ) : (
-            <TextInput
-              field={selectedField}
-              setFilter={(filter, value) => {
-                if (filter === "workflowName") {
-                  updateFilterWorkflow(value);
-                }
-                if (filter === "stateName") {
-                  updateFilterStateName(value);
-                }
-              }}
-              clearFilter={(filter) => {
-                if (filter === "workflowName") {
-                  resetFilterWorkflow();
-                }
-                if (filter === "stateName") {
-                  resetFilterStateName();
-                }
-              }}
-              value={filters?.[selectedField]}
-            />
-          )}
-        </PopoverContent>
-      </Popover>
-    </ButtonBar>
+
+      {!!undefinedFilters.length && (
+        <Popover
+          open={activeMenu === "main"}
+          onOpenChange={(state) => handleOpenChange(state, "main")}
+        >
+          <PopoverTrigger asChild>
+            {hasFilters ? (
+              <Button
+                variant="outline"
+                size="sm"
+                icon
+                onClick={() => toggleMenu("main")}
+              >
+                <Plus />
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toggleMenu("main")}
+              >
+                <Plus />
+                {t("pages.instances.detail.logs.filter.filterButton")}
+              </Button>
+            )}
+          </PopoverTrigger>
+          <PopoverContent align="start">
+            {selectedField === null ? (
+              <SelectFieldMenu
+                options={undefinedFilters}
+                onSelect={setSelectedField}
+              />
+            ) : (
+              <TextInput
+                field={selectedField}
+                setFilter={setFilter}
+                clearFilter={clearFilter}
+                value={filters?.[selectedField]}
+              />
+            )}
+          </PopoverContent>
+        </Popover>
+      )}
+    </>
   );
 };
 

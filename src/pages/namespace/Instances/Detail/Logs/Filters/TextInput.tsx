@@ -31,12 +31,14 @@ const TextInput = ({
   return (
     <Command>
       <CommandList>
-        {/* TODO: make this i18n dynamic */}
-        <CommandGroup heading={field}>
+        <CommandGroup
+          heading={t(`pages.instances.detail.logs.filter.menuHeading.${field}`)}
+        >
           <Input
             autoFocus
-            // TODO: make this i18n dynamic
-            placeholder={field}
+            placeholder={t(
+              `pages.instances.detail.logs.filter.placeholder.${field}`
+            )}
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
             onKeyDown={handleKeyDown}

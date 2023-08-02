@@ -20,17 +20,17 @@ export const SelectFieldMenu = ({
   return (
     <Command>
       <CommandInput
-        placeholder={t("pages.instances.list.filter.placeholder.mainMenu")}
+        placeholder={t(
+          "pages.instances.detail.logs.filter.placeholder.mainMenu"
+        )}
       />
       <CommandList>
         <CommandGroup
-          heading={t("pages.instances.list.filter.menuHeading.main")}
+          heading={t("pages.instances.detail.logs.filter.menuHeading.main")}
         >
           {options.map((option) => (
             <CommandItem key={option} onSelect={() => onSelect(option)}>
-              {/* {t(`pages.instances.list.filter.field.${option}`)} */}
-              {/* TODO: implement t */}
-              {option}
+              {t(`pages.instances.detail.logs.filter.field.${option}`)}
             </CommandItem>
           ))}
         </CommandGroup>

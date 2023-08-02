@@ -218,6 +218,27 @@
             "TRIGGER": "Type or select trigger type..."
           }
         }
+      },
+      "detail": {
+        "logs": {
+          "filter": {
+            "filterButton": "Filter",
+            "menuHeading": {
+              "main": "Select filter",
+              "workflowName": "workflow name",
+              "stateName": "state"
+            },
+            "field": {
+              "workflowName": "workflow name",
+              "stateName": "state name"
+            },
+            "placeholder": {
+              "mainMenu": "Type or select a field...",
+              "workflowName": "/path/filename.yaml",
+              "stateName": "someStateName"
+            }
+          }
+        }
       }
     },
     "settings": {
