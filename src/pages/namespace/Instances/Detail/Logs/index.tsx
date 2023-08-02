@@ -19,14 +19,12 @@ import CopyButton from "~/design/CopyButton";
 import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
+import { formatTime } from "./utils";
 import { useLogs } from "~/api/logs/query/get";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
   const { t } = useTranslation();
-  const wordWrap = useLogsPreferencesWordWrap();
-  const maximizedPanel = useLogsPreferencesMaximizedPanel();
-  const verboseLogs = useLogsPreferencesVerboseLogs();
   const { setVerboseLogs, setWordWrap, setMaximizedPanel } =
     useLogsPreferencesActions();
 
@@ -37,9 +35,15 @@ const LogsPanel = () => {
     filters,
   });
 
+  // get user preferences
+  const wordWrap = useLogsPreferencesWordWrap();
+  const maximizedPanel = useLogsPreferencesMaximizedPanel();
+  const verboseLogs = useLogsPreferencesVerboseLogs();
+
   const isMaximized = maximizedPanel === "logs";
 
-  const copyValue = data?.results.map((x) => `${x.msg}`).join("\n") ?? "";
+  const copyValue =
+    data?.results.map((x) => `${formatTime(x.t)} ${x.msg}`).join("\n") ?? "";
 
   return (
     <>

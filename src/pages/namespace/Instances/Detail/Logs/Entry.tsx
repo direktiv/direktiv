@@ -2,7 +2,7 @@ import { ComponentProps, ComponentPropsWithoutRef, FC } from "react";
 
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
-import moment from "moment";
+import { formatTime } from "./utils";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 
 type LogEntryVariant = ComponentProps<typeof LogEntry>["variant"];
@@ -29,7 +29,7 @@ const Entry: FC<{ logEntry: LogEntryType } & LogEntryProps> = ({
   ...props
 }) => {
   const { msg, t, level, tags } = logEntry;
-  const time = moment(t).format("HH:mm:ss.mm");
+  const time = formatTime(t);
   const verbose = useLogsPreferencesVerboseLogs();
 
   return (
