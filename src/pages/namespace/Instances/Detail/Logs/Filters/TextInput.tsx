@@ -24,7 +24,6 @@ const TextInput = ({
       setFilter(field, inputValue);
     }
     if (event.key === "Enter" && !inputValue) {
-      console.log("🚀 clear");
       clearFilter(field);
     }
   };
