@@ -45,7 +45,7 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
 
   return (
     <div className="flex grow flex-col gap-5 pb-12">
-      <ButtonBar>
+      <ButtonBar className="justify-end">
         <CopyButton
           value={workflowOutput}
           buttonProps={{

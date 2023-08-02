@@ -17,7 +17,7 @@ const Input = () => {
 
   return (
     <div className="flex grow flex-col gap-5 pb-12">
-      <ButtonBar>
+      <ButtonBar className="justify-end">
         <CopyButton
           value={workflowInput}
           buttonProps={{
