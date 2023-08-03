@@ -27,7 +27,7 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
-      <div className="flex flex-col gap-x-5 max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-x-5 max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-start">
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Box className="h-5" /> {data.instance.id.slice(0, 8)}
           <Badge
@@ -60,12 +60,14 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
             relativeTime: updatedAt,
           })}
         </div>
-        <Button asChild variant="primary">
-          <Link to={link}>
-            <FileSymlink />
-            {t("pages.instances.detail.header.openWorkflow")}
-          </Link>
-        </Button>
+        <div className="grow justify-end sm:flex">
+          <Button asChild variant="primary" className="max-sm:w-full">
+            <Link to={link}>
+              <FileSymlink />
+              {t("pages.instances.detail.header.openWorkflow")}
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
