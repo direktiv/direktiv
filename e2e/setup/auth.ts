@@ -25,10 +25,9 @@
  */
 
 const port = process.env.VITE_E2E_UI_PORT;
-const token = process.env.VITE_E2E_API_TOKEN;
+const token = process.env.VITE_E2E_API_TOKEN || "";
 
-// if no token is required by the API and none is set in env,
-//
+// if token is "", no token is added to the request.
 export const storageState = {
   cookies: [],
   origins: [
