@@ -14,13 +14,13 @@ const (
 
 type Filter struct {
 	Name             string `yaml:"name"`
-	InlineJavascript string `yaml:"inline-js"`
+	InlineJavascript string `yaml:"inline_javascript"`
 	Source           string `yaml:"source"`
 }
 
 type Filters struct {
-	API     string   `yaml:"direktiv-api"`
-	Filters []Filter `yaml:"filters"`
+	DirektivAPI string   `yaml:"direktiv_api"`
+	Filters     []Filter `yaml:"filters"`
 }
 
 const (
@@ -33,8 +33,8 @@ type Service struct {
 }
 
 type Services struct {
-	API      string    `yaml:"direktiv-api"`
-	Services []Service `yaml:"services"`
+	DirektivAPI string    `yaml:"direktiv_api"`
+	Services    []Service `yaml:"services"`
 }
 
 const (
@@ -48,14 +48,14 @@ func LoadResource(data []byte) (interface{}, error) {
 		return nil, fmt.Errorf("error parsing direktiv resource: %w", err)
 	}
 
-	x, exists := m["direktiv-api"]
+	x, exists := m["direktiv_api"]
 	if !exists {
-		return nil, errors.New("error parsing direktiv resource: missing 'direktiv-api'")
+		return nil, errors.New("error parsing direktiv resource: missing 'direktiv_api'")
 	}
 
 	s, ok := x.(string)
 	if !ok {
-		return nil, errors.New("error parsing direktiv resource: invalid 'direktiv-api'")
+		return nil, errors.New("error parsing direktiv resource: invalid 'direktiv_api'")
 	}
 
 	switch s {
@@ -84,6 +84,6 @@ func LoadResource(data []byte) (interface{}, error) {
 
 		return wf, nil
 	default:
-		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv-api': \"%s\"", s)
+		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}
 }
