@@ -1,4 +1,11 @@
-import { Bug, Maximize2, Minimize2, ScrollText, WrapText } from "lucide-react";
+import {
+  Bug,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  ScrollText,
+  WrapText,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +27,7 @@ import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
 import { formatTime } from "./utils";
+import { useInstanceDetails } from "~/api/instances/query/details";
 import { useLogs } from "~/api/logs/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +38,8 @@ const LogsPanel = () => {
 
   const instanceId = useInstanceId();
   const filters = useFilters();
-  const { data } = useLogs({
+  const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
+  const { data: logData } = useLogs({
     instanceId,
     filters,
   });
@@ -43,7 +52,10 @@ const LogsPanel = () => {
   const isMaximized = maximizedPanel === "logs";
 
   const copyValue =
-    data?.results.map((x) => `${formatTime(x.t)} ${x.msg}`).join("\n") ?? "";
+    logData?.results.map((x) => `${formatTime(x.t)} ${x.msg}`).join("\n") ?? "";
+
+  const resultCount = logData?.results.length ?? 0;
+  const isPending = instanceDetailsData?.instance.status === "pending";
 
   return (
     <>
@@ -132,6 +144,10 @@ const LogsPanel = () => {
         </ButtonBar>
       </div>
       <ScrollContainer />
+      <div className="flex items-center justify-center pt-2 text-sm text-gray-11">
+        {isPending && <Loader2 className="h-3 animate-spin" />}
+        {t("pages.instances.detail.logs.logsCount", { count: resultCount })}
+      </div>
     </>
   );
 };

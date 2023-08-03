@@ -231,6 +231,8 @@
         "logs": {
           "title": "Logs",
           "followLogs": "Follow Logs",
+          "logsCount": "received {{count}} logs",
+          "logsCount_one": "received {{count}} log",
           "tooltips": {
             "verbose": "Verbose Logs",
             "wordWrap": "Word Wrap",
