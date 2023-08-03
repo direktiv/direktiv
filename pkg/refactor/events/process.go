@@ -171,7 +171,7 @@ func (EventEngine) handleEvents(ctx context.Context,
 		eCopy := e.Clone()
 		events = append(events, &Event{
 			Namespace:  namespace,
-			ReceivedAt: time.Now(),
+			ReceivedAt: time.Now().UTC(),
 			Event:      &eCopy,
 		})
 	}
@@ -224,7 +224,7 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 func removeExpired(l *EventListener, ces []*event.Event) []*event.Event {
 	for i := range l.ReceivedEventsForAndTrigger {
 		e := l.ReceivedEventsForAndTrigger[i]
-		if l.LifespanOfReceivedEvents != 0 && e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).Before(time.Now()) {
+		if l.LifespanOfReceivedEvents != 0 && e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).Before(time.Now().UTC()) {
 			continue
 		}
 		ces = append(ces, e.Event)

@@ -316,9 +316,9 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	oldController := im.Controller()
 
 	if im.Step() == 0 {
-		t := time.Now()
-		tSoft := time.Now().Add(time.Minute * 15)
-		tHard := time.Now().Add(time.Minute * 20)
+		t := time.Now().UTC()
+		tSoft := time.Now().UTC().Add(time.Minute * 15)
+		tHard := time.Now().UTC().Add(time.Minute * 20)
 
 		if workflow.Timeouts != nil {
 			s := workflow.Timeouts.Interrupt
@@ -375,7 +375,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	}
 	defer cleanup()
 
-	t := time.Now()
+	t := time.Now().UTC()
 
 	im.instance.RuntimeInfo.Flow = flow
 	im.instance.RuntimeInfo.Controller = engine.pubsub.Hostname
@@ -431,7 +431,7 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 }
 
 func (engine *engine) setEndAt(im *instanceMemory) {
-	t := time.Now()
+	t := time.Now().UTC()
 	im.instance.Instance.EndedAt = &t
 	im.updateArgs.EndedAt = im.instance.Instance.EndedAt
 }
@@ -841,7 +841,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
 	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
 
-	deadline := time.Now().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
@@ -1135,7 +1135,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 }
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now())
+	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now().UTC())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}

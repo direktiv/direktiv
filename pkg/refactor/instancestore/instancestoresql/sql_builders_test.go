@@ -182,7 +182,7 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 		t.Errorf("generateGetInstancesFilters failed with one filter: %v", err)
 	}
 
-	t0 := time.Now()
+	t0 := time.Now().UTC()
 	clauses, vals, err = generateGetInstancesFilters(&instancestore.ListOpts{
 		Filters: []instancestore.Filter{
 			{Field: fieldNamespaceID, Kind: instancestore.FilterKindMatch, Value: "x"},

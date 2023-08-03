@@ -261,7 +261,7 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) func() {
 	return func() {
-		t := time.Now()
+		t := time.Now().UTC()
 
 		deadline := t.Add(25 * time.Second)
 

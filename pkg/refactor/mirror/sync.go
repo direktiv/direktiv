@@ -64,7 +64,7 @@ func (j *mirroringJob) SetProcessStatus(store Store, process *Process, status st
 
 	process.Status = status
 	if status == processStatusComplete || status == processStatusFailed {
-		process.EndedAt = time.Now()
+		process.EndedAt = time.Now().UTC()
 	}
 	_, err = store.UpdateProcess(j.ctx, process)
 

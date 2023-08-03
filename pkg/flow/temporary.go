@@ -287,7 +287,7 @@ func (im *instanceMemory) SetMemory(ctx context.Context, x interface{}) error {
 }
 
 func (im *instanceMemory) Deadline(ctx context.Context) time.Time {
-	return time.Now().Add(states.DefaultShortDeadline)
+	return time.Now().UTC().Add(states.DefaultShortDeadline)
 }
 
 func (im *instanceMemory) LivingChildren(ctx context.Context) []*states.ChildInfo {
@@ -300,7 +300,7 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 		return err
 	}
 
-	t := time.Now().Add(d)
+	t := time.Now().UTC().Add(d)
 
 	err = im.engine.scheduleRetry(im.ID().String(), stateID, im.Step(), t, data)
 	if err != nil {
