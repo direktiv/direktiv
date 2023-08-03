@@ -21,10 +21,64 @@ import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
 const Info: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex h-full flex-col items-center justify-center gap-y-5 p-10">
-    <span className="text-center text-gray-11">{children}</span>
+  <div className="flex grow flex-col gap-5 pb-12">
+    <Toolbar copyText="" />
+    <div className="flex h-full flex-col items-center justify-center gap-y-5 p-10">
+      <span className="text-center text-gray-11">{children}</span>
+    </div>
   </div>
 );
+
+const Toolbar: FC<{ copyText: string }> = ({ copyText }) => {
+  const { t } = useTranslation();
+  const { setMaximizedPanel } = useLogsPreferencesActions();
+  const maximizedPanel = useLogsPreferencesMaximizedPanel();
+  const isMaximized = maximizedPanel === "input-output";
+
+  return (
+    <ButtonBar className="justify-end">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <CopyButton
+                value={copyText}
+                buttonProps={{
+                  variant: "outline",
+                  size: "sm",
+                }}
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            {t("pages.instances.detail.inputOutput.copyOutput")}
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <Button
+                icon
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setMaximizedPanel(isMaximized ? "none" : "input-output");
+                }}
+              >
+                {isMaximized ? <Minimize2 /> : <Maximize2 />}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isMaximized
+              ? t("pages.instances.detail.inputOutput.minimizeOutput")
+              : t("pages.instances.detail.inputOutput.maximizeOutput")}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </ButtonBar>
+  );
+};
 
 const Output: FC<{ instanceIsFinished: boolean }> = ({
   instanceIsFinished,
@@ -36,9 +90,6 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
     enabled: instanceIsFinished,
   });
   const theme = useTheme();
-  const { setMaximizedPanel } = useLogsPreferencesActions();
-  const maximizedPanel = useLogsPreferencesMaximizedPanel();
-  const isMaximized = maximizedPanel === "input-output";
 
   if (!instanceIsFinished) {
     return (
@@ -58,47 +109,7 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
 
   return (
     <div className="flex grow flex-col gap-5 pb-12">
-      <ButtonBar className="justify-end">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <CopyButton
-                  value={workflowOutput}
-                  buttonProps={{
-                    variant: "outline",
-                    size: "sm",
-                  }}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              {t("pages.instances.detail.inputOutput.copyOutput")}
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Button
-                  icon
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setMaximizedPanel(isMaximized ? "none" : "input-output");
-                  }}
-                >
-                  {isMaximized ? <Minimize2 /> : <Maximize2 />}
-                </Button>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              {isMaximized
-                ? t("pages.instances.detail.inputOutput.minimizeOutput")
-                : t("pages.instances.detail.inputOutput.maximizeOutput")}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </ButtonBar>
+      <Toolbar copyText={workflowOutput} />
       <Editor
         value={workflowOutput}
         language="json"
