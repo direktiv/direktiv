@@ -25,7 +25,7 @@ const InstancesDetail = () => {
         <Card className="relative col-span-2 grid grid-rows-[auto,1fr] p-5">
           <Logs />
         </Card>
-        <Card>
+        <Card className="flex">
           <Diagram workflowPath={data.instance.as} flow={data.flow} />
         </Card>
         <Card className="flex p-5">

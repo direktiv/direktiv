@@ -247,6 +247,10 @@
             }
           }
         },
+        "diagram": {
+          "minimizeInput": "Minimize Diagram",
+          "maximizeInput": "Maximize Diagram"
+        },
         "inputOutput": {
           "copyInput": "Copy Input",
           "minimizeInput": "Minimize Input",
