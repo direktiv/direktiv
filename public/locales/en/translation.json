@@ -220,6 +220,14 @@
         }
       },
       "detail": {
+        "header": {
+          "openWorkflow": "Open Workflow",
+          "invoker": "trigger",
+          "state": "state",
+          "startedAt": "started at",
+          "updatedAt": "last updated",
+          "realtiveTime": "{{relativeTime}} ago"
+        },
         "logs": {
           "title": "Logs",
           "followLogs": "Follow Logs",
