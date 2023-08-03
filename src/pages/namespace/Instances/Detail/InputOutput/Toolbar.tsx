@@ -16,7 +16,7 @@ import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-const Toolbar: FC<{ copyText: string }> = ({ copyText }) => {
+const Toolbar: FC<{ copyText?: string }> = ({ copyText }) => {
   const { t } = useTranslation();
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
@@ -29,10 +29,11 @@ const Toolbar: FC<{ copyText: string }> = ({ copyText }) => {
           <TooltipTrigger asChild>
             <div>
               <CopyButton
-                value={copyText}
+                value={copyText ?? ""}
                 buttonProps={{
                   variant: "outline",
                   size: "sm",
+                  disabled: !copyText,
                 }}
               />
             </div>
