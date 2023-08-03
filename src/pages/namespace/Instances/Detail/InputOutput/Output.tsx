@@ -1,20 +1,11 @@
-import { FC, PropsWithChildren } from "react";
-
 import Editor from "~/design/Editor";
+import { FC } from "react";
+import InfoText from "./InfoText";
 import Toolbar from "./Toolbar";
 import { useInstanceId } from "../state/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-
-const Info: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex grow flex-col gap-5 pb-12">
-    <Toolbar copyText="" />
-    <div className="flex h-full flex-col items-center justify-center gap-y-5 p-10">
-      <span className="text-center text-gray-11">{children}</span>
-    </div>
-  </div>
-);
 
 const Output: FC<{ instanceIsFinished: boolean }> = ({
   instanceIsFinished,
@@ -29,15 +20,17 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
 
   if (!instanceIsFinished) {
     return (
-      <Info>
+      <InfoText>
         {t("pages.instances.detail.inputOutput.output.stillRunningMsg")}
-      </Info>
+      </InfoText>
     );
   }
 
   if (isError) {
     return (
-      <Info>{t("pages.instances.detail.inputOutput.output.noOutputMsg")}</Info>
+      <InfoText>
+        {t("pages.instances.detail.inputOutput.output.noOutputMsg")}
+      </InfoText>
     );
   }
 
