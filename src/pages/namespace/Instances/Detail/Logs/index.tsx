@@ -1,4 +1,4 @@
-import { Bug, Maximize2, Minimize2, WrapText } from "lucide-react";
+import { Bug, Maximize2, Minimize2, ScrollText, WrapText } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -48,7 +48,8 @@ const LogsPanel = () => {
   return (
     <>
       <div className="mb-5 flex gap-x-5">
-        <h3 className="grow font-medium">
+        <h3 className="flex grow items-center  gap-x-2 font-medium">
+          <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title")}
         </h3>
         <Filters />
