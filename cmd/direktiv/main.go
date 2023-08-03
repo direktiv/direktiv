@@ -16,7 +16,7 @@ import (
 func main() {
 	appName := os.Getenv("DIREKTIV_APP")
 
-	time.Local = time.UTC //nolint:gosmopolitan // this is the only line where its ok to use time.Local
+	time.Local = time.UTC //nolint:gosmopolitan // this is the only line where it's ok to use time.Local
 
 	switch appName {
 	case "api":
