@@ -1,8 +1,7 @@
 name: Create and push PR Docker image
 
 on:
-  push:
-    branches: [ "feature/redesign", "**/dir-**" ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
