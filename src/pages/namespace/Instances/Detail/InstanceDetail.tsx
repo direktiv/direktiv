@@ -17,8 +17,8 @@ const InstancesDetail = () => {
       <div
         className={twMergeClsx(
           "grid grow gap-5 p-5",
-          "grid-rows-[minmax(300px,50vh)_1fr]",
-          "grid-cols-[1fr_400px]",
+          "grid-rows-[minmax(300px,45vh)_1fr]",
+          "grid-cols-[1fr_500px]",
           "grid-template"
         )}
       >
