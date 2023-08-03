@@ -1,6 +1,6 @@
 import Editor from "~/design/Editor";
 import { FC } from "react";
-import InfoText from "./InfoText";
+import InfoText from "./OutputInfo";
 import Toolbar from "./Toolbar";
 import { useInstanceId } from "../state/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
