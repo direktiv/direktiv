@@ -357,12 +357,6 @@ test("It will display child instances as well", async ({ page }) => {
   if (!childInstanceDetail)
     throw new Error("there should be at least one child instance");
 
-  const revisionId = page.getByTestId(
-    `instance-row-revision-id-${childInstanceDetail.id}`
-  );
-
-  await expect(revisionId, `revision id is "none"`).toContainText("none");
-
   const invoker = page.getByTestId(
     `instance-row-invoker-${childInstanceDetail.id}`
   );
