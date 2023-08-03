@@ -2,6 +2,8 @@ name: Create and push PR Docker image
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ "feature/redesign", "stable", "develop" ]
 
 env:
   REGISTRY: ghcr.io
@@ -24,6 +26,14 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Nginx configuration
+        run: |
+          sed -i "s|proxy_pass.*|proxy_pass $PROXY_API_URL;|" conf/nginx.conf
+          sed -i "s|proxy_set_header.*|proxy_set_header Authorization 'Bearer $PROXY_API_KEY';|" conf/nginx.conf
+        env:
+          PROXY_API_URL: ${{ secrets.API_IP }}
+          PROXY_API_KEY: ${{ secrets.API_KEY }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -61,7 +71,7 @@ jobs:
         with:
           version: "1.5.5"
 
-      - name: Run nomad job
+      - name: Deploy to nomad
         timeout-minutes: 4
         run: |
           sed -i "s/DEPLOYMENT_NAME/${GITHUB_REF////-}/g" deploy.nomad
