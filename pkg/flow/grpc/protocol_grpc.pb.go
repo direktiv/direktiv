@@ -176,6 +176,7 @@ const (
 	Flow_File_FullMethodName                          = "/direktiv_flow.Flow/File"
 	Flow_CreateFile_FullMethodName                    = "/direktiv_flow.Flow/CreateFile"
 	Flow_UpdateFile_FullMethodName                    = "/direktiv_flow.Flow/UpdateFile"
+	Flow_NamespaceLint_FullMethodName                 = "/direktiv_flow.Flow/NamespaceLint"
 )
 
 // FlowClient is the client API for Flow service.
@@ -344,6 +345,7 @@ type FlowClient interface {
 	File(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*FileResponse, error)
 	CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error)
 	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error)
+	NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error)
 }
 
 type flowClient struct {
@@ -2715,6 +2717,15 @@ func (c *flowClient) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts
 	return out, nil
 }
 
+func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error) {
+	out := new(NamespaceLintResponse)
+	err := c.cc.Invoke(ctx, Flow_NamespaceLint_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -2881,6 +2892,7 @@ type FlowServer interface {
 	File(context.Context, *FileRequest) (*FileResponse, error)
 	CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error)
 	UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error)
+	NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -3355,6 +3367,9 @@ func (UnimplementedFlowServer) CreateFile(context.Context, *CreateFileRequest) (
 }
 func (UnimplementedFlowServer) UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
+}
+func (UnimplementedFlowServer) NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NamespaceLint not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -6335,6 +6350,24 @@ func _Flow_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_NamespaceLint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NamespaceLintRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NamespaceLint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_NamespaceLint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NamespaceLint(ctx, req.(*NamespaceLintRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -6801,6 +6834,10 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateFile",
 			Handler:    _Flow_UpdateFile_Handler,
+		},
+		{
+			MethodName: "NamespaceLint",
+			Handler:    _Flow_NamespaceLint_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
