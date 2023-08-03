@@ -277,7 +277,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 				if err != nil {
 					return nil, instancestore.ErrBadListOpts
 				}
-				filter.Value = t
+				filter.Value = t.UTC()
 			case "STATUS":
 				filter.Field = instancestore.FieldStatus
 				filter.Value, err = instancestore.InstanceStatusFromString(x.Val)
