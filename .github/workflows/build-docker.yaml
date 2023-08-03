@@ -32,7 +32,6 @@ jobs:
       - name: Update Nginx configuration
         run: |
           sed -i "s|proxy_pass.*|proxy_pass $PROXY_API_URL;|" conf/nginx.conf
-          sed -i "s|proxy_set_header.*|proxy_set_header Authorization 'Bearer $PROXY_API_KEY';|" conf/nginx.conf
         env:
           PROXY_API_URL: ${{ secrets.API_IP }}
           PROXY_API_KEY: ${{ secrets.API_KEY }}
