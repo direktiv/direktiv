@@ -1,4 +1,4 @@
-import { Box, Check, FileSymlink, Loader2, X } from "lucide-react";
+import { Box, FileSymlink } from "lucide-react";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
@@ -33,14 +33,9 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
           <Badge
             variant={statusToBadgeVariant(data.instance.status)}
             className="font-normal"
+            icon={data.instance.status}
           >
             {data.instance.status}
-            {data.instance.status === "pending" && (
-              <Loader2 className="h-3 animate-spin" />
-            )}
-            {data.instance.status === "complete" && <Check className="h-3" />}
-            {(data.instance.status === "failed" ||
-              data.instance.status === "crashed") && <X className="h-3" />}
           </Badge>
         </h3>
         <div className="text-sm">
