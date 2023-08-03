@@ -8,11 +8,13 @@ import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useLogs } from "~/api/logs/query/get";
 import { useLogsPreferencesWordWrap } from "~/util/store/logs";
+import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const wordWrap = useLogsPreferencesWordWrap();
+  const { t } = useTranslation();
 
   const filters = useFilters();
 
@@ -96,7 +98,7 @@ const ScrollContainer = () => {
           }}
         >
           <ArrowDown />
-          follow logs
+          {t("pages.instances.detail.logs.followLogs")}
           <ArrowDown />
         </Button>
       </div>

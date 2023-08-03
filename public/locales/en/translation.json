@@ -222,6 +222,7 @@
       "detail": {
         "logs": {
           "title": "Logs",
+          "followLogs": "Follow Logs",
           "tooltips": {
             "verbose": "Verbose Logs",
             "wordWrap": "Word Wrap",
