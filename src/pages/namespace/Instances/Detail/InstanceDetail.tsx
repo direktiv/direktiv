@@ -26,7 +26,7 @@ const InstancesDetail = () => {
           <Logs />
         </Card>
         <Card>
-          <Diagram workflowPath={data.workflow.path} flow={data.flow} />
+          <Diagram workflowPath={data.instance.as} flow={data.flow} />
         </Card>
         <Card className="flex p-5">
           <InputOutput />
