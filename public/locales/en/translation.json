@@ -245,7 +245,7 @@
             "menuHeading": {
               "main": "Select filter",
               "workflowName": "workflow name",
-              "stateName": "state"
+              "stateName": "state name"
             },
             "field": {
               "workflowName": "workflow name",
