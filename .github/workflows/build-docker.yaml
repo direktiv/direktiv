@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ "feature/redesign", "stable", "develop" ]
+  pull_request:
+    types: [opened, synchronize]
 
 env:
   REGISTRY: ghcr.io
