@@ -19,7 +19,14 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
   switch (layout) {
     case "logs":
       return (
-        <div className="grid grow grid-rows-[calc(100vh-17rem)] gap-5 p-5">
+        <div
+          className={twMergeClsx(
+            "grid grow gap-5 p-5",
+            "grid-rows-[calc(100vh-20rem)]",
+            "sm:grid-rows-[calc(100vh-17rem)]",
+            "lg:grid-rows-[calc(100vh-12rem)]"
+          )}
+        >
           <Card className="relative grid p-5">{logComponent}</Card>
         </div>
       );
