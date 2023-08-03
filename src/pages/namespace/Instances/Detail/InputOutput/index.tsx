@@ -13,7 +13,7 @@ const InputOutput = () => {
   const { data } = useInstanceDetails({ instanceId });
   const tabs = ["input", "output"] as const;
 
-  const instanceIsFinished = data?.instance.status !== "pending";
+  const instanceIsFinished = data?.instance.status === "complete";
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>(
     instanceIsFinished ? "output" : "input"
   );
