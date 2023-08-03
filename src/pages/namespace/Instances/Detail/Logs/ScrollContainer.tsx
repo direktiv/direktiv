@@ -1,7 +1,7 @@
+import { ArrowDown, Dot, Loader2, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useFilters, useInstanceId } from "../state/instanceContext";
 
-import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
@@ -44,7 +44,7 @@ const ScrollContainer = () => {
     }
   }, [logData?.results.length, rowVirtualizer, watch]);
 
-  const showFolloLogsBtn = instanceDetailsData?.instance?.status === "pending";
+  const isPending = instanceDetailsData?.instance?.status === "pending";
 
   if (!logData) return null;
 
@@ -85,7 +85,7 @@ const ScrollContainer = () => {
           );
         })}
       </div>
-      {showFolloLogsBtn && (
+      {isPending && (
         <div
           className={twMergeClsx(
             "absolute box-border flex w-full pr-10",
