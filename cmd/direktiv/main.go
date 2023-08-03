@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/direktiv/direktiv/cmd/api"
 	"github.com/direktiv/direktiv/cmd/flow"
@@ -14,6 +15,8 @@ import (
 
 func main() {
 	appName := os.Getenv("DIREKTIV_APP")
+
+	time.Local = time.UTC
 
 	switch appName {
 	case "api":
