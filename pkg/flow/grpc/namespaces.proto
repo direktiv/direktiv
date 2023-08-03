@@ -59,3 +59,19 @@ message RenameNamespaceRequest {
 message RenameNamespaceResponse {
 	Namespace namespace = 1;
 }
+
+message LinterIssue {
+	string type = 1;
+	string id = 2;
+	string issue = 3;
+	string level = 4;
+}
+
+message NamespaceLintRequest {
+	string name = 1;
+}
+
+message NamespaceLintResponse {
+	Namespace namespace = 1;
+	repeated LinterIssue issues = 4;
+}
