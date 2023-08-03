@@ -47,11 +47,14 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
         <div
           className={twMergeClsx(
             "grid grow gap-5 p-5",
-            "grid-rows-[minmax(300px,45vh)_1fr]",
-            "grid-cols-[1fr_500px]"
+            "grid-rows-[100vh_50vh_50vh]",
+            "md:grid-rows-[minmax(300px,45vh)_1fr]",
+            "md:grid-cols-[minmax(430px,1fr)_1fr]"
           )}
         >
-          <Card className="relative col-span-2 grid p-5">{logComponent}</Card>
+          <Card className="relative grid p-5 md:col-span-2">
+            {logComponent}
+          </Card>
           <Card className="flex">{diagramComponent}</Card>
           <Card className="flex p-5">{inputOutputComponent}</Card>
         </div>
