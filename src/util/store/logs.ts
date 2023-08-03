@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type InstanceLayout = "none" | "logs" | "diagram" | "input-output";
+
 interface LogsPreferencesState {
-  maximizedPanel: "none" | "logs" | "diagram" | "input-output";
+  maximizedPanel: InstanceLayout;
   wordWrap: boolean;
   verboseLogs: boolean;
   actions: {

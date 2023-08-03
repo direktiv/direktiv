@@ -1,37 +1,29 @@
-import { Card } from "~/design/Card";
 import Diagram from "./Diagram";
 import Header from "./Header";
 import InputOutput from "./InputOutput";
 import Logs from "./Logs";
-import { twMergeClsx } from "~/util/helpers";
+import WorkspaceLayout from "./WorkspaceLayout";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "./state/instanceContext";
+import { useLogsPreferencesMaximizedPanel } from "~/util/store/logs";
 
 const InstancesDetail = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
+  const preferedLayout = useLogsPreferencesMaximizedPanel();
+
   if (!data) return null;
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
       <Header instanceId={instanceId} />
-      <div
-        className={twMergeClsx(
-          "grid grow gap-5 p-5",
-          "grid-rows-[minmax(300px,45vh)_1fr]",
-          "grid-cols-[1fr_500px]",
-          "grid-template"
-        )}
-      >
-        <Card className="relative col-span-2 grid grid-rows-[auto,1fr] p-5">
-          <Logs />
-        </Card>
-        <Card className="flex">
+      <WorkspaceLayout
+        layout={preferedLayout}
+        logComponent={<Logs />}
+        diagramComponent={
           <Diagram workflowPath={data.instance.as} flow={data.flow} />
-        </Card>
-        <Card className="flex p-5">
-          <InputOutput />
-        </Card>
-      </div>
+        }
+        inputOutputComponent={<InputOutput />}
+      />
     </div>
   );
 };
