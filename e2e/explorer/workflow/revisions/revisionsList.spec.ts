@@ -46,7 +46,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
 test("it is possible to navigate to the revisions tab", async ({ page }) => {
   const workflow = await createWorkflow(
     namespace,
-    faker.git.shortSha() + ".yaml"
+    faker.internet.domainName() + ".yaml"
   );
   await page.goto("/");
   await expect(
@@ -84,7 +84,7 @@ test("it is possible to navigate to the revisions tab", async ({ page }) => {
 test("latest is the only revision by default", async ({ page }) => {
   const workflow = await createWorkflow(
     namespace,
-    faker.git.shortSha() + ".yaml"
+    faker.internet.domainName() + ".yaml"
   );
   await page.goto(`${namespace}/explorer/workflow/revisions/${workflow}`);
 

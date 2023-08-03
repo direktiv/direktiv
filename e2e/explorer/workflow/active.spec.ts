@@ -15,7 +15,10 @@ const defaultDescription = "A simple 'no-op' state that returns 'Hello world!'";
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
-  workflow = await createWorkflow(namespace, faker.git.shortSha() + ".yaml");
+  workflow = await createWorkflow(
+    namespace,
+    faker.internet.domainName() + ".yaml"
+  );
 });
 
 test.afterEach(async () => {
