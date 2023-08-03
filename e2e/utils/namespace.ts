@@ -1,5 +1,6 @@
 import { NamespaceListSchemaType } from "~/api/namespaces/schema";
 import { faker } from "@faker-js/faker";
+import { headers } from "./testutils";
 
 const apiUrl = process.env.VITE_DEV_API_DOMAIN;
 
@@ -10,6 +11,7 @@ export const createNamespace = () =>
     const name = createNamespaceName();
     fetch(`${apiUrl}/api/namespaces/${name}`, {
       method: "PUT",
+      headers,
     }).then((response) => {
       response.ok
         ? resolve(name)
@@ -21,6 +23,7 @@ export const deleteNamespace = (namespace: string) =>
   new Promise<void>((resolve, reject) => {
     fetch(`${apiUrl}/api/namespaces/${namespace}?recursive=true`, {
       method: "DELETE",
+      headers,
     }).then((response) => {
       response.ok
         ? resolve()
@@ -29,7 +32,7 @@ export const deleteNamespace = (namespace: string) =>
   });
 
 export const checkIfNamespaceExists = async (namespace: string) => {
-  const response = await fetch(`${apiUrl}/api/namespaces`);
+  const response = await fetch(`${apiUrl}/api/namespaces`, { headers });
   if (!response.ok) {
     throw `fetching namespaces failed with code ${response.status}`;
   }
@@ -46,7 +49,7 @@ export const checkIfNamespaceExists = async (namespace: string) => {
 // If you have spammed namespaces while writing tests, call this temporarily:
 // await cleanupNamespace();
 export const cleanupNamespaces = async () => {
-  const response = await fetch(`${apiUrl}/api/namespaces`);
+  const response = await fetch(`${apiUrl}/api/namespaces`, { headers });
   const namespaces = await response
     .json()
     .then((json: NamespaceListSchemaType) =>

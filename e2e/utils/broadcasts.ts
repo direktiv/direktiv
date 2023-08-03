@@ -3,6 +3,7 @@ import {
   BroadcastsSchemaType,
 } from "~/api/broadcasts/schema";
 
+import { headers } from "./testutils";
 import { updateBroadcasts } from "~/api/broadcasts/mutate/updateBroadcasts";
 
 export const createBroadcasts = async (namespace: string) => {
@@ -17,6 +18,7 @@ export const createBroadcasts = async (namespace: string) => {
       namespace,
     },
     headers: {
+      ...headers,
       "content-type": "application/json",
     },
   });
