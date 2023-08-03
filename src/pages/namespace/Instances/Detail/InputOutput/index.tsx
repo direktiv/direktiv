@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
+import { useEffect, useState } from "react";
 
 import Input from "./Input";
 import Output from "./Output";
 import { t } from "i18next";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../state/instanceContext";
-import { useState } from "react";
 import { z } from "zod";
 
 const InputOutput = () => {
@@ -14,7 +14,19 @@ const InputOutput = () => {
   const tabs = ["input", "output"] as const;
 
   const instanceIsFinished = data?.instance.status !== "pending";
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("input");
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>(
+    instanceIsFinished ? "output" : "input"
+  );
+
+  useEffect(() => {
+    /**
+     * switch to the output tab when the instance is switching
+     * to a finished state while this component is mounted
+     */
+    setActiveTab(instanceIsFinished ? "output" : "input");
+  }, [instanceIsFinished]);
+
+  if (!data) return null;
 
   return (
     <div className="flex grow">
