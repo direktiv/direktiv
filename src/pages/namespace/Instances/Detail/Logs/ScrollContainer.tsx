@@ -1,7 +1,7 @@
-import { ArrowDown, Dot, Loader2, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useFilters, useInstanceId } from "../state/instanceContext";
 
+import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
