@@ -35,7 +35,7 @@ const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="absolute right-5 top-5">
+            <div className="absolute right-5 top-5 z-50">
               <Button
                 icon
                 size="sm"
