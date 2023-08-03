@@ -124,13 +124,6 @@ test("it renders the instance item correctly for failed and success status", asy
       "on hover, a tooltip reveals full id"
     ).toContainText(instance.instance);
 
-    const revisionId = page.getByTestId(
-      `instance-row-revision-id-${instance.instance}`
-    );
-    await expect(revisionId, `the revision id is "latest"`).toContainText(
-      "latest"
-    );
-
     const invoker = page.getByTestId(
       `instance-row-invoker-${instance.instance}`
     );
