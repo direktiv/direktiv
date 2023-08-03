@@ -28,9 +28,7 @@ const Input = () => {
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "input-output";
 
-  if (!data) return null;
-
-  const workflowInput = atob(data.data);
+  const workflowInput = atob(data?.data ?? "");
 
   return (
     <div className="flex grow flex-col gap-5 pb-12">
