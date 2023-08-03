@@ -6,6 +6,7 @@ import Button from "~/design/Button";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
+import { useInstanceDetails } from "~/api/instances/query/details";
 import { useLogs } from "~/api/logs/query/get";
 import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
@@ -14,11 +15,13 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const wordWrap = useLogsPreferencesWordWrap();
+  const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
+
   const { t } = useTranslation();
 
   const filters = useFilters();
 
-  const { data } = useLogs({
+  const { data: logData } = useLogs({
     instanceId,
     filters,
   });
@@ -29,19 +32,21 @@ const ScrollContainer = () => {
 
   // The virtualizer
   const rowVirtualizer = useVirtualizer({
-    count: data?.results.length ?? 0,
+    count: logData?.results.length ?? 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
-    getItemKey: (index) => data?.results[index]?.t ?? index,
+    getItemKey: (index) => logData?.results[index]?.t ?? index,
   });
 
   useEffect(() => {
-    if (data?.results.length && watch) {
-      rowVirtualizer.scrollToIndex(data?.results.length);
+    if (logData?.results.length && watch) {
+      rowVirtualizer.scrollToIndex(logData?.results.length);
     }
-  }, [data?.results.length, rowVirtualizer, watch]);
+  }, [logData?.results.length, rowVirtualizer, watch]);
 
-  if (!data) return null;
+  const showFolloLogsBtn = instanceDetailsData?.instance?.status === "pending";
+
+  if (!logData) return null;
 
   return (
     <Logs
@@ -65,7 +70,7 @@ const ScrollContainer = () => {
         }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-          const logEntry = data.results[virtualItem.index];
+          const logEntry = logData.results[virtualItem.index];
           if (!logEntry) return null;
           return (
             <Entry
@@ -80,28 +85,30 @@ const ScrollContainer = () => {
           );
         })}
       </div>
-      <div
-        className={twMergeClsx(
-          "absolute box-border flex w-full pr-10",
-          "justify-center transition-all",
-          "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-5 aria-[hidden=true]:opacity-0",
-          "aria-[hidden=false]:bottom-10 aria-[hidden=false]:opacity-100"
-        )}
-        aria-hidden={watch ? "true" : "false"}
-      >
-        <Button
-          className="bg-white dark:bg-black"
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setWatch(true);
-          }}
+      {showFolloLogsBtn && (
+        <div
+          className={twMergeClsx(
+            "absolute box-border flex w-full pr-10",
+            "justify-center transition-all",
+            "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-5 aria-[hidden=true]:opacity-0",
+            "aria-[hidden=false]:bottom-10 aria-[hidden=false]:opacity-100"
+          )}
+          aria-hidden={watch ? "true" : "false"}
         >
-          <ArrowDown />
-          {t("pages.instances.detail.logs.followLogs")}
-          <ArrowDown />
-        </Button>
-      </div>
+          <Button
+            className="bg-white dark:bg-black"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setWatch(true);
+            }}
+          >
+            <ArrowDown />
+            {t("pages.instances.detail.logs.followLogs")}
+            <ArrowDown />
+          </Button>
+        </div>
+      )}
     </Logs>
   );
 };
