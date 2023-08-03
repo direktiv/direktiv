@@ -182,7 +182,6 @@
         "tableHeader": {
           "name": "name",
           "id": "id",
-          "revisionId": "revision id",
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",

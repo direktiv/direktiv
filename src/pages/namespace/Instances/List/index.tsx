@@ -57,9 +57,6 @@ const InstancesListPage = () => {
                 {t("pages.instances.list.tableHeader.id")}
               </TableHeaderCell>
               <TableHeaderCell className="w-28">
-                {t("pages.instances.list.tableHeader.revisionId")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-28">
                 {t("pages.instances.list.tableHeader.invoker")}
               </TableHeaderCell>
               <TableHeaderCell className="w-28">
@@ -76,7 +73,7 @@ const InstancesListPage = () => {
           <TableBody>
             {noResults ? (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={7}>
+                <TableCell colSpan={6}>
                   <NoResult
                     message={
                       hasFilters
