@@ -83,7 +83,7 @@ const Filters = () => {
       {currentFilterKeys.map((field) => (
         <ButtonBar key={field}>
           <Button variant="outline" size="sm">
-            {field}
+            {t(`pages.instances.detail.logs.filter.field.${field}`)}
           </Button>
           <Popover
             open={activeMenu === field}
