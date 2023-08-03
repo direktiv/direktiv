@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { useEffect, useState } from "react";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
+import ApiKeyPanel from "./namespace/Settings/ApiKey";
 import Button from "~/design/Button";
 import Logo from "~/design/Logo";
 import NamespaceCreate from "~/componentsNext/NamespaceCreate";
@@ -121,6 +122,7 @@ const Layout = () => {
             </li>
           ))}
         </ul>
+        <ApiKeyPanel />
       </div>
     </main>
   );

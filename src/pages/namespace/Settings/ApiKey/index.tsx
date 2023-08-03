@@ -13,7 +13,7 @@ const ApiKeyPanel = () => {
   const { setApiKey: storeApiKey } = useApiActions();
 
   return (
-    <Card className="flex flex-col gap-5 p-5 md:flex-row ">
+    <Card className="flex flex-col gap-5 p-5">
       <InputWithButton className="w-full">
         <Input
           value={apiKey}
@@ -36,7 +36,6 @@ const ApiKeyPanel = () => {
       </InputWithButton>
 
       <Button
-        className="md:w-1/4"
         block
         disabled={!apiKey}
         onClick={() => {
@@ -45,9 +44,7 @@ const ApiKeyPanel = () => {
       >
         set API key
       </Button>
-
       <Button
-        className="md:w-1/4"
         variant="destructive"
         onClick={() => {
           storeApiKey(null);
