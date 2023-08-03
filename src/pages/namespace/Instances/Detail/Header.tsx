@@ -35,7 +35,7 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
             className="font-normal"
             icon={data.instance.status}
           >
-            {data.instance.status}
+            <span className="max-lg:hidden">{data.instance.status}</span>
           </Badge>
         </h3>
         <div className="text-sm">
