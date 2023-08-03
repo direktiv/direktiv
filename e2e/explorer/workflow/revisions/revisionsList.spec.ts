@@ -18,7 +18,7 @@ test.afterEach(async () => {
 });
 
 const actionCreateRevisionAndTag = async (page: Page) => {
-  const name = faker.system.commonFileName("yaml");
+  const name = `${faker.internet.domainWord()}.yaml`;
   const {
     revisionsReponse: [firstRev],
   } = await createWorkflowWithThreeRevisions(namespace, name);
