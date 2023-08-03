@@ -1,7 +1,6 @@
 import ApiKey from "./ApiKey";
 import Broadcasts from "./Broadcasts";
 import { FC } from "react";
-import Input from "~/design/Input";
 import RegistriesList from "./Registries";
 import SecretsList from "./Secrets";
 import VariablesList from "./Variables";
