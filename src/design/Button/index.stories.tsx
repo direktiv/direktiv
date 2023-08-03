@@ -274,11 +274,3 @@ export const AsChild = () => (
     </Button>
   </div>
 );
-export const AsLabel = () => (
-  <div className="flex flex-wrap gap-5">
-    <Button asLabel>Button As Label</Button>
-    <Button asLabel variant="primary">
-      Primary Button as Label
-    </Button>
-  </div>
-);
