@@ -38,7 +38,7 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
 
   return (
     <div className="flex grow flex-col gap-5 pb-12">
-      <Toolbar copyText={workflowOutput} />
+      <Toolbar copyText={workflowOutput} variant="output" />
       <Editor
         value={workflowOutput}
         language="json"

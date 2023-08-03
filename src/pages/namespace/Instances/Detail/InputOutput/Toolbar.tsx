@@ -16,7 +16,10 @@ import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-const Toolbar: FC<{ copyText?: string }> = ({ copyText }) => {
+const Toolbar: FC<{ copyText?: string; variant: "input" | "output" }> = ({
+  copyText,
+  variant,
+}) => {
   const { t } = useTranslation();
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
@@ -39,7 +42,11 @@ const Toolbar: FC<{ copyText?: string }> = ({ copyText }) => {
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            {t("pages.instances.detail.inputOutput.copyOutput")}
+            {t(
+              variant === "input"
+                ? "pages.instances.detail.inputOutput.copyInput"
+                : "pages.instances.detail.inputOutput.copyOutput"
+            )}
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -58,9 +65,18 @@ const Toolbar: FC<{ copyText?: string }> = ({ copyText }) => {
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            {isMaximized
-              ? t("pages.instances.detail.inputOutput.minimizeOutput")
-              : t("pages.instances.detail.inputOutput.maximizeOutput")}
+            {isMaximized &&
+              variant === "input" &&
+              t("pages.instances.detail.inputOutput.minimizeInput")}
+            {isMaximized &&
+              variant === "output" &&
+              t("pages.instances.detail.inputOutput.minimizeOutput")}
+            {!isMaximized &&
+              variant === "input" &&
+              t("pages.instances.detail.inputOutput.maximizeInput")}
+            {!isMaximized &&
+              variant === "output" &&
+              t("pages.instances.detail.inputOutput.maximizeOutput")}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
