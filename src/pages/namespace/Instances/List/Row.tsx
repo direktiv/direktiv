@@ -161,6 +161,7 @@ const InstanceTableRow: FC<{
             <Badge
               data-testid={`instance-row-state-${instance.id}`}
               variant={statusToBadgeVariant(instance.status)}
+              icon={instance.status}
             >
               {instance.status}
             </Badge>
