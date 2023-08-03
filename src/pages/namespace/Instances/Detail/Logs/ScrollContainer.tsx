@@ -90,8 +90,8 @@ const ScrollContainer = () => {
           className={twMergeClsx(
             "absolute box-border flex w-full pr-10",
             "justify-center transition-all",
-            "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-5 aria-[hidden=true]:opacity-0",
-            "aria-[hidden=false]:bottom-10 aria-[hidden=false]:opacity-100"
+            "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-11 aria-[hidden=true]:opacity-0",
+            "aria-[hidden=false]:bottom-16 aria-[hidden=false]:opacity-100"
           )}
           aria-hidden={watch ? "true" : "false"}
         >
