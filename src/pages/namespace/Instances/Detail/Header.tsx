@@ -14,7 +14,7 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
   if (!data) return null;
 
   const link = pages.explorer.createHref({
-    path: data.workflow.path,
+    path: data.instance.as,
     namespace: data.namespace,
     subpage: "workflow",
   });
