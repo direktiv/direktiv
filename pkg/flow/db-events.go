@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -17,7 +18,8 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	// t := time.Now().Unix() + delay
 
 	// processed := delay == 0 //TODO:
-
+	ctx, end := traceAddtoEventlog(ctx)
+	defer end()
 	li := make([]*pkgevents.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
@@ -93,20 +95,32 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	if err != nil {
 		return err
 	}
+	var lifespan time.Duration
+	if ms.Lifespan != "" {
+		p, err := convertToParseDurationFormat(ms.Lifespan)
+		if err != nil {
+			return err
+		}
+		lifespan, err = time.ParseDuration(p)
+		// lifespan, err := duration.ParseISO8601(ms.Lifespan)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(ms.Events) > 0 && ms.Enabled {
 		fEv := &pkgevents.EventListener{
-			ID:                     uuid.New(),
-			CreatedAt:              time.Now(),
-			UpdatedAt:              time.Now(),
-			Deleted:                false,
-			NamespaceID:            nsID,
-			TriggerType:            pkgevents.StartSimple,
-			ListeningForEventTypes: []string{},
-			TriggerWorkflow:        file.ID,
-			Metadata:               file.Name(),
-			// LifespanOfReceivedEvents: ms.Lifespan, ???
-			// LifespanOfReceivedEvents: , TODO?
-			GlobGatekeepers: make(map[string]string),
+			ID:                       uuid.New(),
+			CreatedAt:                time.Now(),
+			UpdatedAt:                time.Now(),
+			Deleted:                  false,
+			NamespaceID:              nsID,
+			TriggerType:              pkgevents.StartSimple,
+			ListeningForEventTypes:   []string{},
+			TriggerWorkflow:          file.ID,
+			Metadata:                 file.Name(),
+			LifespanOfReceivedEvents: int(lifespan.Milliseconds()),
+			GlobGatekeepers:          make(map[string]string),
 		}
 		switch ms.Type {
 		case "default":
@@ -194,4 +208,24 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 	events.pubsub.NotifyEventListeners(namespace)
 
 	return nil
+}
+
+func convertToParseDurationFormat(iso8601Duration string) (string, error) {
+	if !strings.HasPrefix(iso8601Duration, "P") {
+		return "", fmt.Errorf("invalid ISO8601 duration format")
+	}
+
+	durationStr := ""
+
+	durationComponents := strings.Split(iso8601Duration[1:], "T")
+
+	for _, component := range durationComponents {
+		timeStr := strings.ReplaceAll(component, "H", "h")
+		timeStr = strings.ReplaceAll(timeStr, "M", "m")
+		timeStr = strings.ReplaceAll(timeStr, "S", "s")
+
+		durationStr += timeStr
+	}
+
+	return durationStr, nil
 }

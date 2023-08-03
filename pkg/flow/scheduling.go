@@ -108,7 +108,7 @@ func (engine *engine) sleepWakeup(data []byte) {
 
 func (engine *engine) queue(im *instanceMemory) {
 	namespace := im.instance.TelemetryInfo.NamespaceName
-	workflow := GetInodePath(im.instance.Instance.CalledAs)
+	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()

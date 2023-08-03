@@ -60,16 +60,16 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 }
 
 func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) error {
-	ctx := context.Background()
-
+	ctx := r.Context()
+	ctx, end := startIncomingEvent(ctx, "http")
+	defer end()
 	rcv.logger.Debugf("event for namespace %s (filter: %s)", name, filter)
 
 	m := protocol.NewMessageFromHttpRequest(r)
-	ev, err := binding.ToEvent(context.Background(), m)
+	ev, err := binding.ToEvent(ctx, m)
 	if err != nil {
 		return err
 	}
-
 	var ns *core.Namespace
 	err = rcv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, name)
@@ -80,7 +80,7 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 		return err
 	}
 
-	c := context.WithValue(context.Background(), EventingCtxKeySource, "eventing")
+	c := context.WithValue(ctx, EventingCtxKeySource, "eventing")
 
 	if filter != "" {
 		ce, err := ev.MarshalJSON()
@@ -88,7 +88,7 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 			return err
 		}
 
-		b, err := rcv.flow.execFilter(ctx, name, filter, ce)
+		b, err := rcv.flow.execFilter(c, name, filter, ce)
 		if err != nil {
 			return err
 		}

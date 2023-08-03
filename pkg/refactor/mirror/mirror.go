@@ -15,6 +15,7 @@ import (
 // and any other details).
 type Config struct {
 	NamespaceID uuid.UUID
+	RootName    string
 
 	URL                  string
 	GitRef               string
@@ -49,6 +50,7 @@ const (
 type Process struct {
 	ID          uuid.UUID
 	NamespaceID uuid.UUID
+	RootID      uuid.UUID
 
 	Status string
 	Typ    string
@@ -83,9 +85,6 @@ type Store interface {
 
 	// GetProcessesByNamespaceID gets all processes that belong to a namespace from the store.
 	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
-
-	// TODO: this need to be refactored.
-	SetVariable(ctx context.Context, variable *core.RuntimeVariable) error
 }
 
 // Manager launches and terminates mirroring processes.
@@ -96,7 +95,7 @@ type Manager interface {
 }
 
 // ConfigureWorkflowFunc is a hookup function the gets called for every new or updated workflow file.
-type ConfigureWorkflowFunc func(ctx context.Context, file *filestore.File) error
+type ConfigureWorkflowFunc func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
 
 // LogFunc is a hookup function the gets called to perform application logging.
 type LogFunc func(processID uuid.UUID, msg string, keysAndValues ...interface{})
@@ -113,6 +112,9 @@ type DefaultManager struct {
 	// fStore is to create mirrored files in the filestore.
 	fStore filestore.FileStore
 
+	// vStore is to create mirrored variables.
+	vStore core.RuntimeVariablesStore
+
 	// source is the source of the mirror. Typically, source is a git source.
 	source Source
 
@@ -125,6 +127,7 @@ func NewDefaultManager(
 	errLogFunc LogFunc,
 	store Store,
 	fStore filestore.FileStore,
+	vStore core.RuntimeVariablesStore,
 	source Source,
 	configWorkflowFunc ConfigureWorkflowFunc,
 ) *DefaultManager {
@@ -140,15 +143,36 @@ func NewDefaultManager(
 		errLogFunc:         errLogFunc,
 		store:              store,
 		fStore:             fStore,
+		vStore:             vStore,
 		source:             source,
 		configWorkflowFunc: configWorkflowFunc,
 	}
 }
 
 func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Config, processType string) (*Process, error) {
+	roots, err := d.fStore.GetAllRootsForNamespace(ctx, config.NamespaceID)
+	if err != nil {
+		return nil, fmt.Errorf("creating a new process, err: %w", err)
+	}
+
+	var root *filestore.Root
+
+	for idx := range roots {
+		if roots[idx].Name == config.RootName {
+			root = roots[idx]
+
+			break
+		}
+	}
+
+	if root == nil {
+		return nil, errors.New("failed to resolve root for mirroring")
+	}
+
 	process, err := d.store.CreateProcess(ctx, &Process{
 		ID:          uuid.New(),
 		NamespaceID: config.NamespaceID,
+		RootID:      root.ID,
 		Typ:         processType,
 		Status:      processStatusPending,
 	})
@@ -173,12 +197,12 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 			// FilterIgnoredFiles().
 
 			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
-			ReadRootFilesChecksums(d.fStore, config.NamespaceID).
-			CreateAllDirectories(d.fStore, config.NamespaceID).
-			CopyFilesToRoot(d.fStore, config.NamespaceID).
-			ConfigureWorkflows(d.configWorkflowFunc).
-			ParseDirektivVars(d.fStore, d.store, config.NamespaceID).
-			CropFilesAndDirectoriesInRoot(d.fStore, config.NamespaceID).
+			ReadRootFilesChecksums(d.fStore, process.RootID).
+			CreateAllDirectories(d.fStore, process.RootID).
+			CopyFilesToRoot(d.fStore, process.RootID).
+			ConfigureWorkflows(config.NamespaceID, d.configWorkflowFunc).
+			ParseDirektivVars(d.fStore, d.vStore, config.NamespaceID, process.RootID).
+			CropFilesAndDirectoriesInRoot(d.fStore, process.RootID).
 			DeleteTempDirectory().
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {

@@ -20,6 +20,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	newProcess := &mirror.Process{
 		ID:          uuid.New(),
 		NamespaceID: uuid.New(),
+		RootID:      uuid.New(),
 		Status:      "new",
 	}
 
@@ -64,6 +65,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	secondProcess := &mirror.Process{
 		ID:          uuid.New(),
 		NamespaceID: newProcess.NamespaceID,
+		RootID:      uuid.New(),
 		Status:      "new",
 	}
 

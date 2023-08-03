@@ -28,13 +28,22 @@ var (
 // FileStore manages different operations on files and roots.
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, id uuid.UUID) (*Root, error)
+	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*Root, error)
+
+	// GetRoot gets a root.
+	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
+	// GetAllRootsForNamespace list all roots for a namespace.
+	GetAllRootsForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*Root, error)
+
 	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
+
+	// ForRootNamespaceAndName returns a query object to do further queries on root.
+	ForRootNamespaceAndName(namespaceID uuid.UUID, rootName string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
@@ -52,7 +61,9 @@ type FileStore interface {
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
 // we create a dedicated root for every namespace.
 type Root struct {
-	ID uuid.UUID
+	ID          uuid.UUID
+	NamespaceID uuid.UUID
+	Name        string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -67,7 +78,7 @@ type RootQuery interface {
 	// param 'typ' indicates if file is of type directory or file.
 	// Param 'path' should not already exist and the parent directory of 'path' should exist.
 	// Param 'dataReader' should be nil when creating directories, and should be none nil when creating files.
-	CreateFile(ctx context.Context, path string, typ FileType, dataReader io.Reader) (*File, *Revision, error)
+	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, dataReader io.Reader) (*File, *Revision, error)
 
 	// ReadDirectory lists all files and directories in a path.
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)

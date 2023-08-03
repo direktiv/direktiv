@@ -209,7 +209,7 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	}
 	got[0].UpdatedAt = time.Now()
 	got[0].Deleted = true
-	errs := listeners.Update(context.Background(), []*events.EventListener{got[0]})
+	errs := listeners.UpdateOrDelete(context.Background(), []*events.EventListener{got[0]})
 	for _, err := range errs {
 		if err != nil {
 			t.Error(err)
@@ -221,21 +221,11 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if count != 1 {
+	if count != 0 {
 		t.Error("got wrong count")
 	}
-	if len(got) != 1 {
+	if len(got) != 0 {
 		t.Error("got wrong results")
-	}
-	if got[0].ID != eID {
-		t.Error("got wrong entry")
-	}
-	if !got[0].Deleted {
-		t.Error("entry was not updated")
-	}
-	err = listeners.Delete(context.Background())
-	if err != nil {
-		t.Error(err)
 	}
 	_, err = listeners.GetByID(context.Background(), eID)
 	if err == nil {

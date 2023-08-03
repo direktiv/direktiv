@@ -123,6 +123,20 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	return convertedList, count, nil
 }
 
+func (sl *sqlLogStore) DeleteOldLogs(ctx context.Context, t time.Time) error {
+	query := "DELETE FROM log_entries WHERE timestamp < $1"
+
+	res := sl.db.WithContext(ctx).Exec(
+		query,
+		t.UTC(),
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
 func composeQuery(limit, offset int, wEq []string) string {
 	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, source, type, entry
 	FROM log_entries `

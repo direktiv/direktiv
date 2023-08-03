@@ -2,6 +2,8 @@ package filestoresql
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -25,6 +27,11 @@ type RootQuery struct {
 	rootID       uuid.UUID
 	checksumFunc filestore.CalculateChecksumFunc
 	db           *gorm.DB
+	root         *filestore.Root
+
+	// alternative resolution method
+	nsID     uuid.UUID
+	rootName string
 }
 
 func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []string) error {
@@ -83,7 +90,7 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 		return nil, err
 	}
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Find(&list)
+	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Order("path ASC").Find(&list)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -140,6 +147,11 @@ func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, er
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.
 
 func (q *RootQuery) Delete(ctx context.Context) error {
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return err
+	}
+
 	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_roots WHERE id = ?`, q.rootID)
 	if res.Error != nil {
 		return res.Error
@@ -151,11 +163,19 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
+func computeAPIID(namespaceID uuid.UUID, path string) string {
+	hasher := sha256.New()
+	x := hasher.Sum([]byte(fmt.Sprintf("%s:%s", namespaceID.String(), path)))
+	s := base64.RawURLEncoding.EncodeToString(x)
+
+	return s
+}
+
 //nolint:ireturn
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
-		return nil, nil, filestore.ErrInvalidPathParameter
+		return nil, nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
 
 	// check if root exists.
@@ -186,11 +206,13 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// first, we need to create a file entry for this new file.
 	f := &filestore.File{
-		ID:     uuid.New(),
-		Path:   path,
-		Depth:  filestore.GetPathDepth(path),
-		Typ:    typ,
-		RootID: q.rootID,
+		ID:       uuid.New(),
+		Path:     path,
+		Depth:    filestore.GetPathDepth(path),
+		Typ:      typ,
+		RootID:   q.rootID,
+		APIID:    computeAPIID(q.root.NamespaceID, path),
+		MIMEType: mimeType,
 	}
 
 	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)
@@ -198,7 +220,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	if typ == filestore.FileTypeDirectory {
@@ -291,7 +313,8 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT id, path, depth, typ, root_id, created_at, updated_at
 					FROM filesystem_files
-					WHERE root_id=? AND depth=? AND path LIKE ?`,
+					WHERE root_id=? AND depth=? AND path LIKE ?
+					ORDER BY path ASC`,
 		q.rootID, filestore.GetPathDepth(path)+1, addTrailingSlash(path)+"%").
 		Find(&list)
 
@@ -339,6 +362,24 @@ func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]strin
 }
 
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
+	zeroUUID := (uuid.UUID{}).String()
+
+	if zeroUUID == q.rootID.String() {
+		n := &filestore.Root{}
+		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace_id", q.nsID).Where("name", q.rootName).First(n)
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("root not found, nsid: '%s', name: '%s', err: %w", q.nsID, q.rootName, filestore.ErrNotFound)
+		}
+		if res.Error != nil {
+			return res.Error
+		}
+
+		q.root = n
+		q.rootID = n.ID
+
+		return nil
+	}
+
 	n := &filestore.Root{}
 	res := q.db.WithContext(ctx).Table("filesystem_roots").Where("id", q.rootID).First(n)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -347,6 +388,8 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	if res.Error != nil {
 		return res.Error
 	}
+
+	q.root = n
 
 	return nil
 }

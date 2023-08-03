@@ -7,11 +7,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/cluster"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -105,9 +108,20 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	return srv, nil
 }
 
+type gormLogger struct {
+	*zap.SugaredLogger
+}
+
+func (g gormLogger) Write(p []byte) (n int, err error) {
+	g.Debugw(string(p), "component", "GORM")
+	return len(p), nil
+}
+
 //nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
+	// enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"
+	enableDeveloperMode := os.Getenv("ENABLE_DEVELOPER_MODE") == "true"
 
 	srv.sugar.Debug("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf, "direktiv/flow", "direktiv")
@@ -134,18 +148,31 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
+	jsonV := "json"
+	gormLogLevel := logger.Warn
+	if os.Getenv(util.DirektivDebug) == "true" {
+		gormLogLevel = logger.Info
+	}
+	gormLogger := log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags)
+	if os.Getenv(util.DirektivLogJSON) != jsonV {
+		gormLogger = log.New(os.Stdout, "\r\n", log.LstdFlags)
+	}
+	gormConf := &gorm.Config{
+		Logger: logger.New(
+			gormLogger,
+			logger.Config{
+				LogLevel:                  gormLogLevel,
+				IgnoreRecordNotFoundError: true,
+			},
+		),
+	}
+
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 		// Conn:                 edb.DB(),
-	}), &gorm.Config{
-		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
-			logger.Config{
-				LogLevel: logger.Info,
-			},
-		),
-	})
+	}), gormConf)
+
 	if err != nil {
 		return fmt.Errorf("creating gorm db driver, err: %w", err)
 	}
@@ -169,8 +196,9 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
-
-	fmt.Printf(">>>>>> dsn %s\n", db)
+	if enableDeveloperMode {
+		fmt.Printf(">>>>>> dsn %s\n", db)
+	}
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -239,39 +267,62 @@ func (srv *server) start(ctx context.Context) error {
 	noTx := &sqlTx{
 		res: srv.gormDB,
 	}
-	logger, logworker, closelogworker := logengine.NewCachedLogger(1024,
+	dbLogger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		noTx.DataStore().Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
 			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
 		},
 		srv.sugar.Errorf,
 	)
+
+	addTrace := func(ctx context.Context, toTags map[string]string) map[string]string {
+		span := trace.SpanFromContext(ctx)
+		tid := span.SpanContext().TraceID()
+		toTags["trace"] = tid.String()
+		return toTags
+	}
+	if enableDeveloperMode {
+		addTrace = func(ctx context.Context, toTags map[string]string) map[string]string {
+			_ = ctx
+			return toTags
+		}
+	}
+	var sugarBetterLogger logengine.BetterLogger
+	sugarBetterLogger = logengine.SugarBetterJSONLogger{
+		Sugar:        srv.sugar.Named("userLogger"),
+		AddTraceFrom: addTrace,
+	}
+	if os.Getenv(util.DirektivLogJSON) != "json" {
+		sugarBetterLogger = logengine.SugarBetterConsoleLogger{
+			Sugar:        srv.sugar.Named("userLogger"),
+			AddTraceFrom: addTrace,
+			RetainTags:   []string{"caller", "Caller"}, // if set to nil all tags will be retained
+		}
+	}
 	srv.logger = logengine.ChainedBetterLogger{
-		logengine.SugarBetterLogger{
-			Sugar: srv.sugar,
-			AddTraceFrom: func(ctx context.Context, toTags map[string]string) map[string]string {
-				span := trace.SpanFromContext(ctx)
-				tid := span.SpanContext().TraceID()
-				toTags["trace"] = tid.String()
-				return toTags
-			},
-		},
-		logger,
+		sugarBetterLogger,
+		dbLogger,
 	}
 
 	go func() {
 		logworker()
 	}()
 
-	cc := func(ctx context.Context, file *filestore.File) error {
+	cc := func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
 		_, router, err := getRouter(ctx, noTx, file)
 		if err != nil {
 			return err
 		}
 
-		err = srv.flow.configureWorkflowStarts(ctx, noTx, file.RootID, file, router, false)
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, nsID, file, router, false)
 		if err != nil {
 			return err
+		}
+
+		err = srv.flow.placeholdSecrets(ctx, noTx, nsID, file)
+		if err != nil {
+			srv.sugar.Debugf("Error setting up placeholder secrets: %v", err)
+			srv.flow.logger.Errorf(ctx, nsID, nil, "Error setting up placeholder secrets: %v", err)
 		}
 
 		return nil
@@ -300,6 +351,7 @@ func (srv *server) start(ctx context.Context) error {
 		},
 		noTx.DataStore().Mirror(),
 		noTx.FileStore(),
+		noTx.DataStore().RuntimeVariables(),
 		&mirror.GitSource{},
 		cc,
 	)
@@ -355,8 +407,24 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
+	var node *cluster.Node
+	// start pub sub
+	config := cluster.DefaultConfig()
+	node, err = cluster.NewNode(config, cluster.NewNodeFinderStatic(nil), srv.sugar.Named("cluster"))
+	if err != nil {
+		return err
+	}
 	srv.sugar.Info("Flow server started.")
 
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	// stop inidiviual components here
+	go func(n *cluster.Node) {
+		err = node.Stop()
+		if err != nil {
+			srv.sugar.Error("could not stop cluster node")
+		}
+	}(node)
 	wg.Wait()
 
 	closelogworker()

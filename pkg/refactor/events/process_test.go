@@ -83,7 +83,7 @@ func Test_Add_Get(t *testing.T) {
 	// test simple case
 	eID := uuid.New()
 	ev := newEvent("test-sub1", "test-topic", eID)
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
 	tr, err := waitForTrigger(t, resultsForEngine)
 	if err != nil {
 		t.Error("got no results")
@@ -94,7 +94,7 @@ func Test_Add_Get(t *testing.T) {
 	// test simple wait case
 	eID = uuid.New()
 	ev = newEvent("test-sub", "test-wait-topic", eID)
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
 	tr, err = waitForTrigger(t, resultsForEngine)
 	if err != nil {
 		t.Error("got no results")
@@ -109,7 +109,7 @@ func Test_Add_Get(t *testing.T) {
 	// test for event type that has no listener registered
 	id := uuid.New()
 	ev = newEvent("test-sub", "invalid-topic", id)
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
 	_, err = waitForTrigger(t, resultsForEngine)
 	if err == nil {
 		t.Error("got unexpected results")
@@ -121,8 +121,8 @@ func Test_Add_Get(t *testing.T) {
 	evA := newEvent("test-sub", "event-and-topic-a", idA)
 	idB := uuid.New()
 	evB := newEvent("test-sub", "event-and-topic-b", idB)
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*evA})
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*evB})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*evA}, func(template string, args ...interface{}) {})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*evB}, func(template string, args ...interface{}) {})
 	trAnd, err := waitForTrigger(t, resultsForEngine)
 	if err != nil {
 		t.Error("got no results")
@@ -151,7 +151,7 @@ func Test_Add_Get(t *testing.T) {
 	// test if andTrigger resets its state after being triggered
 	idB = uuid.New()
 	evB = newEvent("test-sub", "event-and-topic-b", idB)
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*evB})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*evB}, func(template string, args ...interface{}) {})
 	_, err = waitForTrigger(t, resultsForEngine)
 	if err == nil {
 		t.Error("expected no results")
@@ -161,7 +161,7 @@ func Test_Add_Get(t *testing.T) {
 	// the order of incoming type should not matter for andTrigger
 	idA = uuid.New()
 	evA = newEvent("test-sub", "event-and-topic-a", idA)
-	engine.ProcessEvents(context.Background(), ns, []event.Event{*evA})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*evA}, func(template string, args ...interface{}) {})
 	_, err = waitForTrigger(t, resultsForEngine)
 	if err != nil {
 		t.Error("expected results")

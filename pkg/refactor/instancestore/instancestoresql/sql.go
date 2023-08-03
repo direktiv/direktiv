@@ -15,7 +15,6 @@ const (
 	table               = "instances_v2"
 	fieldID             = "id"
 	fieldNamespaceID    = "namespace_id"
-	fieldWorkflowID     = "workflow_id"
 	fieldRevisionID     = "revision_id"
 	fieldRootInstanceID = "root_instance_id"
 	fieldCreatedAt      = "created_at"
@@ -23,7 +22,7 @@ const (
 	fieldEndedAt        = "ended_at"
 	fieldDeadline       = "deadline"
 	fieldStatus         = "status"
-	fieldCalledAs       = "called_as"
+	fieldWorkflowPath   = "workflow_path"
 	fieldErrorCode      = "error_code"
 	fieldInvoker        = "invoker"
 	fieldDefinition     = "definition"
@@ -44,15 +43,15 @@ const (
 
 var (
 	mostFields = []string{
-		fieldID, fieldNamespaceID, fieldWorkflowID, fieldRevisionID, fieldRootInstanceID,
-		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
+		fieldID, fieldNamespaceID, fieldRevisionID, fieldRootInstanceID,
+		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
-		fieldID, fieldNamespaceID, fieldWorkflowID, fieldRevisionID, fieldRootInstanceID,
-		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldCalledAs,
+		fieldID, fieldNamespaceID, fieldRevisionID, fieldRootInstanceID,
+		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
 	}
@@ -84,11 +83,10 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	idata := &instancestore.InstanceData{
 		ID:             args.ID,
 		NamespaceID:    args.NamespaceID,
-		WorkflowID:     args.WorkflowID,
 		RevisionID:     args.RevisionID,
 		RootInstanceID: args.RootInstanceID,
 		Status:         instancestore.InstanceStatusPending,
-		CalledAs:       args.CalledAs,
+		WorkflowPath:   args.WorkflowPath,
 		ErrorCode:      "",
 		Invoker:        args.Invoker,
 		Definition:     args.Definition,
@@ -106,16 +104,16 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	}
 
 	columns := []string{
-		fieldID, fieldNamespaceID, fieldWorkflowID, fieldRevisionID, fieldRootInstanceID,
-		fieldStatus, fieldCalledAs, fieldErrorCode, fieldInvoker, fieldDefinition,
+		fieldID, fieldNamespaceID, fieldRevisionID, fieldRootInstanceID,
+		fieldStatus, fieldWorkflowPath, fieldErrorCode, fieldInvoker, fieldDefinition,
 		fieldSettings, fieldDescentInfo, fieldTelemetryInfo, fieldRuntimeInfo,
 		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory,
 	}
 	query := generateInsertQuery(columns)
 
 	res := s.db.WithContext(ctx).Exec(query,
-		idata.ID, idata.NamespaceID, idata.WorkflowID, idata.RevisionID, idata.RootInstanceID,
-		idata.Status, idata.CalledAs, idata.ErrorCode, idata.Invoker, idata.Definition,
+		idata.ID, idata.NamespaceID, idata.RevisionID, idata.RootInstanceID,
+		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
 		idata.Settings, idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
 		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)
 	if res.Error != nil {
@@ -211,14 +209,14 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 	return nil
 }
 
-func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfID uuid.UUID) error {
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s > ?`, table, fieldInvoker, fieldWorkflowID, fieldCreatedAt)
+func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfPath string) error {
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s > ?`, table, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
 	s.logger.Debug(fmt.Sprintf("AssertNoParallelCron executing SQL query: %s", query))
 
 	var k int64
 	res := s.db.WithContext(ctx).Raw(
 		query,
-		instancestore.InvokerCron, wfID, time.Now().UTC().Add(-30*time.Second),
+		instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
 	).First(&k)
 	if res.Error != nil {
 		return res.Error

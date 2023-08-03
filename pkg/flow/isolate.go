@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/functions"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -63,7 +64,6 @@ type functionContainer struct {
 type functionWorkflow struct {
 	Name          string
 	Path          string
-	WorkflowID    string
 	Revision      string
 	InstanceID    string
 	NamespaceID   string
@@ -109,7 +109,7 @@ func (engine *engine) isKnativeFunction(functionsClient igrpc.FunctionsClient, a
 	a := make(map[string]string)
 	a[functions.ServiceHeaderName] = functions.SanitizeLabel(ar.Container.ID)
 	a[functions.ServiceHeaderNamespaceID] = functions.SanitizeLabel(ar.Workflow.NamespaceID)
-	a[functions.ServiceHeaderWorkflowID] = functions.SanitizeLabel(ar.Workflow.WorkflowID)
+	a[functions.ServiceHeaderWorkflowID] = functions.SanitizeLabel(bytedata.ShortChecksum(ar.Workflow.Path))
 
 	engine.sugar.Debugf("knative function search: %v", a)
 
@@ -140,7 +140,6 @@ func createKnativeFunction(functionsClient igrpc.FunctionsClient,
 		Info: &igrpc.FunctionsBaseInfo{
 			Name:          &ir.Container.ID,
 			Namespace:     &ir.Workflow.NamespaceID,
-			Workflow:      &ir.Workflow.WorkflowID,
 			Image:         &ir.Container.Image,
 			Cmd:           &ir.Container.Cmd,
 			Size:          &sz,

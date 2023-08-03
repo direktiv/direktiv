@@ -19,15 +19,21 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
-	store := datastoresql.NewSQLStore(db, "some_secret_key_").Mirror()
 
-	direktivRoot, err := fs.CreateRoot(context.Background(), uuid.New())
+	dStore := datastoresql.NewSQLStore(db, "some_secret_key_")
+	store := dStore.Mirror()
+	nsID := uuid.New()
+	rootID := uuid.New()
+	direktivRoot, err := fs.CreateRoot(context.Background(), rootID, nsID, "test")
 	if err != nil {
 		t.Fatalf("unepxected GetRoot() error = %v", err)
 	}
-
+	if direktivRoot.ID != rootID {
+		t.Fatal("Got wrong id back")
+	}
 	config, err := store.CreateConfig(context.Background(), &mirror.Config{
-		NamespaceID: direktivRoot.ID,
+		NamespaceID: nsID,
+		RootName:    "test",
 	})
 	if err != nil {
 		t.Fatalf("unepxected CreateConfig() error = %v", err)
@@ -41,7 +47,7 @@ func TestExecuteMirroringProcess(t *testing.T) {
 		},
 	}
 
-	manager := mirror.NewDefaultManager(nil, nil, store, fs, source, nil)
+	manager := mirror.NewDefaultManager(nil, nil, store, fs, dStore.RuntimeVariables(), source, nil)
 
 	_, err = manager.StartInitialMirroringProcess(context.Background(), config)
 	if err != nil {

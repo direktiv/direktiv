@@ -122,4 +122,59 @@ describe('Test send events', () => {
 
     })
 
+    it(`bad filter value applied on the eventlog`, async () => {
+        //&filter.field=TEXT&filter.type=CONTAINS&filter.val=dfda&filter.field=CREATED&filter.type=AFTER&filter.val=2023-07-11T22%3A00%3A00.000Z
+        var workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/events?limit=10&offset=0&filter.field=TEXT&filter.type=CONTAINS&filter.val=dfda`)
+            .send()
+
+
+        expect(workflowEventResponse.statusCode).toEqual(200)
+
+        // test there are the four created
+        expect(workflowEventResponse.body.events.pageInfo.total).toEqual(0)
+
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([])
+        )
+
+    })
+    
+    it(`should filter the eventlog by TEXT`, async () => {
+        var workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/events?limit=10&offset=0&filter.field=TEXT&filter.type=CONTAINS&filter.val=world`)
+            .send()
+
+
+        expect(workflowEventResponse.statusCode).toEqual(200)
+
+        // test there are the four created
+        expect(workflowEventResponse.body.events.pageInfo.total).toEqual(1)
+
+        // test that all types are in
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'testerJSON'
+                })
+            ])
+        )
+    })
+    it(`should filter the eventlog by TYPE`, async () => {
+        var workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/events?limit=10&offset=0&filter.field=TYPE&filter.type=CONTAINS&filter.val=testerJSON`)
+            .send()
+
+
+        expect(workflowEventResponse.statusCode).toEqual(200)
+
+        // test there are the four created
+        expect(workflowEventResponse.body.events.pageInfo.total).toEqual(1)
+
+        // test that all types are in
+        expect(workflowEventResponse.body.events.results).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'testerJSON'
+                })
+            ])
+        )
+    })
 })

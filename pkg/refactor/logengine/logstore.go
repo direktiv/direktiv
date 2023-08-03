@@ -24,6 +24,7 @@ type LogStore interface {
 	// - Passing a log_instance_call_path will return all logs which have a callpath with the prefix as the passed log_instance_call_path value.
 	// when passing log_instance_call_path the root_instance_id SHOULD be passed to optimize the performance of the query.
 	Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*LogEntry, int, error)
+	DeleteOldLogs(ctx context.Context, t time.Time) error
 }
 
 // Represents an individual log entry.

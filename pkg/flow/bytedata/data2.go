@@ -23,18 +23,23 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		Attributes: []string{},
 		Oid:        "", // NOTE: this is empty string for now for compatibility with end-to-end tests f.ID.String(),
 		ReadOnly:   false,
+		MimeType:   f.MIMEType,
 	}
 	if node.Name == "/" {
 		node.Name = ""
 	}
+
 	switch node.Type {
 	case string(filestore.FileTypeDirectory):
 		node.ExpandedType = string(filestore.FileTypeDirectory)
+		node.MimeType = ""
 	case string(filestore.FileTypeWorkflow):
 		node.ExpandedType = string(filestore.FileTypeWorkflow)
+		node.MimeType = "application/direktiv"
 	default:
 		node.ExpandedType = string(filestore.FileTypeFile)
 	}
+
 	return node
 }
 
@@ -45,6 +50,15 @@ func ConvertFilesToGrpcNodeList(list []*filestore.File) []*grpc.Node {
 	}
 
 	return result
+}
+
+func ConvertRevisionToGrpcFile(file *filestore.File, rev *filestore.Revision) *grpc.File {
+	return &grpc.File{
+		Name:      rev.ID.String(),
+		CreatedAt: timestamppb.New(rev.CreatedAt),
+		Hash:      rev.Checksum,
+		MimeType:  file.MIMEType,
+	}
 }
 
 func ConvertRevisionToGrpcRevision(rev *filestore.Revision) *grpc.Revision {
@@ -113,7 +127,8 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) 
 
 func ConvertSecretToGrpcSecret(secret *core.Secret) *grpc.Secret {
 	return &grpc.Secret{
-		Name: secret.Name,
+		Name:        secret.Name,
+		Initialized: secret.Data != nil,
 	}
 }
 
@@ -150,7 +165,7 @@ func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Inst
 		CreatedAt:    timestamppb.New(instance.Instance.CreatedAt),
 		UpdatedAt:    timestamppb.New(instance.Instance.UpdatedAt),
 		Id:           instance.Instance.ID.String(),
-		As:           instance.Instance.CalledAs,
+		As:           instance.Instance.WorkflowPath,
 		Status:       instance.Instance.Status.String(),
 		ErrorCode:    instance.Instance.ErrorCode,
 		ErrorMessage: string(instance.Instance.ErrorMessage),
@@ -166,7 +181,7 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 			CreatedAt:    timestamppb.New(instance.CreatedAt),
 			UpdatedAt:    timestamppb.New(instance.UpdatedAt),
 			Id:           instance.ID.String(),
-			As:           instance.CalledAs,
+			As:           instance.WorkflowPath,
 			Status:       instance.Status.String(),
 			ErrorCode:    instance.ErrorCode,
 			ErrorMessage: string(instance.ErrorMessage),

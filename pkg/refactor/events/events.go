@@ -75,7 +75,7 @@ type EventListenerStore interface {
 	// adds a EventListener to the storage.
 	Append(ctx context.Context, listener *EventListener) error
 	// updates the EventListeners.
-	Update(ctx context.Context, listener []*EventListener) []error
+	UpdateOrDelete(ctx context.Context, listener []*EventListener) []error
 	GetByID(ctx context.Context, id uuid.UUID) (*EventListener, error)
 	GetAll(ctx context.Context) ([]*EventListener, error)
 	// return EventListeners for a given namespace with the total row count for pagination.

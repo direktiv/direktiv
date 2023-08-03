@@ -81,16 +81,18 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	go func() {
 		// logs garbage collector
-		// ctx := context.Background()
-		// TODO: remove ent
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
-			// t := time.Now().Add(time.Hour * -24)
-			// _, err := clients.LogMsg.Delete().Where(entlog.TLT(t)).Exec(ctx)
-			// if err != nil {
-			// 	flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
-			// }
+			t := time.Now().Add(time.Hour * -24)
+			flow.sugar.Error(fmt.Sprintf("deleting all logs since %v", t))
+			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
+				return tx.DataStore().Logs().DeleteOldLogs(context.TODO(), t)
+			})
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
+				continue
+			}
 		}
 	}()
 

@@ -8,7 +8,7 @@ const cliExecutable = "direktivctl"
 
 const {exec} = require('child_process');
 const fs = require('fs');
-const filepath = "/tests/jest/cli/mockdata/direktiv-project"
+const filepath = "/tests/cli/mockdata/direktiv-project"
 
 const prefix = common.config.getDirektivHost().includes("http") 
 ? `-a ${common.config.getDirektivHost()} -t password`
@@ -24,11 +24,11 @@ describe('Test the direktiv-cli-tool', () => {
         expect(createResponse.statusCode).toEqual(200)
     })
     it(`test info show ns`, async () => {
-        assertStdErrContainsString(`${filepath}`, "info", `namespace: ${namespaceName}`)
+        assertStdErrContainsString(`${filepath}`, "workflows info", `namespace: ${namespaceName}`)
     })
     it(`test info project exists`, async () => {
-        assertStdErrContainsString(`${filepath}`, "info", `namespace: ${namespaceName}`)
-        assertStdErrContainsString(`${filepath}`, "info", "direktiv-project")
+        assertStdErrContainsString(`${filepath}`, "workflows info", `namespace: ${namespaceName}`)
+        assertStdErrContainsString(`${filepath}`, "workflows info", "direktiv-project")
     })
     it(`test push project abs`, async () => {
         const filename = "simplewf"

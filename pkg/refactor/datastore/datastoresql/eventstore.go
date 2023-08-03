@@ -81,19 +81,19 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 	for i := 0; i < len(keyAndValues); i += 2 {
 		v := keyAndValues[i+1]
 		if keyAndValues[i] == "created_before" {
-			qs = append(qs, " and created_at > $%v")
+			qs = append(qs, " and created_at < $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "created_after" {
-			qs = append(qs, " and created_at <= $%v")
+			qs = append(qs, " and created_at >= $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "received_before" {
-			qs = append(qs, " and received_at > $%v")
+			qs = append(qs, " and received_at < $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "received_after" {
-			qs = append(qs, " and received_at <= $%v")
+			qs = append(qs, " and received_at >= $%v")
 			qv = append(qv, v)
 		}
 		if keyAndValues[i] == "event_contains" {
@@ -282,7 +282,7 @@ func convertListeners(res []*gormEventListener, conv []*events.EventListener) ([
 }
 
 func (s *sqlEventTopicsStore) Delete(ctx context.Context, eventListenerID uuid.UUID) error {
-	q := "DELETE FROM event_topics WHERE eventListenerID = $1;"
+	q := "DELETE FROM event_topics WHERE event_listener_id = $1;"
 	tx := s.db.WithContext(ctx).Exec(q, eventListenerID)
 	if tx.Error != nil {
 		return tx.Error
@@ -412,7 +412,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	if offet > 0 {
 		q += fmt.Sprintf("OFFSET %v", offet)
 	}
-	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 ;`
+	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 and deleted = false;`
 	var count int
 	tx := s.db.WithContext(ctx).Raw(qCount, namespace).Scan(&count)
 	if tx.Error != nil {
@@ -468,7 +468,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
-	FROM event_listeners `
+	FROM event_listeners Where deleted = false`
 	q += " ORDER BY created_at DESC;"
 	res := make([]*gormEventListener, 0)
 	tx := s.db.WithContext(ctx).Raw(q).Scan(&res)
@@ -542,13 +542,21 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	}, nil
 }
 
-func (s *sqlEventListenerStore) Update(ctx context.Context, listeners []*events.EventListener) []error {
+func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []*events.EventListener) []error {
 	q := `UPDATE event_listeners SET
 	 updated_at = $1 , deleted = $2, received_events = $3 WHERE id = $4;`
 
 	errs := make([]error, len(listeners))
 	for i := range listeners {
 		e := listeners[i]
+		if e.Deleted {
+			err := s.DeleteByID(ctx, e.ID)
+			if err != nil {
+				errs[i] = err
+			}
+
+			continue
+		}
 		b, err := json.Marshal(e.ReceivedEventsForAndTrigger)
 		if err != nil {
 			errs[i] = err

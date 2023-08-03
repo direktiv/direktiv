@@ -33,6 +33,11 @@ func Checksum(x interface{}) string {
 	return hash
 }
 
+func ShortChecksum(x interface{}) string {
+	s := Checksum(x)
+	return s[:8]
+}
+
 // ComputeHash is a shortcut to calculate a hash for a byte slice.
 func ComputeHash(data []byte) (string, error) {
 	hasher := sha256.New()

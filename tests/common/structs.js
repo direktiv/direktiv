@@ -37,6 +37,7 @@ const nodeObject = {
     oid: "",
     createdAt: expect.stringMatching(regex.timestampRegex),
     updatedAt: expect.stringMatching(regex.timestampRegex),
+    mimeType: expect.anything(),
 }
 
 export default {errorResponse, pageInfoObject, namespaceObject, nodeObject, unauthorizedResponse}

@@ -39,25 +39,34 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
+	ri := core.RootsInfo{
+		Default: core.RootInfo{
+			Name:   defaultRootName,
+			RootID: uuid.New(),
+		},
+	}
+
 	ns, err = tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:   req.GetName(),
-		Config: core.DefaultNamespaceConfig,
+		Name:      req.GetName(),
+		Config:    core.DefaultNamespaceConfig,
+		RootsInfo: ri.Marshal(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ns.ID)
+	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID, defaultRootName)
 	if err != nil {
 		return nil, err
 	}
-	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, nil)
+	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	mirConfig, err := tx.DataStore().Mirror().CreateConfig(ctx, &mirror.Config{
 		NamespaceID:          ns.ID,
+		RootName:             defaultRootName,
 		GitRef:               settings.Ref,
 		URL:                  settings.Url,
 		PublicKey:            settings.PublicKey,

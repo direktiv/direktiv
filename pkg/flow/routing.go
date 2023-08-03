@@ -175,15 +175,15 @@ func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestor
 }
 
 func (engine *engine) getAmbiguousFile(ctx context.Context, tx *sqlTx, ns *database.Namespace, path string) (*filestore.File, error) {
-	file, err := tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path)
+	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, path)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
 			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
 				var err2 error
-				file, err2 = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path+".yaml")
+				file, err2 = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, path+".yaml")
 				if err2 != nil {
 					if errors.Is(err2, filestore.ErrNotFound) {
-						file, err2 = tx.FileStore().ForRootID(ns.ID).GetFile(ctx, path+".yml")
+						file, err2 = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, path+".yml")
 						if err2 != nil {
 							if !errors.Is(err2, filestore.ErrNotFound) {
 								err = err2
@@ -380,7 +380,13 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	ns, err := tx.DataStore().Namespaces().GetByID(ctx, file.RootID)
+	root, err := tx.FileStore().GetRoot(ctx, file.RootID)
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
+
+	ns, err := tx.DataStore().Namespaces().GetByID(ctx, root.NamespaceID)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -395,7 +401,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.ID)
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return

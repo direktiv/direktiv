@@ -173,6 +173,10 @@ const (
 	Flow_MirrorActivityLogs_FullMethodName            = "/direktiv_flow.Flow/MirrorActivityLogs"
 	Flow_MirrorActivityLogsParcels_FullMethodName     = "/direktiv_flow.Flow/MirrorActivityLogsParcels"
 	Flow_CancelMirrorActivity_FullMethodName          = "/direktiv_flow.Flow/CancelMirrorActivity"
+	Flow_File_FullMethodName                          = "/direktiv_flow.Flow/File"
+	Flow_CreateFile_FullMethodName                    = "/direktiv_flow.Flow/CreateFile"
+	Flow_UpdateFile_FullMethodName                    = "/direktiv_flow.Flow/UpdateFile"
+	Flow_NamespaceLint_FullMethodName                 = "/direktiv_flow.Flow/NamespaceLint"
 )
 
 // FlowClient is the client API for Flow service.
@@ -338,6 +342,10 @@ type FlowClient interface {
 	MirrorActivityLogs(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (*MirrorActivityLogsResponse, error)
 	MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error)
 	CancelMirrorActivity(ctx context.Context, in *CancelMirrorActivityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	File(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*FileResponse, error)
+	CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error)
+	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error)
+	NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error)
 }
 
 type flowClient struct {
@@ -2682,6 +2690,42 @@ func (c *flowClient) CancelMirrorActivity(ctx context.Context, in *CancelMirrorA
 	return out, nil
 }
 
+func (c *flowClient) File(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*FileResponse, error) {
+	out := new(FileResponse)
+	err := c.cc.Invoke(ctx, Flow_File_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error) {
+	out := new(CreateFileResponse)
+	err := c.cc.Invoke(ctx, Flow_CreateFile_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error) {
+	out := new(UpdateFileResponse)
+	err := c.cc.Invoke(ctx, Flow_UpdateFile_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error) {
+	out := new(NamespaceLintResponse)
+	err := c.cc.Invoke(ctx, Flow_NamespaceLint_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -2845,6 +2889,10 @@ type FlowServer interface {
 	MirrorActivityLogs(context.Context, *MirrorActivityLogsRequest) (*MirrorActivityLogsResponse, error)
 	MirrorActivityLogsParcels(*MirrorActivityLogsRequest, Flow_MirrorActivityLogsParcelsServer) error
 	CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error)
+	File(context.Context, *FileRequest) (*FileResponse, error)
+	CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error)
+	UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error)
+	NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -3310,6 +3358,18 @@ func (UnimplementedFlowServer) MirrorActivityLogsParcels(*MirrorActivityLogsRequ
 }
 func (UnimplementedFlowServer) CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelMirrorActivity not implemented")
+}
+func (UnimplementedFlowServer) File(context.Context, *FileRequest) (*FileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method File not implemented")
+}
+func (UnimplementedFlowServer) CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateFile not implemented")
+}
+func (UnimplementedFlowServer) UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
+}
+func (UnimplementedFlowServer) NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NamespaceLint not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -6236,6 +6296,78 @@ func _Flow_CancelMirrorActivity_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Flow_File_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).File(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_File_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).File(ctx, req.(*FileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_CreateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).CreateFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_CreateFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).CreateFile(ctx, req.(*CreateFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).UpdateFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_UpdateFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).UpdateFile(ctx, req.(*UpdateFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_NamespaceLint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NamespaceLintRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).NamespaceLint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_NamespaceLint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).NamespaceLint(ctx, req.(*NamespaceLintRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -6690,6 +6822,22 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelMirrorActivity",
 			Handler:    _Flow_CancelMirrorActivity_Handler,
+		},
+		{
+			MethodName: "File",
+			Handler:    _Flow_File_Handler,
+		},
+		{
+			MethodName: "CreateFile",
+			Handler:    _Flow_CreateFile_Handler,
+		},
+		{
+			MethodName: "UpdateFile",
+			Handler:    _Flow_UpdateFile_Handler,
+		},
+		{
+			MethodName: "NamespaceLint",
+			Handler:    _Flow_NamespaceLint_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

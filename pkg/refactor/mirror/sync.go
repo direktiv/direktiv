@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -138,8 +139,8 @@ func (j *mirroringJob) CreateSourceFilesList() *mirroringJob {
 
 		relativePath := strings.TrimPrefix(path, j.distDirectory)
 
-		if strings.Contains(relativePath, ".git") {
-			return nil
+		if _, err := filestore.SanitizePath(relativePath); err != nil {
+			return nil //nolint:nilerr
 		}
 		paths = append(paths, relativePath)
 
@@ -214,7 +215,7 @@ func (j *mirroringJob) FilterIgnoredFiles() *mirroringJob {
 
 // ParseDirektivVars tries to parse special direktiv files naming convention to create both namespace and workflow
 // files.
-func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, vStore core.RuntimeVariablesStore, namespaceID, rootID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -235,7 +236,8 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 
 			return j
 		}
-		err = store.SetVariable(j.ctx,
+
+		_, err = vStore.Set(j.ctx,
 			&core.RuntimeVariable{
 				NamespaceID: namespaceID,
 				Name:        pk[1],
@@ -251,7 +253,7 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 
 	for _, pk := range workflowVarKeys {
 		path := j.distDirectory + pk[0] + "." + pk[1]
-		workflowFile, err := fStore.ForRootID(namespaceID).GetFile(j.ctx, pk[0])
+		workflowFile, err := fStore.ForRootID(rootID).GetFile(j.ctx, pk[0])
 		if errors.Is(err, filestore.ErrNotFound) {
 			continue
 		}
@@ -273,15 +275,16 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 
 			return j
 		}
-		err = store.SetVariable(j.ctx,
+		_, err = vStore.Set(j.ctx,
 			&core.RuntimeVariable{
-				WorkflowID: workflowFile.ID,
-				Name:       pk[1],
-				MimeType:   mType.String(),
-				Data:       data,
+				NamespaceID:  namespaceID,
+				WorkflowPath: workflowFile.Path,
+				Name:         pk[1],
+				MimeType:     mType.String(),
+				Data:         data,
 			})
 		if err != nil {
-			j.err = fmt.Errorf("save namespace variable, path: %s, err: %w", path, err)
+			j.err = fmt.Errorf("save workflow variable, path: %s, err: %w", path, err)
 
 			return j
 		}
@@ -291,7 +294,7 @@ func (j *mirroringJob) ParseDirektivVars(fStore filestore.FileStore, store Store
 }
 
 // CopyFilesToRoot copies files to the filestore.
-func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, rootID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -314,6 +317,8 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			continue
 		}
 
+		mimeType := http.DetectContentType(data)
+
 		fileReader := bytes.NewReader(data)
 
 		if !pathDoesExist {
@@ -321,7 +326,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 				typ = filestore.FileTypeWorkflow
 			}
-			file, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, path, typ, fileReader)
+			file, _, err := fStore.ForRootID(rootID).CreateFile(j.ctx, path, typ, mimeType, fileReader)
 			if err != nil {
 				j.err = fmt.Errorf("filestore create file, path: %s, err: %w", path, err)
 
@@ -336,7 +341,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 			continue
 		}
 
-		file, err := fStore.ForRootID(namespaceID).GetFile(j.ctx, path)
+		file, err := fStore.ForRootID(rootID).GetFile(j.ctx, path)
 		if err != nil {
 			j.err = fmt.Errorf("get file from root, path: %s, err: %w", path, err)
 
@@ -360,7 +365,7 @@ func (j *mirroringJob) CopyFilesToRoot(fStore filestore.FileStore, namespaceID u
 }
 
 // ConfigureWorkflows calls a function hook for every changed or new workflow.
-func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *mirroringJob {
+func (j *mirroringJob) ConfigureWorkflows(nsID uuid.UUID, configureFunc ConfigureWorkflowFunc) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -369,7 +374,7 @@ func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *
 	}
 
 	for _, file := range j.changedOrNewWorkflows {
-		err := configureFunc(j.ctx, file)
+		err := configureFunc(j.ctx, nsID, file)
 		if err != nil {
 			j.err = fmt.Errorf("configure workflow, path: %s, err: %w", file.Path, err)
 
@@ -382,12 +387,12 @@ func (j *mirroringJob) ConfigureWorkflows(configureFunc ConfigureWorkflowFunc) *
 }
 
 // CropFilesAndDirectoriesInRoot crops the filestore to remove all files and directories that don't exist in the mirror.
-func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore, rootID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
 
-	err := fStore.ForRootID(namespaceID).CropFilesAndDirectories(j.ctx, j.sourcedPaths)
+	err := fStore.ForRootID(rootID).CropFilesAndDirectories(j.ctx, j.sourcedPaths)
 	if err != nil {
 		j.err = fmt.Errorf("filestore crop to paths, err: %w", err)
 
@@ -399,12 +404,12 @@ func (j *mirroringJob) CropFilesAndDirectoriesInRoot(fStore filestore.FileStore,
 
 // ReadRootFilesChecksums reads the rootChecksums param which helps to prevent copying none-changed files
 // to the filestore.
-func (j *mirroringJob) ReadRootFilesChecksums(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) ReadRootFilesChecksums(fStore filestore.FileStore, rootID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
 
-	checksums, err := fStore.ForRootID(namespaceID).CalculateChecksumsMap(j.ctx)
+	checksums, err := fStore.ForRootID(rootID).CalculateChecksumsMap(j.ctx)
 	if err != nil {
 		j.err = fmt.Errorf("filestore calculate checksums map, err: %w", err)
 
@@ -417,7 +422,7 @@ func (j *mirroringJob) ReadRootFilesChecksums(fStore filestore.FileStore, namesp
 }
 
 // CreateAllDirectories creates all the directories that appears in the mirror.
-func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespaceID uuid.UUID) *mirroringJob {
+func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, rootID uuid.UUID) *mirroringJob {
 	if j.err != nil {
 		return j
 	}
@@ -436,7 +441,7 @@ func (j *mirroringJob) CreateAllDirectories(fStore filestore.FileStore, namespac
 				continue
 			}
 
-			_, _, err := fStore.ForRootID(namespaceID).CreateFile(j.ctx, d, filestore.FileTypeDirectory, nil)
+			_, _, err := fStore.ForRootID(rootID).CreateFile(j.ctx, d, filestore.FileTypeDirectory, "", nil)
 
 			// check if it is a fatal error.
 			if err != nil && !errors.Is(err, filestore.ErrPathAlreadyExists) {
