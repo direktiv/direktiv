@@ -102,24 +102,30 @@ export const ButtonSizes = () => (
   </div>
 );
 
-export const LabelButtons = () => (
+export const AsChildButtons = () => (
   <div className="flex flex-col gap-4">
-    <p>No Click effects on label</p>
+    <p>No Click, Hover effects on child components except Anchor</p>
     <ButtonBar>
-      <Button asLabel size="lg">
-        Labels
+      <Button asChild size="lg">
+        <label>Label1</label>
       </Button>
-      <Button asLabel size="lg">
-        Mid-1
+      <Button asChild size="lg">
+        <label>Label2</label>
       </Button>
-      <Button asLabel size="lg">
-        Mid-2
+      <Button asChild size="lg">
+        <a href="/">Link</a>
       </Button>
-      <Button asLabel size="lg">
+      <Button size="lg">
         <GitBranchIcon /> Review
       </Button>
-      <Button asLabel size="lg">
+      <Button size="lg">
         <SearchIcon /> Search
+      </Button>
+      <Button asChild size="lg">
+        <span>Span Tag</span>
+      </Button>
+      <Button variant="primary" asChild size="lg">
+        <span>No Hover</span>
       </Button>
     </ButtonBar>
   </div>
@@ -148,7 +154,12 @@ https://github.com/radix-ui/primitives/discussions/560
 TLDR; It could technically solved, but all state attributes would need to be 
 namespaced which would have a DX impact that is not worth it for now.
              */}
-            <div>
+
+            {/* 
+                add !border-0 class in wrapper so trigger wouldn't have border for both button and its wrapper(div)
+            */}
+
+            <div className="!border-0">
               <Toggle aria-label="Toggle italic">
                 <HelpCircle />
               </Toggle>
@@ -164,7 +175,7 @@ namespaced which would have a DX impact that is not worth it for now.
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
+            <div className="!border-0">
               <Button variant="outline" aria-label="Toggle italic">
                 <Bug /> Button with tooltip
               </Button>

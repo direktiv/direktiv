@@ -21,45 +21,39 @@ export type ButtonProps = {
   circle?: boolean;
   block?: boolean;
   icon?: boolean;
-  asLabel?: boolean;
 } & AsChildOrLoading;
 
 const Button = React.forwardRef<
-  HTMLButtonElement & HTMLLabelElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> &
-    React.LabelHTMLAttributes<HTMLLabelElement> &
-    ButtonProps
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & ButtonProps
 >(
   (
     {
+      children,
       className,
       variant,
       size,
       circle,
-      children,
       disabled,
       block,
       loading,
       icon,
       asChild,
-      asLabel,
       ...props
     },
     ref
   ) => {
-    let Comp;
-    if (asLabel) {
-      Comp = "label";
-    } else if (asChild) {
-      Comp = Slot;
-    } else {
-      Comp = "button";
-    }
+    const Comp = asChild ? Slot : "button";
+    const isAnchor = React.Children.toArray(children).some(
+      (child) => React.isValidElement(child) && child.type === "a"
+    );
+    // In case of asChild, if a child is not an anchor(e.g, label, span, etc) we are going to remove th click & hover effect
+    const isNotAChildAnchor = asChild && !isAnchor;
+
     return (
       <Comp
         className={twMergeClsx(
-          !asLabel && "active:scale-95",
-          "inline-flex items-center justify-center text-sm font-medium transition-colors ",
+          "inline-flex items-center justify-center text-sm font-medium transition-colors active:scale-95",
           "focus:outline-none focus:ring-2 focus:ring-gray-4 focus:ring-offset-2 focus:ring-offset-gray-1",
           "dark:focus:ring-gray-dark-4 dark:focus:ring-offset-gray-dark-1",
           "disabled:pointer-events-none disabled:opacity-50",
@@ -98,6 +92,7 @@ const Button = React.forwardRef<
           circle && "rounded-full",
           !circle && "rounded-md",
           block && "w-full",
+          isNotAChildAnchor && "pointer-events-none active:scale-100",
           className
         )}
         disabled={disabled || loading}
