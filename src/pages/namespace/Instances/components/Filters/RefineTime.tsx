@@ -50,18 +50,10 @@ const RefineTime = ({
               type="time"
               step={1}
               value={time}
-              onChange={(event) => {
-                setTime(event.target.value);
-              }}
+              onChange={(event) => setTime(event.target.value)}
               onKeyDown={handleKeyDown}
             />
-            <Button
-              icon
-              variant="ghost"
-              onClick={() => {
-                setTimeOnDate();
-              }}
-            >
+            <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
               <Check />
             </Button>
           </InputWithButton>
