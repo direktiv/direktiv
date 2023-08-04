@@ -27,7 +27,9 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
             "lg:grid-rows-[calc(100vh-12rem)]"
           )}
         >
-          <Card className="relative grid p-5">{logComponent}</Card>
+          <Card className="relative grid grid-rows-[auto,1fr,auto] border p-5">
+            {logComponent}
+          </Card>
         </div>
       );
     case "diagram":
