@@ -66,7 +66,7 @@ export const useEventSource = ({
 
 /**
  * react hook that acts as a proxy for useEventSource
- * and implements schema validation and on top of it
+ * and implements schema validation on top of it
  */
 export const useStreaming = <T>({
   url,
