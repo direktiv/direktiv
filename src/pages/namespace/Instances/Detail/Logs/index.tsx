@@ -1,11 +1,4 @@
-import {
-  Bug,
-  Loader2,
-  Maximize2,
-  Minimize2,
-  ScrollText,
-  WrapText,
-} from "lucide-react";
+import { Bug, Loader2, Maximize2, Minimize2, ScrollText } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -17,7 +10,6 @@ import {
   useLogsPreferencesActions,
   useLogsPreferencesMaximizedPanel,
   useLogsPreferencesVerboseLogs,
-  useLogsPreferencesWordWrap,
 } from "~/util/store/logs";
 
 import Button from "~/design/Button";
@@ -33,8 +25,7 @@ import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
   const { t } = useTranslation();
-  const { setVerboseLogs, setWordWrap, setMaximizedPanel } =
-    useLogsPreferencesActions();
+  const { setVerboseLogs, setMaximizedPanel } = useLogsPreferencesActions();
 
   const instanceId = useInstanceId();
   const filters = useFilters();
@@ -45,7 +36,6 @@ const LogsPanel = () => {
   });
 
   // get user preferences
-  const wordWrap = useLogsPreferencesWordWrap();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const verboseLogs = useLogsPreferencesVerboseLogs();
 
@@ -86,7 +76,7 @@ const LogsPanel = () => {
                 {t("pages.instances.detail.logs.tooltips.verbose")}
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
+            {/* <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
                   <Toggle
@@ -104,7 +94,7 @@ const LogsPanel = () => {
               <TooltipContent>
                 {t("pages.instances.detail.logs.tooltips.wordWrap")}
               </TooltipContent>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
