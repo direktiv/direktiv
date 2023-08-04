@@ -38,7 +38,6 @@ const Header = () => {
           </h3>
           <Badge
             variant={statusToBadgeVariant(data.instance.status)}
-            className="font-normal"
             icon={data.instance.status}
           >
             {data.instance.status}
