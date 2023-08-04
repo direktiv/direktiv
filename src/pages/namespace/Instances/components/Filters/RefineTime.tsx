@@ -21,7 +21,7 @@ const RefineTime = ({
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
 
-    if (!hr || !min || !sec) {
+    if (hr === undefined || min == undefined || sec === undefined) {
       console.error("Invalid time string in setTimeOnDate");
       return;
     }
