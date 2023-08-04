@@ -35,6 +35,14 @@ const ScrollContainer = () => {
     count: logData?.results.length ?? 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
+    /**
+     * overscan is the number of items to render above and below
+     * the visible window. More items = less flickering when
+     * scrolling, but more memory usage and initial load time.
+     * I tested it with around 2000 items and 40 was a good fit
+     * to have no flickering with pretty high scrolling speed.
+     */
+    overscan: 40,
     getItemKey: (index) => logData?.results[index]?.t ?? index,
   });
 
@@ -47,6 +55,8 @@ const ScrollContainer = () => {
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
   if (!logData) return null;
+
+  const items = rowVirtualizer.getVirtualItems();
 
   return (
     <Logs
@@ -69,21 +79,28 @@ const ScrollContainer = () => {
           height: `${rowVirtualizer.getTotalSize()}px`,
         }}
       >
-        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-          const logEntry = logData.results[virtualItem.index];
-          if (!logEntry) return null;
-          return (
-            <Entry
-              key={virtualItem.key}
-              logEntry={logEntry}
-              className="absolute top-0 left-0 w-full"
-              style={{
-                height: `${virtualItem.size}px`,
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-            />
-          );
-        })}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            transform: `translateY(${items[0]?.start}px)`,
+          }}
+        >
+          {items.map((virtualItem) => {
+            const logEntry = logData.results[virtualItem.index];
+            if (!logEntry) return null;
+            return (
+              <Entry
+                key={virtualItem.key}
+                data-index={virtualItem.key}
+                ref={rowVirtualizer.measureElement}
+                logEntry={logEntry}
+              />
+            );
+          })}
+        </div>
       </div>
       {isPending && (
         <div
