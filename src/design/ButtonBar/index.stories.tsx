@@ -107,10 +107,7 @@ export const AsChildButtons = () => (
     <p>No Click, Hover effects on child components except Anchor</p>
     <ButtonBar>
       <Button asChild size="lg">
-        <label>Label1</label>
-      </Button>
-      <Button asChild size="lg">
-        <label>Label2</label>
+        <label>Label</label>
       </Button>
       <Button asChild size="lg">
         <a href="/">Link</a>
@@ -123,9 +120,6 @@ export const AsChildButtons = () => (
       </Button>
       <Button asChild size="lg">
         <span>Span Tag</span>
-      </Button>
-      <Button variant="primary" asChild size="lg">
-        <span>No Hover</span>
       </Button>
     </ButtonBar>
   </div>
