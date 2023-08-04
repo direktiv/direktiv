@@ -59,7 +59,7 @@ const LogsPanel = () => {
 
   return (
     <>
-      <div className="mb-5 flex gap-x-5">
+      <div className="mb-5 flex flex-col gap-5 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title")}
@@ -72,6 +72,7 @@ const LogsPanel = () => {
                 <div className="flex grow">
                   <Toggle
                     size="sm"
+                    className="grow"
                     pressed={verboseLogs}
                     onClick={() => {
                       setVerboseLogs(!verboseLogs);
@@ -90,6 +91,7 @@ const LogsPanel = () => {
                 <div className="flex grow">
                   <Toggle
                     size="sm"
+                    className="grow"
                     pressed={wordWrap}
                     onClick={() => {
                       setWordWrap(!wordWrap);
@@ -111,6 +113,7 @@ const LogsPanel = () => {
                     buttonProps={{
                       variant: "outline",
                       size: "sm",
+                      className: "grow",
                     }}
                   />
                 </div>
@@ -126,6 +129,7 @@ const LogsPanel = () => {
                     icon
                     variant="outline"
                     size="sm"
+                    className="grow"
                     onClick={() => {
                       setMaximizedPanel(isMaximized ? "none" : "logs");
                     }}
