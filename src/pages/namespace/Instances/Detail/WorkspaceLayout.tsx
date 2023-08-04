@@ -54,7 +54,7 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
             "md:grid-cols-[minmax(430px,1fr)_1fr]"
           )}
         >
-          <Card className="relative grid p-5 md:col-span-2">
+          <Card className="relative grid grid-rows-[auto,1fr,auto] p-5 md:col-span-2">
             {logComponent}
           </Card>
           <Card className="flex">{diagramComponent}</Card>
