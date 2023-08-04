@@ -190,7 +190,10 @@
           "childInstances": {
             "label": "spawned",
             "instanceCount": "{{count}} instances",
-            "instanceCountMax": "+ {{count}} instances"
+            "instanceCountMax": "+ {{count}} instances",
+            "searchPlaceholder": "Search last 20 Child Instances...",
+            "searchPlaceholderMax": "Search the latest {{count}} Child Instances...",
+            "notFound": "No child instances found."
           }
         },
         "tableRow": {
