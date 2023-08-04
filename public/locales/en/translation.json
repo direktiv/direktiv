@@ -186,7 +186,12 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated"
+          "updatedAt": "last updated",
+          "childInstances": {
+            "label": "spawned",
+            "instanceCount": "{{count}} instances",
+            "instanceCountMax": "+ {{count}} instances"
+          }
         },
         "tableRow": {
           "noRevisionId": "none",

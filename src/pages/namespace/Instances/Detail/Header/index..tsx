@@ -2,7 +2,7 @@ import { Box, FileSymlink } from "lucide-react";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
-import { FC } from "react";
+import ChildInstances from "./ChildInstances";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
@@ -31,17 +31,19 @@ const Header = () => {
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
-      <div className="flex flex-col gap-x-5 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
-        <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-          <Box className="h-5" /> {data.instance.id.slice(0, 8)}
+      <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
+        <div className="flex flex-col items-start gap-2">
+          <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
+            <Box className="h-5" /> {data.instance.id.slice(0, 8)}
+          </h3>
           <Badge
             variant={statusToBadgeVariant(data.instance.status)}
             className="font-normal"
             icon={data.instance.status}
           >
-            <span className="max-lg:hidden">{data.instance.status}</span>
+            {data.instance.status}
           </Badge>
-        </h3>
+        </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.instances.detail.header.invoker")}
@@ -64,6 +66,7 @@ const Header = () => {
             relativeTime: updatedAt,
           })}
         </div>
+        <ChildInstances />
         <div className="grow justify-end md:flex">
           <Button asChild variant="primary" className="max-md:w-full">
             <Link to={link}>
