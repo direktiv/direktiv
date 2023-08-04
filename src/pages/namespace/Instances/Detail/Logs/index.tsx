@@ -60,7 +60,7 @@ const LogsPanel = () => {
   return (
     <>
       <div className="mb-5 flex gap-x-5">
-        <h3 className="flex grow items-center  gap-x-2 font-medium">
+        <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title")}
         </h3>
