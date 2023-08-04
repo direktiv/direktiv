@@ -13,12 +13,19 @@ const Instance = () => {
   const instanceId = useInstanceId();
   const filters = useFilters();
 
+  /**
+   * the streaming hooks will update the react query cache
+   * when it received new data. This will trigger a rerender
+   * of all components that consume this data via useQuery.
+   *
+   * This is why it's important to place this hook in a separate
+   * parent component on top of the consuming components. This
+   * will ensure that the hook will not rerun itself (canceling
+   * the stream and restarting a new one when it updates the cache
+   */
   useInstanceDetailsStream({ instanceId });
   useLogsStream({ instanceId, filters });
 
-  // Details page is moved into a separate component to give us a state
-  // where the id alwawys defined. This is required for the data fetching
-  // hook that require the id (and hooks can not be conditionally called)
   return <InstancesDetail />;
 };
 
