@@ -23,8 +23,8 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
           className={twMergeClsx(
             "grid grow gap-5 p-5",
             "grid-rows-[calc(100vh-20rem)]",
-            "sm:grid-rows-[calc(100vh-17rem)]",
-            "lg:grid-rows-[calc(100vh-12rem)]"
+            "sm:grid-rows-[calc(100vh-18rem)]",
+            "lg:grid-rows-[calc(100vh-13rem)]"
           )}
         >
           <Card className="relative grid grid-rows-[auto,1fr,auto] p-5">
