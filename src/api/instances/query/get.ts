@@ -25,7 +25,7 @@ export type FiltersObj = {
   };
   TRIGGER?: {
     type: "MATCH";
-    value: TriggerValue | string; // value can be trigger value and also instance:someid
+    value: TriggerValue;
   };
   AFTER?: { type: "AFTER"; value: Date };
   BEFORE?: { type: "BEFORE"; value: Date };
