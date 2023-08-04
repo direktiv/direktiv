@@ -17,7 +17,6 @@ export const statusValues = [
 
 export type TriggerValue = (typeof triggerValues)[number];
 export type StatusValue = (typeof statusValues)[number];
-
 export type FiltersObj = {
   AS?: { type: "CONTAINS"; value: string };
   STATUS?: {
@@ -26,7 +25,7 @@ export type FiltersObj = {
   };
   TRIGGER?: {
     type: "MATCH";
-    value: TriggerValue;
+    value: TriggerValue | string; // value can be trigger value and also instance:someid
   };
   AFTER?: { type: "AFTER"; value: Date };
   BEFORE?: { type: "BEFORE"; value: Date };
