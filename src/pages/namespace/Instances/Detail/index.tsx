@@ -9,7 +9,7 @@ import { pages } from "~/util/router/pages";
 import { useInstanceDetailsStream } from "~/api/instances/query/details";
 import { useLogsStream } from "~/api/logs/query/get";
 
-const Instance = () => {
+const InstanceStreaming = () => {
   const instanceId = useInstanceId();
   const filters = useFilters();
 
@@ -19,9 +19,9 @@ const Instance = () => {
    * of all components that consume this data via useQuery.
    *
    * This is why it's important to place this hook in a separate
-   * parent component on top of the consuming components. This
+   * parent component on top of the consuming components. It
    * will ensure that the hook will not rerun itself (canceling
-   * the stream and restarting a new one when it updates the cache
+   * the stream and restarting a new one) when it updates the cache
    */
   useInstanceDetailsStream({ instanceId });
   useLogsStream({ instanceId, filters });
@@ -35,7 +35,7 @@ const InstanceWithContextProvider = () => {
 
   return (
     <InstanceStateProvider instanceId={instanceId}>
-      <Instance />
+      <InstanceStreaming />
     </InstanceStateProvider>
   );
 };
