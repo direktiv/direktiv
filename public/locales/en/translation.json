@@ -4,6 +4,7 @@
       "welcomeTo": "Welcome to",
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
+      "tokenRequired": "An authentication token is required to connect to the API.",
       "links": {
         "docs": {
           "title": "Getting started",
