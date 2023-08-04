@@ -17,7 +17,7 @@ test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = await createWorkflow(
     namespace,
-    faker.internet.domainName() + ".yaml"
+    faker.internet.domainWord() + ".yaml"
   );
 });
 
