@@ -14,6 +14,7 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
   const { data } = useInstanceDetails({ instanceId });
   const { t } = useTranslation();
 
+  const [invoker] = (data?.instance?.invoker ?? "").split(":");
   const updatedAt = useUpdatedAt(data?.instance.updatedAt);
   const createdAt = useUpdatedAt(data?.instance.createdAt);
 
@@ -42,7 +43,7 @@ const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.instances.detail.header.invoker")}
           </div>
-          {data.instance.invoker}
+          {invoker}
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
