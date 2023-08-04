@@ -149,11 +149,7 @@ TLDR; It could technically solved, but all state attributes would need to be
 namespaced which would have a DX impact that is not worth it for now.
              */}
 
-            {/* 
-                add !border-0 class in wrapper so trigger wouldn't have border for both button and its wrapper(div)
-            */}
-
-            <div className="!border-0">
+            <div className="">
               <Toggle aria-label="Toggle italic">
                 <HelpCircle />
               </Toggle>
@@ -169,7 +165,7 @@ namespaced which would have a DX impact that is not worth it for now.
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="!border-0">
+            <div className="">
               <Button variant="outline" aria-label="Toggle italic">
                 <Bug /> Button with tooltip
               </Button>
