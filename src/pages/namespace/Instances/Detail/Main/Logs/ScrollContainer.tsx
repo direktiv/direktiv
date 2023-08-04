@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useFilters, useInstanceId } from "../state/instanceContext";
+import { useFilters, useInstanceId } from "../../store/instanceContext";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";

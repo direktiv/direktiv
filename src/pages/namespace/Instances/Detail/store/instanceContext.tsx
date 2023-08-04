@@ -5,14 +5,7 @@ import {
   useContext,
   useReducer,
 } from "react";
-
-import { FiltersObj } from "~/api/logs/query/get";
-import { Actions as InstanceActions } from "./type";
-
-type StateType = {
-  instanceId: string;
-  filters?: FiltersObj;
-};
+import { Actions as InstanceActions, StateType } from "./type";
 
 const InstanceStateContext = createContext<StateType | null>(null);
 

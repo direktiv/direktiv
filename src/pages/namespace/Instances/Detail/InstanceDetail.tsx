@@ -1,10 +1,10 @@
-import Diagram from "./Diagram";
-import Header from "./Header";
-import InputOutput from "./InputOutput";
-import Logs from "./Logs";
-import WorkspaceLayout from "./WorkspaceLayout";
+import Diagram from "./Main/Diagram";
+import Header from "./Header/index.";
+import InputOutput from "./Main/InputOutput";
+import Logs from "./Main/Logs";
+import WorkspaceLayout from "./Main";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useInstanceId } from "./state/instanceContext";
+import { useInstanceId } from "./store/instanceContext";
 import { useLogsPreferencesMaximizedPanel } from "~/util/store/logs";
 
 const InstancesDetail = () => {

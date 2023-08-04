@@ -1,6 +1,6 @@
 import { Plus, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import { useActions, useFilters } from "../../state/instanceContext";
+import { useActions, useFilters } from "../../../store/instanceContext";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";

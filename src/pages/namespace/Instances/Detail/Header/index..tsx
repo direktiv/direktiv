@@ -5,7 +5,7 @@ import Button from "~/design/Button";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
-import { statusToBadgeVariant } from "../utils";
+import { statusToBadgeVariant } from "../../utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";

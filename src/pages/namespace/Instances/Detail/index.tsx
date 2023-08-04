@@ -2,7 +2,7 @@ import {
   InstanceStateProvider,
   useFilters,
   useInstanceId,
-} from "./state/instanceContext";
+} from "./store/instanceContext";
 
 import InstancesDetail from "./InstanceDetail";
 import { pages } from "~/util/router/pages";

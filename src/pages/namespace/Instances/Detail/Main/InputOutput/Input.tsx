@@ -1,7 +1,7 @@
 import Editor from "~/design/Editor";
 import Toolbar from "./Toolbar";
 import { useInput } from "~/api/instances/query/input";
-import { useInstanceId } from "../state/instanceContext";
+import { useInstanceId } from "../../store/instanceContext";
 import { useTheme } from "~/util/store/theme";
 
 const Input = () => {

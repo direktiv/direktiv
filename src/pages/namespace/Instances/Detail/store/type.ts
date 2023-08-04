@@ -1,3 +1,10 @@
+import { FiltersObj } from "~/api/logs/query/get";
+
+export type StateType = {
+  instanceId: string;
+  filters?: FiltersObj;
+};
+
 export type UpdateFilterState = {
   type: "UPDATE_FILTER_STATE_NAME";
   payload: {

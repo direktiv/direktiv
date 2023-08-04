@@ -5,7 +5,7 @@ import Input from "./Input";
 import Output from "./Output";
 import { t } from "i18next";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useInstanceId } from "../state/instanceContext";
+import { useInstanceId } from "../../store/instanceContext";
 import { z } from "zod";
 
 const InputOutput = () => {

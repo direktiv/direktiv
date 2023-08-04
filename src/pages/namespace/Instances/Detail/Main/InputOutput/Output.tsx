@@ -2,7 +2,7 @@ import Editor from "~/design/Editor";
 import { FC } from "react";
 import InfoText from "./OutputInfo";
 import Toolbar from "./Toolbar";
-import { useInstanceId } from "../state/instanceContext";
+import { useInstanceId } from "../../store/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";

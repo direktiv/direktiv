@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useFilters, useInstanceId } from "../state/instanceContext";
+import { useFilters, useInstanceId } from "../../store/instanceContext";
 import {
   useLogsPreferencesActions,
   useLogsPreferencesMaximizedPanel,
