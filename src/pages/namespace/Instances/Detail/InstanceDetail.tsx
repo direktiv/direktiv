@@ -15,7 +15,7 @@ const InstancesDetail = () => {
   if (!data) return null;
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
-      <Header instanceId={instanceId} />
+      <Header />
       <WorkspaceLayout
         layout={preferedLayout}
         logComponent={<Logs />}

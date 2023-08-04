@@ -7,11 +7,14 @@ import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceId } from "../store/instanceContext";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const Header: FC<{ instanceId: string }> = ({ instanceId }) => {
+const Header = () => {
+  const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
+
   const { t } = useTranslation();
 
   const [invoker] = (data?.instance?.invoker ?? "").split(":");
