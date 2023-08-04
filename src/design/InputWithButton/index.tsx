@@ -14,7 +14,7 @@ export const InputWithButton: React.FC<HTMLAttributes<HTMLDivElement>> = ({
     <div
       {...props}
       className={twMergeClsx(
-        "relative flex w-full items-end p-0 [&_input]:pr-10",
+        "&_input]:pr-10 relative flex w-full items-end",
         className
       )}
     >

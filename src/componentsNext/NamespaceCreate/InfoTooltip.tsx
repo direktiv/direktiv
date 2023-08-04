@@ -12,7 +12,7 @@ const InfoTooltip: FC<PropsWithChildren> = ({ children }) => (
   <TooltipProvider>
     <Tooltip delayDuration={100}>
       <TooltipTrigger type="button">
-        <Info size={16} className="ml-2 text-gray-11" />
+        <Info size={16} className="mx-2 text-gray-11" />
       </TooltipTrigger>
       <TooltipContent className="max-w-md text-left">{children}</TooltipContent>
     </Tooltip>
