@@ -97,8 +97,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         if (field === "AS") {
           return (
             <ButtonBar key={field}>
-              <Button variant="outline">
-                {t([`pages.instances.list.filter.field.${field}`])}
+              <Button variant="outline" asChild>
+                <label>
+                  {t([`pages.instances.list.filter.field.${field}`])}
+                </label>
               </Button>
               <Popover
                 open={activeMenu === field}
@@ -128,8 +130,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         if (field === "STATUS" || field === "TRIGGER") {
           return (
             <ButtonBar key={field}>
-              <Button variant="outline">
-                {t([`pages.instances.list.filter.field.${field}`])}
+              <Button variant="outline" asChild>
+                <label>
+                  {t([`pages.instances.list.filter.field.${field}`])}
+                </label>
               </Button>
               <Popover
                 open={activeMenu === field}
@@ -170,8 +174,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           }
           return (
             <ButtonBar key={field}>
-              <Button variant="outline">
-                {t([`pages.instances.list.filter.field.${field}`])}
+              <Button variant="outline" asChild>
+                <label>
+                  {t([`pages.instances.list.filter.field.${field}`])}
+                </label>
               </Button>
               <Popover
                 open={activeMenu === field}

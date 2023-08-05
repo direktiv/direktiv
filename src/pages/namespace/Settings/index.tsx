@@ -1,3 +1,4 @@
+import ApiKey from "./ApiKey";
 import Broadcasts from "./Broadcasts";
 import { FC } from "react";
 import RegistriesList from "./Registries";
@@ -49,6 +50,10 @@ const SettingsPage: FC = () => {
 
       <section data-testid="broadcasts-section">
         <Broadcasts />
+      </section>
+
+      <section>
+        <ApiKey />
       </section>
     </div>
   );

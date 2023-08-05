@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { useEffect, useState } from "react";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
+import Alert from "~/design/Alert";
+import ApiKeyPanel from "./namespace/Settings/ApiKey";
 import Button from "~/design/Button";
 import Logo from "~/design/Logo";
 import NamespaceCreate from "~/componentsNext/NamespaceCreate";
@@ -13,10 +15,11 @@ import { useTranslation } from "react-i18next";
 
 const Layout = () => {
   const { t } = useTranslation();
-  const { data: availableNamespaces, isFetched } = useListNamespaces();
+  const { data: availableNamespaces, isFetched, error } = useListNamespaces();
   const activeNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
   const [, setDialogOpen] = useState(false);
+  const [tokenRequired, setTokenRequired] = useState(false);
   const navigate = useNavigate();
 
   const linkItems = [
@@ -61,6 +64,12 @@ const Layout = () => {
     }
   }, [activeNamespace, availableNamespaces, navigate, setNamespace]);
 
+  useEffect(() => {
+    if (error === "error 401 for GET /api/namespaces") {
+      setTokenRequired(true);
+    }
+  }, [error]);
+
   // wait until namespaces are fetched to avoid layout shifts
   // either the useEffect will redirect or the onboarding screen
   // will be shown
@@ -75,22 +84,35 @@ const Layout = () => {
           <span> {t("pages.onboarding.welcomeTo")}</span>
           <Logo />
         </h1>
-        <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-5 p-12 text-center dark:border-gray-dark-5">
-          <p className="mt-1 text-sm text-gray-9 dark:text-gray-dark-9">
-            {t("pages.onboarding.noNamespace")}
-          </p>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="lg" className="my-5">
-                <PlusCircle />
-                {t("pages.onboarding.createNamespaceBtn")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <NamespaceCreate close={() => setDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
+
+        {tokenRequired && (
+          <>
+            <Alert variant="warning" className="mb-4">
+              {t("pages.onboarding.tokenRequired")}
+            </Alert>
+
+            <ApiKeyPanel />
+          </>
+        )}
+
+        {!tokenRequired && (
+          <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-5 p-12 text-center dark:border-gray-dark-5">
+            <p className="mt-1 text-sm text-gray-9 dark:text-gray-dark-9">
+              {t("pages.onboarding.noNamespace")}
+            </p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="lg" className="my-5">
+                  <PlusCircle />
+                  {t("pages.onboarding.createNamespaceBtn")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <NamespaceCreate close={() => setDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
 
         <ul role="list" className="mt-6 text-left">
           {linkItems.map((item, itemIdx) => (
