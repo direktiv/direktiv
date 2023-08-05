@@ -1,5 +1,12 @@
 import { Locator } from "@playwright/test";
 
+const token = process.env.VITE_E2E_API_TOKEN;
+export const headers: { "Direktiv-Token"?: string } = token
+  ? {
+      "Direktiv-Token": token,
+    }
+  : {};
+
 export const getStyle = async (
   locator: Locator,
   property: string

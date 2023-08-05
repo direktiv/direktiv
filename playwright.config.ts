@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import { defineConfig, devices } from "@playwright/test";
 
 import { envVariablesSchema } from "./src/config/env/schema";
+import { storageState } from "./e2e/setup/auth";
 
 dotenv.config();
 const env = envVariablesSchema.parse(process.env);
@@ -27,7 +28,7 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL,
-
+    storageState,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     // trace: "on-first-retry",
     /* temporary override: this is expensive, but useful for debugging tests */

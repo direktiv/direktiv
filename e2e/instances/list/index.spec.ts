@@ -9,6 +9,7 @@ import {
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
+import { headers } from "e2e/utils/testutils";
 import moment from "moment";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 
@@ -28,6 +29,7 @@ test.beforeEach(async () => {
       namespace,
       name: simpleWorkflow,
     },
+    headers,
   });
 
   await createWorkflow({
@@ -37,6 +39,7 @@ test.beforeEach(async () => {
       namespace,
       name: workflowThatFails,
     },
+    headers,
   });
 });
 
@@ -52,6 +55,7 @@ const createBasicInstance = async () =>
       namespace,
       path: simpleWorkflow,
     },
+    headers,
   });
 
 const createFailedInstance = async () =>
@@ -61,6 +65,7 @@ const createFailedInstance = async () =>
       namespace,
       path: workflowThatFails,
     },
+    headers,
   });
 
 test("it displays a note, when there are no instances yet.", async ({
@@ -90,6 +95,7 @@ test("it renders the instance item correctly for failed and success status", asy
         limit: 10,
         offset: 0,
       },
+      headers,
     });
 
     const instanceDetail = instancesList.instances.results.find(
@@ -243,6 +249,7 @@ test("it provides a proper pagination", async ({ page }) => {
       namespace,
       name: parentWorkflow,
     },
+    headers,
   });
 
   await runWorkflow({
@@ -251,6 +258,7 @@ test("it provides a proper pagination", async ({ page }) => {
       namespace,
       path: parentWorkflow,
     },
+    headers,
   });
 
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
@@ -303,6 +311,7 @@ test("it provides a proper pagination", async ({ page }) => {
       limit: pageSize,
       offset: 2 * pageSize,
     },
+    headers,
   });
 
   const firstInstance = instancesListPage3.instances.results[0];
@@ -329,6 +338,7 @@ test("It will display child instances as well", async ({ page }) => {
       namespace,
       name: parentWorkflow,
     },
+    headers,
   });
 
   const parentInstance = await runWorkflow({
@@ -337,6 +347,7 @@ test("It will display child instances as well", async ({ page }) => {
       namespace,
       path: parentWorkflow,
     },
+    headers,
   });
 
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
@@ -348,6 +359,7 @@ test("It will display child instances as well", async ({ page }) => {
       limit: 15,
       offset: 0,
     },
+    headers,
   });
 
   const childInstanceDetail = instancesList.instances.results.find(

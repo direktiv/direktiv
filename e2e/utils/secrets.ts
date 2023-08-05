@@ -1,5 +1,6 @@
 import { createSecret } from "~/api/secrets/mutate/createSecret";
 import { faker } from "@faker-js/faker";
+import { headers } from "./testutils";
 
 export const createSecrets = async (namespace: string, amount = 5) => {
   const secrets = Array.from({ length: amount }, () => ({
@@ -16,7 +17,7 @@ export const createSecrets = async (namespace: string, amount = 5) => {
           namespace,
           name: secret.name,
         },
-        headers: undefined,
+        headers,
       })
     )
   );
