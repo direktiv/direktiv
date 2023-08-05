@@ -9,7 +9,7 @@
  * to generate it before running any tests.
  *
  * Since there are only two variables and it is more convenient to set
- * then via the environment, the code below is based on such a .json file,
+ * them via the environment, the code below is based on such a .json file,
  * but just fills these values programatically.
  *
  * If breaking changes are made to our local storage, see the following
