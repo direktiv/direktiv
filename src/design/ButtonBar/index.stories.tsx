@@ -102,6 +102,29 @@ export const ButtonSizes = () => (
   </div>
 );
 
+export const AsChildButtons = () => (
+  <div className="flex flex-col gap-4">
+    <p>No Click, Hover effects on child components except Anchor</p>
+    <ButtonBar>
+      <Button asChild size="lg">
+        <label>Label</label>
+      </Button>
+      <Button asChild size="lg">
+        <a href="/">Link</a>
+      </Button>
+      <Button size="lg">
+        <GitBranchIcon /> Review
+      </Button>
+      <Button size="lg">
+        <SearchIcon /> Search
+      </Button>
+      <Button asChild size="lg">
+        <span>Span Tag</span>
+      </Button>
+    </ButtonBar>
+  </div>
+);
+
 export const ToolbarWithToolTips = () => (
   <div className="flex flex-col space-y-3">
     <div>
@@ -125,6 +148,7 @@ https://github.com/radix-ui/primitives/discussions/560
 TLDR; It could technically solved, but all state attributes would need to be 
 namespaced which would have a DX impact that is not worth it for now.
              */}
+
             <div>
               <Toggle aria-label="Toggle italic">
                 <HelpCircle />
