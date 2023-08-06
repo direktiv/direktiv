@@ -183,14 +183,12 @@
         "tableHeader": {
           "name": "name",
           "id": "id",
-          "revisionId": "revision id",
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
           "updatedAt": "last updated"
         },
         "tableRow": {
-          "noRevisionId": "none",
           "realtiveTime": "{{relativeTime}} ago",
           "openWorkflowTooltip": "click to open workflow"
         },

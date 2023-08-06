@@ -5,6 +5,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkfl
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
+import { headers } from "e2e/utils/testutils";
 
 let namespace = "";
 
@@ -27,6 +28,7 @@ test("by default, traffic shaping is not configured", async ({ page }) => {
       namespace,
       name,
     },
+    headers,
   });
 
   await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);
@@ -70,6 +72,7 @@ test("it is not possible to save traffic shaping when the same revision is selec
       namespace,
       name,
     },
+    headers,
   });
 
   await page.goto(`/${namespace}/explorer/workflow/revisions/${name}`);

@@ -1,5 +1,6 @@
 import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { headers } from "./testutils";
 import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
 const getRevisionContentVariation = (revision: number) => `\
@@ -22,6 +23,7 @@ export const createWorkflowWithThreeRevisions = async (
     baseUrl: process.env.VITE_DEV_API_DOMAIN,
     namespace,
     path: `${path ?? ""}${workflowName}`,
+    headers,
   };
 
   // revision 1
@@ -33,28 +35,35 @@ export const createWorkflowWithThreeRevisions = async (
       path,
       name: workflowName,
     },
+    headers,
   });
 
   const firstRevision = await createRevision({
     urlParams: commonUrlParams,
+    headers,
   });
 
   // revision 2
   await updateWorkflow({
     payload: contentRevision2,
     urlParams: commonUrlParams,
+    headers,
   });
   const secondRevision = await createRevision({
     urlParams: commonUrlParams,
+    headers,
   });
 
   // revision 3
   await updateWorkflow({
     payload: contentRevision3,
     urlParams: commonUrlParams,
+    headers,
   });
+
   const thirdRevision = await createRevision({
     urlParams: commonUrlParams,
+    headers,
   });
 
   return {

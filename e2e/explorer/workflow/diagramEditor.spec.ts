@@ -5,6 +5,7 @@ import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer
 import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
+import { headers } from "e2e/utils/testutils";
 
 let namespace = "";
 let workflow = "";
@@ -40,6 +41,7 @@ test.beforeEach(async () => {
       namespace,
       name: workflow,
     },
+    headers,
   });
 });
 
@@ -263,6 +265,7 @@ test("it is possible to use the diagram view on the revisions detail page as wel
       namespace,
       path: workflow,
     },
+    headers,
   });
 
   await page.goto(

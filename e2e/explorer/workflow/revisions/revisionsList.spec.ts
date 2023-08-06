@@ -18,7 +18,7 @@ test.afterEach(async () => {
 });
 
 const actionCreateRevisionAndTag = async (page: Page) => {
-  const name = faker.system.commonFileName("yaml");
+  const name = `${faker.internet.domainWord()}.yaml`;
   const {
     revisionsReponse: [firstRev],
   } = await createWorkflowWithThreeRevisions(namespace, name);
@@ -46,7 +46,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
 test("it is possible to navigate to the revisions tab", async ({ page }) => {
   const workflow = await createWorkflow(
     namespace,
-    faker.git.shortSha() + ".yaml"
+    faker.internet.domainWord() + ".yaml"
   );
   await page.goto("/");
   await expect(
@@ -84,7 +84,7 @@ test("it is possible to navigate to the revisions tab", async ({ page }) => {
 test("latest is the only revision by default", async ({ page }) => {
   const workflow = await createWorkflow(
     namespace,
-    faker.git.shortSha() + ".yaml"
+    faker.internet.domainWord() + ".yaml"
   );
   await page.goto(`${namespace}/explorer/workflow/revisions/${workflow}`);
 

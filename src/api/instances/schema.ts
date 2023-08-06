@@ -5,7 +5,7 @@ const InstanceSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   id: z.string(),
-  as: z.string(), // f.e. "some.yaml:latest",
+  as: z.string(), // f.e. "some.yaml",
   status: z.enum(["pending", "failed", "crashed", "complete"]),
   errorCode: z.string(),
   errorMessage: z.string(),
