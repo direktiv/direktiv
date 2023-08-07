@@ -192,8 +192,8 @@
             "label": "spawned",
             "instanceCount": "{{count}} instances",
             "instanceCountMax": "+ {{count}} instances",
-            "searchPlaceholder": "Search Child Instances...",
-            "searchPlaceholderMax": "Search the latest {{count}} Child Instances...",
+            "searchPlaceholder": "Search child instances...",
+            "searchPlaceholderMax": "Search the latest {{count}} child instances...",
             "notFound": "No child instances found."
           }
         },
