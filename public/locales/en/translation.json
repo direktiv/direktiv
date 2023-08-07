@@ -239,7 +239,7 @@
         },
         "logs": {
           "title": "Logs",
-          "followLogs": "Follow Logs",
+          "followLogs": "Follow logs",
           "logsCount": "received {{count}} log entries",
           "logsCount_one": "received {{count}} log entry",
           "tooltips": {
