@@ -7,21 +7,6 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const updateCache = (
-  oldData: NamespaceListSchemaType | undefined,
-  variables: Parameters<ReturnType<typeof useDeleteNamespace>["mutate"]>[0]
-) => {
-  if (!oldData) return undefined;
-  return {
-    ...oldData,
-    results: [
-      ...oldData.results.filter(
-        (namespace) => namespace.name !== variables.namespace
-      ),
-    ],
-  };
-};
-
 const deleteNamespace = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
     `/api/namespaces/${namespace}?recursive=true`,
@@ -48,19 +33,15 @@ export const useDeleteNamespace = ({
         },
       }),
     onSuccess(data, variables) {
-      queryClient.setQueryData<NamespaceListSchemaType>(
-        namespaceKeys.all(apiKey ?? undefined),
-        /**
-         * updating the cache is important here, because after deleting the namespace
-         * we will redirect to the frontpage, where we pick the first namespace we can
-         * find and redirect to it. It is very likely that the cache will be used here
-         * (namespace cache gets populated very ealy in the app lifecycle), so we need
-         * to make sure that we don't accidentally redirect to the namespace we just
-         * deleted.
-         */
-        (oldData) => updateCache(oldData, variables)
-      );
-
+      /**
+       * invalidating the cache is important here, because after deleting the namespace
+       * we will redirect to the frontpage, where we pick the first namespace we can
+       * find and redirect to it. It is very likely that the cache will be used here
+       * (namespace cache gets populated very ealy in the app lifecycle), so we need
+       * to make sure that we don't accidentally redirect to the namespace we just
+       * deleted.
+       */
+      queryClient.invalidateQueries(namespaceKeys.all(apiKey ?? undefined));
       toast({
         title: t("api.namespaces.mutate.deleteNamespaces.success.title"),
         description: t(
