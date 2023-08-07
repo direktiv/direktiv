@@ -243,11 +243,11 @@
           "logsCount": "received {{count}} log entries",
           "logsCount_one": "received {{count}} log entry",
           "tooltips": {
-            "verbose": "Verbose Logs",
-            "wordWrap": "Word Wrap",
-            "copy": "Copy Logs",
-            "minimize": "Minimize Logs",
-            "maximize": "Maximize Logs"
+            "verbose": "Verbose logs",
+            "wordWrap": "Word wrap",
+            "copy": "Copy logs",
+            "minimize": "Minimize logs",
+            "maximize": "Maximize logs"
           },
           "filter": {
             "filterButton": "Filter",
