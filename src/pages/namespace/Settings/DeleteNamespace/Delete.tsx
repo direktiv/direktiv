@@ -41,10 +41,7 @@ const Delete = ({ namespace, onConfirm }: DeleteProps) => {
           i18nKey="pages.settings.deleteNamespace.modal.description"
           values={{ namespace }}
         />
-        <br />
-        <br />
-
-        <div className="flex flex-col gap-2">
+        <div className="mt-5 flex flex-col gap-2">
           <label htmlFor="confirm">
             <Trans
               i18nKey="pages.settings.deleteNamespace.modal.confirm"
