@@ -6,6 +6,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkfl
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
+import { headers } from "e2e/utils/testutils";
 
 let namespace = "";
 
@@ -29,6 +30,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
       namespace,
       name: workflowName,
     },
+    headers,
   });
 
   await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
@@ -99,6 +101,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
       namespace,
       name: workflowName,
     },
+    headers,
   });
 
   await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
@@ -153,6 +156,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
       instanceId,
       namespace,
     },
+    headers,
   });
 
   const inputResponseString = atob(res.data);
@@ -180,6 +184,7 @@ test("it is possible to provide the input via generated form", async ({
       namespace,
       name: workflowName,
     },
+    headers,
   });
 
   await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
@@ -266,6 +271,7 @@ test("it is possible to provide the input via generated form", async ({
       instanceId,
       namespace,
     },
+    headers,
   });
 
   const expectedJson = {
@@ -291,6 +297,7 @@ test("it is possible to provide the input via generated form and resolve form er
       namespace,
       name: workflowName,
     },
+    headers,
   });
 
   await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
@@ -361,6 +368,7 @@ test("it is possible to provide the input via generated form and resolve form er
       instanceId,
       namespace,
     },
+    headers,
   });
 
   const expectedJson = {

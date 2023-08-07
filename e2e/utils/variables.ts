@@ -1,5 +1,6 @@
 import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { faker } from "@faker-js/faker";
+import { headers } from "./testutils";
 import { updateVar } from "~/api/variables/mutate/updateVariable";
 
 // Note: This makes sure only mimeTypes supported by the form are used,
@@ -23,6 +24,7 @@ export const createVariables = async (namespace: string, amount = 5) => {
           name: variable.name,
         },
         headers: {
+          ...headers,
           "content-type": variable.mimeType,
         },
       }).then((result) => ({

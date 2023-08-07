@@ -29,11 +29,11 @@ const Button = React.forwardRef<
 >(
   (
     {
+      children,
       className,
       variant,
       size,
       circle,
-      children,
       disabled,
       block,
       loading,
@@ -44,6 +44,11 @@ const Button = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
+    const isAnchor = React.Children.toArray(children).some(
+      (child) => React.isValidElement(child) && child.type === "a"
+    );
+    // In case of asChild, if a child is not an anchor(e.g, label, span, etc) we are going to remove th click & hover effect
+    const isNotAChildAnchor = asChild && !isAnchor;
 
     return (
       <Comp
@@ -87,6 +92,7 @@ const Button = React.forwardRef<
           circle && "rounded-full",
           !circle && "rounded-md",
           block && "w-full",
+          isNotAChildAnchor && "pointer-events-none active:scale-100",
           className
         )}
         disabled={disabled || loading}
