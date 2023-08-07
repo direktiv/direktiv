@@ -15,4 +15,6 @@ export const NamespaceCreatedSchema = z.object({
   namespace: NamespaceSchema,
 });
 
+export const NamespaceDeletedSchema = z.null();
+
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
