@@ -60,7 +60,7 @@ export const getFilterQuery = (filters: FiltersObj = {}) => {
   const stateName = filters?.stateName ?? "";
   if (workflowName || stateName) {
     query = query.concat(
-      `&filter.field=QUERY&filter.type=CONTAINS&filter.val=${workflowName}::${stateName}::`
+      `&filter.field=QUERY&filter.type=MATCH&filter.val=${workflowName}::${stateName}::`
     );
   }
 
