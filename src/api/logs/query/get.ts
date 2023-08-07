@@ -9,6 +9,46 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
+const updateCache = (
+  oldData: LogListSchemaType | undefined,
+  msg: LogListSchemaType
+) => {
+  if (!oldData) {
+    return msg;
+  }
+  /**
+   * Dedup logs. The onMessage callback gets called in two different cases:
+   *
+   * case 1:
+   * when the SSE connection is established, the whole set of logs is received
+   *
+   * case 2:
+   * after the connection is established and only some new log entries are received
+   *
+   * it's also important to note that multiple components can subscribe to the same
+   * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
+   */
+  const lastCachedLog = oldData.results[oldData.results.length - 1];
+  let newResults: typeof oldData.results = [];
+
+  // there was a previous cache, but with no entries yet
+  if (!lastCachedLog) {
+    newResults = msg.results;
+    // there was a previous cache with entries
+  } else {
+    const newestLogTimeFromCache = moment(lastCachedLog.t);
+    // new results are all logs that are newer than the last cached log
+    newResults = msg.results.filter((entry) =>
+      newestLogTimeFromCache.isBefore(entry.t)
+    );
+  }
+
+  return {
+    ...oldData,
+    results: [...oldData.results, ...newResults],
+  };
+};
+
 export type FiltersObj = {
   workflowName?: string;
   stateName?: string;
@@ -97,42 +137,7 @@ export const useLogsStream = (
           instanceId,
           filters: filters ?? {},
         }),
-        (old) => {
-          if (!old) {
-            return msg;
-          }
-          /**
-           * Dedup logs. The onMessage callback gets called in two different cases:
-           *
-           * case 1:
-           * when the SSE connection is established, the whole set of logs is received
-           *
-           * case 2:
-           * after the connection is established and only some new log entries are received
-           *
-           * it's also important to note that multiple components can subscribe to the same
-           * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
-           */
-          const lastCachedLog = old.results[old.results.length - 1];
-          let newResults: typeof old.results = [];
-
-          // there was a previous cache, but with no entries yet
-          if (!lastCachedLog) {
-            newResults = msg.results;
-            // there was a previous cache with entries
-          } else {
-            const newestLogTimeFromCache = moment(lastCachedLog.t);
-            // new results are all logs that are newer than the last cached log
-            newResults = msg.results.filter((entry) =>
-              newestLogTimeFromCache.isBefore(entry.t)
-            );
-          }
-
-          return {
-            ...old,
-            results: [...old.results, ...newResults],
-          };
-        }
+        (oldData) => updateCache(oldData, msg)
       );
     },
   });
