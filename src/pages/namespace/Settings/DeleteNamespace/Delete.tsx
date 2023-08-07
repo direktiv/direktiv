@@ -6,12 +6,13 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { Trans, useTranslation } from "react-i18next";
+import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { Trash } from "lucide-react";
 import { useDeleteNamespace } from "~/api/namespaces/mutate/deleteNamespace";
-import { useNamespace } from "~/util/store/namespace";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 type DeleteProps = {
@@ -21,15 +22,20 @@ type DeleteProps = {
 const Delete = ({ close }: DeleteProps) => {
   const { t } = useTranslation();
   const [confirmText, setConfirmText] = useState("");
+  const { setNamespace } = useNamespaceActions();
   const [submitDisabled, setSubmitDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const namespace = useNamespace();
+  const navigate = useNavigate();
+
   const { mutate: deleteNamespace } = useDeleteNamespace({
     onSuccess: () => {
       setIsLoading(false);
       setSubmitDisabled(true);
       setConfirmText("");
       close();
+      setNamespace(null);
+      navigate("/");
     },
   });
 
