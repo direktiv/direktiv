@@ -272,12 +272,12 @@
           "maximizeInput": "Maximize diagram"
         },
         "inputOutput": {
-          "copyInput": "Copy Input",
-          "minimizeInput": "Minimize Input",
-          "maximizeInput": "Maximize Input",
-          "copyOutput": "Copy Output",
-          "minimizeOutput": "Minimize Output",
-          "maximizeOutput": "Maximize Output",
+          "copyInput": "Copy input",
+          "minimizeInput": "Minimize input",
+          "maximizeInput": "Maximize input",
+          "copyOutput": "Copy output",
+          "minimizeOutput": "Minimize output",
+          "maximizeOutput": "Maximize output",
           "tabs": {
             "input": "Input",
             "output": "Output"
