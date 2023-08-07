@@ -1,7 +1,10 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
 
+import { ArrowRight } from "lucide-react";
+import Button from "~/design/Button";
 import { FilterField } from ".";
 import Input from "~/design/Input";
+import { InputWithButton } from "~/design/InputWithButton";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,12 +22,17 @@ const TextInput = ({
   const [inputValue, setInputValue] = useState<string>(value || "");
   const { t } = useTranslation();
 
-  const handleKeyDown = (event: { key: string }) => {
-    if (event.key === "Enter" && inputValue) {
+  const applyFilter = () => {
+    if (inputValue) {
       setFilter(field, inputValue);
-    }
-    if (event.key === "Enter" && !inputValue) {
+    } else {
       clearFilter(field);
+    }
+  };
+
+  const handleKeyDown = (event: { key: string }) => {
+    if (event.key === "Enter") {
+      applyFilter();
     }
   };
 
@@ -34,15 +42,20 @@ const TextInput = ({
         <CommandGroup
           heading={t(`pages.instances.detail.logs.filter.menuHeading.${field}`)}
         >
-          <Input
-            autoFocus
-            placeholder={t(
-              `pages.instances.detail.logs.filter.placeholder.${field}`
-            )}
-            value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          <InputWithButton>
+            <Input
+              autoFocus
+              placeholder={t(
+                `pages.instances.detail.logs.filter.placeholder.${field}`
+              )}
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <Button icon variant="ghost" onClick={() => applyFilter()}>
+              <ArrowRight />
+            </Button>
+          </InputWithButton>
         </CommandGroup>
       </CommandList>
     </Command>
