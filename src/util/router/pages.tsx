@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import EventsPage from "~/pages/namespace/Events";
+import EventsPageList from "~/pages/namespace/Events/List";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
@@ -257,7 +259,13 @@ export const pages: PageType = {
     createHref: (params) => `/${params.namespace}/events`,
     route: {
       path: "events",
-      element: <div className="flex flex-col space-y-5 p-10">Events</div>,
+      element: <EventsPage />,
+      children: [
+        {
+          path: "",
+          element: <EventsPageList />,
+        },
+      ],
     },
   },
   // gateway: {
