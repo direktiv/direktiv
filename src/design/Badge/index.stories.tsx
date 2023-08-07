@@ -31,7 +31,7 @@ export const BadgeVariants = () => (
   </div>
 );
 
-export const BadgeWidthIcon = () => (
+export const BadgeWithIcon = () => (
   <div className="flex flex-col gap-y-5">
     <div className="flex space-x-2">
       <Badge icon="complete">default complete icon</Badge>
