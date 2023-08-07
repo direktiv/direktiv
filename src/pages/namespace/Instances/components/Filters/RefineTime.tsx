@@ -1,7 +1,7 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
 
+import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
-import { Check } from "lucide-react";
 import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
@@ -54,7 +54,7 @@ const RefineTime = ({
               onKeyDown={handleKeyDown}
             />
             <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
-              <Check />
+              <ArrowRight />
             </Button>
           </InputWithButton>
         </CommandGroup>
