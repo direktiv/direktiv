@@ -17,7 +17,7 @@ export const NamespaceCreatedSchema = z.object({
 
 // Regex for input validation. This isn't perfect but should be good enough for
 // a start. Matches git@hostname:path, where path isn't very restrictive.
-const gitUrlSchema = z
+export const gitUrlSchema = z
   .string()
   .regex(/^([a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+:[a-zA-Z0-9.\-_/]+)*$/, {
     message: "format must be git@host:path when using SSH",
