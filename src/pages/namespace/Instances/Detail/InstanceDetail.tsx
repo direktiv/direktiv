@@ -1,5 +1,5 @@
 import Diagram from "./Main/Diagram";
-import Header from "./Header/index.";
+import Header from "./Header";
 import InputOutput from "./Main/InputOutput";
 import Logs from "./Main/Logs";
 import WorkspaceLayout from "./Main";
