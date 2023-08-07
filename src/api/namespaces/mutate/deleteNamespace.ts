@@ -1,9 +1,26 @@
-import { NamespaceDeletedSchema } from "../schema";
+import { NamespaceDeletedSchema, NamespaceListSchemaType } from "../schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { apiFactory } from "~/api/apiFactory";
+import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
+
+const updateCache = (
+  oldData: NamespaceListSchemaType | undefined,
+  variables: Parameters<ReturnType<typeof useDeleteNamespace>["mutate"]>[0]
+) => {
+  if (!oldData) return undefined;
+  return {
+    ...oldData,
+    results: [
+      ...oldData.results.filter(
+        (namespace) => namespace.name !== variables.namespace
+      ),
+    ],
+  };
+};
 
 const deleteNamespace = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
@@ -19,6 +36,7 @@ export const useDeleteNamespace = ({
 }: { onSuccess?: (data: ResolvedCreateNamespace) => void } = {}) => {
   const apiKey = useApiKey();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   return useMutation({
@@ -30,6 +48,19 @@ export const useDeleteNamespace = ({
         },
       }),
     onSuccess(data, variables) {
+      queryClient.setQueryData<NamespaceListSchemaType>(
+        namespaceKeys.all(apiKey ?? undefined),
+        /**
+         * updating the cache is important here, because after deleting the namespace
+         * we will redirect to the frontpage, where we pick the first namespace we can
+         * find and redirect to it. It is very likely that the cache will be used here
+         * (namespace cache gets populated very ealy in the app lifecycle), so we need
+         * to make sure that we don't accidentally redirect to the namespace we just
+         * deleted.
+         */
+        (oldData) => updateCache(oldData, variables)
+      );
+
       toast({
         title: t("api.namespaces.mutate.deleteNamespaces.success.title"),
         description: t(
