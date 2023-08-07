@@ -268,8 +268,8 @@
           }
         },
         "diagram": {
-          "minimizeInput": "Minimize Diagram",
-          "maximizeInput": "Maximize Diagram"
+          "minimizeInput": "Minimize diagram",
+          "maximizeInput": "Maximize diagram"
         },
         "inputOutput": {
           "copyInput": "Copy Input",
