@@ -61,7 +61,7 @@ const Provider: FC<PropsWithChildren & { instanceId: string }> = ({
 const useInstanceId = () => {
   const context = useContext(InstanceStateContext);
   if (!context) {
-    throw new Error("useFilter must be used within a InstanceContext");
+    throw new Error("useInstanceId must be used within a InstanceContext");
   }
 
   return context.instanceId;
@@ -70,7 +70,7 @@ const useInstanceId = () => {
 const useFilters = () => {
   const context = useContext(InstanceStateContext);
   if (!context) {
-    throw new Error("useFilter must be used within a InstanceContext");
+    throw new Error("useFilters must be used within a InstanceContext");
   }
 
   return context.filters;
