@@ -165,7 +165,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
         >
           <fieldset className="flex items-center gap-5">
             <label
-              className="w-[90px] overflow-hidden text-right text-[14px]"
+              className="w-[112px] overflow-hidden text-right text-[14px]"
               htmlFor="name"
             >
               {t("components.namespaceCreate.label.name")}
@@ -182,7 +182,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
             <>
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] flex-row overflow-hidden text-right text-[14px]"
+                  className="w-[112px] flex-row overflow-hidden text-right text-[14px]"
                   htmlFor="url"
                 >
                   {t("components.namespaceCreate.label.url")}
@@ -206,7 +206,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
 
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] overflow-hidden text-right text-[14px]"
+                  className="w-[112px] overflow-hidden text-right text-[14px]"
                   htmlFor="ref"
                 >
                   {t("components.namespaceCreate.label.ref")}
@@ -228,7 +228,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
 
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] overflow-hidden text-right text-[14px]"
+                  className="w-[112px] overflow-hidden text-right text-[14px]"
                   htmlFor="ref"
                 >
                   {t("components.namespaceCreate.label.authType")}
@@ -261,7 +261,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
               {authType === "token" && (
                 <fieldset className="flex items-center gap-5">
                   <label
-                    className="w-[90px] overflow-hidden text-right text-[14px]"
+                    className="w-[112px] overflow-hidden text-right text-[14px]"
                     htmlFor="token"
                   >
                     {t("components.namespaceCreate.label.token")}
@@ -286,7 +286,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                 <>
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[90px] overflow-hidden text-right text-[14px]"
+                      className="w-[112px] overflow-hidden text-right text-[14px]"
                       htmlFor="passphrase"
                     >
                       {t("components.namespaceCreate.label.passphrase")}
@@ -307,7 +307,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
                   </fieldset>
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[90px] overflow-hidden text-right text-[14px]"
+                      className="w-[112px] overflow-hidden text-right text-[14px]"
                       htmlFor="public-key"
                     >
                       {t("components.namespaceCreate.label.publicKey")}
@@ -329,7 +329,7 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
 
                   <fieldset className="flex items-center gap-5">
                     <label
-                      className="w-[90px] overflow-hidden text-right text-[14px]"
+                      className="w-[112px] overflow-hidden text-right text-[14px]"
                       htmlFor="private-key"
                     >
                       {t("components.namespaceCreate.label.privateKey")}
