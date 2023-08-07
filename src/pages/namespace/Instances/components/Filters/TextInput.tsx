@@ -1,7 +1,10 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
 
+import { ArrowRight } from "lucide-react";
+import Button from "~/design/Button";
 import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
+import { InputWithButton } from "~/design/InputWithButton";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,17 +22,22 @@ const TextInput = ({
   const [inputValue, setInputValue] = useState<string>(value || "");
   const { t } = useTranslation();
 
-  const handleKeyDown = (event: { key: string }) => {
-    // Currently API only supports CONTAINS on filter fields with text inputs
-    const type = "CONTAINS";
+  // Currently API only supports CONTAINS on filter fields with text inputs
+  const type = "CONTAINS";
 
-    if (event.key === "Enter" && inputValue) {
+  const applyFilter = () => {
+    if (inputValue) {
       setFilter({
         [field]: { value: inputValue, type },
       });
-    }
-    if (event.key === "Enter" && !inputValue) {
+    } else {
       clearFilter(field);
+    }
+  };
+
+  const handleKeyDown = (event: { key: string }) => {
+    if (event.key === "Enter") {
+      applyFilter();
     }
   };
 
@@ -37,13 +45,18 @@ const TextInput = ({
     <Command>
       <CommandList>
         <CommandGroup heading={t("pages.instances.list.filter.menuHeading.AS")}>
-          <Input
-            autoFocus
-            placeholder={t("pages.instances.list.filter.placeholder.AS")}
-            value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          <InputWithButton>
+            <Input
+              autoFocus
+              placeholder={t("pages.instances.list.filter.placeholder.AS")}
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <Button icon variant="ghost" onClick={() => applyFilter()}>
+              <ArrowRight />
+            </Button>
+          </InputWithButton>
         </CommandGroup>
       </CommandList>
     </Command>
