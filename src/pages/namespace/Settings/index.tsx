@@ -1,5 +1,6 @@
 import ApiKey from "./ApiKey";
 import Broadcasts from "./Broadcasts";
+import DeleteNamespace from "./DeleteNamespace";
 import { FC } from "react";
 import RegistriesList from "./Registries";
 import SecretsList from "./Secrets";
@@ -50,6 +51,10 @@ const SettingsPage: FC = () => {
 
       <section data-testid="broadcasts-section">
         <Broadcasts />
+      </section>
+
+      <section data-testid="broadcasts-section">
+        <DeleteNamespace />
       </section>
 
       <section>

@@ -295,6 +295,15 @@
           "workflowVariable": "Workflow Variable"
         }
       },
+      "deleteNamespace": {
+        "title": "Delete Namespace",
+        "description": "This will permanently delete the current active namespace and all resources associated with it.",
+        "deleteBtn": "Delete Namespace",
+        "modal": {
+          "description": "Are you sure you want to delete <b>{{namespace}}</b>?<br/> This cannot be undone.",
+          "confirm": "Please type <b>{{namespace}}</b> to confirm."
+        }
+      },
       "theme": {
         "title": "Theme"
       },
