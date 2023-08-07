@@ -482,6 +482,15 @@
           "error": {
             "description": "could not create namespace 😢"
           }
+        },
+        "deleteNamespaces": {
+          "success": {
+            "title": "Delete namespace",
+            "description": "Namespace {{name}} was deleted successfully."
+          },
+          "error": {
+            "description": "could not delete namespace 😢"
+          }
         }
       }
     },
