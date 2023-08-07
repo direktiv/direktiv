@@ -7,11 +7,11 @@ const NodeSchema = z.object({
   name: z.string(),
   path: z.string(),
   parent: z.string(),
-  type: z.enum(["directory", "workflow"]),
+  type: z.enum(["directory", "workflow", "file"]),
   attributes: z.array(z.string()), // must be more specified
   oid: z.string(),
   readOnly: z.boolean(),
-  expandedType: z.enum(["directory", "workflow", "git"]),
+  expandedType: z.enum(["directory", "workflow", "file", "git"]),
 });
 
 const RevisionSchema = z.object({

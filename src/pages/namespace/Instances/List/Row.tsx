@@ -1,4 +1,3 @@
-import { ConditionalWrapper, twMergeClsx } from "~/util/helpers";
 import {
   HoverCard,
   HoverCardContent,
@@ -15,6 +14,7 @@ import {
 
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
+import { ConditionalWrapper } from "~/util/helpers";
 import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
@@ -27,16 +27,12 @@ const InstanceTableRow: FC<{
   instance: InstanceSchemaType;
   namespace: string;
 }> = ({ instance, namespace }) => {
-  const [name, revision] = instance.as.split(":");
   const [invoker, childInstance] = instance.invoker.split(":");
   const updatedAt = useUpdatedAt(instance.updatedAt);
   const createdAt = useUpdatedAt(instance.createdAt);
   const navigate = useNavigate();
   const { t } = useTranslation();
-
   const isChild = invoker === "instance" && !!childInstance;
-
-  const isLatestRevision = revision === "latest" || isChild;
 
   return (
     <TooltipProvider>
@@ -64,13 +60,12 @@ const InstanceTableRow: FC<{
                 }}
                 to={pages.explorer.createHref({
                   namespace,
-                  path: name,
-                  subpage: isLatestRevision ? "workflow" : "workflow-revisions",
-                  revision: isLatestRevision ? undefined : revision,
+                  path: instance.as,
+                  subpage: "workflow",
                 })}
                 className="hover:underline"
               >
-                {name}
+                {instance.as}
               </Link>
             </TooltipTrigger>
             <TooltipContent>
@@ -99,15 +94,6 @@ const InstanceTableRow: FC<{
               />
             </TooltipContent>
           </Tooltip>
-        </TableCell>
-        <TableCell>
-          <Badge
-            data-testid={`instance-row-revision-id-${instance.id}`}
-            variant="outline"
-            className={twMergeClsx(!revision && "italic")}
-          >
-            {revision ?? t("pages.instances.list.tableRow.noRevisionId")}
-          </Badge>
         </TableCell>
         <TableCell>
           <ConditionalWrapper

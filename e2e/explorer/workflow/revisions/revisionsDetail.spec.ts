@@ -1,11 +1,11 @@
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 import { expect, test } from "@playwright/test";
+import { headers, radixClick } from "../../../utils/testutils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
-import { radixClick } from "../../../utils/testutils";
 
 let namespace = "";
 
@@ -30,6 +30,7 @@ test('it is possible to open the revision details of the "latest" revision', asy
       namespace,
       name: workflow,
     },
+    headers,
   });
 
   await page.goto(

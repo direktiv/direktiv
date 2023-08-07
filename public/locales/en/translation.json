@@ -183,7 +183,6 @@
         "tableHeader": {
           "name": "name",
           "id": "id",
-          "revisionId": "revision id",
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
@@ -199,7 +198,6 @@
           }
         },
         "tableRow": {
-          "noRevisionId": "none",
           "realtiveTime": "{{relativeTime}} ago",
           "openWorkflowTooltip": "click to open workflow"
         },
@@ -403,11 +401,47 @@
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
-      "placeholder": "new-namespace-name",
       "createBtn": "Create",
-      "namespaceLabel": "Namespace",
       "nameAlreadyExists": "The name already exists",
-      "cancelBtn": "Cancel"
+      "cancelBtn": "Cancel",
+      "tab": {
+        "namespace": "Namespace",
+        "mirror": "Mirror"
+      },
+      "authType": {
+        "none": "none",
+        "ssh": "SSH",
+        "token": "token"
+      },
+      "placeholder": {
+        "name": "new-namespace-name",
+        "ref": "branch or commit hash",
+        "httpUrl": "https://example.com/direktiv/repo.git",
+        "gitUrl": "git@example.com/direktiv/repo.git",
+        "passphrase": "Passphrase (optional)",
+        "publicKey": "Public Key (required)",
+        "privateKey": "Private Key (required)",
+        "token": "token",
+        "authType": "Select authentication method"
+      },
+      "label": {
+        "name": "Name",
+        "ref": "Ref",
+        "url": "Url",
+        "passphrase": "Passphrase",
+        "publicKey": "Public key",
+        "privateKey": "Private key",
+        "token": "Token",
+        "authType": "Auth type"
+      },
+      "tooltip": {
+        "url": "URL to repository. If auth method is SSH, a git url must be used, e.g. 'git@github.com:direktiv/apps-svc.git'. All other auth methods must use HTTP/S urls.",
+        "ref": "Repository reference to sync from. For example this could be a commit hash ('b139f0e') or branch ('main').",
+        "token": "Personal access token (for authentication with a HTTP/S url).",
+        "passphrase": "Passphrase to decrypt keys (optional).",
+        "privateKey": "Private SSH key used for authentication via git@ url.",
+        "publicKey": "Public SSH key used for authenticating via git@ url."
+      }
     },
     "button": {
       "label": {

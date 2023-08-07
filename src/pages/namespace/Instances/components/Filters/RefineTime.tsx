@@ -1,7 +1,10 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
 
+import { ArrowRight } from "lucide-react";
+import Button from "~/design/Button";
 import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
+import { InputWithButton } from "~/design/InputWithButton";
 import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,7 +24,7 @@ const RefineTime = ({
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
 
-    if (!hr || !min || !sec) {
+    if (hr === undefined || min == undefined || sec === undefined) {
       console.error("Invalid time string in setTimeOnDate");
       return;
     }
@@ -42,15 +45,18 @@ const RefineTime = ({
         <CommandGroup
           heading={t("pages.instances.list.filter.menuHeading.time")}
         >
-          <Input
-            type="time"
-            step={1}
-            value={time}
-            onChange={(event) => {
-              setTime(event.target.value);
-            }}
-            onKeyDown={handleKeyDown}
-          />
+          <InputWithButton>
+            <Input
+              type="time"
+              step={1}
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
+              <ArrowRight />
+            </Button>
+          </InputWithButton>
         </CommandGroup>
       </CommandList>
     </Command>
