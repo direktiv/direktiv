@@ -190,6 +190,7 @@
           "updatedAt": "last updated",
           "childInstances": {
             "label": "spawned",
+            "updateTooltip": "refetch child instances",
             "instanceCount": "{{count}} instances",
             "instanceCountMax": "+ {{count}} instances",
             "searchPlaceholder": "Search child instances...",

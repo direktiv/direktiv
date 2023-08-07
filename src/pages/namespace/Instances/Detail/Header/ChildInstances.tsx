@@ -8,6 +8,12 @@ import {
 } from "~/design/Command";
 import { ConditionalWrapper, twMergeClsx } from "~/util/helpers";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
@@ -135,18 +141,29 @@ const ChildInstances = () => {
                 )}
           </span>
         </ConditionalWrapper>
-        <Button
-          icon
-          size="sm"
-          variant="ghost"
-          className="relative -top-0.5"
-          disabled={isFetching}
-          onClick={() => {
-            refetch();
-          }}
-        >
-          <RefreshCcw />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                icon
+                size="sm"
+                variant="ghost"
+                className="relative -top-0.5"
+                disabled={isFetching}
+                onClick={() => {
+                  refetch();
+                }}
+              >
+                <RefreshCcw />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t(
+                `pages.instances.list.tableHeader.childInstances.updateTooltip`
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
