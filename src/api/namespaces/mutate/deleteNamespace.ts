@@ -1,6 +1,6 @@
-import { NamespaceDeletedSchema, NamespaceListSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { NamespaceDeletedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
