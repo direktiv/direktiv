@@ -241,7 +241,7 @@ func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID,
 	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
-		time:          time.Now(),
+		time:          time.Now().UTC(),
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
@@ -258,7 +258,7 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
-		time:          time.Now(),
+		time:          time.Now().UTC(),
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
@@ -275,7 +275,7 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
-		time:          time.Now(),
+		time:          time.Now().UTC(),
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),

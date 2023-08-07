@@ -40,10 +40,10 @@ func (logic *eventsAndLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		logic.Log(ctx, log.Error, "failed to parse duration: %v", err)
-		return time.Now().Add(DefaultLongDeadline)
+		return time.Now().UTC().Add(DefaultLongDeadline)
 	}
 
-	t := d.Shift(time.Now().Add(DefaultShortDeadline))
+	t := d.Shift(time.Now().UTC().Add(DefaultShortDeadline))
 
 	return t
 }

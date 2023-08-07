@@ -207,7 +207,7 @@ func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Conf
 			SetProcessStatus(d.store, process, processStatusComplete).Error()
 		if err != nil {
 			process.Status = processStatusFailed
-			process.EndedAt = time.Now()
+			process.EndedAt = time.Now().UTC()
 			process, _ = d.store.UpdateProcess(context.TODO(), process)
 			d.errLogFunc(process.ID, "mirroring process failed", "err", err, "process_id", process.ID)
 

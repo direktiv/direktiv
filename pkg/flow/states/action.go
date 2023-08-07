@@ -42,18 +42,18 @@ func Action(instance Instance, state model.State) (Logic, error) {
 // Action is a multi-step state.
 func (logic *actionLogic) Deadline(ctx context.Context) time.Time {
 	if logic.Async {
-		return time.Now().Add(DefaultShortDeadline)
+		return time.Now().UTC().Add(DefaultShortDeadline)
 	}
 
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
 		if logic.Timeout != "" {
 			logic.Log(ctx, log.Error, "failed to parse timeout: %v for %s", err, logic.label())
-			return time.Now().Add(DefaultLongDeadline)
+			return time.Now().UTC().Add(DefaultLongDeadline)
 		}
 	}
 
-	t := d.Shift(time.Now().Add(DefaultLongDeadline))
+	t := d.Shift(time.Now().UTC().Add(DefaultLongDeadline))
 
 	return t
 }

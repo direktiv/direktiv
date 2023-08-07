@@ -27,7 +27,7 @@ func Test_ChachedSQLLogStore(t *testing.T) {
 			}
 			tagsCopy["level"] = level
 			l := logengine.LogEntry{
-				T:      time.Now(),
+				T:      time.Now().UTC(),
 				Msg:    msg,
 				Fields: tagsCopy,
 			}
@@ -58,7 +58,7 @@ func Test_ChachedSQLLogStore(t *testing.T) {
 	if logs.Msg != "test msg" {
 		t.Error("got wrong log entry")
 	}
-	if logs.T.After(time.Now()) {
+	if logs.T.After(time.Now().UTC()) {
 		t.Error("some thing is broken with the timestamp")
 	}
 	gotSource, ok := logs.Fields["source"]
@@ -87,7 +87,7 @@ func Test_ChachedSQLLogStore(t *testing.T) {
 	if logs.Msg != "test msg2" {
 		t.Error("got wrong log entry")
 	}
-	if logs.T.After(time.Now()) {
+	if logs.T.After(time.Now().UTC()) {
 		t.Error("some thing is broken with the timestamp")
 	}
 	gotSource, ok = logs.Fields["source"]

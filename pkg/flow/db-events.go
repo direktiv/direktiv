@@ -15,7 +15,7 @@ import (
 )
 
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
-	// t := time.Now().Unix() + delay
+	// t := time.Now().UTC().Unix() + delay
 
 	// processed := delay == 0 //TODO:
 	ctx, end := traceAddtoEventlog(ctx)
@@ -27,7 +27,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	li = append(li, &pkgevents.Event{
 		Event:      eventin,
 		Namespace:  ns.ID,
-		ReceivedAt: time.Now(),
+		ReceivedAt: time.Now().UTC(),
 	})
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
@@ -111,8 +111,8 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	if len(ms.Events) > 0 && ms.Enabled {
 		fEv := &pkgevents.EventListener{
 			ID:                       uuid.New(),
-			CreatedAt:                time.Now(),
-			UpdatedAt:                time.Now(),
+			CreatedAt:                time.Now().UTC(),
+			UpdatedAt:                time.Now().UTC(),
 			Deleted:                  false,
 			NamespaceID:              nsID,
 			TriggerType:              pkgevents.StartSimple,
@@ -166,8 +166,8 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 
 	fEv := &pkgevents.EventListener{
 		ID:                     uuid.New(),
-		CreatedAt:              time.Now(),
-		UpdatedAt:              time.Now(),
+		CreatedAt:              time.Now().UTC(),
+		UpdatedAt:              time.Now().UTC(),
 		Deleted:                false,
 		NamespaceID:            namespace,
 		TriggerType:            pkgevents.WaitSimple,

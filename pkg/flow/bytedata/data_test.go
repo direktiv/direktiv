@@ -12,7 +12,7 @@ func TestConvertLogMsgForOutput(t *testing.T) {
 	field := make(map[string]interface{})
 	field["level"] = "info"
 	input = append(input, &logengine.LogEntry{
-		T:      time.Now(),
+		T:      time.Now().UTC(),
 		Msg:    "test",
 		Fields: field,
 	})

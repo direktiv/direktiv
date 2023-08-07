@@ -54,7 +54,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().Add(time.Hour * -24)
+			t := time.Now().UTC().Add(time.Hour * -24)
 
 			tx, err := srv.flow.beginSqlTx(ctx)
 			if err != nil {
@@ -84,7 +84,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().Add(time.Hour * -24)
+			t := time.Now().UTC().Add(time.Hour * -24)
 			flow.sugar.Error(fmt.Sprintf("deleting all logs since %v", t))
 			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
 				return tx.DataStore().Logs().DeleteOldLogs(context.TODO(), t)

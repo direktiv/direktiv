@@ -40,7 +40,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Eve
 		values = append(values, string(eventByte))
 		values = append(values, v.Namespace)
 		values = append(values, v.ReceivedAt)
-		values = append(values, time.Now())
+		values = append(values, time.Now().UTC())
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
 		if tx.Error != nil {
 			errs[i] = tx.Error

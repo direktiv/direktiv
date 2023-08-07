@@ -33,7 +33,7 @@ func getRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*core.File
 	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
 	if err != nil {
 		if errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			t := time.Now()
+			t := time.Now().UTC()
 			annotations := &core.FileAnnotations{
 				FileID:    file.ID,
 				Data:      make(core.FileAnnotationsData),

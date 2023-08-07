@@ -323,7 +323,7 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 		workflow = workflow[0:divider]
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	empty := time.Time{}
 
 	if im.Status() == util.InstanceStatusFailed || im.Status() == util.InstanceStatusCrashed {

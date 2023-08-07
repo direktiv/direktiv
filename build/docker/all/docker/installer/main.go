@@ -140,7 +140,7 @@ func main() {
 	}
 
 	writer := goterminal.New(os.Stdout)
-	n := time.Now()
+	n := time.Now().UTC()
 
 	log.Println("waiting for pods (can take several minutes)")
 

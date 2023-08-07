@@ -103,14 +103,14 @@ func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
 				Type: t,
 				ID:   id.String(),
 				Time: &types.Timestamp{
-					Time: time.Now(),
+					Time: time.Now().UTC(),
 				},
 				Subject: &subj,
 				Source:  *types.ParseURIRef("test.com"),
 			},
 		},
 		Namespace:  ns,
-		ReceivedAt: time.Now(),
+		ReceivedAt: time.Now().UTC(),
 	}
 
 	return ev
@@ -128,8 +128,8 @@ func Test_TopicAddGet(t *testing.T) {
 	listeners := store.EventListener()
 	err = listeners.Append(context.Background(), &events.EventListener{
 		ID:                          eID,
-		CreatedAt:                   time.Now(),
-		UpdatedAt:                   time.Now(),
+		CreatedAt:                   time.Now().UTC(),
+		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"a"},
@@ -171,8 +171,8 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	listeners := store.EventListener()
 	err = listeners.Append(context.Background(), &events.EventListener{
 		ID:                          eID,
-		CreatedAt:                   time.Now(),
-		UpdatedAt:                   time.Now(),
+		CreatedAt:                   time.Now().UTC(),
+		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"a"},
@@ -207,7 +207,7 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	if got[0].TriggerWorkflow != wf {
 		t.Error("trigger info was not correct")
 	}
-	got[0].UpdatedAt = time.Now()
+	got[0].UpdatedAt = time.Now().UTC()
 	got[0].Deleted = true
 	errs := listeners.UpdateOrDelete(context.Background(), []*events.EventListener{got[0]})
 	for _, err := range errs {
@@ -245,8 +245,8 @@ func Test_ListenerAddDeleteByWf(t *testing.T) {
 	listeners := store.EventListener()
 	err = listeners.Append(context.Background(), &events.EventListener{
 		ID:                          eID,
-		CreatedAt:                   time.Now(),
-		UpdatedAt:                   time.Now(),
+		CreatedAt:                   time.Now().UTC(),
+		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"a"},
