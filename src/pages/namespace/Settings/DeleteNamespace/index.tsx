@@ -6,16 +6,11 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const DeleteNamespace: FC = () => {
   const { t } = useTranslation();
-  const namespace = useNamespace();
-
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  if (!namespace) return null;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -40,12 +35,7 @@ const DeleteNamespace: FC = () => {
           </div>
         </Alert>
 
-        <Delete
-          namespace={namespace}
-          onConfirm={() => {
-            // delete
-          }}
-        />
+        <Delete close={() => setDialogOpen(false)} />
       </Card>
     </Dialog>
   );
