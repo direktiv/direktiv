@@ -1,9 +1,10 @@
 import {
+  ActivitySquare,
   Boxes,
-  Bug,
   Calendar,
   FolderTree,
   Layers,
+  Monitor,
   Settings,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
@@ -199,7 +200,7 @@ export const pages: PageType = {
   },
   monitoring: {
     name: "components.mainMenu.monitoring",
-    icon: Bug,
+    icon: ActivitySquare,
     createHref: (params) => `/${params.namespace}/monitoring`,
     route: {
       path: "monitoring",
