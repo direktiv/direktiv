@@ -397,7 +397,8 @@
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
       "loading": "loading...",
-      "instances": "Instances"
+      "instances": "Instances",
+      "monitoring": "Monitoring"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",

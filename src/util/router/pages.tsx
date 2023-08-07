@@ -4,7 +4,6 @@ import {
   Calendar,
   FolderTree,
   Layers,
-  Monitor,
   Settings,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
@@ -97,7 +96,20 @@ type InstancesPageSetup = Record<
   }
 >;
 
-type PageType = DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup;
+type MonitoringPageSetup = Record<
+  "monitoring",
+  PageBase & {
+    createHref: (params: { namespace: string }) => string;
+    useParams: () => {
+      isMonitoringPage: boolean;
+    };
+  }
+>;
+
+type PageType = DefaultPageSetup &
+  ExplorerPageSetup &
+  InstancesPageSetup &
+  MonitoringPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -202,9 +214,15 @@ export const pages: PageType = {
     name: "components.mainMenu.monitoring",
     icon: ActivitySquare,
     createHref: (params) => `/${params.namespace}/monitoring`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
+      return { isMonitoringPage };
+    },
     route: {
       path: "monitoring",
       element: <div className="flex flex-col space-y-5 p-10">Monitoring</div>,
+      handle: { isMonitoringPage: true },
     },
   },
   instances: {
