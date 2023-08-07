@@ -19,7 +19,7 @@ import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import { pages } from "~/util/router/pages";
-import { statusToBadgeVariant } from "./utils";
+import { statusToBadgeVariant } from "../utils";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
@@ -147,6 +147,7 @@ const InstanceTableRow: FC<{
             <Badge
               data-testid={`instance-row-state-${instance.id}`}
               variant={statusToBadgeVariant(instance.status)}
+              icon={instance.status}
             >
               {instance.status}
             </Badge>

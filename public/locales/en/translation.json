@@ -186,7 +186,16 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated"
+          "updatedAt": "last updated",
+          "childInstances": {
+            "label": "spawned",
+            "updateTooltip": "refetch child instances",
+            "instanceCount": "{{count}} instances",
+            "instanceCountMax": "+ {{count}} instances",
+            "searchPlaceholder": "Search child instances...",
+            "searchPlaceholderMax": "Search the latest {{count}} child instances...",
+            "notFound": "No child instances found."
+          }
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
@@ -215,6 +224,66 @@
             "AS": "filename.yaml",
             "STATUS": "Type or select status...",
             "TRIGGER": "Type or select trigger type..."
+          }
+        }
+      },
+      "detail": {
+        "header": {
+          "openWorkflow": "Open workflow",
+          "invoker": "trigger",
+          "state": "state",
+          "startedAt": "started at",
+          "updatedAt": "last updated",
+          "realtiveTime": "{{relativeTime}} ago"
+        },
+        "logs": {
+          "title": "Logs",
+          "followLogs": "Follow logs",
+          "logsCount": "received {{count}} log entries",
+          "logsCount_one": "received {{count}} log entry",
+          "tooltips": {
+            "verbose": "Verbose logs",
+            "wordWrap": "Word wrap",
+            "copy": "Copy logs",
+            "minimize": "Minimize logs",
+            "maximize": "Maximize logs"
+          },
+          "filter": {
+            "filterButton": "Filter",
+            "menuHeading": {
+              "main": "Select filter",
+              "workflowName": "workflow name",
+              "stateName": "state name"
+            },
+            "field": {
+              "workflowName": "workflow name",
+              "stateName": "state name"
+            },
+            "placeholder": {
+              "mainMenu": "Type or select a field...",
+              "workflowName": "/path/filename.yaml",
+              "stateName": "someStateName"
+            }
+          }
+        },
+        "diagram": {
+          "minimizeInput": "Minimize diagram",
+          "maximizeInput": "Maximize diagram"
+        },
+        "inputOutput": {
+          "copyInput": "Copy input",
+          "minimizeInput": "Minimize input",
+          "maximizeInput": "Maximize input",
+          "copyOutput": "Copy output",
+          "minimizeOutput": "Minimize output",
+          "maximizeOutput": "Maximize output",
+          "tabs": {
+            "input": "Input",
+            "output": "Output"
+          },
+          "output": {
+            "stillRunningMsg": "The workflow is still running",
+            "noOutputMsg": "no output data was resolved"
           }
         }
       }

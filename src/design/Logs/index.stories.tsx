@@ -17,11 +17,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: ({ ...args }) => (
     <Logs {...args}>
-      <LogEntry time="12:342:23" variant="error">
+      <LogEntry time="12:34:23.12" variant="error">
         Hey this is the log
       </LogEntry>
 
-      <LogEntry time="12:342:23" variant="error">
+      <LogEntry time="12:34:23.12" variant="error">
         Hey this is the log
       </LogEntry>
     </Logs>
@@ -30,28 +30,28 @@ export const Default: Story = {
 
 export const LogVariants = () => (
   <Logs>
-    <LogEntry time="12:34:23" variant="error">
+    <LogEntry time="12:34:23.12" variant="error">
       Hey this is the error log
     </LogEntry>
 
-    <LogEntry time="12:34:23" variant="success">
+    <LogEntry time="12:34:23.12" variant="success">
       Hey this is the success log
     </LogEntry>
 
-    <LogEntry time="12:34:23" variant="warning">
+    <LogEntry time="12:34:23.12" variant="warning">
       Hey this is the warning log
     </LogEntry>
-    <LogEntry time="12:34:23" variant="info">
+    <LogEntry time="12:34:23.12" variant="info">
       Hey this is the info log
     </LogEntry>
-    <LogEntry time="12:34:23">Hey this is the info log</LogEntry>
+    <LogEntry time="12:34:23.12">Hey this is the info log</LogEntry>
   </Logs>
 );
 
 export const WrapLog = () => (
   <Card>
-    <Logs linewrap>
-      <LogEntry time="12:34:23" variant="success">
+    <Logs wordWrap>
+      <LogEntry time="12:34:23.12" variant="success">
         This is going to be a very long line This is going to be a very long
         line This is going to be a very long line This is going to be a very
         long line This is going to be a very long line Next line Third line
@@ -63,12 +63,12 @@ export const WrapLog = () => (
 export const NoWrapLog = () => (
   <Card>
     <Logs>
-      <LogEntry time="12:34:23" variant="success">
+      <LogEntry time="12:34:23.12" variant="success">
         This is going to be a very long line This is going to be a very long
         line This is going to be a very long line This is going to be a very
         long line This is going to be a very long line Next line Third line
       </LogEntry>
-      <LogEntry time="12:34:23" variant="error">
+      <LogEntry time="12:34:23.12" variant="error">
         New Entry
       </LogEntry>
     </Logs>
@@ -76,24 +76,24 @@ export const NoWrapLog = () => (
 );
 
 export const EditorVSLogsFontCompare = () => {
-  const [lineWrap, setLineWrap] = useState(true);
+  const [wordWrap, setWordWrap] = useState(true);
   return (
     <div className="flex flex-col gap-y-5">
-      <Button className="self-start" onClick={() => setLineWrap((old) => !old)}>
-        {!lineWrap && "don't"} wrap long lines
+      <Button className="self-start" onClick={() => setWordWrap((old) => !old)}>
+        {!wordWrap && "don't"} wrap long lines
       </Button>
       <div className="flex flex-row gap-5">
         <Card className="flex h-[500px] flex-1 overflow-x-auto">
-          <Logs linewrap={lineWrap} className="grow">
-            <LogEntry time="12:34:23">
+          <Logs wordWrap={wordWrap} className="grow">
+            <LogEntry time="12:34:23.12">
               Preparing workflow triggered by api.
             </LogEntry>
-            <LogEntry time="12:34:23">Starting workflow demo.yml.</LogEntry>
-            <LogEntry time="12:34:23">
+            <LogEntry time="12:34:23.12">Starting workflow demo.yml.</LogEntry>
+            <LogEntry time="12:34:23.12">
               Running state logic (step:1) -- helloworld
             </LogEntry>
-            <LogEntry time="12:34:23">Transforming state data.</LogEntry>
-            <LogEntry time="12:34:23" variant="warning">
+            <LogEntry time="12:34:23.12">Transforming state data.</LogEntry>
+            <LogEntry time="12:34:23.12" variant="warning">
               Warning: this is a very long line with a warning. this is a very
               long line with a warning. this is a very long line with a warning.
               this is a very long line with a warning. this is a very long line
@@ -103,7 +103,7 @@ export const EditorVSLogsFontCompare = () => {
               long line with a warning. this is a very long line with a warning.
               this is a very long line with a warning.
             </LogEntry>
-            <LogEntry time="12:34:23" variant="success">
+            <LogEntry time="12:34:23.12" variant="success">
               Workflow demo.yml completed.
             </LogEntry>
           </Logs>

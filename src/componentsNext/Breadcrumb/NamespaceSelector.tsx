@@ -39,7 +39,7 @@ const NamespaceSelector = () => {
   } = useListNamespaces();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
 

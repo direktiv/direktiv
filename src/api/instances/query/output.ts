@@ -1,12 +1,12 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
-import { InstancesInputSchema } from "../schema";
+import { InstancesOutputSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 
-export const getInput = apiFactory({
+export const getOutput = apiFactory({
   url: ({
     namespace,
     baseUrl,
@@ -18,20 +18,28 @@ export const getInput = apiFactory({
   }) =>
     `${
       baseUrl ?? ""
-    }/api/namespaces/${namespace}/instances/${instanceId}/input`,
+    }/api/namespaces/${namespace}/instances/${instanceId}/output`,
   method: "GET",
-  schema: InstancesInputSchema,
+  schema: InstancesOutputSchema,
 });
 
-const fetchInput = async ({
+const fetchOutput = async ({
   queryKey: [{ apiKey, namespace, instanceId }],
-}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instancesInput"]>>) =>
-  getInput({
+}: QueryFunctionContext<
+  ReturnType<(typeof instanceKeys)["instancesOutput"]>
+>) =>
+  getOutput({
     apiKey,
     urlParams: { namespace, instanceId },
   });
 
-export const useInput = ({ instanceId }: { instanceId: string }) => {
+export const useOutput = ({
+  instanceId,
+  enabled = true,
+}: {
+  instanceId: string;
+  enabled?: boolean;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -40,11 +48,11 @@ export const useInput = ({ instanceId }: { instanceId: string }) => {
   }
 
   return useQuery({
-    queryKey: instanceKeys.instancesInput(namespace, {
+    queryKey: instanceKeys.instancesOutput(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),
-    queryFn: fetchInput,
-    enabled: !!namespace,
+    queryFn: fetchOutput,
+    enabled,
   });
 };
