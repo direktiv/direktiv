@@ -11,6 +11,7 @@ import { useMatches, useParams, useSearchParams } from "react-router-dom";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
+import MonitoringPage from "~/pages/namespace/Monitoring";
 import React from "react";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -221,7 +222,7 @@ export const pages: PageType = {
     },
     route: {
       path: "monitoring",
-      element: <div className="flex flex-col space-y-5 p-10">Monitoring</div>,
+      element: <MonitoringPage />,
       handle: { isMonitoringPage: true },
     },
   },

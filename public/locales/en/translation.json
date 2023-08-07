@@ -173,6 +173,9 @@
         }
       }
     },
+    "monitoring": {
+      "title": "Monitoring"
+    },
     "instances": {
       "list": {
         "title": "Recently executed instances",
