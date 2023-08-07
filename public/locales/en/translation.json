@@ -230,7 +230,7 @@
       },
       "detail": {
         "header": {
-          "openWorkflow": "Open Workflow",
+          "openWorkflow": "Open workflow",
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
