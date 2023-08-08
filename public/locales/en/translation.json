@@ -173,6 +173,21 @@
         }
       }
     },
+    "events": {
+      "list": {
+        "title": "Events",
+        "tableHeader": {
+          "id": "id",
+          "type": "type",
+          "source": "source",
+          "receivedAt": "received"
+        },
+        "empty": {
+          "noFilterResults": "No events found with these filter criteria",
+          "noResults": "No events found"
+        }
+      }
+    },
     "instances": {
       "list": {
         "title": "Recently executed instances",
