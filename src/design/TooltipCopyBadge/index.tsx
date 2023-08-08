@@ -11,11 +11,11 @@ const TooltipCopyBadge = ({
   displayValue: string;
 }) => (
   <Tooltip>
-    <TooltipTrigger data-testid={`instance-row-id-${value}`}>
+    <TooltipTrigger data-testid={`tooltip-copy-badge-${value}`}>
       <Badge variant="outline">{displayValue}</Badge>
     </TooltipTrigger>
     <TooltipContent
-      data-testid={`instance-row-id-full-${value}`}
+      data-testid={`tooltip-copy-badge-content-${value}`}
       className="flex gap-2 align-middle"
     >
       {value}
