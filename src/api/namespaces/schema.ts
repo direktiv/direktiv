@@ -1,3 +1,4 @@
+import { LogLevelSchema } from "../schema";
 import { z } from "zod";
 
 export const NamespaceSchema = z.object({
@@ -17,10 +18,10 @@ export const NamespaceCreatedSchema = z.object({
 
 export const NamespaceLogSchema = z.object({
   t: z.string(), // 2023-08-07T08:09:49.406596Z
-  level: z.enum(["debug", "info", "error"]),
+  level: LogLevelSchema,
   msg: z.string(), // Starting workflow /stable-diffusion.yaml
   tags: z.object({
-    level: z.enum(["debug", "info", "error"]),
+    level: LogLevelSchema,
     namespace: z.string(), // my-namespace
     "namespace-id": z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
     source: z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020

@@ -18,3 +18,5 @@ export const PageinfoSchema = z.object({
   offset: z.number(),
   total: z.number(),
 });
+
+export const LogLevelSchema = z.enum(["debug", "info", "error"]);
