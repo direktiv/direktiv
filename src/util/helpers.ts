@@ -1,6 +1,7 @@
 import clsx, { ClassValue } from "clsx";
 
 import { FC } from "react";
+import moment from "moment";
 import { twMerge } from "tailwind-merge";
 
 /**
@@ -29,3 +30,6 @@ export const ConditionalWrapper: FC<ConditionalWrapperProps> = ({
   wrapper,
   children,
 }) => (condition ? wrapper(children) : children);
+
+export const formatLogTime = (time: string) =>
+  moment(time).format("HH:mm:ss.mm");

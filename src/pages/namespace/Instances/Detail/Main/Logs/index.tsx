@@ -18,7 +18,7 @@ import CopyButton from "~/design/CopyButton";
 import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
-import { formatTime } from "./utils";
+import { formatLogTime } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useLogs } from "~/api/logs/query/get";
 import { useTranslation } from "react-i18next";
@@ -42,7 +42,8 @@ const LogsPanel = () => {
   const isMaximized = maximizedPanel === "logs";
 
   const copyValue =
-    logData?.results.map((x) => `${formatTime(x.t)} ${x.msg}`).join("\n") ?? "";
+    logData?.results.map((x) => `${formatLogTime(x.t)} ${x.msg}`).join("\n") ??
+    "";
 
   const resultCount = logData?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
