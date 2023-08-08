@@ -28,7 +28,7 @@ const InstancesPage = () => {
           "grid grow gap-5",
           "grid-rows-[100vh_50vh_50vh]",
           "md:grid-rows-[minmax(300px,45vh)_1fr]",
-          "md:grid-cols-[minmax(430px,1fr)_1fr]"
+          "md:grid-cols-[1fr_1fr]"
         )}
       >
         <Card className="relative grid grid-rows-[auto,1fr,auto] p-5 md:col-span-2">
