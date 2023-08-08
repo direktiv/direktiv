@@ -1,4 +1,4 @@
-import { NamespaceLogsSchema, NamespaceLogsSchemaType } from "../schema";
+import { NamespaceLogListSchema, NamespaceLogListSchemaType } from "../schema";
 import {
   QueryFunctionContext,
   useQuery,
@@ -15,7 +15,7 @@ export const getInstanceDetails = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/namespaces/${namespace}/logs`,
   method: "GET",
-  schema: NamespaceLogsSchema,
+  schema: NamespaceLogListSchema,
 });
 
 const fetchInstanceDetails = async ({
@@ -41,9 +41,9 @@ export const useNamespaceLogsStream = ({
     url: `/api/namespaces/${namespace}/logs`,
     apiKey: apiKey ?? undefined,
     enabled,
-    schema: NamespaceLogsSchema,
+    schema: NamespaceLogListSchema,
     onMessage: (msg) => {
-      queryClient.setQueryData<NamespaceLogsSchemaType>(
+      queryClient.setQueryData<NamespaceLogListSchemaType>(
         namespaceKeys.logs(namespace, { apiKey: apiKey ?? undefined }),
         () => msg
       );
