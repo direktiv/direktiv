@@ -1,18 +1,17 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
+import { ComponentProps } from "react";
 import CopyButton from "~/design/CopyButton";
 
-const TooltipCopyBadge = ({
-  value,
-  displayValue,
-}: {
+type TooltipCopyBadge = ComponentProps<typeof Badge> & {
   value: string;
-  displayValue: string;
-}) => (
+};
+
+const TooltipCopyBadge = ({ value, ...props }: TooltipCopyBadge) => (
   <Tooltip>
     <TooltipTrigger data-testid={`tooltip-copy-badge-${value}`}>
-      <Badge variant="outline">{displayValue}</Badge>
+      <Badge {...props} />
     </TooltipTrigger>
     <TooltipContent
       data-testid={`tooltip-copy-badge-content-${value}`}
