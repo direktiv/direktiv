@@ -11,7 +11,6 @@ type logLevel = LogEntryType["level"];
 const logLevelToLogEntryVariant = (level: logLevel): LogEntryVariant => {
   switch (level) {
     case "error":
-    case "panic":
       return "error";
     case "info":
       return "info";
