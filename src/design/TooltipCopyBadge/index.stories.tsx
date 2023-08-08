@@ -6,12 +6,38 @@ export default {
 };
 
 export const Default = () => (
-  <div>
+  <div className="flex gap-2">
     <TooltipProvider>
+      <TooltipCopyBadge value="some-rather-a-bit-too-long-text" icon="complete">
+        short-text
+      </TooltipCopyBadge>
+      <TooltipCopyBadge
+        variant="secondary"
+        value="some-rather-a-bit-too-long-text"
+        icon="pending"
+      >
+        short-text
+      </TooltipCopyBadge>
+      <TooltipCopyBadge
+        variant="outline"
+        value="some-rather-a-bit-too-long-text"
+      >
+        short-text
+      </TooltipCopyBadge>
       <TooltipCopyBadge
         value="some-rather-a-bit-too-long-text"
-        displayValue="short-text"
-      />
+        variant="destructive"
+        icon="failed"
+      >
+        short-text
+      </TooltipCopyBadge>
+      <TooltipCopyBadge
+        value="some-rather-a-bit-too-long-text"
+        variant="success"
+        icon="complete"
+      >
+        short-text
+      </TooltipCopyBadge>
     </TooltipProvider>
   </div>
 );

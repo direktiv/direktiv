@@ -75,10 +75,9 @@ const InstanceTableRow: FC<{
           </Tooltip>
         </TableCell>
         <TableCell>
-          <TooltipCopyBadge
-            value={instance.id}
-            displayValue={instance.id.slice(0, 8)}
-          />
+          <TooltipCopyBadge value={instance.id} variant="outline">
+            {instance.id.slice(0, 8)}
+          </TooltipCopyBadge>
         </TableCell>
         <TableCell>
           <ConditionalWrapper
