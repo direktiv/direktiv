@@ -115,7 +115,7 @@ test("it renders the instance item correctly for failed and success status", asy
       `instance-row-wrap-${instance.instance}`
     );
     const instanceItemId = page.getByTestId(
-      `instance-row-id-${instance.instance}`
+      `tooltip-copy-badge-${instance.instance}`
     );
     await expect(
       instanceItemId,
@@ -123,7 +123,7 @@ test("it renders the instance item correctly for failed and success status", asy
     ).toContainText(instance.instance.slice(0, 8));
     await instanceItemId.hover();
     const idTooltip = page.getByTestId(
-      `instance-row-id-full-${instance.instance}`
+      `tooltip-copy-badge-content-${instance.instance}`
     );
     await expect(
       idTooltip,
@@ -317,7 +317,7 @@ test("it provides a proper pagination", async ({ page }) => {
   const firstInstance = instancesListPage3.instances.results[0];
   if (!firstInstance) throw new Error("there should be at least one instance");
   const instanceItemId = page.getByTestId(
-    `instance-row-id-${firstInstance.id}`
+    `tooltip-copy-badge-${firstInstance.id}`
   );
   await expect(
     instanceItemId,
@@ -375,7 +375,7 @@ test("It will display child instances as well", async ({ page }) => {
   await expect(invoker, `invoker is "instance"`).toContainText("instance");
 
   const instanceItemId = page.getByTestId(
-    `instance-row-id-${childInstanceDetail.id}`
+    `tooltip-copy-badge-${childInstanceDetail.id}`
   );
   await expect(
     instanceItemId,
@@ -383,7 +383,7 @@ test("It will display child instances as well", async ({ page }) => {
   ).toContainText(childInstanceDetail.id.slice(0, 8));
   await instanceItemId.hover();
   const idTooltip = page.getByTestId(
-    `instance-row-id-full-${childInstanceDetail.id}`
+    `tooltip-copy-badge-content-${childInstanceDetail.id}`
   );
   await expect(idTooltip, "on hover, a tooltip reveals full id").toContainText(
     childInstanceDetail.id
