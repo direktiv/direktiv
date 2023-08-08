@@ -12,13 +12,12 @@ const Row = ({
   namespace: string;
 }) => (
   <TooltipProvider>
-    <TableRow>
+    <TableRow data-testid={`event-row-${event.id}`}>
       <TableCell>{event.type}</TableCell>
       <TableCell>
-        <TooltipCopyBadge
-          value={event.id}
-          displayValue={event.id.slice(0, 8)}
-        />
+        <TooltipCopyBadge value={event.id} variant="outline">
+          {event.id.slice(0, 8)}
+        </TooltipCopyBadge>
       </TableCell>
       <TableCell>{event.source}</TableCell>
       <TableCell>{event.receivedAt}</TableCell>
