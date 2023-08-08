@@ -46,10 +46,10 @@ const EventsPageList = () => {
               <TableHeaderCell>
                 {t("pages.events.list.tableHeader.id")}
               </TableHeaderCell>
-              <TableHeaderCell className="w-32">
+              <TableHeaderCell>
                 {t("pages.events.list.tableHeader.source")}
               </TableHeaderCell>
-              <TableHeaderCell className="w-28">
+              <TableHeaderCell>
                 {t("pages.events.list.tableHeader.receivedAt")}
               </TableHeaderCell>
             </TableRow>
