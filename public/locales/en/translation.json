@@ -175,12 +175,15 @@
     },
     "events": {
       "list": {
-        "title": "Events",
+        "title": "Cloud events history",
         "tableHeader": {
           "id": "id",
           "type": "type",
           "source": "source",
           "receivedAt": "received"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
         },
         "empty": {
           "noFilterResults": "No events found with these filter criteria",
