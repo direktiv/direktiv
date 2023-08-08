@@ -174,7 +174,15 @@
       }
     },
     "monitoring": {
-      "title": "Monitoring"
+      "title": "Monitoring",
+      "logs": {
+        "title": "Logs",
+        "logsCount": "received {{count}} log entries",
+        "logsCount_one": "received {{count}} log entry",
+        "tooltips": {
+          "copy": "Copy logs"
+        }
+      }
     },
     "instances": {
       "list": {

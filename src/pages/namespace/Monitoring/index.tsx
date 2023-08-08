@@ -1,5 +1,6 @@
 import { ActivitySquare } from "lucide-react";
 import { Card } from "~/design/Card";
+import Logs from "./Logs";
 import { useNamespacelogs } from "~/api/namespaces/query/logs";
 import { useTranslation } from "react-i18next";
 
@@ -13,7 +14,9 @@ const InstancesPage = () => {
         <ActivitySquare className="h-5" />
         {t("pages.monitoring.title")}
       </h3>
-      <Card className="p-5"></Card>
+      <Card className="p-5">
+        <Logs />
+      </Card>
     </div>
   );
 };
