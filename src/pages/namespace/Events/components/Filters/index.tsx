@@ -91,7 +91,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         // so it is possible to assert filters[field]?.value is defined and TS
         // does not merge the different possible types of filters[field]?.value
 
-        if (field === "TEXT") {
+        if (field === "TYPE" || field === "TEXT") {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
