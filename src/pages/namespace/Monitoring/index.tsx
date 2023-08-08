@@ -1,5 +1,6 @@
 import { ActivitySquare } from "lucide-react";
 import { Card } from "~/design/Card";
+import { Instances } from "./Instances";
 import Logs from "./Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespaceLogsStream } from "~/api/namespaces/query/logs";
@@ -36,8 +37,7 @@ const InstancesPage = () => {
         <Card className="relative grid grid-rows-[auto,1fr,auto] p-5 md:col-span-2">
           <Logs />
         </Card>
-        <Card className="p-5"></Card>
-        <Card className="p-5"></Card>
+        <Instances />
       </div>
     </div>
   );
