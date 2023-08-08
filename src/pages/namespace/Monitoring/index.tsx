@@ -8,15 +8,12 @@ import { useTranslation } from "react-i18next";
 
 const InstancesPage = () => {
   const { t } = useTranslation();
+
   /**
-   * the streaming hooks will update the react query cache
-   * when it received new data. This will trigger a rerender
-   * of all components that consume this data via useQuery.
-   *
-   * This is why it's important to place this hook in a separate
-   * parent component on top of the consuming components. It
-   * will ensure that the hook will not rerun itself (canceling
-   * the stream and restarting a new one) when it updates the cache
+   * each of these hooks will subscribe to a SSE stream. They will
+   * setup a connection on mount and cancel the connection on unmount.
+   * To avoid unnecessary reconnects, make sure to place this hooks
+   * in a isolated a parent component that will not rerender very often.
    */
   useNamespaceLogsStream();
 
