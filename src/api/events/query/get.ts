@@ -43,16 +43,15 @@ const updateCache = (
    * it's also important to note that multiple components can subscribe to the same
    * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
    */
-  const lastCachedLog =
-    oldData.events.results[oldData.events.results.length - 1];
+  const lastCachedEvent = oldData.events.results[0];
   let newResults: typeof oldData.events.results = [];
 
   // there was a previous cache, but with no entries yet
-  if (!lastCachedLog) {
+  if (!lastCachedEvent) {
     newResults = message.events.results;
     // there was a previous cache with entries
   } else {
-    const newestLogTimeFromCache = moment(lastCachedLog.receivedAt);
+    const newestLogTimeFromCache = moment(lastCachedEvent.receivedAt);
     // new results are all logs that are newer than the last cached log
     newResults = message.events.results.filter((entry) =>
       newestLogTimeFromCache.isBefore(entry.receivedAt)
@@ -62,7 +61,7 @@ const updateCache = (
   return {
     ...oldData,
     events: {
-      results: [...oldData.events.results, ...newResults],
+      results: [...newResults, ...oldData.events.results],
       pageInfo: message.events.pageInfo,
     },
   };
