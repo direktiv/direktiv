@@ -15,7 +15,28 @@ export const NamespaceCreatedSchema = z.object({
   namespace: NamespaceSchema,
 });
 
-export const NamespaceLogListSchema = z.object({});
+export const NamespaceLogSchema = z.object({
+  t: z.string(), // 2023-08-07T08:09:49.406596Z
+  level: z.enum(["debug", "info", "error"]),
+  msg: z.string(), // Starting workflow /stable-diffusion.yaml
+  tags: z.object({
+    level: z.enum(["debug", "info", "error"]),
+    namespace: z.string(), // my-namespace
+    "namespace-id": z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
+    source: z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
+    type: z.string(),
+    callpath: z.string().optional(), // / 7fda01ef-2fa7-454b-8fb1-b63f87464762
+    instanceId: z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
+    invoker: z.string().optional(), // api TODO: enum?
+    "revision-id": z.string().optional(), // 498841a9-f278-480e-9bfc-af698d9f8047
+    "root-instance-id": z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
+    workflow: z.string().optional(), // /path/to/workflow.yaml
+  }),
+});
+
+export const NamespaceLogListSchema = z.object({
+  results: z.array(NamespaceLogSchema),
+});
 
 // Regex for input validation. This isn't perfect but should be good enough for
 // a start. Matches git@hostname:path, where path isn't very restrictive.
