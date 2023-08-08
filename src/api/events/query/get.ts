@@ -1,10 +1,16 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
+import { EventsListSchema, EventsListSchemaType } from "../schema";
+import {
+  QueryFunctionContext,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
-import { EventsListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { eventKeys } from "..";
+import moment from "moment";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useStreaming } from "~/api/streaming";
 
 /**
  * Filtering events:
@@ -16,6 +22,50 @@ export type FiltersObj = {
   TEXT?: { type: "CONTAINS"; value: string };
   AFTER?: { type: "AFTER"; value: Date };
   BEFORE?: { type: "BEFORE"; value: Date };
+};
+
+const updateCache = (
+  oldData: EventsListSchemaType | undefined,
+  message: EventsListSchemaType
+) => {
+  if (!oldData) {
+    return message;
+  }
+  /**
+   * Dedup logs. The onMessage callback gets called in two different cases:
+   *
+   * case 1:
+   * when the SSE connection is established, the whole set of logs is received
+   *
+   * case 2:
+   * after the connection is established and only some new log entries are received
+   *
+   * it's also important to note that multiple components can subscribe to the same
+   * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
+   */
+  const lastCachedLog =
+    oldData.events.results[oldData.events.results.length - 1];
+  let newResults: typeof oldData.events.results = [];
+
+  // there was a previous cache, but with no entries yet
+  if (!lastCachedLog) {
+    newResults = message.events.results;
+    // there was a previous cache with entries
+  } else {
+    const newestLogTimeFromCache = moment(lastCachedLog.receivedAt);
+    // new results are all logs that are newer than the last cached log
+    newResults = message.events.results.filter((entry) =>
+      newestLogTimeFromCache.isBefore(entry.receivedAt)
+    );
+  }
+
+  return {
+    ...oldData,
+    events: {
+      results: [...oldData.events.results, ...newResults],
+      pageInfo: message.events.pageInfo,
+    },
+  };
 };
 
 // TODO: this same method is duplicated in several places, extract and import?
@@ -120,5 +170,44 @@ export const useEvents = ({
     }),
     queryFn: fetchEvents,
     enabled: !!namespace,
+  });
+};
+
+export const useEventsStream = (
+  {
+    limit,
+    offset,
+    filters,
+  }: {
+    limit: number;
+    offset: number;
+    filters: FiltersObj;
+  },
+  { enabled = true }: { enabled?: boolean } = {}
+) => {
+  const apiKey = useApiKey();
+  const namespace = useNamespace();
+  const queryClient = useQueryClient();
+
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
+
+  return useStreaming({
+    url: getUrl({ namespace, offset, limit, filters }),
+    apiKey: apiKey ?? undefined,
+    enabled,
+    schema: EventsListSchema,
+    onMessage: (message) => {
+      queryClient.setQueryData<EventsListSchemaType>(
+        eventKeys.eventsList(namespace, {
+          apiKey: apiKey ?? undefined,
+          limit,
+          offset,
+          filters: filters ?? {},
+        }),
+        (oldData) => updateCache(oldData, message)
+      );
+    },
   });
 };

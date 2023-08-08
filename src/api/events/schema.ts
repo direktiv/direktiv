@@ -18,3 +18,4 @@ export const EventsListSchema = z.object({
 });
 
 export type EventSchemaType = z.infer<typeof EventSchema>;
+export type EventsListSchemaType = z.infer<typeof EventsListSchema>;
