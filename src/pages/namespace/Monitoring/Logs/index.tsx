@@ -8,6 +8,7 @@ import {
 
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
+import ScrollContainer from "./Scrollcontainer";
 import { formatLogTime } from "~/util/helpers";
 import { useNamespacelogs } from "~/api/namespaces/query/logs";
 import { useTranslation } from "react-i18next";
@@ -51,7 +52,7 @@ const LogsPanel = () => {
           </TooltipProvider>
         </ButtonBar>
       </div>
-      <div>Scrollcontainer</div>
+      <ScrollContainer />
       <div className="flex items-center justify-center pt-2 text-sm text-gray-11">
         <Loader2 className="h-3 animate-spin" />
         {t("pages.monitoring.logs.logsCount", { count: resultCount })}
