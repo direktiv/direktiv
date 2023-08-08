@@ -176,7 +176,11 @@
     "events": {
       "list": {
         "title": "Cloud events history",
-        "createEventBtn": "Send new event",
+        "send": {
+          "dialogTrigger": "Send new event",
+          "dialogHeader": "Create new event",
+          "submit": "Send"
+        },
         "tableHeader": {
           "id": "id",
           "type": "type",

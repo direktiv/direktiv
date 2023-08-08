@@ -1,4 +1,12 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/design/Dialog";
 import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
   Table,
@@ -12,9 +20,12 @@ import {
 import Button from "~/design/Button";
 import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import Filters from "../components/Filters";
 import NoResult from "./NoResult";
 import Row from "./Row";
+import Send from "./Send";
+import { exampleEvent } from "./exampleEvent";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -55,14 +66,7 @@ const EventsList = ({
           {t("pages.events.list.title")}
         </h3>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="primary" data-testid="event-create">
-              {t("pages.events.list.createEventBtn")}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>Send Event Dialog</DialogContent>
-        </Dialog>
+        <Send />
       </div>
 
       <Card>
