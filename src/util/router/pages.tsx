@@ -98,7 +98,20 @@ type InstancesPageSetup = Record<
   }
 >;
 
-type PageType = DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup;
+type EventsPageSetup = Record<
+  "events",
+  PageBase & {
+    createHref: (params: { namespace: string }) => string;
+    useParams: () => {
+      isEventsPage: boolean;
+    };
+  }
+>;
+
+type PageType = DefaultPageSetup &
+  ExplorerPageSetup &
+  InstancesPageSetup &
+  EventsPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -257,6 +270,11 @@ export const pages: PageType = {
     name: "components.mainMenu.events",
     icon: Calendar,
     createHref: (params) => `/${params.namespace}/events`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isEventsPage = checkHandler(secondLevel, "isEventsPage");
+      return { isEventsPage };
+    },
     route: {
       path: "events",
       element: <EventsPage />,
@@ -266,6 +284,7 @@ export const pages: PageType = {
           element: <EventsPageList />,
         },
       ],
+      handle: { isEventsPage: true },
     },
   },
   // gateway: {

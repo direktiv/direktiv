@@ -415,7 +415,8 @@
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
       "loading": "loading...",
-      "instances": "Instances"
+      "instances": "Instances",
+      "events": "Events"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
