@@ -1,3 +1,4 @@
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
   Table,
@@ -8,6 +9,7 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import Button from "~/design/Button";
 import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
@@ -18,14 +20,14 @@ import { useTranslation } from "react-i18next";
 
 const itemsPerPage = 15;
 
-const EventsPageList = ({
+const EventsList = ({
   filters,
   setFilters,
 }: {
   filters: FiltersObj;
   setFilters: (filters: FiltersObj) => void;
 }) => {
-  const [, setOffset] = useState(0);
+  const [, setOffset] = useState(0); // Todo: implement pagination
 
   const { data, isFetched } = useEvents({
     limit: itemsPerPage,
@@ -47,10 +49,22 @@ const EventsPageList = ({
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold">
-        <Calendar className="h-5" />
-        {t("pages.events.list.title")}
-      </h3>
+      <div className="flex flex-row justify-between align-bottom">
+        <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
+          <Calendar className="h-5" />
+          {t("pages.events.list.title")}
+        </h3>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="primary" data-testid="event-create">
+              {t("pages.events.list.createEventBtn")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>Send Event Dialog</DialogContent>
+        </Dialog>
+      </div>
+
       <Card>
         <Filters filters={filters} onUpdate={handleFilterChange} />
 
@@ -101,4 +115,4 @@ const EventsPageList = ({
   );
 };
 
-export default EventsPageList;
+export default EventsList;

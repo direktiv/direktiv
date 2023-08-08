@@ -176,6 +176,7 @@
     "events": {
       "list": {
         "title": "Cloud events history",
+        "createEventBtn": "Send new event",
         "tableHeader": {
           "id": "id",
           "type": "type",
