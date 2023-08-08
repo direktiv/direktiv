@@ -78,6 +78,7 @@ export const MirrorFormSchema = MirrorPublicFormSchema.or(
 
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
 export type NamespaceLogListSchemaType = z.infer<typeof NamespaceLogListSchema>;
+export type NamespaceLogSchemaType = z.infer<typeof NamespaceLogSchema>;
 export type MirrorPublicFormSchemaType = z.infer<typeof MirrorPublicFormSchema>;
 export type MirrorTokenFormSchemaType = z.infer<typeof MirrorTokenFormSchema>;
 export type MirrorSshFormSchemaType = z.infer<typeof MirrorSshFormSchema>;
