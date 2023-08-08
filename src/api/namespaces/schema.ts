@@ -15,6 +15,8 @@ export const NamespaceCreatedSchema = z.object({
   namespace: NamespaceSchema,
 });
 
+export const NamespaceLogsSchema = z.object({});
+
 // Regex for input validation. This isn't perfect but should be good enough for
 // a start. Matches git@hostname:path, where path isn't very restrictive.
 export const gitUrlSchema = z
@@ -54,6 +56,7 @@ export const MirrorFormSchema = MirrorPublicFormSchema.or(
 ).or(MirrorSshFormSchema);
 
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
+export type NamespaceLogsSchemaType = z.infer<typeof NamespaceLogsSchema>;
 export type MirrorPublicFormSchemaType = z.infer<typeof MirrorPublicFormSchema>;
 export type MirrorTokenFormSchemaType = z.infer<typeof MirrorTokenFormSchema>;
 export type MirrorSshFormSchemaType = z.infer<typeof MirrorSshFormSchema>;
