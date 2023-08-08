@@ -20,3 +20,4 @@ export const PageinfoSchema = z.object({
 });
 
 export const LogLevelSchema = z.enum(["debug", "info", "error"]);
+export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
