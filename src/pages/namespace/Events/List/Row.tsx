@@ -11,13 +11,7 @@ import TooltipCopyBadge from "../../../../design/TooltipCopyBadge";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const Row = ({
-  event,
-  namespace,
-}: {
-  event: EventSchemaType;
-  namespace: string;
-}) => {
+const Row = ({ event }: { event: EventSchemaType; namespace: string }) => {
   const { t } = useTranslation();
 
   const receivedAt = useUpdatedAt(event.receivedAt);

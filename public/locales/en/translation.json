@@ -188,6 +188,28 @@
         "empty": {
           "noFilterResults": "No events found with these filter criteria",
           "noResults": "No events found"
+        },
+        "filter": {
+          "filterButton": "Filter",
+          "placeholder": {
+            "mainMenu": "Type or select a field...",
+            "TYPE": "cloud.event.type",
+            "TEXT": "search cloudevent content"
+          },
+          "field": {
+            "TYPE": "type",
+            "TEXT": "search content",
+            "AFTER": "received after",
+            "BEFORE": "received before"
+          },
+          "menuHeading": {
+            "main": "Select filter",
+            "time": "refine time",
+            "TYPE": "filter by type",
+            "TEXT": "search cloudevent content",
+            "AFTER": "filter by received after",
+            "BEFORE": "filter by received before"
+          }
         }
       }
     },

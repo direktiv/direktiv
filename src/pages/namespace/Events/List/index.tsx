@@ -1,3 +1,4 @@
+import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
   Table,
   TableBody,
@@ -9,14 +10,18 @@ import {
 
 import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
+import Filters from "../components/Filters";
 import NoResult from "./NoResult";
 import Row from "./Row";
-import { useEvents } from "~/api/events/query/get";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const itemsPerPage = 15;
 
 const EventsPageList = () => {
+  const [, setOffset] = useState(0);
+  const [filters, setFilters] = useState<FiltersObj>({});
+
   const { data, isFetched } = useEvents({
     limit: itemsPerPage,
     offset: 0,
@@ -24,6 +29,11 @@ const EventsPageList = () => {
   });
 
   const { t } = useTranslation();
+
+  const handleFilterChange = (filters: FiltersObj) => {
+    setFilters(filters);
+    setOffset(0);
+  };
 
   // const numberOfResults = data?.events?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.events.results.length === 0;
@@ -37,6 +47,8 @@ const EventsPageList = () => {
         {t("pages.events.list.title")}
       </h3>
       <Card>
+        <Filters filters={filters} onUpdate={handleFilterChange} />
+
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
