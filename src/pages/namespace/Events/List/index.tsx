@@ -25,7 +25,7 @@ const EventsPageList = () => {
   const { data, isFetched } = useEvents({
     limit: itemsPerPage,
     offset: 0,
-    filters: {},
+    filters,
   });
 
   const { t } = useTranslation();
