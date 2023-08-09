@@ -15,7 +15,6 @@ import {
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
-import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
@@ -80,33 +79,22 @@ const InstanceTableRow: FC<{
           </TooltipCopyBadge>
         </TableCell>
         <TableCell>
-          <ConditionalWrapper
-            condition={isChild}
-            wrapper={(children) => (
-              <Tooltip>
-                <TooltipTrigger>{children}</TooltipTrigger>
-                <TooltipContent className="flex gap-2 align-middle">
-                  {childInstance}
-                  <CopyButton
-                    value={childInstance ?? ""}
-                    buttonProps={{
-                      size: "sm",
-                      onClick: (e) => {
-                        e.stopPropagation();
-                      },
-                    }}
-                  />
-                </TooltipContent>
-              </Tooltip>
-            )}
-          >
+          {isChild ? (
+            <TooltipCopyBadge
+              value={childInstance}
+              variant="outline"
+              data-testid={`instance-row-invoker-${instance.id}`}
+            >
+              {invoker}
+            </TooltipCopyBadge>
+          ) : (
             <Badge
               data-testid={`instance-row-invoker-${instance.id}`}
               variant="outline"
             >
               {invoker}
             </Badge>
-          </ConditionalWrapper>
+          )}
         </TableCell>
         <TableCell>
           <ConditionalWrapper
