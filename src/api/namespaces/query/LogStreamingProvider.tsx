@@ -1,14 +1,13 @@
-import { FC, PropsWithChildren } from "react";
-
+import { memo } from "react";
 import { useNamespaceLogsStream } from "./logs";
 
-type NamespaceLogsStreamingProviderType = PropsWithChildren & {
-  enabled?: boolean;
-};
+type LogStreamingProviderTypeProps = { enabled?: boolean };
 
-export const NamespaceLogsStreamingProvider: FC<
-  NamespaceLogsStreamingProviderType
-> = ({ enabled, children }) => {
-  useNamespaceLogsStream({ enabled: enabled ?? true });
-  return <>{children}</>;
-};
+export const NamespaceLogsStreamingProvider = memo(
+  ({ enabled }: LogStreamingProviderTypeProps) => {
+    useNamespaceLogsStream({ enabled: enabled ?? true });
+    return null;
+  }
+);
+
+NamespaceLogsStreamingProvider.displayName = "NamespaceLogsStreamingProvider";

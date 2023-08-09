@@ -9,7 +9,8 @@ import { useTranslation } from "react-i18next";
 const InstancesPage = () => {
   const { t } = useTranslation();
   return (
-    <NamespaceLogsStreamingProvider>
+    <>
+      <NamespaceLogsStreamingProvider />
       <div className="flex grow flex-col gap-y-4 p-5">
         <h3 className="flex items-center gap-x-2 font-bold">
           <ActivitySquare className="h-5" />
@@ -29,7 +30,7 @@ const InstancesPage = () => {
           <Instances />
         </div>
       </div>
-    </NamespaceLogsStreamingProvider>
+    </>
   );
 };
 
