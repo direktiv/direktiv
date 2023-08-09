@@ -1,4 +1,5 @@
 import { CheckCircle2, XCircle } from "lucide-react";
+import { Table, TableBody } from "~/design/Table";
 
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
@@ -49,29 +50,43 @@ export const Instances = () => {
         headline={t("pages.monitoring.instances.successfullExecutions.title")}
         icon={CheckCircle2}
       >
-        {completedInstances?.instances?.results.length === 0 && (
-          <NoResult
-            message={t(
-              "pages.monitoring.instances.successfullExecutions.empty"
-            )}
-          />
+        {completedInstances?.instances?.results.length === 0 ? (
+          <div className="flex grow justify-center">
+            <NoResult
+              message={t(
+                "pages.monitoring.instances.successfullExecutions.empty"
+              )}
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableBody>
+              {completedInstances?.instances?.results.map((instance) => (
+                <InstanceRow key={instance.id} instance={instance} />
+              ))}
+            </TableBody>
+          </Table>
         )}
-        {completedInstances?.instances?.results.map((instance) => (
-          <InstanceRow key={instance.id} instance={instance} />
-        ))}
       </InstanceCard>
       <InstanceCard
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
       >
-        {failedInstances?.instances?.results.length === 0 && (
-          <NoResult
-            message={t("pages.monitoring.instances.failedExecutions.empty")}
-          />
+        {failedInstances?.instances?.results.length === 0 ? (
+          <div className="flex grow justify-center">
+            <NoResult
+              message={t("pages.monitoring.instances.failedExecutions.empty")}
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableBody>
+              {failedInstances?.instances?.results.map((instance) => (
+                <InstanceRow key={instance.id} instance={instance} />
+              ))}
+            </TableBody>
+          </Table>
         )}
-        {failedInstances?.instances?.results.map((instance) => (
-          <InstanceRow key={instance.id} instance={instance} />
-        ))}
       </InstanceCard>
     </>
   );
