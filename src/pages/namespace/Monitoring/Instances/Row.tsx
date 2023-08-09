@@ -44,7 +44,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
         }}
         className="cursor-pointer"
       >
-        <TableCell>
+        <TableCell className="pl-5">
           <Tooltip>
             <TooltipTrigger>
               <Link
@@ -95,7 +95,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
             </Badge>
           </ConditionalWrapper>
         </TableCell>
-        <TableCell>
+        <TableCell className="pr-5">
           <Tooltip>
             <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
