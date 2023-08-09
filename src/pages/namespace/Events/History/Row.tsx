@@ -29,7 +29,7 @@ const Row = ({ event }: { event: EventSchemaType; namespace: string }) => {
         <TableCell>
           <Tooltip>
             <TooltipTrigger data-testid="receivedAt-tooltip-trigger">
-              {t("pages.events.list.tableRow.realtiveTime", {
+              {t("pages.events.history.tableRow.realtiveTime", {
                 relativeTime: receivedAt,
               })}
             </TooltipTrigger>

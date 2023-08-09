@@ -53,7 +53,7 @@ const EventsList = ({
       <div className="flex flex-row justify-between align-bottom">
         <h3 className="flex items-center gap-x-2 pt-1 font-bold">
           <Radio className="h-5" />
-          {t("pages.events.list.title")}
+          {t("pages.events.history.title")}
         </h3>
 
         <Send />
@@ -66,16 +66,16 @@ const EventsList = ({
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
-                {t("pages.events.list.tableHeader.type")}
+                {t("pages.events.history.tableHeader.type")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.events.list.tableHeader.id")}
+                {t("pages.events.history.tableHeader.id")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.events.list.tableHeader.source")}
+                {t("pages.events.history.tableHeader.source")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.events.list.tableHeader.receivedAt")}
+                {t("pages.events.history.tableHeader.receivedAt")}
               </TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -86,8 +86,8 @@ const EventsList = ({
                   <NoResult
                     message={
                       hasFilters
-                        ? t("pages.events.list.empty.noFilterResults")
-                        : t("pages.events.list.empty.noResults")
+                        ? t("pages.events.history.empty.noFilterResults")
+                        : t("pages.events.history.empty.noResults")
                     }
                   />
                 </TableCell>

@@ -45,12 +45,14 @@ const TextInput = ({
     <Command>
       <CommandList>
         <CommandGroup
-          heading={t(`pages.events.list.filter.menuHeading.${field}`)}
+          heading={t(`pages.events.history.filter.menuHeading.${field}`)}
         >
           <InputWithButton>
             <Input
               autoFocus
-              placeholder={t(`pages.events.list.filter.placeholder.${field}`)}
+              placeholder={t(
+                `pages.events.history.filter.placeholder.${field}`
+              )}
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               onKeyDown={handleKeyDown}

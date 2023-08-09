@@ -178,7 +178,7 @@
         "history": "Event history",
         "listeners": "Event listeners"
       },
-      "list": {
+      "history": {
         "title": "Cloud events history",
         "send": {
           "dialogTrigger": "Send new event",

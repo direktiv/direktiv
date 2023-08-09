@@ -42,7 +42,9 @@ const RefineTime = ({
   return (
     <Command>
       <CommandList className="max-h-[460px]">
-        <CommandGroup heading={t("pages.events.list.filter.menuHeading.time")}>
+        <CommandGroup
+          heading={t("pages.events.history.filter.menuHeading.time")}
+        >
           <InputWithButton>
             <Input
               type="time"

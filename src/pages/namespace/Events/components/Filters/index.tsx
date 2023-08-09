@@ -95,7 +95,9 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
-                <label>{t([`pages.events.list.filter.field.${field}`])}</label>
+                <label>
+                  {t([`pages.events.history.filter.field.${field}`])}
+                </label>
               </Button>
               <Popover
                 open={activeMenu === field}
@@ -129,7 +131,9 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
-                <label>{t([`pages.events.list.filter.field.${field}`])}</label>
+                <label>
+                  {t([`pages.events.history.filter.field.${field}`])}
+                </label>
               </Button>
               <Popover
                 open={activeMenu === field}
@@ -190,7 +194,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
             ) : (
               <Button variant="outline" onClick={() => toggleMenu("main")}>
                 <Plus />
-                {t("pages.events.list.filter.filterButton")}
+                {t("pages.events.history.filter.filterButton")}
               </Button>
             )}
           </PopoverTrigger>

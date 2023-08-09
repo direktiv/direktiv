@@ -47,7 +47,7 @@ const Send = () => {
       <DialogTrigger asChild>
         <Button icon variant="outline" data-testid="event-create">
           <PlusCircle />
-          {t("pages.events.list.send.dialogTrigger")}
+          {t("pages.events.history.send.dialogTrigger")}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -59,7 +59,7 @@ const Send = () => {
           <DialogHeader>
             <DialogTitle>
               <Calendar />
-              {t("pages.events.list.send.dialogHeader")}
+              {t("pages.events.history.send.dialogHeader")}
             </DialogTitle>
           </DialogHeader>
           <Card
@@ -89,7 +89,7 @@ const Send = () => {
               type="submit"
               variant="primary"
             >
-              {t("pages.events.list.send.submit")}
+              {t("pages.events.history.send.submit")}
             </Button>
           </DialogFooter>
         </form>
