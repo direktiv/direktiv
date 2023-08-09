@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
+import { memo } from "react";
 import moment from "moment";
 import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -91,6 +92,15 @@ export const useNamespaceLogsStream = ({
     },
   });
 };
+
+type LogStreamingProviderTypeProps = { enabled?: boolean };
+export const NamespaceLogsStreamingProvider = memo(
+  ({ enabled }: LogStreamingProviderTypeProps) => {
+    useNamespaceLogsStream({ enabled: enabled ?? true });
+    return null;
+  }
+);
+NamespaceLogsStreamingProvider.displayName = "NamespaceLogsStreamingProvider";
 
 export const useNamespacelogs = () => {
   const apiKey = useApiKey();

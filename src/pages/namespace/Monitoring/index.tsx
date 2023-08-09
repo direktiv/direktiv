@@ -2,7 +2,7 @@ import { ActivitySquare } from "lucide-react";
 import { Card } from "~/design/Card";
 import { Instances } from "./Instances";
 import Logs from "./Logs";
-import { NamespaceLogsStreamingProvider } from "~/api/namespaces/query/LogStreamingProvider";
+import { NamespaceLogsStreamingProvider } from "~/api/namespaces/query/logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 

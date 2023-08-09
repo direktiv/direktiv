@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { logKeys } from "../";
+import { memo } from "react";
 import moment from "moment";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
@@ -142,6 +143,21 @@ export const useLogsStream = (
     },
   });
 };
+
+type LogStreamingProviderType = {
+  instanceId: string;
+  filters?: FiltersObj;
+  enabled?: boolean;
+};
+
+export const LogStreamingProvider = memo(
+  ({ instanceId, filters, enabled }: LogStreamingProviderType) => {
+    useLogsStream({ instanceId, filters }, { enabled: enabled ?? true });
+    return null;
+  }
+);
+
+LogStreamingProvider.displayName = "LogStreamingProvider";
 
 export const useLogs = ({
   instanceId,
