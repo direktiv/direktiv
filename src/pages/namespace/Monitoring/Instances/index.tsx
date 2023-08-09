@@ -1,4 +1,5 @@
 import { Card } from "~/design/Card";
+import { InstanceRow } from "./Row";
 import { useInstances } from "~/api/instances/query/get";
 
 const useInstancesBatch = () => {
@@ -35,17 +36,19 @@ const useInstancesBatch = () => {
 export const Instances = () => {
   const { isFetched, completedInstances, failedInstances } =
     useInstancesBatch();
+
   if (!isFetched) return null;
+
   return (
     <>
       <Card className="p-5">
         {completedInstances?.instances?.results.map((instance) => (
-          <div key={instance.id}>{instance.as}</div>
+          <InstanceRow key={instance.id} instance={instance} />
         ))}
       </Card>
       <Card className="p-5">
         {failedInstances?.instances?.results.map((instance) => (
-          <div key={instance.id}>{instance.as}</div>
+          <InstanceRow key={instance.id} instance={instance} />
         ))}
       </Card>
     </>
