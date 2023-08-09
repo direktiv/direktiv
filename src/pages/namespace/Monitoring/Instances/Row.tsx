@@ -56,7 +56,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
                   path: instance.as,
                   subpage: "workflow",
                 })}
-                className="hover:underline"
+                className="block w-36 overflow-hidden text-ellipsis hover:underline sm:w-72 md:w-32"
               >
                 {instance.as}
               </Link>
@@ -91,7 +91,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
               variant={statusToBadgeVariant(instance.status)}
               icon={instance.status}
             >
-              {instance.status}
+              <span className="max-lg:hidden ">{instance.status}</span>
             </Badge>
           </ConditionalWrapper>
         </TableCell>
