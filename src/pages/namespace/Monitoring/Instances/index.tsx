@@ -3,7 +3,7 @@ import { Table, TableBody } from "~/design/Table";
 
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
-import NoResult from "../../Instances/List/NoResult";
+import NoResult from "./NoResult";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -51,13 +51,11 @@ export const Instances = () => {
         icon={CheckCircle2}
       >
         {completedInstances?.instances?.results.length === 0 ? (
-          <div className="flex grow justify-center">
-            <NoResult
-              message={t(
-                "pages.monitoring.instances.successfullExecutions.empty"
-              )}
-            />
-          </div>
+          <NoResult
+            message={t(
+              "pages.monitoring.instances.successfullExecutions.empty"
+            )}
+          />
         ) : (
           <Table>
             <TableBody>
@@ -73,11 +71,9 @@ export const Instances = () => {
         icon={XCircle}
       >
         {failedInstances?.instances?.results.length === 0 ? (
-          <div className="flex grow justify-center">
-            <NoResult
-              message={t("pages.monitoring.instances.failedExecutions.empty")}
-            />
-          </div>
+          <NoResult
+            message={t("pages.monitoring.instances.failedExecutions.empty")}
+          />
         ) : (
           <Table>
             <TableBody>
