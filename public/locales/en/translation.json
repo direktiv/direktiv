@@ -186,6 +186,7 @@
       },
       "instances": {
         "openWorkflowTooltip": "click to open workflow",
+        "updateTooltip": "refetch instances",
         "successfullExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recently successful executions."

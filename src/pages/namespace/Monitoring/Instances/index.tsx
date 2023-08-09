@@ -1,14 +1,42 @@
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, RefreshCcw, XCircle } from "lucide-react";
 import { Table, TableBody } from "~/design/Table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
+import Button from "~/design/Button";
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
 import NoResult from "./NoResult";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
-const useInstancesBatch = () => {
-  const { data: failedInstances, isFetched: isFetchedFailed } = useInstances({
+export const Instances = () => {
+  const {
+    data: completedInstances,
+    isFetched: isFetchedCompleted,
+    isFetching: isFetchingCompleted,
+    refetch: refetchCompletedInstances,
+  } = useInstances({
+    limit: 10,
+    offset: 0,
+    filters: {
+      STATUS: {
+        type: "MATCH",
+        value: "complete",
+      },
+    },
+  });
+
+  const {
+    data: failedInstances,
+    isFetched: isFetchedFailed,
+    isFetching: isFetchingFailed,
+    refetch: refetchFailedInstances,
+  } = useInstances({
     limit: 10,
     offset: 0,
     filters: {
@@ -19,36 +47,35 @@ const useInstancesBatch = () => {
     },
   });
 
-  const { data: completedInstances, isFetched: isFetchedCompleted } =
-    useInstances({
-      limit: 10,
-      offset: 0,
-      filters: {
-        STATUS: {
-          type: "MATCH",
-          value: "complete",
-        },
-      },
-    });
-
-  return {
-    isFetched: isFetchedFailed && isFetchedCompleted,
-    failedInstances,
-    completedInstances,
-  };
-};
-
-export const Instances = () => {
-  const { isFetched, completedInstances, failedInstances } =
-    useInstancesBatch();
-
   const { t } = useTranslation();
-  if (!isFetched) return null;
+  if (!isFetchedCompleted || !isFetchedFailed) return null;
   return (
     <>
       <InstanceCard
         headline={t("pages.monitoring.instances.successfullExecutions.title")}
         icon={CheckCircle2}
+        refetchButton={
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  icon
+                  size="sm"
+                  variant="ghost"
+                  disabled={isFetchingCompleted}
+                  onClick={() => {
+                    refetchCompletedInstances();
+                  }}
+                >
+                  <RefreshCcw />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t(`pages.monitoring.instances.updateTooltip`)}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        }
       >
         {completedInstances?.instances?.results.length === 0 ? (
           <NoResult
@@ -69,6 +96,28 @@ export const Instances = () => {
       <InstanceCard
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
+        refetchButton={
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  icon
+                  size="sm"
+                  variant="ghost"
+                  disabled={isFetchingFailed}
+                  onClick={() => {
+                    refetchFailedInstances();
+                  }}
+                >
+                  <RefreshCcw />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t(`pages.monitoring.instances.updateTooltip`)}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        }
       >
         {failedInstances?.instances?.results.length === 0 ? (
           <NoResult
