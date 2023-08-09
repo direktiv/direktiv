@@ -183,6 +183,16 @@
         "tooltips": {
           "copy": "Copy logs"
         }
+      },
+      "instances": {
+        "successfullExecutions": {
+          "title": "Successful Executions",
+          "empty": "There are no recently successful executions."
+        },
+        "failedExecutions": {
+          "title": "Failed Executions",
+          "empty": "There are no recently failed executions."
+        }
       }
     },
     "instances": {

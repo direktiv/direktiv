@@ -1,6 +1,10 @@
-import { Card } from "~/design/Card";
+import { CheckCircle2, XCircle } from "lucide-react";
+
+import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
+import NoResult from "../../Instances/List/NoResult";
 import { useInstances } from "~/api/instances/query/get";
+import { useTranslation } from "react-i18next";
 
 const useInstancesBatch = () => {
   const { data: failedInstances, isFetched: isFetchedFailed } = useInstances({
@@ -37,20 +41,38 @@ export const Instances = () => {
   const { isFetched, completedInstances, failedInstances } =
     useInstancesBatch();
 
+  const { t } = useTranslation();
   if (!isFetched) return null;
-
   return (
     <>
-      <Card className="p-5">
+      <InstanceCard
+        headline={t("pages.monitoring.instances.successfullExecutions.title")}
+        icon={CheckCircle2}
+      >
+        {completedInstances?.instances?.results.length === 0 && (
+          <NoResult
+            message={t(
+              "pages.monitoring.instances.successfullExecutions.empty"
+            )}
+          />
+        )}
         {completedInstances?.instances?.results.map((instance) => (
           <InstanceRow key={instance.id} instance={instance} />
         ))}
-      </Card>
-      <Card className="p-5">
+      </InstanceCard>
+      <InstanceCard
+        headline={t("pages.monitoring.instances.failedExecutions.title")}
+        icon={XCircle}
+      >
+        {failedInstances?.instances?.results.length === 0 && (
+          <NoResult
+            message={t("pages.monitoring.instances.failedExecutions.empty")}
+          />
+        )}
         {failedInstances?.instances?.results.map((instance) => (
           <InstanceRow key={instance.id} instance={instance} />
         ))}
-      </Card>
+      </InstanceCard>
     </>
   );
 };
