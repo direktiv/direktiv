@@ -692,6 +692,19 @@
           }
         }
       }
+    },
+    "events": {
+      "mutate": {
+        "sendEvent": {
+          "success": {
+            "title": "Event sent",
+            "description": "The event was sent"
+          },
+          "error": {
+            "description": "The event could not be sent 😢"
+          }
+        }
+      }
     }
   }
 }

@@ -7,5 +7,5 @@ export const exampleEvent = `{
   "comexampleextension1" : "value",
   "comexampleothervalue" : 5,
   "datacontenttype" : "text/xml",
-  "data" : "<much wow="xml"/>"
+  "data" : "<much wow=\\"xml\\"/>"
 }`;

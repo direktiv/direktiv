@@ -17,5 +17,13 @@ export const EventsListSchema = z.object({
   }),
 });
 
+export const NewEventSchema = z.object({
+  body: z.string(),
+});
+
+export const EventCreatedSchema = z.null();
+
 export type EventSchemaType = z.infer<typeof EventSchema>;
 export type EventsListSchemaType = z.infer<typeof EventsListSchema>;
+export type EventCreatedSchemaType = z.infer<typeof EventCreatedSchema>;
+export type NewEventSchemaType = z.infer<typeof NewEventSchema>;
