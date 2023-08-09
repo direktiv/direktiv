@@ -1,11 +1,4 @@
-import {
-  Boxes,
-  Bug,
-  Calendar,
-  FolderTree,
-  Layers,
-  Settings,
-} from "lucide-react";
+import { Boxes, Bug, FolderTree, Layers, Radio, Settings } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import EventsPage from "~/pages/namespace/Events";
@@ -268,7 +261,7 @@ export const pages: PageType = {
   },
   events: {
     name: "components.mainMenu.events",
-    icon: Calendar,
+    icon: Radio,
     createHref: (params) => `/${params.namespace}/events`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level

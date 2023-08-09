@@ -9,11 +9,11 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
+import { Radio } from "lucide-react";
 import Row from "./Row";
 import Send from "./Send";
 import { itemsPerPage } from ".";
@@ -52,7 +52,7 @@ const EventsList = ({
     <div className="flex grow flex-col gap-y-3 p-5">
       <div className="flex flex-row justify-between align-bottom">
         <h3 className="flex items-center gap-x-2 pt-1 font-bold">
-          <Calendar className="h-5" />
+          <Radio className="h-5" />
           {t("pages.events.list.title")}
         </h3>
 

@@ -1,3 +1,4 @@
+import { Calendar, PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -11,7 +12,6 @@ import { NewEventSchema, NewEventSchemaType } from "~/api/events/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { exampleEvent } from "./exampleEvent";
@@ -45,7 +45,8 @@ const Send = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="primary" data-testid="event-create">
+        <Button icon variant="outline" data-testid="event-create">
+          <PlusCircle />
           {t("pages.events.list.send.dialogTrigger")}
         </Button>
       </DialogTrigger>
