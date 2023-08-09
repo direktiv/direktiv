@@ -70,7 +70,9 @@ const InstanceTableRow: FC<{
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              {t("pages.instances.list.tableRow.openWorkflowTooltip")}
+              {t("pages.instances.list.tableRow.openWorkflowTooltip", {
+                name: instance.as,
+              })}
             </TooltipContent>
           </Tooltip>
         </TableCell>

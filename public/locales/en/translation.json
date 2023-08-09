@@ -185,7 +185,7 @@
         }
       },
       "instances": {
-        "openWorkflowTooltip": "click to open workflow",
+        "openWorkflowTooltip": "click to open workflow {{name}}",
         "updateTooltip": "refetch instances",
         "successfullExecutions": {
           "title": "Successful Executions",
@@ -223,7 +223,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
-          "openWorkflowTooltip": "click to open workflow"
+          "openWorkflowTooltip": "click to open workflow {{name}}"
         },
         "filter": {
           "filterButton": "Filter",

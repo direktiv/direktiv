@@ -62,7 +62,9 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              {t("pages.monitoring.instances.openWorkflowTooltip")}
+              {t("pages.monitoring.instances.openWorkflowTooltip", {
+                name: instance.as,
+              })}
             </TooltipContent>
           </Tooltip>
         </TableCell>
