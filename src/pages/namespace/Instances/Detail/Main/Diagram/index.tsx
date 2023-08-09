@@ -40,6 +40,7 @@ const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
                 icon
                 size="sm"
                 variant="outline"
+                className="bg-white dark:bg-black"
                 onClick={() => {
                   setMaximizedPanel(isMaximized ? "none" : "diagram");
                 }}
