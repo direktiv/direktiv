@@ -36,6 +36,7 @@ export const EventListenersListSchema = z.object({
   results: z.array(EventListenerSchema),
 });
 
+export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
 export type EventListenersListSchemaType = z.infer<
   typeof EventListenersListSchema
 >;

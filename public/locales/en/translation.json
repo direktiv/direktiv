@@ -220,6 +220,21 @@
             "BEFORE": "filter by received before"
           }
         }
+      },
+      "listeners": {
+        "title": "Event listeners",
+        "tableHeader": {
+          "workflow": "workflow",
+          "type": "type",
+          "mode": "mode",
+          "createdAt": "updated"
+        },
+        "empty": {
+          "noResults": "No event listeners found"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
+        }
       }
     },
     "instances": {
