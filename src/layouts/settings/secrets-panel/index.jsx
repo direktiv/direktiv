@@ -1,25 +1,25 @@
 /* eslint-disable tailwindcss/no-custom-classname */
 import "./style.css";
 
-import { Config, GenerateRandomKey } from "~/util";
+import { Config, GenerateRandomKey } from "../../../util";
 import ContentPanel, {
   ContentPanelBody,
   ContentPanelTitle,
   ContentPanelTitleIcon,
-} from "~/components/content-panel";
+} from "../../../components/content-panel";
 import React, { useState } from "react";
 import { VscAdd, VscLock, VscTrash } from "react-icons/vsc";
 
-import Alert from "~/components/alert";
+import Alert from "../../../components/alert";
 import { AutoSizer } from "react-virtualized";
-import DirektivEditor from "~/components/editor";
-import FlexBox from "~/components/flexbox";
-import HelpIcon from "~/components/help";
-import Modal from "~/components/modal";
-import Tabs from "~/components/tabs";
-import { useApiKey } from "~/util/apiKeyProvider";
+import DirektivEditor from "../../../components/editor";
+import FlexBox from "../../../components/flexbox";
+import HelpIcon from "../../../components/help";
+import Modal from "../../../components/modal";
+import Tabs from "../../../components/tabs";
+import { useApiKey } from "../../../util/apiKeyProvider";
 import { useDropzone } from "react-dropzone";
-import { useSecrets } from "~/hooks";
+import { useSecrets } from "../../../hooks";
 
 function SecretsPanel(props) {
   const { namespace } = props;
