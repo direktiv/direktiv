@@ -2,7 +2,6 @@ import { Boxes, Bug, FolderTree, Layers, Radio, Settings } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import EventsPage from "~/pages/namespace/Events";
-import EventsPageList from "~/pages/namespace/Events/List";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
@@ -271,12 +270,6 @@ export const pages: PageType = {
     route: {
       path: "events",
       element: <EventsPage />,
-      children: [
-        {
-          path: "",
-          element: <EventsPageList />,
-        },
-      ],
       handle: { isEventsPage: true },
     },
   },

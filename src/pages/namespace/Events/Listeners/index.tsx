@@ -1,3 +1,3 @@
-const EventListeners = () => <>Event Listeners</>;
+const Listeners = () => <>Event Listeners</>;
 
-export default EventListeners;
+export default Listeners;
