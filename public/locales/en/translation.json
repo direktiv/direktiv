@@ -185,6 +185,7 @@
         }
       },
       "instances": {
+        "openWorkflowTooltip": "click to open workflow",
         "successfullExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recently successful executions."
