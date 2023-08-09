@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react";
 import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
   Table,
@@ -12,25 +13,26 @@ import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
 import NoResult from "./NoResult";
+import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
 import Send from "./Send";
-import { useState } from "react";
+import { itemsPerPage } from ".";
 import { useTranslation } from "react-i18next";
-
-const itemsPerPage = 15;
 
 const EventsList = ({
   filters,
   setFilters,
+  offset,
+  setOffset,
 }: {
   filters: FiltersObj;
   setFilters: (filters: FiltersObj) => void;
+  offset: number;
+  setOffset: Dispatch<SetStateAction<number>>;
 }) => {
-  const [, setOffset] = useState(0); // Todo: implement pagination
-
   const { data, isFetched } = useEvents({
     limit: itemsPerPage,
-    offset: 0,
+    offset,
     filters,
   });
 
@@ -41,10 +43,10 @@ const EventsList = ({
     setOffset(0);
   };
 
-  // const numberOfResults = data?.events?.pageInfo?.total ?? 0;
+  const numberOfResults = data?.events?.pageInfo?.total ?? 0;
   const noResults = isFetched && data?.events.results.length === 0;
-  // const showPagination = numberOfResults > itemsPerPage;
-  const hasFilters = false; // !!Object.keys(filters).length;
+  const showPagination = numberOfResults > itemsPerPage;
+  const hasFilters = !!Object.keys(filters).length;
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
@@ -103,6 +105,14 @@ const EventsList = ({
           </TableBody>
         </Table>
       </Card>
+      {showPagination && (
+        <Pagination
+          itemsPerPage={itemsPerPage}
+          offset={offset}
+          setOffset={(value) => setOffset(value)}
+          totalItems={numberOfResults}
+        />
+      )}
     </div>
   );
 };
