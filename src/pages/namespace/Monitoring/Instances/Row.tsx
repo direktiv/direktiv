@@ -46,7 +46,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
       >
         <TableCell className="pl-5">
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Link
                 onClick={(e) => {
                   e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link

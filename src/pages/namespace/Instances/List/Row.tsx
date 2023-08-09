@@ -53,6 +53,7 @@ const InstanceTableRow: FC<{
           <Tooltip>
             <TooltipTrigger
               data-testid={`instance-row-workflow-${instance.id}`}
+              asChild
             >
               <Link
                 onClick={(e) => {
