@@ -19,6 +19,8 @@ const Row = ({
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
+  const eventTypes = listener.events.map((event) => event.type).join(", ");
+
   return (
     <TooltipProvider>
       <TableRow>
@@ -37,6 +39,7 @@ const Row = ({
             </TooltipContent>
           </Tooltip>
         </TableCell>
+        <TableCell>{eventTypes}</TableCell>
       </TableRow>
     </TooltipProvider>
   );

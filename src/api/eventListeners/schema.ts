@@ -25,7 +25,7 @@ const EventDefinition = z.object({
 const EventListenerSchema = z.object({
   createdAt: z.string(),
   workflow: z.string(), // "/listener.yaml",
-  instance: z.string(), // ""
+  instance: z.string(), // "" - TODO: is this being used?
   mode: z.string(), // "simple" - TODO: is this an ENUM?
   events: z.array(EventDefinition),
 });

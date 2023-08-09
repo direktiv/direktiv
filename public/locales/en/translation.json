@@ -227,7 +227,8 @@
           "workflow": "workflow",
           "type": "type",
           "mode": "mode",
-          "createdAt": "updated"
+          "createdAt": "updated",
+          "eventTypes": "event types"
         },
         "empty": {
           "noResults": "No event listeners found"

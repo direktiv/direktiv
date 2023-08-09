@@ -60,6 +60,9 @@ const ListenersList = ({
               <TableHeaderCell>
                 {t("pages.events.listeners.tableHeader.createdAt")}
               </TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.events.listeners.tableHeader.eventTypes")}
+              </TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
