@@ -29,7 +29,6 @@ const LogsPanel = () => {
           <ScrollText className="h-5" />
           {t("pages.monitoring.logs.title")}
         </h3>
-
         <ButtonBar>
           <TooltipProvider>
             <Tooltip>
