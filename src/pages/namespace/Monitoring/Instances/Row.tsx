@@ -3,6 +3,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
+import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,
@@ -15,7 +16,6 @@ import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
 import { InstanceSchemaType } from "~/api/instances/schema";
-import { Link } from "react-router-dom";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../Instances/utils";
@@ -25,6 +25,7 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const updatedAt = useUpdatedAt(instance.updatedAt);
   const namespace = useNamespace();
 
@@ -32,7 +33,17 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
 
   return (
     <TooltipProvider>
-      <TableRow>
+      <TableRow
+        onClick={() => {
+          navigate(
+            pages.instances.createHref({
+              namespace,
+              instance: instance.id,
+            })
+          );
+        }}
+        className="cursor-pointer"
+      >
         <TableCell>
           <Tooltip>
             <TooltipTrigger>
