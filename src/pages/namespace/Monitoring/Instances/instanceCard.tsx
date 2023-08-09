@@ -12,11 +12,11 @@ export const InstanceCard: FC<InstanceCardProps> = ({
   headline,
   icon: Icon,
 }) => (
-  <Card className="flex flex-col p-5">
+  <Card className="flex flex-col gap-5 p-5">
     <h3 className="flex items-center gap-x-2 font-medium">
       <Icon className="h-5" />
       {headline}
     </h3>
-    <div className="grow">{children}</div>
+    {children}
   </Card>
 );
