@@ -30,11 +30,13 @@ const VariablesList: FC = () => {
   const isSearch = search.length > 0;
 
   const { data, isFetched } = useVars();
-  const items = data?.variables?.results ?? null;
 
   const filteredItems = useMemo(
-    () => items?.filter((item) => !isSearch || item.name.includes(search)),
-    [isSearch, items, search]
+    () =>
+      (data?.variables?.results ?? [])?.filter(
+        (item) => !isSearch || item.name.includes(search)
+      ),
+    [data?.variables?.results, isSearch, search]
   );
 
   const { mutate: deleteVarMutation } = useDeleteVar({
@@ -55,7 +57,7 @@ const VariablesList: FC = () => {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <PaginationProvider items={filteredItems ?? []} pageSize={pageSize}>
+      <PaginationProvider items={filteredItems} pageSize={pageSize}>
         {({
           currentItems,
           goToFirstPage,
@@ -91,10 +93,10 @@ const VariablesList: FC = () => {
               </CreateItemButton>
             </div>
             <Card className="mb-4">
-              {currentItems?.length ? (
+              {currentItems.length ? (
                 <Table>
                   <TableBody>
-                    {currentItems?.map((item, i) => (
+                    {currentItems.map((item, i) => (
                       <ItemRow
                         item={item}
                         key={i}
