@@ -1,3 +1,4 @@
+import { CheckCircle2, CircleDashed, PlusCircle, XCircle } from "lucide-react";
 import {
   DialogClose,
   DialogContent,
@@ -14,8 +15,9 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import { PlusCircle } from "lucide-react";
 import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
+import { useState } from "react";
+import { useTestConnection } from "~/api/registries/mutate/testConnection";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -23,9 +25,16 @@ type CreateProps = { onSuccess: () => void };
 
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
+  const { mutate: createRegistryMutation } = useCreateRegistry({ onSuccess });
+  const [testSuccessful, setTestSuccessful] = useState<boolean | null>(null);
 
-  const { mutate: createRegistryMutation } = useCreateRegistry({
-    onSuccess,
+  const { mutate: testConnection, isLoading: testLoading } = useTestConnection({
+    onSuccess: () => {
+      setTestSuccessful(true);
+    },
+    onError: () => {
+      setTestSuccessful(false);
+    },
   });
 
   const onSubmit: SubmitHandler<RegistryFormSchemaType> = (data) => {
@@ -35,10 +44,19 @@ const Create = ({ onSuccess }: CreateProps) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    getValues,
+    formState: { errors, isValid },
   } = useForm<RegistryFormSchemaType>({
     resolver: zodResolver(RegistryFormSchema),
   });
+
+  const onTestConnectionClick = () => {
+    testConnection({
+      url: getValues("url"),
+      username: getValues("user"),
+      password: getValues("password"),
+    });
+  };
 
   return (
     <DialogContent>
@@ -53,9 +71,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             {t("pages.settings.registries.create.description")}
           </DialogTitle>
         </DialogHeader>
-
         <FormErrors errors={errors} className="mb-5" />
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="url">
             {t("pages.settings.registries.create.url")}
@@ -67,7 +83,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             {...register("url")}
           />
         </fieldset>
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="user">
             {t("pages.settings.registries.create.user")}
@@ -79,7 +94,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             {...register("user")}
           />
         </fieldset>
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="password">
             {t("pages.settings.registries.create.password")}
@@ -99,6 +113,18 @@ const Create = ({ onSuccess }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
+          <Button
+            data-testid="registry-create-test-connection"
+            onClick={onTestConnectionClick}
+            loading={testLoading}
+            disabled={!isValid || testLoading}
+            type="button"
+          >
+            {!testLoading && testSuccessful === true && <CheckCircle2 />}
+            {!testLoading && testSuccessful === false && <XCircle />}
+            {!testLoading && testSuccessful === null && <CircleDashed />}
+            {t("pages.settings.registries.create.testConnectionBtn")}
+          </Button>
           <Button data-testid="registry-create-submit" type="submit">
             {t("components.button.label.create")}
           </Button>
