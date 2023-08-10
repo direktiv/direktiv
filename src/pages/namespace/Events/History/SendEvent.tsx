@@ -50,7 +50,7 @@ const SendEvent = () => {
           {t("pages.events.history.send.dialogTrigger")}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
         <form
           id="send-event"
           onSubmit={handleSubmit(onSubmit)}

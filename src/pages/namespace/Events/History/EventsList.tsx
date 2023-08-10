@@ -121,7 +121,7 @@ const EventsList = ({
             </TableBody>
           </Table>
         </Card>
-        <DialogContent>
+        <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
           {!!eventDialog && (
             <ViewEvent
               event={eventDialog}
