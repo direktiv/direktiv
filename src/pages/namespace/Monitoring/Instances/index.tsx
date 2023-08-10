@@ -1,4 +1,4 @@
-import { CheckCircle2, RefreshCcw, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
@@ -7,10 +7,10 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import Button from "~/design/Button";
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
 import NoResult from "./NoResult";
+import RefreshButton from "~/design/RefreshButton";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -58,7 +58,7 @@ export const Instances = () => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <RefreshButton
                   icon
                   size="sm"
                   variant="ghost"
@@ -66,9 +66,7 @@ export const Instances = () => {
                   onClick={() => {
                     refetchCompletedInstances();
                   }}
-                >
-                  <RefreshCcw />
-                </Button>
+                />
               </TooltipTrigger>
               <TooltipContent>
                 {t(`pages.monitoring.instances.updateTooltip`)}
@@ -100,7 +98,7 @@ export const Instances = () => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <RefreshButton
                   icon
                   size="sm"
                   variant="ghost"
@@ -108,9 +106,7 @@ export const Instances = () => {
                   onClick={() => {
                     refetchFailedInstances();
                   }}
-                >
-                  <RefreshCcw />
-                </Button>
+                />
               </TooltipTrigger>
               <TooltipContent>
                 {t(`pages.monitoring.instances.updateTooltip`)}
