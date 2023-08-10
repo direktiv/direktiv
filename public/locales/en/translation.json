@@ -330,7 +330,7 @@
           "empty": "No variables exist yet",
           "createBtn": "Create Variable",
           "searchPlaceholder": "Filter variables...",
-          "emptySearch": "No variables match your search"
+          "emptySearch": "No variable matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
