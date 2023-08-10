@@ -17,10 +17,10 @@ import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
   const {
-    data: completedInstances,
-    isFetched: isFetchedCompleted,
-    isFetching: isFetchingCompleted,
-    refetch: refetchCompletedInstances,
+    data: sucessfullInstances,
+    isFetched: isFetchedSucessfullInstances,
+    isFetching: isFetchingSucessfullinstances,
+    refetch: refetchSucessfullInstances,
   } = useInstances({
     limit: 10,
     offset: 0,
@@ -34,8 +34,8 @@ export const Instances = () => {
 
   const {
     data: failedInstances,
-    isFetched: isFetchedFailed,
-    isFetching: isFetchingFailed,
+    isFetched: isFetchedFailedInstances,
+    isFetching: isFetchingFailedInstances,
     refetch: refetchFailedInstances,
   } = useInstances({
     limit: 10,
@@ -49,7 +49,7 @@ export const Instances = () => {
   });
 
   const { t } = useTranslation();
-  if (!isFetchedCompleted || !isFetchedFailed) return null;
+  if (!isFetchedSucessfullInstances || !isFetchedFailedInstances) return null;
   return (
     <>
       <InstanceCard
@@ -63,9 +63,9 @@ export const Instances = () => {
                   icon
                   size="sm"
                   variant="ghost"
-                  disabled={isFetchingCompleted}
+                  disabled={isFetchingSucessfullinstances}
                   onClick={() => {
-                    refetchCompletedInstances();
+                    refetchSucessfullInstances();
                   }}
                 />
               </TooltipTrigger>
@@ -76,7 +76,7 @@ export const Instances = () => {
           </TooltipProvider>
         }
       >
-        {completedInstances?.instances?.results.length === 0 ? (
+        {sucessfullInstances?.instances?.results.length === 0 ? (
           <NoResult
             message={t(
               "pages.monitoring.instances.successfullExecutions.empty"
@@ -86,7 +86,7 @@ export const Instances = () => {
           <ScrollArea className="h-full">
             <Table>
               <TableBody>
-                {completedInstances?.instances?.results.map((instance) => (
+                {sucessfullInstances?.instances?.results.map((instance) => (
                   <InstanceRow key={instance.id} instance={instance} />
                 ))}
               </TableBody>
@@ -105,7 +105,7 @@ export const Instances = () => {
                   icon
                   size="sm"
                   variant="ghost"
-                  disabled={isFetchingFailed}
+                  disabled={isFetchingFailedInstances}
                   onClick={() => {
                     refetchFailedInstances();
                   }}
