@@ -27,13 +27,14 @@ const VariablesList: FC = () => {
   const [editItem, setEditItem] = useState<VarSchemaType>();
   const [createItem, setCreateItem] = useState(false);
   const [search, setSearch] = useState("");
+  const isSearch = search.length > 0;
 
   const { data, isFetched } = useVars();
   const items = data?.variables?.results ?? null;
 
   // wrap in useMemo
   const filteredItems = items?.filter(
-    (item) => !search || item.name.includes(search)
+    (item) => !isSearch || item.name.includes(search)
   );
 
   const { mutate: deleteVarMutation } = useDeleteVar({
@@ -103,7 +104,11 @@ const VariablesList: FC = () => {
                 </Table>
               ) : (
                 <EmptyList>
-                  {t("pages.settings.variables.list.empty")}
+                  {t(
+                    isSearch
+                      ? "pages.settings.variables.list.emptySearch"
+                      : "pages.settings.variables.list.empty"
+                  )}
                 </EmptyList>
               )}
             </Card>
