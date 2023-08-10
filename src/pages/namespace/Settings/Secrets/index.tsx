@@ -50,7 +50,9 @@ const SecretsList: FC = () => {
         <CreateItemButton
           data-testid="secret-create"
           onClick={() => setCreateSecret(true)}
-        />
+        >
+          {t("pages.settings.secrets.list.createBtn")}
+        </CreateItemButton>
       </div>
 
       <Card>

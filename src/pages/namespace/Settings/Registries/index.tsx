@@ -46,11 +46,12 @@ const RegistriesList: FC = () => {
           <Container className="h-5" />
           {t("pages.settings.registries.list.title")}
         </h3>
-
         <CreateItemButton
           onClick={() => setCreateRegistry(true)}
           data-testid="registry-create"
-        />
+        >
+          {t("pages.settings.registries.list.createBtn")}
+        </CreateItemButton>
       </div>
 
       <Card>
