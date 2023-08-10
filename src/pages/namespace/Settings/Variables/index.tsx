@@ -67,28 +67,30 @@ const VariablesList: FC = () => {
           totalPages,
         }) => (
           <>
-            <div className="mb-3 flex flex-row gap-3">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row">
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
                 <Braces className="h-5" />
                 {t("pages.settings.variables.list.title")}
               </h3>
-
               <Input
-                className="w-1/3"
+                className="sm:w-60"
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   goToFirstPage();
                 }}
-                placeholder="search variables:"
+                placeholder={t(
+                  "pages.settings.variables.list.searchPlaceholder"
+                )}
               />
               <CreateItemButton
                 data-testid="variable-create"
                 onClick={() => setCreateItem(true)}
-              />
+              >
+                {t("pages.settings.variables.list.createBtn")}
+              </CreateItemButton>
             </div>
-
-            <Card className="mb-3">
+            <Card className="mb-4">
               {currentItems?.length ? (
                 <Table>
                   <TableBody>
