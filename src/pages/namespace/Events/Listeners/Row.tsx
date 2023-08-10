@@ -8,11 +8,14 @@ import {
 
 import CopyButton from "~/design/CopyButton";
 import { EventListenerSchemaType } from "~/api/eventListeners/schema";
+import { Link } from "react-router-dom";
+import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 const Row = ({
   listener,
+  namespace,
 }: {
   listener: EventListenerSchemaType;
   namespace: string;
@@ -20,8 +23,27 @@ const Row = ({
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
+  const { workflow, instance } = listener;
+  const listenerType = instance ? "instance" : "workflow";
   const target = listener.workflow || listener.instance;
-  const listenerType = listener.instance ? "instance" : "workflow";
+
+  let linkTarget;
+
+  if (workflow) {
+    linkTarget = pages.explorer.createHref({
+      namespace,
+      path: listener.workflow,
+      subpage: "workflow",
+    });
+  }
+
+  if (instance) {
+    linkTarget = pages.instances.createHref({
+      namespace,
+      instance,
+    });
+  }
+
   const eventTypes = listener.events.map((event) => event.type).join(", ");
 
   return (
@@ -30,7 +52,9 @@ const Row = ({
         <TableCell>
           {t(`pages.events.listeners.tableRow.type.${listenerType}`)}
         </TableCell>
-        <TableCell>{target}</TableCell>
+        <TableCell>
+          {linkTarget ? <Link to={linkTarget}>{target}</Link> : <>{target}</>}
+        </TableCell>
         <TableCell>{listener.mode}</TableCell>
         <TableCell>
           <Tooltip>
