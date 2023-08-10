@@ -147,7 +147,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button type="submit" data-testid="var-edit-submit" variant="primary">
+          <Button type="submit" data-testid="var-edit-submit">
             {t("components.button.label.save")}
           </Button>
         </DialogFooter>

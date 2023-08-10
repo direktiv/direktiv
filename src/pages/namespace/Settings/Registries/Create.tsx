@@ -99,11 +99,7 @@ const Create = ({ onSuccess }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button
-            data-testid="registry-create-submit"
-            type="submit"
-            variant="primary"
-          >
+          <Button data-testid="registry-create-submit" type="submit">
             {t("components.button.label.create")}
           </Button>
         </DialogFooter>
