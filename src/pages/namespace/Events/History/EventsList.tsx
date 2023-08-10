@@ -50,14 +50,18 @@ const EventsList = ({
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
-      <div className="flex flex-row justify-between align-bottom">
-        <h3 className="flex items-center gap-x-2 pt-1 font-bold">
+      <div className="flex flex-row justify-between">
+        <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
           <Radio className="h-5" />
           {t("pages.events.history.title")}
         </h3>
 
         <Send />
       </div>
+
+      {/* <div className="flex flex-row justify-between">
+        <h3 className="flex items-center gap-x-2 pt-1 font-bold"></h3>
+      </div> */}
 
       <Card>
         <Filters filters={filters} onUpdate={handleFilterChange} />
