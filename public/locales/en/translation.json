@@ -185,6 +185,10 @@
           "dialogHeader": "Create new event",
           "submit": "Send"
         },
+        "view": {
+          "dialogHeader": "View event",
+          "submit": "Retrigger"
+        },
         "tableHeader": {
           "id": "id",
           "type": "type",
@@ -726,6 +730,15 @@
           },
           "error": {
             "description": "The event could not be sent 😢"
+          }
+        },
+        "replayEvent": {
+          "success": {
+            "title": "Event retriggered",
+            "description": "The event was retriggered"
+          },
+          "error": {
+            "description": "The event could not be retriggered 😢"
           }
         }
       }

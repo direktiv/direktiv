@@ -11,14 +11,24 @@ import TooltipCopyBadge from "../../../../design/TooltipCopyBadge";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const Row = ({ event }: { event: EventSchemaType; namespace: string }) => {
+const Row = ({
+  event,
+  onClick,
+}: {
+  event: EventSchemaType;
+  namespace: string;
+  onClick: (value: EventSchemaType) => void;
+}) => {
   const { t } = useTranslation();
 
   const receivedAt = useUpdatedAt(event.receivedAt);
 
   return (
     <TooltipProvider>
-      <TableRow data-testid={`event-row-${event.id}`}>
+      <TableRow
+        data-testid={`event-row-${event.id}`}
+        onClick={() => onClick(event)}
+      >
         <TableCell>{event.type}</TableCell>
         <TableCell>
           <TooltipCopyBadge value={event.id} variant="outline">

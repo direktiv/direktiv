@@ -85,7 +85,7 @@ const Send = () => {
               </Button>
             </DialogClose>
             <Button
-              data-testid="variable-create-submit"
+              data-testid="event-send-submit"
               type="submit"
               variant="primary"
             >
