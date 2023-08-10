@@ -12,7 +12,7 @@ import {
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
-import Filters from "../components/Filters";
+import Filters from "./components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import { Radio } from "lucide-react";
