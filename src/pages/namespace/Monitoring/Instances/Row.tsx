@@ -68,12 +68,12 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell>
+        <TableCell className="w-28">
           <TooltipCopyBadge value={instance.id} variant="outline">
             {instance.id.slice(0, 8)}
           </TooltipCopyBadge>
         </TableCell>
-        <TableCell>
+        <TableCell className="w-28">
           <ConditionalWrapper
             condition={instance.status === "failed"}
             wrapper={(children) => (
@@ -97,7 +97,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
             </Badge>
           </ConditionalWrapper>
         </TableCell>
-        <TableCell className="pr-5">
+        <TableCell className="w-40 pr-5">
           <Tooltip>
             <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
