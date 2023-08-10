@@ -107,7 +107,7 @@ const VariablesList: FC = () => {
                 </EmptyList>
               )}
             </Card>
-            {totalPages > 2 && (
+            {totalPages > 1 && (
               <Pagination>
                 <PaginationLink
                   icon="left"
