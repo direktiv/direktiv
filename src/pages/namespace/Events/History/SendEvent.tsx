@@ -65,7 +65,7 @@ const SendEvent = () => {
           <Card
             className="grow p-4 pl-0"
             background="weight-1"
-            data-testid="variable-create-card"
+            data-testid="event-create-card"
           >
             <div className="h-[500px]">
               <Editor
