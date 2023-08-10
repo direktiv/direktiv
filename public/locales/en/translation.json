@@ -327,7 +327,10 @@
       "variables": {
         "list": {
           "title": "Variables",
-          "empty": "No variables exist yet"
+          "empty": "No variables exist yet",
+          "createBtn": "Create Variable",
+          "searchPlaceholder": "Filter variables...",
+          "emptySearch": "No variables match your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
