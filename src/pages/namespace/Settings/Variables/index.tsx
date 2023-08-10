@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import { Table, TableBody } from "~/design/Table";
 
@@ -32,9 +32,9 @@ const VariablesList: FC = () => {
   const { data, isFetched } = useVars();
   const items = data?.variables?.results ?? null;
 
-  // wrap in useMemo
-  const filteredItems = items?.filter(
-    (item) => !isSearch || item.name.includes(search)
+  const filteredItems = useMemo(
+    () => items?.filter((item) => !isSearch || item.name.includes(search)),
+    [isSearch, items, search]
   );
 
   const { mutate: deleteVarMutation } = useDeleteVar({
