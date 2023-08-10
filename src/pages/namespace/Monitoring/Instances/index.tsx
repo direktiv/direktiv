@@ -11,6 +11,7 @@ import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
 import NoResult from "./NoResult";
 import RefreshButton from "~/design/RefreshButton";
+import { ScrollArea } from "~/design/ScrollArea";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -82,13 +83,15 @@ export const Instances = () => {
             )}
           />
         ) : (
-          <Table>
-            <TableBody>
-              {completedInstances?.instances?.results.map((instance) => (
-                <InstanceRow key={instance.id} instance={instance} />
-              ))}
-            </TableBody>
-          </Table>
+          <ScrollArea className="h-full">
+            <Table>
+              <TableBody>
+                {completedInstances?.instances?.results.map((instance) => (
+                  <InstanceRow key={instance.id} instance={instance} />
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         )}
       </InstanceCard>
       <InstanceCard
@@ -120,13 +123,15 @@ export const Instances = () => {
             message={t("pages.monitoring.instances.failedExecutions.empty")}
           />
         ) : (
-          <Table>
-            <TableBody>
-              {failedInstances?.instances?.results.map((instance) => (
-                <InstanceRow key={instance.id} instance={instance} />
-              ))}
-            </TableBody>
-          </Table>
+          <ScrollArea className="h-full">
+            <Table>
+              <TableBody>
+                {failedInstances?.instances?.results.map((instance) => (
+                  <InstanceRow key={instance.id} instance={instance} />
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         )}
       </InstanceCard>
     </>
