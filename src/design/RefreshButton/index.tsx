@@ -24,9 +24,6 @@ const RefreshButton: FC<ButtonPropsType> = ({
 
   return (
     <Button
-      icon
-      size="sm"
-      variant="ghost"
       onClick={(e) => {
         onClick?.(e);
         setSpinning(true);
