@@ -224,7 +224,7 @@
       "listeners": {
         "title": "Event listeners",
         "tableHeader": {
-          "workflow": "workflow",
+          "target": "target",
           "type": "type",
           "mode": "mode",
           "createdAt": "updated",
@@ -234,7 +234,11 @@
           "noResults": "No event listeners found"
         },
         "tableRow": {
-          "realtiveTime": "{{relativeTime}} ago"
+          "realtiveTime": "{{relativeTime}} ago",
+          "type": {
+            "workflow": "start workflow",
+            "instance": "resume instance"
+          }
         }
       }
     },

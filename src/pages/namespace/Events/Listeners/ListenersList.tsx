@@ -49,10 +49,10 @@ const ListenersList = ({
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
-                {t("pages.events.listeners.tableHeader.workflow")}
+                {t("pages.events.listeners.tableHeader.type")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.events.listeners.tableHeader.type")}
+                {t("pages.events.listeners.tableHeader.target")}
               </TableHeaderCell>
               <TableHeaderCell>
                 {t("pages.events.listeners.tableHeader.mode")}
