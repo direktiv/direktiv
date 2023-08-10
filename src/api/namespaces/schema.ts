@@ -28,7 +28,7 @@ export const NamespaceLogSchema = z.object({
     type: z.string(),
     callpath: z.string().optional(), // / 7fda01ef-2fa7-454b-8fb1-b63f87464762
     instanceId: z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
-    invoker: z.string().optional(), // api TODO: enum?
+    invoker: z.string().optional(), // api
     "revision-id": z.string().optional(), // 498841a9-f278-480e-9bfc-af698d9f8047
     "root-instance-id": z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
     workflow: z.string().optional(), // /path/to/workflow.yaml
