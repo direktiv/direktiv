@@ -44,7 +44,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
         }}
         className="cursor-pointer"
       >
-        <TableCell className="pl-5">
+        <TableCell className="grid pl-5">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
@@ -56,7 +56,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
                   path: instance.as,
                   subpage: "workflow",
                 })}
-                className="block w-36 overflow-hidden text-ellipsis hover:underline sm:w-72 md:w-32"
+                className="overflow-hidden text-ellipsis hover:underline md:w-auto"
               >
                 {instance.as}
               </Link>
@@ -68,12 +68,12 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell className="w-28">
+        <TableCell className="w-0">
           <TooltipCopyBadge value={instance.id} variant="outline">
             {instance.id.slice(0, 8)}
           </TooltipCopyBadge>
         </TableCell>
-        <TableCell className="w-28">
+        <TableCell className="w-0">
           <ConditionalWrapper
             condition={instance.status === "failed"}
             wrapper={(children) => (
@@ -97,7 +97,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
             </Badge>
           </ConditionalWrapper>
         </TableCell>
-        <TableCell className="w-40 pr-5">
+        <TableCell className="w-0 pr-5">
           <Tooltip>
             <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
