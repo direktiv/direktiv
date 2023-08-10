@@ -16,7 +16,7 @@ import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const EventEditorForm = ({ event }: { event: EventSchemaType }) => {
+const ViewEvent = ({ event }: { event: EventSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -67,4 +67,4 @@ const EventEditorForm = ({ event }: { event: EventSchemaType }) => {
   );
 };
 
-export default EventEditorForm;
+export default ViewEvent;

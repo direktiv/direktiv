@@ -11,14 +11,14 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
-import EventEditorForm from "./EventEditorForm";
 import { EventSchemaType } from "~/api/events/schema";
 import Filters from "../components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import { Radio } from "lucide-react";
 import Row from "./Row";
-import Send from "./Send";
+import SendEvent from "./SendEvent";
+import ViewEvent from "./ViewEvent";
 import { itemsPerPage } from ".";
 import { useTranslation } from "react-i18next";
 
@@ -66,7 +66,7 @@ const EventsList = ({
           {t("pages.events.history.title")} {eventDialog ? "open" : "close"}
         </h3>
 
-        <Send />
+        <SendEvent />
       </div>
 
       {/* <div className="flex flex-row justify-between">
@@ -122,7 +122,7 @@ const EventsList = ({
           </Table>
         </Card>
         <DialogContent>
-          {!!eventDialog && <EventEditorForm event={eventDialog} />}
+          {!!eventDialog && <ViewEvent event={eventDialog} />}
         </DialogContent>
       </Dialog>
       {showPagination && (

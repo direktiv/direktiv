@@ -21,7 +21,7 @@ import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const Send = () => {
+const SendEvent = () => {
   const [body, setBody] = useState<string | undefined>(exampleEvent);
   const [isOpen, setIsOpen] = useState(false);
   const theme = useTheme();
@@ -98,4 +98,4 @@ const Send = () => {
   );
 };
 
-export default Send;
+export default SendEvent;
