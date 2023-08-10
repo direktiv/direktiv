@@ -4,44 +4,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import {
-  EventSchemaType,
-  NewEventSchema,
-  NewEventSchemaType,
-} from "~/api/events/schema";
+import { EventSchemaType, NewEventSchemaType } from "~/api/events/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { useReplayEvent } from "~/api/events/mutate/replayEvent";
-import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 const EventEditorForm = ({ event }: { event: EventSchemaType }) => {
-  const [body, setBody] = useState<string | undefined>(
-    atob(event.cloudevent) || undefined
-  );
-
   const { t } = useTranslation();
   const theme = useTheme();
 
-  // TODO: Implement
   const { mutate: replayEvent } = useReplayEvent();
 
   const onSubmit: SubmitHandler<NewEventSchemaType> = () => {
     replayEvent(event.id);
   };
 
-  const { handleSubmit } = useForm<NewEventSchemaType>({
-    resolver: zodResolver(NewEventSchema),
-    values: {
-      body: body || "",
-    },
-  });
+  const { handleSubmit } = useForm<NewEventSchemaType>({});
 
   return (
     <form
@@ -55,6 +40,7 @@ const EventEditorForm = ({ event }: { event: EventSchemaType }) => {
           {t("pages.events.history.view.dialogHeader")}
         </DialogTitle>
       </DialogHeader>
+      <Alert variant="info">{t("pages.events.history.view.info")}</Alert>
       <Card
         className="grow p-4 pl-0"
         background="weight-1"
@@ -62,12 +48,10 @@ const EventEditorForm = ({ event }: { event: EventSchemaType }) => {
       >
         <div className="h-[500px]">
           <Editor
-            value={body}
+            value={atob(event.cloudevent)}
             language="json"
             theme={theme ?? undefined}
-            onChange={(newData) => {
-              setBody(newData);
-            }}
+            options={{ readOnly: true }}
           />
         </div>
       </Card>

@@ -186,6 +186,7 @@
           "submit": "Send"
         },
         "view": {
+          "info": "This information is read-only, 'retrigger' will replay a stored copy of the event.",
           "dialogHeader": "View event",
           "submit": "Retrigger"
         },
