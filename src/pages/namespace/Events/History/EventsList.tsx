@@ -122,7 +122,12 @@ const EventsList = ({
           </Table>
         </Card>
         <DialogContent>
-          {!!eventDialog && <ViewEvent event={eventDialog} />}
+          {!!eventDialog && (
+            <ViewEvent
+              event={eventDialog}
+              handleOpenChange={handleOpenChange}
+            />
+          )}
         </DialogContent>
       </Dialog>
       {showPagination && (

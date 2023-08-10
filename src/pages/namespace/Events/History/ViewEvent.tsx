@@ -16,11 +16,19 @@ import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const ViewEvent = ({ event }: { event: EventSchemaType }) => {
+const ViewEvent = ({
+  event,
+  handleOpenChange,
+}: {
+  event: EventSchemaType;
+  handleOpenChange: (value: boolean) => void;
+}) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const { mutate: replayEvent } = useReplayEvent();
+  const { mutate: replayEvent } = useReplayEvent({
+    onSuccess: () => handleOpenChange(false),
+  });
 
   const onSubmit: SubmitHandler<NewEventSchemaType> = () => {
     replayEvent(event.id);
