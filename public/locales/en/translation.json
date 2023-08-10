@@ -299,7 +299,10 @@
       "secrets": {
         "list": {
           "title": "Secrets",
-          "empty": "No secrets exist yet"
+          "empty": "No secrets exist yet",
+          "createBtn": "Create Secret",
+          "searchPlaceholder": "Filter Secrets...",
+          "emptySearch": "No secret matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -312,7 +315,10 @@
       "registries": {
         "list": {
           "title": "Container Registries",
-          "empty": "No registries exist yet"
+          "empty": "No registries exist yet",
+          "createBtn": "Create Registry",
+          "searchPlaceholder": "Filter Registries...",
+          "emptySearch": "No registry matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
