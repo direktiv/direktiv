@@ -20,7 +20,7 @@ const InstancesPage = () => {
           className={twMergeClsx(
             "grid grow gap-5",
             "grid-rows-[100vh_50vh_50vh]",
-            "md:grid-rows-[minmax(300px,45vh)_1fr]",
+            "md:grid-rows-[minmax(300px,55vh)_1fr]",
             "md:grid-cols-[1fr_1fr]"
           )}
         >
