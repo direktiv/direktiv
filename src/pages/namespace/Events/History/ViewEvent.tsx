@@ -48,7 +48,9 @@ const ViewEvent = ({
           {t("pages.events.history.view.dialogHeader")}
         </DialogTitle>
       </DialogHeader>
-      <Alert variant="info">{t("pages.events.history.view.info")}</Alert>
+      <Alert variant="info" className="text-sm">
+        {t("pages.events.history.view.info")}
+      </Alert>
       <Card
         className="grow p-4 pl-0"
         background="weight-1"
