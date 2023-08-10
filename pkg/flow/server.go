@@ -30,6 +30,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/refactor/workers"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -223,12 +224,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.timers.Close)
 
-	srv.events, err = initEvents(srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.events.Close)
-
 	srv.sugar.Debug("Initializing metrics.")
 
 	srv.metrics = metrics.NewClient(srv.gormDB)
@@ -307,6 +302,20 @@ func (srv *server) start(ctx context.Context) error {
 	go func() {
 		logworker()
 	}()
+
+	srv.sugar.Debug("Initializing events.")
+	srv.events, err = initEvents(srv, noTx.DataStore().StagingEvents().Append)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.events.Close)
+
+	srv.sugar.Debug("Initializing EventWorkers.")
+
+	interval := 1 * time.Second // TODO: Adjust the polling interval
+	eventWorker := workers.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.sugar.Named("eventworker"), srv.events.handleEvent)
+
+	go eventWorker.Start(ctx)
 
 	cc := func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
 		_, router, err := getRouter(ctx, noTx, file)

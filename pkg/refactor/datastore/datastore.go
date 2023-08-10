@@ -35,6 +35,7 @@ type Store interface {
 	EventListener() events.EventListenerStore
 	EventFilter() events.CloudEventsFilterStore
 	EventListenerTopics() events.EventTopicsStore
+	StagingEvents() events.StagingEventStore
 }
 
 // ErrNotFound is a common error type that should be returned by any store implementation

@@ -8,11 +8,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type StagingEvent struct {
+	*Event
+	DatabaseID   uuid.UUID
+	DelayedUntil time.Time
+}
+
 // wraps the cloud-event and adds contextual information.
 type Event struct {
-	Event      *cloudevents.Event
-	Namespace  uuid.UUID
-	ReceivedAt time.Time // marks when the events received by the web-API or created via internal logic.
+	Event         *cloudevents.Event
+	Namespace     uuid.UUID
+	NamespaceName string
+	ReceivedAt    time.Time // marks when the events received by the web-API or created via internal logic.
 }
 
 // Persists and gets events.
@@ -100,4 +107,11 @@ type CloudEventsFilterStore interface {
 	Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error
 	Get(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, int, error)
 	GetAll(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, error)
+}
+
+// Currently only in use for delayed events.
+type StagingEventStore interface {
+	Append(ctx context.Context, events ...*StagingEvent) ([]*StagingEvent, []error)
+	GetDelayedEvents(ctx context.Context, currentTime time.Time, limit int, offset int) ([]*StagingEvent, int, error)
+	DeleteByDatabaseIDs(ctx context.Context, databaseIDs ...uuid.UUID) error
 }

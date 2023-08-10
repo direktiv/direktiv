@@ -82,6 +82,10 @@ func (s *sqlStore) EventFilter() events.CloudEventsFilterStore {
 	return &sqlNamespaceCloudEventFilter{db: s.db}
 }
 
+func (s *sqlStore) StagingEvents() events.StagingEventStore {
+	return &sqlStagingEventStore{db: s.db}
+}
+
 func (s *sqlStore) EventHistory() events.EventHistoryStore {
 	return &sqlEventHistoryStore{db: s.db}
 }
