@@ -228,7 +228,7 @@
           "type": "type",
           "mode": "mode",
           "createdAt": "updated",
-          "eventTypes": "event types"
+          "eventTypes": "cloud event type"
         },
         "empty": {
           "noResults": "No event listeners found"

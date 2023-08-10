@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
+import CopyButton from "~/design/CopyButton";
 import { EventListenerSchemaType } from "~/api/eventListeners/schema";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
@@ -39,7 +40,25 @@ const Row = ({
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell>{eventTypes}</TableCell>
+        <TableCell>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="w-40 truncate text-left">{eventTypes}</div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {eventTypes}
+              <CopyButton
+                value={eventTypes}
+                buttonProps={{
+                  size: "sm",
+                  onClick: (e) => {
+                    e.stopPropagation();
+                  },
+                }}
+              />
+            </TooltipContent>
+          </Tooltip>
+        </TableCell>
       </TableRow>
     </TooltipProvider>
   );
