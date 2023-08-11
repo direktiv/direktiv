@@ -1,4 +1,3 @@
-import { Antenna, ArrowDownToDot } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import {
   Table,
@@ -9,6 +8,7 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
