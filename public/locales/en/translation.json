@@ -142,7 +142,8 @@
             "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
-            "runBtn": "Run"
+            "runBtn": "Run",
+            "genericRunError": "Something went wrong running this workflow."
           }
         }
       },
