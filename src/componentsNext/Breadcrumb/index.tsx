@@ -1,5 +1,6 @@
 import { BreadcrumbRoot } from "~/design/Breadcrumbs";
-import EventsBreadcrumb from "./EventsBreadcrumb";
+import EventHistoryBreadcrumb from "./Events/HistoryBreadcrumb";
+import EventListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
@@ -10,7 +11,8 @@ const Breadcrumb = () => {
   const namespace = useNamespace();
   const { isExplorerPage } = pages.explorer.useParams();
   const { isInstancePage } = pages.instances.useParams();
-  const { isEventsPage } = pages.events.useParams();
+  const { isEventsHistoryPage, isEventsListenersPage } =
+    pages.events.useParams();
 
   if (!namespace) return null;
 
@@ -19,7 +21,8 @@ const Breadcrumb = () => {
       <NamespaceSelector />
       {isExplorerPage && <ExplorerBreadcrumb />}
       {isInstancePage && <InstancesBreadcrumb />}
-      {isEventsPage && <EventsBreadcrumb />}
+      {isEventsHistoryPage && <EventHistoryBreadcrumb />}
+      {isEventsListenersPage && <EventListenerBreadcrumb />}
     </BreadcrumbRoot>
   );
 };

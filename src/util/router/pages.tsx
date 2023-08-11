@@ -10,10 +10,11 @@ import {
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import EventsPage from "~/pages/namespace/Events";
+import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
-import React from "react";
+import Listeners from "~/pages/namespace/Events/Listeners";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
@@ -32,7 +33,6 @@ interface PageBase {
 
 type KeysWithNoPathParams =
   | "monitoring"
-  | "events"
   // | "gateway"
   // | "permissions"
   | "services"
@@ -101,9 +101,13 @@ type InstancesPageSetup = Record<
 type EventsPageSetup = Record<
   "events",
   PageBase & {
-    createHref: (params: { namespace: string }) => string;
+    createHref: (params: {
+      namespace: string;
+      subpage?: "eventlisteners";
+    }) => string;
     useParams: () => {
-      isEventsPage: boolean;
+      isEventsHistoryPage: boolean;
+      isEventsListenersPage: boolean;
     };
   }
 >;
@@ -269,16 +273,37 @@ export const pages: PageType = {
   events: {
     name: "components.mainMenu.events",
     icon: Radio,
-    createHref: (params) => `/${params.namespace}/events`,
+    createHref: (params) =>
+      `/${params.namespace}/events/${
+        params?.subpage === "eventlisteners" ? `listeners` : "history"
+      }`,
     useParams: () => {
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      const isEventsPage = checkHandler(secondLevel, "isEventsPage");
-      return { isEventsPage };
+      const [, , thirdLevel] = useMatches(); // first level is namespace level
+      const isEventsHistoryPage = checkHandler(
+        thirdLevel,
+        "isEventHistoryPage"
+      );
+      const isEventsListenersPage = checkHandler(
+        thirdLevel,
+        "isEventListenersPage"
+      );
+      return { isEventsHistoryPage, isEventsListenersPage };
     },
     route: {
       path: "events",
       element: <EventsPage />,
-      handle: { isEventsPage: true },
+      children: [
+        {
+          path: "history",
+          element: <Listeners />,
+          handle: { isEventHistoryPage: true },
+        },
+        {
+          path: "listeners",
+          element: <History />,
+          handle: { isEventListenersPage: true },
+        },
+      ],
     },
   },
   // gateway: {

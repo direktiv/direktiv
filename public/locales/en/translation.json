@@ -472,7 +472,8 @@
       "createBtn": "Create new namespace",
       "loading": "loading...",
       "instances": "Instances",
-      "events": "Events"
+      "eventHistory": "Event History",
+      "eventListeners": "Event Listeners"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
