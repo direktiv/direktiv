@@ -295,12 +295,12 @@ export const pages: PageType = {
       children: [
         {
           path: "history",
-          element: <Listeners />,
+          element: <History />,
           handle: { isEventHistoryPage: true },
         },
         {
           path: "listeners",
-          element: <History />,
+          element: <Listeners />,
           handle: { isEventListenersPage: true },
         },
       ],
