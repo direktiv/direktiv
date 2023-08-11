@@ -22,7 +22,7 @@ export const RegistryListSchema = z.object({
   registries: z.array(RegistrySchema),
 });
 
-export const RegistryTestConnectionSchema = z.null();
+export const RegistryTestConnectionSchema = z.object({});
 
 export const RegistryCreatedSchema = z.null();
 
