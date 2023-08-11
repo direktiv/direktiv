@@ -328,7 +328,11 @@
           "url": "URL",
           "user": "User",
           "password": "Password",
-          "testConnectionBtn": "Test Connection"
+          "testConnectionBtn": {
+            "label": "Test Connection",
+            "success": "Connection successful",
+            "error": "Connection failed"
+          }
         }
       },
       "variables": {
