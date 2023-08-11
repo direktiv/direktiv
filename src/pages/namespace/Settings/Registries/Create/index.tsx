@@ -1,5 +1,3 @@
-import { CheckCircle2, CircleDashed, PlusCircle, XCircle } from "lucide-react";
-import { ComponentProps, FC, useState } from "react";
 import {
   DialogClose,
   DialogContent,
@@ -16,63 +14,17 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
+import { PlusCircle } from "lucide-react";
+import { TestConnectionButton } from "./TestConnectionButton";
 import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
-import { useTestConnection } from "~/api/registries/mutate/testConnection";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };
 
-type ConnectionTestSuccessfull = boolean | null; // null = not tested yet
-type ButtonVariants = ComponentProps<typeof Button>["variant"];
-
-const useConnectionButtonState = (
-  testSuccessful: ConnectionTestSuccessfull
-): {
-  variant: ButtonVariants;
-  icon: FC<React.SVGProps<SVGSVGElement>>;
-  label: string;
-} => {
-  const { t } = useTranslation();
-  let variant: ButtonVariants = "outline";
-  let icon: FC<React.SVGProps<SVGSVGElement>> = CircleDashed;
-
-  let label = t("pages.settings.registries.create.testConnectionBtn.label");
-
-  if (testSuccessful === true) {
-    variant = "primary";
-    icon = CheckCircle2;
-    label = t("pages.settings.registries.create.testConnectionBtn.success");
-  }
-  if (testSuccessful === false) {
-    variant = "destructive";
-    icon = XCircle;
-    label = t("pages.settings.registries.create.testConnectionBtn.error");
-  }
-
-  return {
-    variant,
-    icon,
-    label,
-  };
-};
-
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const { mutate: createRegistryMutation } = useCreateRegistry({ onSuccess });
-  const [testSuccessful, setTestSuccessful] =
-    useState<ConnectionTestSuccessfull>(null);
-
-  const connectionButtonState = useConnectionButtonState(testSuccessful);
-
-  const { mutate: testConnection, isLoading: testLoading } = useTestConnection({
-    onSuccess: () => {
-      setTestSuccessful(true);
-    },
-    onError: () => {
-      setTestSuccessful(false);
-    },
-  });
 
   const onSubmit: SubmitHandler<RegistryFormSchemaType> = (data) => {
     createRegistryMutation(data);
@@ -86,14 +38,6 @@ const Create = ({ onSuccess }: CreateProps) => {
   } = useForm<RegistryFormSchemaType>({
     resolver: zodResolver(RegistryFormSchema),
   });
-
-  const onTestConnectionClick = () => {
-    testConnection({
-      url: getValues("url"),
-      username: getValues("user"),
-      password: getValues("password"),
-    });
-  };
 
   return (
     <DialogContent>
@@ -150,17 +94,7 @@ const Create = ({ onSuccess }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button
-            data-testid="registry-create-test-connection"
-            onClick={onTestConnectionClick}
-            loading={testLoading}
-            disabled={!isValid || testLoading}
-            type="button"
-            variant={connectionButtonState.variant}
-          >
-            {!testLoading && <connectionButtonState.icon />}
-            {connectionButtonState.label}
-          </Button>
+          <TestConnectionButton getValues={getValues} isValid={isValid} />
           <Button data-testid="registry-create-submit" type="submit">
             {t("components.button.label.create")}
           </Button>
