@@ -1,4 +1,4 @@
-import { ArrowDownToDot, Radio } from "lucide-react";
+import { Antenna, Radio } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import History from "./History";
@@ -33,7 +33,7 @@ const EventsPage = () => {
               onClick={() => setTab("listeners")}
             >
               <a href="#">
-                <ArrowDownToDot aria-hidden="true" />
+                <Antenna aria-hidden="true" />
                 {t("pages.events.tabs.listeners")}
               </a>
             </TabsTrigger>

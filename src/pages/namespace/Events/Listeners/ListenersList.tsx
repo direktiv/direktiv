@@ -1,3 +1,4 @@
+import { Antenna, ArrowDownToDot } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import {
   Table,
@@ -8,7 +9,6 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { ArrowDownToDot } from "lucide-react";
 import { Card } from "~/design/Card";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
@@ -39,7 +39,7 @@ const ListenersList = ({
     <div className="flex grow flex-col gap-y-3 p-5">
       <div className="flex flex-row justify-between">
         <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
-          <ArrowDownToDot className="h-5" />
+          <Antenna className="h-5" />
           {t("pages.events.listeners.title")}
         </h3>
       </div>
