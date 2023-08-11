@@ -1,4 +1,5 @@
 import { CheckCircle2, CircleDashed, PlusCircle, XCircle } from "lucide-react";
+import { ComponentProps, FC, useState } from "react";
 import {
   DialogClose,
   DialogContent,
@@ -16,17 +17,53 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
-import { useState } from "react";
 import { useTestConnection } from "~/api/registries/mutate/testConnection";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };
 
+type ConnectionTestSuccessfull = boolean | null; // null = not tested yet
+type ButtonVariants = ComponentProps<typeof Button>["variant"];
+
+const useConnectionButtonState = (
+  testSuccessful: ConnectionTestSuccessfull
+): {
+  variant: ButtonVariants;
+  icon: FC<React.SVGProps<SVGSVGElement>>;
+  label: string;
+} => {
+  const { t } = useTranslation();
+  let variant: ButtonVariants = "outline";
+  let icon: FC<React.SVGProps<SVGSVGElement>> = CircleDashed;
+
+  let label = t("pages.settings.registries.create.testConnectionBtn.label");
+
+  if (testSuccessful === true) {
+    variant = "primary";
+    icon = CheckCircle2;
+    label = t("pages.settings.registries.create.testConnectionBtn.success");
+  }
+  if (testSuccessful === false) {
+    variant = "destructive";
+    icon = XCircle;
+    label = t("pages.settings.registries.create.testConnectionBtn.error");
+  }
+
+  return {
+    variant,
+    icon,
+    label,
+  };
+};
+
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const { mutate: createRegistryMutation } = useCreateRegistry({ onSuccess });
-  const [testSuccessful, setTestSuccessful] = useState<boolean | null>(null);
+  const [testSuccessful, setTestSuccessful] =
+    useState<ConnectionTestSuccessfull>(null);
+
+  const connectionButtonState = useConnectionButtonState(testSuccessful);
 
   const { mutate: testConnection, isLoading: testLoading } = useTestConnection({
     onSuccess: () => {
@@ -119,11 +156,10 @@ const Create = ({ onSuccess }: CreateProps) => {
             loading={testLoading}
             disabled={!isValid || testLoading}
             type="button"
+            variant={connectionButtonState.variant}
           >
-            {!testLoading && testSuccessful === true && <CheckCircle2 />}
-            {!testLoading && testSuccessful === false && <XCircle />}
-            {!testLoading && testSuccessful === null && <CircleDashed />}
-            {t("pages.settings.registries.create.testConnectionBtn")}
+            {!testLoading && <connectionButtonState.icon />}
+            {connectionButtonState.label}
           </Button>
           <Button data-testid="registry-create-submit" type="submit">
             {t("components.button.label.create")}
