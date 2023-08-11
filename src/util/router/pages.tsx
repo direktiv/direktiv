@@ -1,4 +1,12 @@
-import { Boxes, Bug, FolderTree, Layers, Radio, Settings } from "lucide-react";
+import {
+  Boxes,
+  Bug,
+  FolderTree,
+  Layers,
+  LucideIcon,
+  Radio,
+  Settings,
+} from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import EventsPage from "~/pages/namespace/Events";
@@ -18,7 +26,7 @@ import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
   name: string;
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
   route: RouteObject;
 }
 
