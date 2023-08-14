@@ -3,6 +3,7 @@ import { Diamond, Layers } from "lucide-react";
 import { FC, useState } from "react";
 
 import Button from "~/design/Button";
+import CreateService from "./Create";
 import { useTranslation } from "react-i18next";
 
 const NoResult: FC = () => {
@@ -28,7 +29,7 @@ const NoResult: FC = () => {
           </DialogTrigger>
 
           <DialogContent>
-            {/* <NewService close={() => setDialogOpen(false)} /> */}
+            <CreateService close={() => setDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
