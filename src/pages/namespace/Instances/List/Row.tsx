@@ -32,7 +32,7 @@ const InstanceTableRow: FC<{
   const createdAt = useUpdatedAt(instance.createdAt);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const isChild = invoker === "instance" && !!childInstance;
+  const isChildInstance = invoker === "instance" && !!childInstance;
 
   return (
     <TooltipProvider>
@@ -82,7 +82,7 @@ const InstanceTableRow: FC<{
           </TooltipCopyBadge>
         </TableCell>
         <TableCell>
-          {isChild ? (
+          {isChildInstance ? (
             <TooltipCopyBadge
               value={childInstance}
               variant="outline"
