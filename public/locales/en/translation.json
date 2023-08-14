@@ -189,11 +189,11 @@
         "updateTooltip": "refetch instances",
         "successfullExecutions": {
           "title": "Successful Executions",
-          "empty": "There are no recently successful executions."
+          "empty": "There are no recent successful executions."
         },
         "failedExecutions": {
           "title": "Failed Executions",
-          "empty": "There are no recently failed executions."
+          "empty": "There are no recent failed executions."
         }
       }
     },
