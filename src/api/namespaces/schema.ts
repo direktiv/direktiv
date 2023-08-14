@@ -25,7 +25,7 @@ export const NamespaceLogSchema = z.object({
     namespace: z.string(), // my-namespace
     "namespace-id": z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
     source: z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
-    type: z.string(),
+    type: z.string(), // instance
     callpath: z.string().optional(), // / 7fda01ef-2fa7-454b-8fb1-b63f87464762
     instanceId: z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
     invoker: z.string().optional(), // api
