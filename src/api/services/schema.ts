@@ -34,5 +34,16 @@ export const ServicesListSchema = z.object({
   functions: z.array(ServiceSchema),
 });
 
+export const ServiceFormSchema = z.object({
+  cmd: z.string().nonempty(),
+  image: z.string().nonempty(),
+  minscale: z.number().int().gte(0).lte(3),
+  scale: z.number().int().gte(1).lte(3),
+});
+
 export const ServiceDeletedSchema = z.null();
+
+export const ServiceCreatedSchema = z.null();
+
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
+export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;

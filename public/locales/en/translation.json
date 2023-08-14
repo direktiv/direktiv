@@ -606,6 +606,15 @@
     },
     "services": {
       "mutate": {
+        "createService": {
+          "success": {
+            "title": "Service create",
+            "description": "Service {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create service 😢"
+          }
+        },
         "deleteService": {
           "success": {
             "title": "Service deleted",
