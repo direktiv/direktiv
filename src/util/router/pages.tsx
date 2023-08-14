@@ -309,12 +309,11 @@ export const pages: PageType = {
 
       const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
       const isServiceDetailPage = checkHandler(thirdLvl, "isServiceDetailPage");
-
       const isServicePage = isServiceListPage || isServiceDetailPage;
 
       return {
         namespace: isServicePage ? namespace : undefined,
-        service: isServicePage ? instance : undefined,
+        service: isServicePage ? service : undefined,
         isServicePage,
         isServiceListPage,
         isServiceDetailPage,
