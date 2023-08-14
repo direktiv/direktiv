@@ -33,3 +33,6 @@ export const ServicesListSchema = z.object({
   }),
   functions: z.array(ServiceSchema),
 });
+
+export const ServiceDeletedSchema = z.null();
+export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;

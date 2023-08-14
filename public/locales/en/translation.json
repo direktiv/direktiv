@@ -604,6 +604,19 @@
         }
       }
     },
+    "services": {
+      "mutate": {
+        "deleteService": {
+          "success": {
+            "title": "Service deleted",
+            "description": "Service {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete service 😢"
+          }
+        }
+      }
+    },
     "variables": {
       "mutate": {
         "updateVariable": {
