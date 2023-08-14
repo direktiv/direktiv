@@ -9,9 +9,9 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
-import { Calendar } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { Radio } from "lucide-react";
 import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,7 @@ const ViewEvent = ({
     >
       <DialogHeader>
         <DialogTitle>
-          <Calendar />
+          <Radio />
           {t("pages.events.history.view.dialogHeader")}
         </DialogTitle>
       </DialogHeader>

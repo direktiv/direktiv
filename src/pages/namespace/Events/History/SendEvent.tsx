@@ -1,4 +1,3 @@
-import { Calendar, PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -9,6 +8,7 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 import { NewEventSchema, NewEventSchemaType } from "~/api/events/schema";
+import { PlusCircle, Radio } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
@@ -58,7 +58,7 @@ const SendEvent = () => {
         >
           <DialogHeader>
             <DialogTitle>
-              <Calendar />
+              <Radio />
               {t("pages.events.history.send.dialogHeader")}
             </DialogTitle>
           </DialogHeader>
