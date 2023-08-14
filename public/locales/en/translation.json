@@ -288,6 +288,24 @@
         }
       }
     },
+    "services": {
+      "list": {
+        "title": "Services",
+        "contextMenu": {
+          "delete": "Delete"
+        },
+        "empty": {
+          "title": "No services exist yet",
+          "create": "Create a new service"
+        },
+        "delete": {
+          "title": "Delete Service",
+          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        }
+      }
+    },
     "settings": {
       "generic": {
         "contextMenu": {
