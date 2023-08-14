@@ -13,6 +13,8 @@ import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import React from "react";
 import type { RouteObject } from "react-router-dom";
+import ServiceDetailPage from "~/pages/namespace/Services/Detail";
+import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
@@ -326,12 +328,12 @@ export const pages: PageType = {
       children: [
         {
           path: "",
-          element: <h1>Services</h1>,
+          element: <ServicesListPage />,
           handle: { isServiceListPage: true },
         },
         {
           path: ":service",
-          element: <h1>Service Detail</h1>,
+          element: <ServiceDetailPage />,
           handle: { isServiceDetailPage: true },
         },
       ],
