@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-const BooleanSchema = z.enum(["True", "False"]);
+const StatusSchema = z.enum(["True", "False", "Unknown"]);
 
 const ConditionSchema = z.object({
   name: z.enum(["ConfigurationsReady", "Ready", "RoutesReady"]),
-  status: BooleanSchema,
+  status: StatusSchema,
   reason: z.string(),
   message: z.string(),
 });
@@ -23,7 +23,7 @@ const ServiceSchema = z.object({
     revision: z.string(),
     envs: z.object({}),
   }),
-  status: BooleanSchema,
+  status: StatusSchema,
   conditions: z.array(ConditionSchema),
 });
 
