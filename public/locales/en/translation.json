@@ -316,8 +316,8 @@
         "list": {
           "title": "Container Registries",
           "empty": "No registries exist yet",
-          "createBtn": "Create Registry",
-          "searchPlaceholder": "Filter Registries...",
+          "createBtn": "Create registry",
+          "searchPlaceholder": "Filter registries...",
           "emptySearch": "No registry matches your search"
         },
         "delete": {
@@ -339,7 +339,7 @@
         "list": {
           "title": "Variables",
           "empty": "No variables exist yet",
-          "createBtn": "Create Variable",
+          "createBtn": "Create variable",
           "searchPlaceholder": "Filter variables...",
           "emptySearch": "No variable matches your search"
         },
