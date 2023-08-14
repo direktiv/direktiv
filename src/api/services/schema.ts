@@ -36,7 +36,7 @@ export const ServicesListSchema = z.object({
 
 export const ServiceFormSchema = z.object({
   name: z.string().nonempty(),
-  cmd: z.string().nonempty(),
+  cmd: z.string(),
   image: z.string().nonempty(),
   minscale: z.number().int().gte(0).lte(3),
   scale: z.number().int().gte(1).lte(3),
