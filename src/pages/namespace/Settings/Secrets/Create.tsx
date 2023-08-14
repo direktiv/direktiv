@@ -82,11 +82,7 @@ const Create = ({ onSuccess }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button
-            data-testid="secret-create-submit"
-            type="submit"
-            variant="primary"
-          >
+          <Button data-testid="secret-create-submit" type="submit">
             {t("components.button.label.create")}
           </Button>
         </DialogFooter>

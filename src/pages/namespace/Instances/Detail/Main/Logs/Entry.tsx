@@ -1,35 +1,17 @@
-import { ComponentProps, ComponentPropsWithoutRef, forwardRef } from "react";
+import { ComponentPropsWithoutRef, forwardRef } from "react";
+import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
 
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
-import { formatTime } from "./utils";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 
-type LogEntryVariant = ComponentProps<typeof LogEntry>["variant"];
-type logLevel = LogEntryType["level"];
-
-const logLevelToLogEntryVariant = (level: logLevel): LogEntryVariant => {
-  switch (level) {
-    case "error":
-    case "panic":
-      return "error";
-    case "info":
-      return "info";
-    case "debug":
-      return undefined;
-    default:
-      break;
-  }
-};
-
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
-
 type Props = { logEntry: LogEntryType } & LogEntryProps;
 
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const { msg, t, level, tags } = logEntry;
-    const time = formatTime(t);
+    const time = formatLogTime(t);
     const verbose = useLogsPreferencesVerboseLogs();
 
     return (

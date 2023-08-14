@@ -15,30 +15,25 @@ import {
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
-import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
-import { statusToBadgeVariant } from "../utils";
+import { statusToBadgeVariant } from "../../Instances/utils";
+import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const InstanceTableRow: FC<{
-  instance: InstanceSchemaType;
-  namespace: string;
-}> = ({ instance, namespace }) => {
-  const [invoker, childInstance] = instance.invoker.split(":");
-  const updatedAt = useUpdatedAt(instance.updatedAt);
-  const createdAt = useUpdatedAt(instance.createdAt);
-  const navigate = useNavigate();
+export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
   const { t } = useTranslation();
-  const isChildInstance = invoker === "instance" && !!childInstance;
+  const navigate = useNavigate();
+  const updatedAt = useUpdatedAt(instance.updatedAt);
+  const namespace = useNamespace();
+
+  if (!namespace) return null;
 
   return (
     <TooltipProvider>
       <TableRow
-        data-testid={`instance-row-wrap-${instance.id}`}
-        key={instance.id}
         onClick={() => {
           navigate(
             pages.instances.createHref({
@@ -49,12 +44,9 @@ const InstanceTableRow: FC<{
         }}
         className="cursor-pointer"
       >
-        <TableCell>
+        <TableCell className="grid pl-5">
           <Tooltip>
-            <TooltipTrigger
-              data-testid={`instance-row-workflow-${instance.id}`}
-              asChild
-            >
+            <TooltipTrigger asChild>
               <Link
                 onClick={(e) => {
                   e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
@@ -64,52 +56,30 @@ const InstanceTableRow: FC<{
                   path: instance.as,
                   subpage: "workflow",
                 })}
-                className="hover:underline"
+                className="overflow-hidden text-ellipsis hover:underline md:w-auto"
               >
                 {instance.as}
               </Link>
             </TooltipTrigger>
             <TooltipContent>
-              {t("pages.instances.list.tableRow.openWorkflowTooltip", {
+              {t("pages.monitoring.instances.openWorkflowTooltip", {
                 name: instance.as,
               })}
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell>
+        <TableCell className="w-0">
           <TooltipCopyBadge value={instance.id} variant="outline">
             {instance.id.slice(0, 8)}
           </TooltipCopyBadge>
         </TableCell>
-        <TableCell>
-          {isChildInstance ? (
-            <TooltipCopyBadge
-              value={childInstance}
-              variant="outline"
-              data-testid={`instance-row-invoker-${instance.id}`}
-            >
-              {invoker}
-            </TooltipCopyBadge>
-          ) : (
-            <Badge
-              data-testid={`instance-row-invoker-${instance.id}`}
-              variant="outline"
-            >
-              {invoker}
-            </Badge>
-          )}
-        </TableCell>
-        <TableCell>
+        <TableCell className="w-0">
           <ConditionalWrapper
             condition={instance.status === "failed"}
             wrapper={(children) => (
               <HoverCard>
                 <HoverCardTrigger>{children}</HoverCardTrigger>
-                <HoverCardContent
-                  asChild
-                  noBackground
-                  data-testid={`instance-row-state-error-tooltip-${instance.id}`}
-                >
+                <HoverCardContent asChild noBackground>
                   <Alert variant="error">
                     <span className="font-bold">{instance.errorCode}</span>
                     <br />
@@ -120,49 +90,24 @@ const InstanceTableRow: FC<{
             )}
           >
             <Badge
-              data-testid={`instance-row-state-${instance.id}`}
               variant={statusToBadgeVariant(instance.status)}
               icon={instance.status}
             >
-              {instance.status}
+              <span className="max-lg:hidden ">{instance.status}</span>
             </Badge>
           </ConditionalWrapper>
         </TableCell>
-        <TableCell>
+        <TableCell className="w-0 pr-5">
           <Tooltip>
-            <TooltipTrigger
-              data-testid={`instance-row-relative-created-time-${instance.id}`}
-            >
-              {t("pages.instances.list.tableRow.realtiveTime", {
-                relativeTime: createdAt,
-              })}
-            </TooltipTrigger>
-            <TooltipContent
-              data-testid={`instance-row-absolute-created-time-${instance.id}`}
-            >
-              {instance.createdAt}
-            </TooltipContent>
-          </Tooltip>
-        </TableCell>
-        <TableCell>
-          <Tooltip>
-            <TooltipTrigger
-              data-testid={`instance-row-relative-updated-time-${instance.id}`}
-            >
+            <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
                 relativeTime: updatedAt,
               })}
             </TooltipTrigger>
-            <TooltipContent
-              data-testid={`instance-row-absolute-updated-time-${instance.id}`}
-            >
-              {instance.updatedAt}
-            </TooltipContent>
+            <TooltipContent>{instance.updatedAt}</TooltipContent>
           </Tooltip>
         </TableCell>
       </TableRow>
     </TooltipProvider>
   );
 };
-
-export default InstanceTableRow;

@@ -16,8 +16,7 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
-import Button from "~/design/Button";
-import { RefreshCcw } from "lucide-react";
+import RefreshButton from "~/design/RefreshButton";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
@@ -144,7 +143,7 @@ const ChildInstances = () => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <Button
+              <RefreshButton
                 icon
                 size="sm"
                 variant="ghost"
@@ -153,9 +152,7 @@ const ChildInstances = () => {
                 onClick={() => {
                   refetch();
                 }}
-              >
-                <RefreshCcw />
-              </Button>
+              />
             </TooltipTrigger>
             <TooltipContent>
               {t(
