@@ -13,6 +13,7 @@ import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import React from "react";
 import type { RouteObject } from "react-router-dom";
+import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
@@ -101,7 +102,7 @@ type ServicesPageSetup = Record<
     createHref: (params: { namespace: string; service?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
-      instance: string | undefined;
+      service: string | undefined;
       isServicePage: boolean;
       isServiceListPage: boolean;
       isServiceDetailPage: boolean;
@@ -302,7 +303,7 @@ export const pages: PageType = {
         params.service ? `/${params.service}` : ""
       }`,
     useParams: () => {
-      const { namespace, instance } = useParams();
+      const { namespace, service } = useParams();
 
       const [, , thirdLvl] = useMatches(); // first level is namespace level
 
@@ -313,7 +314,7 @@ export const pages: PageType = {
 
       return {
         namespace: isServicePage ? namespace : undefined,
-        instance: isServicePage ? instance : undefined,
+        service: isServicePage ? instance : undefined,
         isServicePage,
         isServiceListPage,
         isServiceDetailPage,
@@ -322,7 +323,7 @@ export const pages: PageType = {
 
     route: {
       path: "services",
-      element: <div className="flex flex-col space-y-5 p-10">Services</div>,
+      element: <ServicesPage />,
       children: [
         {
           path: "",
