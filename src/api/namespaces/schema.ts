@@ -16,23 +16,36 @@ export const NamespaceCreatedSchema = z.object({
   namespace: NamespaceSchema,
 });
 
+/**
+ * Example log entry
+ * 
+ * {
+      "t":  "2023-08-14T08:22:00.692787Z",
+      "level":  "info",
+      "msg":  "Workflow /delay.yaml completed.",
+      "tags":  {
+        "callpath":  "/9ab6abab-23b1-4c8c-9ad0-53a70d0d2c47",
+        "instance-id":  "9ab6abab-23b1-4c8c-9ad0-53a70d0d2c47",
+        "invoker":  "api",
+        "level":  "info",
+        "log_instance_call_path":  "/9ab6abab-23b1-4c8c-9ad0-53a70d0d2c47",
+        "namespace":  "stefan",
+        "namespace-id":  "c75454f2-3790-4f36-a1a2-22ca8a4f8020",
+        "recipientType":  "namespace",
+        "revision-id":  "908be548-ec50-4a43-94dd-2da717159685",
+        "root-instance-id":  "9ab6abab-23b1-4c8c-9ad0-53a70d0d2c47",
+        "root_instance_id":  "9ab6abab-23b1-4c8c-9ad0-53a70d0d2c47",
+        "source":  "c75454f2-3790-4f36-a1a2-22ca8a4f8020",
+        "trace":  "00000000000000000000000000000000",
+        "type":  "namespace",
+        "workflow":  "/delay.yaml"
+      }
+    },
+ */
 export const NamespaceLogSchema = z.object({
   t: z.string(), // 2023-08-07T08:09:49.406596Z
   level: LogLevelSchema,
   msg: z.string(), // Starting workflow /stable-diffusion.yaml
-  tags: z.object({
-    level: LogLevelSchema,
-    namespace: z.string(), // my-namespace
-    "namespace-id": z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
-    source: z.string(), // c75454f2-3790-4f36-a1a2-22ca8a4f8020
-    type: z.string(), // instance
-    callpath: z.string().optional(), // / 7fda01ef-2fa7-454b-8fb1-b63f87464762
-    instanceId: z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
-    invoker: z.string().optional(), // api
-    "revision-id": z.string().optional(), // 498841a9-f278-480e-9bfc-af698d9f8047
-    "root-instance-id": z.string().optional(), // 7fda01ef-2fa7-454b-8fb1-b63f87464762
-    workflow: z.string().optional(), // /path/to/workflow.yaml
-  }),
 });
 
 export const NamespaceLogListSchema = z.object({
