@@ -49,32 +49,36 @@ export const Instances = () => {
   });
 
   const { t } = useTranslation();
+
+  const refetchButton = (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <RefreshButton
+            icon
+            size="sm"
+            variant="ghost"
+            disabled={isFetchingSucessfullinstances}
+            onClick={() => {
+              refetchSucessfullInstances();
+            }}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          {t(`pages.monitoring.instances.updateTooltip`)}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
   if (!isFetchedSucessfullInstances || !isFetchedFailedInstances) return null;
+
   return (
     <>
       <InstanceCard
         headline={t("pages.monitoring.instances.successfullExecutions.title")}
         icon={CheckCircle2}
-        refetchButton={
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <RefreshButton
-                  icon
-                  size="sm"
-                  variant="ghost"
-                  disabled={isFetchingSucessfullinstances}
-                  onClick={() => {
-                    refetchSucessfullInstances();
-                  }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {t(`pages.monitoring.instances.updateTooltip`)}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        }
+        refetchButton={refetchButton}
       >
         {sucessfullInstances?.instances?.results.length === 0 ? (
           <NoResult
