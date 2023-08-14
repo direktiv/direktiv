@@ -9,8 +9,7 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const createService = apiFactory({
-  url: ({ name }: { name: string; service: ServiceFormSchemaType }) =>
-    `/api/functions/namespaces/${name}`,
+  url: ({ name }: { name: string }) => `/api/functions/namespaces/${name}`,
   method: "PUT",
   schema: ServiceCreatedSchema,
 });
@@ -31,22 +30,15 @@ export const useCreateService = ({
   }
 
   return useMutation({
-    mutationFn: ({
-      name,
-      service,
-    }: {
-      name: string;
-      service: ServiceFormSchemaType;
-    }) =>
+    mutationFn: ({ name, ...serviceProps }: ServiceFormSchemaType) =>
       createService({
         apiKey: apiKey ?? undefined,
         urlParams: {
           name,
-          service,
         },
-        payload: service,
+        payload: serviceProps,
       }),
-    onSuccess(data, variables) {
+    onSuccess(data, { name }) {
       queryClient.invalidateQueries(
         serviceKeys.servicesList(namespace, {
           apiKey: apiKey ?? undefined,
@@ -56,7 +48,7 @@ export const useCreateService = ({
         title: t("api.services.mutate.createService.success.title"),
         description: t(
           "api.services.mutate.createService.success.description",
-          { name: variables.name }
+          { name }
         ),
         variant: "success",
       });
