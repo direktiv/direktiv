@@ -15,7 +15,6 @@ import { EventSchemaType } from "~/api/events/schema";
 import Filters from "./components/Filters";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
-import { Radio } from "lucide-react";
 import Row from "./Row";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";

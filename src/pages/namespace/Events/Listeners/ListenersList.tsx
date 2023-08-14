@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
 import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
