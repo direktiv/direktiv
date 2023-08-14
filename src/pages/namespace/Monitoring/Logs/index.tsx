@@ -1,4 +1,3 @@
-import { Loader2, ScrollText } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +8,7 @@ import {
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./Scrollcontainer";
+import { ScrollText } from "lucide-react";
 import { formatLogTime } from "~/util/helpers";
 import { useNamespacelogs } from "~/api/namespaces/query/logs";
 import { useTranslation } from "react-i18next";
@@ -54,8 +54,11 @@ const LogsPanel = () => {
         </ButtonBar>
       </div>
       <ScrollContainer />
-      <div className="flex items-center justify-center pt-2 text-sm text-gray-11">
-        <Loader2 className="h-3 animate-spin" />
+      <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">
+        <span className="relative mr-2 flex h-3 w-3">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
+        </span>
         {t("pages.monitoring.logs.logsCount", { count: resultCount })}
       </div>
     </>
