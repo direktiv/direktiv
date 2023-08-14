@@ -329,7 +329,7 @@
           "user": "User",
           "password": "Password",
           "testConnectionBtn": {
-            "label": "Test Connection",
+            "label": "Test connection",
             "success": "Connection successful",
             "error": "Connection failed"
           }
