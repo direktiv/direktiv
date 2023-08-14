@@ -300,8 +300,8 @@
         "list": {
           "title": "Secrets",
           "empty": "No secrets exist yet",
-          "createBtn": "Create Secret",
-          "searchPlaceholder": "Filter Secrets...",
+          "createBtn": "Create secret",
+          "searchPlaceholder": "Filter secrets...",
           "emptySearch": "No secret matches your search"
         },
         "delete": {
