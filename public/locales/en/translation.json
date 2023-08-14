@@ -304,6 +304,20 @@
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
         }
+      },
+      "create": {
+        "title": "Create a new Service",
+        "nameLabel": "Name",
+        "namePlaceholder": "service-name",
+        "nameAlreadyExists": "The name already exists",
+        "imageLabel": "Image",
+        "scaleLabel": "Sale",
+        "sizeLabel": "Size",
+        "cmdLabel": "Cmd",
+        "cmdPlaceholder": "Enter the Cmd for a service",
+        "imagePlaceholder": "image/name:tag",
+        "createBtn": "Create",
+        "cancelBtn": "Cancel"
       }
     },
     "settings": {
