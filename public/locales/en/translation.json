@@ -323,7 +323,10 @@
       "secrets": {
         "list": {
           "title": "Secrets",
-          "empty": "No secrets exist yet"
+          "empty": "No secrets exist yet",
+          "createBtn": "Create secret",
+          "searchPlaceholder": "Filter secrets...",
+          "emptySearch": "No secret matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -336,7 +339,10 @@
       "registries": {
         "list": {
           "title": "Container Registries",
-          "empty": "No registries exist yet"
+          "empty": "No registries exist yet",
+          "createBtn": "Create registry",
+          "searchPlaceholder": "Filter registries...",
+          "emptySearch": "No registry matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -345,13 +351,21 @@
           "description": "Add a container registry",
           "url": "URL",
           "user": "User",
-          "password": "Password"
+          "password": "Password",
+          "testConnectionBtn": {
+            "label": "Test connection",
+            "success": "Connection successful",
+            "error": "Connection failed"
+          }
         }
       },
       "variables": {
         "list": {
           "title": "Variables",
-          "empty": "No variables exist yet"
+          "empty": "No variables exist yet",
+          "createBtn": "Create variable",
+          "searchPlaceholder": "Filter variables...",
+          "emptySearch": "No variable matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
