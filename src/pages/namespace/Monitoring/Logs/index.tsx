@@ -18,7 +18,9 @@ const LogsPanel = () => {
   const { data } = useNamespacelogs();
 
   const copyValue =
-    data?.results.map((x) => `${formatLogTime(x.t)} ${x.msg}`).join("\n") ?? "";
+    data?.results
+      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
+      .join("\n") ?? "";
 
   const resultCount = data?.results.length ?? 0;
 

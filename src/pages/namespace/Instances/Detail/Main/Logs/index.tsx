@@ -42,8 +42,9 @@ const LogsPanel = () => {
   const isMaximized = maximizedPanel === "logs";
 
   const copyValue =
-    logData?.results.map((x) => `${formatLogTime(x.t)} ${x.msg}`).join("\n") ??
-    "";
+    logData?.results
+      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
+      .join("\n") ?? "";
 
   const resultCount = logData?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
