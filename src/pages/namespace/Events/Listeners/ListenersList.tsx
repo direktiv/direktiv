@@ -37,13 +37,6 @@ const ListenersList = ({
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
-      <div className="flex flex-row justify-between">
-        <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
-          <Antenna className="h-5" />
-          {t("pages.events.listeners.title")}
-        </h3>
-      </div>
-
       <Card>
         <Table className="border-gray-5 dark:border-gray-dark-5">
           <TableHead>

@@ -45,7 +45,12 @@ const SendEvent = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button icon variant="outline" data-testid="event-create">
+        <Button
+          className="whitespace-nowrap"
+          icon
+          variant="primary"
+          data-testid="event-create"
+        >
           <PlusCircle />
           {t("pages.events.history.send.dialogTrigger")}
         </Button>

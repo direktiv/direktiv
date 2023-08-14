@@ -60,17 +60,14 @@ const EventsList = ({
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
-      <div className="flex flex-row justify-between">
-        <h3 className="flex items-center gap-x-2 pb-2 pt-1 font-bold">
-          <Radio className="h-5" />
-          {t("pages.events.history.title")}
-        </h3>
-        <SendEvent />
-      </div>
-
       <Dialog open={!!eventDialog} onOpenChange={handleOpenChange}>
         <Card>
-          <Filters filters={filters} onUpdate={handleFilterChange} />
+          <div className="flex flex-row place-content-between items-start">
+            <Filters filters={filters} onUpdate={handleFilterChange} />
+            <div className="m-2 flex flex-row flex-wrap gap-2">
+              <SendEvent />
+            </div>
+          </div>
 
           <Table className="border-t border-gray-5 dark:border-gray-dark-5">
             <TableHead>
