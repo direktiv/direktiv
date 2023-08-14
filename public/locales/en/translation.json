@@ -388,6 +388,15 @@
           "workflowVariable": "Workflow Variable"
         }
       },
+      "deleteNamespace": {
+        "title": "Delete namespace",
+        "description": "This will permanently delete the current active namespace and all resources associated with it.",
+        "deleteBtn": "Delete namespace",
+        "modal": {
+          "description": "Are you sure you want to delete <b>{{namespace}}</b>?<br/> This cannot be undone.",
+          "confirm": "Please type <b>{{namespace}}</b> to confirm."
+        }
+      },
       "theme": {
         "title": "Theme"
       },
@@ -602,6 +611,15 @@
           },
           "error": {
             "description": "could not create namespace 😢"
+          }
+        },
+        "deleteNamespaces": {
+          "success": {
+            "title": "Delete namespace",
+            "description": "Namespace {{name}} was deleted successfully."
+          },
+          "error": {
+            "description": "could not delete namespace 😢"
           }
         }
       }
