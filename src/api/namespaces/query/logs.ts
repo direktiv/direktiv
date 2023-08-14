@@ -93,14 +93,16 @@ export const useNamespaceLogsStream = ({
   });
 };
 
-type LogStreamingProviderTypeProps = { enabled?: boolean };
-export const NamespaceLogsStreamingProvider = memo(
-  ({ enabled }: LogStreamingProviderTypeProps) => {
+type LogStreamingSubscriberTypeProps = { enabled?: boolean };
+
+export const NamespaceLogsStreamingSubscriber = memo(
+  ({ enabled }: LogStreamingSubscriberTypeProps) => {
     useNamespaceLogsStream({ enabled: enabled ?? true });
     return null;
   }
 );
-NamespaceLogsStreamingProvider.displayName = "NamespaceLogsStreamingProvider";
+NamespaceLogsStreamingSubscriber.displayName =
+  "NamespaceLogsStreamingSubscriber";
 
 export const useNamespacelogs = () => {
   const apiKey = useApiKey();

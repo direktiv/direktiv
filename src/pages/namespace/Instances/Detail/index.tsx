@@ -4,9 +4,9 @@ import {
   useInstanceId,
 } from "./store/instanceContext";
 
-import { InstanceStreamingProvider } from "~/api/instances/query/details";
+import { InstanceStreamingSubscriber } from "~/api/instances/query/details";
 import InstancesDetail from "./InstanceDetail";
-import { LogStreamingProvider } from "~/api/logs/query/get";
+import { LogStreamingSubscriber } from "~/api/logs/query/get";
 import { pages } from "~/util/router/pages";
 
 const InstanceStreaming = () => {
@@ -14,8 +14,8 @@ const InstanceStreaming = () => {
   const filters = useFilters();
   return (
     <>
-      <InstanceStreamingProvider instanceId={instanceId} />
-      <LogStreamingProvider filters={filters} instanceId={instanceId} />
+      <InstanceStreamingSubscriber instanceId={instanceId} />
+      <LogStreamingSubscriber filters={filters} instanceId={instanceId} />
       <InstancesDetail />
     </>
   );

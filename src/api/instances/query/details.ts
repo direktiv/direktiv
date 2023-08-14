@@ -63,19 +63,19 @@ export const useInstanceDetailsStream = (
   });
 };
 
-type InstanceStreamingProviderType = {
+type InstanceStreamingSubscriberType = {
   instanceId: string;
   enabled?: boolean;
 };
 
-export const InstanceStreamingProvider = memo(
-  ({ instanceId, enabled }: InstanceStreamingProviderType) => {
+export const InstanceStreamingSubscriber = memo(
+  ({ instanceId, enabled }: InstanceStreamingSubscriberType) => {
     useInstanceDetailsStream({ instanceId }, { enabled: enabled ?? true });
     return null;
   }
 );
 
-InstanceStreamingProvider.displayName = "InstanceStreamingProvider";
+InstanceStreamingSubscriber.displayName = "InstanceStreamingSubscriber";
 
 export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
   const apiKey = useApiKey();

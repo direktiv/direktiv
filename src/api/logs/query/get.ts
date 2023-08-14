@@ -144,20 +144,20 @@ export const useLogsStream = (
   });
 };
 
-type LogStreamingProviderType = {
+type LogStreamingSubscriberType = {
   instanceId: string;
   filters?: FiltersObj;
   enabled?: boolean;
 };
 
-export const LogStreamingProvider = memo(
-  ({ instanceId, filters, enabled }: LogStreamingProviderType) => {
+export const LogStreamingSubscriber = memo(
+  ({ instanceId, filters, enabled }: LogStreamingSubscriberType) => {
     useLogsStream({ instanceId, filters }, { enabled: enabled ?? true });
     return null;
   }
 );
 
-LogStreamingProvider.displayName = "LogStreamingProvider";
+LogStreamingSubscriber.displayName = "LogStreamingSubscriber";
 
 export const useLogs = ({
   instanceId,
