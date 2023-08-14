@@ -173,6 +173,30 @@
         }
       }
     },
+    "monitoring": {
+      "title": "Monitoring",
+      "logs": {
+        "title": "Logs",
+        "followLogs": "Follow logs",
+        "logsCount": "received {{count}} log entries",
+        "logsCount_one": "received {{count}} log entry",
+        "tooltips": {
+          "copy": "Copy logs"
+        }
+      },
+      "instances": {
+        "openWorkflowTooltip": "click to open workflow {{name}}",
+        "updateTooltip": "refetch instances",
+        "successfullExecutions": {
+          "title": "Successful Executions",
+          "empty": "There are no recent successful executions."
+        },
+        "failedExecutions": {
+          "title": "Failed Executions",
+          "empty": "There are no recent failed executions."
+        }
+      }
+    },
     "instances": {
       "list": {
         "title": "Recently executed instances",
@@ -199,7 +223,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
-          "openWorkflowTooltip": "click to open workflow"
+          "openWorkflowTooltip": "click to open workflow {{name}}"
         },
         "filter": {
           "filterButton": "Filter",
@@ -406,7 +430,8 @@
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
       "loading": "loading...",
-      "instances": "Instances"
+      "instances": "Instances",
+      "monitoring": "Monitoring"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
