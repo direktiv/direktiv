@@ -21,6 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
@@ -64,7 +65,7 @@ type server struct {
 
 	rawDB *sql.DB
 
-	mirrorManager mirror.Manager
+	mirrorManager *mirror.Manager
 
 	flow            *flow
 	internal        *internal
@@ -116,6 +117,88 @@ func (g gormLogger) Write(p []byte) (n int, err error) {
 	g.Debugw(string(p), "component", "GORM")
 	return len(p), nil
 }
+
+type mirrorProcessLogger struct {
+	sugar  *zap.SugaredLogger
+	logger logengine.BetterLogger
+}
+
+func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
+	log.sugar.Debugw(msg, kv...)
+	tags := map[string]string{
+		"recipientType": "mirror",
+		"mirror-id":     pid.String(),
+	}
+	msg += strings.Repeat(", %s = %v", len(kv)/2)
+	log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
+}
+
+func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
+	log.sugar.Infow(msg, kv...)
+	tags := map[string]string{
+		"recipientType": "mirror",
+		"mirror-id":     pid.String(),
+	}
+	msg += strings.Repeat(", %s = %v", len(kv)/2)
+	log.logger.Infof(context.Background(), pid, tags, msg, kv...)
+}
+
+func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
+	log.sugar.Warnw(msg, kv...)
+	tags := map[string]string{
+		"recipientType": "mirror",
+		"mirror-id":     pid.String(),
+	}
+	msg += strings.Repeat(", %s = %v", len(kv)/2)
+	log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
+}
+
+func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
+	log.sugar.Errorw(msg, kv...)
+	tags := map[string]string{
+		"recipientType": "mirror",
+		"mirror-id":     pid.String(),
+	}
+	msg += strings.Repeat(", %s = %v", len(kv)/2)
+	log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
+}
+
+var _ mirror.ProcessLogger = &mirrorProcessLogger{}
+
+type mirrorCallbacks struct {
+	logger    mirror.ProcessLogger
+	syslogger *zap.SugaredLogger
+	store     mirror.Store
+	fstore    filestore.FileStore
+	varstore  core.RuntimeVariablesStore
+	wfconf    func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
+}
+
+func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
+	return c.wfconf(ctx, nsID, file)
+}
+
+func (c *mirrorCallbacks) ProcessLogger() mirror.ProcessLogger {
+	return c.logger
+}
+
+func (c *mirrorCallbacks) SysLogCrit(msg string) {
+	c.syslogger.Error(msg)
+}
+
+func (c *mirrorCallbacks) Store() mirror.Store {
+	return c.store
+}
+
+func (c *mirrorCallbacks) FileStore() filestore.FileStore {
+	return c.fstore
+}
+
+func (c *mirrorCallbacks) VarStore() core.RuntimeVariablesStore {
+	return c.varstore
+}
+
+var _ mirror.Callbacks = &mirrorCallbacks{}
 
 //nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
@@ -328,32 +411,18 @@ func (srv *server) start(ctx context.Context) error {
 		return nil
 	}
 
-	srv.mirrorManager = mirror.NewDefaultManager(
-		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
-			srv.sugar.Infow(msg, keysAndValues...)
-
-			tags := map[string]string{
-				"recipientType": "mirror",
-				"mirror-id":     mirrorProcessID.String(),
-			}
-			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
-			srv.logger.Infof(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
+	srv.mirrorManager = mirror.NewManager(
+		&mirrorCallbacks{
+			logger: &mirrorProcessLogger{
+				sugar:  srv.sugar,
+				logger: srv.logger,
+			},
+			syslogger: srv.sugar,
+			store:     noTx.DataStore().Mirror(),
+			fstore:    noTx.FileStore(),
+			varstore:  noTx.DataStore().RuntimeVariables(),
+			wfconf:    cc,
 		},
-		func(mirrorProcessID uuid.UUID, msg string, keysAndValues ...interface{}) {
-			srv.sugar.Errorw(msg, keysAndValues...)
-
-			tags := map[string]string{
-				"recipientType": "mirror",
-				"mirror-id":     mirrorProcessID.String(),
-			}
-			msg += strings.Repeat(", %s = %v", len(keysAndValues)/2)
-			srv.logger.Errorf(context.Background(), mirrorProcessID, tags, msg, keysAndValues...)
-		},
-		noTx.DataStore().Mirror(),
-		noTx.FileStore(),
-		noTx.DataStore().RuntimeVariables(),
-		&mirror.GitSource{},
-		cc,
 	)
 
 	srv.sugar.Debug("Initializing functions grpc client.")

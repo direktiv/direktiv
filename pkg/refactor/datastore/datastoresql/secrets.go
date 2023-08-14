@@ -27,7 +27,7 @@ func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error 
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
@@ -46,7 +46,7 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespaceID uuid.UUID, name
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil

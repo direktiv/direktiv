@@ -81,10 +81,13 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	_, err = flow.mirrorManager.StartInitialMirroringProcess(ctx, mirConfig)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns.ID, root.ID, mirror.ProcessTypeInit)
 	if err != nil {
 		return nil, err
 	}
+
+	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 
 	var resp grpc.CreateNamespaceResponse
@@ -140,16 +143,35 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
+	roots, err := tx.FileStore().GetAllRootsForNamespace(ctx, ns.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var root *filestore.Root
+	for idx := range roots {
+		if roots[idx].Name == defaultRootName {
+			root = roots[idx]
+			break
+		}
+	}
+
+	if root == nil {
+		return nil, errors.New("can't find roots")
+	}
+
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
-	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns.ID, root.ID, mirror.ProcessTypeSync)
 	if err != nil {
 		return nil, err
 	}
+
+	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
 
 	var resp emptypb.Empty
 
@@ -196,10 +218,29 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	_, err = flow.mirrorManager.StartSyncingMirrorProcess(ctx, mirConfig)
+	roots, err := tx.FileStore().GetAllRootsForNamespace(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}
+
+	var root *filestore.Root
+	for idx := range roots {
+		if roots[idx].Name == defaultRootName {
+			root = roots[idx]
+			break
+		}
+	}
+
+	if root == nil {
+		return nil, errors.New("can't find")
+	}
+
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns.ID, root.ID, mirror.ProcessTypeSync)
+	if err != nil {
+		return nil, err
+	}
+
+	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
 
@@ -401,7 +442,7 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 	}
 
 	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "cancelled by api request")
-	err = flow.mirrorManager.CancelMirroringProcess(ctx, mirProcessID)
+	err = flow.mirrorManager.Cancel(ctx, mirProcessID)
 	if err != nil {
 		return nil, err
 	}

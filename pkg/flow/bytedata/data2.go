@@ -38,6 +38,7 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		node.MimeType = "application/direktiv"
 	default:
 		node.ExpandedType = string(filestore.FileTypeFile)
+		node.MimeType = f.MIMEType
 	}
 
 	return node

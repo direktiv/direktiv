@@ -99,6 +99,9 @@ type RootQuery interface {
 
 	// CropFilesAndDirectories removes all files and directories that don't appear in excludePaths.
 	CropFilesAndDirectories(ctx context.Context, excludePaths []string) error
+
+	// Rename renames the root.
+	Rename(ctx context.Context, newName string) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

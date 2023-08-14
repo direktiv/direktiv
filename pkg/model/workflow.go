@@ -12,6 +12,7 @@ const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
 // Workflow global object defining the fields for a workflow.
 type Workflow struct {
+	DirektivAPI string `yaml:"direktiv_api" json:"direktiv_api,omitempty"`
 	// ID          string               `yaml:"id" json:"id"`
 	// Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
 	URL         string `yaml:"url" json:"url"`

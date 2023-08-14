@@ -40,6 +40,7 @@ type LogLevel int
 
 const (
 	Debug LogLevel = iota
-	Info           = iota
-	Error          = iota
+	Info
+	Warn
+	Error
 )

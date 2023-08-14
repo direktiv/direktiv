@@ -77,7 +77,7 @@ func (s *sqlNamespacesStore) Update(ctx context.Context, namespace *core.Namespa
 		return nil, res.Error
 	}
 	if res.RowsAffected > 1 {
-		return nil, fmt.Errorf("unexpedted namespaces update count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected namespaces update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 	if res.RowsAffected == 0 {
 		return nil, datastore.ErrNotFound
@@ -92,7 +92,7 @@ func (s *sqlNamespacesStore) Delete(ctx context.Context, id uuid.UUID) error {
 		return res.Error
 	}
 	if res.RowsAffected > 1 {
-		return fmt.Errorf("unexpedted namespaces delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected namespaces delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 	if res.RowsAffected == 0 {
 		return datastore.ErrNotFound
