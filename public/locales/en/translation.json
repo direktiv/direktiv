@@ -327,7 +327,12 @@
           "description": "Add a container registry",
           "url": "URL",
           "user": "User",
-          "password": "Password"
+          "password": "Password",
+          "testConnectionBtn": {
+            "label": "Test connection",
+            "success": "Connection successful",
+            "error": "Connection failed"
+          }
         }
       },
       "variables": {
