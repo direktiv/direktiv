@@ -122,13 +122,13 @@ const VariablesList: FC = () => {
                   icon="left"
                   onClick={() => goToPreviousPage()}
                 />
-                {pagesList.map((p) => (
+                {pagesList.map((page) => (
                   <PaginationLink
-                    active={currentPage === p}
-                    key={`${p}`}
-                    onClick={() => goToPage(p)}
+                    active={currentPage === page}
+                    key={`${page}`}
+                    onClick={() => goToPage(page)}
                   >
-                    {p}
+                    {page}
                   </PaginationLink>
                 ))}
                 <PaginationLink icon="right" onClick={() => goToNextPage()} />
