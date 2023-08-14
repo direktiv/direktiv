@@ -15,6 +15,7 @@ export const NamespaceCreatedSchema = z.object({
   namespace: NamespaceSchema,
 });
 
+export const NamespaceDeletedSchema = z.null();
 // Regex for input validation. This isn't perfect but should be good enough for
 // a start. Matches git@hostname:path, where path isn't very restrictive.
 export const gitUrlSchema = z
