@@ -23,20 +23,17 @@ const updateCache = (
     return message;
   }
   /**
-   * TODO: copied from events. Does this behave the same?
-   *
-   * Dedup logs. The onMessage callback gets called in two different cases:
+   * Dedup results. The onMessage callback gets called in two different cases:
    *
    * case 1:
-   * when the SSE connection is established, the whole set of logs is received
+   * when the SSE connection is established, the whole set of results is received
    *
    * case 2:
-   * after the connection is established and only some new log entries are received
+   * after the connection is established and only some new results are received
    *
    * it's also important to note that multiple components can subscribe to the same
    * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
    */
-
   const lastCachedItem = oldData?.results[0];
   let newResults: typeof oldData.results = [];
 
