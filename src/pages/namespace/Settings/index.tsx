@@ -53,7 +53,7 @@ const SettingsPage: FC = () => {
         <Broadcasts />
       </section>
 
-      <section data-testid="broadcasts-section">
+      <section data-testid="namespace-section">
         <DeleteNamespace />
       </section>
 
