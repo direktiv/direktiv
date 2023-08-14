@@ -20,4 +20,40 @@ export const instanceKeys = {
         filters,
       },
     ] as const,
+  instanceDetail: (
+    namespace: string,
+    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+  ) =>
+    [
+      {
+        scope: "instance-detail",
+        apiKey,
+        namespace,
+        instanceId,
+      },
+    ] as const,
+  instancesInput: (
+    namespace: string,
+    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+  ) =>
+    [
+      {
+        scope: "instance-input",
+        apiKey,
+        namespace,
+        instanceId,
+      },
+    ] as const,
+  instancesOutput: (
+    namespace: string,
+    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+  ) =>
+    [
+      {
+        scope: "instance-output",
+        apiKey,
+        namespace,
+        instanceId,
+      },
+    ] as const,
 };

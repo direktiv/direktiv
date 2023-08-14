@@ -20,10 +20,24 @@ export const InstancesListSchema = z.object({
   }),
 });
 
+export const InstancesDetailSchema = z.object({
+  namespace: z.string(),
+  instance: InstanceSchema,
+  invokedBy: z.string(), // mostly empty
+  flow: z.array(z.string()), // required for the diagram: a list of states that have been executed
+});
+
 export const InstancesInputSchema = z.object({
   namespace: z.string(),
   instance: InstanceSchema,
   data: z.string(),
 });
 
+export const InstancesOutputSchema = z.object({
+  namespace: z.string(),
+  instance: InstanceSchema,
+  data: z.string(),
+});
+
 export type InstanceSchemaType = z.infer<typeof InstanceSchema>;
+export type InstancesDetailSchemaType = z.infer<typeof InstancesDetailSchema>;

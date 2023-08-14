@@ -8,17 +8,17 @@ interface LogEntryProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Logs = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    linewrap?: boolean;
+    wordWrap?: boolean;
   }
->(({ className, children, linewrap, ...props }, ref) => (
+>(({ className, children, wordWrap, ...props }, ref) => (
   <div className="overflow-x-auto">
     <div
       ref={ref}
       {...props}
       className={twMergeClsx(
-        !linewrap && "w-max",
-        !linewrap && "[&>div>div>pre]:whitespace-pre",
-        linewrap && "[&>div>div>pre]:whitespace-pre-wrap",
+        !wordWrap && "w-max",
+        !wordWrap && "[&>div>div>pre]:whitespace-pre",
+        wordWrap && "[&>div>div>pre]:whitespace-pre-wrap",
         "min-w-full",
         className
       )}
@@ -48,9 +48,9 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
         className
       )}
     >
-      <div className="w-32 shrink-0 pr-2 font-menlo">{time}</div>
-      <div className={twMergeClsx("font-menlo", "leading-5")}>
-        <pre>{children}</pre>
+      <div className="w-24 shrink-0 self-start pr-2 font-menlo">{time}</div>
+      <div className="self-center font-menlo leading-5">
+        <pre className="whitespace-pre-line">{children}</pre>
       </div>
     </div>
   )

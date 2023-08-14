@@ -32,10 +32,10 @@ export const Default: Story = {
 };
 
 export const IconWithToolTip = () => {
-  const [value, setValue] = useState("some value");
+  const [value, setValue] = useState("some very very looooooooooong value");
   return (
     <TooltipProvider>
-      <InputWithButton>
+      <InputWithButton className="w-60">
         <Input
           value={value}
           onChange={(e) => {

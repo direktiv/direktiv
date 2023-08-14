@@ -3978,6 +3978,18 @@
     "@tanstack/query-core" "4.26.0"
     use-sync-external-store "^1.2.0"
 
+"@tanstack/react-virtual@^3.0.0-beta.54":
+  version "3.0.0-beta.54"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.0-beta.54.tgz#755979455adf13f2584937204a3f38703e446037"
+  integrity sha512-D1mDMf4UPbrtHRZZriCly5bXTBMhylslm4dhcHqTtDJ6brQcgGmk8YD9JdWBGWfGSWPKoh2x1H3e7eh+hgPXtQ==
+  dependencies:
+    "@tanstack/virtual-core" "3.0.0-beta.54"
+
+"@tanstack/virtual-core@3.0.0-beta.54":
+  version "3.0.0-beta.54"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0-beta.54.tgz#12259d007911ad9fce1388385c54a9141f4ecdc4"
+  integrity sha512-jtkwqdP2rY2iCCDVAFuaNBH3fiEi29aTn2RhtIoky8DTTiCdc48plpHHreLwmv1PICJ4AJUUESaq3xa8fZH8+g==
+
 "@testing-library/dom@^8.3.0":
   version "8.17.1"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-8.17.1.tgz#2d7af4ff6dad8d837630fecd08835aee08320ad7"
@@ -4415,6 +4427,11 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.0.tgz#5fb2e536c1ae9bf35366eed879e827fa59ca41c2"
   integrity sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==
+
+"@types/event-source-polyfill@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/event-source-polyfill/-/event-source-polyfill-1.0.1.tgz#ffcb4ca17bc35bc1ca5d3e047fe833292bb73c32"
+  integrity sha512-dls8b0lUgJ/miRApF0efboQ9QZnAm7ofTO6P1ILu8bRPxUFKDxVwFf8+TeuuErmNui6blpltyr7+eV72dbQXlQ==
 
 "@types/express-serve-static-core@^4.17.33":
   version "4.17.33"

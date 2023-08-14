@@ -18,8 +18,9 @@ import { ConditionalWrapper } from "~/util/helpers";
 import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
+import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
-import { statusToBadgeVariant } from "./utils";
+import { statusToBadgeVariant } from "../utils";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
@@ -74,26 +75,9 @@ const InstanceTableRow: FC<{
           </Tooltip>
         </TableCell>
         <TableCell>
-          <Tooltip>
-            <TooltipTrigger data-testid={`instance-row-id-${instance.id}`}>
-              <Badge variant="outline">{instance.id.slice(0, 8)}</Badge>
-            </TooltipTrigger>
-            <TooltipContent
-              data-testid={`instance-row-id-full-${instance.id}`}
-              className="flex gap-2 align-middle"
-            >
-              {instance.id}
-              <CopyButton
-                value={instance.id}
-                buttonProps={{
-                  size: "sm",
-                  onClick: (e) => {
-                    e.stopPropagation();
-                  },
-                }}
-              />
-            </TooltipContent>
-          </Tooltip>
+          <TooltipCopyBadge value={instance.id} variant="outline">
+            {instance.id.slice(0, 8)}
+          </TooltipCopyBadge>
         </TableCell>
         <TableCell>
           <ConditionalWrapper
@@ -147,6 +131,7 @@ const InstanceTableRow: FC<{
             <Badge
               data-testid={`instance-row-state-${instance.id}`}
               variant={statusToBadgeVariant(instance.status)}
+              icon={instance.status}
             >
               {instance.status}
             </Badge>
