@@ -14,11 +14,11 @@ const deleteNamespace = apiFactory({
   schema: NamespaceDeletedSchema,
 });
 
-type ResolvedCreateNamespace = Awaited<ReturnType<typeof deleteNamespace>>;
+type ResolvedDeleteNamespace = Awaited<ReturnType<typeof deleteNamespace>>;
 
 export const useDeleteNamespace = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateNamespace) => void } = {}) => {
+}: { onSuccess?: (data: ResolvedDeleteNamespace) => void } = {}) => {
   const apiKey = useApiKey();
   const { toast } = useToast();
   const queryClient = useQueryClient();
