@@ -33,7 +33,6 @@ type KeysWithNoPathParams =
   | "events"
   // | "gateway"
   // | "permissions"
-  | "services"
   | "settings";
 
 type DefaultPageSetup = Record<
@@ -96,7 +95,24 @@ type InstancesPageSetup = Record<
   }
 >;
 
-type PageType = DefaultPageSetup & ExplorerPageSetup & InstancesPageSetup;
+type ServicesPageSetup = Record<
+  "services",
+  PageBase & {
+    createHref: (params: { namespace: string; service?: string }) => string;
+    useParams: () => {
+      namespace: string | undefined;
+      instance: string | undefined;
+      isServicePage: boolean;
+      isServiceListPage: boolean;
+      isServiceDetailPage: boolean;
+    };
+  }
+>;
+
+type PageType = DefaultPageSetup &
+  ExplorerPageSetup &
+  InstancesPageSetup &
+  ServicesPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -281,10 +297,44 @@ export const pages: PageType = {
   services: {
     name: "components.mainMenu.services",
     icon: Layers,
-    createHref: (params) => `/${params.namespace}/services`,
+    createHref: (params) =>
+      `/${params.namespace}/services${
+        params.service ? `/${params.service}` : ""
+      }`,
+    useParams: () => {
+      const { namespace, instance } = useParams();
+
+      const [, , thirdLvl] = useMatches(); // first level is namespace level
+
+      const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
+      const isServiceDetailPage = checkHandler(thirdLvl, "isServiceDetailPage");
+
+      const isServicePage = isServiceListPage || isServiceDetailPage;
+
+      return {
+        namespace: isServicePage ? namespace : undefined,
+        instance: isServicePage ? instance : undefined,
+        isServicePage,
+        isServiceListPage,
+        isServiceDetailPage,
+      };
+    },
+
     route: {
       path: "services",
       element: <div className="flex flex-col space-y-5 p-10">Services</div>,
+      children: [
+        {
+          path: "",
+          element: <h1>Services</h1>,
+          handle: { isServiceListPage: true },
+        },
+        {
+          path: ":service",
+          element: <h1>Service Detail</h1>,
+          handle: { isServiceDetailPage: true },
+        },
+      ],
     },
   },
   settings: {
