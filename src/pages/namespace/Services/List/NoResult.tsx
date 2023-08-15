@@ -1,16 +1,10 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Diamond, Layers } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, PropsWithChildren } from "react";
 
-import Button from "~/design/Button";
-import CreateService from "./Create";
+import { Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const NoResult: FC = () => {
+const NoResult: FC<PropsWithChildren> = ({ children }) => {
   const { t } = useTranslation();
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-
   return (
     <div className="flex flex-col items-center gap-y-5 p-10">
       <div className="flex flex-col items-center justify-center gap-1">
@@ -19,20 +13,7 @@ const NoResult: FC = () => {
           {t("pages.services.list.empty.title")}
         </span>
       </div>
-      <div className="flex flex-col gap-5 sm:flex-row">
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Diamond />
-              {t("pages.services.list.empty.create")}
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent>
-            <CreateService close={() => setDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <div className="flex flex-col gap-5 sm:flex-row">{children}</div>
     </div>
   );
 };
