@@ -129,7 +129,8 @@ const CreateService = ({
             <label className="w-[90px] text-right text-[14px]" htmlFor="scale">
               {t("pages.services.create.scaleLabel")}
             </label>
-            <div className="grow">
+
+            <div className="flex w-full gap-5">
               <Slider
                 id="scale"
                 step={1}
@@ -141,7 +142,7 @@ const CreateService = ({
                   newValue !== undefined && setValue("scale", newValue);
                 }}
               />
-              <div>{watch("scale")}</div>
+              <div className="text-center">{watch("scale")}</div>
             </div>
           </fieldset>
           <fieldset className="flex items-center gap-5">
