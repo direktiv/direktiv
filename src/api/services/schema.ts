@@ -34,8 +34,16 @@ export const ServicesListSchema = z.object({
   functions: z.array(ServiceSchema),
 });
 
+export const serviceNameSchema = z
+  .string()
+  .nonempty()
+  .regex(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?$/, {
+    message:
+      "Please use a name that only contains lowercase letters, and use - instead of whitespaces.",
+  });
+
 export const ServiceFormSchema = z.object({
-  name: z.string().nonempty(),
+  name: serviceNameSchema,
   cmd: z.string(),
   image: z.string().nonempty(),
   minscale: z.number().int().gte(0).lte(3),
