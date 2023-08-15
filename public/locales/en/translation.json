@@ -320,7 +320,7 @@
         },
         "empty": {
           "title": "No services exist yet",
-          "create": "Create a new service"
+          "create": "Create a new Service"
         },
         "delete": {
           "title": "Delete Service",
