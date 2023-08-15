@@ -46,8 +46,13 @@ export const useSendEvent = ({
 
   return useMutation({
     mutationFn,
-    // no cache invalidation because events are updated via streaming
     onSuccess: () => {
+      /* Cache for scope: events-list is not invalidated here because in the
+       * current use case, new events come in via streaming and additional
+       * complexity would be required to invalidate cache. If cache invalidation
+       * becomes relevant, it should probably be optional so no refetching
+       * occurs in views that use streaming.
+       * */
       toast({
         title: t("api.events.mutate.sendEvent.success.title"),
         description: t("api.events.mutate.sendEvent.success.description"),
