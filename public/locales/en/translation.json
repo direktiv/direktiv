@@ -335,7 +335,7 @@
         "namePlaceholder": "service-name",
         "nameAlreadyExists": "The name already exists",
         "imageLabel": "Image",
-        "scaleLabel": "Sale",
+        "scaleLabel": "Scale",
         "sizeLabel": "Size",
         "sizePlaceholder": "Select Size",
         "sizeValues": {
