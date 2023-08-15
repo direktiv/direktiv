@@ -1,6 +1,6 @@
 import {
+  ActivitySquare,
   Boxes,
-  Bug,
   FolderTree,
   Layers,
   LucideIcon,
@@ -15,6 +15,7 @@ import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import Listeners from "~/pages/namespace/Events/Listeners";
+import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
@@ -112,10 +113,21 @@ type EventsPageSetup = Record<
   }
 >;
 
+type MonitoringPageSetup = Record<
+  "monitoring",
+  PageBase & {
+    createHref: (params: { namespace: string }) => string;
+    useParams: () => {
+      isMonitoringPage: boolean;
+    };
+  }
+>;
+
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
-  EventsPageSetup;
+  EventsPageSetup &
+  MonitoringPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -218,11 +230,17 @@ export const pages: PageType = {
   },
   monitoring: {
     name: "components.mainMenu.monitoring",
-    icon: Bug,
+    icon: ActivitySquare,
     createHref: (params) => `/${params.namespace}/monitoring`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
+      return { isMonitoringPage };
+    },
     route: {
       path: "monitoring",
-      element: <div className="flex flex-col space-y-5 p-10">Monitoring</div>,
+      element: <MonitoringPage />,
+      handle: { isMonitoringPage: true },
     },
   },
   instances: {

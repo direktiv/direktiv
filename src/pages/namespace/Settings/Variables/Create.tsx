@@ -132,11 +132,7 @@ const Create = ({ onSuccess }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button
-            data-testid="variable-create-submit"
-            type="submit"
-            variant="primary"
-          >
+          <Button data-testid="variable-create-submit" type="submit">
             {t("components.button.label.create")}
           </Button>
         </DialogFooter>

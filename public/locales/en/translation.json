@@ -248,6 +248,30 @@
         }
       }
     },
+    "monitoring": {
+      "title": "Monitoring",
+      "logs": {
+        "title": "Logs",
+        "followLogs": "Follow logs",
+        "logsCount": "received {{count}} log entries",
+        "logsCount_one": "received {{count}} log entry",
+        "tooltips": {
+          "copy": "Copy logs"
+        }
+      },
+      "instances": {
+        "openWorkflowTooltip": "click to open workflow {{name}}",
+        "updateTooltip": "refetch instances",
+        "successfullExecutions": {
+          "title": "Successful Executions",
+          "empty": "There are no recent successful executions."
+        },
+        "failedExecutions": {
+          "title": "Failed Executions",
+          "empty": "There are no recent failed executions."
+        }
+      }
+    },
     "instances": {
       "list": {
         "title": "Recently executed instances",
@@ -274,7 +298,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
-          "openWorkflowTooltip": "click to open workflow"
+          "openWorkflowTooltip": "click to open workflow {{name}}"
         },
         "filter": {
           "filterButton": "Filter",
@@ -374,7 +398,10 @@
       "secrets": {
         "list": {
           "title": "Secrets",
-          "empty": "No secrets exist yet"
+          "empty": "No secrets exist yet",
+          "createBtn": "Create secret",
+          "searchPlaceholder": "Filter secrets...",
+          "emptySearch": "No secret matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -387,7 +414,10 @@
       "registries": {
         "list": {
           "title": "Container Registries",
-          "empty": "No registries exist yet"
+          "empty": "No registries exist yet",
+          "createBtn": "Create registry",
+          "searchPlaceholder": "Filter registries...",
+          "emptySearch": "No registry matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -396,13 +426,21 @@
           "description": "Add a container registry",
           "url": "URL",
           "user": "User",
-          "password": "Password"
+          "password": "Password",
+          "testConnectionBtn": {
+            "label": "Test connection",
+            "success": "Connection successful",
+            "error": "Connection failed"
+          }
         }
       },
       "variables": {
         "list": {
           "title": "Variables",
-          "empty": "No variables exist yet"
+          "empty": "No variables exist yet",
+          "createBtn": "Create variable",
+          "searchPlaceholder": "Filter variables...",
+          "emptySearch": "No variable matches your search"
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -437,6 +475,15 @@
           "instanceVariable": "Instance Variable",
           "namespaceVariable": "Namespace Variable",
           "workflowVariable": "Workflow Variable"
+        }
+      },
+      "deleteNamespace": {
+        "title": "Delete namespace",
+        "description": "This will permanently delete the current active namespace and all resources associated with it.",
+        "deleteBtn": "Delete namespace",
+        "modal": {
+          "description": "Are you sure you want to delete <b>{{namespace}}</b>?<br/> This cannot be undone.",
+          "confirm": "Please type <b>{{namespace}}</b> to confirm."
         }
       },
       "theme": {
@@ -474,7 +521,8 @@
       "loading": "loading...",
       "instances": "Instances",
       "eventHistory": "Event History",
-      "eventListeners": "Event Listeners"
+      "eventListeners": "Event Listeners",
+      "monitoring": "Monitoring"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
@@ -654,6 +702,15 @@
           },
           "error": {
             "description": "could not create namespace 😢"
+          }
+        },
+        "deleteNamespaces": {
+          "success": {
+            "title": "Delete namespace",
+            "description": "Namespace {{name}} was deleted successfully."
+          },
+          "error": {
+            "description": "could not delete namespace 😢"
           }
         }
       }

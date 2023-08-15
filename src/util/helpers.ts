@@ -1,6 +1,9 @@
+import { ComponentProps, FC } from "react";
 import clsx, { ClassValue } from "clsx";
 
-import { FC } from "react";
+import { LogEntry } from "~/design/Logs";
+import { LogLevelSchemaType } from "~/api/schema";
+import moment from "moment";
 import { twMerge } from "tailwind-merge";
 
 /**
@@ -29,3 +32,23 @@ export const ConditionalWrapper: FC<ConditionalWrapperProps> = ({
   wrapper,
   children,
 }) => (condition ? wrapper(children) : children);
+
+export const formatLogTime = (time: string) =>
+  moment(time).format("HH:mm:ss.mm");
+
+type LogEntryVariant = ComponentProps<typeof LogEntry>["variant"];
+
+export const logLevelToLogEntryVariant = (
+  level: LogLevelSchemaType
+): LogEntryVariant => {
+  switch (level) {
+    case "error":
+      return "error";
+    case "info":
+      return "info";
+    case "debug":
+      return undefined;
+    default:
+      break;
+  }
+};

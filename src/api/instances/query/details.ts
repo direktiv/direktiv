@@ -7,6 +7,7 @@ import {
 
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
+import { memo } from "react";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
@@ -61,6 +62,20 @@ export const useInstanceDetailsStream = (
     },
   });
 };
+
+type InstanceStreamingSubscriberType = {
+  instanceId: string;
+  enabled?: boolean;
+};
+
+export const InstanceStreamingSubscriber = memo(
+  ({ instanceId, enabled }: InstanceStreamingSubscriberType) => {
+    useInstanceDetailsStream({ instanceId }, { enabled: enabled ?? true });
+    return null;
+  }
+);
+
+InstanceStreamingSubscriber.displayName = "InstanceStreamingSubscriber";
 
 export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
   const apiKey = useApiKey();
