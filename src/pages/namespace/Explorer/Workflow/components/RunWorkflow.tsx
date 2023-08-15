@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
+import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ type FormInput = {
 type JSONSchemaFormSubmit = Parameters<typeof JSONSchemaForm>[0]["onSubmit"];
 
 const RunWorkflow = ({ path }: { path: string }) => {
+  const { toast } = useToast();
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -68,6 +70,15 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { mutate: runWorkflow, isLoading } = useRunWorkflow({
     onSuccess: ({ namespace, instance }) => {
       navigate(pages.instances.createHref({ namespace, instance }));
+    },
+    onError: (error) => {
+      toast({
+        title: t("api.generic.error"),
+        description:
+          error ??
+          t("pages.explorer.tree.workflow.runWorkflow.genericRunError"),
+        variant: "error",
+      });
     },
   });
 

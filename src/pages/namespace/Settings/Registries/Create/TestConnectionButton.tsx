@@ -1,5 +1,5 @@
-import { CheckCircle2, CircleDashed, XCircle } from "lucide-react";
-import { ComponentProps, FC, useEffect, useState } from "react";
+import { CheckCircle2, CircleDashed, LucideIcon, XCircle } from "lucide-react";
+import { ComponentProps, useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { useTestConnection } from "~/api/registries/mutate/testConnection";
@@ -43,7 +43,7 @@ export const TestConnectionButton = ({
   };
 
   let variant: ComponentProps<typeof Button>["variant"] = "outline";
-  let Icon: FC<React.SVGProps<SVGSVGElement>> = CircleDashed;
+  let Icon: LucideIcon = CircleDashed;
   let label = t("pages.settings.registries.create.testConnectionBtn.label");
 
   if (testSuccessful === true) {

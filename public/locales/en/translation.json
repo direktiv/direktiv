@@ -142,7 +142,8 @@
             "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
-            "runBtn": "Run"
+            "runBtn": "Run",
+            "genericRunError": "Something went wrong running this workflow."
           }
         }
       },
@@ -169,6 +170,80 @@
             "diagram": "Diagram View",
             "splitVertically": "Split Vertically",
             "splitHorizontally": "Split Horizontally"
+          }
+        }
+      }
+    },
+    "events": {
+      "tabs": {
+        "history": "Event history",
+        "listeners": "Event listeners"
+      },
+      "history": {
+        "title": "Cloud events history",
+        "send": {
+          "dialogTrigger": "Send new event",
+          "dialogHeader": "Create new event",
+          "submit": "Send"
+        },
+        "view": {
+          "info": "This information is read-only, 'retrigger' will replay a stored copy of the event.",
+          "dialogHeader": "View event",
+          "submit": "Retrigger"
+        },
+        "tableHeader": {
+          "id": "id",
+          "type": "type",
+          "source": "source",
+          "receivedAt": "received"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
+        },
+        "empty": {
+          "noFilterResults": "No events found with these filter criteria",
+          "noResults": "No events found"
+        },
+        "filter": {
+          "filterButton": "Filter",
+          "placeholder": {
+            "mainMenu": "Type or select a field...",
+            "TYPE": "cloud.event.type",
+            "TEXT": "search cloudevent content"
+          },
+          "field": {
+            "TYPE": "type",
+            "TEXT": "search content",
+            "AFTER": "received after",
+            "BEFORE": "received before"
+          },
+          "menuHeading": {
+            "main": "Select filter",
+            "time": "refine time",
+            "TYPE": "filter by type",
+            "TEXT": "search cloudevent content",
+            "AFTER": "filter by received after",
+            "BEFORE": "filter by received before"
+          }
+        }
+      },
+      "listeners": {
+        "title": "Event listeners",
+        "tableHeader": {
+          "target": "target",
+          "type": "type",
+          "mode": "mode",
+          "createdAt": "updated",
+          "eventTypes": "cloud event type"
+        },
+        "empty": {
+          "noResults": "No event listeners found"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago",
+          "type": {
+            "workflow": "start workflow",
+            "instance": "resume instance"
           }
         }
       }
@@ -483,7 +558,9 @@
       "createBtn": "Create new namespace",
       "loading": "loading...",
       "instances": "Instances",
+      "eventHistory": "Event History",
       "services": "Services",
+      "eventListeners": "Event Listeners",
       "monitoring": "Monitoring"
     },
     "namespaceCreate": {
@@ -761,6 +838,28 @@
           },
           "error": {
             "description": "Could not delete secret 😢"
+          }
+        }
+      }
+    },
+    "events": {
+      "mutate": {
+        "sendEvent": {
+          "success": {
+            "title": "Event sent",
+            "description": "The event was sent"
+          },
+          "error": {
+            "description": "The event could not be sent 😢"
+          }
+        },
+        "replayEvent": {
+          "success": {
+            "title": "Event retriggered",
+            "description": "The event was retriggered"
+          },
+          "error": {
+            "description": "The event could not be retriggered 😢"
           }
         }
       }
