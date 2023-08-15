@@ -23,6 +23,7 @@ import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Slider } from "~/design/Slider";
 import { useCreateService } from "~/api/services/mutate/create";
+import { useServices } from "~/api/services/query/get";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -39,6 +40,7 @@ const CreateService = ({
 }) => {
   const { t } = useTranslation();
 
+  const { data } = useServices();
   const { mutate: createService, isLoading } = useCreateService({
     onSuccess: () => {
       close();
@@ -89,6 +91,10 @@ const CreateService = ({
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   const formId = `new-service-${path}`;
+
+  const maxScale = data?.config.maxscale;
+  if (maxScale === undefined) return null;
+
   return (
     <>
       <DialogHeader>
@@ -135,7 +141,7 @@ const CreateService = ({
                 id="scale"
                 step={1}
                 min={0}
-                max={3}
+                max={maxScale}
                 value={[watch("scale") ?? 0]}
                 onValueChange={(e) => {
                   const newValue = e[0];
