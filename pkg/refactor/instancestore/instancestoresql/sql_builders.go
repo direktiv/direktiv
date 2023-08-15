@@ -71,7 +71,6 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 			} else {
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
-
 		case instancestore.FieldCreatedAt:
 			if t, ok := filter.Value.(time.Time); ok {
 				filter.Value = t.UTC()
@@ -111,7 +110,10 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 			}
 
 		case instancestore.FieldWorkflowPath:
-			if filter.Kind == instancestore.FilterKindPrefix {
+			if filter.Kind == instancestore.FilterKindMatch {
+				clause = fieldWorkflowPath + " = ?"
+				val = fmt.Sprintf("%s", filter.Value)
+			} else if filter.Kind == instancestore.FilterKindPrefix {
 				clause = fieldWorkflowPath + " LIKE ?"
 				val = fmt.Sprintf("%s", filter.Value) + "%"
 			} else if filter.Kind == instancestore.FilterKindContains {
