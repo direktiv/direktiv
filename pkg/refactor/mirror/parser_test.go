@@ -35,6 +35,10 @@ func (src *memSource) Free() error {
 	return nil
 }
 
+func (src *memSource) Notes() map[string]string {
+	return make(map[string]string)
+}
+
 func assertTree(t *testing.T, p *mirror.Parser, paths []string) {
 	expect := fmt.Sprintf("%v", paths)
 

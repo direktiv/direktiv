@@ -89,7 +89,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 		}
 	}()
 
-	err = applyer.apply(ctx, d.callbacks, p, parser)
+	err = applyer.apply(ctx, d.callbacks, p, parser, src.Notes())
 	if err != nil {
 		d.failProcess(p, fmt.Errorf("applying changes: %v", err))
 		return

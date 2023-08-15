@@ -17,6 +17,7 @@ type Source interface {
 	FS() fs.FS
 	Unwrap() Source
 	Free() error
+	Notes() map[string]string
 }
 
 type DirectorySource struct {
@@ -43,6 +44,10 @@ func (src *DirectorySource) Free() error {
 	return nil
 }
 
+func (src *DirectorySource) Notes() map[string]string {
+	return make(map[string]string)
+}
+
 type GitSourceConfig struct {
 	URL    string
 	GitRef string
@@ -55,8 +60,9 @@ type GitSourceOptions struct {
 
 type gitSource struct {
 	*DirectorySource
-	path string
-	conf GitSourceConfig
+	path  string
+	conf  GitSourceConfig
+	notes map[string]string
 }
 
 var _ Source = &gitSource{}
@@ -76,15 +82,27 @@ func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions, opts GitSourceOpti
 		return nil, err
 	}
 
-	_, err = git.PlainClone(path, false, cloneOpts)
+	repo, err := git.PlainClone(path, false, cloneOpts)
 	if err != nil {
 		return nil, err
 	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	hash := ref.Hash()
 
 	return &gitSource{
 		conf:            conf,
 		path:            path,
 		DirectorySource: NewDirectorySource(path),
+		notes: map[string]string{
+			"commit_hash": hash.String(),
+			"ref":         conf.GitRef,
+			"url":         conf.URL,
+		},
 	}, nil
 }
 
@@ -103,6 +121,10 @@ func (src *gitSource) Free() error {
 	}
 
 	return nil
+}
+
+func (src *gitSource) Notes() map[string]string {
+	return src.notes
 }
 
 func NewGitSourceNoAuth(conf GitSourceConfig, opts GitSourceOptions) (Source, error) {

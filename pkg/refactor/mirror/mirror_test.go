@@ -38,10 +38,11 @@ func (l *testLogger) Debug(processID uuid.UUID, msg string, keysAndValues ...int
 var _ mirror.ProcessLogger = &testLogger{}
 
 type testCallbacks struct {
-	store    mirror.Store
-	fstore   filestore.FileStore
-	varstore core.RuntimeVariablesStore
-	buf      *bytes.Buffer
+	store                mirror.Store
+	fstore               filestore.FileStore
+	varstore             core.RuntimeVariablesStore
+	fileAnnotationsStore core.FileAnnotationsStore
+	buf                  *bytes.Buffer
 }
 
 func (c *testCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
@@ -66,6 +67,10 @@ func (c *testCallbacks) FileStore() filestore.FileStore {
 
 func (c *testCallbacks) VarStore() core.RuntimeVariablesStore {
 	return c.varstore
+}
+
+func (c *testCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
+	return c.fileAnnotationsStore
 }
 
 var _ mirror.Callbacks = &testCallbacks{}
@@ -113,10 +118,11 @@ func TestDryRun(t *testing.T) {
 	store := dStore.Mirror()
 
 	callbacks := &testCallbacks{
-		store:    store,
-		fstore:   fs,
-		varstore: dStore.RuntimeVariables(),
-		buf:      new(bytes.Buffer),
+		store:                store,
+		fstore:               fs,
+		varstore:             dStore.RuntimeVariables(),
+		fileAnnotationsStore: dStore.FileAnnotations(),
+		buf:                  new(bytes.Buffer),
 	}
 
 	nsID := uuid.New()

@@ -166,12 +166,13 @@ func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}
 
 type mirrorCallbacks struct {
-	logger    mirror.ProcessLogger
-	syslogger *zap.SugaredLogger
-	store     mirror.Store
-	fstore    filestore.FileStore
-	varstore  core.RuntimeVariablesStore
-	wfconf    func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
+	logger               mirror.ProcessLogger
+	syslogger            *zap.SugaredLogger
+	store                mirror.Store
+	fstore               filestore.FileStore
+	varstore             core.RuntimeVariablesStore
+	fileAnnotationsStore core.FileAnnotationsStore
+	wfconf               func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
 }
 
 func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
@@ -196,6 +197,10 @@ func (c *mirrorCallbacks) FileStore() filestore.FileStore {
 
 func (c *mirrorCallbacks) VarStore() core.RuntimeVariablesStore {
 	return c.varstore
+}
+
+func (c *mirrorCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
+	return c.fileAnnotationsStore
 }
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
@@ -417,11 +422,12 @@ func (srv *server) start(ctx context.Context) error {
 				sugar:  srv.sugar,
 				logger: srv.logger,
 			},
-			syslogger: srv.sugar,
-			store:     noTx.DataStore().Mirror(),
-			fstore:    noTx.FileStore(),
-			varstore:  noTx.DataStore().RuntimeVariables(),
-			wfconf:    cc,
+			syslogger:            srv.sugar,
+			store:                noTx.DataStore().Mirror(),
+			fstore:               noTx.FileStore(),
+			varstore:             noTx.DataStore().RuntimeVariables(),
+			fileAnnotationsStore: noTx.DataStore().FileAnnotations(),
+			wfconf:               cc,
 		},
 	)
 

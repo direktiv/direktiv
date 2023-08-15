@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -15,13 +16,13 @@ import (
 )
 
 type Applyer interface {
-	apply(context.Context, Callbacks, *Process, *Parser) error
+	apply(context.Context, Callbacks, *Process, *Parser, map[string]string) error
 }
 
 type DryrunApplyer struct {
 }
 
-func (o *DryrunApplyer) apply(ctx context.Context, _ Callbacks, _ *Process, parser *Parser) error {
+func (o *DryrunApplyer) apply(ctx context.Context, _ Callbacks, _ *Process, parser *Parser, _ map[string]string) error {
 	return nil
 }
 
@@ -32,13 +33,15 @@ type DirektivApplyer struct {
 	parser    *Parser
 
 	rootID uuid.UUID
+	notes  map[string]string
 }
 
-func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *Process, parser *Parser) error {
+func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *Process, parser *Parser, notes map[string]string) error {
 	o.log = newPIDFormatLogger(callbacks.ProcessLogger(), proc.ID)
 	o.callbacks = callbacks
 	o.proc = proc
 	o.parser = parser
+	o.notes = notes
 
 	oldRoot, err := callbacks.FileStore().GetRoot(ctx, proc.RootID)
 	if err != nil {
@@ -67,9 +70,13 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy deprecated variables: %w", err)
 	}
 
-	// TODO: copy commit hash metadata
 	// TODO: copy filters
 	// TODO: copy services
+
+	err = o.createAnnotations(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create annotations: %w", err)
+	}
 
 	// TODO: join the next two operations into a single atomic SQL operation?
 	err = callbacks.FileStore().ForRootID(oldRoot.ID).Delete(ctx)
@@ -85,6 +92,11 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	err = o.configureWorkflows(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to configure workflows: %w", err)
+	}
+
+	err = o.updateConfig(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to configure update config: %w", err)
 	}
 
 	return nil
@@ -220,6 +232,44 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 				return fmt.Errorf("failed to save workflow variable '%s' '%s': %w", path, k, err)
 			}
 		}
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) createAnnotations(ctx context.Context) error {
+	f, err := o.callbacks.FileStore().ForRootID(o.rootID).GetFile(ctx, "/")
+	if err != nil {
+		return err
+	}
+
+	err = o.callbacks.FileAnnotationsStore().Set(ctx, &core.FileAnnotations{
+		FileID: f.ID,
+		Data:   o.notes,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
+	cfg, err := o.callbacks.Store().GetConfig(ctx, o.proc.NamespaceID)
+	if err != nil {
+		return err
+	}
+
+	cfg.UpdatedAt = time.Now()
+
+	if v, ok := o.notes["commit_hash"]; ok {
+		cfg.GitCommitHash = v
+		return nil
+	}
+
+	_, err = o.callbacks.Store().UpdateConfig(ctx, cfg)
+	if err != nil {
+		return err
 	}
 
 	return nil

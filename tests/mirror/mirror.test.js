@@ -26,7 +26,6 @@ describe('Test behaviour specific to the root node', () => {
                 publicKey: "",
                 privateKey: ""
             })
-
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({
             namespace: {
