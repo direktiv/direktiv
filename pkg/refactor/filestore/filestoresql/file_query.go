@@ -171,7 +171,7 @@ func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
@@ -254,7 +254,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return newRev, nil

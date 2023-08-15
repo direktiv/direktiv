@@ -65,7 +65,7 @@ func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.
 		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return n, nil

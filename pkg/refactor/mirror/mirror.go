@@ -2,239 +2,113 @@ package mirror
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
-// Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
-// and any other details).
-type Config struct {
-	NamespaceID uuid.UUID
-	RootName    string
+// TODO: validate credentials helper
+// TODO: failed mirror garbage collector?
 
-	URL                  string
-	GitRef               string
-	GitCommitHash        string
-	PublicKey            string
-	PrivateKey           string
-	PrivateKeyPassphrase string
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
+type Manager struct {
+	callbacks Callbacks
 }
 
-// Process different statuses.
-const (
-	processStatusComplete  = "complete"
-	processStatusPending   = "pending"
-	processStatusExecuting = "executing"
-	processStatusFailed    = "failed"
-)
-
-// Process different types.
-const (
-	// Indicates initial mirroring process.
-	processTypeInit = "init"
-
-	// Indicates re-mirroring process.
-	processTypeSync = "sync"
-)
-
-// Process represents an instance of mirroring process that happened or is currently happened. For every mirroring
-// process gets executing, a Process instance should be created with mirror.Store.
-type Process struct {
-	ID          uuid.UUID
-	NamespaceID uuid.UUID
-	RootID      uuid.UUID
-
-	Status string
-	Typ    string
-
-	EndedAt   time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-var ErrNotFound = errors.New("ErrNotFound")
-
-// Store *doesn't* lunch any mirroring process. Store is only responsible for fetching and setting mirror.Config and
-// mirror.Process from datastore.
-type Store interface {
-	// CreateConfig stores a new config in the store.
-	CreateConfig(ctx context.Context, config *Config) (*Config, error)
-
-	// UpdateConfig updates a config in the store.
-	UpdateConfig(ctx context.Context, config *Config) (*Config, error)
-
-	// GetConfig gets config by namespaceID from the store.
-	GetConfig(ctx context.Context, namespaceID uuid.UUID) (*Config, error)
-
-	// CreateProcess stores a new process in the store.
-	CreateProcess(ctx context.Context, process *Process) (*Process, error)
-
-	// UpdateProcess update a process in the store.
-	UpdateProcess(ctx context.Context, process *Process) (*Process, error)
-
-	// GetProcess gets a process by id from the store.
-	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
-
-	// GetProcessesByNamespaceID gets all processes that belong to a namespace from the store.
-	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
-}
-
-// Manager launches and terminates mirroring processes.
-type Manager interface {
-	StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error)
-	StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error)
-	CancelMirroringProcess(ctx context.Context, id uuid.UUID) error
-}
-
-// ConfigureWorkflowFunc is a hookup function the gets called for every new or updated workflow file.
-type ConfigureWorkflowFunc func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
-
-// LogFunc is a hookup function the gets called to perform application logging.
-type LogFunc func(processID uuid.UUID, msg string, keysAndValues ...interface{})
-
-// DefaultManager launches and terminates mirroring processes. When launching a mirroring process, DefaultManager
-// creates stores and update process objects in the mirror.Store.
-type DefaultManager struct {
-	infoLogFunc LogFunc
-	errLogFunc  LogFunc
-
-	// store is needed so that DefaultManager can create and update mirror.Process objects.
-	store Store
-
-	// fStore is to create mirrored files in the filestore.
-	fStore filestore.FileStore
-
-	// vStore is to create mirrored variables.
-	vStore core.RuntimeVariablesStore
-
-	// source is the source of the mirror. Typically, source is a git source.
-	source Source
-
-	// configWorkflowFunc is a hookup function the gets called for every new or updated workflow file.
-	configWorkflowFunc ConfigureWorkflowFunc
-}
-
-func NewDefaultManager(
-	infoLogFunc LogFunc,
-	errLogFunc LogFunc,
-	store Store,
-	fStore filestore.FileStore,
-	vStore core.RuntimeVariablesStore,
-	source Source,
-	configWorkflowFunc ConfigureWorkflowFunc,
-) *DefaultManager {
-	if infoLogFunc == nil {
-		infoLogFunc = func(processID uuid.UUID, msg string, keysAndValues ...interface{}) {}
-	}
-	if errLogFunc == nil {
-		errLogFunc = func(processID uuid.UUID, msg string, keysAndValues ...interface{}) {}
-	}
-
-	return &DefaultManager{
-		infoLogFunc:        infoLogFunc,
-		errLogFunc:         errLogFunc,
-		store:              store,
-		fStore:             fStore,
-		vStore:             vStore,
-		source:             source,
-		configWorkflowFunc: configWorkflowFunc,
+func NewManager(callbacks Callbacks) *Manager {
+	return &Manager{
+		callbacks: callbacks,
 	}
 }
 
-func (d *DefaultManager) startMirroringProcess(ctx context.Context, config *Config, processType string) (*Process, error) {
-	roots, err := d.fStore.GetAllRootsForNamespace(ctx, config.NamespaceID)
-	if err != nil {
-		return nil, fmt.Errorf("creating a new process, err: %w", err)
-	}
+// Cancel stops a currently running mirroring process.
+func (d *Manager) Cancel(_ context.Context, _ uuid.UUID) error {
+	// TODO
 
-	var root *filestore.Root
-
-	for idx := range roots {
-		if roots[idx].Name == config.RootName {
-			root = roots[idx]
-
-			break
-		}
-	}
-
-	if root == nil {
-		return nil, errors.New("failed to resolve root for mirroring")
-	}
-
-	process, err := d.store.CreateProcess(ctx, &Process{
-		ID:          uuid.New(),
-		NamespaceID: config.NamespaceID,
-		RootID:      root.ID,
-		Typ:         processType,
-		Status:      processStatusPending,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("creating a new process, err: %w", err)
-	}
-
-	d.infoLogFunc(process.ID, "starting mirroring process",
-		"type", processType, "process_id", process.ID)
-
-	go func() {
-		err := (&mirroringJob{
-			ctx:         context.TODO(),
-			infoLogFunc: d.infoLogFunc,
-		}).
-			SetProcessID(process.ID).
-			SetProcessStatus(d.store, process, processStatusExecuting).
-			CreateTempDirectory().
-			PullSourceInPath(d.source, config).
-			CreateSourceFilesList().
-			// ParseIgnoreFile("/.direktivignore").
-			// FilterIgnoredFiles().
-
-			// TODO: we need to implement a mechanism to synchronize multiple mirroring processes.
-			ReadRootFilesChecksums(d.fStore, process.RootID).
-			CreateAllDirectories(d.fStore, process.RootID).
-			CopyFilesToRoot(d.fStore, process.RootID).
-			ConfigureWorkflows(config.NamespaceID, d.configWorkflowFunc).
-			ParseDirektivVars(d.fStore, d.vStore, config.NamespaceID, process.RootID).
-			CropFilesAndDirectoriesInRoot(d.fStore, process.RootID).
-			DeleteTempDirectory().
-			SetProcessStatus(d.store, process, processStatusComplete).Error()
-		if err != nil {
-			process.Status = processStatusFailed
-			process.EndedAt = time.Now().UTC()
-			process, _ = d.store.UpdateProcess(context.TODO(), process)
-			d.errLogFunc(process.ID, "mirroring process failed", "err", err, "process_id", process.ID)
-
-			return
-		}
-
-		d.infoLogFunc(process.ID, "mirroring process succeeded", "process_id", process.ID)
-	}()
-
-	return process, err
-}
-
-// StartInitialMirroringProcess starts an initial mirroring process. The new launched process object is returned.
-func (d *DefaultManager) StartInitialMirroringProcess(ctx context.Context, config *Config) (*Process, error) {
-	return d.startMirroringProcess(ctx, config, processTypeInit)
-}
-
-// StartSyncingMirrorProcess starts a re-mirroring process. The launched process object is returned.
-func (d *DefaultManager) StartSyncingMirrorProcess(ctx context.Context, config *Config) (*Process, error) {
-	return d.startMirroringProcess(ctx, config, processTypeSync)
-}
-
-// nolint:revive
-// CancelMirroringProcess stops a currently running mirroring process.
-func (d *DefaultManager) CancelMirroringProcess(ctx context.Context, processID uuid.UUID) error {
-	// TODO, look if this is needed before release.
 	return nil
 }
 
-var _ Manager = &DefaultManager{}
+func (d *Manager) silentFailProcess(p *Process) {
+	p.Status = ProcessStatusFailed
+	p.EndedAt = time.Now().UTC()
+	_, e := d.callbacks.Store().UpdateProcess(context.Background(), p)
+	if e != nil {
+		d.callbacks.SysLogCrit(fmt.Sprintf("Error updating failed mirror process record in database: %v", e))
+
+		return
+	}
+}
+
+func (d *Manager) failProcess(p *Process, err error) {
+	d.silentFailProcess(p)
+	d.callbacks.ProcessLogger().Error(p.ID, fmt.Sprintf("Mirroring process failed %v", err), "process_id", p.ID)
+}
+
+func (d *Manager) setProcessStatus(ctx context.Context, process *Process, status string) error {
+	process.Status = status
+	if status == ProcessStatusComplete || status == ProcessStatusFailed {
+		process.EndedAt = time.Now().UTC()
+	}
+
+	_, err := d.callbacks.Store().UpdateProcess(ctx, process)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Execute ..
+func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.Context) (Source, error), applyer Applyer) {
+	err := d.setProcessStatus(ctx, p, ProcessStatusExecuting)
+	if err != nil {
+		//nolint:contextcheck
+		d.failProcess(p, fmt.Errorf("updating process status: %w", err))
+
+		return
+	}
+
+	src, err := get(ctx)
+	if err != nil {
+		//nolint:contextcheck
+		d.failProcess(p, fmt.Errorf("initializing source: %w", err))
+
+		return
+	}
+	defer func() {
+		err := src.Free()
+		if err != nil {
+			d.callbacks.SysLogCrit(fmt.Sprintf("Error freeing mirror source: %v", err))
+		}
+	}()
+
+	parser, err := NewParser(newPIDFormatLogger(d.callbacks.ProcessLogger(), p.ID), src)
+	if err != nil {
+		//nolint:contextcheck
+		d.silentFailProcess(p)
+
+		return
+	}
+	defer func() {
+		err := parser.Close()
+		if err != nil {
+			d.callbacks.SysLogCrit(fmt.Sprintf("Error freeing mirror temporary files: %v", err))
+		}
+	}()
+
+	err = applyer.apply(ctx, d.callbacks, p, parser, src.Notes())
+	if err != nil {
+		//nolint:contextcheck
+		d.failProcess(p, fmt.Errorf("applying changes: %w", err))
+
+		return
+	}
+
+	err = d.setProcessStatus(ctx, p, ProcessStatusComplete)
+	if err != nil {
+		//nolint:contextcheck
+		d.failProcess(p, fmt.Errorf("updating process status: %w", err))
+
+		return
+	}
+}

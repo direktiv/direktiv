@@ -76,7 +76,7 @@ func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []
 		return res.Error
 	}
 	if res.RowsAffected != int64(len(pathsToRemove)) {
-		return fmt.Errorf("unexpedted delete from filesystem_files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
+		return fmt.Errorf("unexpected delete from filesystem_files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
 	}
 
 	return nil
@@ -157,7 +157,7 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
@@ -252,7 +252,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, nil, fmt.Errorf("unexpedted gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return f, rev, nil
@@ -311,7 +311,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	}
 
 	res := q.db.WithContext(ctx).Raw(`
-					SELECT id, path, depth, typ, root_id, created_at, updated_at
+					SELECT id, path, depth, typ, root_id, created_at, updated_at, mime_type
 					FROM filesystem_files
 					WHERE root_id=? AND depth=? AND path LIKE ?
 					ORDER BY path ASC`,
@@ -390,6 +390,23 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	}
 
 	q.root = n
+
+	return nil
+}
+
+func (q *RootQuery) Rename(ctx context.Context, newName string) error {
+	res := q.db.WithContext(ctx).Exec(`UPDATE filesystem_roots
+		SET name = ?
+		WHERE id = ?`,
+		newName,
+		q.rootID,
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return filestore.ErrNotFound
+	}
 
 	return nil
 }

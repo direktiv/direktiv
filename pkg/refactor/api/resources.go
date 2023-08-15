@@ -41,21 +41,23 @@ const (
 	WorkflowAPIV1 = "workflow/v1"
 )
 
+var ErrNotDirektivAPIResource = errors.New("not a direktiv_api resource")
+
 func LoadResource(data []byte) (interface{}, error) {
 	m := make(map[string]interface{})
 	err := yaml.Unmarshal(data, &m)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing direktiv resource: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrNotDirektivAPIResource, err)
 	}
 
 	x, exists := m["direktiv_api"]
 	if !exists {
-		return nil, errors.New("error parsing direktiv resource: missing 'direktiv_api'")
+		return nil, fmt.Errorf("%w: missing 'direktiv_api' field", ErrNotDirektivAPIResource)
 	}
 
 	s, ok := x.(string)
 	if !ok {
-		return nil, errors.New("error parsing direktiv resource: invalid 'direktiv_api'")
+		return nil, fmt.Errorf("%w: invalid 'direktiv_api' field", ErrNotDirektivAPIResource)
 	}
 
 	switch s {
@@ -63,7 +65,9 @@ func LoadResource(data []byte) (interface{}, error) {
 		filters := new(Filters)
 		err = yaml.Unmarshal(data, &filters)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+			return &Filters{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
 
 		return filters, nil
@@ -71,7 +75,9 @@ func LoadResource(data []byte) (interface{}, error) {
 		services := new(Services)
 		err = yaml.Unmarshal(data, &services)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+			return &Services{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
 
 		return services, nil
@@ -79,7 +85,9 @@ func LoadResource(data []byte) (interface{}, error) {
 		wf := new(model.Workflow)
 		err = wf.Load(data)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+			return &model.Workflow{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
 
 		return wf, nil

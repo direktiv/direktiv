@@ -78,7 +78,7 @@ func (s *sqlServicesStore) Update(ctx context.Context, service *core.Service) er
 		return res.Error
 	}
 	if res.RowsAffected > 1 {
-		return fmt.Errorf("unexpedted services update count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected services update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 	if res.RowsAffected == 0 {
 		return datastore.ErrNotFound
@@ -106,7 +106,7 @@ func (s *sqlServicesStore) DeleteByName(ctx context.Context, name string) error 
 		return res.Error
 	}
 	if res.RowsAffected > 1 {
-		return fmt.Errorf("unexpedted services delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected services delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 	if res.RowsAffected == 0 {
 		return datastore.ErrNotFound

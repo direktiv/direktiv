@@ -38,6 +38,7 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		node.MimeType = "application/direktiv"
 	default:
 		node.ExpandedType = string(filestore.FileTypeFile)
+		node.MimeType = f.MIMEType
 	}
 
 	return node
@@ -192,20 +193,28 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 	return list
 }
 
-func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
-	return &grpc.Namespace{
+func ConvertNamespaceToGrpc(item *core.Namespace, annotations *core.FileAnnotations) *grpc.Namespace {
+	ns := &grpc.Namespace{
 		Oid:  item.ID.String(),
 		Name: item.Name,
 
 		CreatedAt: timestamppb.New(item.CreatedAt),
 		UpdatedAt: timestamppb.New(item.UpdatedAt),
 	}
+
+	if annotations != nil {
+		ns.Notes = map[string]string(annotations.Data)
+	}
+
+	return ns
 }
 
-func ConvertNamespacesListToGrpc(list []*core.Namespace) []*grpc.Namespace {
+func ConvertNamespacesListToGrpc(list []*core.Namespace, annotations []*core.FileAnnotations) []*grpc.Namespace {
 	var result []*grpc.Namespace
-	for _, f := range list {
-		result = append(result, ConvertNamespaceToGrpc(f))
+	for idx := range list {
+		ns := list[idx]
+		annotation := annotations[idx]
+		result = append(result, ConvertNamespaceToGrpc(ns, annotation))
 	}
 
 	return result

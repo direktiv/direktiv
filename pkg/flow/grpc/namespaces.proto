@@ -13,6 +13,7 @@ message Namespace {
 	google.protobuf.Timestamp updated_at = 2;
 	string name = 3;
 	string oid = 4;
+	map<string, string> notes = 5;
 }
 
 message ResolveNamespaceUIDRequest {

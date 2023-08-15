@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -34,7 +34,8 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 
 	mimeType := req.GetMimeType()
 	if mimeType == "" {
-		mimeType = http.DetectContentType(data)
+		mt := mimetype.Detect(data)
+		mimeType = mt.String()
 	}
 
 	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, bytes.NewReader(data))
@@ -75,7 +76,8 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 
 	mimeType := req.GetMimeType()
 	if mimeType == "" {
-		mimeType = http.DetectContentType(data)
+		mt := mimetype.Detect(data)
+		mimeType = mt.String()
 	}
 
 	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())

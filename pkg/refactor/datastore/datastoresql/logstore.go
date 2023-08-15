@@ -109,7 +109,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 			return nil, 0, err
 		}
 
-		levels := []string{"debug", "info", "error"}
+		levels := []string{"debug", "info", "warn", "error"}
 		m["level"] = levels[e.Level]
 		msg := fmt.Sprintf("%v", m["message"])
 		delete(m, "message")

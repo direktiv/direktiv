@@ -1,7 +1,9 @@
 package mirror
 
 import (
+	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -11,77 +13,194 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Source is an interface that represent a mirror source (git repo is a valid mirror source example).
-// In Direktiv, a Mirror is a directory of files that sits somewhere (local or remote) and a user wants to mirror (copy)
-// his direktiv namespace files from it.
-// Source knows how to access the mirror files (connecting to a remote server in case of git) and copy the files in
-// the user's direktiv namespace. Parameter 'settings' is used to configure the sourcing (pulling) mirror process.
-// Parameter 'dir' specifies the directory where Source should copy the mirror to.
 type Source interface {
-	// PullInPath pulls (copies) mirror into local directory specified by 'dir' parameter.
-	PullInPath(config *Config, dir string) error
+	FS() fs.FS
+	Unwrap() Source
+	Free() error
+	Notes() map[string]string
 }
 
-// MockedSource mocks Source interface.
-type MockedSource struct {
-	Paths map[string]string
+type DirectorySource struct {
+	fs fs.FS
 }
 
-var _ Source = &MockedSource{} // Ensures MockedSource struct conforms to Source interface.
+var _ Source = &DirectorySource{}
 
-//nolint:revive
-func (m MockedSource) PullInPath(config *Config, dst string) error {
-	for k, v := range m.Paths {
-		//nolint:gomnd
-		if err := os.WriteFile(dst+k, []byte(v), 0o600); err != nil {
-			return err
-		}
+func NewDirectorySource(dir string) *DirectorySource {
+	return &DirectorySource{
+		fs: os.DirFS(dir),
 	}
+}
 
+func (src *DirectorySource) FS() fs.FS {
+	return src.fs
+}
+
+func (src *DirectorySource) Unwrap() Source {
+	return src
+}
+
+func (src *DirectorySource) Free() error {
 	return nil
 }
 
-// GitSource implements sourcing git remote mirror into a local directory.
-type GitSource struct{}
+func (src *DirectorySource) Notes() map[string]string {
+	return make(map[string]string)
+}
 
-var _ Source = &GitSource{} // Ensures GitSource struct conforms to Source interface.
+type GitSourceConfig struct {
+	URL    string
+	GitRef string
+}
 
-func (m *GitSource) PullInPath(config *Config, dst string) error {
-	uri := config.URL
-	prefix := "https://"
+type GitSourceOptions struct {
+	InsecureSkipTLS bool
+	TempDir         string
+}
 
-	cloneOptions := &git.CloneOptions{
-		InsecureSkipTLS: true, // This has to be a toggle in the UI
-		URL:             uri,
-		Progress:        os.Stdout,
-		ReferenceName:   plumbing.NewBranchReferenceName(config.GitRef),
+type gitSource struct {
+	*DirectorySource
+	path  string
+	conf  GitSourceConfig
+	notes map[string]string
+}
+
+var _ Source = &gitSource{}
+
+func basicCloneOpts(conf GitSourceConfig, opts GitSourceOptions) *git.CloneOptions {
+	return &git.CloneOptions{
+		InsecureSkipTLS: opts.InsecureSkipTLS,
+		URL:             conf.URL,
+		Progress:        nil,
+		ReferenceName:   plumbing.NewBranchReferenceName(conf.GitRef),
+	}
+}
+
+func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions, opts GitSourceOptions) (Source, error) {
+	path, err := os.MkdirTemp(opts.TempDir, "direktiv_clone_*")
+	if err != nil {
+		return nil, err
 	}
 
-	// https with access token case. Put passphrase inside the git url.
-	if strings.HasPrefix(uri, prefix) && len(config.PrivateKeyPassphrase) > 0 {
-		if !strings.Contains(uri, "@") {
-			uri = fmt.Sprintf("%s%s@", prefix, config.PrivateKeyPassphrase) + strings.TrimPrefix(uri, prefix)
-			cloneOptions.URL = uri
-		}
+	repo, err := git.PlainClone(path, false, cloneOpts)
+	if err != nil {
+		return nil, err
 	}
 
-	// ssh case. Configure cloneOptions.Auth field.
-	if !strings.HasPrefix(uri, prefix) {
-		publicKeys, err := gitssh.NewPublicKeys("git", []byte(config.PrivateKey), config.PrivateKeyPassphrase)
-		if err != nil {
-			return err
-		}
-		publicKeys.HostKeyCallbackHelper = gitssh.HostKeyCallbackHelper{
-			//nolint:gosec
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		}
-		cloneOptions.Auth = publicKeys
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
 	}
 
-	_, err := git.PlainClone(dst, false, cloneOptions)
+	hash := ref.Hash()
+
+	return &gitSource{
+		conf:            conf,
+		path:            path,
+		DirectorySource: NewDirectorySource(path),
+		notes: map[string]string{
+			"commit_hash": hash.String(),
+			"ref":         conf.GitRef,
+			"url":         conf.URL,
+		},
+	}, nil
+}
+
+func (src *gitSource) FS() fs.FS {
+	return src.fs
+}
+
+func (src *gitSource) Unwrap() Source {
+	return src
+}
+
+func (src *gitSource) Free() error {
+	err := os.RemoveAll(src.path)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (src *gitSource) Notes() map[string]string {
+	return src.notes
+}
+
+func NewGitSourceNoAuth(conf GitSourceConfig, opts GitSourceOptions) (Source, error) {
+	return clone(conf, basicCloneOpts(conf, opts), opts)
+}
+
+type GitSourceTokenAuthConf struct {
+	Token string
+}
+
+func newGitSourceToken(conf GitSourceConfig, auth GitSourceTokenAuthConf, opts GitSourceOptions) (Source, error) {
+	cloneOpts := basicCloneOpts(conf, opts)
+
+	prefix := "https://"
+	cloneOpts.URL = fmt.Sprintf("%s%s@", prefix, auth.Token) + strings.TrimPrefix(conf.URL, prefix)
+
+	return clone(conf, cloneOpts, opts)
+}
+
+type GitSourceSSHAuthConf struct {
+	PublicKey            string
+	PrivateKey           string
+	PrivateKeyPassphrase string
+}
+
+func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf, opts GitSourceOptions) (Source, error) {
+	cloneOpts := basicCloneOpts(conf, opts)
+
+	publicKeys, err := gitssh.NewPublicKeys("git", []byte(auth.PrivateKey), auth.PrivateKeyPassphrase)
+	if err != nil {
+		return nil, err
+	}
+	publicKeys.HostKeyCallbackHelper = gitssh.HostKeyCallbackHelper{
+		//nolint:gosec
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+	cloneOpts.Auth = publicKeys
+
+	return clone(conf, cloneOpts, opts)
+}
+
+func (cfg *Config) GetSource(_ context.Context) (Source, error) {
+	insecureSkipTLS := true
+	tempDir := ""
+
+	if cfg.PrivateKey == "" {
+		return NewGitSourceNoAuth(GitSourceConfig{
+			URL:    cfg.URL,
+			GitRef: cfg.GitRef,
+		}, GitSourceOptions{
+			InsecureSkipTLS: insecureSkipTLS,
+			TempDir:         tempDir,
+		})
+	}
+
+	if strings.HasPrefix(cfg.URL, "http") {
+		return newGitSourceToken(GitSourceConfig{
+			URL:    cfg.URL,
+			GitRef: cfg.GitRef,
+		}, GitSourceTokenAuthConf{
+			Token: cfg.PrivateKey,
+		}, GitSourceOptions{
+			InsecureSkipTLS: insecureSkipTLS,
+			TempDir:         tempDir,
+		})
+	}
+
+	return NewGitSourceSSH(GitSourceConfig{
+		URL:    cfg.URL,
+		GitRef: cfg.GitRef,
+	}, GitSourceSSHAuthConf{
+		PrivateKey:           cfg.PrivateKey,
+		PublicKey:            cfg.PublicKey,
+		PrivateKeyPassphrase: cfg.PrivateKeyPassphrase,
+	}, GitSourceOptions{
+		InsecureSkipTLS: insecureSkipTLS,
+		TempDir:         tempDir,
+	})
 }
