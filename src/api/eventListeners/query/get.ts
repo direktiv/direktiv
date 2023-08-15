@@ -10,50 +10,9 @@ import {
 
 import { apiFactory } from "~/api/apiFactory";
 import { eventListenerKeys } from "..";
-import moment from "moment";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
-
-const updateCache = (
-  oldData: EventListenersListSchemaType | undefined,
-  message: EventListenersListSchemaType
-) => {
-  if (!oldData) {
-    return message;
-  }
-  /**
-   * Dedup results. The onMessage callback gets called in two different cases:
-   *
-   * case 1:
-   * when the SSE connection is established, the whole set of results is received
-   *
-   * case 2:
-   * after the connection is established and only some new results are received
-   *
-   * it's also important to note that multiple components can subscribe to the same
-   * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
-   */
-  const lastCachedItem = oldData?.results[0];
-  let newResults: typeof oldData.results = [];
-
-  // there was a previous cache, but with no entries yet
-  if (!lastCachedItem) {
-    newResults = message.results;
-    // there was a previous cache with entries
-  } else {
-    const newestLogTimeFromCache = moment(lastCachedItem.createdAt);
-    // new results are all logs that are newer than the last cached log
-    newResults = message.results.filter((entry) =>
-      newestLogTimeFromCache.isBefore(entry.createdAt)
-    );
-  }
-
-  return {
-    ...oldData,
-    results: [...newResults, ...oldData.results],
-  };
-};
 
 const getUrl = ({
   namespace,
@@ -141,7 +100,10 @@ export const useEventListenersStream = (
           limit,
           offset,
         }),
-        (oldData) => updateCache(oldData, message)
+        // when useStreaming is invoked with offset and limit, it will always
+        // return a full page of results on every update, so it is not
+        // necessary to merge old and new data like we do in some other cases.
+        message
       );
     },
   });

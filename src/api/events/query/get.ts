@@ -7,7 +7,6 @@ import {
 
 import { apiFactory } from "~/api/apiFactory";
 import { eventKeys } from "..";
-import moment from "moment";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
@@ -22,49 +21,6 @@ export type FiltersObj = {
   TEXT?: { type: "CONTAINS"; value: string };
   AFTER?: { type: "AFTER"; value: Date };
   BEFORE?: { type: "BEFORE"; value: Date };
-};
-
-const updateCache = (
-  oldData: EventsListSchemaType | undefined,
-  message: EventsListSchemaType
-) => {
-  if (!oldData) {
-    return message;
-  }
-  /**
-   * Dedup logs. The onMessage callback gets called in two different cases:
-   *
-   * case 1:
-   * when the SSE connection is established, the whole set of logs is received
-   *
-   * case 2:
-   * after the connection is established and only some new log entries are received
-   *
-   * it's also important to note that multiple components can subscribe to the same
-   * cache, so we can have case 1 and 2 at the same time, or case 1 after case 2
-   */
-  const lastCachedEvent = oldData.events.results[0];
-  let newResults: typeof oldData.events.results = [];
-
-  // there was a previous cache, but with no entries yet
-  if (!lastCachedEvent) {
-    newResults = message.events.results;
-    // there was a previous cache with entries
-  } else {
-    const newestLogTimeFromCache = moment(lastCachedEvent.receivedAt);
-    // new results are all logs that are newer than the last cached log
-    newResults = message.events.results.filter((entry) =>
-      newestLogTimeFromCache.isBefore(entry.receivedAt)
-    );
-  }
-
-  return {
-    ...oldData,
-    events: {
-      results: [...newResults, ...oldData.events.results],
-      pageInfo: message.events.pageInfo,
-    },
-  };
 };
 
 // TODO: this same method is duplicated in several places, extract and import?
@@ -205,7 +161,10 @@ export const useEventsStream = (
           offset,
           filters: filters ?? {},
         }),
-        (oldData) => updateCache(oldData, message)
+        // when useStreaming is invoked with offset and limit, it will always
+        // return a full page of results on every update, so it is not
+        // necessary to merge old and new data like we do in some other cases.
+        message
       );
     },
   });
