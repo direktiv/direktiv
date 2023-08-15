@@ -98,11 +98,12 @@ export const WorkflowVariableSchema = z.object({
   mimeType: z.string(), // "application/json"
 });
 
+// TODO before merging: really allow z.null for pageinfo?
 export const WorkflowVariableListSchema = z.object({
   namespace: z.string(),
   path: z.string(), // the workflow identifier
   variables: z.object({
-    pageInfo: PageinfoSchema,
+    pageInfo: PageinfoSchema.or(z.null()),
     results: z.array(WorkflowVariableSchema),
   }),
 });
