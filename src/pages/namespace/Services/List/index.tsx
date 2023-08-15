@@ -1,11 +1,13 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Layers, PlusCircle } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
-import { Layers, MoreVertical, PlusCircle, Trash } from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from "~/design/Table";
 import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
@@ -13,6 +15,7 @@ import { Card } from "~/design/Card";
 import CreateService from "./Create";
 import Delete from "./Delete";
 import NoResult from "./NoResult";
+import Row from "./Row";
 import { useNamespace } from "~/util/store/namespace";
 import { useServices } from "~/api/services/query/get";
 import { useTranslation } from "react-i18next";
@@ -62,42 +65,51 @@ const ServicesListPage = () => {
           {createNewButton}
         </div>
         <Card>
-          {showTable && (
-            <>
-              {serviceList?.functions.map((service) => (
-                <h1 className="p-2" key={service.info.name}>
-                  {service.info.name}{" "}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => e.preventDefault()}
-                        icon
-                      >
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-40">
-                      <DialogTrigger
-                        className="w-full"
-                        data-testid="node-actions-delete"
-                        onClick={() => {
-                          setDeleteService(service.info.name);
-                        }}
-                      >
-                        <DropdownMenuItem>
-                          <Trash className="mr-2 h-4 w-4" />
-                          {t("pages.services.list.contextMenu.delete")}
-                        </DropdownMenuItem>
-                      </DialogTrigger>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </h1>
-              ))}
-            </>
-          )}
-          {noResults && <NoResult>{createNewButton}</NoResult>}
+          <Table>
+            <TableHead>
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                <TableHeaderCell>
+                  {t("pages.services.list.tableHeader.name")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-32">
+                  {t("pages.services.list.tableHeader.image")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-28">
+                  {t("pages.services.list.tableHeader.scale")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-28">
+                  {t("pages.services.list.tableHeader.size")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-40">
+                  {t("pages.services.list.tableHeader.cmd")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-40">
+                  {t("pages.services.list.tableHeader.state")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-0" />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {showTable && (
+                <>
+                  {serviceList?.functions.map((service) => (
+                    <Row
+                      service={service}
+                      key={service.serviceName}
+                      setDeleteService={setDeleteService}
+                    />
+                  ))}
+                </>
+              )}
+              {noResults && (
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableCell colSpan={6}>
+                    <NoResult>{createNewButton}</NoResult>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </Card>
         <DialogContent>
           {deleteService && (

@@ -65,6 +65,7 @@ const ServiceSchema = z.object({
   }),
   status: StatusSchema,
   conditions: z.array(ConditionSchema),
+  serviceName: z.string(),
 });
 
 /**
@@ -104,5 +105,6 @@ export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
 
+export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;

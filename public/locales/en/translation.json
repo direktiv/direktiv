@@ -390,6 +390,14 @@
     "services": {
       "list": {
         "title": "Services",
+        "tableHeader": {
+          "name": "name",
+          "image": "image",
+          "scale": "scale",
+          "size": "size",
+          "cmd": "cmd",
+          "state": "state"
+        },
         "contextMenu": {
           "delete": "Delete"
         },
