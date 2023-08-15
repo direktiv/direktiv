@@ -39,7 +39,8 @@ export const ServiceFormSchema = z.object({
   cmd: z.string(),
   image: z.string().nonempty(),
   minscale: z.number().int().gte(0).lte(3),
-  scale: z.number().int().gte(1).lte(3),
+  // scale also has a max value, but it is dynamic depending on the namespace
+  scale: z.number().int().gte(0),
 });
 
 export const ServiceDeletedSchema = z.null();
