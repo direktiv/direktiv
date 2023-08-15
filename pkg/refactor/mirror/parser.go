@@ -24,7 +24,7 @@ type Parser struct {
 	src     Source
 	tempDir string
 
-	Filters   map[string]*api.Filter
+	Filters   map[string][]byte
 	Services  map[string]*api.Service
 	Workflows map[string][]byte
 
@@ -45,7 +45,7 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 		src:     src,
 		tempDir: tempDir,
 
-		Filters:   make(map[string]*api.Filter),
+		Filters:   make(map[string][]byte),
 		Services:  make(map[string]*api.Service),
 		Workflows: make(map[string][]byte),
 
@@ -360,7 +360,24 @@ func (p *Parser) handleFilters(path string, filters *api.Filters) error {
 		if _, exists := p.Filters[filter.Name]; exists {
 			return fmt.Errorf("duplicate definition detected for filter '%s'", filter.Name)
 		}
-		p.Filters[filter.Name] = &filters.Filters[idx]
+
+		var err error
+
+		data := []byte(filters.Filters[idx].InlineJavascript)
+		sourcePath := filters.Filters[idx].Source
+		if sourcePath != "" {
+			if !filepath.IsAbs(sourcePath) {
+				sourcePath = filepath.Join(filepath.Dir(path), sourcePath)
+			}
+
+			actual := filepath.Join(p.tempDir, sourcePath)
+			data, err = os.ReadFile(actual)
+			if err != nil {
+				return fmt.Errorf("failed to load filter source from '%s': %w", sourcePath, err)
+			}
+		}
+
+		p.Filters[filter.Name] = data
 		p.log.Infof("Filter '%s' loaded.", filter.Name)
 	}
 

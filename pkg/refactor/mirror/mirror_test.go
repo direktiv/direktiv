@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
@@ -42,6 +44,7 @@ type testCallbacks struct {
 	fstore               filestore.FileStore
 	varstore             core.RuntimeVariablesStore
 	fileAnnotationsStore core.FileAnnotationsStore
+	filterStore          events.CloudEventsFilterStore
 	buf                  *bytes.Buffer
 }
 
@@ -71,6 +74,14 @@ func (c *testCallbacks) VarStore() core.RuntimeVariablesStore {
 
 func (c *testCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 	return c.fileAnnotationsStore
+}
+
+func (c *testCallbacks) EventFilterStore() events.CloudEventsFilterStore {
+	return c.filterStore
+}
+
+func (c *testCallbacks) SetNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
+	return nil
 }
 
 var _ mirror.Callbacks = &testCallbacks{}
@@ -122,6 +133,7 @@ func TestDryRun(t *testing.T) {
 		fstore:               fs,
 		varstore:             dStore.RuntimeVariables(),
 		fileAnnotationsStore: dStore.FileAnnotations(),
+		filterStore:          dStore.EventFilter(),
 		buf:                  new(bytes.Buffer),
 	}
 
@@ -207,9 +219,12 @@ func TestInitSync(t *testing.T) {
 	store := dStore.Mirror()
 
 	callbacks := &testCallbacks{
-		store:  store,
-		fstore: fs,
-		buf:    new(bytes.Buffer),
+		store:                store,
+		fstore:               fs,
+		varstore:             dStore.RuntimeVariables(),
+		fileAnnotationsStore: dStore.FileAnnotations(),
+		filterStore:          dStore.EventFilter(),
+		buf:                  new(bytes.Buffer),
 	}
 
 	nsID := uuid.New()

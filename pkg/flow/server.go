@@ -21,10 +21,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
+	eventsstore "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -172,7 +174,9 @@ type mirrorCallbacks struct {
 	fstore               filestore.FileStore
 	varstore             core.RuntimeVariablesStore
 	fileAnnotationsStore core.FileAnnotationsStore
+	filterStore          eventsstore.CloudEventsFilterStore
 	wfconf               func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
+	svcconf              func(uuid.UUID, []*api.Service) error
 }
 
 func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
@@ -201,6 +205,14 @@ func (c *mirrorCallbacks) VarStore() core.RuntimeVariablesStore {
 
 func (c *mirrorCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 	return c.fileAnnotationsStore
+}
+
+func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore {
+	return c.filterStore
+}
+
+func (c *mirrorCallbacks) SetNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
+	return c.svcconf(nsID, services)
 }
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
@@ -427,7 +439,9 @@ func (srv *server) start(ctx context.Context) error {
 			fstore:               noTx.FileStore(),
 			varstore:             noTx.DataStore().RuntimeVariables(),
 			fileAnnotationsStore: noTx.DataStore().FileAnnotations(),
+			filterStore:          noTx.DataStore().EventFilter(),
 			wfconf:               cc,
+			svcconf:              srv.setNamespaceServices,
 		},
 	)
 

@@ -70,9 +70,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy deprecated variables: %w", err)
 	}
 
-	// TODO: copy filters
-	// TODO: copy services
-
 	err = o.createAnnotations(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create annotations: %w", err)
@@ -92,6 +89,16 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	err = o.configureWorkflows(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to configure workflows: %w", err)
+	}
+
+	err = o.copyEventFilters(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy event filters: %w", err)
+	}
+
+	err = o.copyNamespaceServices(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy event filters: %w", err)
 	}
 
 	err = o.updateConfig(ctx)
@@ -271,6 +278,35 @@ func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
+	filters, err := o.callbacks.EventFilterStore().GetAll(ctx, o.proc.NamespaceID)
+	if err != nil {
+		return err
+	}
+
+	for _, filter := range filters {
+		err = o.callbacks.EventFilterStore().Delete(ctx, o.proc.NamespaceID, filter.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	for name, script := range o.parser.Filters {
+		err = o.callbacks.EventFilterStore().Create(ctx, o.proc.NamespaceID, name, string(script))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyNamespaceServices(ctx context.Context) error {
+	// TODO
 
 	return nil
 }
