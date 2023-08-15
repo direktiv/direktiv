@@ -9,6 +9,46 @@ const ConditionSchema = z.object({
   message: z.string(),
 });
 
+/**
+ * example
+  {
+    "info": {
+      "name": "service",
+      "namespace": "c75454f2-3790-4f36-a1a2-22ca8a4f8020",
+      "workflow": "",
+      "image": "direktiv/request",
+      "cmd": "",
+      "size": 0,
+      "minScale": 0,
+      "namespaceName": "stefan",
+      "path": "",
+      "revision": "",
+      "envs": {}
+    },
+    "status": "True",
+    "conditions": [
+      {
+        "name": "ConfigurationsReady",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "Ready",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "RoutesReady",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      }
+    ],
+    "serviceName": "namespace-14895841056527822151"
+  }
+ */
 const ServiceSchema = z.object({
   info: z.object({
     name: z.string(),
@@ -27,6 +67,15 @@ const ServiceSchema = z.object({
   conditions: z.array(ConditionSchema),
 });
 
+/**
+ * example
+  {
+    "config": {
+      "maxscale": 3
+    },
+    "functions": []
+  }
+ */
 export const ServicesListSchema = z.object({
   config: z.object({
     maxscale: z.number(),
