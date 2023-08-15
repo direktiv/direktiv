@@ -57,7 +57,6 @@ func (c *testCallbacks) ProcessLogger() mirror.ProcessLogger {
 }
 
 func (c *testCallbacks) SysLogCrit(msg string) {
-
 }
 
 func (c *testCallbacks) Store() mirror.Store {
@@ -95,7 +94,6 @@ func assertProcessSuccess(ctx context.Context, callbacks mirror.Callbacks, t *te
 	if p.Status != mirror.ProcessStatusComplete {
 		t.Errorf("assertProcessSuccess failed: expected %s but got %s", mirror.ProcessStatusComplete, p.Status)
 	}
-
 }
 
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, paths ...string) {
@@ -157,30 +155,30 @@ func TestDryRun(t *testing.T) {
 	*/
 
 	src := newMemSource()
-	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0755)
+	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
 	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
 services:
 - name: alpha
   image: requester
-`), 0755)
-	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0755)
-	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0755)
-	_ = src.fs.MkdirAll("a/b", 0755)
+`), 0o755)
+	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
+	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
+	_ = src.fs.MkdirAll("a/b", 0o755)
 	_ = src.fs.WriteFile("a/b/c.yaml", []byte(`direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/d.yaml", []byte(`
 states:
 - id: a
 	type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/e.yaml", []byte(`
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 
 	manager := mirror.NewManager(callbacks)
 
@@ -247,30 +245,30 @@ func TestInitSync(t *testing.T) {
 	*/
 
 	src := newMemSource()
-	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0755)
+	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
 	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
 services:
 - name: alpha
   image: requester
-`), 0755)
-	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0755)
-	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0755)
-	_ = src.fs.MkdirAll("a/b", 0755)
+`), 0o755)
+	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
+	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
+	_ = src.fs.MkdirAll("a/b", 0o755)
 	_ = src.fs.WriteFile("a/b/c.yaml", []byte(`direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/d.yaml", []byte(`
 states:
 - id: a
 	type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/e.yaml", []byte(`
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 
 	manager := mirror.NewManager(callbacks)
 

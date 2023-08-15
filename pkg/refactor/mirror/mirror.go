@@ -22,7 +22,7 @@ func NewManager(callbacks Callbacks) *Manager {
 }
 
 // Cancel stops a currently running mirroring process.
-func (d *Manager) Cancel(ctx context.Context, processID uuid.UUID) error {
+func (d *Manager) Cancel(_ context.Context, _ uuid.UUID) error {
 	// TODO
 
 	return nil
@@ -34,6 +34,7 @@ func (d *Manager) silentFailProcess(p *Process) {
 	_, e := d.callbacks.Store().UpdateProcess(context.Background(), p)
 	if e != nil {
 		d.callbacks.SysLogCrit(fmt.Sprintf("Error updating failed mirror process record in database: %v", e))
+
 		return
 	}
 }
@@ -57,17 +58,21 @@ func (d *Manager) setProcessStatus(ctx context.Context, process *Process, status
 	return nil
 }
 
-// Execute
+// Execute ..
 func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.Context) (Source, error), applyer Applyer) {
 	err := d.setProcessStatus(ctx, p, ProcessStatusExecuting)
 	if err != nil {
+		//nolint:contextcheck
 		d.failProcess(p, fmt.Errorf("updating process status: %w", err))
+
 		return
 	}
 
 	src, err := get(ctx)
 	if err != nil {
-		d.failProcess(p, fmt.Errorf("initializing source: %v", err))
+		//nolint:contextcheck
+		d.failProcess(p, fmt.Errorf("initializing source: %w", err))
+
 		return
 	}
 	defer func() {
@@ -79,7 +84,9 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 
 	parser, err := NewParser(newPIDFormatLogger(d.callbacks.ProcessLogger(), p.ID), src)
 	if err != nil {
+		//nolint:contextcheck
 		d.silentFailProcess(p)
+
 		return
 	}
 	defer func() {
@@ -91,13 +98,17 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 
 	err = applyer.apply(ctx, d.callbacks, p, parser, src.Notes())
 	if err != nil {
-		d.failProcess(p, fmt.Errorf("applying changes: %v", err))
+		//nolint:contextcheck
+		d.failProcess(p, fmt.Errorf("applying changes: %w", err))
+
 		return
 	}
 
 	err = d.setProcessStatus(ctx, p, ProcessStatusComplete)
 	if err != nil {
+		//nolint:contextcheck
 		d.failProcess(p, fmt.Errorf("updating process status: %w", err))
+
 		return
 	}
 }

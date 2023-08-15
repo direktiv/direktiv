@@ -19,10 +19,9 @@ type Applyer interface {
 	apply(context.Context, Callbacks, *Process, *Parser, map[string]string) error
 }
 
-type DryrunApplyer struct {
-}
+type DryrunApplyer struct{}
 
-func (o *DryrunApplyer) apply(ctx context.Context, _ Callbacks, _ *Process, parser *Parser, _ map[string]string) error {
+func (o *DryrunApplyer) apply(_ context.Context, _ Callbacks, _ *Process, _ *Parser, _ map[string]string) error {
 	return nil
 }
 
@@ -130,6 +129,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 			}
 
 			o.log.Debugf("Created directory in database: %s", path)
+
 			continue
 		}
 
@@ -271,6 +271,7 @@ func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
 
 	if v, ok := o.notes["commit_hash"]; ok {
 		cfg.GitCommitHash = v
+
 		return nil
 	}
 
@@ -305,7 +306,7 @@ func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
 	return nil
 }
 
-func (o *DirektivApplyer) copyNamespaceServices(ctx context.Context) error {
+func (o *DirektivApplyer) copyNamespaceServices(_ context.Context) error {
 	// TODO
 
 	return nil

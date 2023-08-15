@@ -57,6 +57,7 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 	if err != nil {
 		log.Errorf("Error processing repository: %v", err)
 		_ = p.Close()
+
 		return nil, err
 	}
 
@@ -105,6 +106,7 @@ func (p *Parser) loadIgnores() error {
 	f, err := p.src.FS().Open(".direktivignore")
 	if errors.Is(err, os.ErrNotExist) {
 		p.log.Infof("No .direktivignore file detected")
+
 		return nil
 	}
 	if err != nil {
@@ -117,7 +119,6 @@ func (p *Parser) loadIgnores() error {
 	for scanner.Scan() {
 		s := scanner.Text()
 		if !strings.HasPrefix(s, "#") && len(strings.TrimSpace(s)) > 0 {
-			fmt.Println("~", s)
 			ps = append(ps, gitignore.ParsePattern(s, nil))
 		}
 	}
@@ -132,39 +133,46 @@ func (p *Parser) loadIgnores() error {
 	return nil
 }
 
-func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, err error) error {
+const perms = 0o755
+
+func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) error {
 	isMatch := p.matcher.Match(strings.Split(path, "/"), d.IsDir())
 	if isMatch {
 		if d.IsDir() {
 			p.log.Infof("Skipping directory '%s': excluded by .direktivignore patterns", path)
+
 			return fs.SkipDir
 		}
 
 		p.log.Infof("Skipping file '%s': excluded by .direktivignore patterns", path)
+
 		return nil
 	}
 
 	base := filepath.Base(path)
-	_, err = filestore.SanitizePath(base)
+	_, err := filestore.SanitizePath(base)
 	if err != nil {
 		if d.IsDir() {
 			p.log.Infof("Skipping directory '%s': filename contains illegal characters", path)
+
 			return fs.SkipDir
 		}
 
 		p.log.Infof("Skipping file '%s': filename contains illegal characters", path)
+
 		return nil
 	}
 
 	tpath := filepath.Join(p.tempDir, path)
 
 	if d.IsDir() {
-		err := os.MkdirAll(tpath, 0755)
+		err := os.MkdirAll(tpath, perms)
 		if err != nil {
 			return err
 		}
 
 		p.log.Debugf("Created directory '%s'", path)
+
 		return nil
 	}
 
@@ -248,18 +256,25 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 	}
 	if err != nil {
 		p.log.Warnf("Error loading possible Direktiv resource definition '%s': %v", path, err)
+
 		return nil
 	}
 
 	switch typ := resource.(type) {
 	case *api.Filters:
-		filters := resource.(*api.Filters)
+		filters, ok := resource.(*api.Filters)
+		if !ok {
+			panic(nil)
+		}
 		err = p.handleFilters(path, filters)
 		if err != nil {
 			return err
 		}
 	case *api.Services:
-		services := resource.(*api.Services)
+		services, ok := resource.(*api.Services)
+		if !ok {
+			panic(nil)
+		}
 		err = p.handleServices(path, services)
 		if err != nil {
 			return err
@@ -311,6 +326,7 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 	err = wf.Load(data)
 	if err != nil {
 		p.log.Warnf("Error loading possible Direktiv workflow definition (ambiguous) '%s': %v", path, err)
+
 		return nil
 	}
 
@@ -434,12 +450,10 @@ func (p *Parser) ListFiles() ([]string, error) {
 	return paths, nil
 }
 
-func (p *Parser) parseDeprecatedVariableFiles() error {
-	regex := regexp.MustCompile(core.RuntimeVariableNameRegexPattern)
-
+func (p *Parser) listOnlyFiles() ([]string, error) {
 	allFiles, err := p.ListFiles()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var trimmed []string
@@ -447,7 +461,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 		actual := filepath.Join(p.tempDir, fpath)
 		fi, err := os.Stat(actual)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if fi.Mode().IsRegular() {
@@ -455,7 +469,16 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 		}
 	}
 
-	allFiles = trimmed
+	return trimmed, nil
+}
+
+func (p *Parser) parseDeprecatedVariableFiles() error {
+	regex := regexp.MustCompile(core.RuntimeVariableNameRegexPattern)
+
+	allFiles, err := p.listOnlyFiles()
+	if err != nil {
+		return err
+	}
 
 	for _, fpath := range allFiles {
 		base := filepath.Base(fpath)

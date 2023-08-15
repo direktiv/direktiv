@@ -166,7 +166,7 @@ func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf, opts GitSo
 	return clone(conf, cloneOpts, opts)
 }
 
-func (cfg *Config) GetSource(ctx context.Context) (Source, error) {
+func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 	insecureSkipTLS := true
 	tempDir := ""
 

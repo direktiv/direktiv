@@ -131,30 +131,30 @@ func TestParseEmpty(t *testing.T) {
 func TestParseSimple(t *testing.T) {
 	log := zap.NewNop().Sugar()
 	src := newMemSource()
-	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0755)
+	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
 	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
 services:
 - name: alpha
   image: requester
-`), 0755)
-	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0755)
-	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0755)
-	_ = src.fs.MkdirAll("a/b", 0755)
+`), 0o755)
+	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
+	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
+	_ = src.fs.MkdirAll("a/b", 0o755)
 	_ = src.fs.WriteFile("a/b/c.yaml", []byte(`direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/d.yaml", []byte(`
 states:
 - id: a
 	type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/e.yaml", []byte(`
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 
 	p, err := mirror.NewParser(log, src)
 	if err != nil {
@@ -186,52 +186,52 @@ func TestParseComplex(t *testing.T) {
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(`*.csv
 a/b/e.yaml
-a/f/`), 0755)
+a/f/`), 0o755)
 	_ = src.fs.WriteFile("filters.yaml", []byte(`direktiv_api: filters/v1
 filters:
 - name: alpha
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
 services:
 - name: alpha
   image: requester
-`), 0755)
-	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0755)
-	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0755)
-	_ = src.fs.WriteFile("z.csv", []byte(`1,2,3`), 0755)
-	_ = src.fs.MkdirAll("a/b", 0755)
+`), 0o755)
+	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
+	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
+	_ = src.fs.WriteFile("z.csv", []byte(`1,2,3`), 0o755)
+	_ = src.fs.MkdirAll("a/b", 0o755)
 	_ = src.fs.WriteFile("a/b/c.yaml", []byte(`direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/d.yaml", []byte(`
 states:
 - id: a
 	type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/b/e.yaml", []byte(`
 states:
 - id: a
   type: noop
-`), 0755)
-	_ = src.fs.WriteFile("a/b/z.csv", []byte(`1,2,3`), 0755)
-	_ = src.fs.MkdirAll("a/b", 0755)
+`), 0o755)
+	_ = src.fs.WriteFile("a/b/z.csv", []byte(`1,2,3`), 0o755)
+	_ = src.fs.MkdirAll("a/b", 0o755)
 	_ = src.fs.WriteFile("a/f/c.yaml", []byte(`direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/f/d.yaml", []byte(`
 states:
 - id: a
 	type: noop
-`), 0755)
+`), 0o755)
 	_ = src.fs.WriteFile("a/f/e.yaml", []byte(`
 states:
 - id: a
   type: noop
-`), 0755)
+`), 0o755)
 
 	p, err := mirror.NewParser(log, src)
 	if err != nil {
