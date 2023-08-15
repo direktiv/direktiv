@@ -148,7 +148,12 @@ const CreateService = ({
                   newValue !== undefined && setValue("scale", newValue);
                 }}
               />
-              <div className="text-center">{watch("scale")}</div>
+              <Input
+                className="w-12"
+                readOnly
+                value={watch("scale")}
+                disabled
+              />
             </div>
           </fieldset>
           <fieldset className="flex items-center gap-5">
