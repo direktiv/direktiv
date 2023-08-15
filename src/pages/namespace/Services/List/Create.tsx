@@ -57,7 +57,15 @@ const CreateService = ({
       minscale: 0,
       scale: 1,
     },
-    resolver: zodResolver(ServiceFormSchema),
+    resolver: zodResolver(
+      ServiceFormSchema.refine(
+        (x) => !(unallowedNames ?? []).some((n) => n === x.name),
+        {
+          path: ["name"],
+          message: t("pages.services.create.nameAlreadyExists"),
+        }
+      )
+    ),
   });
 
   const onSubmit: SubmitHandler<ServiceFormSchemaType> = ({
