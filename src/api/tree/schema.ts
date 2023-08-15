@@ -77,6 +77,64 @@ export const WorkflowStartedSchema = z.object({
   instance: z.string(),
 });
 
+// TODO before merging:
+// - what values are possible for mimeType below, should we use an enum?
+
+/**
+ * Example for a workflow variable record in the API response
+  {
+    "name": "variable-name",
+    "createdAt": "2023-08-15T12:14:28.980237Z",
+    "updatedAt": "2023-08-15T12:14:28.980237Z",
+    "checksum": "",
+    "size": "3",
+    "mimeType": "application/json"
+  },
+*/
+export const WorkflowVariableSchema = z.object({
+  name: z.string(), // identifier
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  mimeType: z.string(), // "application/json"
+});
+
+export const WorkflowVariableListSchema = z.object({
+  namespace: z.string(),
+  path: z.string(), // the workflow identifier
+  variables: z.object({
+    pageInfo: PageinfoSchema,
+    results: z.array(WorkflowVariableSchema),
+  }),
+});
+
+export const WorkflowVariableFormSchema = z.object({
+  name: z.string(),
+  value: z.string(),
+});
+
+/**
+ * Example for a workflow variable returned after creating a new record
+  {
+    "namespace":  "foo",
+    "path":  "/bar.yaml",
+    "key":  "variable-name",
+    "createdAt":  "2023-08-15T13:12:17.432222Z",
+    "updatedAt":  "2023-08-15T13:12:17.432222Z",
+    "checksum":  "",
+    "totalSize":  "10",
+    "mimeType":  "application/json"
+  }
+*/
+
+export const WorkflowVariableCreatedSchema = z.object({
+  namespace: z.string(),
+  path: z.string(), // workflow path
+  key: z.string(), // the variable's identifier
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  mimeType: z.string(), // "application/json"
+});
+
 export const NodeDeletedSchema = z.null();
 
 export const NodeRenameSchema = z.object({
@@ -99,3 +157,9 @@ export type TrimmedRevisionSchemaType = z.infer<typeof TrimmedRevisionSchema>;
 export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
 export type RouterSchemaType = z.infer<typeof RouterSchema>;
+export type WorkflowVariableFormSchemaType = z.infer<
+  typeof WorkflowVariableFormSchema
+>;
+export type WorkflowVariableCreatedSchemaType = z.infer<
+  typeof WorkflowVariableCreatedSchema
+>;

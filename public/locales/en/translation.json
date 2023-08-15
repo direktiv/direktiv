@@ -609,6 +609,15 @@
           },
           "error": "could set traffic shaping"
         },
+        "setVariable": {
+          "success": {
+            "title": "Worfklow variable created",
+            "description": "Added variable {{variable}} for workflow {{workflow}}"
+          },
+          "error": {
+            "description": "could not create workflow variable 😢"
+          }
+        },
         "createDirectory": {
           "success": {
             "title": "Directory created",
