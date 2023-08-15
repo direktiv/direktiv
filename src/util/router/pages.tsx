@@ -1,18 +1,21 @@
 import {
   ActivitySquare,
   Boxes,
-  Calendar,
   FolderTree,
   Layers,
+  LucideIcon,
+  Radio,
   Settings,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import EventsPage from "~/pages/namespace/Events";
+import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
+import Listeners from "~/pages/namespace/Events/Listeners";
 import MonitoringPage from "~/pages/namespace/Monitoring";
-import React from "react";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
@@ -25,13 +28,12 @@ import { checkHandlerInMatcher as checkHandler } from "./utils";
 
 interface PageBase {
   name: string;
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
   route: RouteObject;
 }
 
 type KeysWithNoPathParams =
   | "monitoring"
-  | "events"
   // | "gateway"
   // | "permissions"
   | "services"
@@ -97,6 +99,20 @@ type InstancesPageSetup = Record<
   }
 >;
 
+type EventsPageSetup = Record<
+  "events",
+  PageBase & {
+    createHref: (params: {
+      namespace: string;
+      subpage?: "eventlisteners";
+    }) => string;
+    useParams: () => {
+      isEventsHistoryPage: boolean;
+      isEventsListenersPage: boolean;
+    };
+  }
+>;
+
 type MonitoringPageSetup = Record<
   "monitoring",
   PageBase & {
@@ -110,6 +126,7 @@ type MonitoringPageSetup = Record<
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
+  EventsPageSetup &
   MonitoringPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
@@ -273,11 +290,38 @@ export const pages: PageType = {
   },
   events: {
     name: "components.mainMenu.events",
-    icon: Calendar,
-    createHref: (params) => `/${params.namespace}/events`,
+    icon: Radio,
+    createHref: (params) =>
+      `/${params.namespace}/events/${
+        params?.subpage === "eventlisteners" ? `listeners` : "history"
+      }`,
+    useParams: () => {
+      const [, , thirdLevel] = useMatches(); // first level is namespace level
+      const isEventsHistoryPage = checkHandler(
+        thirdLevel,
+        "isEventHistoryPage"
+      );
+      const isEventsListenersPage = checkHandler(
+        thirdLevel,
+        "isEventListenersPage"
+      );
+      return { isEventsHistoryPage, isEventsListenersPage };
+    },
     route: {
       path: "events",
-      element: <div className="flex flex-col space-y-5 p-10">Events</div>,
+      element: <EventsPage />,
+      children: [
+        {
+          path: "history",
+          element: <History />,
+          handle: { isEventHistoryPage: true },
+        },
+        {
+          path: "listeners",
+          element: <Listeners />,
+          handle: { isEventListenersPage: true },
+        },
+      ],
     },
   },
   // gateway: {

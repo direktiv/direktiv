@@ -4,6 +4,7 @@ import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
+import { z } from "zod";
 
 export const runWorkflow = apiFactory({
   url: ({
@@ -26,7 +27,11 @@ type ResolvedRunWorkflow = Awaited<ReturnType<typeof runWorkflow>>;
 
 export const useRunWorkflow = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedRunWorkflow) => void } = {}) => {
+  onError,
+}: {
+  onSuccess?: (data: ResolvedRunWorkflow) => void;
+  onError?: (error?: string) => void;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -46,6 +51,14 @@ export const useRunWorkflow = ({
       }),
     onSuccess: (data) => {
       onSuccess?.(data);
+    },
+    onError: (error) => {
+      const errorResponse = z.object({
+        code: z.number(),
+        message: z.string(),
+      });
+      const parsedError = errorResponse.safeParse(error);
+      onError?.(parsedError.success ? parsedError.data.message : undefined);
     },
   });
 };

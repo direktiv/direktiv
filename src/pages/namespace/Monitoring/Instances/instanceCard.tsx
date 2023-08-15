@@ -1,11 +1,12 @@
-import { FC, PropsWithChildren, ReactNode, SVGProps } from "react";
+import { FC, PropsWithChildren, ReactNode } from "react";
 
 import { Card } from "~/design/Card";
+import { LucideIcon } from "lucide-react";
 
 type InstanceCardProps = PropsWithChildren & {
   headline: string;
   refetchButton: ReactNode;
-  icon: FC<SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
 };
 
 export const InstanceCard: FC<InstanceCardProps> = ({
