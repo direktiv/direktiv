@@ -151,26 +151,23 @@ const CreateService = ({
             >
               {t("pages.services.create.sizeLabel")}
             </label>
-            <div className="grow">
-              <Select
-                value={`${getValues("minscale")}`}
-                onValueChange={(value) => setValue("minscale", parseInt(value))}
-              >
-                <SelectTrigger variant="outline" className="w-full">
-                  <SelectValue
-                    placeholder={t("pages.services.create.sizePlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSizes.map((size) => (
-                    <SelectItem key={size} value={`${size}`}>
-                      {t(`pages.services.create.sizeValues.${size}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div>{watch("minscale")}</div>
-            </div>
+            <Select
+              value={`${getValues("minscale")}`}
+              onValueChange={(value) => setValue("minscale", parseInt(value))}
+            >
+              <SelectTrigger variant="outline" className="w-full" id="minscale">
+                <SelectValue
+                  placeholder={t("pages.services.create.sizePlaceholder")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {availableSizes.map((size) => (
+                  <SelectItem key={size} value={`${size}`}>
+                    {t(`pages.services.create.sizeValues.${size}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </fieldset>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="cmd">
