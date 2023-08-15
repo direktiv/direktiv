@@ -137,6 +137,12 @@ const CreateService = ({
             </label>
 
             <div className="flex w-full gap-5">
+              <Input
+                className="w-12"
+                readOnly
+                value={watch("scale")}
+                disabled
+              />
               <Slider
                 id="scale"
                 step={1}
@@ -147,12 +153,6 @@ const CreateService = ({
                   const newValue = e[0];
                   newValue !== undefined && setValue("scale", newValue);
                 }}
-              />
-              <Input
-                className="w-12"
-                readOnly
-                value={watch("scale")}
-                disabled
               />
             </div>
           </fieldset>
