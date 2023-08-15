@@ -6,6 +6,13 @@ import {
 } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
+import {
   ServiceFormSchema,
   ServiceFormSchemaType,
 } from "~/api/services/schema";
@@ -18,6 +25,8 @@ import { Slider } from "~/design/Slider";
 import { useCreateService } from "~/api/services/mutate/create";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+const availableSizes = [0, 1, 2] as const;
 
 const CreateService = ({
   path,
@@ -39,14 +48,14 @@ const CreateService = ({
   const {
     register,
     handleSubmit,
-
     watch,
+    getValues,
     setValue,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<ServiceFormSchemaType>({
     defaultValues: {
-      minscale: 2,
-      scale: 2,
+      minscale: 0,
+      scale: 1,
     },
     resolver: zodResolver(ServiceFormSchema),
   });
@@ -62,8 +71,8 @@ const CreateService = ({
       name,
       cmd,
       image,
-      minscale: 2,
-      scale: 2,
+      minscale,
+      scale,
     });
   };
 
@@ -135,17 +144,23 @@ const CreateService = ({
               {t("pages.services.create.sizeLabel")}
             </label>
             <div className="grow">
-              <Slider
-                id="minscale"
-                step={1}
-                min={0}
-                max={3}
-                value={[watch("minscale") ?? 0]}
-                onValueChange={(e) => {
-                  const newValue = e[0];
-                  newValue !== undefined && setValue("minscale", newValue);
-                }}
-              />
+              <Select
+                value={`${getValues("minscale")}`}
+                onValueChange={(value) => setValue("minscale", parseInt(value))}
+              >
+                <SelectTrigger variant="outline" className="w-full">
+                  <SelectValue
+                    placeholder={t("pages.services.create.sizePlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSizes.map((size) => (
+                    <SelectItem key={size} value={`${size}`}>
+                      {t(`pages.services.create.sizeValues.${size}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <div>{watch("minscale")}</div>
             </div>
           </fieldset>
