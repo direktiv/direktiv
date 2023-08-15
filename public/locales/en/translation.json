@@ -337,6 +337,12 @@
         "imageLabel": "Image",
         "scaleLabel": "Sale",
         "sizeLabel": "Size",
+        "sizePlaceholder": "Select Size",
+        "sizeValues": {
+          "0": "Small",
+          "1": "Medium",
+          "2": "Large"
+        },
         "cmdLabel": "Cmd",
         "cmdPlaceholder": "Enter the Cmd for a service",
         "imagePlaceholder": "image/name:tag",
