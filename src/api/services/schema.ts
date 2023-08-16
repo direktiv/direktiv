@@ -101,7 +101,7 @@ export const ServicesListSchema = z.object({
   } 
  */
 export const ServiceStreamingSchema = z.object({
-  event: z.enum(["ADDED", "MODIFIED"]),
+  event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
   function: ServiceSchema,
 });
 
