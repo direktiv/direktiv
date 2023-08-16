@@ -398,6 +398,11 @@
           "cmd": "cmd",
           "state": "state"
         },
+        "conditionNames": {
+          "ConfigurationsReady": "Configuration",
+          "Ready": "Health",
+          "RoutesReady": "Routes"
+        },
         "contextMenu": {
           "delete": "Delete"
         },

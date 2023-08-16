@@ -5,12 +5,12 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { MoreVertical, Trash } from "lucide-react";
+import { ServiceSchemaType, conditionNames } from "~/api/services/schema";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
-import { ServiceSchemaType } from "~/api/services/schema";
 import { StatusBadge } from "./components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
 import { pages } from "~/util/router/pages";
@@ -54,39 +54,21 @@ const ServicesTableRow: FC<{
         <TableCell>{service.info.cmd}</TableCell>
         <TableCell>
           <div className="flex flex-col gap-2">
-            <StatusBadge status="True" className="w-fit">
-              True
-            </StatusBadge>
-            <StatusBadge status="False" className="w-fit">
-              False
-            </StatusBadge>
-            <StatusBadge status="Unknown" className="w-fit">
-              Unknown
-            </StatusBadge>
-            <StatusBadge
-              status="True"
-              className="w-fit"
-              title="Title"
-              message="message"
-            >
-              True
-            </StatusBadge>
-            <StatusBadge
-              status="False"
-              className="w-fit"
-              title="Title"
-              message="message"
-            >
-              False
-            </StatusBadge>
-            <StatusBadge
-              status="Unknown"
-              className="w-fit"
-              title="Title"
-              message="message"
-            >
-              Unknown
-            </StatusBadge>
+            {conditionNames.map((condition) => {
+              const res = service.conditions.find((c) => c.name === condition);
+              if (!res) return null;
+              return (
+                <StatusBadge
+                  key={condition}
+                  status={res.status}
+                  title={res.reason}
+                  message={res.message}
+                  className="w-fit"
+                >
+                  {t(`pages.services.list.conditionNames.${res.name}`)}
+                </StatusBadge>
+              );
+            })}
           </div>
         </TableCell>
         <TableCell>
