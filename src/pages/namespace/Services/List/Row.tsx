@@ -54,9 +54,9 @@ const ServicesTableRow: FC<{
         <TableCell>{service.info.cmd}</TableCell>
         <TableCell>
           <div className="flex flex-col gap-2">
-            <Badge>Configuration</Badge>
-            <Badge>State</Badge>
-            <Badge>Route</Badge>
+            <Badge className="w-fit">Configuration</Badge>
+            <Badge className="w-fit">State</Badge>
+            <Badge className="w-fit">Route</Badge>
           </div>
         </TableCell>
         <TableCell>
