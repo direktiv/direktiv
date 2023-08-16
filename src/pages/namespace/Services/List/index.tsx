@@ -1,4 +1,8 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import {
+  InstanceStreamingSubscriber,
+  useServices,
+} from "~/api/services/query/get";
 import { Layers, PlusCircle } from "lucide-react";
 import {
   Table,
@@ -18,7 +22,6 @@ import NoResult from "./NoResult";
 import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useNamespace } from "~/util/store/namespace";
-import { useServices } from "~/api/services/query/get";
 import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
@@ -57,6 +60,7 @@ const ServicesListPage = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
+      <InstanceStreamingSubscriber />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
