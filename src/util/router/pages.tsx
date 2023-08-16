@@ -372,7 +372,7 @@ export const pages: PageType = {
     createHref: (params) =>
       `/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
-      }`,
+      }${params.revision ? `/${params.revision}` : ""}`,
     useParams: () => {
       const { namespace, service, revision } = useParams();
 
