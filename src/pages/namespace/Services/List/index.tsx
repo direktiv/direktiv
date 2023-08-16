@@ -63,8 +63,8 @@ const ServicesListPage = () => {
             <Layers className="h-5" />
             {t("pages.services.list.title")}
           </h3>
-          {createNewButton}
           <RefreshButton onClick={() => refetch()} variant="outline" />
+          {createNewButton}
         </div>
         <Card>
           <Table>
