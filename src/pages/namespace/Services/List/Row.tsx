@@ -7,11 +7,11 @@ import {
 import { MoreVertical, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
-import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema";
+import { StatusBadge } from "./components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -54,9 +54,39 @@ const ServicesTableRow: FC<{
         <TableCell>{service.info.cmd}</TableCell>
         <TableCell>
           <div className="flex flex-col gap-2">
-            <Badge className="w-fit">Configuration</Badge>
-            <Badge className="w-fit">State</Badge>
-            <Badge className="w-fit">Route</Badge>
+            <StatusBadge status="True" className="w-fit">
+              True
+            </StatusBadge>
+            <StatusBadge status="False" className="w-fit">
+              False
+            </StatusBadge>
+            <StatusBadge status="Unknown" className="w-fit">
+              Unknown
+            </StatusBadge>
+            <StatusBadge
+              status="True"
+              className="w-fit"
+              title="Title"
+              message="message"
+            >
+              True
+            </StatusBadge>
+            <StatusBadge
+              status="False"
+              className="w-fit"
+              title="Title"
+              message="message"
+            >
+              False
+            </StatusBadge>
+            <StatusBadge
+              status="Unknown"
+              className="w-fit"
+              title="Title"
+              message="message"
+            >
+              Unknown
+            </StatusBadge>
           </div>
         </TableCell>
         <TableCell>
