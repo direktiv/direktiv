@@ -67,7 +67,9 @@ const VariablesList: FC = () => {
             <div className="mb-4 flex flex-col gap-4 sm:flex-row">
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
                 <Braces className="h-5" />
-                {t("pages.explorer.tree.workflow.settings.variables.title")}
+                {t(
+                  "pages.explorer.tree.workflow.settings.variables.list.title"
+                )}
               </h3>
               <Input
                 className="sm:w-60"
@@ -84,7 +86,9 @@ const VariablesList: FC = () => {
                 data-testid="variable-create"
                 onClick={() => setCreateItem(true)}
               >
-                {t("pages.explorer.tree.workflow.settings.variables.createBtn")}
+                {t(
+                  "pages.explorer.tree.workflow.settings.variables.list.createBtn"
+                )}
               </CreateItemButton>
             </div>
             <Card className="mb-4">
@@ -106,8 +110,8 @@ const VariablesList: FC = () => {
                   icon={Braces}
                   message={t(
                     isSearch
-                      ? "pages.explorer.tree.workflow.settings.variables.emptySearch"
-                      : "pages.explorer.tree.workflow.settings.variables.empty"
+                      ? "pages.explorer.tree.workflow.settings.variables.list.emptySearch"
+                      : "pages.explorer.tree.workflow.settings.variables.list.empty"
                   )}
                 />
               )}

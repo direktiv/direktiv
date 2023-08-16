@@ -147,10 +147,15 @@
           },
           "settings": {
             "variables": {
-              "title": "Workflow variables",
-              "createBtn": "Add variable",
-              "emptySearch": "No variable matches your search",
-              "empty": "No variable found"
+              "list": {
+                "title": "Workflow variables",
+                "createBtn": "Add variable",
+                "emptySearch": "No variable matches your search",
+                "empty": "No variable found"
+              },
+              "edit": {
+                "title": "Edit {{name}}"
+              }
             }
           }
         }

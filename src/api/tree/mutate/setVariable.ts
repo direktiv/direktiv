@@ -48,31 +48,37 @@ export const useSetVariable = ({
   const mutationFn = ({
     name,
     path,
-    payload,
-  }: {
-    name: string;
-    path: string;
-    payload: WorkflowVariableFormSchemaType;
-  }) =>
+    content,
+    mimeType,
+  }: WorkflowVariableFormSchemaType) =>
     setVariable({
       apiKey: apiKey ?? undefined,
-      payload,
+      payload: content,
       urlParams: {
         namespace,
         path,
         name,
+      },
+      headers: {
+        "content-type": mimeType,
       },
     });
 
   return useMutation({
     mutationFn,
     onSuccess: (data, variables) => {
-      queryClient.setQueryData<WorkflowVariableCreatedSchemaType>(
+      queryClient.invalidateQueries(
         treeKeys.workflowVariablesList(namespace, {
           apiKey: apiKey ?? undefined,
           path: variables.path,
-        }),
-        data
+        })
+      );
+      queryClient.invalidateQueries(
+        treeKeys.workflowVariableContent(namespace, {
+          apiKey: apiKey ?? undefined,
+          path: variables.path,
+          name: variables.name,
+        })
       );
       onSuccess?.(data);
       toast({

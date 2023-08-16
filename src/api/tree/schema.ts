@@ -1,3 +1,4 @@
+import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { PageinfoSchema } from "../schema";
 import { z } from "zod";
 
@@ -116,8 +117,10 @@ export const WorkflowVariableListSchema = z.object({
 });
 
 export const WorkflowVariableFormSchema = z.object({
-  name: z.string(),
-  value: z.string(),
+  name: z.string().nonempty(),
+  path: z.string().nonempty(),
+  content: z.string().nonempty(),
+  mimeType: MimeTypeSchema,
 });
 
 /**
