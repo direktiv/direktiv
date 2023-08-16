@@ -55,16 +55,15 @@ const ServicesTableRow: FC<{
                 const res = service.conditions.find(
                   (c) => c.name === condition
                 );
-                if (!res) return null;
                 return (
                   <StatusBadge
                     key={condition}
-                    status={res.status}
-                    title={res.reason}
-                    message={res.message}
+                    status={res?.status ?? "Unknown"}
+                    title={res?.reason ?? undefined}
+                    message={res?.message ?? undefined}
                     className="w-fit"
                   >
-                    {res.name}
+                    {condition}
                   </StatusBadge>
                 );
               })}
