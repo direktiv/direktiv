@@ -5,11 +5,18 @@ const ServiceDetailPage = () => {
   const { service } = pages.services.useParams();
 
   const { data } = useServiceDetails({
-    service,
+    service: service ?? "",
   });
   if (!service) return null;
 
-  return <h1>service detail page: {service}</h1>;
+  return (
+    <div>
+      <h1>service detail</h1>
+      {data?.revisions?.map((revision) => (
+        <div key={revision.name}>{revision.name}</div>
+      ))}
+    </div>
+  );
 };
 
 export default ServiceDetailPage;
