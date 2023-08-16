@@ -7,4 +7,16 @@ export const serviceKeys = {
         namespace,
       },
     ] as const,
+  serviceDetail: (
+    namespace: string,
+    { apiKey, service }: { apiKey?: string; service: string }
+  ) =>
+    [
+      {
+        scope: "service-detail",
+        apiKey,
+        namespace,
+        service,
+      },
+    ] as const,
 };

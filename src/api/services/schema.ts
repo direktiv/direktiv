@@ -15,6 +15,20 @@ const ServiceConditionSchema = z.object({
   message: z.string(),
 });
 
+export const serviceRevisionConditionNames = [
+  "Active",
+  "ContainerHealthy",
+  "Ready",
+  "ResourcesAvailable",
+] as const;
+
+const ServiceRevisionConditionSchema = z.object({
+  name: z.enum(serviceRevisionConditionNames),
+  status: StatusSchema,
+  reason: z.string(),
+  message: z.string(),
+});
+
 /**
  * example
   {
@@ -120,6 +134,72 @@ export const ServiceFormSchema = z.object({
   minscale: z.number().int().gte(0).lte(3),
   // scale also has a max value, but it is dynamic depending on the namespace
   scale: z.number().int().gte(0),
+});
+
+/**
+ * example
+  {
+    "name": "namespace-14937757830533003475-00001",
+    "image": "direktiv/solve:v3",
+    "created": 1691140028,
+    "status": "True",
+    "conditions": [
+      {
+        "name": "Active",
+        "status": "False",
+        "reason": "NoTraffic",
+        "message": "The target is not receiving traffic."
+      },
+      {
+        "name": "ContainerHealthy",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "Ready",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "ResourcesAvailable",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      }
+    ],
+    "revision": "00001"
+  }
+
+ */
+const ServiceRevisionSchema = z.object({
+  name: z.string(),
+  image: z.string(),
+  created: z.number(),
+  status: StatusSchema,
+  conditions: z.array(ServiceRevisionConditionSchema),
+  revision: z.string(),
+});
+
+/**
+ * example
+  {
+    "name": "name123",
+    "namespace": "sebxian",
+    "config": {
+      "maxscale": 3
+    },
+    "revisions": [],
+    "scope": "namespace"
+  }
+ */
+export const ServicesRevisionListSchema = z.object({
+  name: z.string(),
+  config: z.object({
+    maxscale: z.number(),
+  }),
+  revisions: z.array(ServiceRevisionSchema),
 });
 
 export const ServiceDeletedSchema = z.null();
