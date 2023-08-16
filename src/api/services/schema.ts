@@ -90,6 +90,21 @@ export const ServicesListSchema = z.object({
   functions: z.array(ServiceSchema),
 });
 
+/**
+ * example
+  {
+    "event": "ADDED",
+    "function": {
+      ...
+    },
+    "traffic": []
+  } 
+ */
+export const ServiceStreamingSchema = z.object({
+  event: z.enum(["ADDED", "MODIFIED"]),
+  function: ServiceSchema,
+});
+
 export const serviceNameSchema = z
   .string()
   .nonempty()
