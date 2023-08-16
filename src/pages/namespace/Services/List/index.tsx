@@ -21,18 +21,15 @@ import Delete from "./Delete";
 import NoResult from "./NoResult";
 import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
-  const namespace = useNamespace();
+  const { t } = useTranslation();
   const { data: serviceList, isSuccess, refetch } = useServices();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteService, setDeleteService] = useState<string>();
   const [createService, setCreateService] = useState(false);
-
-  const { t } = useTranslation();
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -40,8 +37,6 @@ const ServicesListPage = () => {
       setCreateService(false);
     }
   }, [dialogOpen]);
-
-  if (!namespace) return null;
 
   const showTable = (serviceList?.functions?.length ?? 0) > 0;
   const noResults = isSuccess && serviceList?.functions?.length === 0;
