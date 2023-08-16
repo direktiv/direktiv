@@ -14,7 +14,6 @@ import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
 import { ConditionalWrapper } from "~/util/helpers";
 import { StatusSchemaType } from "~/api/services/schema";
-import { useTranslation } from "react-i18next";
 
 type BadgeProps = ComponentProps<typeof Badge>;
 
@@ -35,8 +34,11 @@ export const StatusBadge = ({
     wrapper={(children) => (
       <HoverCard>
         <HoverCardTrigger>{children}</HoverCardTrigger>
-        <HoverCardContent asChild noBackground>
-          <Alert variant={statusToAlertVariant(status)}>
+        <HoverCardContent asChild noBackground className="">
+          <Alert
+            variant={statusToAlertVariant(status)}
+            className="w-96 whitespace-pre-wrap break-all"
+          >
             <span className="font-bold">{title}</span>
             <br />
             {message}
