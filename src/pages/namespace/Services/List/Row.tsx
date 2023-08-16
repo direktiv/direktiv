@@ -28,6 +28,12 @@ const ServicesTableRow: FC<{
 
   if (!namespace) return null;
 
+  const size = service.info.size;
+  const sizeLabel =
+    size === 0 || size === 1 || size === 2
+      ? t(`pages.services.create.sizeValues.${size}`)
+      : "";
+
   return (
     <TooltipProvider>
       <TableRow
@@ -44,7 +50,7 @@ const ServicesTableRow: FC<{
         <TableCell>{service.info.name}</TableCell>
         <TableCell>{service.info.image}</TableCell>
         <TableCell>{service.info.minScale}</TableCell>
-        <TableCell>{service.info.size}</TableCell>
+        <TableCell>{sizeLabel}</TableCell>
         <TableCell>{service.info.cmd}</TableCell>
         <TableCell>
           <div className="flex flex-col gap-2">
