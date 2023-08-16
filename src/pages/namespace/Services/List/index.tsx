@@ -89,9 +89,6 @@ const ServicesListPage = () => {
                 <TableHeaderCell className="w-0">
                   {t("pages.services.list.tableHeader.cmd")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-0">
-                  {t("pages.services.list.tableHeader.state")}
-                </TableHeaderCell>
                 <TableHeaderCell className="w-0" />
               </TableRow>
             </TableHead>

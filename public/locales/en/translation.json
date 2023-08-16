@@ -395,8 +395,7 @@
           "image": "image",
           "scale": "scale",
           "size": "size",
-          "cmd": "cmd",
-          "state": "state"
+          "cmd": "cmd"
         },
         "contextMenu": {
           "delete": "Delete"

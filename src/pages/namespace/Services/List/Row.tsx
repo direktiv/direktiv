@@ -47,30 +47,34 @@ const ServicesTableRow: FC<{
         }}
         className="cursor-pointer"
       >
-        <TableCell>{service.info.name}</TableCell>
+        <TableCell>
+          <div className="flex flex-col gap-3">
+            {service.info.name}
+            <div className="flex gap-3">
+              {conditionNames.map((condition) => {
+                const res = service.conditions.find(
+                  (c) => c.name === condition
+                );
+                if (!res) return null;
+                return (
+                  <StatusBadge
+                    key={condition}
+                    status={res.status}
+                    title={res.reason}
+                    message={res.message}
+                    className="w-fit"
+                  >
+                    {res.name}
+                  </StatusBadge>
+                );
+              })}
+            </div>
+          </div>
+        </TableCell>
         <TableCell>{service.info.image}</TableCell>
         <TableCell>{service.info.minScale}</TableCell>
         <TableCell>{sizeLabel}</TableCell>
         <TableCell>{service.info.cmd}</TableCell>
-        <TableCell>
-          <div className="flex flex-col gap-2">
-            {conditionNames.map((condition) => {
-              const res = service.conditions.find((c) => c.name === condition);
-              if (!res) return null;
-              return (
-                <StatusBadge
-                  key={condition}
-                  status={res.status}
-                  title={res.reason}
-                  message={res.message}
-                  className="w-fit"
-                >
-                  {res.name}
-                </StatusBadge>
-              );
-            })}
-          </div>
-        </TableCell>
         <TableCell>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
