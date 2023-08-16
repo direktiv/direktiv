@@ -136,6 +136,14 @@ export const ServiceFormSchema = z.object({
   scale: z.number().int().gte(0),
 });
 
+export const ServiceRevisionFormSchema = z.object({
+  cmd: z.string(),
+  image: z.string().nonempty(),
+  minscale: z.number().int().gte(0).lte(3),
+  // scale also has a max value, but it is dynamic depending on the namespace
+  size: z.number().int().gte(0),
+});
+
 /**
  * example
   {
@@ -206,8 +214,13 @@ export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
 
+export const ServiceRevisionCreatedSchema = z.null();
+
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type StatusSchemaType = z.infer<typeof StatusSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
 export type ServiceStreamingSchemaType = z.infer<typeof ServiceStreamingSchema>;
+export type ServiceRevisionFormSchemaType = z.infer<
+  typeof ServiceRevisionFormSchema
+>;
