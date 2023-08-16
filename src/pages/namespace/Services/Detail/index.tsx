@@ -1,7 +1,6 @@
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeaderCell,
   TableRow,
@@ -31,7 +30,6 @@ const ServiceDetailPage = () => {
           {service}
         </h3>
       </div>
-
       <Card>
         <Table>
           <TableHead>
