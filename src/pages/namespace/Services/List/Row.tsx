@@ -5,7 +5,10 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { MoreVertical, Trash } from "lucide-react";
-import { ServiceSchemaType, conditionNames } from "~/api/services/schema";
+import {
+  ServiceSchemaType,
+  serviceConditionNames,
+} from "~/api/services/schema";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
@@ -51,7 +54,7 @@ const ServicesTableRow: FC<{
           <div className="flex flex-col gap-3">
             {service.info.name}
             <div className="flex gap-3">
-              {conditionNames.map((condition) => {
+              {serviceConditionNames.map((condition) => {
                 const res = service.conditions.find(
                   (c) => c.name === condition
                 );

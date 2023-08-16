@@ -2,14 +2,14 @@ import { z } from "zod";
 
 export const StatusSchema = z.enum(["True", "False", "Unknown"]);
 
-export const conditionNames = [
+export const serviceConditionNames = [
   "ConfigurationsReady",
   "Ready",
   "RoutesReady",
 ] as const;
 
-const ConditionSchema = z.object({
-  name: z.enum(conditionNames),
+const ServiceConditionSchema = z.object({
+  name: z.enum(serviceConditionNames),
   status: StatusSchema,
   reason: z.string(),
   message: z.string(),
@@ -70,7 +70,7 @@ const ServiceSchema = z.object({
     envs: z.object({}),
   }),
   status: StatusSchema,
-  conditions: z.array(ConditionSchema),
+  conditions: z.array(ServiceConditionSchema),
   serviceName: z.string(),
 });
 
