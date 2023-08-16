@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const StatusSchema = z.enum(["True", "False", "Unknown"]);
+export const StatusSchema = z.enum(["True", "False", "Unknown"]);
 
 const ConditionSchema = z.object({
   name: z.enum(["ConfigurationsReady", "Ready", "RoutesReady"]),
@@ -106,5 +106,6 @@ export const ServiceDeletedSchema = z.null();
 export const ServiceCreatedSchema = z.null();
 
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
+export type StatusSchemaType = z.infer<typeof StatusSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
