@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import {
+  NoResult,
   Table,
   TableBody,
   TableCell,
@@ -8,8 +9,8 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
-import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
 import Row from "./Row";
 import { itemsPerPage } from ".";
@@ -62,6 +63,7 @@ const ListenersList = ({
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
                   <NoResult
+                    icon={Antenna}
                     message={t("pages.events.listeners.empty.noResults")}
                   />
                 </TableCell>

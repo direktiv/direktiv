@@ -1,5 +1,5 @@
-import { CheckCircle2, XCircle } from "lucide-react";
-import { Table, TableBody } from "~/design/Table";
+import { Boxes, CheckCircle2, XCircle } from "lucide-react";
+import { NoResult, Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
   TooltipContent,
@@ -9,7 +9,6 @@ import {
 
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
-import NoResult from "./NoResult";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { useInstances } from "~/api/instances/query/get";
@@ -82,6 +81,7 @@ export const Instances = () => {
       >
         {sucessfullInstances?.instances?.results.length === 0 ? (
           <NoResult
+            icon={Boxes}
             message={t(
               "pages.monitoring.instances.successfullExecutions.empty"
             )}

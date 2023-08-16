@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "~/design/Dialog";
 import { Dispatch, SetStateAction, useState } from "react";
 import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
+  NoResult,
   Table,
   TableBody,
   TableCell,
@@ -13,8 +14,8 @@ import {
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
 import Filters from "./components/Filters";
-import NoResult from "./NoResult";
 import { Pagination } from "~/componentsNext/Pagination";
+import { Radio } from "lucide-react";
 import Row from "./Row";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
@@ -90,6 +91,7 @@ const EventsList = ({
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>
                     <NoResult
+                      icon={Radio}
                       message={
                         hasFilters
                           ? t("pages.events.history.empty.noFilterResults")
