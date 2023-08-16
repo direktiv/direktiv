@@ -118,7 +118,7 @@ export const NoResult = ({
   icon?: LucideIcon;
 }) => (
   <div
-    className="flex flex-col items-center justify-center gap-1 p-10"
+    className="flex grow flex-col items-center justify-center gap-1 p-10"
     data-testid="no-result"
   >
     {Icon && <Icon />}

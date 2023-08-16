@@ -124,6 +124,7 @@ export const Instances = () => {
       >
         {failedInstances?.instances?.results.length === 0 ? (
           <NoResult
+            icon={Boxes}
             message={t("pages.monitoring.instances.failedExecutions.empty")}
           />
         ) : (
