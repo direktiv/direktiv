@@ -77,19 +77,19 @@ const ServicesListPage = () => {
                 <TableHeaderCell>
                   {t("pages.services.list.tableHeader.name")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-0">
+                <TableHeaderCell className="w-48">
                   {t("pages.services.list.tableHeader.image")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-0">
+                <TableHeaderCell className="w-16">
                   {t("pages.services.list.tableHeader.scale")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-0">
+                <TableHeaderCell className="w-20">
                   {t("pages.services.list.tableHeader.size")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-0">
+                <TableHeaderCell className="w-48">
                   {t("pages.services.list.tableHeader.cmd")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-0" />
+                <TableHeaderCell className="w-16" />
               </TableRow>
             </TableHead>
             <TableBody>
