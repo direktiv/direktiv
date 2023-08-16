@@ -15,6 +15,7 @@ import { Card } from "~/design/Card";
 import CreateService from "./Create";
 import Delete from "./Delete";
 import NoResult from "./NoResult";
+import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useNamespace } from "~/util/store/namespace";
 import { useServices } from "~/api/services/query/get";
@@ -22,7 +23,7 @@ import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
   const namespace = useNamespace();
-  const { data: serviceList, isSuccess } = useServices();
+  const { data: serviceList, isSuccess, refetch } = useServices();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteService, setDeleteService] = useState<string>();
@@ -63,6 +64,7 @@ const ServicesListPage = () => {
             {t("pages.services.list.title")}
           </h3>
           {createNewButton}
+          <RefreshButton onClick={() => refetch()} variant="outline" />
         </div>
         <Card>
           <Table>
