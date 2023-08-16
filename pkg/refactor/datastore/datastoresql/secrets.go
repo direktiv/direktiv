@@ -76,21 +76,34 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace uuid.UUID, name stri
 
 func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
 	var res *gorm.DB
-	if secret.Data == nil {
-		res = s.db.WithContext(ctx).Exec(`
-			INSERT INTO secrets(id, namespace_id, name) VALUES(?, ?, ?);
-			`, secret.ID, secret.NamespaceID, secret.Name)
+	x, err := s.Get(ctx, secret.NamespaceID, secret.Name)
+	//nolint:nestif
+	if errors.Is(err, core.ErrSecretNotFound) {
+		if secret.Data == nil {
+			res = s.db.WithContext(ctx).Exec(`
+				INSERT INTO secrets(id, namespace_id, name) VALUES(?, ?, ?);
+				`, secret.ID, secret.NamespaceID, secret.Name)
+		} else {
+			res = s.db.WithContext(ctx).Exec(`
+				INSERT INTO secrets(id, namespace_id, name, data) VALUES(?, ?, ?, ?);
+				`, secret.ID, secret.NamespaceID, secret.Name, secret.Data)
+		}
+	} else if err != nil {
+		return err
 	} else {
-		res = s.db.WithContext(ctx).Exec(`
-			INSERT INTO secrets(id, namespace_id, name, data) VALUES(?, ?, ?, ?);
-			`, secret.ID, secret.NamespaceID, secret.Name, secret.Data)
+		if secret.Data == nil {
+			res = s.db.WithContext(ctx).Exec(`
+				UPDATE secrets SET data = NULL WHERE id = ?;
+				`, x.ID)
+		} else {
+			res = s.db.WithContext(ctx).Exec(`
+				UPDATE secrets SET data = ? WHERE id = ?;
+				`, secret.Data, x.ID)
+		}
 	}
 
 	if res.Error != nil {
 		return res.Error
-	}
-	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected gorm insert count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil
