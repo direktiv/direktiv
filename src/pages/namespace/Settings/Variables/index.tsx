@@ -1,6 +1,6 @@
 import { FC, useEffect, useMemo, useState } from "react";
+import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
-import { Table, TableBody } from "~/design/Table";
 
 import { Braces } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -9,7 +9,6 @@ import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
-import EmptyList from "../components/EmptyList";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
@@ -107,13 +106,13 @@ const VariablesList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <EmptyList>
-                  {t(
+                <NoResult
+                  message={t(
                     isSearch
                       ? "pages.settings.variables.list.emptySearch"
                       : "pages.settings.variables.list.empty"
                   )}
-                </EmptyList>
+                />
               )}
             </Card>
             {totalPages > 1 && (

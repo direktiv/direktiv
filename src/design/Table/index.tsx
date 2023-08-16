@@ -1,3 +1,4 @@
+import { LucideIcon } from "lucide-react";
 import React from "react";
 import { twMergeClsx } from "~/util/helpers";
 
@@ -108,3 +109,19 @@ export const TableRow = React.forwardRef<
   </tr>
 ));
 TableRow.displayName = "TableRow";
+
+export const NoResult = ({
+  message,
+  icon: Icon,
+}: {
+  message: string;
+  icon?: LucideIcon;
+}) => (
+  <div
+    className="flex flex-col items-center justify-center gap-1 p-10"
+    data-testid="no-result"
+  >
+    {Icon && <Icon />}
+    <span className="text-center text-sm">{message}</span>
+  </div>
+);

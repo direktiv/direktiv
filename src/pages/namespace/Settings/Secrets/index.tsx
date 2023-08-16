@@ -1,13 +1,12 @@
 import { FC, useEffect, useMemo, useState } from "react";
+import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
-import { Table, TableBody } from "~/design/Table";
 
 import { Card } from "~/design/Card";
 import Create from "./Create";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
-import EmptyList from "../components/EmptyList";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
@@ -99,13 +98,13 @@ const SecretsList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <EmptyList>
-                  {t(
+                <NoResult
+                  message={t(
                     isSearch
                       ? "pages.settings.secrets.list.emptySearch"
                       : "pages.settings.secrets.list.empty"
                   )}
-                </EmptyList>
+                />
               )}
             </Card>
             {totalPages > 1 && (
