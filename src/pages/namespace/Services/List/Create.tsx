@@ -30,11 +30,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const availableSizes = [0, 1, 2] as const;
 
 const CreateService = ({
-  path,
   close,
   unallowedNames,
 }: {
-  path?: string;
   close: () => void;
   unallowedNames?: string[];
 }) => {
@@ -90,7 +88,7 @@ const CreateService = ({
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-service-${path}`;
+  const formId = `new-service`;
 
   const maxScale = data?.config.maxscale;
   if (maxScale === undefined) return null;
