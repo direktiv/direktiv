@@ -144,6 +144,14 @@
             "cancelBtn": "Cancel",
             "runBtn": "Run",
             "genericRunError": "Something went wrong running this workflow."
+          },
+          "settings": {
+            "variables": {
+              "title": "Workflow variables",
+              "createBtn": "Add variable",
+              "emptySearch": "No variable matches your search",
+              "empty": "No variable found"
+            }
           }
         }
       },

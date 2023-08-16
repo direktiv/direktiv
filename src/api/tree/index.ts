@@ -66,4 +66,17 @@ export const treeKeys = {
         path: forceLeadingSlash(path ?? "/"),
       },
     ] as const,
+  workflowVariableContent: (
+    namespace: string,
+    { apiKey, path, name }: { apiKey?: string; path?: string; name: string }
+  ) =>
+    [
+      {
+        scope: "workflow-variable-content",
+        name,
+        apiKey,
+        namespace,
+        path: forceLeadingSlash(path ?? "/"),
+      },
+    ] as const,
 };

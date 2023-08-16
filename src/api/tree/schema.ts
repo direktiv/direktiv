@@ -98,6 +98,13 @@ export const WorkflowVariableSchema = z.object({
   mimeType: z.string(), // "application/json"
 });
 
+export const WorkflowVariableContentSchema = z.object({
+  body: z.string(),
+  headers: z.object({
+    "content-type": z.string(),
+  }),
+});
+
 // TODO before merging: really allow z.null for pageinfo?
 export const WorkflowVariableListSchema = z.object({
   namespace: z.string(),
@@ -158,6 +165,7 @@ export type TrimmedRevisionSchemaType = z.infer<typeof TrimmedRevisionSchema>;
 export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
 export type RouterSchemaType = z.infer<typeof RouterSchema>;
+export type WorkflowVariableSchemaType = z.infer<typeof WorkflowVariableSchema>;
 export type WorkflowVariableFormSchemaType = z.infer<
   typeof WorkflowVariableFormSchema
 >;
