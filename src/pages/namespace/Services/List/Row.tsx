@@ -65,7 +65,7 @@ const ServicesTableRow: FC<{
                   message={res.message}
                   className="w-fit"
                 >
-                  {t(`pages.services.list.conditionNames.${res.name}`)}
+                  {res.name}
                 </StatusBadge>
               );
             })}
