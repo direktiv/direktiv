@@ -199,7 +199,7 @@ export const ServicesRevisionListSchema = z.object({
   config: z.object({
     maxscale: z.number(),
   }),
-  revisions: z.array(ServiceRevisionSchema),
+  revisions: z.array(ServiceRevisionSchema).optional(),
 });
 
 export const ServiceDeletedSchema = z.null();
