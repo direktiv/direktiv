@@ -38,13 +38,14 @@ const ServiceDetailPage = () => {
   if (!service) return null;
 
   const latestRevision = data.revisions?.[0];
+
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
             <Diamond className="h-5" />
-            {service}
+            {t("pages.services.revision.list.title", { name: service })}
           </h3>
           <DialogTrigger asChild>
             <Button onClick={() => setCreateService(true)} variant="outline">
@@ -58,19 +59,19 @@ const ServiceDetailPage = () => {
             <TableHead>
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableHeaderCell>
-                  {t("pages.services.list.tableHeader.name")}
+                  {t("pages.services.revision.list.tableHeader.name")}
                 </TableHeaderCell>
                 <TableHeaderCell className="w-48">
-                  {t("pages.services.list.tableHeader.image")}
+                  {t("pages.services.revision.list.tableHeader.image")}
                 </TableHeaderCell>
                 <TableHeaderCell className="w-16">
-                  {t("pages.services.list.tableHeader.scale")}
+                  {t("pages.services.revision.list.tableHeader.scale")}
                 </TableHeaderCell>
                 <TableHeaderCell className="w-20">
-                  {t("pages.services.list.tableHeader.size")}
+                  {t("pages.services.revision.list.tableHeader.size")}
                 </TableHeaderCell>
                 <TableHeaderCell className="w-48">
-                  {t("pages.services.list.tableHeader.cmd")}
+                  {t("pages.services.revision.list.tableHeader.createdAt")}
                 </TableHeaderCell>
                 <TableHeaderCell className="w-16" />
               </TableRow>

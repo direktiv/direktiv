@@ -413,7 +413,15 @@
       },
       "revision": {
         "list": {
-          "create": "Create a new Revision"
+          "title": "Services \"{{name}}\" revisions",
+          "create": "Create a new Revision",
+          "tableHeader": {
+            "name": "name",
+            "image": "image",
+            "scale": "scale",
+            "size": "size",
+            "createdAt": "created at"
+          }
         },
         "create": {
           "noChanges": "please make some changes before creating a new revision",
