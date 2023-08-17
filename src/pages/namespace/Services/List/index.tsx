@@ -19,7 +19,6 @@ import { Card } from "~/design/Card";
 import CreateService from "./Create";
 import Delete from "./Delete";
 import NoResult from "./NoResult";
-import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useTranslation } from "react-i18next";
 
@@ -62,7 +61,6 @@ const ServicesListPage = () => {
             <Layers className="h-5" />
             {t("pages.services.list.title")}
           </h3>
-          <RefreshButton onClick={() => refetch()} variant="outline" />
           {createNewButton}
         </div>
         <Card>
