@@ -45,6 +45,16 @@ export const useServiceDetails = ({ service }: { service: string }) => {
       service,
     }),
     queryFn: fetchServiceDetails,
+    select: (data) => {
+      // reverse the order of revisions (newer first)
+      if (!data) {
+        return undefined;
+      }
+      return {
+        ...data,
+        revisions: (data.revisions ?? []).reverse(),
+      };
+    },
     enabled: !!namespace,
   });
 };
