@@ -21,7 +21,7 @@ import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
-import { useSetVariable } from "~/api/tree/mutate/setVariable";
+import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -63,7 +63,7 @@ const Create = ({ onSuccess, path }: CreateProps) => {
     setEditorLanguage(mimeTypeToLanguageDict[value]);
   };
 
-  const { mutate: createVarMutation } = useSetVariable({
+  const { mutate: createVarMutation } = useSetWorkflowVariable({
     onSuccess,
   });
 

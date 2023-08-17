@@ -25,7 +25,7 @@ import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
-import { useSetVariable } from "~/api/tree/mutate/setVariable";
+import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useTheme } from "~/util/store/theme";
 import { useWorkflowVariableContent } from "~/api/tree/query/variableContent";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -87,7 +87,7 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
     }
   }, [data, isFetched, isInitialized]);
 
-  const { mutate: setVariable } = useSetVariable({
+  const { mutate: setVariable } = useSetWorkflowVariable({
     onSuccess,
   });
 

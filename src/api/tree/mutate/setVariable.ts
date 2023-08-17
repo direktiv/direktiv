@@ -30,7 +30,7 @@ const setVariable = apiFactory({
   schema: WorkflowVariableCreatedSchema,
 });
 
-export const useSetVariable = ({
+export const useSetWorkflowVariable = ({
   onSuccess,
 }: {
   onSuccess?: (data: WorkflowVariableCreatedSchemaType) => void;
