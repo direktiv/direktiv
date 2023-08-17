@@ -20,10 +20,10 @@ import {
 } from "~/api/variables/schema";
 import { useEffect, useState } from "react";
 
+import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
-import { Trash } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
 import { useVarContent } from "~/api/variables/query/useVariableContent";
@@ -98,7 +98,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
       >
         <DialogHeader>
           <DialogTitle>
-            <Trash />
+            <Braces />
             <Trans
               i18nKey="pages.settings.variables.edit.title"
               values={{ name: item.name }}

@@ -20,10 +20,10 @@ import {
 } from "~/api/tree/schema";
 import { useEffect, useState } from "react";
 
+import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
-import { Trash } from "lucide-react";
 import { useSetVariable } from "~/api/tree/mutate/setVariable";
 import { useTheme } from "~/util/store/theme";
 import { useWorkflowVariableContent } from "~/api/tree/query/variableContent";
@@ -100,7 +100,7 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
       >
         <DialogHeader>
           <DialogTitle>
-            <Trash />
+            <Braces />
             <Trans
               i18nKey="pages.settings.variables.edit.title"
               values={{ name: item.name }}
