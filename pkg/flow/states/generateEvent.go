@@ -99,7 +99,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 
 	if len(logic.Delay) != 0 && logic.Delay != "immediate" {
 		d, _ := duration.ParseISO8601(logic.Delay)
-		t := d.Shift(time.Unix(0, 0).UTC())
+		t := d.Shift(time.Now().UTC())
 		dd = t.Unix()
 	}
 

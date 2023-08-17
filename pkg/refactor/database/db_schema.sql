@@ -185,6 +185,22 @@ CREATE TABLE IF NOT EXISTS "log_entries" (
 -- speeds up pagination
 CREATE INDEX  IF NOT EXISTS "log_entries_sorted" ON log_entries ("timestamp" ASC);
 
+CREATE TABLE IF NOT EXISTS "staging_events" (
+    "id" uuid NOT NULL,
+    "event_id" text,
+    "source" text NOT NULL,
+    "type" text NOT NULL,
+    "cloudevent" text NOT NULL,
+    "namespace_id" uuid NOT NULL,
+    "namespace_name" text,
+    "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamptz NOT NULL,
+    "delayed_until" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "no_dup_stag_check" UNIQUE ("source","event_id", "namespace_id"),
+    PRIMARY KEY ("id")
+);
+
 CREATE TABLE IF NOT EXISTS "events_history" (
     "id" text,
     "type" text NOT NULL,
