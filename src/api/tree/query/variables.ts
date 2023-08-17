@@ -27,11 +27,7 @@ const fetchVariables = async ({
     },
   });
 
-export const useWorkflowVariables = ({
-  path,
-}: {
-  path?: string;
-} = {}) => {
+export const useWorkflowVariables = ({ path }: { path: string }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 

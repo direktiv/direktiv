@@ -56,19 +56,19 @@ export const treeKeys = {
     ] as const,
   workflowVariablesList: (
     namespace: string,
-    { apiKey, path }: { apiKey?: string; path?: string }
+    { apiKey, path }: { apiKey?: string; path: string }
   ) =>
     [
       {
         scope: "workflow-variables-list",
         apiKey,
         namespace,
-        path: forceLeadingSlash(path ?? "/"),
+        path: forceLeadingSlash(path),
       },
     ] as const,
   workflowVariableContent: (
     namespace: string,
-    { apiKey, path, name }: { apiKey?: string; path?: string; name: string }
+    { apiKey, path, name }: { apiKey?: string; path: string; name: string }
   ) =>
     [
       {
@@ -76,7 +76,7 @@ export const treeKeys = {
         name,
         apiKey,
         namespace,
-        path: forceLeadingSlash(path ?? "/"),
+        path: forceLeadingSlash(path),
       },
     ] as const,
 };

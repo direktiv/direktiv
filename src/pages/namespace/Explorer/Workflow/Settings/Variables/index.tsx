@@ -1,6 +1,6 @@
-import { FC, useEffect, useMemo, useState } from "react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
+import { useEffect, useMemo, useState } from "react";
 
 import { Braces } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -13,16 +13,14 @@ import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { WorkflowVariableSchemaType } from "~/api/tree/schema";
-import { pages } from "~/util/router/pages";
 import { useDeleteWorkflowVariable } from "~/api/tree/mutate/deleteVariable";
 import { useTranslation } from "react-i18next";
 import { useWorkflowVariables } from "~/api/tree/query/variables";
 
 const pageSize = 10;
 
-const VariablesList: FC = () => {
+const VariablesList = ({ path }: { path: string }) => {
   const { t } = useTranslation();
-  const { path } = pages.explorer.useParams();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState<WorkflowVariableSchemaType>();
@@ -141,9 +139,6 @@ const VariablesList: FC = () => {
         )}
       </PaginationProvider>
 
-      {/* TODO: path shouldn't be undefined here, but according to TS, it might be and 
-          it is necessary for the components below. 
-      */}
       {deleteItem && path && (
         <Delete
           name={deleteItem.name}
