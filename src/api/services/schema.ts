@@ -188,7 +188,7 @@ const ServiceRevisionSchema = z.object({
   image: z.string(),
   created: z.number(),
   status: StatusSchema,
-  conditions: z.array(ServiceRevisionConditionSchema),
+  conditions: z.array(ServiceRevisionConditionSchema).optional(),
   revision: z.string(),
   minScale: z.number().optional(),
   size: z.number().optional(),

@@ -67,7 +67,7 @@ const ServicesTableRow: FC<{
             {revision.name}
             <div className="flex gap-3">
               {serviceRevisionConditionNames.map((condition) => {
-                const res = revision.conditions.find(
+                const res = (revision.conditions ?? []).find(
                   (c) => c.name === condition
                 );
                 return (
