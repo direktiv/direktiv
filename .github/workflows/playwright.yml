@@ -33,9 +33,8 @@ jobs:
           key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             playwright-browsers-${{ runner.os }}-
-              playwright install-deps --dry-run
-      - name: Dependencies Playwright Browsers
-        run: yarn playwright install --with-deps
+      - name: Dependencies Playwright dry run
+        run: yarn playwright install-deps --dry-run
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
       
