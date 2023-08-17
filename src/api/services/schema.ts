@@ -133,7 +133,7 @@ export const ServiceFormSchema = z.object({
   image: z.string().nonempty(),
   minscale: z.number().int().gte(0).lte(3),
   // scale also has a max value, but it is dynamic depending on the namespace
-  scale: z.number().int().gte(0),
+  size: z.number().int().gte(0),
 });
 
 export const ServiceRevisionFormSchema = z.object({

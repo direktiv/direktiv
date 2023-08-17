@@ -55,7 +55,7 @@ const CreateService = ({
   } = useForm<ServiceFormSchemaType>({
     defaultValues: {
       minscale: 0,
-      scale: 1,
+      size: 1,
     },
     resolver: zodResolver(
       ServiceFormSchema.refine(
@@ -73,14 +73,14 @@ const CreateService = ({
     cmd,
     image,
     minscale,
-    scale,
+    size,
   }) => {
     createService({
       name,
       cmd,
       image,
       minscale,
-      scale,
+      size,
     });
   };
 
@@ -135,21 +135,16 @@ const CreateService = ({
             </label>
 
             <div className="flex w-full gap-5">
-              <Input
-                className="w-12"
-                readOnly
-                value={watch("scale")}
-                disabled
-              />
+              <Input className="w-12" readOnly value={watch("size")} disabled />
               <Slider
                 id="scale"
                 step={1}
                 min={0}
                 max={maxScale}
-                value={[watch("scale") ?? 0]}
+                value={[watch("size") ?? 0]}
                 onValueChange={(e) => {
                   const newValue = e[0];
-                  newValue !== undefined && setValue("scale", newValue);
+                  newValue !== undefined && setValue("size", newValue);
                 }}
               />
             </div>
