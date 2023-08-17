@@ -146,6 +146,8 @@ export const WorkflowVariableCreatedSchema = z.object({
   mimeType: z.string(), // "application/json"
 });
 
+export const WorkflowVariableDeletedSchema = z.null();
+
 export const NodeDeletedSchema = z.null();
 
 export const NodeRenameSchema = z.object({

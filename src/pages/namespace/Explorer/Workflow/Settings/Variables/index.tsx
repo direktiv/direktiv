@@ -6,7 +6,7 @@ import { Braces } from "lucide-react";
 import { Card } from "~/design/Card";
 import Create from "./Create";
 import CreateItemButton from "~/pages/namespace/Settings/components/CreateItemButton";
-import Delete from "./Delete";
+import Delete from "~/pages/namespace/Settings/Variables/Delete";
 import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
 import Input from "~/design/Input";
@@ -14,6 +14,7 @@ import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { WorkflowVariableSchemaType } from "~/api/tree/schema";
 import { pages } from "~/util/router/pages";
+import { useDeleteWorkflowVariable } from "~/api/tree/mutate/deleteVariable";
 import { useTranslation } from "react-i18next";
 import { useWorkflowVariables } from "~/api/tree/query/variables";
 
@@ -31,6 +32,8 @@ const VariablesList: FC = () => {
   const isSearch = search.length > 0;
 
   const { data, isFetched } = useWorkflowVariables({ path });
+
+  const { mutate: deleteWorkflowVariable } = useDeleteWorkflowVariable();
 
   const filteredItems = useMemo(
     () =>
@@ -138,17 +141,26 @@ const VariablesList: FC = () => {
         )}
       </PaginationProvider>
 
-      {deleteItem && <Delete name={deleteItem.name} onConfirm={() => "TBD"} />}
-      {createItem && (
+      {/* TODO: path shouldn't be undefined here, but according to TS, it might be and 
+          it is necessary for the components below. 
+      */}
+      {deleteItem && path && (
+        <Delete
+          name={deleteItem.name}
+          onConfirm={() =>
+            deleteWorkflowVariable({ variable: deleteItem, path })
+          }
+        />
+      )}
+
+      {createItem && path && (
         <Create
+          path={path}
           onSuccess={() => {
             setDialogOpen(false);
           }}
         />
       )}
-      {/* TODO: path shouldn't be undefined here, but according to TS, it might be and 
-          it is necessary to fetch the variable's content 
-      */}
       {editItem && path && (
         <Edit
           item={editItem}
