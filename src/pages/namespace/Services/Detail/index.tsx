@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
+import Delete from "./Delete";
 import Row from "./Row";
 import { pages } from "~/util/router/pages";
 import { useServiceDetails } from "~/api/services/query/details";
@@ -90,14 +91,14 @@ const ServiceDetailPage = () => {
           </Table>
         </Card>
         <DialogContent>
-          {/* {deleteRevision && (
+          {deleteRevision && (
             <Delete
-              service={deleteService}
+              service={deleteRevision}
               close={() => {
                 setDialogOpen(false);
               }}
             />
-          )} */}
+          )}
           {createRevision && (
             <CreateServiceRevision
               service={service}

@@ -424,6 +424,12 @@
           },
           "contextMenu": {
             "delete": "Delete"
+          },
+          "delete": {
+            "title": "Delete Revision",
+            "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+            "cancelBtn": "Cancel",
+            "deleteBtn": "Delete"
           }
         },
         "create": {

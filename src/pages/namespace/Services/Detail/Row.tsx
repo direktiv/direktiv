@@ -7,7 +7,7 @@ import {
 import { MoreVertical, Trash } from "lucide-react";
 import {
   ServiceRevisionSchemaType,
-  serviceConditionNames,
+  serviceRevisionConditionNames,
 } from "~/api/services/schema";
 import { TableCell, TableRow } from "~/design/Table";
 import {
@@ -20,6 +20,7 @@ import {
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
+import { StatusBadge } from "../List/components/StatusBadge";
 import moment from "moment";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -65,8 +66,8 @@ const ServicesTableRow: FC<{
           <div className="flex flex-col gap-3">
             {revision.name}
             <div className="flex gap-3">
-              {/* {serviceConditionNames.map((condition) => {
-                const res = service.conditions.find(
+              {serviceRevisionConditionNames.map((condition) => {
+                const res = revision.conditions.find(
                   (c) => c.name === condition
                 );
                 return (
@@ -80,7 +81,7 @@ const ServicesTableRow: FC<{
                     {condition}
                   </StatusBadge>
                 );
-              })} */}
+              })}
             </div>
           </div>
         </TableCell>
