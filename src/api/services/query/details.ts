@@ -29,6 +29,19 @@ const fetchServiceDetails = async ({
   getServiceDetails({
     apiKey,
     urlParams: { namespace, service },
+  }).then((res) => ({
+    // revisions must be sorted by creation date, to figure out the latest revision
+    ...res,
+    revisions: (res.revisions ?? []).sort((a, b) => {
+      if (a.revision > b.revision) {
+        return -1;
+      }
+      if (a.revision < b.revision) {
+        return 1;
+      }
+      return 0;
+    }),
+  }));
   });
 
 export const useServiceDetails = ({ service }: { service: string }) => {
@@ -45,24 +58,6 @@ export const useServiceDetails = ({ service }: { service: string }) => {
       service,
     }),
     queryFn: fetchServiceDetails,
-    select: (data) => {
-      // revisions must be sorted by creation date, to figure out the latest revision
-      if (!data) {
-        return undefined;
-      }
-      return {
-        ...data,
-        revisions: (data.revisions ?? []).sort((a, b) => {
-          if (a.revision > b.revision) {
-            return -1;
-          }
-          if (a.revision < b.revision) {
-            return 1;
-          }
-          return 0;
-        }),
-      };
-    },
     enabled: !!namespace,
   });
 };
