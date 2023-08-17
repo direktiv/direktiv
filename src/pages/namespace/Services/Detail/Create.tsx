@@ -83,7 +83,7 @@ const CreateRevision = ({
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = !isDirty || (isSubmitted && !isValid);
+  const disableSubmit = isSubmitted && !isValid;
 
   const formId = `new-service-revision`;
 
@@ -120,32 +120,34 @@ const CreateRevision = ({
               {t("pages.services.revision.create.scaleLabel")}
             </label>
             <div className="flex w-full gap-5">
-              <Input className="w-12" readOnly value={watch("size")} disabled />
+              <Input
+                className="w-12"
+                readOnly
+                value={watch("minscale")}
+                disabled
+              />
               <Slider
                 id="scale"
                 step={1}
                 min={0}
                 max={maxScale}
-                value={[watch("size") ?? 0]}
+                value={[watch("minscale") ?? 0]}
                 onValueChange={(e) => {
                   const newValue = e[0];
-                  newValue !== undefined && setValue("size", newValue);
+                  newValue !== undefined && setValue("minscale", newValue);
                 }}
               />
             </div>
           </fieldset>
           <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[90px] text-right text-[14px]"
-              htmlFor="minscale"
-            >
+            <label className="w-[90px] text-right text-[14px]" htmlFor="size">
               {t("pages.services.revision.create.sizeLabel")}
             </label>
             <Select
-              value={`${getValues("minscale")}`}
-              onValueChange={(value) => setValue("minscale", parseInt(value))}
+              value={`${getValues("size")}`}
+              onValueChange={(value) => setValue("size", parseInt(value))}
             >
-              <SelectTrigger variant="outline" className="w-full" id="minscale">
+              <SelectTrigger variant="outline" className="w-full" id="size">
                 <SelectValue
                   placeholder={t(
                     "pages.services.revision.create.sizePlaceholder"
