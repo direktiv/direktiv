@@ -10,7 +10,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      
+      - uses: Borales/actions-yarn@v4.2.0
+
       # Cache Node Modules
       - name: Cache Node Modules
         uses: actions/cache@v2
