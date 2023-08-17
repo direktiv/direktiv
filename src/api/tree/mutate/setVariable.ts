@@ -87,6 +87,7 @@ export const useSetVariable = ({
           variable: data.key,
           workflow: data.path,
         }),
+        variant: "success",
       });
     },
   });

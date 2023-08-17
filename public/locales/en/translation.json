@@ -625,11 +625,11 @@
         },
         "setVariable": {
           "success": {
-            "title": "Worfklow variable created",
-            "description": "Added variable {{variable}} for workflow {{workflow}}"
+            "title": "Worfklow variable saved",
+            "description": "Saved variable {{variable}} for workflow {{workflow}}"
           },
           "error": {
-            "description": "could not create workflow variable 😢"
+            "description": "could not save workflow variable 😢"
           }
         },
         "createDirectory": {
