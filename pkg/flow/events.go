@@ -584,6 +584,7 @@ resend:
 			Id:         e.Event.ID(),
 			Source:     e.Event.Source(),
 			Type:       e.Event.Type(),
+			Cloudevent: []byte(e.Event.String()),
 		})
 	}
 	resp.Events.Results = finalResults
