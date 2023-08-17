@@ -34,8 +34,10 @@ const ServiceDetailPage = () => {
     }
   }, [dialogOpen]);
 
+  if (!data) return null;
   if (!service) return null;
 
+  const latestRevision = data.revisions?.[0];
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -93,6 +95,16 @@ const ServiceDetailPage = () => {
             <CreateServiceRevision
               service={service}
               close={() => setDialogOpen(false)}
+              defatulValues={
+                latestRevision
+                  ? {
+                      image: latestRevision.image,
+                      size: latestRevision.size ?? 0,
+                      minscale: latestRevision.minScale ?? 0,
+                      cmd: "",
+                    }
+                  : undefined
+              }
             />
           )}
         </DialogContent>
