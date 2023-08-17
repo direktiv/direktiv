@@ -416,6 +416,7 @@
           "create": "Create a new Revision"
         },
         "create": {
+          "noChanges": "please make some changes before creating a new revision",
           "title": "Create a new Revision",
           "imageLabel": "Image",
           "imagePlaceholder": "image/name:tag",

@@ -61,7 +61,22 @@ const CreateRevision = ({
       minscale: 0,
       size: 1,
     },
-    resolver: zodResolver(ServiceRevisionFormSchema),
+    resolver: zodResolver(
+      ServiceRevisionFormSchema.refine(
+        (x) => {
+          if (defaultValues) {
+            return Object.keys(defaultValues).some((key) => {
+              const typedKey = key as keyof typeof defaultValues;
+              return x[typedKey] !== defaultValues[typedKey];
+            });
+          }
+          return false;
+        },
+        {
+          message: t("pages.services.revision.create.noChanges"),
+        }
+      )
+    ),
   });
 
   const onSubmit: SubmitHandler<ServiceRevisionFormSchemaType> = ({
