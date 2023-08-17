@@ -95,7 +95,7 @@ const ServiceDetailPage = () => {
             <CreateServiceRevision
               service={service}
               close={() => setDialogOpen(false)}
-              defatulValues={
+              defaultValues={
                 latestRevision
                   ? {
                       image: latestRevision.image,

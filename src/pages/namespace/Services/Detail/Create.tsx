@@ -31,12 +31,12 @@ const availableSizes = [0, 1, 2] as const;
 
 const CreateRevision = ({
   service,
-  defatulValues,
+  defaultValues,
   close,
 }: {
   service: string;
   close: () => void;
-  defatulValues?: ServiceRevisionFormSchemaType;
+  defaultValues?: ServiceRevisionFormSchemaType;
 }) => {
   const { t } = useTranslation();
 
@@ -55,9 +55,9 @@ const CreateRevision = ({
     watch,
     getValues,
     setValue,
-    formState: { isDirty, errors, isValid, isSubmitted },
+    formState: { errors, isValid, isSubmitted },
   } = useForm<ServiceRevisionFormSchemaType>({
-    defaultValues: defatulValues ?? {
+    defaultValues: defaultValues ?? {
       minscale: 0,
       size: 1,
     },
