@@ -7,17 +7,28 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
+import { ServiceRevisionSchemaType } from "~/api/services/schema";
 import { Trash } from "lucide-react";
-import { useDeleteService } from "~/api/services/mutate/delete";
+import { useDeleteServiceRevision } from "~/api/services/mutate/deleteRevision";
 
-const Delete = ({ service, close }: { service: string; close: () => void }) => {
+const Delete = ({
+  revision,
+  service,
+  close,
+}: {
+  revision: ServiceRevisionSchemaType;
+  service: string;
+  close: () => void;
+}) => {
   const { t } = useTranslation();
 
-  const { mutate: deleteService, isLoading } = useDeleteService({
-    onSuccess: () => {
-      close();
-    },
-  });
+  const { mutate: deleteServiceRevision, isLoading } = useDeleteServiceRevision(
+    {
+      onSuccess: () => {
+        close();
+      },
+    }
+  );
 
   return (
     <>
@@ -29,7 +40,7 @@ const Delete = ({ service, close }: { service: string; close: () => void }) => {
       <div className="my-3">
         <Trans
           i18nKey="pages.services.revision.list.delete.msg"
-          values={{ name: service }}
+          values={{ name: revision.name }}
         />
       </div>
       <DialogFooter>
@@ -40,7 +51,7 @@ const Delete = ({ service, close }: { service: string; close: () => void }) => {
         </DialogClose>
         <Button
           onClick={() => {
-            deleteService({ service });
+            deleteServiceRevision({ service, revision: revision.revision });
           }}
           variant="destructive"
           loading={isLoading}

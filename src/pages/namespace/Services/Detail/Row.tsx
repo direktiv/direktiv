@@ -31,7 +31,7 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 const ServicesTableRow: FC<{
   service: string;
   revision: ServiceRevisionSchemaType;
-  setDeleteRevision: (service: string | undefined) => void;
+  setDeleteRevision: (service: ServiceRevisionSchemaType | undefined) => void;
 }> = ({ revision, service, setDeleteRevision }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
@@ -116,7 +116,7 @@ const ServicesTableRow: FC<{
                 data-testid="node-actions-delete"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDeleteRevision(revision.name);
+                  setDeleteRevision(revision);
                 }}
               >
                 <DropdownMenuItem>

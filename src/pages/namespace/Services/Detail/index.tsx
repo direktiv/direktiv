@@ -14,6 +14,7 @@ import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
 import Delete from "./Delete";
 import Row from "./Row";
+import { ServiceRevisionSchemaType } from "~/api/services/schema";
 import { pages } from "~/util/router/pages";
 import { useServiceDetails } from "~/api/services/query/details";
 import { useTranslation } from "react-i18next";
@@ -26,7 +27,8 @@ const ServiceDetailPage = () => {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteRevision, setDeleteRevision] = useState<string>();
+  const [deleteRevision, setDeleteRevision] =
+    useState<ServiceRevisionSchemaType>();
   const [createRevision, setCreateRevision] = useState(false);
 
   useEffect(() => {
@@ -93,7 +95,8 @@ const ServiceDetailPage = () => {
         <DialogContent>
           {deleteRevision && (
             <Delete
-              service={deleteRevision}
+              service={service}
+              revision={deleteRevision}
               close={() => {
                 setDialogOpen(false);
               }}

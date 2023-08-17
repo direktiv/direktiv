@@ -851,6 +851,15 @@
           "error": {
             "description": "Could not delete service 😢"
           }
+        },
+        "deleteServiceRevision": {
+          "success": {
+            "title": "Service revision deleted",
+            "description": "Service revision {name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete service revision 😢"
+          }
         }
       }
     },
