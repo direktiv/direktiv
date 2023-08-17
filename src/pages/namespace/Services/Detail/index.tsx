@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
+import Row from "./Row";
 import { pages } from "~/util/router/pages";
 import { useServiceDetails } from "~/api/services/query/details";
 import { useTranslation } from "react-i18next";
@@ -76,13 +77,18 @@ const ServiceDetailPage = () => {
                 <TableHeaderCell className="w-16" />
               </TableRow>
             </TableHead>
-            <TableBody></TableBody>
+            <TableBody>
+              {data?.revisions?.map((revision) => (
+                <Row
+                  revision={revision}
+                  service={service}
+                  key={revision.name}
+                  setDeleteRevision={setDeleteRevision}
+                />
+              ))}
+            </TableBody>
           </Table>
-          {data?.revisions?.map((revision) => (
-            <div key={revision.name}>{revision.name}</div>
-          ))}
         </Card>
-
         <DialogContent>
           {/* {deleteRevision && (
             <Delete

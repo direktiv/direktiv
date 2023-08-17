@@ -421,6 +421,9 @@
             "scale": "scale",
             "size": "size",
             "createdAt": "created at"
+          },
+          "contextMenu": {
+            "delete": "Delete"
           }
         },
         "create": {
