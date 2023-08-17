@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
   const { t } = useTranslation();
-  const { data: serviceList, isSuccess, refetch } = useServices();
+  const { data: serviceList, isSuccess } = useServices();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteService, setDeleteService] = useState<string>();
