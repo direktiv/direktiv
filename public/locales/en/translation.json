@@ -465,6 +465,7 @@
         "edit": {
           "title": "Edit {{name}}",
           "name": "Name",
+          "fetchError": "There was an error fetching the variable's content",
           "mimeType": {
             "label": "Mimetype",
             "placeholder": "Select a mimetype"
