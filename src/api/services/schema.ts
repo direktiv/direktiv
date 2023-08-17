@@ -151,6 +151,8 @@ export const ServiceRevisionFormSchema = z.object({
     "image": "direktiv/solve:v3",
     "created": 1691140028,
     "status": "True",
+    "minScale" : 1,
+    "size" : 1,
     "conditions": [
       {
         "name": "Active",
@@ -188,6 +190,8 @@ const ServiceRevisionSchema = z.object({
   status: StatusSchema,
   conditions: z.array(ServiceRevisionConditionSchema),
   revision: z.string(),
+  minScale: z.number().optional(),
+  size: z.number().optional(),
 });
 
 /**
