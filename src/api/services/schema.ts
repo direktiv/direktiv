@@ -225,6 +225,7 @@ export type StatusSchemaType = z.infer<typeof StatusSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
 export type ServiceStreamingSchemaType = z.infer<typeof ServiceStreamingSchema>;
+export type ServiceRevisionSchemaType = z.infer<typeof ServiceRevisionSchema>;
 export type ServiceRevisionFormSchemaType = z.infer<
   typeof ServiceRevisionFormSchema
 >;
