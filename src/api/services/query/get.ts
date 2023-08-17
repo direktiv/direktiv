@@ -119,6 +119,17 @@ export const useServices = () => {
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchServices,
+    select: (data) => {
+      // TODO: this should be changed in the backend
+      // reverse the order of functions (newer first)
+      if (!data) {
+        return undefined;
+      }
+      return {
+        ...data,
+        functions: (data.functions ?? []).reverse(),
+      };
+    },
     enabled: !!namespace,
   });
 };
