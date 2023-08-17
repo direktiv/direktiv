@@ -70,7 +70,7 @@ const ServiceDetailPage = () => {
                 <TableHeaderCell className="w-20">
                   {t("pages.services.revision.list.tableHeader.size")}
                 </TableHeaderCell>
-                <TableHeaderCell className="w-48">
+                <TableHeaderCell className="w-40">
                   {t("pages.services.revision.list.tableHeader.createdAt")}
                 </TableHeaderCell>
                 <TableHeaderCell className="w-16" />
