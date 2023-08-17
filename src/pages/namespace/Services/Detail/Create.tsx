@@ -55,7 +55,7 @@ const CreateRevision = ({
     watch,
     getValues,
     setValue,
-    formState: { errors, isValid, isSubmitted },
+    formState: { errors },
   } = useForm<ServiceRevisionFormSchemaType>({
     defaultValues: defaultValues ?? {
       minscale: 0,
