@@ -78,19 +78,26 @@ export const WorkflowStartedSchema = z.object({
   instance: z.string(),
 });
 
-// TODO before merging:
-// - what values are possible for mimeType below, should we use an enum?
-
-/**
- * Example for a workflow variable record in the API response
-  {
-    "name": "variable-name",
-    "createdAt": "2023-08-15T12:14:28.980237Z",
-    "updatedAt": "2023-08-15T12:14:28.980237Z",
-    "checksum": "",
-    "size": "3",
-    "mimeType": "application/json"
-  },
+/*
+ * Example response for a list of variables. Only properties consumed by the 
+ * frontend are added to the schemas below.
+{
+  "namespace":  "foobar",
+  "path":  "/file.yaml",
+  "variables":  {
+    "pageInfo":  null,
+    "results":  [
+      {
+        "name":  "fix-color",
+        "createdAt":  "2023-08-17T09:32:34.255765Z",
+        "updatedAt":  "2023-08-17T09:32:34.255765Z",
+        "checksum":  "",
+        "size":  "45",
+        "mimeType":  "text/plain"
+      },
+    ]
+  }
+}
 */
 export const WorkflowVariableSchema = z.object({
   name: z.string(), // identifier
@@ -99,23 +106,22 @@ export const WorkflowVariableSchema = z.object({
   mimeType: z.string(), // "application/json"
 });
 
-export const WorkflowVariableContentSchema = z.object({
-  body: z.string(),
-  headers: z.object({
-    "content-type": z.string(),
-  }),
-});
-
-// TODO before merging: really allow z.null for pageinfo?
 export const WorkflowVariableListSchema = z.object({
   namespace: z.string(),
   path: z.string(), // the workflow identifier
   variables: z.object({
-    pageInfo: PageinfoSchema.or(z.null()),
     results: z.array(WorkflowVariableSchema),
   }),
 });
 
+export const WorkflowVariableContentSchema = z.object({
+  body: z.string(),
+  headers: z.object({
+    "content-type": z.string(), // same as mimeType
+  }),
+});
+
+/* needed for validation, but not all properties are editable in the form */
 export const WorkflowVariableFormSchema = z.object({
   name: z.string().nonempty(),
   path: z.string().nonempty(),
@@ -140,7 +146,7 @@ export const WorkflowVariableFormSchema = z.object({
 export const WorkflowVariableCreatedSchema = z.object({
   namespace: z.string(),
   path: z.string(), // workflow path
-  key: z.string(), // the variable's identifier
+  key: z.string(), // "name" when GETting the variable
   createdAt: z.string(),
   updatedAt: z.string(),
   mimeType: z.string(), // "application/json"
