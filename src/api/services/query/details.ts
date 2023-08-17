@@ -46,13 +46,21 @@ export const useServiceDetails = ({ service }: { service: string }) => {
     }),
     queryFn: fetchServiceDetails,
     select: (data) => {
-      // reverse the order of revisions (newer first)
+      // revisions must be sorted by creation date, to figure out the latest revision
       if (!data) {
         return undefined;
       }
       return {
         ...data,
-        revisions: (data.revisions ?? []).reverse(),
+        revisions: (data.revisions ?? []).sort((a, b) => {
+          if (a.revision > b.revision) {
+            return -1;
+          }
+          if (a.revision < b.revision) {
+            return 1;
+          }
+          return 0;
+        }),
       };
     },
     enabled: !!namespace,
