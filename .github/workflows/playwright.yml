@@ -36,7 +36,7 @@ jobs:
       - name: Dependencies Playwright dry run
         run: yarn playwright install-deps --dry-run
       - name: Install Playwright Browsers
-        run: yarn playwright install --with-deps
+        run: yarn playwright install
       
       - name: Run Playwright tests
         run: yarn playwright test
