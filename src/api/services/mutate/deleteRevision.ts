@@ -20,7 +20,7 @@ const updateCache = (
   if (!oldData) return undefined;
   return {
     ...oldData,
-    functions: (oldData.revisions ?? []).filter(
+    revisions: (oldData.revisions ?? []).filter(
       (service) => service.revision !== variables.revision
     ),
   };
