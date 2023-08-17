@@ -24,13 +24,13 @@ const ServiceDetailPage = () => {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteService, setDeleteService] = useState<string>();
-  const [createService, setCreateService] = useState(false);
+  const [deleteRevision, setDeleteRevision] = useState<string>();
+  const [createRevision, setCreateRevision] = useState(false);
 
   useEffect(() => {
     if (dialogOpen === false) {
-      setDeleteService(undefined);
-      setCreateService(false);
+      setDeleteRevision(undefined);
+      setCreateRevision(false);
     }
   }, [dialogOpen]);
 
@@ -48,7 +48,7 @@ const ServiceDetailPage = () => {
             {t("pages.services.revision.list.title", { name: service })}
           </h3>
           <DialogTrigger asChild>
-            <Button onClick={() => setCreateService(true)} variant="outline">
+            <Button onClick={() => setCreateRevision(true)} variant="outline">
               <PlusCircle />
               {t("pages.services.revision.list.create")}
             </Button>
@@ -84,7 +84,7 @@ const ServiceDetailPage = () => {
         </Card>
 
         <DialogContent>
-          {/* {deleteService && (
+          {/* {deleteRevision && (
             <Delete
               service={deleteService}
               close={() => {
@@ -92,7 +92,7 @@ const ServiceDetailPage = () => {
               }}
             />
           )} */}
-          {createService && (
+          {createRevision && (
             <CreateServiceRevision
               service={service}
               close={() => setDialogOpen(false)}
