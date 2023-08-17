@@ -35,6 +35,7 @@ import (
 type BetterLogger interface {
 	Debugf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
 	Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
+	Warnf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
 	Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{})
 }
 
@@ -61,6 +62,15 @@ func (s SugarBetterJSONLogger) Infof(ctx context.Context, recipientID uuid.UUID,
 	s.log(Info, tags, msg)
 }
 
+func (s SugarBetterJSONLogger) Warnf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	_ = ctx
+	appendInstanceInheritanceInfo(tags)
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	tags["source"] = recipientID.String()
+	s.log(Warn, tags, msg)
+}
+
 func (s SugarBetterJSONLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
 	appendInstanceInheritanceInfo(tags)
@@ -76,6 +86,8 @@ func (s SugarBetterJSONLogger) log(level LogLevel, tags map[string]string, msg s
 	case Debug:
 	case Info:
 		logToSuggar = s.Sugar.Infow
+	case Warn:
+		logToSuggar = s.Sugar.Warnw
 	case Error:
 		logToSuggar = s.Sugar.Errorw
 	}
@@ -111,6 +123,14 @@ func (s SugarBetterConsoleLogger) Infof(ctx context.Context, recipientID uuid.UU
 	s.log(Info, tags, msg)
 }
 
+func (s SugarBetterConsoleLogger) Warnf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	_ = ctx
+	_ = recipientID
+	msg = fmt.Sprintf(msg, a...)
+	tags = s.AddTraceFrom(ctx, tags)
+	s.log(Warn, tags, msg)
+}
+
 func (s SugarBetterConsoleLogger) Errorf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
 	_ = recipientID
@@ -125,6 +145,8 @@ func (s SugarBetterConsoleLogger) log(level LogLevel, tags map[string]string, ms
 	case Debug:
 	case Info:
 		logToSuggar = s.Sugar.Infow
+	case Warn:
+		logToSuggar = s.Sugar.Warnw
 	case Error:
 		logToSuggar = s.Sugar.Errorw
 	}
@@ -164,6 +186,16 @@ func (loggers ChainedBetterLogger) Infof(ctx context.Context, recipientID uuid.U
 	}
 	for i := range loggers {
 		loggers[i].Infof(ctx, recipientID, tagsCopy, msg, a...)
+	}
+}
+
+func (loggers ChainedBetterLogger) Warnf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	tagsCopy := map[string]string{}
+	for k, v := range tags {
+		tagsCopy[k] = v
+	}
+	for i := range loggers {
+		loggers[i].Warnf(ctx, recipientID, tagsCopy, msg, a...)
 	}
 }
 
@@ -241,7 +273,7 @@ func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID,
 	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
-		time:          time.Now(),
+		time:          time.Now().UTC(),
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
@@ -258,7 +290,7 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
-		time:          time.Now(),
+		time:          time.Now().UTC(),
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
@@ -270,12 +302,29 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 	}
 }
 
+func (cls *CachedSQLLogStore) Warnf(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
+	_ = ctx
+	appendInstanceInheritanceInfo(tags)
+	select {
+	case cls.logQueue <- &logMessage{
+		time:          time.Now().UTC(),
+		recipientID:   recipientID,
+		tags:          tags,
+		msg:           fmt.Sprintf(msg, a...),
+		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
+		level:         Warn,
+	}:
+	default:
+		cls.logError("!! Log-buffer is/was full.")
+	}
+}
+
 func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, tags map[string]string, msg string, a ...interface{}) {
 	_ = ctx
 	appendInstanceInheritanceInfo(tags)
 	select {
 	case cls.logQueue <- &logMessage{
-		time:          time.Now(),
+		time:          time.Now().UTC(),
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),

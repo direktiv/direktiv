@@ -33,14 +33,14 @@ func newTesterInstance() *testerInstance {
 	instance.tbuf = make([]string, 0)
 	instance.instanceData = make(map[string]interface{})
 
-	instance.t0 = time.Now()
+	instance.t0 = time.Now().UTC()
 	instance.delays = time.Millisecond * 0
 
 	return instance
 }
 
 func (instance *testerInstance) dt() time.Duration {
-	return time.Now().Add(instance.delays).Sub(instance.t0)
+	return time.Now().UTC().Add(instance.delays).Sub(instance.t0)
 }
 
 func (instance *testerInstance) dtCPU() time.Duration {
@@ -112,7 +112,7 @@ func (instance *testerInstance) CreateChild(ctx context.Context, args CreateChil
 }
 
 func (instance *testerInstance) Deadline(ctx context.Context) time.Time {
-	return time.Now().Add(DefaultShortDeadline)
+	return time.Now().UTC().Add(DefaultShortDeadline)
 }
 
 func (instance *testerInstance) GetInstanceData() interface{} {

@@ -155,7 +155,7 @@ func valueForSystem(key string, instance Instance) (interface{}, error) {
 	case "uuid":
 		ret = uuid.New().String()
 	case "epoch":
-		ret = time.Now().Unix()
+		ret = time.Now().UTC().Unix()
 	default:
 		return nil, fmt.Errorf("unknown system key %s", key)
 	}

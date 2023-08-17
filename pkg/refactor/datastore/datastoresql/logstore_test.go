@@ -45,7 +45,7 @@ func Test_Callpath(t *testing.T) {
 	id := uuid.New()
 	tags := make(map[string]interface{})
 	tags["log_instance_call_path"] = "/" + id.String()
-	err = logstore.Append(context.Background(), time.Now(), logengine.Debug, "testing callpath", tags)
+	err = logstore.Append(context.Background(), time.Now().UTC(), logengine.Debug, "testing callpath", tags)
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,7 +60,7 @@ func Test_Callpath(t *testing.T) {
 		t.Error("got no results")
 	}
 	tags["log_instance_call_path"] = "/" + id.String() + "/" + uuid.NewString()
-	err = logstore.Append(context.Background(), time.Now(), logengine.Debug, "testing callpath", tags)
+	err = logstore.Append(context.Background(), time.Now().UTC(), logengine.Debug, "testing callpath", tags)
 	if err != nil {
 		t.Error(err)
 	}
@@ -86,7 +86,7 @@ func addRandomMsgs(t *testing.T, logstore logengine.LogStore, col string, id uui
 	in := map[string]interface{}{}
 	in[col] = id
 	for _, v := range want {
-		err := logstore.Append(context.Background(), time.Now(), level, v, in)
+		err := logstore.Append(context.Background(), time.Now().UTC(), level, v, in)
 		if err != nil {
 			t.Error(err)
 		}

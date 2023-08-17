@@ -15,8 +15,10 @@ import (
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/functions"
+	"github.com/direktiv/direktiv/pkg/functions/grpc"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
@@ -287,7 +289,7 @@ func (im *instanceMemory) SetMemory(ctx context.Context, x interface{}) error {
 }
 
 func (im *instanceMemory) Deadline(ctx context.Context) time.Time {
-	return time.Now().Add(states.DefaultShortDeadline)
+	return time.Now().UTC().Add(states.DefaultShortDeadline)
 }
 
 func (im *instanceMemory) LivingChildren(ctx context.Context) []*states.ChildInfo {
@@ -300,7 +302,7 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 		return err
 	}
 
-	t := time.Now().Add(d)
+	t := time.Now().UTC().Add(d)
 
 	err = im.engine.scheduleRetry(im.ID().String(), stateID, im.Step(), t, data)
 	if err != nil {
@@ -477,4 +479,59 @@ func (child *knativeHandle) Run(ctx context.Context) {
 
 func (child *knativeHandle) Info() states.ChildInfo {
 	return child.info
+}
+
+func (server *server) setNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
+	ctx := context.Background()
+
+	tx, err := server.flow.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByID(ctx, nsID)
+	if err != nil {
+		return err
+	}
+
+	tx.Rollback()
+
+	// TODO: more error tolerance?
+
+	// NOTE: until the refactor reaches the functions logic I hope we can get away with the simplest solution. Purge all existing and replace, even if unchanged.
+	annotations := make(map[string]string)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
+	annotations[functions.ServiceHeaderNamespaceName] = ns.Name
+
+	_, err = server.functionsClient.DeleteFunctions(ctx, &igrpc.FunctionsListFunctionsRequest{
+		Annotations: annotations,
+	})
+	if err != nil {
+		return err
+	}
+
+	for idx := range services {
+		req := new(igrpc.FunctionsCreateFunctionRequest)
+		namespace := ns.ID.String()
+
+		req.Info = &grpc.FunctionsBaseInfo{
+			Namespace:     &namespace,
+			NamespaceName: &ns.Name,
+			Name:          &services[idx].Name,
+			Image:         &services[idx].Image,
+			// Cmd:           &cr.Cmd,
+			// Size:          &cr.Size,
+			// MinScale:      &cr.MinScale,
+			// Path:          &cr.WorkflowPath,
+			// Envs:          cr.Envs,
+		}
+
+		_, err = server.functionsClient.CreateFunction(ctx, req)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

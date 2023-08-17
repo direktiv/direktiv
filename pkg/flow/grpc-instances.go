@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -276,7 +277,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 				if err != nil {
 					return nil, instancestore.ErrBadListOpts
 				}
-				filter.Value = t
+				filter.Value = t.UTC()
 			case "STATUS":
 				filter.Field = instancestore.FieldStatus
 				filter.Value, err = instancestore.InstanceStatusFromString(x.Val)
@@ -390,18 +391,17 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	var resp grpc.InstanceResponse
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 	resp.Flow = instance.RuntimeInfo.Flow
-	// TODO: alan
-	// if rt.Caller != uuid.Nil {
-	// 	resp.InvokedBy = rt.Caller.String()
-	// }
+
+	if l := len(instance.DescentInfo.Descent); l > 0 {
+		resp.InvokedBy = instance.DescentInfo.Descent[l-1].ID.String()
+	}
 
 	resp.Namespace = instance.TelemetryInfo.NamespaceName
 
 	rwf := new(grpc.InstanceWorkflow)
-	// TODO: alan
-	// rwf.Name = instance.Instance.CalledAs
-	// rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
-	// rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
+	rwf.Name = filepath.Base(instance.Instance.WorkflowPath)
+	rwf.Parent = filepath.Dir(instance.Instance.WorkflowPath)
+	rwf.Path = instance.Instance.WorkflowPath
 	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 
@@ -461,18 +461,17 @@ resend:
 	resp := new(grpc.InstanceResponse)
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
 	resp.Flow = instance.RuntimeInfo.Flow
-	// TODO: alan
-	// resp.InvokedBy = rt.Caller.String()
+
+	if l := len(instance.DescentInfo.Descent); l > 0 {
+		resp.InvokedBy = instance.DescentInfo.Descent[l-1].ID.String()
+	}
 
 	resp.Namespace = ns.Name
 
 	rwf := new(grpc.InstanceWorkflow)
-	// TODO: alan
-	// if cached.File != nil {
-	// 	rwf.Name = cached.File.Name()
-	// 	rwf.Parent = strings.TrimPrefix(cached.File.Dir(), "/") // TODO: get rid of the trim?
-	// 	rwf.Path = strings.TrimPrefix(cached.File.Path, "/")    // TODO: get rid of the trim?
-	// }
+	rwf.Name = filepath.Base(instance.Instance.WorkflowPath)
+	rwf.Parent = filepath.Dir(instance.Instance.WorkflowPath)
+	rwf.Path = instance.Instance.WorkflowPath
 	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 

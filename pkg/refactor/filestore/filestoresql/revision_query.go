@@ -24,7 +24,7 @@ func (q *RevisionQuery) Delete(ctx context.Context) error {
 		return res.Error
 	}
 	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpedted gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil

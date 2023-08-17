@@ -41,10 +41,10 @@ func (logic *delayLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Duration)
 	if err != nil {
 		logic.Log(ctx, log.Error, "failed to parse duration: %v", err)
-		return time.Now().Add(DefaultShortDeadline)
+		return time.Now().UTC().Add(DefaultShortDeadline)
 	}
 
-	t := d.Shift(time.Now().Add(DefaultShortDeadline))
+	t := d.Shift(time.Now().UTC().Add(DefaultShortDeadline))
 
 	return t
 }
@@ -72,7 +72,7 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 			return nil, derrors.NewInternalError(fmt.Errorf("failed to parse delay duration: %w", err))
 		}
 
-		t0 := time.Now()
+		t0 := time.Now().UTC()
 		t := d.Shift(t0)
 
 		err = logic.Sleep(ctx, t.Sub(t0), "")

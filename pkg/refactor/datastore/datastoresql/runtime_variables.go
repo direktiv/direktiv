@@ -250,7 +250,7 @@ func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, na
 		return nil, datastore.ErrNotFound
 	}
 	if res.RowsAffected > 1 {
-		return nil, fmt.Errorf("unexpedted runtime_variables update count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected runtime_variables update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return s.GetByID(ctx, id)
@@ -267,7 +267,7 @@ func (s *sqlRuntimeVariablesStore) Delete(ctx context.Context, id uuid.UUID) err
 		return datastore.ErrNotFound
 	}
 	if res.RowsAffected > 1 {
-		return fmt.Errorf("unexpedted runtime_variables delete count, got: %d, want: %d", res.RowsAffected, 1)
+		return fmt.Errorf("unexpected runtime_variables delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
 	return nil

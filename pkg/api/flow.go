@@ -160,6 +160,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "namespace config has been successfully been updated"
 	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodPatch)
 
+	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name(RN_GetNamespaceLogs).Methods(http.MethodGet)
+
 	// swagger:operation GET /api/namespaces/{namespace}/config Namespaces getNamespaceConfig
 	// ---
 	// summary: Gets a namespace config
@@ -2175,6 +2177,25 @@ func (h *flowHandler) SetNamespaceConfig(w http.ResponseWriter, r *http.Request)
 	resp := make(map[string]interface{})
 	err = json.Unmarshal([]byte(grpcResp.Config), &resp)
 	respondJSON(w, resp, err)
+}
+
+func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("Handling request: %s", this())
+
+	ctx := r.Context()
+	namespace := mux.Vars(r)["ns"]
+
+	in := &grpc.NamespaceLintRequest{
+		Name: namespace,
+	}
+
+	resp, err := h.client.NamespaceLint(ctx, in)
+	if err != nil {
+		respond(w, resp, err)
+		return
+	}
+
+	respond(w, resp, nil)
 }
 
 func (h *flowHandler) GetNamespaceConfig(w http.ResponseWriter, r *http.Request) {

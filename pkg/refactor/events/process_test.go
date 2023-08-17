@@ -27,8 +27,8 @@ func Test_Add_Get(t *testing.T) {
 
 	waitListener := &events.EventListener{
 		ID:                     uuid.New(),
-		CreatedAt:              time.Now(),
-		UpdatedAt:              time.Now(),
+		CreatedAt:              time.Now().UTC(),
+		UpdatedAt:              time.Now().UTC(),
 		Deleted:                false,
 		NamespaceID:            ns,
 		ListeningForEventTypes: []string{"test-wait-topic"},
@@ -39,8 +39,8 @@ func Test_Add_Get(t *testing.T) {
 	listeners = append(listeners,
 		&events.EventListener{
 			ID:                     uuid.New(),
-			CreatedAt:              time.Now(),
-			UpdatedAt:              time.Now(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
@@ -50,8 +50,8 @@ func Test_Add_Get(t *testing.T) {
 		waitListener,
 		&events.EventListener{
 			ID:                     uuid.New(),
-			CreatedAt:              time.Now(),
-			UpdatedAt:              time.Now(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"event-and-topic-a", "event-and-topic-b"},
@@ -193,7 +193,7 @@ func newEvent(subj, t string, id uuid.UUID) *cloudevents.Event {
 			Type: t,
 			ID:   id.String(),
 			Time: &types.Timestamp{
-				Time: time.Now(),
+				Time: time.Now().UTC(),
 			},
 			Subject: &subj,
 			Source:  *types.ParseURIRef("test.com"),

@@ -61,7 +61,7 @@ const (
 )
 
 func Shutdown(code int) {
-	t := time.Now()
+	t := time.Now().UTC()
 	threads.Stop(&t, code)
 }
 

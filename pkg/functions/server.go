@@ -253,7 +253,7 @@ func (fServer *functionsServer) reusableGC() {
 
 		logger.Debugf("reusable heartbeat garbage collector running.")
 
-		cutoff := time.Now().Add(time.Minute * -15)
+		cutoff := time.Now().UTC().Add(time.Minute * -15)
 
 		fServer.reusableCacheLock.Lock()
 
@@ -273,7 +273,7 @@ type cacheTuple struct {
 }
 
 func (ct *cacheTuple) Add(name string) {
-	ct.t = time.Now()
+	ct.t = time.Now().UTC()
 
 	sort.Strings(ct.names)
 
@@ -361,7 +361,7 @@ func (fServer *functionsServer) orphansGC() {
 			fServer.reusableCacheLock.Unlock()
 
 			if !exists {
-				if !item.CreationTimestamp.Time.Before(time.Now().Add(time.Minute * -60)) {
+				if !item.CreationTimestamp.Time.Before(time.Now().UTC().Add(time.Minute * -60)) {
 					continue
 				}
 				logger.Debugf("Reusable orphans garbage collector deleting detected orphan function: %s", item.Name)

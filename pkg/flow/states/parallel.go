@@ -46,10 +46,10 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 		if logic.Timeout != "" {
 			logic.Log(ctx, log.Error, "failed to parse timeout: %v", err)
 		}
-		return time.Now().Add(DefaultLongDeadline)
+		return time.Now().UTC().Add(DefaultLongDeadline)
 	}
 
-	t := d.Shift(time.Now().Add(DefaultLongDeadline))
+	t := d.Shift(time.Now().UTC().Add(DefaultLongDeadline))
 
 	return t
 }
