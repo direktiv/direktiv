@@ -51,10 +51,11 @@ export const useCreateServiceRevision = ({
         },
         payload,
       }),
-    onSuccess(data) {
+    onSuccess(data, variables) {
       queryClient.invalidateQueries(
-        serviceKeys.servicesList(namespace, {
+        serviceKeys.serviceDetail(namespace, {
           apiKey: apiKey ?? undefined,
+          service: variables.service,
         })
       );
       toast({
