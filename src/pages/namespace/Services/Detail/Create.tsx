@@ -96,9 +96,7 @@ const CreateRevision = ({
     });
   };
 
-  // you can not submit if the form has not changed or if there are any errors and
-  // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = isSubmitted && !isValid;
+  const disableSubmit = isLoading;
 
   const formId = `new-service-revision`;
 
