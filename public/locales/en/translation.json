@@ -411,6 +411,28 @@
           "deleteBtn": "Delete"
         }
       },
+      "revision": {
+        "list": {
+          "create": "Create a new Revision"
+        },
+        "create": {
+          "title": "Create a new Revision",
+          "imageLabel": "Image",
+          "imagePlaceholder": "image/name:tag",
+          "scaleLabel": "Scale",
+          "sizeLabel": "Size",
+          "sizePlaceholder": "Select Size",
+          "sizeValues": {
+            "0": "Small",
+            "1": "Medium",
+            "2": "Large"
+          },
+          "cmdLabel": "Cmd",
+          "cmdPlaceholder": "Enter the Cmd for a service",
+          "createBtn": "Create",
+          "cancelBtn": "Cancel"
+        }
+      },
       "create": {
         "title": "Create a new Service",
         "nameLabel": "Name",
