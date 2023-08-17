@@ -390,6 +390,7 @@
     "services": {
       "list": {
         "title": "Services",
+        "create": "Create a new Service",
         "tableHeader": {
           "name": "name",
           "image": "image",
@@ -401,8 +402,7 @@
           "delete": "Delete"
         },
         "empty": {
-          "title": "No services exist yet",
-          "create": "Create a new Service"
+          "title": "No services exist yet"
         },
         "delete": {
           "title": "Delete Service",

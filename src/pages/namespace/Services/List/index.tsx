@@ -48,7 +48,7 @@ const ServicesListPage = () => {
     <DialogTrigger asChild>
       <Button onClick={() => setCreateService(true)} variant="outline">
         <PlusCircle />
-        {t("pages.services.list.empty.create")}
+        {t("pages.services.list.create")}
       </Button>
     </DialogTrigger>
   );
