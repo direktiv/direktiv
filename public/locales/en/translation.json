@@ -169,7 +169,11 @@
         },
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
-        "runBtn": "Run",
+        "runBtn": {
+          "runWorkflow": "Run",
+          "setActive": "Set active",
+          "setInactive": "Set inactive"
+        },
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
@@ -630,6 +634,15 @@
           },
           "error": {
             "description": "could not save workflow variable 😢"
+          }
+        },
+        "toggleLive": {
+          "success": {
+            "title": "Workflow updated",
+            "description": {
+              "activated": "Workflow {{workflow}} was activated",
+              "deactivated": "Workflow {{workflow}} was deactivated"
+            }
           }
         },
         "createDirectory": {

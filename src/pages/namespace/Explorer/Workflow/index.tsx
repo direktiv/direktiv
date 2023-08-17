@@ -1,14 +1,32 @@
+import {
+  ChevronDown,
+  GitCommit,
+  GitMerge,
+  PieChart,
+  Play,
+  Power,
+  PowerOff,
+  Settings,
+} from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/design/Dropdown";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
 import { FC } from "react";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { useRouter } from "~/api/tree/query/router";
+import { useToggleLive } from "~/api/tree/mutate/toggleLive";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {
@@ -23,6 +41,12 @@ const Header: FC = () => {
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
+
+  const { data: router, isFetched: routerIsFetched } = useRouter({ path });
+
+  const { mutate: toggleLive } = useToggleLive();
+
+  const isLive = router?.live || false;
 
   if (!namespace) return null;
   if (!path) return null;
@@ -87,12 +111,47 @@ const Header: FC = () => {
           </h3>
 
           <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="primary" data-testid="workflow-header-btn-run">
-                <Play />
-                {t("pages.explorer.workflow.runBtn")}
-              </Button>
-            </DialogTrigger>
+            <ButtonBar>
+              <DialogTrigger asChild>
+                <Button
+                  loading={!routerIsFetched}
+                  disabled={!isLive}
+                  variant="primary"
+                  data-testid="workflow-header-btn-run"
+                >
+                  {routerIsFetched && <Play />}
+                  {t("pages.explorer.workflow.runBtn.runWorkflow")}
+                </Button>
+              </DialogTrigger>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant={isLive ? "primary" : "outline"}
+                    disabled={!routerIsFetched}
+                    loading={!routerIsFetched}
+                  >
+                    {routerIsFetched && <ChevronDown />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={() => toggleLive({ path, value: !isLive })}
+                  >
+                    {isLive ? (
+                      <>
+                        <PowerOff className="mr-2 h-4 w-4" />
+                        {t("pages.explorer.workflow.runBtn.setInactive")}
+                      </>
+                    ) : (
+                      <>
+                        <Power className="mr-2 h-4 w-4" />
+                        {t("pages.explorer.workflow.runBtn.setActive")}
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </ButtonBar>
 
             <DialogContent className="sm:max-w-2xl">
               <RunWorkflow path={path} />
