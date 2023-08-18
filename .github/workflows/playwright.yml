@@ -2,17 +2,42 @@ name: Playwright Tests
 on: pull_request
 jobs:
   test:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
+      
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Install dependencies
+      
+      # Cache Node Modules
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            node-modules-${{ runner.os }}-
+      
+      - name: Install yarn
+        run: npm install -g yarn
+      - name: Install project dependencies
         run: yarn
+
+      # Cache Playwright Browsers
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            playwright-browsers-${{ runner.os }}-
+      - name: Dependencies Playwright dry run
+        run: yarn playwright install-deps --dry-run
       - name: Install Playwright Browsers
-        run: yarn playwright install --with-deps
+        run: yarn playwright install
+      
       - name: Run Playwright tests
         run: yarn playwright test
         env:
@@ -20,6 +45,7 @@ jobs:
           VITE_E2E_UI_PORT: ${{ vars.VITE_E2E_UI_PORT }}
           VITE_DEV_API_DOMAIN: ${{ vars.VITE_DEV_API_DOMAIN }}
           VITE_E2E_API_TOKEN: ${{ vars.VITE_E2E_API_TOKEN }}
+      
       - uses: actions/upload-artifact@v3
         if: always()
         with:
