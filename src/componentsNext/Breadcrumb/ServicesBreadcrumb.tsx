@@ -55,8 +55,7 @@ const ServicesBreadcrumb = () => {
               revision,
             })}
           >
-            {/* turn namespace-14937757830533003475-00008 into 00008 */}
-            {revision?.split("-").at(-1)}
+            {revision}
           </Link>
         </BreadcrumbLink>
       ) : null}

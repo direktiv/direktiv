@@ -57,7 +57,7 @@ const ServicesTableRow: FC<{
             pages.services.createHref({
               namespace,
               service,
-              revision: revision.name,
+              revision: revision.revision,
             })
           );
         }}
