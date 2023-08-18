@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
-  InstanceRevisionStreamingSubscriber,
+  ServiceDetailsStreamingSubscriber,
   useServiceDetails,
 } from "~/api/services/query/details";
 import {
@@ -53,7 +53,7 @@ const ServiceDetailPage = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <InstanceRevisionStreamingSubscriber service={service} />
+      <ServiceDetailsStreamingSubscriber service={service} />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">

@@ -128,14 +128,15 @@ type ServiceRevisionStreamingSubscriberType = {
   enabled?: boolean;
 };
 
-export const InstanceRevisionStreamingSubscriber = memo(
+export const ServiceDetailsStreamingSubscriber = memo(
   ({ service, enabled }: ServiceRevisionStreamingSubscriberType) => {
     useServiceDetailsStream(service, { enabled: enabled ?? true });
     return null;
   }
 );
 
-InstanceRevisionStreamingSubscriber.displayName = "InstanceStreamingSubscriber";
+ServiceDetailsStreamingSubscriber.displayName =
+  "ServiceDetailsStreamingSubscriber";
 
 export const useServiceDetails = ({ service }: { service: string }) => {
   const apiKey = useApiKey();
