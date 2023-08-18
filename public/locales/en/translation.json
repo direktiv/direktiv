@@ -425,6 +425,9 @@
           "contextMenu": {
             "delete": "Delete"
           },
+          "empty": {
+            "title": "No revisions exist yet"
+          },
           "delete": {
             "title": "Delete Revision",
             "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
