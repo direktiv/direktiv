@@ -82,7 +82,9 @@ const Create = ({ onSuccess, path }: CreateProps) => {
           <DialogHeader>
             <DialogTitle>
               <PlusCircle />
-              {t("pages.settings.variables.create.title")}
+              {t(
+                "pages.explorer.tree.workflow.settings.variables.create.title"
+              )}
             </DialogTitle>
           </DialogHeader>
         </DialogHeader>
@@ -91,12 +93,12 @@ const Create = ({ onSuccess, path }: CreateProps) => {
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="name">
-            {t("pages.settings.variables.create.name")}
+            {t("pages.settings.variables.create.name.label")}
           </label>
           <Input
             id="name"
             data-testid="new-variable-name"
-            placeholder="variable-name"
+            placeholder={t("pages.settings.variables.create.name.placeholder")}
             onChange={(event) => setName(event.target.value)}
           />
         </fieldset>
