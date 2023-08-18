@@ -227,13 +227,11 @@ export const ServiceRevisionStreamingSchema = z.object({
   revision: ServiceRevisionSchemaStreaming,
 });
 
-export const ServiceRevisionDetailSchema = z
-  .object({
-    name: z.string(),
-    image: z.string(),
-    cmd: z.string(),
-  })
-  .or(z.null());
+export const ServiceRevisionDetailSchema = z.object({
+  name: z.string(),
+  image: z.string(),
+  cmd: z.string(),
+});
 
 export const ServiceRevisionDetailStreamingSchema = z.object({
   event: z.enum(["ADDED", "MODIFIED", "DELETED"]),

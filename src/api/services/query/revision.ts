@@ -1,8 +1,6 @@
 import {
   ServiceRevisionDetailSchemaType,
   ServiceRevisionDetailStreamingSchema,
-  ServiceRevisionStreamingSchema,
-  ServicesRevisionListSchemaType,
 } from "../schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -66,11 +64,6 @@ export const ServiceRevisionStreamingSubscriber = memo(
 ServiceRevisionStreamingSubscriber.displayName =
   "ServiceRevisionStreamingSubscriber";
 
-/**
- * The queryFn of this hook will never return any data because we only have a
- * streaming endoint for this data. This hook is only used to subscribe to the
- * correct cache key. Data for this key will be added by a streaming subscriber
- */
 export const useServiceRevision = ({
   service,
   revision,
@@ -91,7 +84,12 @@ export const useServiceRevision = ({
       service,
       revision,
     }),
-    queryFn: (): ServiceRevisionDetailSchemaType => null,
-    enabled: !!namespace,
+    /**
+     * This hook is only used to subscribe to the correct cache key. Data for this key
+     * will be added by a streaming subscriber. We don't have any non streaming endpoint
+     * to initial data. So the queryFn is missing on purpose and the enabled flag is set
+     * to false.
+     */
+    enabled: false,
   });
 };
