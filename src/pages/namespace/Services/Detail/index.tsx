@@ -3,6 +3,7 @@ import { Diamond, PlusCircle } from "lucide-react";
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeaderCell,
   TableRow,
@@ -13,6 +14,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
 import Delete from "./Delete";
+import NoResult from "../components/NoResult";
 import Row from "./Row";
 import { ServiceRevisionSchemaType } from "~/api/services/schema";
 import { pages } from "~/util/router/pages";
@@ -22,7 +24,7 @@ import { useTranslation } from "react-i18next";
 const ServiceDetailPage = () => {
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
-  const { data } = useServiceDetails({
+  const { data, isSuccess } = useServiceDetails({
     service: service ?? "",
   });
 
@@ -40,6 +42,9 @@ const ServiceDetailPage = () => {
 
   if (!data) return null;
   if (!service) return null;
+
+  const showTable = (data.revisions.length ?? 0) > 0;
+  const noResults = isSuccess && data.revisions.length === 0;
 
   const latestRevision = data.revisions?.[0];
 
@@ -81,16 +86,26 @@ const ServiceDetailPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data?.revisions?.map((revision, index) => (
-                <Row
-                  revision={revision}
-                  service={service}
-                  key={revision.name}
-                  setDeleteRevision={
-                    index !== 0 ? setDeleteRevision : undefined
-                  }
-                />
-              ))}
+              {showTable &&
+                data?.revisions?.map((revision, index) => (
+                  <Row
+                    revision={revision}
+                    service={service}
+                    key={revision.name}
+                    setDeleteRevision={
+                      index !== 0 ? setDeleteRevision : undefined
+                    }
+                  />
+                ))}
+              {noResults && (
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableCell colSpan={6}>
+                    <NoResult icon={Diamond}>
+                      {t("pages.services.revision.list.empty.title")}
+                    </NoResult>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </Card>

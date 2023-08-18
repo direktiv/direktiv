@@ -86,21 +86,20 @@ const ServicesListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {showTable && (
-                <>
-                  {serviceList?.functions.map((service) => (
-                    <Row
-                      service={service}
-                      key={service.serviceName}
-                      setDeleteService={setDeleteService}
-                    />
-                  ))}
-                </>
-              )}
+              {showTable &&
+                serviceList?.functions.map((service) => (
+                  <Row
+                    service={service}
+                    key={service.serviceName}
+                    setDeleteService={setDeleteService}
+                  />
+                ))}
               {noResults && (
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>
-                    <NoResult>{createNewButton}</NoResult>
+                    <NoResult icon={Layers} button={createNewButton}>
+                      {t("pages.services.list.empty.title")}
+                    </NoResult>
                   </TableCell>
                 </TableRow>
               )}
