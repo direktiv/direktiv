@@ -14,7 +14,7 @@ import { TableCell, TableRow } from "~/design/Table";
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
-import { StatusBadge } from "./components/StatusBadge";
+import { StatusBadge } from "../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";

@@ -20,7 +20,7 @@ import {
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
-import { StatusBadge } from "../List/components/StatusBadge";
+import { StatusBadge } from "../components/StatusBadge";
 import moment from "moment";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
