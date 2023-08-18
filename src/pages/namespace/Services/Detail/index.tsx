@@ -81,12 +81,14 @@ const ServiceDetailPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data?.revisions?.map((revision) => (
+              {data?.revisions?.map((revision, index) => (
                 <Row
                   revision={revision}
                   service={service}
                   key={revision.name}
-                  setDeleteRevision={setDeleteRevision}
+                  setDeleteRevision={
+                    index !== 0 ? setDeleteRevision : undefined
+                  }
                 />
               ))}
             </TableBody>

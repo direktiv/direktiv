@@ -31,7 +31,8 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 const ServicesTableRow: FC<{
   service: string;
   revision: ServiceRevisionSchemaType;
-  setDeleteRevision: (service: ServiceRevisionSchemaType | undefined) => void;
+  // not passing a function will disable the delete button
+  setDeleteRevision?: (service: ServiceRevisionSchemaType | undefined) => void;
 }> = ({ revision, service, setDeleteRevision }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
@@ -99,33 +100,35 @@ const ServicesTableRow: FC<{
           </Tooltip>
         </TableCell>
         <TableCell>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.preventDefault()}
-                icon
-              >
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DialogTrigger
-                className="w-full"
-                data-testid="node-actions-delete"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeleteRevision(revision);
-                }}
-              >
-                <DropdownMenuItem>
-                  <Trash className="mr-2 h-4 w-4" />
-                  {t("pages.services.revision.list.contextMenu.delete")}
-                </DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {setDeleteRevision && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.preventDefault()}
+                  icon
+                >
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40">
+                <DialogTrigger
+                  className="w-full"
+                  data-testid="node-actions-delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteRevision(revision);
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Trash className="mr-2 h-4 w-4" />
+                    {t("pages.services.revision.list.contextMenu.delete")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </TableCell>
       </TableRow>
     </TooltipProvider>
