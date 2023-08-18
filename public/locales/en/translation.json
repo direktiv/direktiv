@@ -153,6 +153,9 @@
                 "emptySearch": "No variable matches your search",
                 "empty": "No variable found"
               },
+              "create": {
+                "title": "Add a workflow variable"
+              },
               "edit": {
                 "title": "Edit {{name}}"
               }
@@ -464,11 +467,13 @@
         },
         "create": {
           "title": "Add a variable",
-          "name": "Name"
+          "name": {
+            "label": "Name",
+            "placeholder": "variable-name"
+          }
         },
         "edit": {
           "title": "Edit {{name}}",
-          "name": "Name",
           "fetchError": "There was an error fetching the variable's content",
           "mimeType": {
             "label": "Mimetype",
