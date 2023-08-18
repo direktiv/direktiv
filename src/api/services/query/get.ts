@@ -50,7 +50,7 @@ const updateCache = (
     /**
      * please note that that streaming the services will never add new services
      * because the streamingPayload.event === "ADDED" can not be trusted. This
-     * would also just be usefull to recognize new services that are note created
+     * would also just be usefull to recognize new services that are not created
      * by the window that is currently open. The user might not except that anyways
      */
     functions: oldData.functions
