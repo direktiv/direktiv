@@ -18,7 +18,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateService from "./Create";
 import Delete from "./Delete";
-import NoResult from "./NoResult";
+import NoResult from "../components/NoResult";
 import Row from "./Row";
 import { useTranslation } from "react-i18next";
 
