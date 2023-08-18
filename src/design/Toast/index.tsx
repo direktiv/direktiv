@@ -13,7 +13,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={twMergeClsx(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse pb-4 pr-4 sm:top-auto sm:bottom-0 sm:right-0 sm:flex-col md:max-w-[420px]",
+      "fixed top-0 right-0 z-[100] flex max-h-screen max-w-[350px] flex-col-reverse pt-4 pr-4 sm:top-auto sm:bottom-0 sm:max-w-[420px] sm:flex-col sm:pb-4",
       className
     )}
     {...props}
