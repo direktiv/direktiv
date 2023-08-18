@@ -1,14 +1,9 @@
-import { pages } from "~/util/router/pages";
+import Header from "./Header";
 
-const ServiceRevisionPage = () => {
-  const { service, revision } = pages.services.useParams();
-  if (!service) return null;
-
-  return (
-    <h1>
-      revisions page: service: {service} - revision: {revision}
-    </h1>
-  );
-};
+const ServiceRevisionPage = () => (
+  <div className="grid grow grid-rows-[auto_1fr]">
+    <Header />
+  </div>
+);
 
 export default ServiceRevisionPage;
