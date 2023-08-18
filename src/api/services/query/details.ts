@@ -42,7 +42,6 @@ const fetchServiceDetails = async ({
       return 0;
     }),
   }));
-  });
 
 export const useServiceDetails = ({ service }: { service: string }) => {
   const apiKey = useApiKey();
