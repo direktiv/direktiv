@@ -194,6 +194,14 @@ const ServiceRevisionSchema = z.object({
   size: z.number().optional(),
 });
 
+// streaming violates the schema at two fields, so we create a new
+// schema for streaming that will ignore this fields, when updating
+// the cache, we will not update these fields (will not change anyways)
+const ServiceRevisionSchemaStreaming = ServiceRevisionSchema.omit({
+  created: true, // created is a string when received via streaming
+  revision: true, // not present when streamed 🫠
+});
+
 /**
  * example
   {
@@ -214,6 +222,11 @@ export const ServicesRevisionListSchema = z.object({
   revisions: z.array(ServiceRevisionSchema).optional(),
 });
 
+export const ServiceRevisionStreamingSchema = z.object({
+  event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
+  revision: ServiceRevisionSchemaStreaming,
+});
+
 export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
@@ -227,6 +240,9 @@ export type StatusSchemaType = z.infer<typeof StatusSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
 export type ServiceStreamingSchemaType = z.infer<typeof ServiceStreamingSchema>;
+export type ServiceRevisionStreamingSchemaType = z.infer<
+  typeof ServiceRevisionStreamingSchema
+>;
 export type ServiceRevisionSchemaType = z.infer<typeof ServiceRevisionSchema>;
 export type ServicesRevisionListSchemaType = z.infer<
   typeof ServicesRevisionListSchema

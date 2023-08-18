@@ -1,10 +1,21 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
+import {
+  QueryFunctionContext,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  ServiceRevisionStreamingSchema,
+  ServiceRevisionStreamingSchemaType,
+  ServicesRevisionListSchema,
+  ServicesRevisionListSchemaType,
+} from "../schema";
 
-import { ServicesRevisionListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
+import { memo } from "react";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useStreaming } from "~/api/streaming";
 
 export const getServiceDetails = apiFactory({
   url: ({
@@ -42,6 +53,89 @@ const fetchServiceDetails = async ({
       return 0;
     }),
   }));
+
+const updateCache = (
+  oldData: ServicesRevisionListSchemaType | undefined,
+  streamingPayload: ServiceRevisionStreamingSchemaType
+) => {
+  if (!oldData) {
+    return undefined;
+  }
+  return {
+    ...oldData,
+    /**
+     * please note that that streaming the revisions will never add new revisions
+     * because the streamingPayload.event === "ADDED" can not be trusted. This
+     * would also just be usefull to recognize new revisions that are not created
+     * by the window that is currently open. The user might not except that anyways
+     */
+    revisions: (oldData.revisions ?? [])
+      // swap the element that came in (if it already is in the cache)
+      .map((rev) => ({
+        /**
+         * we need to spread the old revision, because we don't consume all fields
+         * when streaming. The streaming payload has some minor inconsistencies
+         * with the revision schema. However, the fields that we keep from the
+         * cache are long living oney like the creation date and the name (which
+         * acts like an id)
+         */
+        ...rev,
+        ...(rev.name === streamingPayload.revision.name
+          ? streamingPayload.revision
+          : {}),
+      }))
+      // remove element if it was deleted
+      .filter((rev) => {
+        if (streamingPayload.event !== "DELETED") {
+          return true;
+        }
+        return rev.name !== streamingPayload.revision.name;
+      }),
+  };
+};
+
+export const useServiceDetailsStream = (
+  service: string,
+  { enabled = true }: { enabled?: boolean } = {}
+) => {
+  const apiKey = useApiKey();
+  const namespace = useNamespace();
+  const queryClient = useQueryClient();
+
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
+
+  return useStreaming({
+    url: `/api/functions/namespaces/${namespace}/function/${service}/revisions`,
+    apiKey: apiKey ?? undefined,
+    enabled,
+    schema: ServiceRevisionStreamingSchema,
+    onMessage: (msg) => {
+      queryClient.setQueryData<ServicesRevisionListSchemaType>(
+        serviceKeys.serviceDetail(namespace, {
+          apiKey: apiKey ?? undefined,
+          service,
+        }),
+        (oldData) => updateCache(oldData, msg)
+      );
+    },
+  });
+};
+
+type ServiceRevisionStreamingSubscriberType = {
+  service: string;
+  enabled?: boolean;
+};
+
+export const InstanceRevisionStreamingSubscriber = memo(
+  ({ service, enabled }: ServiceRevisionStreamingSubscriberType) => {
+    useServiceDetailsStream(service, { enabled: enabled ?? true });
+    return null;
+  }
+);
+
+InstanceRevisionStreamingSubscriber.displayName = "InstanceStreamingSubscriber";
 
 export const useServiceDetails = ({ service }: { service: string }) => {
   const apiKey = useApiKey();

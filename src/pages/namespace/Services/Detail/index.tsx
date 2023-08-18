@@ -1,6 +1,10 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
+  InstanceRevisionStreamingSubscriber,
+  useServiceDetails,
+} from "~/api/services/query/details";
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,7 +22,6 @@ import NoResult from "../components/NoResult";
 import Row from "./Row";
 import { ServiceRevisionSchemaType } from "~/api/services/schema";
 import { pages } from "~/util/router/pages";
-import { useServiceDetails } from "~/api/services/query/details";
 import { useTranslation } from "react-i18next";
 
 const ServiceDetailPage = () => {
@@ -50,6 +53,7 @@ const ServiceDetailPage = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
+      <InstanceRevisionStreamingSubscriber service={service} />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
