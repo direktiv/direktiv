@@ -8,6 +8,7 @@ import { pages } from "~/util/router/pages";
 const Header = () => {
   const { service, revision } = pages.services.useParams();
 
+  // TODO: pass service and revision as params to this component
   const { data } = useServiceRevision({
     service: service ?? "",
     revision: revision ?? "",
