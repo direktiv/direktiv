@@ -1,11 +1,6 @@
 name: Create and push PR Docker image
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [ "feature/redesign", "stable", "develop" ]
-  pull_request:
-    types: [opened, synchronize]
+on: pull_request
 
 env:
   REGISTRY: ghcr.io
