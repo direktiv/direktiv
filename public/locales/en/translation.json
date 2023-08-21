@@ -535,7 +535,8 @@
       "gateway": "Gateway",
       "permissions": "Permissions",
       "services": "Services",
-      "settings": "Settings"
+      "settings": "Settings",
+      "mirror": "Mirror"
     },
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",

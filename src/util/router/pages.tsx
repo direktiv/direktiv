@@ -2,6 +2,7 @@ import {
   ActivitySquare,
   Boxes,
   FolderTree,
+  GitCompare,
   Layers,
   LucideIcon,
   Radio,
@@ -9,12 +10,15 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import Activities from "~/pages/namespace/Mirror/Activities";
 import EventsPage from "~/pages/namespace/Events";
 import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import Listeners from "~/pages/namespace/Events/Listeners";
+import Logs from "~/pages/namespace/Mirror/Logs";
+import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -113,6 +117,17 @@ type EventsPageSetup = Record<
   }
 >;
 
+type MirrorPageSetup = Record<
+  "mirror",
+  PageBase & {
+    createHref: (params: { namespace: string; subpage?: "logs" }) => string;
+    useParams: () => {
+      isMirrorActivityPage: boolean;
+      isMirrorLogsPage: boolean;
+    };
+  }
+>;
+
 type MonitoringPageSetup = Record<
   "monitoring",
   PageBase & {
@@ -127,7 +142,8 @@ type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
   EventsPageSetup &
-  MonitoringPageSetup;
+  MonitoringPageSetup &
+  MirrorPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -349,6 +365,39 @@ export const pages: PageType = {
     route: {
       path: "services",
       element: <div className="flex flex-col space-y-5 p-10">Services</div>,
+    },
+  },
+  mirror: {
+    name: "components.mainMenu.mirror",
+    icon: GitCompare,
+    createHref: (params) =>
+      `/${params.namespace}/mirror/${
+        params?.subpage === "logs" ? "logs" : "activities"
+      }`,
+    useParams: () => {
+      const [, , thirdLevel] = useMatches(); // first level is namespace level
+      const isMirrorActivityPage = checkHandler(
+        thirdLevel,
+        "isMirrorActivityPage"
+      );
+      const isMirrorLogsPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+      return { isMirrorActivityPage, isMirrorLogsPage };
+    },
+    route: {
+      path: "mirror",
+      element: <MirrorPage />,
+      children: [
+        {
+          path: "activities",
+          element: <Activities />,
+          handle: { isMirrorActivitiesPage: true },
+        },
+        {
+          path: "logs",
+          element: <Logs />,
+          handle: { isMirrorLogsPage: true },
+        },
+      ],
     },
   },
   settings: {
