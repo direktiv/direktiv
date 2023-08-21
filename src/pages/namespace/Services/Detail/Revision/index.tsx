@@ -1,9 +1,22 @@
 import Header from "./Header";
+import { ServiceRevisionStreamingSubscriber } from "~/api/services/query/revision/getAll";
+import { pages } from "~/util/router/pages";
 
-const ServiceRevisionPage = () => (
-  <div className="grid grow grid-rows-[auto_1fr]">
-    <Header />
-  </div>
-);
+const ServiceRevisionPage = () => {
+  const { service, revision } = pages.services.useParams();
+
+  if (!service) return null;
+  if (!revision) return null;
+
+  return (
+    <div className="grid grow grid-rows-[auto_1fr]">
+      <ServiceRevisionStreamingSubscriber
+        revision={revision}
+        service={service}
+      />
+      <Header service={service} revision={revision} />
+    </div>
+  );
+};
 
 export default ServiceRevisionPage;
