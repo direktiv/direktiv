@@ -10,7 +10,6 @@ import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import { Card } from "~/design/Card";
 import { PodsListSchemaType } from "~/api/services/schema";
-import { TabsContent } from "@radix-ui/react-tabs";
 import { useState } from "react";
 
 export const Pods = ({
@@ -38,16 +37,21 @@ export const PodsWithData = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState(pods[0]?.name ?? "");
 
-  const selectedPod = pods.find((pod) => pod.name === selectedTab);
-
   const { data: logData } = usePodLogs({
     name: selectedTab,
   });
+
+  const pod = pods.find((pod) => pod.name === selectedTab);
+
+  if (!pod) return null;
 
   return (
     <div>
       <PodLogsSubscriber name={selectedTab} />
       <Card className="p-5">
+        <h1 className="font-bold">
+          {pod.name.split("-").at(-1)} {pod.status}
+        </h1>
         {logData?.data}
         <Tabs
           value={selectedTab}
