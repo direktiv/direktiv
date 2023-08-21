@@ -98,13 +98,13 @@ const SecretsList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult
-                  message={t(
+                <NoResult>
+                  {t(
                     isSearch
                       ? "pages.settings.secrets.list.emptySearch"
                       : "pages.settings.secrets.list.empty"
                   )}
-                />
+                </NoResult>
               )}
             </Card>
             {totalPages > 1 && (

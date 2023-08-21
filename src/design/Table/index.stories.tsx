@@ -273,7 +273,7 @@ export const EmptyListWithHeader = () => (
     </TableHead>
     <TableBody>
       <TableCell colSpan={4}>
-        <NoResult message="no data found" icon={Contact}></NoResult>
+        <NoResult icon={Contact}>no data found</NoResult>
       </TableCell>
     </TableBody>
   </Table>
@@ -281,6 +281,6 @@ export const EmptyListWithHeader = () => (
 
 export const EmptyListWithoutHeader = () => (
   <Card>
-    <NoResult message="no data found" icon={Contact}></NoResult>
+    <NoResult icon={Contact}>no data found</NoResult>
   </Card>
 );

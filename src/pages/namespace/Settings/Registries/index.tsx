@@ -104,13 +104,13 @@ const RegistriesList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult
-                  message={t(
+                <NoResult>
+                  {t(
                     isSearch
                       ? "pages.settings.registries.list.emptySearch"
                       : "pages.settings.registries.list.empty"
                   )}
-                />
+                </NoResult>
               )}
             </Card>
             {totalPages > 1 && (

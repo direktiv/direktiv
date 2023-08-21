@@ -62,10 +62,9 @@ const ListenersList = ({
             {noResults ? (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
-                  <NoResult
-                    icon={Antenna}
-                    message={t("pages.events.listeners.empty.noResults")}
-                  />
+                  <NoResult icon={Antenna}>
+                    {t("pages.events.listeners.empty.noResults")}
+                  </NoResult>
                 </TableCell>
               </TableRow>
             ) : (

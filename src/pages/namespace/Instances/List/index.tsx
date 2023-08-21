@@ -74,14 +74,11 @@ const InstancesListPage = () => {
             {noResults ? (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
-                  <NoResult
-                    icon={Boxes}
-                    message={
-                      hasFilters
-                        ? t("pages.instances.list.empty.noFilterResults")
-                        : t("pages.instances.list.empty.noInstances")
-                    }
-                  />
+                  <NoResult icon={Boxes}>
+                    {hasFilters
+                      ? t("pages.instances.list.empty.noFilterResults")
+                      : t("pages.instances.list.empty.noInstances")}
+                  </NoResult>
                 </TableCell>
               </TableRow>
             ) : (

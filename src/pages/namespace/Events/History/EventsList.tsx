@@ -90,14 +90,11 @@ const EventsList = ({
               {noResults ? (
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>
-                    <NoResult
-                      icon={Radio}
-                      message={
-                        hasFilters
-                          ? t("pages.events.history.empty.noFilterResults")
-                          : t("pages.events.history.empty.noResults")
-                      }
-                    />
+                    <NoResult icon={Radio}>
+                      {hasFilters
+                        ? t("pages.events.history.empty.noFilterResults")
+                        : t("pages.events.history.empty.noResults")}
+                    </NoResult>
                   </TableCell>
                 </TableRow>
               ) : (

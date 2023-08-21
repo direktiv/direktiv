@@ -111,7 +111,7 @@ export const TableRow = React.forwardRef<
 TableRow.displayName = "TableRow";
 
 export const NoResult = ({
-  message,
+  children,
   icon: Icon,
 }: {
   message: string;
@@ -122,6 +122,6 @@ export const NoResult = ({
     data-testid="no-result"
   >
     {Icon && <Icon />}
-    <span className="text-center text-sm">{message}</span>
+    <span className="text-center text-sm">{children}</span>
   </div>
 );

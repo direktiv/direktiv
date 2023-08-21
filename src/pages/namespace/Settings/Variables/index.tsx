@@ -106,13 +106,13 @@ const VariablesList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult
-                  message={t(
+                <NoResult>
+                  {t(
                     isSearch
                       ? "pages.settings.variables.list.emptySearch"
                       : "pages.settings.variables.list.empty"
                   )}
-                />
+                </NoResult>
               )}
             </Card>
             {totalPages > 1 && (

@@ -80,12 +80,9 @@ export const Instances = () => {
         refetchButton={refetchButton}
       >
         {sucessfullInstances?.instances?.results.length === 0 ? (
-          <NoResult
-            icon={Boxes}
-            message={t(
-              "pages.monitoring.instances.successfullExecutions.empty"
-            )}
-          />
+          <NoResult icon={Boxes}>
+            {t("pages.monitoring.instances.successfullExecutions.empty")}
+          </NoResult>
         ) : (
           <ScrollArea className="h-full">
             <Table>
@@ -123,10 +120,9 @@ export const Instances = () => {
         }
       >
         {failedInstances?.instances?.results.length === 0 ? (
-          <NoResult
-            icon={Boxes}
-            message={t("pages.monitoring.instances.failedExecutions.empty")}
-          />
+          <NoResult icon={Boxes}>
+            {t("pages.monitoring.instances.failedExecutions.empty")}
+          </NoResult>
         ) : (
           <ScrollArea className="h-full">
             <Table>

@@ -107,14 +107,13 @@ const VariablesList = ({ path }: { path: string }) => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult
-                  icon={Braces}
-                  message={t(
+                <NoResult icon={Braces}>
+                  {t(
                     isSearch
                       ? "pages.explorer.tree.workflow.settings.variables.list.emptySearch"
                       : "pages.explorer.tree.workflow.settings.variables.list.empty"
                   )}
-                />
+                </NoResult>
               )}
             </Card>
             {totalPages > 1 && (
