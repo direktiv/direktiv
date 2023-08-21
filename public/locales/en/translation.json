@@ -407,6 +407,21 @@
         }
       }
     },
+    "mirror": {
+      "noMirror": {
+        "title": "This namespace is not a mirror",
+        "description1": "This page is only available for Git mirrors.",
+        "description2": "When you create a new namespace, you can set it up as a Git mirror. This means the contents of a Git repository will be imported, and changes to your files will be synched between namespace and repository.",
+        "docs": {
+          "title": "Git mirrors",
+          "description": "Read more about Git synching in our docs."
+        },
+        "example": {
+          "title": "Try it out!",
+          "description": "Create a mirror using our examples repository."
+        }
+      }
+    },
     "settings": {
       "generic": {
         "contextMenu": {
