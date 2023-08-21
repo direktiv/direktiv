@@ -289,6 +289,33 @@ export const ServiceRevisionDetailStreamingSchema = z.object({
   revision: ServiceRevisionDetailSchema,
 });
 
+/**
+ * example
+  {
+    "name": "namespace-14529307612894023951-00004-deployment-76d465f47cqvfk7",
+    "status": "Running",
+    "serviceName": "namespace-14529307612894023951",
+    "serviceRevision": "namespace-14529307612894023951-00004"
+  }
+ */
+
+export const PodsSchema = z.object({
+  name: z.string(),
+  status: z.string(), // TODO: make enum
+  serviceName: z.string(),
+  serviceRevision: z.string(),
+});
+
+/**
+ * example
+  {
+    "pods": []
+  }
+ */
+export const PodsListSchema = z.object({
+  pods: z.array(PodsSchema),
+});
+
 export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
