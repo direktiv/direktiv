@@ -36,4 +36,21 @@ export const serviceKeys = {
         revision,
       },
     ] as const,
+  servicePods: (
+    namespace: string,
+    {
+      apiKey,
+      service,
+      revision,
+    }: { apiKey?: string; service: string; revision: string }
+  ) =>
+    [
+      {
+        scope: "service-pods",
+        apiKey,
+        namespace,
+        service,
+        revision,
+      },
+    ] as const,
 };
