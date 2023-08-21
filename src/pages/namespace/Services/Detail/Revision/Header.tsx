@@ -23,7 +23,15 @@ const Header = () => {
         service={service}
       />
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
-        revisions page: service: {service} - revision: {revision} - {data?.name}
+        revisions page: service: {service} - revision: {revision}
+        <div>
+          <hr />
+          {data?.actualReplicas} / {data?.desiredReplicas}
+          <hr />
+          {data?.image}
+          <hr />
+          {data?.generation}
+        </div>
       </div>
     </div>
   );

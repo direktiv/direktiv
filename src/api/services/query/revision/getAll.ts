@@ -83,7 +83,7 @@ export const useServiceRevision = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQuery<ServiceRevisionDetailSchemaType>({
     queryKey: serviceKeys.serviceRevisionDetail(namespace, {
       apiKey: apiKey ?? undefined,
       service,
