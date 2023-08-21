@@ -17,11 +17,6 @@ const Header = ({
   revision: string;
 }) => {
   const { data: revisionData } = useServiceRevision({ service, revision });
-  const { data: podsList } = usePods({ revision, service });
-
-  const { data: logData } = usePodLogs({
-    name: podsList?.pods?.[0]?.name ?? "",
-  });
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -36,17 +31,6 @@ const Header = ({
           {revisionData?.generation}
         </div>
       </div>
-
-      {podsList?.pods.map((pod) => (
-        <div key={pod.name}>
-          {pod.name} {pod.status}
-        </div>
-      ))}
-      <PodsSubscriber revision={revision} service={service} />
-      {podsList?.pods?.[0]?.name && (
-        <PodLogsSubscriber name={podsList?.pods?.[0]?.name} />
-      )}
-      <div>LogsData: {logData?.data}</div>
     </div>
   );
 };

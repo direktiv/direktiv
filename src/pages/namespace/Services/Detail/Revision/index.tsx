@@ -16,7 +16,9 @@ const ServiceRevisionPage = () => {
         service={service}
       />
       <Header service={service} revision={revision} />
-      <Pods />
+      <div className="p-5">
+        <Pods revision={revision} service={service} />
+      </div>
     </div>
   );
 };
