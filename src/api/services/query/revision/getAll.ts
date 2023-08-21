@@ -2,11 +2,11 @@ import {
   ServiceRevisionDetailSchemaType,
   ServiceRevisionDetailStreamingSchema,
   ServiceRevisionDetailStreamingSchemaType,
-} from "../schema";
+} from "../../schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { memo } from "react";
-import { serviceKeys } from "..";
+import { serviceKeys } from "../..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";

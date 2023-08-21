@@ -1,7 +1,7 @@
 import {
   ServiceRevisionStreamingSubscriber,
   useServiceRevision,
-} from "~/api/services/query/revision";
+} from "~/api/services/query/revision/getAll";
 
 import { pages } from "~/util/router/pages";
 

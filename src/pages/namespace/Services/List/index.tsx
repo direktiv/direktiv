@@ -3,7 +3,7 @@ import { Layers, PlusCircle } from "lucide-react";
 import {
   ServicesStreamingSubscriber,
   useServices,
-} from "~/api/services/query/get";
+} from "~/api/services/query/getAll";
 import {
   Table,
   TableBody,
