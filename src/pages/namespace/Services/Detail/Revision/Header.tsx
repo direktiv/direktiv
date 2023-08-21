@@ -1,4 +1,8 @@
 import {
+  PodLogsSubscriber,
+  usePodLogs,
+} from "~/api/services/query/revision/pods/getLogs";
+import {
   PodsSubscriber,
   usePods,
 } from "~/api/services/query/revision/pods/getAll";
@@ -21,6 +25,10 @@ const Header = () => {
   const { data: podsList } = usePods({
     revision: revision ?? "",
     service: service ?? "",
+  });
+
+  const { data: logData } = usePodLogs({
+    name: podsList?.pods?.[0]?.name ?? "",
   });
 
   if (!service) return null;
@@ -50,6 +58,10 @@ const Header = () => {
       ))}
 
       <PodsSubscriber revision={revision} service={service} />
+      {podsList?.pods?.[0]?.name && (
+        <PodLogsSubscriber name={podsList?.pods?.[0]?.name} />
+      )}
+      <div>LogsData: {logData?.data}</div>
     </div>
   );
 };

@@ -53,4 +53,12 @@ export const serviceKeys = {
         revision,
       },
     ] as const,
+  podLogs: ({ apiKey, name }: { apiKey?: string; name: string }) =>
+    [
+      {
+        scope: "service-pods-logs",
+        apiKey,
+        name,
+      },
+    ] as const,
 };

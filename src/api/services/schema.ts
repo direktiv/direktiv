@@ -321,6 +321,16 @@ export const PodsStreamingSchema = z.object({
   pod: PodsSchema,
 });
 
+/**
+ * example
+  {
+    "data": "2023/08/18 07:02:13 Serving hello world at http://[::]:8080\n"
+  }
+ */
+export const PodLogsSchema = z.object({
+  data: z.string(),
+});
+
 export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
@@ -355,3 +365,5 @@ export type ServiceRevisionDetailStreamingSchemaType = z.infer<
 export type PodsListSchemaType = z.infer<typeof PodsListSchema>;
 export type PodsSchemaType = z.infer<typeof PodsSchema>;
 export type PodsStreamingSchemaType = z.infer<typeof PodsStreamingSchema>;
+
+export type PodLogsSchemaType = z.infer<typeof PodLogsSchema>;
