@@ -47,23 +47,24 @@ export const PodsWithData = ({
   return (
     <div>
       <PodLogsSubscriber name={selectedTab} />
-
-      <Tabs
-        value={selectedTab}
-        className="flex w-full grid-rows-[auto_1fr] flex-col"
-        onValueChange={(value) => {
-          setSelectedTab(value);
-        }}
-      >
-        <TabsList variant="boxed" className="w-max">
-          {pods.map((pod, index) => (
-            <TabsTrigger key={pod.name} variant="boxed" value={pod.name}>
-              Pod {index}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-      <Card className="p-5">{logData?.data}</Card>
+      <Card className="p-5">
+        {logData?.data}
+        <Tabs
+          value={selectedTab}
+          className="flex w-full grid-rows-[auto_1fr] flex-col"
+          onValueChange={(value) => {
+            setSelectedTab(value);
+          }}
+        >
+          <TabsList variant="boxed" className="w-max">
+            {pods.map((pod, index) => (
+              <TabsTrigger key={pod.name} variant="boxed" value={pod.name}>
+                Pod {index}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </Card>
     </div>
   );
 };
