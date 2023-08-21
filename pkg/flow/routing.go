@@ -18,8 +18,10 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -401,7 +403,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
+	err = instancestoresql.NewSQLInstanceStore(flow.gormDB, zap.NewNop().Sugar()).AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return
@@ -416,7 +418,7 @@ func (flow *flow) cronHandler(data []byte) {
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  file.Path,
-		Input:     nil,
+		Input:     make([]byte, 0),
 		Invoker:   instancestore.InvokerCron,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
 			TraceID: span.SpanContext().TraceID().String(),
@@ -428,7 +430,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
-		flow.sugar.Error("Error returned to gRPC request %s: %v", this(), err)
+		flow.sugar.Errorf("Error returned to gRPC request %s: %v", this(), err)
 		return
 	}
 
