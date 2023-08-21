@@ -316,6 +316,11 @@ export const PodsListSchema = z.object({
   pods: z.array(PodsSchema),
 });
 
+export const PodsStreamingSchema = z.object({
+  event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
+  pod: PodsSchema,
+});
+
 export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
@@ -346,3 +351,7 @@ export type ServiceRevisionDetailSchemaType = z.infer<
 export type ServiceRevisionDetailStreamingSchemaType = z.infer<
   typeof ServiceRevisionDetailStreamingSchema
 >;
+
+export type PodsListSchemaType = z.infer<typeof PodsListSchema>;
+export type PodsSchemaType = z.infer<typeof PodsSchema>;
+export type PodsStreamingSchemaType = z.infer<typeof PodsStreamingSchema>;
