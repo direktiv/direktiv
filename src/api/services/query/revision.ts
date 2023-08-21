@@ -1,6 +1,7 @@
 import {
   ServiceRevisionDetailSchemaType,
   ServiceRevisionDetailStreamingSchema,
+  ServiceRevisionDetailStreamingSchemaType,
 } from "../schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -9,6 +10,15 @@ import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
+
+const updateCache = (
+  oldData: ServiceRevisionDetailSchemaType | undefined,
+  streamingPayload: ServiceRevisionDetailStreamingSchemaType
+) => {
+  if (streamingPayload.event === "ADDED") {
+    return streamingPayload.revision;
+  }
+};
 
 export const useServiceRevisionStream = (
   { service, revision }: { service: string; revision: string },
@@ -34,12 +44,7 @@ export const useServiceRevisionStream = (
           service,
           revision,
         }),
-        (oldData) => {
-          if (!oldData) {
-            return msg.revision;
-          }
-          return undefined;
-        }
+        (oldData) => updateCache(oldData, msg)
       );
     },
   });
