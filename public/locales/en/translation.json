@@ -472,6 +472,14 @@
           "cmdPlaceholder": "Enter the Cmd for a service",
           "createBtn": "Create",
           "cancelBtn": "Cancel"
+        },
+        "detail": {
+          "created": "Created",
+          "realtiveTime": "{{relativeTime}} ago",
+          "size": "Size",
+          "Generation": "Generation",
+          "scale": "Scale",
+          "replicas": "Replicas"
         }
       },
       "create": {
