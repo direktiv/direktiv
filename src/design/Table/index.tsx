@@ -1,5 +1,6 @@
+import React, { FC, PropsWithChildren } from "react";
+
 import { LucideIcon } from "lucide-react";
-import React from "react";
 import { twMergeClsx } from "~/util/helpers";
 
 export const Table = React.forwardRef<
@@ -110,13 +111,9 @@ export const TableRow = React.forwardRef<
 ));
 TableRow.displayName = "TableRow";
 
-export const NoResult = ({
-  children,
-  icon: Icon,
-}: {
-  message: string;
-  icon?: LucideIcon;
-}) => (
+type NoResultProps = PropsWithChildren & { icon?: LucideIcon };
+
+export const NoResult: FC<NoResultProps> = ({ children, icon: Icon }) => (
   <div
     className="flex grow flex-col items-center justify-center gap-1 p-10"
     data-testid="no-result"
