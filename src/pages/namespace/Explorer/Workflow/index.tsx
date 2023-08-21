@@ -1,7 +1,21 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { GitCommit, GitMerge, PieChart, Play, Settings } from "lucide-react";
+import {
+  GitCommit,
+  GitMerge,
+  PieChart,
+  Play,
+  Power,
+  PowerOff,
+  Settings,
+} from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Button from "~/design/Button";
 import { FC } from "react";
@@ -9,6 +23,8 @@ import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { useRouter } from "~/api/tree/query/router";
+import { useToggleLive } from "~/api/tree/mutate/toggleLive";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {
@@ -23,6 +39,12 @@ const Header: FC = () => {
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
+
+  const { data: router, isFetched: routerIsFetched } = useRouter({ path });
+
+  const { mutate: toggleLive } = useToggleLive();
+
+  const isLive = router?.live || false;
 
   if (!namespace) return null;
   if (!path) return null;
@@ -85,19 +107,43 @@ const Header: FC = () => {
             <Play className="h-5" />
             {filename?.relative}
           </h3>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="primary" data-testid="workflow-header-btn-run">
-                <Play />
-                {t("pages.explorer.workflow.runBtn")}
+          <div className="flex gap-x-3">
+            <TooltipProvider>
+              <Button
+                loading={!routerIsFetched}
+                icon
+                variant="outline"
+                onClick={() => toggleLive({ path, value: !isLive })}
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {routerIsFetched && (isLive ? <PowerOff /> : <Power />)}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isLive
+                      ? t("pages.explorer.workflow.toggleActiveBtn.setInactive")
+                      : t("pages.explorer.workflow.toggleActiveBtn.setActive")}
+                  </TooltipContent>
+                </Tooltip>
               </Button>
-            </DialogTrigger>
+            </TooltipProvider>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="primary"
+                  disabled={!isLive}
+                  data-testid="workflow-header-btn-run"
+                >
+                  <Play />
+                  {t("pages.explorer.workflow.runBtn")}
+                </Button>
+              </DialogTrigger>
 
-            <DialogContent className="sm:max-w-2xl">
-              <RunWorkflow path={path} />
-            </DialogContent>
-          </Dialog>
+              <DialogContent className="sm:max-w-2xl">
+                <RunWorkflow path={path} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         <div>
           <nav className="-mb-px flex space-x-8">

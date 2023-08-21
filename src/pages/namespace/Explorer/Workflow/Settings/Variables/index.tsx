@@ -1,53 +1,51 @@
-import { FC, useEffect, useMemo, useState } from "react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
+import { useEffect, useMemo, useState } from "react";
 
+import { Braces } from "lucide-react";
 import { Card } from "~/design/Card";
 import Create from "./Create";
-import CreateItemButton from "../components/CreateItemButton";
-import Delete from "./Delete";
+import CreateItemButton from "~/pages/namespace/Settings/components/CreateItemButton";
+import Delete from "~/pages/namespace/Settings/Variables/Delete";
 import { Dialog } from "~/design/Dialog";
+import Edit from "./Edit";
 import Input from "~/design/Input";
-import ItemRow from "../components/ItemRow";
+import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
-import { SecretSchemaType } from "~/api/secrets/schema";
-import { SquareAsterisk } from "lucide-react";
-import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
-import { useSecrets } from "~/api/secrets/query/get";
+import { WorkflowVariableSchemaType } from "~/api/tree/schema";
+import { useDeleteWorkflowVariable } from "~/api/tree/mutate/deleteVariable";
 import { useTranslation } from "react-i18next";
+import { useWorkflowVariables } from "~/api/tree/query/variables";
 
 const pageSize = 10;
 
-const SecretsList: FC = () => {
+const VariablesList = ({ path }: { path: string }) => {
   const { t } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteSecret, setDeleteSecret] = useState<SecretSchemaType>();
-  const [createSecret, setCreateSecret] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<WorkflowVariableSchemaType>();
+  const [editItem, setEditItem] = useState<WorkflowVariableSchemaType>();
+  const [createItem, setCreateItem] = useState(false);
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched } = useSecrets();
+  const { data, isFetched } = useWorkflowVariables({ path });
+
+  const { mutate: deleteWorkflowVariable } = useDeleteWorkflowVariable();
 
   const filteredItems = useMemo(
     () =>
-      (data?.secrets.results ?? [])?.filter(
+      (data?.variables?.results ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.secrets.results, isSearch, search]
+    [data?.variables?.results, isSearch, search]
   );
-
-  const { mutate: deleteSecretMutation } = useDeleteSecret({
-    onSuccess: () => {
-      setDeleteSecret(undefined);
-      setDialogOpen(false);
-    },
-  });
 
   useEffect(() => {
     if (dialogOpen === false) {
-      setDeleteSecret(undefined);
-      setCreateSecret(false);
+      setDeleteItem(undefined);
+      setCreateItem(false);
+      setEditItem(undefined);
     }
   }, [dialogOpen]);
 
@@ -69,8 +67,10 @@ const SecretsList: FC = () => {
           <>
             <div className="mb-4 flex flex-col gap-4 sm:flex-row">
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
-                <SquareAsterisk className="h-5" />
-                {t("pages.settings.secrets.list.title")}
+                <Braces className="h-5" />
+                {t(
+                  "pages.explorer.tree.workflow.settings.variables.list.title"
+                )}
               </h3>
               <Input
                 className="sm:w-60"
@@ -79,13 +79,17 @@ const SecretsList: FC = () => {
                   setSearch(e.target.value);
                   goToFirstPage();
                 }}
-                placeholder={t("pages.settings.secrets.list.searchPlaceholder")}
+                placeholder={t(
+                  "pages.settings.variables.list.searchPlaceholder"
+                )}
               />
               <CreateItemButton
-                data-testid="secret-create"
-                onClick={() => setCreateSecret(true)}
+                data-testid="variable-create"
+                onClick={() => setCreateItem(true)}
               >
-                {t("pages.settings.secrets.list.createBtn")}
+                {t(
+                  "pages.explorer.tree.workflow.settings.variables.list.createBtn"
+                )}
               </CreateItemButton>
             </div>
             <Card className="mb-4">
@@ -93,16 +97,21 @@ const SecretsList: FC = () => {
                 <Table>
                   <TableBody>
                     {currentItems.map((item, i) => (
-                      <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
+                      <ItemRow
+                        item={item}
+                        key={i}
+                        onDelete={setDeleteItem}
+                        onEdit={() => setEditItem(item)}
+                      />
                     ))}
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult>
+                <NoResult icon={Braces}>
                   {t(
                     isSearch
-                      ? "pages.settings.secrets.list.emptySearch"
-                      : "pages.settings.secrets.list.empty"
+                      ? "pages.explorer.tree.workflow.settings.variables.list.emptySearch"
+                      : "pages.explorer.tree.workflow.settings.variables.list.empty"
                   )}
                 </NoResult>
               )}
@@ -128,15 +137,35 @@ const SecretsList: FC = () => {
           </>
         )}
       </PaginationProvider>
-      {deleteSecret && (
+
+      {deleteItem && path && (
         <Delete
-          name={deleteSecret.name}
-          onConfirm={() => deleteSecretMutation({ secret: deleteSecret })}
+          name={deleteItem.name}
+          onConfirm={() =>
+            deleteWorkflowVariable({ variable: deleteItem, path })
+          }
         />
       )}
-      {createSecret && <Create onSuccess={() => setDialogOpen(false)} />}
+
+      {createItem && path && (
+        <Create
+          path={path}
+          onSuccess={() => {
+            setDialogOpen(false);
+          }}
+        />
+      )}
+      {editItem && path && (
+        <Edit
+          item={editItem}
+          path={path}
+          onSuccess={() => {
+            setDialogOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };
 
-export default SecretsList;
+export default VariablesList;

@@ -10,14 +10,14 @@ import MimeTypeSelect, {
   MimeTypeSchema,
   MimeTypeType,
   mimeTypeToLanguageDict,
-} from "./MimeTypeSelect";
+} from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import {
-  VarFormSchema,
-  VarFormSchemaType,
-  VarSchemaType,
-} from "~/api/variables/schema";
+  WorkflowVariableFormSchema,
+  WorkflowVariableFormSchemaType,
+  WorkflowVariableSchemaType,
+} from "~/api/tree/schema";
 import { useEffect, useState } from "react";
 
 import Alert from "~/design/Alert";
@@ -25,13 +25,14 @@ import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
+import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useTheme } from "~/util/store/theme";
-import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
-import { useVarContent } from "~/api/variables/query/useVariableContent";
+import { useWorkflowVariableContent } from "~/api/tree/query/variableContent";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type EditProps = {
-  item: VarSchemaType;
+  item: WorkflowVariableSchemaType;
+  path: string;
   onSuccess: () => void;
 };
 
@@ -39,11 +40,14 @@ type EditProps = {
 // setting defaults that may not fit with the options in MimeTypeSelect
 const fallbackMimeType: MimeTypeType = "text/plain";
 
-const Edit = ({ item, onSuccess }: EditProps) => {
+const Edit = ({ item, onSuccess, path }: EditProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const { data, isFetched, isError } = useVarContent(item.name);
+  const { data, isFetched, isError } = useWorkflowVariableContent(
+    item.name,
+    path
+  );
 
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
@@ -55,10 +59,11 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const {
     handleSubmit,
     formState: { errors },
-  } = useForm<VarFormSchemaType>({
-    resolver: zodResolver(VarFormSchema),
+  } = useForm<WorkflowVariableFormSchemaType>({
+    resolver: zodResolver(WorkflowVariableFormSchema),
     values: {
       name: item.name,
+      path,
       content: body ?? "",
       mimeType,
     },
@@ -82,12 +87,12 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     }
   }, [data, isFetched, isInitialized]);
 
-  const { mutate: updateVarMutation } = useUpdateVar({
+  const { mutate: setVariable } = useSetWorkflowVariable({
     onSuccess,
   });
 
-  const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
-    updateVarMutation(data);
+  const onSubmit: SubmitHandler<WorkflowVariableFormSchemaType> = (data) => {
+    setVariable(data);
   };
 
   return (

@@ -1,5 +1,5 @@
-import { CheckCircle2, XCircle } from "lucide-react";
-import { Table, TableBody } from "~/design/Table";
+import { Boxes, CheckCircle2, XCircle } from "lucide-react";
+import { NoResult, Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
   TooltipContent,
@@ -9,7 +9,6 @@ import {
 
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
-import NoResult from "./NoResult";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { useInstances } from "~/api/instances/query/get";
@@ -81,11 +80,9 @@ export const Instances = () => {
         refetchButton={refetchButton}
       >
         {sucessfullInstances?.instances?.results.length === 0 ? (
-          <NoResult
-            message={t(
-              "pages.monitoring.instances.successfullExecutions.empty"
-            )}
-          />
+          <NoResult icon={Boxes}>
+            {t("pages.monitoring.instances.successfullExecutions.empty")}
+          </NoResult>
         ) : (
           <ScrollArea className="h-full">
             <Table>
@@ -123,9 +120,9 @@ export const Instances = () => {
         }
       >
         {failedInstances?.instances?.results.length === 0 ? (
-          <NoResult
-            message={t("pages.monitoring.instances.failedExecutions.empty")}
-          />
+          <NoResult icon={Boxes}>
+            {t("pages.monitoring.instances.failedExecutions.empty")}
+          </NoResult>
         ) : (
           <ScrollArea className="h-full">
             <Table>

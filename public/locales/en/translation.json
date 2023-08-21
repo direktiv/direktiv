@@ -144,6 +144,22 @@
             "cancelBtn": "Cancel",
             "runBtn": "Run",
             "genericRunError": "Something went wrong running this workflow."
+          },
+          "settings": {
+            "variables": {
+              "list": {
+                "title": "Workflow variables",
+                "createBtn": "Add variable",
+                "emptySearch": "No variable matches your search",
+                "empty": "No variable found"
+              },
+              "create": {
+                "title": "Add a workflow variable"
+              },
+              "edit": {
+                "title": "Edit {{name}}"
+              }
+            }
           }
         }
       },
@@ -157,6 +173,10 @@
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
+        "toggleActiveBtn": {
+          "setActive": "Activate workflow",
+          "setInactive": "Deactivate workflow"
+        },
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
@@ -535,11 +555,14 @@
         },
         "create": {
           "title": "Add a variable",
-          "name": "Name"
+          "name": {
+            "label": "Name",
+            "placeholder": "variable-name"
+          }
         },
         "edit": {
           "title": "Edit {{name}}",
-          "name": "Name",
+          "fetchError": "There was an error fetching the variable's content",
           "mimeType": {
             "label": "Mimetype",
             "placeholder": "Select a mimetype"
@@ -697,6 +720,24 @@
             "description": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %"
           },
           "error": "could set traffic shaping"
+        },
+        "setVariable": {
+          "success": {
+            "title": "Worfklow variable saved",
+            "description": "Saved variable {{variable}} for workflow {{workflow}}"
+          },
+          "error": {
+            "description": "could not save workflow variable 😢"
+          }
+        },
+        "toggleLive": {
+          "success": {
+            "title": "Workflow updated",
+            "description": {
+              "activated": "Workflow {{workflow}} was activated",
+              "deactivated": "Workflow {{workflow}} was deactivated"
+            }
+          }
         },
         "createDirectory": {
           "success": {

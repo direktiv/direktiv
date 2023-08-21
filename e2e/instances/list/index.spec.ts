@@ -73,7 +73,7 @@ test("it displays a note, when there are no instances yet.", async ({
 }) => {
   await page.goto(`${namespace}/instances/`);
   await expect(
-    page.getByTestId("instance-no-result"),
+    page.getByTestId("no-result"),
     "no result message should be visible"
   ).toBeVisible();
   await expect(
