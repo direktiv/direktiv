@@ -1,6 +1,7 @@
-import { File, MoreVertical } from "lucide-react";
+import { Contact, File, MoreVertical } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
+  NoResult,
   Table,
   TableBody,
   TableCell,
@@ -258,4 +259,28 @@ export const StickyHeader = () => (
       </TableBody>
     </Table>
   </div>
+);
+
+export const EmptyListWithHeader = () => (
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableHeaderCell>Name</TableHeaderCell>
+        <TableHeaderCell>Title</TableHeaderCell>
+        <TableHeaderCell>Email</TableHeaderCell>
+        <TableHeaderCell>Role</TableHeaderCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      <TableCell colSpan={4}>
+        <NoResult icon={Contact}>no data found</NoResult>
+      </TableCell>
+    </TableBody>
+  </Table>
+);
+
+export const EmptyListWithoutHeader = () => (
+  <Card>
+    <NoResult icon={Contact}>no data found</NoResult>
+  </Card>
 );

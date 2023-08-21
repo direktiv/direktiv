@@ -9,26 +9,29 @@ import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
   MimeTypeType,
   mimeTypeToLanguageDict,
-} from "./MimeTypeSelect";
+} from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
+import {
+  WorkflowVariableFormSchema,
+  WorkflowVariableFormSchemaType,
+} from "~/api/tree/schema";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
+import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type CreateProps = { onSuccess: () => void };
+type CreateProps = { onSuccess: () => void; path: string };
 
 const defaultMimeType: MimeTypeType = "application/json";
 
-const Create = ({ onSuccess }: CreateProps) => {
+const Create = ({ onSuccess, path }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -42,13 +45,14 @@ const Create = ({ onSuccess }: CreateProps) => {
   const {
     handleSubmit,
     formState: { errors },
-  } = useForm<VarFormSchemaType>({
-    resolver: zodResolver(VarFormSchema),
+  } = useForm<WorkflowVariableFormSchemaType>({
+    resolver: zodResolver(WorkflowVariableFormSchema),
     // mimeType should always be initialized to avoid backend defaulting to
     // "text/plain, charset=utf-8", which does not fit the options in
     // MimeTypeSelect
     values: {
       name: name ?? "",
+      path,
       content: body ?? "",
       mimeType: mimeType ?? defaultMimeType,
     },
@@ -59,11 +63,11 @@ const Create = ({ onSuccess }: CreateProps) => {
     setEditorLanguage(mimeTypeToLanguageDict[value]);
   };
 
-  const { mutate: createVarMutation } = useUpdateVar({
+  const { mutate: createVarMutation } = useSetWorkflowVariable({
     onSuccess,
   });
 
-  const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
+  const onSubmit: SubmitHandler<WorkflowVariableFormSchemaType> = (data) => {
     createVarMutation(data);
   };
 
@@ -78,7 +82,9 @@ const Create = ({ onSuccess }: CreateProps) => {
           <DialogHeader>
             <DialogTitle>
               <PlusCircle />
-              {t("pages.settings.variables.create.title")}
+              {t(
+                "pages.explorer.tree.workflow.settings.variables.create.title"
+              )}
             </DialogTitle>
           </DialogHeader>
         </DialogHeader>

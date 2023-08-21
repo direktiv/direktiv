@@ -1,6 +1,6 @@
 import { FC, useEffect, useMemo, useState } from "react";
+import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
-import { Table, TableBody } from "~/design/Table";
 
 import { Card } from "~/design/Card";
 import { Container } from "lucide-react";
@@ -8,7 +8,6 @@ import Create from "./Create";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
-import EmptyList from "../components/EmptyList";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
@@ -105,13 +104,13 @@ const RegistriesList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <EmptyList>
+                <NoResult>
                   {t(
                     isSearch
                       ? "pages.settings.registries.list.emptySearch"
                       : "pages.settings.registries.list.empty"
                   )}
-                </EmptyList>
+                </NoResult>
               )}
             </Card>
             {totalPages > 1 && (
