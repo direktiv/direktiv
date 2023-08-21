@@ -19,9 +19,9 @@ import { useStreaming } from "~/api/streaming";
 
 export const getServiceDetails = apiFactory({
   url: ({
+    baseUrl,
     namespace,
     service,
-    baseUrl,
   }: {
     baseUrl?: string;
     namespace: string;
