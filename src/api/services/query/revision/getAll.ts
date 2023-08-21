@@ -1,7 +1,7 @@
 import {
-  ServiceRevisionDetailSchemaType,
-  ServiceRevisionDetailStreamingSchema,
-  ServiceRevisionDetailStreamingSchemaType,
+  RevisionDetailSchemaType,
+  RevisionDetailStreamingSchema,
+  RevisionDetailStreamingSchemaType,
 } from "../../schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -12,8 +12,8 @@ import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
 const updateCache = (
-  oldData: ServiceRevisionDetailSchemaType | undefined,
-  streamingPayload: ServiceRevisionDetailStreamingSchemaType
+  oldData: RevisionDetailSchemaType | undefined,
+  streamingPayload: RevisionDetailStreamingSchemaType
 ) => {
   if (streamingPayload.event === "ADDED") {
     return streamingPayload.revision;
@@ -36,9 +36,9 @@ export const useServiceRevisionStream = (
     url: `/api/functions/namespaces/${namespace}/function/${service}/revisions/${revision}`,
     apiKey: apiKey ?? undefined,
     enabled,
-    schema: ServiceRevisionDetailStreamingSchema,
+    schema: RevisionDetailStreamingSchema,
     onMessage: (msg) => {
-      queryClient.setQueryData<ServiceRevisionDetailSchemaType>(
+      queryClient.setQueryData<RevisionDetailSchemaType>(
         serviceKeys.serviceRevisionDetail(namespace, {
           apiKey: apiKey ?? undefined,
           service,
@@ -83,7 +83,7 @@ export const useServiceRevision = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery<ServiceRevisionDetailSchemaType>({
+  return useQuery<RevisionDetailSchemaType>({
     queryKey: serviceKeys.serviceRevisionDetail(namespace, {
       apiKey: apiKey ?? undefined,
       service,

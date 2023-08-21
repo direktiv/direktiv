@@ -19,8 +19,8 @@ import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
 import Delete from "./Delete";
 import NoResult from "../components/NoResult";
+import { RevisionSchemaType } from "~/api/services/schema";
 import Row from "./Row";
-import { ServiceRevisionSchemaType } from "~/api/services/schema";
 import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
@@ -32,8 +32,7 @@ const ServiceDetailPage = () => {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteRevision, setDeleteRevision] =
-    useState<ServiceRevisionSchemaType>();
+  const [deleteRevision, setDeleteRevision] = useState<RevisionSchemaType>();
   const [createRevision, setCreateRevision] = useState(false);
 
   useEffect(() => {

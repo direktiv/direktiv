@@ -8,22 +8,22 @@ export const serviceConditionNames = [
   "RoutesReady",
 ] as const;
 
-const ServiceConditionSchema = z.object({
+const ConditionSchema = z.object({
   name: z.enum(serviceConditionNames),
   status: StatusSchema,
   reason: z.string(),
   message: z.string(),
 });
 
-export const serviceRevisionConditionNames = [
+export const revisionConditionNames = [
   "Active",
   "ContainerHealthy",
   "Ready",
   "ResourcesAvailable",
 ] as const;
 
-const ServiceRevisionConditionSchema = z.object({
-  name: z.enum(serviceRevisionConditionNames),
+const RevisionConditionSchema = z.object({
+  name: z.enum(revisionConditionNames),
   status: StatusSchema,
   reason: z.string(),
   message: z.string(),
@@ -84,7 +84,7 @@ const ServiceSchema = z.object({
     envs: z.object({}),
   }),
   status: StatusSchema,
-  conditions: z.array(ServiceConditionSchema),
+  conditions: z.array(ConditionSchema),
   serviceName: z.string(),
 });
 
@@ -136,13 +136,9 @@ export const ServiceFormSchema = z.object({
   size: z.number().int().gte(0),
 });
 
-export const ServiceRevisionFormSchema = z.object({
-  cmd: z.string(),
-  image: z.string().nonempty(),
-  minscale: z.number().int().gte(0).lte(3),
-  // scale also has a max value, but it is dynamic depending on the namespace
-  size: z.number().int().gte(0),
-});
+export const ServiceDeletedSchema = z.null();
+
+export const ServiceCreatedSchema = z.null();
 
 /**
  * example
@@ -183,21 +179,33 @@ export const ServiceRevisionFormSchema = z.object({
   }
 
  */
-const ServiceRevisionSchema = z.object({
+const RevisionSchema = z.object({
   name: z.string(),
   image: z.string(),
   created: z.number(),
   status: StatusSchema,
-  conditions: z.array(ServiceRevisionConditionSchema).optional(),
+  conditions: z.array(RevisionConditionSchema).optional(),
   revision: z.string(),
   minScale: z.number().optional(),
   size: z.number().optional(),
 });
 
+export const RevisionFormSchema = z.object({
+  cmd: z.string(),
+  image: z.string().nonempty(),
+  minscale: z.number().int().gte(0).lte(3),
+  // scale also has a max value, but it is dynamic depending on the namespace
+  size: z.number().int().gte(0),
+});
+
+export const RevisionCreatedSchema = z.null();
+
+export const RevisionDeletedSchema = z.null();
+
 // streaming violates the schema at two fields, so we create a new
 // schema for streaming that will ignore this fields, when updating
 // the cache, we will not update these fields (will not change anyways)
-const ServiceRevisionSchemaStreaming = ServiceRevisionSchema.omit({
+const RevisionSchemaWhenStreamed = RevisionSchema.omit({
   created: true, // created is a string when received via streaming
   revision: true, // not present when streamed 🫠
 });
@@ -214,17 +222,17 @@ const ServiceRevisionSchemaStreaming = ServiceRevisionSchema.omit({
     "scope": "namespace"
   }
  */
-export const ServicesRevisionListSchema = z.object({
+export const RevisionsListSchema = z.object({
   name: z.string(),
   config: z.object({
     maxscale: z.number(),
   }),
-  revisions: z.array(ServiceRevisionSchema).optional(),
+  revisions: z.array(RevisionSchema).optional(),
 });
 
-export const ServiceRevisionStreamingSchema = z.object({
+export const RevisionStreamingSchema = z.object({
   event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
-  revision: ServiceRevisionSchemaStreaming,
+  revision: RevisionSchemaWhenStreamed,
 });
 
 /**
@@ -269,7 +277,7 @@ export const ServiceRevisionStreamingSchema = z.object({
     "rev": "00004"
   }
  */
-export const ServiceRevisionDetailSchema = z.object({
+export const RevisionDetailSchema = z.object({
   name: z.string(),
   image: z.string(),
   cmd: z.string(),
@@ -278,15 +286,15 @@ export const ServiceRevisionDetailSchema = z.object({
   generation: z.string(),
   created: z.string(),
   status: StatusSchema,
-  conditions: z.array(ServiceRevisionConditionSchema),
+  conditions: z.array(RevisionConditionSchema),
   desiredReplicas: z.string(),
   actualReplicas: z.string(),
   rev: z.string(),
 });
 
-export const ServiceRevisionDetailStreamingSchema = z.object({
+export const RevisionDetailStreamingSchema = z.object({
   event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
-  revision: ServiceRevisionDetailSchema,
+  revision: RevisionDetailSchema,
 });
 
 /**
@@ -299,7 +307,7 @@ export const ServiceRevisionDetailStreamingSchema = z.object({
   }
  */
 
-export const PodsSchema = z.object({
+export const PodSchema = z.object({
   name: z.string(),
   status: z.string(), // TODO: make enum
   serviceName: z.string(),
@@ -313,12 +321,12 @@ export const PodsSchema = z.object({
   }
  */
 export const PodsListSchema = z.object({
-  pods: z.array(PodsSchema),
+  pods: z.array(PodSchema),
 });
 
 export const PodsStreamingSchema = z.object({
   event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
-  pod: PodsSchema,
+  pod: PodSchema,
 });
 
 /**
@@ -331,39 +339,26 @@ export const PodLogsSchema = z.object({
   data: z.string(),
 });
 
-export const ServiceDeletedSchema = z.null();
-
-export const ServiceCreatedSchema = z.null();
-
-export const ServiceRevisionCreatedSchema = z.null();
-
-export const ServiceRevisionDeletedSchema = z.null();
-
-export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type StatusSchemaType = z.infer<typeof StatusSchema>;
+export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
 export type ServiceStreamingSchemaType = z.infer<typeof ServiceStreamingSchema>;
-export type ServiceRevisionStreamingSchemaType = z.infer<
-  typeof ServiceRevisionStreamingSchema
->;
-export type ServiceRevisionSchemaType = z.infer<typeof ServiceRevisionSchema>;
-export type ServicesRevisionListSchemaType = z.infer<
-  typeof ServicesRevisionListSchema
->;
-export type ServiceRevisionFormSchemaType = z.infer<
-  typeof ServiceRevisionFormSchema
+
+export type RevisionSchemaType = z.infer<typeof RevisionSchema>;
+export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
+export type RevisionFormSchemaType = z.infer<typeof RevisionFormSchema>;
+export type RevisionStreamingSchemaType = z.infer<
+  typeof RevisionStreamingSchema
 >;
 
-export type ServiceRevisionDetailSchemaType = z.infer<
-  typeof ServiceRevisionDetailSchema
->;
-export type ServiceRevisionDetailStreamingSchemaType = z.infer<
-  typeof ServiceRevisionDetailStreamingSchema
+export type RevisionDetailSchemaType = z.infer<typeof RevisionDetailSchema>;
+export type RevisionDetailStreamingSchemaType = z.infer<
+  typeof RevisionDetailStreamingSchema
 >;
 
+export type PodSchemaType = z.infer<typeof PodSchema>;
 export type PodsListSchemaType = z.infer<typeof PodsListSchema>;
-export type PodsSchemaType = z.infer<typeof PodsSchema>;
 export type PodsStreamingSchemaType = z.infer<typeof PodsStreamingSchema>;
 
 export type PodLogsSchemaType = z.infer<typeof PodLogsSchema>;

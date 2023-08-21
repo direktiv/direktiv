@@ -4,10 +4,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
-  ServiceRevisionStreamingSchema,
-  ServiceRevisionStreamingSchemaType,
-  ServicesRevisionListSchema,
-  ServicesRevisionListSchemaType,
+  RevisionStreamingSchema,
+  RevisionStreamingSchemaType,
+  RevisionsListSchema,
+  RevisionsListSchemaType,
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -31,7 +31,7 @@ export const getServiceDetails = apiFactory({
       baseUrl ?? ""
     }/api/functions/namespaces/${namespace}/function/${service}`,
   method: "GET",
-  schema: ServicesRevisionListSchema,
+  schema: RevisionsListSchema,
 });
 
 const fetchServiceDetails = async ({
@@ -55,8 +55,8 @@ const fetchServiceDetails = async ({
   }));
 
 const updateCache = (
-  oldData: ServicesRevisionListSchemaType | undefined,
-  streamingPayload: ServiceRevisionStreamingSchemaType
+  oldData: RevisionsListSchemaType | undefined,
+  streamingPayload: RevisionStreamingSchemaType
 ) => {
   if (!oldData) {
     return undefined;
@@ -110,9 +110,9 @@ export const useServiceDetailsStream = (
     url: `/api/functions/namespaces/${namespace}/function/${service}/revisions`,
     apiKey: apiKey ?? undefined,
     enabled,
-    schema: ServiceRevisionStreamingSchema,
+    schema: RevisionStreamingSchema,
     onMessage: (msg) => {
-      queryClient.setQueryData<ServicesRevisionListSchemaType>(
+      queryClient.setQueryData<RevisionsListSchemaType>(
         serviceKeys.serviceDetail(namespace, {
           apiKey: apiKey ?? undefined,
           service,

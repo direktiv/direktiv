@@ -6,8 +6,8 @@ import {
 } from "~/design/Dropdown";
 import { MoreVertical, Trash } from "lucide-react";
 import {
-  ServiceRevisionSchemaType,
-  serviceRevisionConditionNames,
+  RevisionSchemaType,
+  revisionConditionNames,
 } from "~/api/services/schema";
 import { TableCell, TableRow } from "~/design/Table";
 import {
@@ -30,9 +30,9 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 const ServicesTableRow: FC<{
   service: string;
-  revision: ServiceRevisionSchemaType;
+  revision: RevisionSchemaType;
   // not passing a function will disable the delete button
-  setDeleteRevision?: (service: ServiceRevisionSchemaType | undefined) => void;
+  setDeleteRevision?: (service: RevisionSchemaType | undefined) => void;
 }> = ({ revision, service, setDeleteRevision }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const ServicesTableRow: FC<{
           <div className="flex flex-col gap-3">
             {revision.name}
             <div className="flex gap-3">
-              {serviceRevisionConditionNames.map((condition) => {
+              {revisionConditionNames.map((condition) => {
                 const res = (revision.conditions ?? []).find(
                   (c) => c.name === condition
                 );

@@ -1,7 +1,4 @@
-import {
-  ServiceRevisionCreatedSchema,
-  ServiceRevisionFormSchemaType,
-} from "../schema";
+import { RevisionCreatedSchema, RevisionFormSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -15,7 +12,7 @@ const createServiceRevision = apiFactory({
   url: ({ namespace, service }: { namespace: string; service: string }) =>
     `/api/functions/namespaces/${namespace}/function/${service}`,
   method: "POST",
-  schema: ServiceRevisionCreatedSchema,
+  schema: RevisionCreatedSchema,
 });
 
 type ResolvedCreateNamespace = Awaited<
@@ -41,7 +38,7 @@ export const useCreateServiceRevision = ({
       payload,
     }: {
       service: string;
-      payload: ServiceRevisionFormSchemaType;
+      payload: RevisionFormSchemaType;
     }) =>
       createServiceRevision({
         apiKey: apiKey ?? undefined,

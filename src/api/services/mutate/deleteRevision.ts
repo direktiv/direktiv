@@ -1,7 +1,4 @@
-import {
-  ServiceRevisionDeletedSchema,
-  ServicesRevisionListSchemaType,
-} from "../schema";
+import { RevisionDeletedSchema, RevisionsListSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -12,7 +9,7 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const updateCache = (
-  oldData: ServicesRevisionListSchemaType | undefined,
+  oldData: RevisionsListSchemaType | undefined,
   variables: Parameters<
     ReturnType<typeof useDeleteServiceRevision>["mutate"]
   >[0]
@@ -38,7 +35,7 @@ const deleteServiceRevision = apiFactory({
   }) =>
     `/api/functions/namespaces/${namespace}/function/${service}/revisions/${revision}`,
   method: "DELETE",
-  schema: ServiceRevisionDeletedSchema,
+  schema: RevisionDeletedSchema,
 });
 
 export const useDeleteServiceRevision = ({
@@ -71,7 +68,7 @@ export const useDeleteServiceRevision = ({
         },
       }),
     onSuccess(_, variables) {
-      queryClient.setQueryData<ServicesRevisionListSchemaType>(
+      queryClient.setQueryData<RevisionsListSchemaType>(
         serviceKeys.serviceDetail(namespace, {
           apiKey: apiKey ?? undefined,
           service: variables.service,

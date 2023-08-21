@@ -6,16 +6,16 @@ import {
 } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
+  RevisionFormSchema,
+  RevisionFormSchemaType,
+} from "~/api/services/schema";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import {
-  ServiceRevisionFormSchema,
-  ServiceRevisionFormSchemaType,
-} from "~/api/services/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
@@ -36,7 +36,7 @@ const CreateRevision = ({
 }: {
   service: string;
   close: () => void;
-  defaultValues?: ServiceRevisionFormSchemaType;
+  defaultValues?: RevisionFormSchemaType;
 }) => {
   const { t } = useTranslation();
 
@@ -56,13 +56,13 @@ const CreateRevision = ({
     getValues,
     setValue,
     formState: { errors },
-  } = useForm<ServiceRevisionFormSchemaType>({
+  } = useForm<RevisionFormSchemaType>({
     defaultValues: defaultValues ?? {
       minscale: 0,
       size: 1,
     },
     resolver: zodResolver(
-      ServiceRevisionFormSchema.refine(
+      RevisionFormSchema.refine(
         (x) => {
           if (defaultValues) {
             return Object.keys(defaultValues).some((key) => {
@@ -79,7 +79,7 @@ const CreateRevision = ({
     ),
   });
 
-  const onSubmit: SubmitHandler<ServiceRevisionFormSchemaType> = ({
+  const onSubmit: SubmitHandler<RevisionFormSchemaType> = ({
     cmd,
     image,
     minscale,

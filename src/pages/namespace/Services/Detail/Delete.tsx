@@ -7,7 +7,7 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { ServiceRevisionSchemaType } from "~/api/services/schema";
+import { RevisionSchemaType } from "~/api/services/schema";
 import { Trash } from "lucide-react";
 import { useDeleteServiceRevision } from "~/api/services/mutate/deleteRevision";
 
@@ -16,7 +16,7 @@ const Delete = ({
   service,
   close,
 }: {
-  revision: ServiceRevisionSchemaType;
+  revision: RevisionSchemaType;
   service: string;
   close: () => void;
 }) => {
