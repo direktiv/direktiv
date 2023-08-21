@@ -32,9 +32,7 @@ const updateCache = (
 
   return {
     pods: oldData.pods.map((pod) =>
-      pod.name === streamingPayload.pod.name
-        ? { ...streamingPayload.pod, name: "COOL", status: "NOt" }
-        : pod
+      pod.name === streamingPayload.pod.name ? streamingPayload.pod : pod
     ),
   };
 };
