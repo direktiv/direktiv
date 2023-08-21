@@ -1,10 +1,13 @@
 import {
+  PodsSubscriber,
+  usePods,
+} from "~/api/services/query/revision/pods/getAll";
+import {
   ServiceRevisionStreamingSubscriber,
   useServiceRevision,
 } from "~/api/services/query/revision/getAll";
 
 import { pages } from "~/util/router/pages";
-import { usePods } from "~/api/services/query/revision/pods/getAll";
 
 const Header = () => {
   const { service, revision } = pages.services.useParams();
@@ -45,6 +48,8 @@ const Header = () => {
           {pod.name} {pod.status}
         </div>
       ))}
+
+      <PodsSubscriber revision={revision} service={service} />
     </div>
   );
 };
