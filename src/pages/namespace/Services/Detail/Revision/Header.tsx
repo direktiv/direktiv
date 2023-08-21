@@ -1,12 +1,3 @@
-import {
-  PodLogsSubscriber,
-  usePodLogs,
-} from "~/api/services/query/revision/pods/getLogs";
-import {
-  PodsSubscriber,
-  usePods,
-} from "~/api/services/query/revision/pods/getAll";
-
 import { useServiceRevision } from "~/api/services/query/revision/getAll";
 
 const Header = ({
