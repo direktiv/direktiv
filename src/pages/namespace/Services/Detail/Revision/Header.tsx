@@ -4,6 +4,7 @@ import {
 } from "~/api/services/query/revision/getAll";
 
 import { pages } from "~/util/router/pages";
+import { usePods } from "~/api/services/query/revision/pods/getAll";
 
 const Header = () => {
   const { service, revision } = pages.services.useParams();
@@ -12,6 +13,11 @@ const Header = () => {
   const { data } = useServiceRevision({
     service: service ?? "",
     revision: revision ?? "",
+  });
+
+  const { data: podsList } = usePods({
+    revision: revision ?? "",
+    service: service ?? "",
   });
 
   if (!service) return null;
@@ -34,6 +40,11 @@ const Header = () => {
           {data?.generation}
         </div>
       </div>
+      {podsList?.pods.map((pod) => (
+        <div key={pod.name}>
+          {pod.name} {pod.status}
+        </div>
+      ))}
     </div>
   );
 };
