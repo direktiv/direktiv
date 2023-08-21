@@ -227,10 +227,61 @@ export const ServiceRevisionStreamingSchema = z.object({
   revision: ServiceRevisionSchemaStreaming,
 });
 
+/**
+ * example
+  {
+    "name": "namespace-14529307612894023951-00004",
+    "image": "gcr.io/direktiv/functions/hello-world:1.0",
+    "cmd": "",
+    "size": 1,
+    "minScale": 1,
+    "generation": "0",
+    "created": "1692342131",
+    "status": "True",
+    "conditions": [
+      {
+        "name": "Active",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "ContainerHealthy",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "Ready",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      },
+      {
+        "name": "ResourcesAvailable",
+        "status": "True",
+        "reason": "",
+        "message": ""
+      }
+    ],
+    "desiredReplicas": "1",
+    "actualReplicas": "1",
+    "rev": "00004"
+  }
+ */
 export const ServiceRevisionDetailSchema = z.object({
   name: z.string(),
   image: z.string(),
   cmd: z.string(),
+  size: z.number(),
+  minScale: z.number(),
+  generation: z.string(),
+  created: z.string(),
+  status: StatusSchema,
+  conditions: z.array(ServiceRevisionConditionSchema),
+  desiredReplicas: z.string(),
+  actualReplicas: z.string(),
+  rev: z.string(),
 });
 
 export const ServiceRevisionDetailStreamingSchema = z.object({
