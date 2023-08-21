@@ -172,10 +172,10 @@
         },
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
-        "runBtn": {
-          "runWorkflow": "Run",
-          "setActive": "Set active",
-          "setInactive": "Set inactive"
+        "runBtn": "Run",
+        "toggleActiveBtn": {
+          "setActive": "Activate workflow",
+          "setInactive": "Deactivate workflow"
         },
         "editor": {
           "unsavedNote": "unsaved changes",

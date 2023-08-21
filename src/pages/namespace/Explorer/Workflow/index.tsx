@@ -1,5 +1,5 @@
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
-  ChevronDown,
   GitCommit,
   GitMerge,
   PieChart,
@@ -8,18 +8,16 @@ import {
   PowerOff,
   Settings,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Button from "~/design/Button";
-import { ButtonBar } from "~/design/ButtonBar";
 import { FC } from "react";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
@@ -109,54 +107,43 @@ const Header: FC = () => {
             <Play className="h-5" />
             {filename?.relative}
           </h3>
-
-          <Dialog>
-            <ButtonBar>
+          <div className="flex gap-x-3">
+            <TooltipProvider>
+              <Button
+                loading={!routerIsFetched}
+                icon
+                variant="outline"
+                onClick={() => toggleLive({ path, value: !isLive })}
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {routerIsFetched && (isLive ? <PowerOff /> : <Power />)}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isLive
+                      ? t("pages.explorer.workflow.toggleActiveBtn.setInactive")
+                      : t("pages.explorer.workflow.toggleActiveBtn.setActive")}
+                  </TooltipContent>
+                </Tooltip>
+              </Button>
+            </TooltipProvider>
+            <Dialog>
               <DialogTrigger asChild>
                 <Button
-                  loading={!routerIsFetched}
-                  disabled={!isLive}
                   variant="primary"
+                  disabled={!isLive}
                   data-testid="workflow-header-btn-run"
                 >
-                  {routerIsFetched && <Play />}
-                  {t("pages.explorer.workflow.runBtn.runWorkflow")}
+                  <Play />
+                  {t("pages.explorer.workflow.runBtn")}
                 </Button>
               </DialogTrigger>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant={isLive ? "primary" : "outline"}
-                    disabled={!routerIsFetched}
-                    loading={!routerIsFetched}
-                  >
-                    {routerIsFetched && <ChevronDown />}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={() => toggleLive({ path, value: !isLive })}
-                  >
-                    {isLive ? (
-                      <>
-                        <PowerOff className="mr-2 h-4 w-4" />
-                        {t("pages.explorer.workflow.runBtn.setInactive")}
-                      </>
-                    ) : (
-                      <>
-                        <Power className="mr-2 h-4 w-4" />
-                        {t("pages.explorer.workflow.runBtn.setActive")}
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </ButtonBar>
 
-            <DialogContent className="sm:max-w-2xl">
-              <RunWorkflow path={path} />
-            </DialogContent>
-          </Dialog>
+              <DialogContent className="sm:max-w-2xl">
+                <RunWorkflow path={path} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         <div>
           <nav className="-mb-px flex space-x-8">
