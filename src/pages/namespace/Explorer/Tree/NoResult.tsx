@@ -23,7 +23,7 @@ const NoResult: FC = () => {
   }, [dialogOpen, selectedDialog]);
 
   return (
-    <div className="flex flex-col items-center gap-y-5 p-10">
+    <div className="flex flex-col items-center gap-y-5">
       <NoResultContainer
         icon={FolderOpen}
         button={
