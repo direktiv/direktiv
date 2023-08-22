@@ -1,7 +1,8 @@
+import { PodStatusSchemaType, StatusSchemaType } from "~/api/services/schema";
+
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
-import { StatusSchemaType } from "~/api/services/schema";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 type BadgeIcon = ComponentProps<typeof Badge>["icon"];
@@ -45,6 +46,22 @@ export const statusToAlertVariant = (
       return "error";
     case "Unknown":
       return undefined;
+    default:
+      break;
+  }
+};
+
+export const podStatusToBadgeVariant = (
+  status: PodStatusSchemaType
+): BadgeVariant => {
+  switch (status) {
+    case "Succeeded":
+    case "Running":
+      return "success";
+    case "Failed":
+      return "destructive";
+    case "Unknown":
+      return "outline";
     default:
       break;
   }

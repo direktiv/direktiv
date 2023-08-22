@@ -348,6 +348,7 @@ export const PodLogsSchema = z.object({
 });
 
 export type StatusSchemaType = z.infer<typeof StatusSchema>;
+export type PodStatusSchemaType = z.infer<typeof PodStatusSchema>;
 export type SizeSchemaType = z.infer<typeof SizeSchema>;
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;

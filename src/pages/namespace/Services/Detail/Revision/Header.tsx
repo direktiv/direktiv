@@ -1,6 +1,17 @@
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "~/design/HoverCard";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+
+import Badge from "~/design/Badge";
+import { ConditionalWrapper } from "~/util/helpers";
 import { Diamond } from "lucide-react";
 import { SizeSchema } from "~/api/services/schema";
 import moment from "moment";
+import { podStatusToBadgeVariant } from "../../components/utils";
+import { usePods } from "~/api/services/query/revision/pods/getAll";
 import { useServiceRevision } from "~/api/services/query/revision/getAll";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
@@ -13,6 +24,7 @@ const Header = ({
   revision: string;
 }) => {
   const { data: revisionData } = useServiceRevision({ service, revision });
+  const { data: podsData } = usePods({ service, revision });
   const { t } = useTranslation();
 
   const created = useUpdatedAt(
@@ -59,7 +71,36 @@ const Header = ({
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.services.revision.detail.scale")}
           </div>
-          {revisionData.minScale} {/* TODO: show pods with state on hover*/}
+          <ConditionalWrapper
+            condition={!!podsData?.pods?.length}
+            wrapper={(children) => (
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <span className="cursor-pointer underline">{children}</span>
+                </HoverCardTrigger>
+                <HoverCardContent className="p-0">
+                  <Table>
+                    <TableBody>
+                      {podsData?.pods.map((pod) => (
+                        <TableRow key={pod.name}>
+                          <TableCell>{pod.name.split("-").at(-1)}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={podStatusToBadgeVariant(pod.status)}
+                            >
+                              {pod.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </HoverCardContent>
+              </HoverCard>
+            )}
+          >
+            <span>{revisionData.minScale}</span>
+          </ConditionalWrapper>
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
