@@ -71,12 +71,19 @@ const CreateRevision = ({
               return x[typedKey] !== defaultValues[typedKey];
             });
           }
-          return false;
+          return true;
         },
         {
           message: t("pages.services.revision.create.noChanges"),
         }
-      )
+        /**
+         * when no default values are available, it problably means that
+         * there is no previous revision. In this case, we don't let the
+         * user create one
+         */
+      ).refine(() => !!defaultValues, {
+        message: t("pages.services.revision.create.noDefaultValues"),
+      })
     ),
   });
 

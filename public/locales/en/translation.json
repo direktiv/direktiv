@@ -456,7 +456,8 @@
           }
         },
         "create": {
-          "noChanges": "please make some changes before creating a new revision",
+          "noChanges": "Please make some changes before creating a new revision",
+          "noDefaultValues": "There seems to be no previous revision, this service might be damaged.",
           "title": "Create a new Revision",
           "imageLabel": "Image",
           "imagePlaceholder": "image/name:tag",
