@@ -87,4 +87,15 @@ export const treeKeys = {
         namespace,
       },
     ] as const,
+  activityLog: (
+    namespace: string,
+    { activityId, apiKey }: { activityId: string; apiKey?: string }
+  ) => [
+    {
+      scope: "activity-log",
+      activityId,
+      apiKey,
+      namespace,
+    },
+  ],
 };
