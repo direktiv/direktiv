@@ -15,7 +15,6 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
-import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { PodsListSchemaType } from "~/api/services/schema";
@@ -118,7 +117,9 @@ export const PodsWithData = ({
           <TabsList variant="boxed" className="w-max">
             {pods.map((pod, index) => (
               <TabsTrigger key={pod.name} variant="boxed" value={pod.name}>
-                Pod {index}
+                {t("pages.services.revision.detail.logs.tab", {
+                  number: index,
+                })}
               </TabsTrigger>
             ))}
           </TabsList>

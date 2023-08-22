@@ -486,6 +486,7 @@
             "followLogs": "Follow logs",
             "logsCount": "received {{count}} log entries",
             "logsCount_one": "received {{count}} log entry",
+            "tab": "Pod {{number}}",
             "tooltips": {
               "copy": "Copy logs"
             }

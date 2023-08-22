@@ -10,13 +10,15 @@ const ServiceRevisionPage = () => {
   if (!revision) return null;
 
   return (
-    <div className="grid grow grid-rows-[auto_1fr]">
+    <div className="flex grow flex-col border">
       <ServiceRevisionStreamingSubscriber
         revision={revision}
         service={service}
       />
-      <Header service={service} revision={revision} />
-      <div className="p-5">
+      <div className="flex-none">
+        <Header service={service} revision={revision} />
+      </div>
+      <div className="grow border">
         <Pods revision={revision} service={service} />
       </div>
     </div>
