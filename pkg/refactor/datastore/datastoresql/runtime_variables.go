@@ -114,8 +114,15 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 	var variables []*core.RuntimeVariable
 
 	conditions := make([]string, 0)
-	for _, fieldName := range fieldNames {
-		conditions = append(conditions, fmt.Sprintf(`"%s" = ?`, fieldName))
+	vals := make([]interface{}, 0)
+
+	for idx, fieldName := range fieldNames {
+		if fieldValues[idx] != nil {
+			conditions = append(conditions, fmt.Sprintf(`"%s" = ?`, fieldName))
+			vals = append(vals, fieldValues[idx])
+		} else {
+			conditions = append(conditions, fmt.Sprintf(`"%s" IS NULL`, fieldName))
+		}
 	}
 
 	aggregateConditions := strings.Join(conditions, " AND ")
@@ -126,7 +133,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
 							FROM runtime_variables WHERE %s`, aggregateConditions),
-		fieldValues...).Find(&variables)
+		vals...).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -143,7 +150,7 @@ func (s *sqlRuntimeVariablesStore) ListByWorkflowPath(ctx context.Context, names
 }
 
 func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
-	return s.listByFieldValue(ctx, []string{"namespace_id"}, []interface{}{namespaceID.String()})
+	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path"}, []interface{}{namespaceID.String(), nil})
 }
 
 func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
