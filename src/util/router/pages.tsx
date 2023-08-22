@@ -17,7 +17,7 @@ import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import Listeners from "~/pages/namespace/Events/Listeners";
-import Logs from "~/pages/namespace/Mirror/Activities/Logs";
+import Logs from "~/pages/namespace/Mirror/Activities/Detail";
 import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";

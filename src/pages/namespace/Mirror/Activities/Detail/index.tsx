@@ -1,4 +1,4 @@
-import ActivityLog from "./ActivityLog";
+import ActivityDetail from "./ActivityDetail";
 import { MirrorActivityLogSubscriber } from "~/api/tree/query/mirrorActivity";
 import { pages } from "~/util/router/pages";
 
@@ -10,7 +10,7 @@ const Logs = () => {
   return (
     <>
       <MirrorActivityLogSubscriber activityId={activity} />
-      <ActivityLog activityId={activity} />
+      <ActivityDetail activityId={activity} />
     </>
   );
 };
