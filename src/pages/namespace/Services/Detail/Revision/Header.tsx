@@ -1,6 +1,5 @@
 import { Diamond } from "lucide-react";
 import moment from "moment";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useServiceRevision } from "~/api/services/query/revision/getAll";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
