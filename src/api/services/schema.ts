@@ -30,12 +30,23 @@ export const revisionConditionNames = [
   "ResourcesAvailable",
 ] as const;
 
-const RevisionConditionSchema = z.object({
-  name: z.enum(revisionConditionNames),
-  status: StatusSchema,
-  reason: z.string(),
-  message: z.string(),
-});
+const RevisionConditionSchema = z
+  .object({
+    name: z.enum(revisionConditionNames),
+    status: StatusSchema,
+    reason: z.string(),
+    message: z.string(),
+  })
+  // handle status: False with reason: NoTraffic as status: True
+  .transform((data) => ({
+    ...data,
+    status:
+      data.status === "False" &&
+      data.name === "Active" &&
+      data.reason === "NoTraffic"
+        ? "True"
+        : data.status,
+  }));
 
 /**
  * example
