@@ -482,7 +482,7 @@
           "scale": "Scale",
           "replicas": "Replicas",
           "logs": {
-            "title": "Logs",
+            "title": "Logs for {{name}}",
             "followLogs": "Follow logs",
             "logsCount": "received {{count}} log entries",
             "logsCount_one": "received {{count}} log entry",
