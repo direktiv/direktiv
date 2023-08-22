@@ -17,7 +17,7 @@ import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import Listeners from "~/pages/namespace/Events/Listeners";
-import Logs from "~/pages/namespace/Mirror/Logs";
+import Logs from "~/pages/namespace/Mirror/Activities/Logs";
 import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";
@@ -122,6 +122,7 @@ type MirrorPageSetup = Record<
   PageBase & {
     createHref: (params: { namespace: string; activity?: string }) => string;
     useParams: () => {
+      activity?: string;
       isMirrorActivityPage: boolean;
       isMirrorLogsPage: boolean;
     };
@@ -371,15 +372,22 @@ export const pages: PageType = {
     name: "components.mainMenu.mirror",
     icon: GitCompare,
     createHref: (params) =>
-      `/${params.namespace}/mirror/${params?.activity ? "logs" : "activities"}`,
+      `/${params.namespace}/mirror/activities/${
+        params?.activity ? params.activity : ""
+      }`,
     useParams: () => {
+      const { activity } = useParams();
       const [, , thirdLevel] = useMatches(); // first level is namespace level
       const isMirrorActivityPage = checkHandler(
         thirdLevel,
         "isMirrorActivityPage"
       );
       const isMirrorLogsPage = checkHandler(thirdLevel, "isMirrorLogsPage");
-      return { isMirrorActivityPage, isMirrorLogsPage };
+      return {
+        isMirrorActivityPage,
+        isMirrorLogsPage,
+        activity: isMirrorLogsPage ? activity : undefined,
+      };
     },
     route: {
       path: "mirror",
@@ -391,7 +399,7 @@ export const pages: PageType = {
           handle: { isMirrorActivitiesPage: true },
         },
         {
-          path: "logs",
+          path: "activities/:activity",
           element: <Logs />,
           handle: { isMirrorLogsPage: true },
         },
