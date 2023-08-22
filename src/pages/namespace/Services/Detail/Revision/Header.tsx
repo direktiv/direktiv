@@ -9,6 +9,7 @@ import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
 import { Diamond } from "lucide-react";
 import { SizeSchema } from "~/api/services/schema";
+import { StatusBadge } from "../../components/StatusBadge";
 import moment from "moment";
 import { podStatusToBadgeVariant } from "../../components/utils";
 import { usePods } from "~/api/services/query/revision/pods/getAll";
@@ -107,6 +108,20 @@ const Header = ({
             {t("pages.services.revision.detail.replicas")}
           </div>
           {revisionData.actualReplicas}/{revisionData.desiredReplicas}
+        </div>
+      </div>
+      <div>
+        <div className="flex gap-x-3">
+          {revisionData.conditions.map((condition) => (
+            <StatusBadge
+              key={condition.name}
+              status={condition.status}
+              title={condition.reason}
+              message={condition.message}
+            >
+              {condition.name}
+            </StatusBadge>
+          ))}
         </div>
       </div>
     </div>
