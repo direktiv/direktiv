@@ -47,7 +47,11 @@ const Activities = () => {
           </TableHead>
           <TableBody>
             {activities.map((activity) => (
-              <Row key={activity.id} item={activity} />
+              <Row
+                namespace={data.namespace}
+                key={activity.id}
+                item={activity}
+              />
             ))}
           </TableBody>
         </Table>

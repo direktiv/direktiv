@@ -8,15 +8,34 @@ import {
 
 import type { MirrorActivitySchemaType } from "~/api/tree/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
+import { pages } from "~/util/router/pages";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const Row = ({ item }: { item: MirrorActivitySchemaType }) => {
+const Row = ({
+  item,
+  namespace,
+}: {
+  item: MirrorActivitySchemaType;
+  namespace: string;
+}) => {
   const createdAt = useUpdatedAt(item.createdAt);
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   return (
-    <TableRow>
+    <TableRow
+      onClick={() => {
+        navigate(
+          pages.mirror.createHref({
+            namespace,
+            activity: item.id,
+          })
+        );
+      }}
+    >
       <TooltipProvider>
         <TableCell>{item.status}</TableCell>
         <TableCell>{item.type}</TableCell>

@@ -120,7 +120,7 @@ type EventsPageSetup = Record<
 type MirrorPageSetup = Record<
   "mirror",
   PageBase & {
-    createHref: (params: { namespace: string; subpage?: "logs" }) => string;
+    createHref: (params: { namespace: string; activity?: string }) => string;
     useParams: () => {
       isMirrorActivityPage: boolean;
       isMirrorLogsPage: boolean;
@@ -371,9 +371,7 @@ export const pages: PageType = {
     name: "components.mainMenu.mirror",
     icon: GitCompare,
     createHref: (params) =>
-      `/${params.namespace}/mirror/${
-        params?.subpage === "logs" ? "logs" : "activities"
-      }`,
+      `/${params.namespace}/mirror/${params?.activity ? "logs" : "activities"}`,
     useParams: () => {
       const [, , thirdLevel] = useMatches(); // first level is namespace level
       const isMirrorActivityPage = checkHandler(
