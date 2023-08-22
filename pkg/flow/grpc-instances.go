@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -111,16 +110,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 
 	var resp grpc.InstanceInputResponse
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-
-	m := make(map[string]interface{})
-	err = json.Unmarshal(idata.Input, &m)
-	if err != nil {
-		return nil, err
-	}
-	delete(m, "private")
-	input := bytedata.Marshal(m)
-
-	resp.Data = []byte(input)
+	resp.Data = []byte(idata.Input)
 	resp.Namespace = ns.Name
 
 	return &resp, nil
@@ -159,16 +149,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	var resp grpc.InstanceOutputResponse
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-
-	m := make(map[string]interface{})
-	err = json.Unmarshal(idata.Output, &m)
-	if err != nil {
-		return nil, err
-	}
-	delete(m, "private")
-	output := bytedata.Marshal(m)
-
-	resp.Data = []byte(output)
+	resp.Data = []byte(idata.Output)
 	resp.Namespace = ns.Name
 
 	return &resp, nil
