@@ -480,7 +480,16 @@
           "size": "Size",
           "Generation": "Generation",
           "scale": "Scale",
-          "replicas": "Replicas"
+          "replicas": "Replicas",
+          "logs": {
+            "title": "Logs",
+            "followLogs": "Follow logs",
+            "logsCount": "received {{count}} log entries",
+            "logsCount_one": "received {{count}} log entry",
+            "tooltips": {
+              "copy": "Copy logs"
+            }
+          }
         }
       },
       "create": {
