@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const StatusSchema = z.enum(["True", "False", "Unknown"]);
+export const SizeSchema = z.union([z.literal(0), z.literal(1), z.literal(2)]);
 
 export const serviceConditionNames = [
   "ConfigurationsReady",
@@ -76,7 +77,7 @@ const ServiceSchema = z.object({
     workflow: z.string(),
     image: z.string(), // direktiv/request"
     cmd: z.string(),
-    size: z.number(),
+    size: SizeSchema,
     minScale: z.number(),
     namespaceName: z.string(),
     path: z.string(),
@@ -131,7 +132,7 @@ export const ServiceFormSchema = z.object({
   name: serviceNameSchema,
   cmd: z.string(),
   image: z.string().nonempty(),
-  size: z.number().int().gte(0).lte(3),
+  size: SizeSchema,
   // scale also has a max value, but it is dynamic depending on the namespace
   minscale: z.number().int().gte(0),
 });
@@ -187,15 +188,15 @@ const RevisionSchema = z.object({
   conditions: z.array(RevisionConditionSchema).optional(),
   revision: z.string(),
   minScale: z.number().optional(),
-  size: z.number().optional(),
+  size: SizeSchema.optional(),
 });
 
 export const RevisionFormSchema = z.object({
   cmd: z.string(),
   image: z.string().nonempty(),
-  minscale: z.number().int().gte(0).lte(3),
+  size: SizeSchema,
   // scale also has a max value, but it is dynamic depending on the namespace
-  size: z.number().int().gte(0),
+  minscale: z.number().int().gte(0),
 });
 
 export const RevisionCreatedSchema = z.null();
@@ -340,6 +341,7 @@ export const PodLogsSchema = z.object({
 });
 
 export type StatusSchemaType = z.infer<typeof StatusSchema>;
+export type SizeSchemaType = z.infer<typeof SizeSchema>;
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;

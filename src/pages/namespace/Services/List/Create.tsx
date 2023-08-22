@@ -15,6 +15,8 @@ import {
 import {
   ServiceFormSchema,
   ServiceFormSchemaType,
+  SizeSchema,
+  SizeSchemaType,
 } from "~/api/services/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -27,7 +29,7 @@ import { useServices } from "~/api/services/query/getAll";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const availableSizes = [0, 1, 2] as const;
+const availableSizes: SizeSchemaType[] = [0, 1, 2];
 
 const CreateService = ({
   close,
@@ -159,7 +161,12 @@ const CreateService = ({
             </label>
             <Select
               value={`${getValues("size")}`}
-              onValueChange={(value) => setValue("size", parseInt(value))}
+              onValueChange={(value) => {
+                const sizeParsed = SizeSchema.safeParse(parseInt(value));
+                if (sizeParsed.success) {
+                  setValue("size", sizeParsed.data);
+                }
+              }}
             >
               <SelectTrigger variant="outline" className="w-full" id="size">
                 <SelectValue

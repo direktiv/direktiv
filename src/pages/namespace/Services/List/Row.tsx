@@ -7,6 +7,7 @@ import {
 import { MoreVertical, Trash } from "lucide-react";
 import {
   ServiceSchemaType,
+  SizeSchema,
   serviceConditionNames,
 } from "~/api/services/schema";
 import { TableCell, TableRow } from "~/design/Table";
@@ -31,11 +32,10 @@ const ServicesTableRow: FC<{
 
   if (!namespace) return null;
 
-  const size = service.info.size;
-  const sizeLabel =
-    size === 0 || size === 1 || size === 2
-      ? t(`pages.services.create.sizeValues.${size}`)
-      : "";
+  const sizeParsed = SizeSchema.safeParse(service.info.size);
+  const sizeLabel = sizeParsed.success
+    ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
+    : "";
 
   return (
     <TooltipProvider>

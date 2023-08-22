@@ -8,6 +8,7 @@ import { Diamond, PlusCircle } from "lucide-react";
 import {
   RevisionFormSchema,
   RevisionFormSchemaType,
+  SizeSchema,
 } from "~/api/services/schema";
 import {
   Select,
@@ -158,7 +159,12 @@ const CreateRevision = ({
             </label>
             <Select
               value={`${getValues("size")}`}
-              onValueChange={(value) => setValue("size", parseInt(value))}
+              onValueChange={(value) => {
+                const sizeParsed = SizeSchema.safeParse(parseInt(value));
+                if (sizeParsed.success) {
+                  setValue("size", sizeParsed.data);
+                }
+              }}
             >
               <SelectTrigger variant="outline" className="w-full" id="size">
                 <SelectValue

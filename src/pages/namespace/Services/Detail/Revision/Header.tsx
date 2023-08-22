@@ -1,4 +1,5 @@
 import { Diamond } from "lucide-react";
+import { SizeSchema } from "~/api/services/schema";
 import moment from "moment";
 import { useServiceRevision } from "~/api/services/query/revision/getAll";
 import { useTranslation } from "react-i18next";
@@ -20,11 +21,10 @@ const Header = ({
 
   if (!revisionData) return null;
 
-  const size = revisionData.size;
-  const sizeLabel =
-    size === 0 || size === 1 || size === 2
-      ? t(`pages.services.create.sizeValues.${size}`)
-      : ""; // TODO: move into a schema helper (also in src/pages/namespace/Services/List/Row.tsx, and src/pages/namespace/Services/List/Create.tsx)
+  const sizeParsed = SizeSchema.safeParse(revisionData.size);
+  const sizeLabel = sizeParsed.success
+    ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
+    : "";
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
