@@ -191,7 +191,7 @@ export const MirrorInfoInfoSchema = z.object({
   lastSync: z.string().or(z.null()),
 });
 
-export const MirrorActivitiesSchema = z.object({
+export const MirrorActivitySchema = z.object({
   id: z.string(),
   type: z.string(),
   status: z.string(),
@@ -204,7 +204,7 @@ export const MirrorInfoSchema = z.object({
   info: MirrorInfoInfoSchema,
   activities: z.object({
     pageInfo: PageinfoSchema.or(z.null()),
-    results: z.array(MirrorActivitiesSchema),
+    results: z.array(MirrorActivitySchema),
   }),
 });
 
@@ -237,3 +237,4 @@ export type WorkflowVariableFormSchemaType = z.infer<
 export type WorkflowVariableCreatedSchemaType = z.infer<
   typeof WorkflowVariableCreatedSchema
 >;
+export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;

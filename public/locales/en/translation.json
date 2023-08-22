@@ -408,6 +408,17 @@
       }
     },
     "mirror": {
+      "activities": {
+        "list": {
+          "title": "Activities"
+        },
+        "tableHeader": {
+          "createdAt": "Started",
+          "id": "Activity ID",
+          "status": "Status",
+          "type": "Type"
+        }
+      },
       "noMirror": {
         "title": "This namespace is not a mirror",
         "description1": "This page is only available for Git mirrors.",
