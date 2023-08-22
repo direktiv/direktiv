@@ -33,7 +33,7 @@ export const StatusBadge = ({
     condition={!!title || !!message}
     wrapper={(children) => (
       <HoverCard>
-        <HoverCardTrigger>{children}</HoverCardTrigger>
+        <HoverCardTrigger className="inline-flex">{children}</HoverCardTrigger>
         <HoverCardContent asChild noBackground className="">
           <Alert
             variant={statusToAlertVariant(status)}
