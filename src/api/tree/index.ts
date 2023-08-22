@@ -79,4 +79,12 @@ export const treeKeys = {
         path: forceLeadingSlash(path),
       },
     ] as const,
+  mirrorInfo: (namespace: string, { apiKey }: { apiKey?: string }) =>
+    [
+      {
+        scope: "mirror-info",
+        apiKey,
+        namespace,
+      },
+    ] as const,
 };

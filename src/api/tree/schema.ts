@@ -156,6 +156,58 @@ export const WorkflowVariableCreatedSchema = z.object({
 
 export const WorkflowVariableDeletedSchema = z.null();
 
+/**
+ * Example for a mirror-info response
+ * {
+  "namespace":  "examples",
+  "info":  {
+    "url":  "https://github.com/direktiv/direktiv-examples",
+    "ref":  "main",
+    "cron":  "",
+    "publicKey":  "",
+    "commitId":  "",
+    "lastSync":  null,
+    "privateKey":  "",
+    "passphrase":  ""
+  },
+  "activities":  {
+    "pageInfo":  null,
+    "results":  [
+      {
+        "id":  "29f1c217-2f2a-447d-8730-23f519634755",
+        "type":  "init",
+        "status":  "complete",
+        "createdAt":  "2023-08-04T12:26:18.271385Z",
+        "updatedAt":  "2023-08-04T12:26:18.968351Z"
+      }
+    ]
+  }
+}
+*/
+
+export const MirrorInfoInfoSchema = z.object({
+  url: z.string(),
+  ref: z.string(),
+  lastSync: z.string().or(z.null()),
+});
+
+export const MirrorActivitiesSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  status: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const MirrorInfoSchema = z.object({
+  namespace: z.string(),
+  info: MirrorInfoInfoSchema,
+  activities: z.object({
+    pageInfo: PageinfoSchema.or(z.null()),
+    results: z.array(MirrorActivitiesSchema),
+  }),
+});
+
 export const NodeDeletedSchema = z.null();
 
 export const NodeRenameSchema = z.object({
