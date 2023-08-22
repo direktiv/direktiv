@@ -372,8 +372,8 @@ export const pages: PageType = {
     name: "components.mainMenu.mirror",
     icon: GitCompare,
     createHref: (params) =>
-      `/${params.namespace}/mirror/activities/${
-        params?.activity ? params.activity : ""
+      `/${params.namespace}/mirror/${
+        params?.activity ? `logs/${params.activity}` : ""
       }`,
     useParams: () => {
       const { activity } = useParams();
@@ -394,12 +394,12 @@ export const pages: PageType = {
       element: <MirrorPage />,
       children: [
         {
-          path: "activities",
+          path: "",
           element: <Activities />,
           handle: { isMirrorActivitiesPage: true },
         },
         {
-          path: "activities/:activity",
+          path: "logs/:activity",
           element: <Logs />,
           handle: { isMirrorLogsPage: true },
         },
