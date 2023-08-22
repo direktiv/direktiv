@@ -41,7 +41,7 @@ const Header = ({
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-bold text-primary-500">
           <Diamond className="h-5" /> {service} / {revision}
         </h3>
@@ -111,13 +111,14 @@ const Header = ({
         </div>
       </div>
       <div>
-        <div className="flex gap-x-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           {revisionData.conditions.map((condition) => (
             <StatusBadge
               key={condition.name}
               status={condition.status}
               title={condition.reason}
               message={condition.message}
+              className="self-start"
             >
               {condition.name}
             </StatusBadge>

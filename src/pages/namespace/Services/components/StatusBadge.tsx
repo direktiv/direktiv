@@ -50,6 +50,7 @@ export const StatusBadge = ({
     <Badge
       variant={statusToBadgeVariant(status)}
       icon={statusToBadgeIcon(status)}
+      className="inline-flex"
       {...props}
     />
   </ConditionalWrapper>
