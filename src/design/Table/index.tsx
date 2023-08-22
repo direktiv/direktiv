@@ -111,14 +111,22 @@ export const TableRow = React.forwardRef<
 ));
 TableRow.displayName = "TableRow";
 
-type NoResultProps = PropsWithChildren & { icon?: LucideIcon };
+type NoResultProps = PropsWithChildren & {
+  icon?: LucideIcon;
+  button?: React.ReactNode;
+};
 
-export const NoResult: FC<NoResultProps> = ({ children, icon: Icon }) => (
+export const NoResult: FC<NoResultProps> = ({
+  children,
+  icon: Icon,
+  button,
+}) => (
   <div
     className="flex grow flex-col items-center justify-center gap-1 p-10"
     data-testid="no-result"
   >
     {Icon && <Icon />}
     <span className="text-center text-sm">{children}</span>
+    {button && <div className="mt-5">{button}</div>}
   </div>
 );
