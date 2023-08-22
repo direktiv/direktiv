@@ -64,9 +64,9 @@ export const usePodLogs = ({ name }: { name: string }) => {
     }),
     /**
      * This hook is only used to subscribe to the correct cache key. Data for this key
-     * will be added by a streaming subscriber. We don't have any non streaming endpoint
-     * to fetch initial data. So the queryFn is missing on purpose and the enabled flag
-     * is set to false.
+     * will be added by a streaming subscriber. We don't have a non-streaming endpoint
+     * for initial data. So the queryFn is missing on purpose and the enabled flag is set
+     * to false.
      */
     enabled: false,
   });
