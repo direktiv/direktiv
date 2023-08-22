@@ -2,6 +2,13 @@ import { z } from "zod";
 
 export const StatusSchema = z.enum(["True", "False", "Unknown"]);
 export const SizeSchema = z.union([z.literal(0), z.literal(1), z.literal(2)]);
+export const PodStatusSchema = z.enum([
+  "Running",
+  "Pending",
+  "Succeeded",
+  "Failed",
+  "Unknown",
+]);
 
 export const serviceConditionNames = [
   "ConfigurationsReady",
@@ -310,7 +317,7 @@ export const RevisionDetailStreamingSchema = z.object({
 
 export const PodSchema = z.object({
   name: z.string(),
-  status: z.string(), // TODO: make enum
+  status: PodStatusSchema,
   serviceName: z.string(),
   serviceRevision: z.string(),
 });
