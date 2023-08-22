@@ -1,4 +1,10 @@
-import { Table, TableHead, TableHeaderCell, TableRow } from "~/design/Table";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from "~/design/Table";
 
 import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
@@ -39,9 +45,11 @@ const Activities = () => {
               </TableHeaderCell>
             </TableRow>
           </TableHead>
-          {activities.map((activity) => (
-            <Row key={activity.id} item={activity} />
-          ))}
+          <TableBody>
+            {activities.map((activity) => (
+              <Row key={activity.id} item={activity} />
+            ))}
+          </TableBody>
         </Table>
       </Card>
     </div>

@@ -417,6 +417,9 @@
           "id": "Activity ID",
           "status": "Status",
           "type": "Type"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
         }
       },
       "noMirror": {
