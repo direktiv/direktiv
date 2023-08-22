@@ -110,7 +110,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 
 	var resp grpc.InstanceInputResponse
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-	resp.Data = []byte(idata.Input)
+	resp.Data = idata.Input
 	resp.Namespace = ns.Name
 
 	return &resp, nil
@@ -149,7 +149,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 
 	var resp grpc.InstanceOutputResponse
 	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-	resp.Data = []byte(idata.Output)
+	resp.Data = idata.Output
 	resp.Namespace = ns.Name
 
 	return &resp, nil
