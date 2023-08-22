@@ -1,10 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Layers, PlusCircle } from "lucide-react";
 import {
-  ServicesStreamingSubscriber,
-  useServices,
-} from "~/api/services/query/getAll";
-import {
+  NoResult,
   Table,
   TableBody,
   TableCell,
@@ -12,13 +9,16 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import {
+  ServicesStreamingSubscriber,
+  useServices,
+} from "~/api/services/query/getAll";
 import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateService from "./Create";
 import Delete from "./Delete";
-import NoResult from "../components/NoResult";
 import Row from "./Row";
 import { useTranslation } from "react-i18next";
 

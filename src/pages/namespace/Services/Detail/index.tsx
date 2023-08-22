@@ -1,10 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
-  ServiceDetailsStreamingSubscriber,
-  useServiceDetails,
-} from "~/api/services/query/details";
-import {
+  NoResult,
   Table,
   TableBody,
   TableCell,
@@ -12,13 +9,16 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import {
+  ServiceDetailsStreamingSubscriber,
+  useServiceDetails,
+} from "~/api/services/query/details";
 import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
 import Delete from "./Delete";
-import NoResult from "../components/NoResult";
 import { RevisionSchemaType } from "~/api/services/schema";
 import Row from "./Row";
 import { pages } from "~/util/router/pages";
