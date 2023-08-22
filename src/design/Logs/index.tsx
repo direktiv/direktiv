@@ -48,7 +48,9 @@ export const LogEntry = React.forwardRef<HTMLDivElement, LogEntryProps>(
         className
       )}
     >
-      <div className="w-24 shrink-0 self-start pr-2 font-menlo">{time}</div>
+      {time && (
+        <div className="w-24 shrink-0 self-start pr-2 font-menlo">{time}</div>
+      )}
       <div className="self-center font-menlo leading-5">
         <pre className="whitespace-pre-line">{children}</pre>
       </div>
