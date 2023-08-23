@@ -10,18 +10,39 @@ import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
 import Header from "./Header";
 import Row from "./Row";
+import { treeKeys } from "~/api/tree";
+import { useApiKey } from "~/util/store/apiKey";
 import { useMirrorInfo } from "~/api/tree/query/mirrorInfo";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 const Activities = () => {
   const { data } = useMirrorInfo();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const apiKey = useApiKey();
 
   const activities = data?.activities.results;
 
   if (!activities) return null;
 
   const repoInfo = `${data.info.url} (${data.info.ref})`;
+
+  const refreshActivities = () => {
+    queryClient.invalidateQueries(
+      treeKeys.mirrorInfo(data.namespace, {
+        apiKey: apiKey ?? undefined,
+      })
+    );
+  };
+
+  const pendingActivities = activities.filter(
+    (activity) => activity.status === "executing"
+  );
+
+  if (pendingActivities.length) {
+    setTimeout(() => refreshActivities(), 1000);
+  }
 
   return (
     <>
