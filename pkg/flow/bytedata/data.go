@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -233,11 +232,11 @@ func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
 		wf := ""
 		ins := ""
 		// step := ""
-		if el.TriggerWorkflow != uuid.Nil {
+		if el.TriggerWorkflow != "" {
 			wf = "/" + strings.Split(el.Metadata, " ")[0]
 		}
-		if el.TriggerInstance != uuid.Nil {
-			ins = el.TriggerInstance.String()
+		if el.TriggerInstance != "" {
+			ins = el.TriggerInstance
 			// step = fmt.Sprintf("%v", el.TriggerInstanceStep)
 		}
 		mode := ""

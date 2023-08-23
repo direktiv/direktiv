@@ -267,7 +267,7 @@ func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
 		return err
 	}
 
-	cfg.UpdatedAt = time.Now()
+	cfg.UpdatedAt = time.Now().UTC()
 
 	if v, ok := o.notes["commit_hash"]; ok {
 		cfg.GitCommitHash = v

@@ -205,6 +205,11 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
 			ces = removeExpired(l, ces)
 			// TODO metrics
+			_, err := uuid.Parse(l.TriggerWorkflow)
+			if err != nil {
+				// TODO: log.
+				return
+			}
 			if canTriggerAction(ces, types) {
 				tr := triggerActionArgs{
 					WorkflowID: l.TriggerWorkflow,
@@ -293,18 +298,27 @@ func (ee EventEngine) eventSimpleHandler(l *EventListener, waitType bool) eventH
 }
 
 type triggerActionArgs struct {
-	WorkflowID uuid.UUID // the id of the workflow.
-	InstanceID uuid.UUID // optional fill for instance-waiting trigger.
-	Step       int       // optional fill for instance-waiting trigger.
+	WorkflowID string // the id of the workflow.
+	InstanceID string // optional fill for instance-waiting trigger.
+	Step       int    // optional fill for instance-waiting trigger.
 }
 
 func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*event.Event) {
 	if waitType {
-		go ee.WakeInstance(t.InstanceID, t.Step, ces)
+		id, err := uuid.Parse(t.InstanceID)
+		if err != nil {
+			return
+		}
+		go ee.WakeInstance(id, t.Step, ces)
 
 		return
 	}
-	go ee.WorkflowStart(t.WorkflowID, ces...)
+	id, err := uuid.Parse(t.WorkflowID)
+	if err != nil {
+		// TODO: Log.
+		return
+	}
+	go ee.WorkflowStart(id, ces...)
 }
 
 func typeMatches(types []string, event *Event) bool {

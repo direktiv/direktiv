@@ -1,8 +1,6 @@
-import request from 'supertest'
-
 import common from "../common"
-
 import events from "./send_helper.js"
+import request from 'supertest'
 
 const namespaceName = "sendeventsand"
 
@@ -87,7 +85,7 @@ const basevent = (type, id, value) => `{
 
 describe('Test workflow events and', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+   // afterAll(common.helpers.deleteAllNamespaces)
 
     it(`should create namespace`, async () => {
         var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
@@ -161,8 +159,8 @@ describe('Test workflow events and', () => {
 
         //  await events.sendEventAndList(namespaceName, basevent("eventtype1", "eventtype1", "world"))
         await events.sendEventAndList(namespaceName, basevent("eventtype2", "eventtype2", "world2"))
-
         var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, "complete")
+        console.log(instancesResponse)
         expect(instancesResponse).not.toBeFalsy();
 
         var instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances/${instancesResponse.id}/output`)

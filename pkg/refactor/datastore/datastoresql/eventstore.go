@@ -216,8 +216,8 @@ func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID,
 }
 
 type triggerInfo struct {
-	WorkflowID uuid.UUID
-	InstanceID uuid.UUID
+	WorkflowID string
+	InstanceID string
 	Step       int
 }
 
@@ -260,6 +260,7 @@ func convertListeners(res []*gormEventListener, conv []*events.EventListener) ([
 		if err != nil {
 			return nil, err
 		}
+
 		conv = append(conv, &events.EventListener{
 			ID:                          l.ID,
 			UpdatedAt:                   l.UpdatedAt,
@@ -641,8 +642,7 @@ func (sf *sqlNamespaceCloudEventFilter) Get(ctx context.Context, nsID uuid.UUID)
 func (sf *sqlNamespaceCloudEventFilter) GetAll(ctx context.Context, nsID uuid.UUID) ([]*events.NamespaceCloudEventFilter, error) {
 	q := `SELECT namespace_id, name, js_code FROM events_filters WHERE namespace_id = $1 `
 	res := make([]*events.NamespaceCloudEventFilter, 0)
-	tx := sf.db.WithContext(ctx).Exec(
-		q, nsID).Scan(&res)
+	tx := sf.db.WithContext(ctx).Raw(q, nsID).Scan(&res)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

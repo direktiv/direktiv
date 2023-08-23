@@ -116,6 +116,105 @@ func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
 	return ev
 }
 
+func Test_sqlEventHistoryStore_Append(t *testing.T) {
+	ns := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+	}
+	eventHistoryStore := datastoresql.NewSQLStore(db, "some key").EventHistory()
+
+	ev := newEvent("subject", "test-type", uuid.New(), ns)
+	ev2 := newEvent("subject", "test-type", uuid.New(), ns)
+
+	appendEvents := []*events.Event{&ev, &ev2}
+	appendedEvents, appendErrs := eventHistoryStore.Append(context.Background(), appendEvents)
+	for _, err := range appendErrs {
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+	if len(appendedEvents) != 2 {
+		t.Error("appended event count mismatch")
+	}
+}
+
+func Test_sqlEventListenerStore_UpdateOrDelete_Update(t *testing.T) {
+	ns := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+	}
+	listenerStore := datastoresql.NewSQLStore(db, "some key").EventListener()
+
+	// Create a test event listener
+	listener := &events.EventListener{
+		ID:                          uuid.New(),
+		CreatedAt:                   time.Now().UTC(),
+		UpdatedAt:                   time.Now().UTC(),
+		Deleted:                     false,
+		NamespaceID:                 ns,
+		ListeningForEventTypes:      []string{"test-type"},
+		ReceivedEventsForAndTrigger: []*events.Event{},
+		LifespanOfReceivedEvents:    10000,
+		TriggerType:                 events.StartSimple,
+		TriggerWorkflow:             uuid.New().String(),
+	}
+
+	// Append the test event listener
+	err = listenerStore.Append(context.Background(), listener)
+	if err != nil {
+		t.Fatalf("error appending test listener: %v", err)
+	}
+
+	// Create a cloudevents.Event instance
+	event := cloudevents.NewEvent()
+	event.SetType("test-event")
+	event.SetSource("http://example.com")
+	event.SetID("123456")
+	event.SetTime(time.Now())
+
+	// Add data to the event's payload
+	data := struct {
+		Message string `json:"message"`
+	}{
+		Message: "Hello, CloudEvents!",
+	}
+
+	event.SetData(cloudevents.ApplicationJSON, data)
+
+	// Update the listener's properties
+	listener.UpdatedAt = time.Now().UTC()
+	listener.ReceivedEventsForAndTrigger = append(listener.ReceivedEventsForAndTrigger, &events.Event{
+		Event:         &event,
+		Namespace:     ns,
+		NamespaceName: "test-ns",
+		ReceivedAt:    time.Now().UTC(), // Set current time,
+	})
+
+	// Call the UpdateOrDelete method
+	updateErrs := listenerStore.UpdateOrDelete(context.Background(), []*events.EventListener{listener})
+	for _, err := range updateErrs {
+		if err != nil {
+			t.Errorf("error updating or deleting listener: %v", err)
+			return
+		}
+	}
+
+	// Retrieve the updated listener by ID
+	updatedListener, getErr := listenerStore.GetByID(context.Background(), listener.ID)
+	if getErr != nil {
+		t.Errorf("error getting updated listener: %v", getErr)
+		return
+	}
+
+	// Validate that the updated fields match the changes
+	if updatedListener.ReceivedEventsForAndTrigger[0].Event.ID() != event.ID() {
+		t.Errorf("expected updated event to match, but they differ")
+	}
+}
+
 func Test_TopicAddGet(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
@@ -136,7 +235,7 @@ func Test_TopicAddGet(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		TriggerWorkflow:             uuid.New(),
+		TriggerWorkflow:             uuid.New().String(),
 	})
 	if err != nil {
 		t.Error(err)
@@ -179,7 +278,7 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		TriggerWorkflow:             wf,
+		TriggerWorkflow:             wf.String(),
 	})
 	if err != nil {
 		t.Error(err)
@@ -204,7 +303,7 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	if got[0].ID != eID {
 		t.Error("got wrong entry")
 	}
-	if got[0].TriggerWorkflow != wf {
+	if got[0].TriggerWorkflow != wf.String() {
 		t.Error("trigger info was not correct")
 	}
 	got[0].UpdatedAt = time.Now().UTC()
@@ -233,6 +332,52 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	}
 }
 
+func Test_sqlEventListenerStore_UpdateOrDelete(t *testing.T) {
+	ns := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+	}
+	listenerStore := datastoresql.NewSQLStore(db, "some key").EventListener()
+
+	// Create a test event listener
+	listener := &events.EventListener{
+		ID:                          uuid.New(),
+		CreatedAt:                   time.Now().UTC(),
+		UpdatedAt:                   time.Now().UTC(),
+		Deleted:                     false,
+		NamespaceID:                 ns,
+		ListeningForEventTypes:      []string{"test-type"},
+		ReceivedEventsForAndTrigger: []*events.Event{},
+		LifespanOfReceivedEvents:    10000,
+		TriggerType:                 events.StartSimple,
+		TriggerWorkflow:             uuid.New().String(),
+	}
+
+	// Append the test event listener
+	err = listenerStore.Append(context.Background(), listener)
+	if err != nil {
+		t.Fatalf("error appending test listener: %v", err)
+	}
+
+	// Modify the listener to be deleted
+	listener.Deleted = true
+
+	// Update or delete the listener
+	errs := listenerStore.UpdateOrDelete(context.Background(), []*events.EventListener{listener})
+	for _, err := range errs {
+		if err != nil {
+			t.Errorf("error updating or deleting listener: %v", err)
+		}
+	}
+
+	// Verify that the listener has been deleted
+	_, err = listenerStore.GetByID(context.Background(), listener.ID)
+	if err == nil {
+		t.Error("listener still exists after deletion")
+	}
+}
+
 func Test_ListenerAddDeleteByWf(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
@@ -253,7 +398,7 @@ func Test_ListenerAddDeleteByWf(t *testing.T) {
 		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
-		TriggerWorkflow:             wf,
+		TriggerWorkflow:             wf.String(),
 	})
 	if err != nil {
 		t.Error(err)
@@ -270,4 +415,88 @@ func Test_ListenerAddDeleteByWf(t *testing.T) {
 	if err == nil {
 		t.Error("expected this listener to be deleted")
 	}
+}
+
+func TestSqlNamespaceCloudEventFilter(t *testing.T) {
+	ns := uuid.New()
+	filterName := "test-filter"
+	script := "filter-script"
+	dbMock, err := database.NewMockGorm() // Create a mock database instance
+	if err != nil {
+		t.Fatalf("error lauching mockdb %v", err)
+	}
+	cloudEventFilterStore := datastoresql.NewSQLStore(dbMock, "test-mirror-key").EventFilter()
+
+	t.Run("Create and GetAll Filters", func(t *testing.T) {
+		err := cloudEventFilterStore.Create(context.Background(), ns, filterName, script)
+		if err != nil {
+			t.Errorf("expected no error, but got %v", err)
+		}
+
+		filters, err := cloudEventFilterStore.GetAll(context.Background(), ns)
+		if err != nil {
+			t.Errorf("expected no error, but got %v", err)
+		}
+		if len(filters) != 1 {
+			t.Errorf("expected 1 filter, but got %d", len(filters))
+		}
+
+		filter := filters[0]
+		if filter.NamespaceID != ns {
+			t.Errorf("expected namespace ID %v, but got %v", ns, filter.NamespaceID)
+		}
+		if filter.Name != filterName {
+			t.Errorf("expected filter name %v, but got %v", filterName, filter.Name)
+		}
+		if filter.JSCode != script {
+			t.Errorf("expected JS code %v, but got %v", script, filter.JSCode)
+		}
+	})
+
+	t.Run("Delete Filter", func(t *testing.T) {
+		err := cloudEventFilterStore.Delete(context.Background(), ns, filterName)
+		if err != nil {
+			t.Errorf("expected no error, but got %v", err)
+		}
+
+		filters, err := cloudEventFilterStore.GetAll(context.Background(), ns)
+		if err != nil {
+			t.Errorf("expected no error, but got %v", err)
+		}
+		if len(filters) != 0 {
+			t.Errorf("expected 0 filters, but got %d", len(filters))
+		}
+	})
+
+	t.Run("Get Filters", func(t *testing.T) {
+		// Insert test data
+		err := cloudEventFilterStore.Create(context.Background(), ns, filterName, script)
+		if err != nil {
+			t.Errorf("expected no error, but got %v", err)
+		}
+
+		// Get filters
+		filters, count, err := cloudEventFilterStore.Get(context.Background(), ns)
+		if err != nil {
+			t.Errorf("expected no error, but got %v", err)
+		}
+
+		if count != len(filters) {
+			t.Errorf("expected count %d, but got %d", len(filters), count)
+		}
+		if len(filters) != 1 {
+			t.Errorf("expected 1 filter, but got %d", len(filters))
+		}
+
+		filter := filters[0]
+		if filter.NamespaceID != ns {
+			t.Errorf("expected namespace ID %v, but got %v", ns, filter.NamespaceID)
+		}
+		if filter.Name != filterName {
+			t.Errorf("expected filter name %v, but got %v", filterName, filter.Name)
+		}
+		if filter.JSCode != script {
+			t.Errorf("expected JS code %v, but got %v", script, filter.JSCode)
+		}
+	})
 }

@@ -60,8 +60,8 @@ type EventListener struct {
 	ReceivedEventsForAndTrigger []*Event    // events already received for the EventsAnd trigger.
 	LifespanOfReceivedEvents    int         // set 0 to omit the value.
 	TriggerType                 TriggerType // set true for EventsAnd.
-	TriggerWorkflow             uuid.UUID   // the id of the workflow.
-	TriggerInstance             uuid.UUID   // optional fill for instance-waiting trigger.
+	TriggerWorkflow             string      // the id of the workflow.
+	TriggerInstance             string      // optional fill for instance-waiting trigger.
 	TriggerInstanceStep         int         // optional fill for instance-waiting trigger.
 	GlobGatekeepers             map[string]string
 	Metadata                    string

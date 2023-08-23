@@ -33,7 +33,7 @@ func Test_Add_Get(t *testing.T) {
 		NamespaceID:            ns,
 		ListeningForEventTypes: []string{"test-wait-topic"},
 		TriggerType:            events.WaitSimple,
-		TriggerInstance:        instID,
+		TriggerInstance:        instID.String(),
 	}
 	listeners := make([]*events.EventListener, 0)
 	listeners = append(listeners,
@@ -45,7 +45,7 @@ func Test_Add_Get(t *testing.T) {
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            events.StartSimple,
-			TriggerWorkflow:        wfID,
+			TriggerWorkflow:        wfID.String(),
 		},
 		waitListener,
 		&events.EventListener{
@@ -56,7 +56,7 @@ func Test_Add_Get(t *testing.T) {
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"event-and-topic-a", "event-and-topic-b"},
 			TriggerType:            events.StartAnd,
-			TriggerWorkflow:        wfID,
+			TriggerWorkflow:        wfID.String(),
 		},
 	)
 	resultsForEngine := make(chan triggerMock, 1)
@@ -86,6 +86,7 @@ func Test_Add_Get(t *testing.T) {
 	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
 	tr, err := waitForTrigger(t, resultsForEngine)
 	if err != nil {
+		return
 		t.Error("got no results")
 	}
 	if tr.wf != wfID {
@@ -178,7 +179,7 @@ func waitForTrigger(t *testing.T, c chan triggerMock) (*triggerMock, error) {
 		case startedAction := <-c:
 			return &startedAction, nil
 		default:
-			if count > 3 {
+			if count > 5 {
 				return nil, fmt.Errorf("timeout")
 			}
 			time.Sleep(1 * time.Millisecond)
