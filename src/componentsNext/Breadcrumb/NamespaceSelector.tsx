@@ -23,7 +23,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
-import NamespaceCreate from "../NamespaceCreate";
+import NamespaceCreate from "../NamespaceEdit";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
