@@ -121,10 +121,11 @@ export const PodsWithData = ({
           }}
         >
           <TabsList variant="boxed">
-            {pods.map((pod, index) => (
+            {pods.map((pod, index, src) => (
               <TabsTrigger key={pod.name} variant="boxed" value={pod.name}>
                 {t("pages.services.revision.detail.logs.tab", {
-                  number: index,
+                  number: index + 1,
+                  total: src.length,
                 })}
               </TabsTrigger>
             ))}
