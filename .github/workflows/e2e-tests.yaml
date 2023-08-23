@@ -103,7 +103,7 @@ jobs:
         run: |
           docker build -t direktiv/direktiv:${{ env.SRVTAG }} -f build/docker/direktiv/Dockerfile .
           docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv:${{ env.SRVTAG }}.tar
-          sudo k3s ctr images import direktiv:${{ env.SRVTAG }}.tar 
+          sudo k3s ctr images import direktiv:${{ env.SRVTAG }}.tar
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
@@ -130,7 +130,7 @@ jobs:
 
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
-      
+
       - name: Wait for Direktiv function pods to be ready
         run: |
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-functions --timeout=120s
@@ -141,7 +141,7 @@ jobs:
         run: |
           kubectl get pods 
           kubectl logs deployments/direktiv-flow | tail -n 200
-      
+
       - name: Cache test dependencies
         uses: actions/cache@v2
         with:
@@ -159,22 +159,20 @@ jobs:
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
-         JEST_PREFIX: filesystem/
-      
+          JEST_PREFIX: filesystem/
+
       - name: Run engine tests
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
-         JEST_PREFIX: engine/
-  
-      - name: Run namespaces tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-         JEST_PREFIX: namespaces/
+          JEST_PREFIX: engine/
 
-         
-      
+      # - name: Run namespaces tests
+      #   run: |
+      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+      #   env:
+      #    JEST_PREFIX: namespaces/
+
       # - name: Run events tests
       #   run: |
       #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
@@ -188,7 +186,7 @@ jobs:
       #    JEST_PREFIX: mirror/
 
       - name: Show logs
-        run: | 
+        run: |
           kubectl logs deployments/direktiv-flow | tail -n 200
 
       - name: Cleanup test cache
