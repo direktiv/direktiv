@@ -10,7 +10,7 @@ const ServiceRevisionPage = () => {
   if (!revision) return null;
 
   return (
-    <div className="flex grow flex-col border">
+    <div className="flex grow flex-col">
       <ServiceRevisionStreamingSubscriber
         revision={revision}
         service={service}
@@ -18,9 +18,7 @@ const ServiceRevisionPage = () => {
       <div className="flex-none">
         <Header service={service} revision={revision} />
       </div>
-      <div className="grow border">
-        <Pods revision={revision} service={service} />
-      </div>
+      <Pods revision={revision} service={service} />
     </div>
   );
 };
