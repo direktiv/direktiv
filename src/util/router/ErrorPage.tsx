@@ -17,19 +17,17 @@ const ErrorPage = () => {
   }
 
   return (
-    <main className="flex h-screen w-full flex-col items-center justify-center gap-8">
+    <main className="flex h-screen w-full flex-col items-center justify-center gap-3">
       <Logo />
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-4xl font-bold">{errorTitle}</div>
-        <div>{errorMessage}</div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            {t("pages.error.goBack")}
-          </Button>
-          <Button variant="primary" asChild>
-            <Link to="/">{t("pages.error.goHome")}</Link>
-          </Button>
-        </div>
+      <div className="text-4xl font-bold">{errorTitle}</div>
+      <div>{errorMessage}</div>
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={() => window.history.back()}>
+          {t("pages.error.goBack")}
+        </Button>
+        <Button variant="primary" asChild>
+          <Link to="/">{t("pages.error.goHome")}</Link>
+        </Button>
       </div>
     </main>
   );
