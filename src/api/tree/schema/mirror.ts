@@ -31,10 +31,14 @@ import { z } from "zod";
 }
 */
 
+// In the current API implementation, for secret values, "-" means a value exists.
 export const MirrorInfoInfoSchema = z.object({
   url: z.string(),
   ref: z.string(),
   lastSync: z.string().or(z.null()),
+  publicKey: z.string(),
+  privateKey: z.enum(["-", ""]),
+  passphrase: z.enum(["-", ""]),
 });
 
 // According to API spec, but currently dry_run isn't used in the API.

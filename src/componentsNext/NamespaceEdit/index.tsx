@@ -24,6 +24,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import InfoTooltip from "./InfoTooltip";
@@ -58,10 +59,20 @@ const NamespaceEdit = ({
   mirror?: MirrorInfoSchemaType;
   close: () => void;
 }) => {
+  const getInitialAuthType = (): MirrorAuthType => {
+    if (mirror?.info.publicKey.length) {
+      return "ssh";
+    }
+    if (mirror?.info.passphrase === "-") {
+      return "token";
+    }
+    return "none";
+  };
+
   const { t } = useTranslation();
   const [isMirror, setIsMirror] = useState(!!mirror);
   const [isNew] = useState(!mirror);
-  const [authType, setAuthType] = useState<MirrorAuthType>("none");
+  const [authType, setAuthType] = useState<MirrorAuthType>(getInitialAuthType);
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
@@ -279,6 +290,12 @@ const NamespaceEdit = ({
                   </SelectContent>
                 </Select>
               </fieldset>
+
+              {!isNew && authType !== "none" && (
+                <Alert variant="info" className="text-sm">
+                  {t("components.namespaceEdit.updateAuthInfo")}
+                </Alert>
+              )}
 
               {authType === "token" && (
                 <fieldset className="flex items-center gap-5">

@@ -604,6 +604,7 @@
       "createBtn": "Create",
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel",
+      "updateAuthInfo": "To overwrite one of the below values, fill in the new value. To keep the existing authentication data, leave them blank.",
       "tab": {
         "namespace": "Namespace",
         "mirror": "Mirror"
