@@ -408,6 +408,10 @@
       }
     },
     "mirror": {
+      "header": {
+        "ref": "ref",
+        "url": "url"
+      },
       "activities": {
         "list": {
           "title": "Activities"
