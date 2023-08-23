@@ -1,5 +1,5 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import { WorkflowVariableListSchema } from "../schema";
+import { WorkflowVariableListSchema } from "../schema/workflowVariable";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "../";

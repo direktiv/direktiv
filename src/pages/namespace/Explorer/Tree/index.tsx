@@ -24,7 +24,7 @@ import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "~/api/tree/schema";
+import { NodeSchemaType } from "~/api/tree/schema/node";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
 import moment from "moment";

@@ -1,6 +1,6 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
-import { MirrorInfoSchema } from "../schema";
+import { MirrorInfoSchema } from "../schema/mirror";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";

@@ -1,6 +1,6 @@
 import { forceLeadingSlash, sortFoldersFirst } from "../utils";
 
-import { NodeListSchema } from "../schema";
+import { NodeListSchema } from "../schema/node";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";

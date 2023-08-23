@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { fileNameSchema } from "../schema";
+import { fileNameSchema } from "../schema/node";
 
 describe("file name schema", () => {
   describe("valid", () => {

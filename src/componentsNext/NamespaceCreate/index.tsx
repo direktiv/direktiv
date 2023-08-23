@@ -30,7 +30,7 @@ import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { Textarea } from "~/design/TextArea";
-import { fileNameSchema } from "~/api/tree/schema";
+import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";

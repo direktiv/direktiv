@@ -1,7 +1,7 @@
 import {
   MirrorActivityLogSchema,
   MirrorActivityLogSchemaType,
-} from "../schema";
+} from "../schema/mirror";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { memo } from "react";

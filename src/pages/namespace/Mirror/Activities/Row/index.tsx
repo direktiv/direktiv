@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import type { MirrorActivitySchemaType } from "~/api/tree/schema";
+import type { MirrorActivitySchemaType } from "~/api/tree/schema/mirror";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
