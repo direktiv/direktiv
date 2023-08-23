@@ -4,7 +4,8 @@
       "status": "Error",
       "message": "Something went wrong here....",
       "goBack": "Go Back",
-      "goHome": "Go Home"
+      "reload": "Reload",
+      "goHome": "Go to Homepage"
     },
     "onboarding": {
       "welcomeTo": "Welcome to",

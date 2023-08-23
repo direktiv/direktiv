@@ -1,3 +1,4 @@
+import { ArrowLeft, Home, RefreshCcw } from "lucide-react";
 import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import Button from "~/design/Button";
@@ -21,12 +22,20 @@ const ErrorPage = () => {
       <Logo />
       <div className="text-4xl font-bold">{errorTitle}</div>
       <div>{errorMessage}</div>
-      <div className="flex gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" onClick={() => window.history.back()}>
+          <ArrowLeft />
           {t("pages.error.goBack")}
         </Button>
-        <Button variant="primary" asChild>
-          <Link to="/">{t("pages.error.goHome")}</Link>
+        <Button variant="outline" onClick={() => location.reload()}>
+          <RefreshCcw />
+          {t("pages.error.reload")}
+        </Button>
+        <Button variant="primary" asChild className="col-span-2">
+          <Link to="/">
+            <Home />
+            {t("pages.error.goHome")}
+          </Link>
         </Button>
       </div>
     </main>
