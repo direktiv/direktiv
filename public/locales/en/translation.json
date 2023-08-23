@@ -410,7 +410,9 @@
     "mirror": {
       "header": {
         "ref": "ref",
-        "url": "url"
+        "url": "url",
+        "editMirror": "Edit mirror",
+        "sync": "Sync"
       },
       "activities": {
         "list": {

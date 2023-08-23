@@ -1,4 +1,6 @@
-import { GitCompare } from "lucide-react";
+import { FileCog, GitCompare, RefreshCcw } from "lucide-react";
+
+import Button from "~/design/Button";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ name, repo }: { name: string; repo: string }) => {
@@ -11,12 +13,17 @@ const Header = ({ name, repo }: { name: string; repo: string }) => {
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
             <GitCompare className="h-5" /> {name}
           </h3>
+          <div className="text-sm">{repo}</div>
         </div>
-        <div className="text-sm">
-          <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.mirror.header.url")}
-          </div>
-          {repo}
+        <div className="flex grow justify-end gap-4">
+          <Button variant="outline" className="max-md:w-full">
+            <FileCog />
+            {t("pages.mirror.header.editMirror")}
+          </Button>
+          <Button variant="primary" className="max-md:w-full">
+            <RefreshCcw />
+            {t("pages.mirror.header.sync")}
+          </Button>
         </div>
       </div>
     </div>
