@@ -32,13 +32,13 @@ const Activities = () => {
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
-                {t("pages.mirror.activities.tableHeader.status")}
+                {t("pages.mirror.activities.tableHeader.id")}
               </TableHeaderCell>
               <TableHeaderCell>
                 {t("pages.mirror.activities.tableHeader.type")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.mirror.activities.tableHeader.id")}
+                {t("pages.mirror.activities.tableHeader.status")}
               </TableHeaderCell>
               <TableHeaderCell>
                 {t("pages.mirror.activities.tableHeader.createdAt")}

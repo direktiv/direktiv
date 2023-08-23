@@ -5,8 +5,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import {
+  activityStatusToBadgeVariant,
+  activityTypeToBadeVariant,
+} from "../utils";
 
-import type { MirrorActivitySchemaType } from "~/api/tree/schema/mirror";
+import Badge from "~/design/Badge";
+import { MirrorActivitySchemaType } from "~/api/tree/schema/mirror";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
@@ -37,12 +42,20 @@ const Row = ({
       }}
     >
       <TooltipProvider>
-        <TableCell>{item.status}</TableCell>
-        <TableCell>{item.type}</TableCell>
         <TableCell>
           <TooltipCopyBadge value={item.id} variant="outline">
             {item.id.slice(0, 8)}
           </TooltipCopyBadge>
+        </TableCell>
+        <TableCell>
+          <Badge variant={activityTypeToBadeVariant(item.type)}>
+            {item.type}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          <Badge variant={activityStatusToBadgeVariant(item.status)}>
+            {item.status}
+          </Badge>
         </TableCell>
         <TableCell>
           <Tooltip>
