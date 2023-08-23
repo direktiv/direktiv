@@ -33,28 +33,44 @@ func (q *FileQuery) setPathForFileType(ctx context.Context, path string) error {
 }
 
 func (q *FileQuery) setPathForDirectoryType(ctx context.Context, path string) error {
-	// In SQL, REPLACE(str, param1, param2) function does replace all the occurrences of param1 with param2, this will
-	// result in a bug where paths with repetitive components like '/a/b/a/b/a/b'
-	// get updated to '/z/b/z/b/z/b' instead of '/z/b/a/b/a/b' when path '/a' get set to '/z'.
-	// To overcome this problem with REPLACE(), we prefix REPLACE() parameter with "//" string.
-
-	res := q.db.WithContext(ctx).Exec(`
-							UPDATE filesystem_files SET path = REPLACE( '//' || path, '//' || ?, ?), depth = ?
-							             WHERE (root_id = ? AND path = ?)
-							             OR (root_id = ? AND path LIKE ?)`,
-		q.file.Path, path, filestore.GetPathDepth(path),
-		q.file.RootID, q.file.Path,
-		q.file.RootID, q.file.Path+"/%",
-	)
-
-	if res.Error != nil {
-		return res.Error
+	rq := &RootQuery{
+		rootID:       q.file.RootID,
+		db:           q.db,
+		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
-	if res.RowsAffected < 1 {
-		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+
+	children, err := rq.ReadDirectory(ctx, q.file.Path)
+	if err != nil {
+		return err
+	}
+
+	for _, child := range children {
+		cq := &FileQuery{
+			file:         child,
+			db:           q.db,
+			checksumFunc: filestore.DefaultCalculateChecksum,
+		}
+
+		err = cq.setPath(ctx, filepath.Join(path, child.Name()))
+		if err != nil {
+			return err
+		}
+	}
+
+	err = q.setPathForFileType(ctx, path)
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func (q *FileQuery) setPath(ctx context.Context, path string) error {
+	if q.file.Typ == filestore.FileTypeDirectory {
+		return q.setPathForDirectoryType(ctx, path)
+	}
+
+	return q.setPathForFileType(ctx, path)
 }
 
 func (q *FileQuery) SetPath(ctx context.Context, path string) error {
@@ -86,11 +102,12 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 		}
 	}
 
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return q.setPathForDirectoryType(ctx, path)
+	err = q.setPath(ctx, path)
+	if err != nil {
+		return err
 	}
 
-	return q.setPathForFileType(ctx, path)
+	return nil
 }
 
 func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
