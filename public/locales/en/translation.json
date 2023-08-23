@@ -412,6 +412,14 @@
         "list": {
           "title": "Activities"
         },
+        "detail": {
+          "header": {
+            "createdAt": "started",
+            "relativeTime": "{{relativeTime}} ago",
+            "type": "type",
+            "status": "status"
+          }
+        },
         "tableHeader": {
           "createdAt": "Started",
           "id": "Activity ID",

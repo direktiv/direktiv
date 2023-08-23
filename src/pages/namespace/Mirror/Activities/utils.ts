@@ -1,9 +1,9 @@
+import Badge, { BadgeProps } from "~/design/Badge";
 import {
   MirrorActivityStatusSchemaType,
   MirrorActivityTypeSchemaType,
 } from "~/api/tree/schema/mirror";
 
-import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
@@ -22,19 +22,24 @@ export const activityTypeToBadeVariant = (
   }
 };
 
-export const activityStatusToBadgeVariant = (
+type StatusBadgeProps = {
+  variant: BadgeProps["variant"];
+  icon: BadgeProps["icon"];
+};
+
+export const activityStatusToBadgeProps = (
   status: MirrorActivityStatusSchemaType
-): BadgeVariant => {
+): StatusBadgeProps => {
   switch (status) {
     case "cancelled":
     case "failed":
-      return "destructive";
+      return { variant: "destructive", icon: "failed" };
     case "complete":
-      return "success";
+      return { variant: "success", icon: "complete" };
     case "executing":
     case "pending":
-      return "outline";
+      return { variant: "outline", icon: "pending" };
     default:
-      break;
+      return { variant: "outline", icon: undefined };
   }
 };

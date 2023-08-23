@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 import {
-  activityStatusToBadgeVariant,
+  activityStatusToBadgeProps,
   activityTypeToBadeVariant,
 } from "../utils";
 
@@ -29,6 +29,8 @@ const Row = ({
 
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const statusBadgeProps = activityStatusToBadgeProps(item.status);
 
   return (
     <TableRow
@@ -53,7 +55,10 @@ const Row = ({
           </Badge>
         </TableCell>
         <TableCell>
-          <Badge variant={activityStatusToBadgeVariant(item.status)}>
+          <Badge
+            variant={statusBadgeProps.variant}
+            icon={statusBadgeProps.icon}
+          >
             {item.status}
           </Badge>
         </TableCell>
