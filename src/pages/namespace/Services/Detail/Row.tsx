@@ -8,7 +8,7 @@ import { MoreVertical, Trash } from "lucide-react";
 import {
   RevisionSchemaType,
   revisionConditionNames,
-} from "~/api/services/schema";
+} from "~/api/services/schema/revisions";
 import { TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,

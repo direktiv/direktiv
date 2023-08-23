@@ -1,4 +1,7 @@
-import { RevisionDeletedSchema, RevisionsListSchemaType } from "../schema";
+import {
+  RevisionDeletedSchema,
+  RevisionsListSchemaType,
+} from "../schema/revisions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";

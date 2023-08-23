@@ -3,7 +3,7 @@ import {
   PodsListSchemaType,
   PodsStreamingSchema,
   PodsStreamingSchemaType,
-} from "../../../schema";
+} from "../../../schema/pods";
 import {
   QueryFunctionContext,
   useQuery,

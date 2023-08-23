@@ -7,7 +7,7 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { RevisionSchemaType } from "~/api/services/schema";
+import { RevisionSchemaType } from "~/api/services/schema/revisions";
 import { Trash } from "lucide-react";
 import { useDeleteServiceRevision } from "~/api/services/mutate/deleteRevision";
 

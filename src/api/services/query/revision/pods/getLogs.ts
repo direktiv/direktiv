@@ -1,4 +1,4 @@
-import { PodLogsSchema, PodLogsSchemaType } from "../../../schema";
+import { PodLogsSchema, PodLogsSchemaType } from "../../../schema/pods";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { memo } from "react";

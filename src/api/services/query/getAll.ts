@@ -8,7 +8,7 @@ import {
   ServiceStreamingSchemaType,
   ServicesListSchema,
   ServicesListSchemaType,
-} from "../schema";
+} from "../schema/services";
 
 import { apiFactory } from "~/api/apiFactory";
 import { memo } from "react";

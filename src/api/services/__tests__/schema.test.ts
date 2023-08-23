@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { serviceNameSchema } from "../schema";
+import { serviceNameSchema } from "../schema/services";
 
 describe("service name schema", () => {
   describe("valid", () => {

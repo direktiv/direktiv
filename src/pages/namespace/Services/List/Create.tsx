@@ -15,9 +15,8 @@ import {
 import {
   ServiceFormSchema,
   ServiceFormSchemaType,
-  SizeSchema,
-  SizeSchemaType,
-} from "~/api/services/schema";
+} from "~/api/services/schema/services";
+import { SizeSchema, SizeSchemaType } from "~/api/services/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";

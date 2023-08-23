@@ -1,8 +1,8 @@
-import { PodStatusSchemaType, StatusSchemaType } from "~/api/services/schema";
-
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
+import { PodStatusSchemaType } from "~/api/services/schema/pods";
+import { StatusSchemaType } from "~/api/services/schema";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 type BadgeIcon = ComponentProps<typeof Badge>["icon"];

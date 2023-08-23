@@ -2,7 +2,7 @@ import {
   RevisionDetailSchemaType,
   RevisionDetailStreamingSchema,
   RevisionDetailStreamingSchemaType,
-} from "../../schema";
+} from "../../schema/revisions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { memo } from "react";

@@ -8,7 +8,7 @@ import {
   RevisionStreamingSchemaType,
   RevisionsListSchema,
   RevisionsListSchemaType,
-} from "../schema";
+} from "../schema/revisions";
 
 import { apiFactory } from "~/api/apiFactory";
 import { memo } from "react";

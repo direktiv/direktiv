@@ -19,7 +19,7 @@ import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { NoResult } from "~/design/Table";
-import { PodsListSchemaType } from "~/api/services/schema";
+import { PodsListSchemaType } from "~/api/services/schema/pods";
 import ScrollContainer from "./ScrollContainer";
 import { podStatusToBadgeVariant } from "../../../components/utils";
 import { twMergeClsx } from "~/util/helpers";

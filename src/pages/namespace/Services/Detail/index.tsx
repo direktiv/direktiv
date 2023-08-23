@@ -19,7 +19,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateServiceRevision from "./Create";
 import Delete from "./Delete";
-import { RevisionSchemaType } from "~/api/services/schema";
+import { RevisionSchemaType } from "~/api/services/schema/revisions";
 import Row from "./Row";
 import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";

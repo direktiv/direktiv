@@ -8,8 +8,7 @@ import { Diamond, PlusCircle } from "lucide-react";
 import {
   RevisionFormSchema,
   RevisionFormSchemaType,
-  SizeSchema,
-} from "~/api/services/schema";
+} from "~/api/services/schema/revisions";
 import {
   Select,
   SelectContent,
@@ -22,6 +21,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
+import { SizeSchema } from "~/api/services/schema";
 import { Slider } from "~/design/Slider";
 import { useCreateServiceRevision } from "~/api/services/mutate/createRevision";
 import { useServiceDetails } from "~/api/services/query/details";

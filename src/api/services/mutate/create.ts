@@ -1,4 +1,7 @@
-import { ServiceCreatedSchema, ServiceFormSchemaType } from "../schema";
+import {
+  ServiceCreatedSchema,
+  ServiceFormSchemaType,
+} from "../schema/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";

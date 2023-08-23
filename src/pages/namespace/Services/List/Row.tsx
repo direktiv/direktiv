@@ -7,14 +7,14 @@ import {
 import { MoreVertical, Trash } from "lucide-react";
 import {
   ServiceSchemaType,
-  SizeSchema,
   serviceConditionNames,
-} from "~/api/services/schema";
+} from "~/api/services/schema/services";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
+import { SizeSchema } from "~/api/services/schema";
 import { StatusBadge } from "../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
 import { pages } from "~/util/router/pages";

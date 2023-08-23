@@ -1,4 +1,7 @@
-import { ServiceDeletedSchema, ServicesListSchemaType } from "../schema";
+import {
+  ServiceDeletedSchema,
+  ServicesListSchemaType,
+} from "../schema/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
