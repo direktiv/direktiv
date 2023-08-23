@@ -596,8 +596,11 @@
       "eventListeners": "Event Listeners",
       "monitoring": "Monitoring"
     },
-    "namespaceCreate": {
-      "title": "Create a new namespace",
+    "namespaceEdit": {
+      "title": {
+        "new": "Create a new namespace",
+        "edit": "Update mirror {{namespace}}"
+      },
       "createBtn": "Create",
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel",

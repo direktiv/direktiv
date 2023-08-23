@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { Home, PlusCircle } from "lucide-react";
+import { GitCompare, Home, PlusCircle } from "lucide-react";
 import {
   MirrorFormSchema,
   MirrorFormSchemaType,
@@ -51,7 +51,7 @@ const mirrorAuthTypes = ["none", "ssh", "token"] as const;
 
 type MirrorAuthType = (typeof mirrorAuthTypes)[number];
 
-const NamespaceCreate = ({
+const NamespaceEdit = ({
   mirror,
   close,
 }: {
@@ -59,7 +59,8 @@ const NamespaceCreate = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const [isMirror, setIsMirror] = useState<boolean>(!!mirror);
+  const [isMirror, setIsMirror] = useState(!!mirror);
+  const [isNew] = useState(!mirror);
   const [authType, setAuthType] = useState<MirrorAuthType>("none");
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
@@ -69,7 +70,7 @@ const NamespaceCreate = ({
 
   const nameSchema = fileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {
-      message: t("components.namespaceCreate.nameAlreadyExists"),
+      message: t("components.namespaceEdit.nameAlreadyExists"),
     })
   );
 
@@ -147,28 +148,35 @@ const NamespaceCreate = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Home /> {t("components.namespaceCreate.title")}
+          {isNew ? <Home /> : <GitCompare />}
+          {isNew
+            ? t("components.namespaceEdit.title.new")
+            : t("components.namespaceEdit.title.edit", {
+                namespace: mirror?.namespace,
+              })}
         </DialogTitle>
       </DialogHeader>
 
-      <Tabs className="mt-2 sm:w-[400px]" defaultValue="namespace">
-        <TabsList variant="boxed">
-          <TabsTrigger
-            variant="boxed"
-            value="namespace"
-            onClick={() => setIsMirror(false)}
-          >
-            {t("components.namespaceCreate.tab.namespace")}
-          </TabsTrigger>
-          <TabsTrigger
-            variant="boxed"
-            value="mirror"
-            onClick={() => setIsMirror(true)}
-          >
-            {t("components.namespaceCreate.tab.mirror")}
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {isNew && (
+        <Tabs className="mt-2 sm:w-[400px]" defaultValue="namespace">
+          <TabsList variant="boxed">
+            <TabsTrigger
+              variant="boxed"
+              value="namespace"
+              onClick={() => setIsMirror(false)}
+            >
+              {t("components.namespaceEdit.tab.namespace")}
+            </TabsTrigger>
+            <TabsTrigger
+              variant="boxed"
+              value="mirror"
+              onClick={() => setIsMirror(true)}
+            >
+              {t("components.namespaceEdit.tab.mirror")}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       <div className="mt-1 mb-3">
         <FormErrors errors={errors} className="mb-5" />
@@ -177,20 +185,22 @@ const NamespaceCreate = ({
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-y-5"
         >
-          <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[112px] overflow-hidden text-right text-[14px]"
-              htmlFor="name"
-            >
-              {t("components.namespaceCreate.label.name")}
-            </label>
-            <Input
-              id="name"
-              data-testid="new-namespace-name"
-              placeholder={t("components.namespaceCreate.placeholder.name")}
-              {...register("name")}
-            />
-          </fieldset>
+          {isNew && (
+            <fieldset className="flex items-center gap-5">
+              <label
+                className="w-[112px] overflow-hidden text-right text-[14px]"
+                htmlFor="name"
+              >
+                {t("components.namespaceEdit.label.name")}
+              </label>
+              <Input
+                id="name"
+                data-testid="new-namespace-name"
+                placeholder={t("components.namespaceEdit.placeholder.name")}
+                {...register("name")}
+              />
+            </fieldset>
+          )}
 
           {isMirror && (
             <>
@@ -199,7 +209,7 @@ const NamespaceCreate = ({
                   className="w-[112px] flex-row overflow-hidden text-right text-[14px]"
                   htmlFor="url"
                 >
-                  {t("components.namespaceCreate.label.url")}
+                  {t("components.namespaceEdit.label.url")}
                 </label>
                 <InputWithButton>
                   <Input
@@ -207,13 +217,13 @@ const NamespaceCreate = ({
                     data-testid="new-namespace-url"
                     placeholder={t(
                       authType === "ssh"
-                        ? "components.namespaceCreate.placeholder.gitUrl"
-                        : "components.namespaceCreate.placeholder.httpUrl"
+                        ? "components.namespaceEdit.placeholder.gitUrl"
+                        : "components.namespaceEdit.placeholder.httpUrl"
                     )}
                     {...register("url")}
                   />
                   <InfoTooltip>
-                    {t("components.namespaceCreate.tooltip.url")}
+                    {t("components.namespaceEdit.tooltip.url")}
                   </InfoTooltip>
                 </InputWithButton>
               </fieldset>
@@ -223,19 +233,17 @@ const NamespaceCreate = ({
                   className="w-[112px] overflow-hidden text-right text-[14px]"
                   htmlFor="ref"
                 >
-                  {t("components.namespaceCreate.label.ref")}
+                  {t("components.namespaceEdit.label.ref")}
                 </label>
                 <InputWithButton>
                   <Input
                     id="ref"
                     data-testid="new-namespace-ref"
-                    placeholder={t(
-                      "components.namespaceCreate.placeholder.ref"
-                    )}
+                    placeholder={t("components.namespaceEdit.placeholder.ref")}
                     {...register("ref")}
                   />
                   <InfoTooltip>
-                    {t("components.namespaceCreate.tooltip.ref")}
+                    {t("components.namespaceEdit.tooltip.ref")}
                   </InfoTooltip>
                 </InputWithButton>
               </fieldset>
@@ -245,7 +253,7 @@ const NamespaceCreate = ({
                   className="w-[112px] overflow-hidden text-right text-[14px]"
                   htmlFor="ref"
                 >
-                  {t("components.namespaceCreate.label.authType")}
+                  {t("components.namespaceEdit.label.authType")}
                 </label>
                 <Select
                   value={authType}
@@ -254,7 +262,7 @@ const NamespaceCreate = ({
                   <SelectTrigger variant="outline" className="w-full">
                     <SelectValue
                       placeholder={t(
-                        "components.namespaceCreate.placeholder.authType"
+                        "components.namespaceEdit.placeholder.authType"
                       )}
                     />
                   </SelectTrigger>
@@ -265,7 +273,7 @@ const NamespaceCreate = ({
                         value={option}
                         onClick={() => setAuthType(option)}
                       >
-                        {t(`components.namespaceCreate.authType.${option}`)}
+                        {t(`components.namespaceEdit.authType.${option}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -278,19 +286,19 @@ const NamespaceCreate = ({
                     className="w-[112px] overflow-hidden text-right text-[14px]"
                     htmlFor="token"
                   >
-                    {t("components.namespaceCreate.label.token")}
+                    {t("components.namespaceEdit.label.token")}
                   </label>
                   <InputWithButton>
                     <Textarea
                       id="token"
                       data-testid="new-namespace-token"
                       placeholder={t(
-                        "components.namespaceCreate.placeholder.token"
+                        "components.namespaceEdit.placeholder.token"
                       )}
                       {...register("passphrase")}
                     />
                     <InfoTooltip>
-                      {t("components.namespaceCreate.tooltip.token")}
+                      {t("components.namespaceEdit.tooltip.token")}
                     </InfoTooltip>
                   </InputWithButton>
                 </fieldset>
@@ -303,19 +311,19 @@ const NamespaceCreate = ({
                       className="w-[112px] overflow-hidden text-right text-[14px]"
                       htmlFor="passphrase"
                     >
-                      {t("components.namespaceCreate.label.passphrase")}
+                      {t("components.namespaceEdit.label.passphrase")}
                     </label>
                     <InputWithButton>
                       <Textarea
                         id="passphrase"
                         data-testid="new-namespace-passphrase"
                         placeholder={t(
-                          "components.namespaceCreate.placeholder.passphrase"
+                          "components.namespaceEdit.placeholder.passphrase"
                         )}
                         {...register("passphrase")}
                       />
                       <InfoTooltip>
-                        {t("components.namespaceCreate.tooltip.passphrase")}
+                        {t("components.namespaceEdit.tooltip.passphrase")}
                       </InfoTooltip>
                     </InputWithButton>
                   </fieldset>
@@ -324,19 +332,19 @@ const NamespaceCreate = ({
                       className="w-[112px] overflow-hidden text-right text-[14px]"
                       htmlFor="public-key"
                     >
-                      {t("components.namespaceCreate.label.publicKey")}
+                      {t("components.namespaceEdit.label.publicKey")}
                     </label>
                     <InputWithButton>
                       <Textarea
                         id="public-key"
                         data-testid="new-namespace-pubkey"
                         placeholder={t(
-                          "components.namespaceCreate.placeholder.publicKey"
+                          "components.namespaceEdit.placeholder.publicKey"
                         )}
                         {...register("publicKey")}
                       />
                       <InfoTooltip>
-                        {t("components.namespaceCreate.tooltip.publicKey")}
+                        {t("components.namespaceEdit.tooltip.publicKey")}
                       </InfoTooltip>
                     </InputWithButton>
                   </fieldset>
@@ -346,19 +354,19 @@ const NamespaceCreate = ({
                       className="w-[112px] overflow-hidden text-right text-[14px]"
                       htmlFor="private-key"
                     >
-                      {t("components.namespaceCreate.label.privateKey")}
+                      {t("components.namespaceEdit.label.privateKey")}
                     </label>
                     <InputWithButton>
                       <Textarea
                         id="private-key"
                         data-testid="new-namespace-privkey"
                         placeholder={t(
-                          "components.namespaceCreate.placeholder.privateKey"
+                          "components.namespaceEdit.placeholder.privateKey"
                         )}
                         {...register("privateKey")}
                       />
                       <InfoTooltip>
-                        {t("components.namespaceCreate.tooltip.privateKey")}
+                        {t("components.namespaceEdit.tooltip.privateKey")}
                       </InfoTooltip>
                     </InputWithButton>
                   </fieldset>
@@ -372,7 +380,7 @@ const NamespaceCreate = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("components.namespaceCreate.cancelBtn")}
+            {t("components.namespaceEdit.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -383,11 +391,11 @@ const NamespaceCreate = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          {t("components.namespaceCreate.createBtn")}
+          {t("components.namespaceEdit.createBtn")}
         </Button>
       </DialogFooter>
     </>
   );
 };
 
-export default NamespaceCreate;
+export default NamespaceEdit;
