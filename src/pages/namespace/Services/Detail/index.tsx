@@ -28,7 +28,7 @@ const ServiceDetailPage = () => {
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
   const { data, isSuccess } = useServiceDetails({
-    service: service ?? "", // TODO: handle undefined
+    service: service ?? "",
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);

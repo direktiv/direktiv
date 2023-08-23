@@ -152,6 +152,6 @@ export const useServiceDetails = ({ service }: { service: string }) => {
       service,
     }),
     queryFn: fetchServiceDetails,
-    enabled: !!namespace,
+    enabled: !!service,
   });
 };
