@@ -797,6 +797,15 @@
           "error": {
             "description": "could not delete namespace 😢"
           }
+        },
+        "syncMirror": {
+          "success": {
+            "title": "Sync namespace",
+            "description": "Triggered sync for namespace {{namespace}}"
+          },
+          "error": {
+            "description": "could not sync namespace 😢"
+          }
         }
       }
     },

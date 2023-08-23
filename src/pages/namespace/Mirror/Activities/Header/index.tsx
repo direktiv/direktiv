@@ -1,10 +1,12 @@
 import { FileCog, GitCompare, RefreshCcw } from "lucide-react";
 
 import Button from "~/design/Button";
+import { useSyncMirror } from "~/api/tree/mutate/syncMirror";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ name, repo }: { name: string; repo: string }) => {
   const { t } = useTranslation();
+  const { mutate: performSync } = useSyncMirror();
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -20,7 +22,11 @@ const Header = ({ name, repo }: { name: string; repo: string }) => {
             <FileCog />
             {t("pages.mirror.header.editMirror")}
           </Button>
-          <Button variant="primary" className="max-md:w-full">
+          <Button
+            variant="primary"
+            className="max-md:w-full"
+            onClick={() => performSync()}
+          >
             <RefreshCcw />
             {t("pages.mirror.header.sync")}
           </Button>
