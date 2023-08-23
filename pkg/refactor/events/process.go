@@ -307,7 +307,6 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 	if waitType {
 		id, err := uuid.Parse(t.InstanceID)
 		if err != nil {
-			panic(err)
 			// TODO: Log.
 			return
 		}
@@ -317,7 +316,6 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 	}
 	id, err := uuid.Parse(t.WorkflowID)
 	if err != nil {
-		panic(err)
 		// TODO: Log.
 		return
 	}
