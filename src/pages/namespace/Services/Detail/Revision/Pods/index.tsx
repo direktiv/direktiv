@@ -1,3 +1,4 @@
+import { Box, ScrollText } from "lucide-react";
 import {
   PodLogsSubscriber,
   usePodLogs,
@@ -17,9 +18,9 @@ import {
 import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
+import { NoResult } from "~/design/Table";
 import { PodsListSchemaType } from "~/api/services/schema";
 import ScrollContainer from "./ScrollContainer";
-import { ScrollText } from "lucide-react";
 import { podStatusToBadgeVariant } from "../../../components/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useState } from "react";
@@ -58,7 +59,14 @@ export const PodsWithData = ({
 
   const logs = logData?.data.split("\n") ?? [];
 
-  if (!pod) return null;
+  if (!pod)
+    return (
+      <Card className="m-5 flex grow">
+        <NoResult icon={Box}>
+          {t("pages.services.revision.detail.logs.noPods")}
+        </NoResult>
+      </Card>
+    );
 
   return (
     <div className="grid grow p-5">

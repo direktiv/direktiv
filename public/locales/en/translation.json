@@ -489,6 +489,7 @@
           "scale": "Scale",
           "replicas": "Replicas",
           "logs": {
+            "noPods": "No running pods",
             "title": "Logs for {{name}}",
             "followLogs": "Follow logs",
             "logsCount": "received {{count}} log entries",
