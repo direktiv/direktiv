@@ -205,11 +205,11 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
 			ces = removeExpired(l, ces)
 			// TODO metrics
-			_, err := uuid.Parse(l.TriggerWorkflow)
-			if err != nil {
-				// TODO: log.
-				return
-			}
+			// _, err := uuid.Parse(l.TriggerWorkflow)
+			// if err != nil {
+			// 	// TODO: log.
+			// 	return
+			// }
 			if canTriggerAction(ces, types) {
 				tr := triggerActionArgs{
 					WorkflowID: l.TriggerWorkflow,
@@ -307,6 +307,8 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 	if waitType {
 		id, err := uuid.Parse(t.InstanceID)
 		if err != nil {
+			panic(err)
+			// TODO: Log.
 			return
 		}
 		go ee.WakeInstance(id, t.Step, ces)
@@ -315,6 +317,7 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 	}
 	id, err := uuid.Parse(t.WorkflowID)
 	if err != nil {
+		panic(err)
 		// TODO: Log.
 		return
 	}

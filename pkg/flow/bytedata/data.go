@@ -222,6 +222,7 @@ func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
 	return results, nil
 }
 
+//TODO test this!!!
 func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
 	res := make([]*grpc.EventListener, 0, len(in))
 	for _, el := range in {

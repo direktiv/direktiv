@@ -86,8 +86,8 @@ func Test_Add_Get(t *testing.T) {
 	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
 	tr, err := waitForTrigger(t, resultsForEngine)
 	if err != nil {
-		return
 		t.Error("got no results")
+		return
 	}
 	if tr.wf != wfID {
 		t.Error("workflow should be triggered")
