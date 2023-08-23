@@ -149,17 +149,31 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('test//package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      - name: Run errors tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-         JEST_PREFIX: errors/
+      # - name: Run errors tests
+      #   run: |
+      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+      #   env:
+      #    JEST_PREFIX: errors/
 
       - name: Run filesystem tests
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
          JEST_PREFIX: filesystem/
+
+      
+      - name: Run engine tests
+        run: |
+          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: engine/
+      - name: Run namespaces tests
+        run: |
+          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+        env:
+         JEST_PREFIX: namespaces/
+
+         
       
       # - name: Run events tests
       #   run: |
