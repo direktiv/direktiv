@@ -1,24 +1,10 @@
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
-import { FileCog, GitCompare, RefreshCcw } from "lucide-react";
+import { FileCog, GitCompare } from "lucide-react";
 
 import Button from "~/design/Button";
-import { useState } from "react";
-import { useSyncMirror } from "~/api/tree/mutate/syncMirror";
+import SyncDialog from "./SyncDialog";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ name, repo }: { name: string; repo: string }) => {
-  const [syncModal, setSyncModal] = useState(false);
-  const { mutate: performSync } = useSyncMirror({
-    onSuccess: () => setSyncModal(false),
-  });
   const { t } = useTranslation();
 
   return (
@@ -35,33 +21,7 @@ const Header = ({ name, repo }: { name: string; repo: string }) => {
             <FileCog />
             {t("pages.mirror.header.editMirror")}
           </Button>
-          <Dialog open={syncModal} onOpenChange={setSyncModal}>
-            <DialogTrigger asChild>
-              <Button variant="primary" className="max-md:w-full">
-                <RefreshCcw />
-                {t("pages.mirror.header.sync")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  <RefreshCcw />
-                  {t("pages.mirror.syncDialog.title", { namespace: name })}
-                </DialogTitle>
-              </DialogHeader>
-              <p>{t("pages.mirror.syncDialog.description")}</p>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="ghost">
-                    {t("components.button.label.cancel")}
-                  </Button>
-                </DialogClose>
-                <Button onClick={() => performSync()}>
-                  {t("pages.mirror.syncDialog.confirm")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <SyncDialog />
         </div>
       </div>
     </div>
