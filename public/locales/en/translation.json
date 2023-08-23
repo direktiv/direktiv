@@ -1,7 +1,7 @@
 {
   "pages": {
     "error": {
-      "status": "Error",
+      "status": "Ups!",
       "message": "Something went wrong here....",
       "goBack": "Go Back",
       "reload": "Reload",
