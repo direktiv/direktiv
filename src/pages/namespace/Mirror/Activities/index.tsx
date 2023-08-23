@@ -26,8 +26,6 @@ const Activities = () => {
 
   if (!activities) return null;
 
-  const repoInfo = `${data.info.url} (${data.info.ref})`;
-
   const refreshActivities = () => {
     queryClient.invalidateQueries(
       treeKeys.mirrorInfo(data.namespace, {
@@ -46,7 +44,7 @@ const Activities = () => {
 
   return (
     <>
-      <Header name={data.namespace} repo={repoInfo} />
+      <Header mirror={data} />
 
       <div className="flex grow flex-col gap-y-4 p-5">
         <h3 className="flex items-center gap-x-2 font-bold">

@@ -123,3 +123,4 @@ export type MirrorActivityStatusSchemaType = z.infer<
 export type MirrorSyncResponseSchemaType = z.infer<
   typeof MirrorSyncResponseSchema
 >;
+export type MirrorInfoSchemaType = z.infer<typeof MirrorInfoSchema>;

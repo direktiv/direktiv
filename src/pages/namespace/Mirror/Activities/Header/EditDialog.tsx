@@ -2,11 +2,12 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 
 import Button from "~/design/Button";
 import { FileCog } from "lucide-react";
+import { MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
 import NamespaceCreate from "~/componentsNext/NamespaceCreate";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const EditDialog = () => {
+const EditDialog = ({ mirror }: { mirror: MirrorInfoSchemaType }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { t } = useTranslation();
 
@@ -19,7 +20,7 @@ const EditDialog = () => {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <NamespaceCreate close={() => setDialogOpen(false)} />
+        <NamespaceCreate mirror={mirror} close={() => setDialogOpen(false)} />
       </DialogContent>
     </Dialog>
   );

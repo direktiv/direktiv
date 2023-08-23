@@ -29,6 +29,7 @@ import FormErrors from "~/componentsNext/FormErrors";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
@@ -50,9 +51,15 @@ const mirrorAuthTypes = ["none", "ssh", "token"] as const;
 
 type MirrorAuthType = (typeof mirrorAuthTypes)[number];
 
-const NamespaceCreate = ({ close }: { close: () => void }) => {
+const NamespaceCreate = ({
+  mirror,
+  close,
+}: {
+  mirror?: MirrorInfoSchemaType;
+  close: () => void;
+}) => {
   const { t } = useTranslation();
-  const [isMirror, setIsMirror] = useState<boolean>(false);
+  const [isMirror, setIsMirror] = useState<boolean>(!!mirror);
   const [authType, setAuthType] = useState<MirrorAuthType>("none");
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
@@ -88,6 +95,13 @@ const NamespaceCreate = ({ close }: { close: () => void }) => {
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: getResolver(isMirror, authType),
+    defaultValues: mirror
+      ? {
+          name: mirror.namespace,
+          url: mirror.info.url,
+          ref: mirror.info.ref,
+        }
+      : {},
   });
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
