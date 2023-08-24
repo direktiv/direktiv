@@ -23,7 +23,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Slider } from "~/design/Slider";
-import { useCreateService } from "~/api/services/mutate/create";
+import { useCreateService } from "~/api/services/mutate/createService";
 import { useServices } from "~/api/services/query/getAll";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

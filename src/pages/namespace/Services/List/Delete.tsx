@@ -8,7 +8,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
 import { Trash } from "lucide-react";
-import { useDeleteService } from "~/api/services/mutate/delete";
+import { useDeleteService } from "~/api/services/mutate/deleteService";
 
 const Delete = ({ service, close }: { service: string; close: () => void }) => {
   const { t } = useTranslation();

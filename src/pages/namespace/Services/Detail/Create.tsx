@@ -24,7 +24,7 @@ import Input from "~/design/Input";
 import { SizeSchema } from "~/api/services/schema";
 import { Slider } from "~/design/Slider";
 import { useCreateServiceRevision } from "~/api/services/mutate/createRevision";
-import { useServiceDetails } from "~/api/services/query/details";
+import { useServiceDetails } from "~/api/services/query/getDetails";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 

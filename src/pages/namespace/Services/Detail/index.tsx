@@ -12,7 +12,7 @@ import {
 import {
   ServiceDetailsStreamingSubscriber,
   useServiceDetails,
-} from "~/api/services/query/details";
+} from "~/api/services/query/getDetails";
 import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
