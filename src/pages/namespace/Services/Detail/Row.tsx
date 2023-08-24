@@ -20,6 +20,7 @@ import {
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
+import { SizeSchema } from "~/api/services/schema";
 import { StatusBadge } from "../components/StatusBadge";
 import moment from "moment";
 import { pages } from "~/util/router/pages";
@@ -43,11 +44,10 @@ const ServicesTableRow: FC<{
 
   if (!namespace) return null;
 
-  const size = revision.size;
-  const sizeLabel =
-    size === 0 || size === 1 || size === 2
-      ? t(`pages.services.revision.create.sizeValues.${size}`)
-      : "";
+  const sizeParse = SizeSchema.safeParse(revision.size);
+  const sizeLabel = sizeParse.success
+    ? t(`pages.services.revision.create.sizeValues.${sizeParse.data}`)
+    : "";
 
   return (
     <TooltipProvider>
