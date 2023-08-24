@@ -51,7 +51,6 @@ export default ({ mode }) => {
           }
         : {},
     },
-    base: "./", // support embedded deployment
     build: {
       commonjsOptions: {
         // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744
