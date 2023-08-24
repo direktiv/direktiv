@@ -8,12 +8,11 @@ import { GitCompare, Home, PlusCircle } from "lucide-react";
 import {
   MirrorFormSchema,
   MirrorFormSchemaType,
+  MirrorKeepCredentialsFormSchema,
   MirrorSshFormSchema,
   MirrorSshFormSchemaType,
   MirrorTokenFormSchema,
   MirrorTokenFormSchemaType,
-  MirrorUpdateSshFormSchema,
-  MirrorUpdateTokenFormSchema,
 } from "~/api/namespaces/schema";
 import {
   Select,
@@ -96,25 +95,30 @@ const NamespaceEdit = ({
   // no validation is needed for this value.
   const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
 
-  const getResolver = (
-    isNew: boolean,
-    isMirror: boolean,
-    authType: MirrorAuthType
-  ) => {
+  const getResolver = (isMirror: boolean, authType: MirrorAuthType) => {
+    let keepCredentials = false;
+
+    if (isMirror && authType === "ssh") {
+      keepCredentials =
+        !dirtyFields.passphrase ||
+        !dirtyFields.privateKey ||
+        !dirtyFields.publicKey;
+    }
+    if (isMirror && authType === "token") {
+      keepCredentials = !dirtyFields.passphrase;
+    }
+
     if (!isMirror) {
       return zodResolver(baseSchema);
     }
-    if (isNew && authType === "token") {
+    if (keepCredentials && (authType === "token" || authType === "ssh")) {
+      return zodResolver(baseSchema.and(MirrorKeepCredentialsFormSchema));
+    }
+    if (authType === "token") {
       return zodResolver(baseSchema.and(MirrorTokenFormSchema));
     }
-    if (isNew && authType === "ssh") {
+    if (authType === "ssh") {
       return zodResolver(baseSchema.and(MirrorSshFormSchema));
-    }
-    if (!isNew && authType === "token") {
-      return zodResolver(baseSchema.and(MirrorUpdateTokenFormSchema));
-    }
-    if (!isNew && authType === "ssh") {
-      return zodResolver(baseSchema.and(MirrorUpdateSshFormSchema));
     }
     return zodResolver(baseSchema.and(MirrorFormSchema));
   };
@@ -125,7 +129,8 @@ const NamespaceEdit = ({
     trigger,
     formState: { isDirty, dirtyFields, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: getResolver(isNew, isMirror, authType),
+    resolver: (values, context, options) =>
+      getResolver(isMirror, authType)(values, context, options),
     defaultValues: mirror
       ? {
           name: mirror.namespace,
@@ -162,7 +167,7 @@ const NamespaceEdit = ({
     privateKey,
   }) => {
     if (isNew) {
-      createNamespace({
+      return createNamespace({
         name,
         mirror: { ref, url, passphrase, publicKey, privateKey },
       });
@@ -197,7 +202,7 @@ const NamespaceEdit = ({
       };
     }
 
-    updateMirror({
+    return updateMirror({
       name,
       mirror: {
         ref,
