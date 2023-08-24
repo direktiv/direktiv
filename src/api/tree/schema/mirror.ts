@@ -114,6 +114,8 @@ export const MirrorActivityLogSchema = z.object({
 
 export const MirrorSyncResponseSchema = z.null();
 
+export const UpdateMirrorResponseSchema = z.null();
+
 export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;
 export type MirrorActivityLogSchemaType = z.infer<
   typeof MirrorActivityLogSchema
@@ -128,3 +130,6 @@ export type MirrorSyncResponseSchemaType = z.infer<
   typeof MirrorSyncResponseSchema
 >;
 export type MirrorInfoSchemaType = z.infer<typeof MirrorInfoSchema>;
+export type UpdateMirrorResponseSchemaType = z.infer<
+  typeof UpdateMirrorResponseSchema
+>;

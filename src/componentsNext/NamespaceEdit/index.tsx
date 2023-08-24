@@ -12,6 +12,8 @@ import {
   MirrorSshFormSchemaType,
   MirrorTokenFormSchema,
   MirrorTokenFormSchemaType,
+  MirrorUpdateSshFormSchema,
+  MirrorUpdateTokenFormSchema,
 } from "~/api/namespaces/schema";
 import {
   Select,
@@ -39,6 +41,7 @@ import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useUpdateMirror } from "~/api/tree/mutate/updateMirror";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -60,7 +63,10 @@ const NamespaceEdit = ({
   close: () => void;
 }) => {
   const getInitialAuthType = (): MirrorAuthType => {
-    if (mirror?.info.publicKey.length) {
+    if (!mirror) {
+      return "none";
+    }
+    if (mirror?.info.url?.startsWith("git@")) {
       return "ssh";
     }
     if (mirror?.info.passphrase === "-") {
@@ -79,23 +85,36 @@ const NamespaceEdit = ({
 
   const existingNamespaces = data?.results.map((n) => n.name) || [];
 
-  const nameSchema = fileNameSchema.and(
+  const newNameSchema = fileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {
       message: t("components.namespaceEdit.nameAlreadyExists"),
     })
   );
 
-  const baseSchema = z.object({ name: nameSchema });
+  // TODO: Improve this?
+  // When a mirror is edited (in this case !isNew), the name isn't editable, so
+  // no validation is needed for this value.
+  const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
 
-  const getResolver = (isMirror: boolean, authType: MirrorAuthType) => {
+  const getResolver = (
+    isNew: boolean,
+    isMirror: boolean,
+    authType: MirrorAuthType
+  ) => {
     if (!isMirror) {
       return zodResolver(baseSchema);
     }
-    if (authType === "token") {
+    if (isNew && authType === "token") {
       return zodResolver(baseSchema.and(MirrorTokenFormSchema));
     }
-    if (authType === "ssh") {
+    if (isNew && authType === "ssh") {
       return zodResolver(baseSchema.and(MirrorSshFormSchema));
+    }
+    if (!isNew && authType === "token") {
+      return zodResolver(baseSchema.and(MirrorUpdateTokenFormSchema));
+    }
+    if (!isNew && authType === "ssh") {
+      return zodResolver(baseSchema.and(MirrorUpdateSshFormSchema));
     }
     return zodResolver(baseSchema.and(MirrorFormSchema));
   };
@@ -104,9 +123,9 @@ const NamespaceEdit = ({
     register,
     handleSubmit,
     trigger,
-    formState: { isDirty, errors, isValid, isSubmitted },
+    formState: { isDirty, dirtyFields, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: getResolver(isMirror, authType),
+    resolver: getResolver(isNew, isMirror, authType),
     defaultValues: mirror
       ? {
           name: mirror.namespace,
@@ -128,6 +147,12 @@ const NamespaceEdit = ({
     },
   });
 
+  const { mutate: updateMirror } = useUpdateMirror({
+    onSuccess: () => {
+      close();
+    },
+  });
+
   const onSubmit: SubmitHandler<FormInput> = ({
     name,
     ref,
@@ -136,9 +161,49 @@ const NamespaceEdit = ({
     publicKey,
     privateKey,
   }) => {
-    createNamespace({
+    if (isNew) {
+      createNamespace({
+        name,
+        mirror: { ref, url, passphrase, publicKey, privateKey },
+      });
+    }
+
+    let updateAuthValues = {};
+
+    if (authType === "none") {
+      updateAuthValues = {
+        passphrase: "",
+        publicKey: "",
+        privateKey: "",
+      };
+    }
+    if (authType === "ssh") {
+      const overwriteAuth =
+        dirtyFields.passphrase ||
+        dirtyFields.privateKey ||
+        dirtyFields.publicKey;
+      updateAuthValues = {
+        passphrase: overwriteAuth ? passphrase : "-",
+        publicKey: overwriteAuth ? publicKey : "-",
+        privateKey: overwriteAuth ? privateKey : "-",
+      };
+    }
+    if (authType === "token") {
+      const overwriteAuth = dirtyFields.passphrase;
+      updateAuthValues = {
+        passphrase: overwriteAuth ? passphrase : "-",
+        publicKey: "",
+        privateKey: "",
+      };
+    }
+
+    updateMirror({
       name,
-      mirror: { ref, url, passphrase, publicKey, privateKey },
+      mirror: {
+        ref,
+        url,
+        ...updateAuthValues,
+      },
     });
   };
 

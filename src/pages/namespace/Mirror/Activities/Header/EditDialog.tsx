@@ -13,7 +13,7 @@ const EditDialog = ({ mirror }: { mirror: MirrorInfoSchemaType }) => {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant="outline" className="max-md:w-full">
           <FileCog />
           {t("pages.mirror.header.editMirror")}

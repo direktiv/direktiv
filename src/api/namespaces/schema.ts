@@ -78,6 +78,12 @@ export const MirrorTokenFormSchema = z.object({
     .nonempty({ message: "Required when using token auth" }),
 });
 
+export const MirrorUpdateTokenFormSchema = z.object({
+  url: z.string().url().nonempty(),
+  ref: z.string().nonempty(),
+  passphrase: z.string().optional(),
+});
+
 export const MirrorSshFormSchema = z.object({
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
@@ -86,6 +92,16 @@ export const MirrorSshFormSchema = z.object({
   passphrase: z.string().optional(),
   privateKey: z.string().nonempty({ message: "Required when using SSH" }),
   publicKey: z.string().nonempty({ message: "Required when using SSH" }),
+});
+
+export const MirrorUpdateSshFormSchema = z.object({
+  url: gitUrlSchema.nonempty({
+    message: "format must be git@host:path when using SSH",
+  }),
+  ref: z.string().nonempty(),
+  passphrase: z.string().optional(),
+  privateKey: z.string().optional(),
+  publicKey: z.string().optional(),
 });
 
 export const MirrorFormSchema = MirrorPublicFormSchema.or(

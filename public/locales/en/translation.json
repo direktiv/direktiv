@@ -815,6 +815,15 @@
           "error": {
             "description": "could not sync namespace 😢"
           }
+        },
+        "updateMirror": {
+          "success": {
+            "title": "Update mirror",
+            "description": "Settings for mirror {{namespace}} were updated"
+          },
+          "error": {
+            "description": "could not update mirror settings 😢"
+          }
         }
       }
     },
