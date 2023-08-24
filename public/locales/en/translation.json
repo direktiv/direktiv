@@ -442,6 +442,7 @@
         "list": {
           "title": "Services \"{{name}}\" revisions",
           "create": "Create a new Revision",
+          "relativeTime": "{{relativeTime}} ago",
           "tableHeader": {
             "name": "name",
             "image": "image",

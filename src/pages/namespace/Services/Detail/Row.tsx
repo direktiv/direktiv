@@ -92,7 +92,7 @@ const ServicesTableRow: FC<{
         <TableCell>
           <Tooltip>
             <TooltipTrigger>
-              {t("pages.instances.list.tableRow.realtiveTime", {
+              {t("pages.services.revision.list.relativeTime", {
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>
