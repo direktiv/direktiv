@@ -1,26 +1,11 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
-import { authenticationKeys } from "..";
-import { getVersion } from "~/api/version/query/get";
+import { authenticationKeys, checkApiKeyAgainstServer } from "..";
 
 const authTest = async ({
   queryKey: [{ apiKey }],
 }: QueryFunctionContext<
   ReturnType<(typeof authenticationKeys)["authentication"]>
->) =>
-  getVersion({
-    apiKey,
-    urlParams: undefined,
-  }) // when test call succeeds and matches the schema our auth test passes
-    .then(() => true)
-    // when the test call fails with a 401 or 403 our auth test fails
-    .catch((err) => {
-      if (err !== 401 || err !== 403) {
-        // any other error should bubble up, like a 500 or schema validation error
-        throw err;
-      }
-      return false;
-    });
+>) => checkApiKeyAgainstServer(apiKey);
 
 export const useAuthTest = ({
   apikey,
