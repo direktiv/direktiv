@@ -21,7 +21,7 @@ const useApiKeyHandling = () => {
   return {
     isKeyRequired: !testWithoutKey,
     isCurrentKeyValid: apiKeyisPresent ? testWithStoredKey : testWithoutKey,
-    isSuccess: apiKeyisPresent
+    isFetched: apiKeyisPresent
       ? testWithoutKeyFinished && testWithStoredKeyFinished
       : testWithoutKeyFinished,
   };
