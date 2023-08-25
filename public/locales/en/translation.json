@@ -616,7 +616,7 @@
       "fieldInvalid": "this field is invalid"
     },
     "userMenu": {
-      "loggedInAs": "You are logged in as {{name}}",
+      "loggedIn": "You are logged in",
       "logout": "Logout",
       "appearance": "Appearance",
       "switchToLight": "switch to Light mode",

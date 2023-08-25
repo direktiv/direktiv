@@ -6,6 +6,7 @@ import {
   Slack,
   Sun,
   Terminal,
+  User,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,15 +23,15 @@ import Button from "~/design/Button";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
 import { useApiActions } from "~/util/store/apiKey";
+import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
 
-const hasAccount = true;
-const username = "admin";
 interface UserMenuProps {
   className?: string;
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
+  const { isKeyRequired } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -44,7 +45,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {hasAccount ? (
+          {isKeyRequired ? (
             <Button
               variant="ghost"
               className="items-center px-1"
@@ -52,7 +53,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               icon
               data-testid="dropdown-trg-user-menu"
             >
-              <Avatar>{username?.slice(0, 2)}</Avatar>
+              <Avatar>
+                <User />
+              </Avatar>
               <RxChevronDown />
             </Button>
           ) : (
@@ -63,13 +66,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {hasAccount && (
+          {isKeyRequired && (
             <>
               <DropdownMenuLabel>
-                {t("components.userMenu.loggedInAs", { name: username })}
+                {t("components.userMenu.loggedIn")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
+              <DropdownMenuItem onClick={logout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>{t("components.userMenu.logout")}</span>
               </DropdownMenuItem>
