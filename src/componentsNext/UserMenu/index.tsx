@@ -1,11 +1,10 @@
 import {
-  CurlyBraces,
+  BookOpen,
   LogOut,
   Moon,
   Settings2,
   Slack,
   Sun,
-  Terminal,
   User,
 } from "lucide-react";
 import {
@@ -87,6 +86,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuItem
             data-testid="dropdown-item-switch-theme"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="cursor-pointer"
           >
             {theme === "dark" ? (
               <>
@@ -103,19 +103,24 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuSeparator />
           <DropdownMenuLabel>{t("components.userMenu.help")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Terminal className="mr-2 h-4 w-4" />
-            {t("components.userMenu.showApiCommands")}
+          <DropdownMenuItem asChild>
+            <a
+              href="https://docs.direktiv.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer"
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              {t("components.userMenu.docs")}
+            </a>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CurlyBraces className="mr-2 h-4 w-4" />
-            {t("components.userMenu.openJQPlayground")}
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <a
               href="https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g"
               target="_blank"
               rel="noopener noreferrer"
+              className="cursor-pointer"
             >
               <Slack className="mr-2 h-4 w-4" />
               {t("components.userMenu.supportChannelOnSlack")}

@@ -622,8 +622,7 @@
       "switchToLight": "switch to Light mode",
       "switchToDark": "switch to Dark mode",
       "help": "Help",
-      "showApiCommands": "Show API Commands",
-      "openJQPlayground": "Open JQ Playground",
+      "docs": "Open the Docs",
       "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
