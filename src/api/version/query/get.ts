@@ -3,6 +3,7 @@ import { VersionSchema } from "../schema";
 import { apiFactory } from "../../apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
+import { versionKeys } from "..";
 
 const getVersion = apiFactory({
   url: () => `/api/version`,
@@ -17,10 +18,6 @@ const fetchVersions = async ({
     apiKey,
     urlParams: undefined,
   });
-
-const versionKeys = {
-  all: (apiKey: string | undefined) => [{ scope: "versions", apiKey }] as const,
-};
 
 export const useVersion = () => {
   const apiKey = useApiKey();
