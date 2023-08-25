@@ -3,8 +3,10 @@ import { persist } from "zustand/middleware";
 
 interface ApiKeyState {
   apiKey: string | null;
+  requiresAuth: boolean | null;
   actions: {
     setApiKey: (apiKey: ApiKeyState["apiKey"]) => void;
+    setRequiresAuth: (requiresAuth: ApiKeyState["requiresAuth"]) => void;
   };
 }
 
@@ -12,8 +14,11 @@ const useApiKeyState = create<ApiKeyState>()(
   persist(
     (set) => ({
       apiKey: null,
+      requiresAuth: null,
       actions: {
         setApiKey: (newApiKey) => set(() => ({ apiKey: newApiKey })),
+        setRequiresAuth: (newRequiresAuth) =>
+          set(() => ({ requiresAuth: newRequiresAuth })),
       },
     }),
     {
