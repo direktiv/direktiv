@@ -619,8 +619,8 @@
       "loggedIn": "You are logged in",
       "logout": "Logout",
       "appearance": "Appearance",
-      "switchToLight": "switch to Light mode",
-      "switchToDark": "switch to Dark mode",
+      "switchToLight": "Switch to Light mode",
+      "switchToDark": "Switch to Dark mode",
       "help": "Help",
       "docs": "Open the Docs",
       "supportChannelOnSlack": "Support Channel on Slack"
