@@ -90,7 +90,6 @@ const Layout = () => {
             <Alert variant="warning" className="mb-4">
               {t("pages.onboarding.tokenRequired")}
             </Alert>
-
             <ApiKeyPanel />
           </>
         )}
