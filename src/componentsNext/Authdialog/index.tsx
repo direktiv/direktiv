@@ -41,6 +41,9 @@ export const Authdialog = () => {
         apiKey: z.string(),
       })
     ),
+    defaultValues: {
+      apiKey: apiKeyFromLocalStorage ?? "",
+    },
   });
 
   const { mutate: authenticate, isLoading } = useAuthenticate({
