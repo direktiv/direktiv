@@ -6,13 +6,13 @@ import { useTranslation } from "react-i18next";
 export const useAuthenticate = ({
   onSuccess,
 }: {
-  onSuccess?: (isKeyCorrect: boolean) => void;
+  onSuccess?: (isKeyCorrect: boolean, apiKey: string) => void;
 } = {}) => {
   const { t } = useTranslation();
   return useMutation({
     mutationFn: (apiKey: string) => checkApiKeyAgainstServer(apiKey),
-    onSuccess: (isKeyCorrect) => {
-      onSuccess?.(isKeyCorrect);
+    onSuccess: (isKeyCorrect, apiKey) => {
+      onSuccess?.(isKeyCorrect, apiKey);
     },
     onError: () => {
       toast({
