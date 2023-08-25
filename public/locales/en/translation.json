@@ -629,6 +629,15 @@
     "generic": {
       "error": "An error occurred"
     },
+    "authentication": {
+      "mutate": {
+        "authenticate": {
+          "error": {
+            "description": "The auth endpoint did not answer as expected 😢"
+          }
+        }
+      }
+    },
     "tree": {
       "mutate": {
         "setRouter": {
