@@ -49,9 +49,12 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 	viper.SetDefault("log.api", "debug")
 
 	viper.SetDefault("server.listen", "0.0.0.0:2304")
-	viper.SetDefault("server.assets", "/direktiv/html")
-	viper.SetDefault("server.backend", "0.0.0.0:1604")
+	viper.SetDefault("server.assets", "/html")
+	viper.SetDefault("server.backend", "localhost:1604")
 	viper.SetDefault("server.backendskip", true)
+	viper.SetDefault("server.apikey", "")
+	viper.SetDefault("server.tlscert", "")
+	viper.SetDefault("server.tlskey", "")
 
 	if configDir != "" {
 		log.Info().Msgf("starting direktiv with config file direktiv.yaml in %s", configDir)

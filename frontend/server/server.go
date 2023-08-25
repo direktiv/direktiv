@@ -8,8 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	// "github.com/gin-contrib/sessions"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
@@ -19,16 +17,11 @@ import (
 
 type Server struct {
 	conf *Config
-	// gin  *gin.Engine
-	chi *chi.Mux
-	srv *http.Server
+	chi  *chi.Mux
+	srv  *http.Server
 
 	routeManager RouteManager
 }
-
-// var (
-// 	EnvAPIKey = "DIREKTIV_APIKEY"
-// )
 
 const (
 	APITokenHeader = "direktiv-token"
@@ -78,16 +71,6 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 			t1 := time.Now()
 			defer func() {
 				t2 := time.Now()
-				// if rec := recover(); rec != nil {
-				// 	log.Error().
-				// 		Str("type", "error").
-				// 		Timestamp().
-				// 		Interface("recover_info", rec).
-				// 		Bytes("debug_stack", debug.Stack()).
-				// 		Msg("log system error")
-				// 	http.Error(ww, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				// }
-
 				log.Debug().
 					Fields(map[string]interface{}{
 						"remote_ip":  r.RemoteAddr,
@@ -107,51 +90,6 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 		return http.HandlerFunc(fn)
 	}
 }
-
-// func HandlerDummyAPI() gin.HandlerFunc {
-
-// 	jens := "JENS"
-
-// 	return func(ctx *gin.Context) {
-// 		ctx.Writer.Write([]byte("DUMMY!!!"))
-// 		ctx.Writer.Write([]byte(jens))
-// 	}
-// }
-
-// func (s *Server) SetRouteManager(rm RouteManager) error {
-
-// 	// gob.Register(map[string]interface{}{})
-// 	// gob.Register(oauth2.Token{})
-// 	// gob.Register(User{})
-
-// 	// var store = sessions.NewCookieStore([]byte(s.conf.OIDC.CookieSecret))
-// 	// store.Op
-
-// 	// s.conf.OIDC.
-// 	// store := cookie.NewStore([]byte(rc.Conf.Server.CookieSecret))
-// 	// r.Use(sessions.SessionsMany([]string{OAuthTokenSession,
-// 	// 	TokenSession, ProfileSession}, store))
-
-// 	// store := cookie.NewStore([]byte("secret"))
-// 	// store.Options(sessions.Options{MaxAge: 60 * 60 * 24}) // expire in a day
-// 	// s.gin.Use(sessions.Sessions("mysession", store))
-
-// 	// add ui routes
-
-// 	// add api routes
-
-// 	// apiRoutes := s.gin.Group("/api")
-// 	// apiRoutes.Any("/:apiPath", rc.reverseProxy)
-// 	// apiRoutes.Any("/dummy", HandlerDummyAPI())
-
-// 	// s.routeManager = rm
-// 	// err := rm.AddExtraRoutes(s.gin, s.conf)
-// 	// if err != nil {
-// 	// 	return err
-// 	// }
-
-// 	// return nil
-// }
 
 func (s *Server) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
