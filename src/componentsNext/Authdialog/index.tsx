@@ -8,6 +8,7 @@ import {
 import { Eye, EyeOff, KeyRound, LogIn } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useApiActions, useApiKey } from "~/util/store/apiKey";
+import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import FormErrors from "../FormErrors";
@@ -15,7 +16,6 @@ import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import Logo from "~/design/Logo";
 import { useAuthenticate } from "~/api/authenticate/mutate/authenticate";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,6 +59,14 @@ export const Authdialog = () => {
   const onSubmit: SubmitHandler<FormInput> = ({ apiKey }) => {
     authenticate(apiKey);
   };
+
+  useEffect(() => {
+    if (apiKeyFromLocalStorage) {
+      setError("apiKey", {
+        message: t("pages.authenticate.wrongOldKey"),
+      });
+    }
+  }, [apiKeyFromLocalStorage, setError, t]);
 
   // TODO: check if there is an old, and show the user if its wrong
   // TODO: delete old one if not needed anymore
