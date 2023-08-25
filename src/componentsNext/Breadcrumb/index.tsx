@@ -3,6 +3,7 @@ import EventHistoryBreadcrumb from "./Events/HistoryBreadcrumb";
 import EventListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
+import JqPlaygroundBreadcrumb from "./JqPlaygroundBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
 import { pages } from "~/util/router/pages";
@@ -15,6 +16,7 @@ const Breadcrumb = () => {
   const { isEventsHistoryPage, isEventsListenersPage } =
     pages.events.useParams();
   const { isMonitoringPage } = pages.monitoring.useParams();
+  const { isJqPlaygroundPage } = pages.jqPlayground.useParams();
 
   if (!namespace) return null;
 
@@ -26,6 +28,7 @@ const Breadcrumb = () => {
       {isEventsHistoryPage && <EventHistoryBreadcrumb />}
       {isEventsListenersPage && <EventListenerBreadcrumb />}
       {isMonitoringPage && <MonitoringBreadcrumb />}
+      {isJqPlaygroundPage && <JqPlaygroundBreadcrumb />}
     </BreadcrumbRoot>
   );
 };

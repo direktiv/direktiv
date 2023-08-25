@@ -546,7 +546,8 @@
       "instances": "Instances",
       "eventHistory": "Event History",
       "eventListeners": "Event Listeners",
-      "monitoring": "Monitoring"
+      "monitoring": "Monitoring",
+      "jqPlayground": "jq Playground"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",

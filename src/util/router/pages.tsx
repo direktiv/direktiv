@@ -125,11 +125,21 @@ type MonitoringPageSetup = Record<
   }
 >;
 
+type JqPlaygroundPageSetup = Record<
+  "jqPlayground",
+  PageBase & {
+    useParams: () => {
+      isJqPlaygroundPage: boolean;
+    };
+  }
+>;
+
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
   EventsPageSetup &
-  MonitoringPageSetup;
+  MonitoringPageSetup &
+  JqPlaygroundPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -366,9 +376,18 @@ export const pages: PageType = {
     name: "components.mainMenu.jqPlayground",
     icon: PlaySquare,
     createHref: (params) => `/${params.namespace}/jq`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isJqPlaygroundPage = checkHandler(
+        secondLevel,
+        "isJqPlaygroundPage"
+      );
+      return { isJqPlaygroundPage };
+    },
     route: {
       path: "jq",
       element: <JqPlaygroundPage />,
+      handle: { isJqPlaygroundPage: true },
     },
   },
 };
