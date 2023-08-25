@@ -20,6 +20,12 @@
         }
       }
     },
+    "authenticate": {
+      "title": "Authenticate",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter your API Key",
+      "loginBtn": "Login"
+    },
     "explorer": {
       "tree": {
         "list": {
