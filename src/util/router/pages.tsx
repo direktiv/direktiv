@@ -125,6 +125,15 @@ type MonitoringPageSetup = Record<
   }
 >;
 
+type SettingsPageSetup = Record<
+  "settings",
+  PageBase & {
+    useParams: () => {
+      isSettingsPage: boolean;
+    };
+  }
+>;
+
 type JqPlaygroundPageSetup = Record<
   "jqPlayground",
   PageBase & {
@@ -139,6 +148,7 @@ type PageType = DefaultPageSetup &
   InstancesPageSetup &
   EventsPageSetup &
   MonitoringPageSetup &
+  SettingsPageSetup &
   JqPlaygroundPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
@@ -367,9 +377,15 @@ export const pages: PageType = {
     name: "components.mainMenu.settings",
     icon: Settings,
     createHref: (params) => `/${params.namespace}/settings`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
+      return { isSettingsPage };
+    },
     route: {
       path: "settings",
       element: <SettingsPage />,
+      handle: { isSettingsPage: true },
     },
   },
   jqPlayground: {
