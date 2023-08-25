@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { GitCompare, Home, PlusCircle } from "lucide-react";
+import { GitCompare, Home, PlusCircle, Save } from "lucide-react";
 import {
   MirrorAuthType,
   MirrorFormSchemaType,
@@ -457,8 +457,10 @@ const NamespaceEdit = ({
           loading={isLoading}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
-          {t("components.namespaceEdit.createBtn")}
+          {!isLoading && (isNew ? <PlusCircle /> : <Save />)}
+          {isNew
+            ? t("components.namespaceEdit.submitBtn.create")
+            : t("components.namespaceEdit.submitBtn.save")}
         </Button>
       </DialogFooter>
     </>
