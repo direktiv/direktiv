@@ -7,13 +7,13 @@ import {
 } from "~/design/Dialog";
 import { Eye, EyeOff, KeyRound, LogIn } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useApiActions, useApiKey } from "~/util/store/apiKey";
 
 import Button from "~/design/Button";
 import FormErrors from "../FormErrors";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import Logo from "~/design/Logo";
-import { useApiActions } from "~/util/store/apiKey";
 import { useAuthenticate } from "~/api/authenticate/mutate/authenticate";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,17 +28,12 @@ export const Authdialog = () => {
   const { t } = useTranslation();
   const [showKey, setShowKey] = useState(false);
   const { setApiKey: storeApiKey } = useApiActions();
-  const { mutate: authenticate, isLoading } = useAuthenticate({
-    onSuccess: (isKeyCorrect, apiKey) => {
-      if (isKeyCorrect) {
-        storeApiKey(apiKey);
-      }
-    },
-  });
+  const apiKeyFromLocalStorage = useApiKey();
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(
@@ -46,6 +41,16 @@ export const Authdialog = () => {
         apiKey: z.string(),
       })
     ),
+  });
+
+  const { mutate: authenticate, isLoading } = useAuthenticate({
+    onSuccess: (isKeyCorrect, apiKey) => {
+      isKeyCorrect
+        ? storeApiKey(apiKey)
+        : setError("apiKey", {
+            message: t("pages.authenticate.wrongKey"),
+          });
+    },
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ apiKey }) => {
