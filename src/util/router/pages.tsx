@@ -4,6 +4,7 @@ import {
   FolderTree,
   Layers,
   LucideIcon,
+  PlaySquare,
   Radio,
   Settings,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
+import JqPlaygroundPage from "~/pages/namespace/JqPlayground";
 import Listeners from "~/pages/namespace/Events/Listeners";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";
@@ -37,7 +39,8 @@ type KeysWithNoPathParams =
   // | "gateway"
   // | "permissions"
   | "services"
-  | "settings";
+  | "settings"
+  | "jqPlayground";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
@@ -358,6 +361,15 @@ export const pages: PageType = {
     route: {
       path: "settings",
       element: <SettingsPage />,
+    },
+  },
+  jqPlayground: {
+    name: "components.mainMenu.jqPlayground",
+    icon: PlaySquare,
+    createHref: (params) => `/${params.namespace}/jq`,
+    route: {
+      path: "jq",
+      element: <JqPlaygroundPage />,
     },
   },
 };
