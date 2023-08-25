@@ -21,6 +21,7 @@ import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
+import { useApiActions } from "~/util/store/apiKey";
 import { useTranslation } from "react-i18next";
 
 const hasAccount = true;
@@ -33,6 +34,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
+  const { setApiKey: storeApiKey } = useApiActions();
+
+  const logout = () => {
+    storeApiKey(null);
+  };
+
   return (
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
@@ -62,7 +69,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
                 {t("components.userMenu.loggedInAs", { name: username })}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>{t("components.userMenu.logout")}</span>
               </DropdownMenuItem>
