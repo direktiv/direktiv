@@ -61,15 +61,18 @@ export const Authdialog = () => {
   };
 
   useEffect(() => {
+    /**
+     * when this component is rendered and there is an api key in local storage we
+     * already know that the key is wrong, so we can delete it and show a message to
+     * the user
+     */
     if (apiKeyFromLocalStorage) {
       setError("apiKey", {
         message: t("pages.authenticate.wrongOldKey"),
       });
+      storeApiKey(null);
     }
-  }, [apiKeyFromLocalStorage, setError, t]);
-
-  // TODO: check if there is an old, and show the user if its wrong
-  // TODO: delete old one if not needed anymore
+  }, [apiKeyFromLocalStorage, setError, storeApiKey, t]);
 
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
   const formId = `authdialog-form`;
