@@ -9,13 +9,13 @@ const useApiKeyHandling = () => {
   const apiKeyFromLocalstorage = useApiKey();
   const apiKeyisPresent = !!apiKeyFromLocalstorage;
 
-  const { data: testWithStoredKey, isSuccess: testWithStoredKeyFinished } =
+  const { data: testWithStoredKey, isFetched: testWithStoredKeyFinished } =
     useAuthTest({
       apikey: apiKeyFromLocalstorage ?? undefined,
       enabled: apiKeyisPresent,
     });
 
-  const { data: testWithoutKey, isSuccess: testWithoutKeyFinished } =
+  const { data: testWithoutKey, isFetched: testWithoutKeyFinished } =
     useAuthTest();
 
   return {
