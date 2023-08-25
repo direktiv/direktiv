@@ -35,6 +35,8 @@ export default ({ mode }) => {
 
   const { VITE_DEV_API_DOMAIN: apiDomain } = parsedEnv;
 
+  const baseconfig = env.VITE_BASE ? { base: env.VITE_BASE } : {};
+
   if (!apiDomain) {
     console.warn("VITE_DEV_API_DOMAIN is not set, no API proxy will be used");
   }
@@ -97,5 +99,6 @@ export default ({ mode }) => {
         "e2e/**", // playwright tests, vitest throws errors when parsing them.
       ],
     },
+    ...baseconfig,
   });
 };
