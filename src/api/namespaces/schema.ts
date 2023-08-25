@@ -101,6 +101,10 @@ export const MirrorFormSchema = MirrorPublicFormSchema.or(
   MirrorTokenFormSchema
 ).or(MirrorSshFormSchema);
 
+export const mirrorAuthTypes = ["none", "ssh", "token"] as const;
+
+export type MirrorAuthType = (typeof mirrorAuthTypes)[number];
+
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
 export type NamespaceLogListSchemaType = z.infer<typeof NamespaceLogListSchema>;
 export type NamespaceLogSchemaType = z.infer<typeof NamespaceLogSchema>;

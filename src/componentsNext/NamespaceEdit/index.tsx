@@ -6,14 +6,11 @@ import {
 } from "~/design/Dialog";
 import { GitCompare, Home, PlusCircle } from "lucide-react";
 import {
-  MirrorFormSchema,
+  MirrorAuthType,
   MirrorFormSchemaType,
-  MirrorKeepSSHKeysFormSchema,
-  MirrorKeepTokenFormSchema,
-  MirrorSshFormSchema,
   MirrorSshFormSchemaType,
-  MirrorTokenFormSchema,
   MirrorTokenFormSchemaType,
+  mirrorAuthTypes,
 } from "~/api/namespaces/schema";
 import {
   Select,
@@ -34,7 +31,7 @@ import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
 import { Textarea } from "~/design/TextArea";
-import { fileNameSchema } from "~/api/tree/schema/node";
+import { getResolver } from "~/api/namespaces/utils/getResolver";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -42,7 +39,6 @@ import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useUpdateMirror } from "~/api/tree/mutate/updateMirror";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
@@ -50,10 +46,6 @@ type FormInput = {
 } & MirrorFormSchemaType &
   MirrorTokenFormSchemaType &
   MirrorSshFormSchemaType;
-
-const mirrorAuthTypes = ["none", "ssh", "token"] as const;
-
-type MirrorAuthType = (typeof mirrorAuthTypes)[number];
 
 const NamespaceEdit = ({
   mirror,
@@ -85,18 +77,10 @@ const NamespaceEdit = ({
 
   const existingNamespaces = data?.results.map((n) => n.name) || [];
 
-  const newNameSchema = fileNameSchema.and(
-    z.string().refine((name) => !existingNamespaces.some((n) => n === name), {
-      message: t("components.namespaceEdit.nameAlreadyExists"),
-    })
-  );
-
-  // TODO: Improve this?
-  // When a mirror is edited (in this case !isNew), the name isn't editable, so
-  // no validation is needed for this value.
-  const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
-
-  const getResolver = (isMirror: boolean, authType: MirrorAuthType) => {
+  const updateResolver = (
+    isMirror: boolean,
+    authType: MirrorAuthType
+  ): ReturnType<typeof zodResolver> => {
     let keepCredentials = false;
 
     if (isMirror && authType === "ssh") {
@@ -110,22 +94,13 @@ const NamespaceEdit = ({
       keepCredentials = !dirtyFields.passphrase;
     }
 
-    if (!isMirror) {
-      return zodResolver(baseSchema);
-    }
-    if (keepCredentials && authType === "token") {
-      return zodResolver(baseSchema.and(MirrorKeepTokenFormSchema));
-    }
-    if (keepCredentials && authType === "ssh") {
-      return zodResolver(baseSchema.and(MirrorKeepSSHKeysFormSchema));
-    }
-    if (authType === "token") {
-      return zodResolver(baseSchema.and(MirrorTokenFormSchema));
-    }
-    if (authType === "ssh") {
-      return zodResolver(baseSchema.and(MirrorSshFormSchema));
-    }
-    return zodResolver(baseSchema.and(MirrorFormSchema));
+    return getResolver({
+      isMirror,
+      isNew,
+      authType,
+      keepCredentials,
+      existingNamespaces,
+    });
   };
 
   const {
@@ -135,7 +110,7 @@ const NamespaceEdit = ({
     formState: { isDirty, dirtyFields, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: (values, context, options) =>
-      getResolver(isMirror, authType)(values, context, options),
+      updateResolver(isMirror, authType)(values, context, options),
     defaultValues: mirror
       ? {
           name: mirror.namespace,
