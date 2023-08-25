@@ -21,6 +21,7 @@
     },
     "authenticate": {
       "title": "Authenticate",
+      "description": "An authentication token is required to connect to the API.",
       "apiKey": "API Key",
       "apiKeyPlaceholder": "Enter your API Key",
       "loginBtn": "Login"
