@@ -25,6 +25,7 @@
       "apiKey": "API Key",
       "apiKeyPlaceholder": "Enter your API Key",
       "wrongKey": "The API Key is incorrect",
+      "wrongOldKey": "The previously used API Key is incorrect, it may have changed after your last use",
       "loginBtn": "Login"
     },
     "explorer": {
