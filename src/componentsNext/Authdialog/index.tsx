@@ -79,7 +79,12 @@ export const Authdialog = () => {
 
   return (
     <Dialog open={true}>
-      <DialogContent className="max-sm:top-20">
+      <DialogContent
+        className="border border-gray-5 dark:border-gray-dark-5 max-sm:top-20"
+        overlayProps={{
+          className: "bg-white dark:bg-black",
+        }}
+      >
         <div className="absolute -top-14 flex w-full justify-center">
           <Logo />
         </div>
