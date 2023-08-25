@@ -8,7 +8,8 @@ import { GitCompare, Home, PlusCircle } from "lucide-react";
 import {
   MirrorFormSchema,
   MirrorFormSchemaType,
-  MirrorKeepCredentialsFormSchema,
+  MirrorKeepSSHKeysFormSchema,
+  MirrorKeepTokenFormSchema,
   MirrorSshFormSchema,
   MirrorSshFormSchemaType,
   MirrorTokenFormSchema,
@@ -99,10 +100,11 @@ const NamespaceEdit = ({
     let keepCredentials = false;
 
     if (isMirror && authType === "ssh") {
-      keepCredentials =
-        !dirtyFields.passphrase ||
-        !dirtyFields.privateKey ||
-        !dirtyFields.publicKey;
+      keepCredentials = !(
+        dirtyFields.passphrase ||
+        dirtyFields.privateKey ||
+        dirtyFields.publicKey
+      );
     }
     if (isMirror && authType === "token") {
       keepCredentials = !dirtyFields.passphrase;
@@ -111,8 +113,11 @@ const NamespaceEdit = ({
     if (!isMirror) {
       return zodResolver(baseSchema);
     }
-    if (keepCredentials && (authType === "token" || authType === "ssh")) {
-      return zodResolver(baseSchema.and(MirrorKeepCredentialsFormSchema));
+    if (keepCredentials && authType === "token") {
+      return zodResolver(baseSchema.and(MirrorKeepTokenFormSchema));
+    }
+    if (keepCredentials && authType === "ssh") {
+      return zodResolver(baseSchema.and(MirrorKeepSSHKeysFormSchema));
     }
     if (authType === "token") {
       return zodResolver(baseSchema.and(MirrorTokenFormSchema));
