@@ -51,6 +51,7 @@ export default ({ mode }) => {
           }
         : {},
     },
+    base: "./",
     build: {
       commonjsOptions: {
         // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744

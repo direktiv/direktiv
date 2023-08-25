@@ -1,12 +1,10 @@
 package server
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
 	"strings"
 	"time"
-
-	"gopkg.in/yaml.v3"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -19,48 +17,27 @@ type Log struct {
 }
 
 type APIServer struct {
-	Listen  string `yaml:"listen"`
-	TLSCert string `yaml:"tls-cert"`
-	TLSKey  string `yaml:"tls-key"`
-	Assets  string `yaml:"assets"`
-	Backend string `yaml:"backend"`
-}
-
-type OIDCConfig struct {
-	Provider     string `yaml:"provider"`
-	ClientID     string `yaml:"client-id"`
-	Redirect     string `yaml:"redirect"`
-	SkipVerify   bool   `yaml:"skip-verify"`
-	AdminGroup   string `yaml:"admin-group"`
-	GroupScope   string `yaml:"group-scope"`
-	CookieSecret string `yaml:"cookiesecret"`
+	Listen      string `yaml:"listen"`
+	TLSCert     string `yaml:"tls-cert"`
+	TLSKey      string `yaml:"tls-key"`
+	Assets      string `yaml:"assets"`
+	Backend     string `yaml:"backend"`
+	BackendSkip bool   `yaml:"skipverify"`
+	APIKey      string `yaml:"apikey"`
 }
 
 type Config struct {
-	Log    Log        `yaml:"log"`
-	Server APIServer  `yaml:"server"`
-	OIDC   OIDCConfig `yaml:"oidc"`
+	Log    Log       `yaml:"log"`
+	Server APIServer `yaml:"server"`
 }
 
 const (
 	DebugLog = "debug"
 )
 
-func readConfigFile(path string) (*Config, error) {
-	var conf Config
-
-	f, err := os.ReadFile(path)
-	if err != nil {
-
-		return &conf, err
-	}
-
-	err = yaml.Unmarshal(f, &conf)
-
-	return &conf, err
-}
-
 func ReadConfigAndPrepare(configDir string) (*Config, error) {
+
+	var c Config
 
 	viper.SetConfigName("direktiv")
 	viper.AddConfigPath(configDir)
@@ -74,6 +51,7 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 	viper.SetDefault("server.listen", "0.0.0.0:2304")
 	viper.SetDefault("server.assets", "/direktiv/html")
 	viper.SetDefault("server.backend", "0.0.0.0:1604")
+	viper.SetDefault("server.backendskip", true)
 
 	if configDir != "" {
 		log.Info().Msgf("starting direktiv with config file direktiv.yaml in %s", configDir)
@@ -85,14 +63,10 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 		log.Info().Msgf("starting direktiv without config file")
 	}
 
-	var c Config
-
 	err := viper.Unmarshal(&c)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf(">>> %+v --> %v\n\n\n\n", c, viper.GetBool("log.json"))
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(os.Stderr)
@@ -102,20 +76,16 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 			TimeFormat: time.RFC3339Nano})
 	}
 
-	// conf, err := readConfigFile(configFile)
-	// if err != nil {
-	// 	log.Error().
-	// 		Err(err).
-	// 		Msgf("can not read config file %s", configFile)
-	// 	return nil, err
-	// }
-
 	// set general logging level
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if viper.GetString("log.api") == DebugLog {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+		b, _ := json.MarshalIndent(c, "", "   ")
+
+		log.Debug().Msgf("%s", string(b))
 	}
 
-	return nil, nil
+	return &c, nil
 
 }

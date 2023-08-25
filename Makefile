@@ -34,17 +34,35 @@ cross-prepare:
 	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-.PHONY: cross-build
-cross-build:
+# this builds the ui files and copies it from the container to dist/
+# used for cross-compilation but can be used locally as well
+.PHONY: cross-base
+cross-base:
 	@if [ "${RELEASE_TAG}" = "" ]; then\
 		echo "setting release to dev"; \
 		$(eval RELEASE_TAG=dev) \
     fi
 	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
 	rm -Rf app.tar
+	rm -Rf dist/
 	docker build -t uibase -f Dockerfile.base .
 	container_id=$$(docker create "uibase"); \
-	docker cp $$container_id:/app - > app.tar; \
+	docker cp $$container_id:/app/dist - > app.tar; \
 	docker rm -v $$container_id
 	tar -xvf app.tar
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile.cross --platform=linux/amd64,linux/arm64 --push -t direktiv/ui:${RELEASE_TAG} .
+	rm -Rf app.tar
+
+# .PHONY: cross-build
+# cross-build:
+# 	@if [ "${RELEASE_TAG}" = "" ]; then\
+# 		echo "setting release to dev"; \
+# 		$(eval RELEASE_TAG=dev) \
+#     fi
+# 	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
+# 	rm -Rf app.tar
+# 	docker build -t uibase -f Dockerfile.base .
+# 	container_id=$$(docker create "uibase"); \
+# 	docker cp $$container_id:/app - > app.tar; \
+# 	docker rm -v $$container_id
+# 	tar -xvf app.tar
+# 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile.cross --platform=linux/amd64,linux/arm64 --push -t direktiv/ui:${RELEASE_TAG} .

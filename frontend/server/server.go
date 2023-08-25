@@ -26,9 +26,9 @@ type Server struct {
 	routeManager RouteManager
 }
 
-var (
-	EnvAPIKey = "DIREKTIV_APIKEY"
-)
+// var (
+// 	EnvAPIKey = "DIREKTIV_APIKEY"
+// )
 
 const (
 	APITokenHeader = "direktiv-token"
@@ -38,6 +38,7 @@ func NewServer(conf *Config, rm RouteManager) *Server {
 
 	r := chi.NewRouter()
 	r.Use(LoggerMiddleware(&log.Logger))
+	r.Use(rm.IsAuthenticated)
 
 	log.Info().Msgf("listening to %s", conf.Server.Listen)
 
@@ -52,9 +53,7 @@ func NewServer(conf *Config, rm RouteManager) *Server {
 		srv:          srv,
 		routeManager: rm,
 	}
-
 	s.addUIRoutes()
-	s.addAPIRoutes()
 
 	err := rm.AddExtraRoutes(r)
 	if err != nil {
@@ -90,7 +89,6 @@ func LoggerMiddleware(logger *zerolog.Logger) func(next http.Handler) http.Handl
 				// }
 
 				log.Debug().
-					// Timestamp().
 					Fields(map[string]interface{}{
 						"remote_ip":  r.RemoteAddr,
 						"url":        r.URL.Path,

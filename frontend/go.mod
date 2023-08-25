@@ -1,4 +1,4 @@
-module github.com/direktiv/direktiv-ui/server/backend
+module github.com/direktiv/direktiv-ui/frontend
 
 go 1.20
 
