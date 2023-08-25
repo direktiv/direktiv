@@ -119,7 +119,6 @@ type EventsPageSetup = Record<
 type MonitoringPageSetup = Record<
   "monitoring",
   PageBase & {
-    createHref: (params: { namespace: string }) => string;
     useParams: () => {
       isMonitoringPage: boolean;
     };
