@@ -1,10 +1,13 @@
+import { FC, useState } from "react";
+
 import Button from "~/design/Button";
-import { FC } from "react";
+import Input from "~/design/Input";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 
 const JqPlaygroundPage: FC = () => {
   const { mutate: executeQuery } = useExecuteJQuery();
-  const query = ".foo[1]";
+  const [query, setQuery] = useState(".foo[1]");
+
   const data = {
     foo: [
       { name: "JSON", good: true },
@@ -14,6 +17,12 @@ const JqPlaygroundPage: FC = () => {
 
   return (
     <div className="flex flex-col space-y-10 p-5">
+      <Input
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+        }}
+      />
       <Button
         onClick={() => {
           executeQuery({ query, inputJSON: JSON.stringify(data) });
