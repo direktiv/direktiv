@@ -24,8 +24,7 @@ export const useExecuteJQuery = ({
         urlParams: {},
         payload: {
           query,
-          // TODO: use inputJSON
-          data: "eyJmb28iOiBbeyJuYW1lIjoiSlNPTiIsICJnb29kIjp0cnVlfSwgeyJuYW1lIjoiWE1MIiwgImdvb2QiOmZhbHNlfV19",
+          data: btoa(inputJSON),
         },
       }),
     onSuccess: (res) => {
