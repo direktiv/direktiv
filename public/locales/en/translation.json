@@ -524,6 +524,9 @@
       "namespacesList": {
         "title": "Namespaces"
       }
+    },
+    "jqPlayground": {
+      "submitBtn": "Execute Query"
     }
   },
   "components": {
