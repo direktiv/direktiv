@@ -528,6 +528,8 @@
     "jqPlayground": {
       "title": "jq Playground",
       "queryPlaceholder": "Enter your jq query here...",
+      "input": "Input",
+      "output": "Output",
       "submitBtn": "Execute Query"
     }
   },

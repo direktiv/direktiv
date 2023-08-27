@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { Play, PlaySquare } from "lucide-react";
+import { FileInput, FileOutput, Play, PlaySquare } from "lucide-react";
 import {
   useJqPlaygroundActions,
   useJqPlaygroundInput,
@@ -8,6 +8,7 @@ import {
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
@@ -105,6 +106,21 @@ const JqPlaygroundPage: FC = () => {
           {error && <FormErrors errors={{ error: { message: error } }} />}
           <div className="flex gap-5">
             <Card className="h-96 w-full p-4" noShadow background="weight-1">
+              <div className="mb-5 flex">
+                <h3 className="flex grow items-center gap-x-2 font-medium">
+                  <FileInput className="h-5" />
+                  {t("pages.jqPlayground.output")}
+                </h3>
+                <CopyButton
+                  value={input}
+                  buttonProps={{
+                    variant: "outline",
+                    size: "sm",
+                    type: "button",
+                    disabled: !input,
+                  }}
+                />
+              </div>
               <Editor
                 value={input}
                 language="json"
@@ -113,6 +129,21 @@ const JqPlaygroundPage: FC = () => {
               />
             </Card>
             <Card className="h-96 w-full p-4" noShadow background="weight-1">
+              <div className="mb-5 flex">
+                <h3 className="flex grow items-center gap-x-2 font-medium">
+                  <FileOutput className="h-5" />
+                  {t("pages.jqPlayground.output")}
+                </h3>
+                <CopyButton
+                  value={result}
+                  buttonProps={{
+                    variant: "outline",
+                    size: "sm",
+                    type: "button",
+                    disabled: !result,
+                  }}
+                />
+              </div>
               <Editor
                 language="json"
                 value={result}
