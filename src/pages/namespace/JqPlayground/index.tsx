@@ -13,16 +13,10 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JqQueryErrorSchema } from "~/api/jq/schema";
+import cheatsheet from "./cheatsheet";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-
-const data = {
-  foo: [
-    { name: "JSON", good: true },
-    { name: "XML", good: false },
-  ],
-};
 
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
@@ -57,9 +51,9 @@ const JqPlaygroundPage: FC = () => {
     executeQuery({ query, inputJsonString: input });
   };
 
-  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    storeQueryInLocalstorage(e.target.value);
+  const onQueryChange = (newQuery: string) => {
+    setQuery(newQuery);
+    storeQueryInLocalstorage(newQuery);
     setError("");
   };
 
@@ -71,11 +65,16 @@ const JqPlaygroundPage: FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   console.log("🚀", test);
-  //   //   const defaultInput = JSON.parse(useJqPlaygroundInput() ?? "{}");
-
-  // }, [test]);
+  const onTemplateClick = ({
+    query,
+    input,
+  }: {
+    query: string;
+    input: string;
+  }) => {
+    onInputChange(input);
+    onQueryChange(query);
+  };
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -93,7 +92,7 @@ const JqPlaygroundPage: FC = () => {
             <Input
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
               value={query}
-              onChange={onQueryChange}
+              onChange={(e) => onQueryChange(e.target.value)}
             />
             <Button
               className="grow sm:w-64"
@@ -169,6 +168,25 @@ const JqPlaygroundPage: FC = () => {
             </Card>
           </div>
         </form>
+      </Card>
+      <Card className="grid grid-cols-2 gap-2 p-5">
+        {cheatsheet.map(({ query, input, example }, index) => (
+          <Card key={index} className="flex gap-2 p-2">
+            <div className="grow">{example}</div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                onTemplateClick({
+                  query,
+                  input,
+                })
+              }
+            >
+              run
+            </Button>
+          </Card>
+        ))}
       </Card>
     </div>
   );
