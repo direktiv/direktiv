@@ -22,7 +22,7 @@ const JqPlaygroundPage: FC = () => {
   const [result, setResult] = useState("");
   const { mutate: executeQuery, isLoading } = useExecuteJQuery({
     onSuccess: (data) => {
-      setResult(JSON.stringify(data.results));
+      setResult(JSON.stringify(data.results, null, 2));
     },
   });
   const [query, setQuery] = useState(".foo[1]"); // TODO: remove default query
@@ -36,8 +36,8 @@ const JqPlaygroundPage: FC = () => {
   };
 
   return (
-    <Card className="m-5 flex flex-col gap-5 p-5">
-      <form id={formId} onSubmit={handleSubmit}>
+    <Card className="m-5 p-5">
+      <form id={formId} onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex flex-col gap-5 sm:flex-row">
           <Input
             value={query}
