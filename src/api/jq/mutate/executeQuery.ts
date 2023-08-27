@@ -18,13 +18,19 @@ export const useExecuteJQuery = ({
   const apiKey = useApiKey();
 
   return useMutation({
-    mutationFn: ({ query, inputJSON }: { query: string; inputJSON: string }) =>
+    mutationFn: ({
+      query,
+      inputJsonString,
+    }: {
+      query: string;
+      inputJsonString: string;
+    }) =>
       executeJquery({
         apiKey: apiKey ?? undefined,
         urlParams: {},
         payload: {
           query,
-          data: btoa(inputJSON),
+          data: btoa(inputJsonString),
         },
       }),
     onSuccess: (res) => {
