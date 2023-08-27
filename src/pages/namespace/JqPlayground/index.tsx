@@ -27,24 +27,20 @@ const data = {
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const defaultInput = JSON.parse(useJqPlaygroundInput() ?? "{}");
-  const defaultQuery = useJqPlaygroundQuery() ?? ".";
   const {
     setInput: storeInputInLocalstorage,
     setQuery: storeQueryInLocalstorage,
   } = useJqPlaygroundActions();
 
-  const [query, setQuery] = useState(defaultQuery ?? ".");
-  const [input, setInput] = useState(
-    JSON.stringify(defaultInput ?? "{}", null, 2)
-  );
+  const [query, setQuery] = useState(useJqPlaygroundQuery() ?? ".");
+  const [input, setInput] = useState(useJqPlaygroundInput() ?? "{}");
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
 
   const { mutate: executeQuery, isLoading } = useExecuteJQuery({
     onSuccess: (data) => {
       const resultAsJson = JSON.parse(data.results?.[0] ?? "{}");
-      setResult(JSON.stringify(resultAsJson, null, 2));
+      setResult(JSON.stringify(resultAsJson, null, 4));
     },
     onError: (error) => {
       const errorParsed = JqQueryErrorSchema.safeParse(error);
@@ -74,6 +70,12 @@ const JqPlaygroundPage: FC = () => {
       setError("");
     }
   };
+
+  // useEffect(() => {
+  //   console.log("🚀", test);
+  //   //   const defaultInput = JSON.parse(useJqPlaygroundInput() ?? "{}");
+
+  // }, [test]);
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
