@@ -43,8 +43,12 @@ const JqPlaygroundPage: FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     executeQuery({ query, inputJsonString: input });
+  };
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setError("");
   };
 
   return (
@@ -63,9 +67,7 @@ const JqPlaygroundPage: FC = () => {
             <Input
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-              }}
+              onChange={onInputChange}
             />
             <Button
               className="grow sm:w-64"
