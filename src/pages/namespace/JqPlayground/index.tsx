@@ -14,7 +14,7 @@ const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [result, setResult] = useState("");
-  const { mutate: executeQuery } = useExecuteJQuery({
+  const { mutate: executeQuery, isLoading } = useExecuteJQuery({
     onSuccess: (data) => {
       setResult(JSON.stringify(data.results));
     },
@@ -42,8 +42,10 @@ const JqPlaygroundPage: FC = () => {
           onClick={() => {
             executeQuery({ query, inputJSON: JSON.stringify(data) });
           }}
+          disabled={isLoading}
+          loading={isLoading}
         >
-          <Play />
+          {!isLoading && <Play />}
           {t("pages.jqPlayground.submitBtn")}
         </Button>
       </div>
