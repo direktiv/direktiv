@@ -37,6 +37,7 @@ const JqPlaygroundPage: FC = () => {
       setResult(JSON.stringify(resultAsJson, null, 4));
     },
     onError: (error) => {
+      setResult("");
       const errorParsed = JqQueryErrorSchema.safeParse(error);
       if (errorParsed.success) {
         setError(errorParsed.data.message);
@@ -74,6 +75,7 @@ const JqPlaygroundPage: FC = () => {
   }) => {
     onInputChange(input);
     onQueryChange(query);
+    executeQuery({ query, inputJsonString: input });
   };
 
   return (
@@ -169,9 +171,9 @@ const JqPlaygroundPage: FC = () => {
           </div>
         </form>
       </Card>
-      <Card className="grid grid-cols-2 gap-2 p-5">
+      <Card className="grid grid-cols-2 gap-5 p-5">
         {cheatsheet.map(({ query, input, example }, index) => (
-          <Card key={index} className="flex gap-2 p-2">
+          <Card key={index} className="flex gap-2 p-5">
             <div className="grow">{example}</div>
             <Button
               size="sm"
