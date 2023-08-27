@@ -526,6 +526,8 @@
       }
     },
     "jqPlayground": {
+      "title": "jq Playground",
+      "queryPlaceholder": "Enter your jq query here...",
       "submitBtn": "Execute Query"
     }
   },
