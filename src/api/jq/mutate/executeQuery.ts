@@ -12,8 +12,10 @@ export const executeJquery = apiFactory({
 
 export const useExecuteJQuery = ({
   onSuccess,
+  onError,
 }: {
   onSuccess?: (data: JqQueryResultType) => void;
+  onError?: (error: unknown) => void;
 } = {}) => {
   const apiKey = useApiKey();
 
@@ -36,8 +38,8 @@ export const useExecuteJQuery = ({
     onSuccess: (res) => {
       onSuccess?.(res);
     },
-    onError: () => {
-      // TODO: handle the error in the UI
+    onError: (e) => {
+      onError?.(e);
     },
   });
 };

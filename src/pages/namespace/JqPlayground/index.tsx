@@ -4,7 +4,9 @@ import { Play, PlaySquare } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
+import { JqQueryErrorSchema } from "~/api/jq/schema";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -20,9 +22,17 @@ const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [result, setResult] = useState("");
+  const [error, setError] = useState("");
+
   const { mutate: executeQuery, isLoading } = useExecuteJQuery({
     onSuccess: (data) => {
       setResult(JSON.stringify(data.results, null, 2));
+    },
+    onError: (error) => {
+      const errorParsed = JqQueryErrorSchema.safeParse(error);
+      if (errorParsed.success) {
+        setError(errorParsed.data.message);
+      }
     },
   });
   const [query, setQuery] = useState(".foo[1]"); // TODO: remove default query
@@ -32,6 +42,7 @@ const JqPlaygroundPage: FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
     executeQuery({ query, inputJsonString: input });
   };
 
@@ -65,6 +76,7 @@ const JqPlaygroundPage: FC = () => {
               {t("pages.jqPlayground.submitBtn")}
             </Button>
           </div>
+          {error && <FormErrors errors={{ error: { message: error } }} />}
           <div className="flex gap-5">
             <Card className="h-96 w-full p-4" noShadow background="weight-1">
               <Editor
