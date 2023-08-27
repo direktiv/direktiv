@@ -73,7 +73,7 @@ const JqPlaygroundPage: FC = () => {
     query: string;
     input: string;
   }) => {
-    onInputChange(input);
+    onInputChange(JSON.stringify(JSON.parse(input), null, 4));
     onQueryChange(query);
     executeQuery({ query, inputJsonString: input });
   };
