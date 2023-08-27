@@ -1,5 +1,10 @@
 import { FC, useState } from "react";
 import { Play, PlaySquare } from "lucide-react";
+import {
+  useJqPlaygroundActions,
+  useJqPlaygroundInput,
+  useJqPlaygroundQuery,
+} from "~/util/store/jqPlaygrpund";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -21,6 +26,17 @@ const data = {
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const defaultInput = JSON.parse(useJqPlaygroundInput() ?? "{}");
+  const defaultQuery = useJqPlaygroundQuery() ?? ".";
+  const {
+    setInput: storeInputInLocalstorage,
+    setQuery: storeQueryInLocalstorage,
+  } = useJqPlaygroundActions();
+
+  const [query, setQuery] = useState(defaultQuery ?? ".");
+  const [input, setInput] = useState(
+    JSON.stringify(defaultInput ?? "{}", null, 2)
+  );
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
 
@@ -36,8 +52,6 @@ const JqPlaygroundPage: FC = () => {
       }
     },
   });
-  const [query, setQuery] = useState(".foo[1]"); // TODO: remove default query
-  const [input, setInput] = useState(JSON.stringify(data, null, 2)); // TODO: remove default query
 
   const formId = "jq-playground-form";
 
@@ -46,9 +60,18 @@ const JqPlaygroundPage: FC = () => {
     executeQuery({ query, inputJsonString: input });
   };
 
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
+    storeQueryInLocalstorage(e.target.value);
     setError("");
+  };
+
+  const onInputChange = (newData: string | undefined) => {
+    if (newData) {
+      setInput(newData);
+      storeInputInLocalstorage(newData);
+      setError("");
+    }
   };
 
   return (
@@ -67,7 +90,7 @@ const JqPlaygroundPage: FC = () => {
             <Input
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
               value={query}
-              onChange={onInputChange}
+              onChange={onQueryChange}
             />
             <Button
               className="grow sm:w-64"
@@ -85,11 +108,7 @@ const JqPlaygroundPage: FC = () => {
               <Editor
                 value={input}
                 language="json"
-                onChange={(newData) => {
-                  if (newData) {
-                    setInput(newData);
-                  }
-                }}
+                onChange={onInputChange}
                 theme={theme ?? undefined}
               />
             </Card>
