@@ -107,12 +107,8 @@ const JqPlaygroundPage: FC = () => {
             </Button>
           </div>
           {error && <FormErrors errors={{ error: { message: error } }} />}
-          <div className="flex gap-5">
-            <Card
-              className="flex h-96 w-full flex-col p-4"
-              noShadow
-              background="weight-1"
-            >
+          <div className="flex flex-col gap-5 md:flex-row">
+            <Card className="flex h-96 w-full flex-col p-4" noShadow>
               <div className="mb-5 flex">
                 <h3 className="flex grow items-center gap-x-2 font-medium">
                   <FileInput className="h-5" />
@@ -137,11 +133,7 @@ const JqPlaygroundPage: FC = () => {
                 />
               </div>
             </Card>
-            <Card
-              className="flex h-96 w-full flex-col p-4"
-              noShadow
-              background="weight-1"
-            >
+            <Card className="flex h-96 w-full flex-col p-4" noShadow>
               <div className="mb-5 flex">
                 <h3 className="flex grow items-center gap-x-2 font-medium">
                   <FileOutput className="h-5" />
