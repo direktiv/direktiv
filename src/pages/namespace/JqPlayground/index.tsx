@@ -112,7 +112,7 @@ const JqPlaygroundPage: FC = () => {
               <div className="mb-5 flex">
                 <h3 className="flex grow items-center gap-x-2 font-medium">
                   <FileInput className="h-5" />
-                  {t("pages.jqPlayground.output")}
+                  {t("pages.jqPlayground.input")}
                 </h3>
                 <CopyButton
                   value={input}
