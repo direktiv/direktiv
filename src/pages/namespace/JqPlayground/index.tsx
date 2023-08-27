@@ -26,7 +26,8 @@ const JqPlaygroundPage: FC = () => {
 
   const { mutate: executeQuery, isLoading } = useExecuteJQuery({
     onSuccess: (data) => {
-      setResult(JSON.stringify(data.results, null, 2));
+      const resultAsJson = JSON.parse(data.results?.[0] ?? "{}");
+      setResult(JSON.stringify(resultAsJson, null, 2));
     },
     onError: (error) => {
       const errorParsed = JqQueryErrorSchema.safeParse(error);
