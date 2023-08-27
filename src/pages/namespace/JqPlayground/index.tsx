@@ -105,7 +105,11 @@ const JqPlaygroundPage: FC = () => {
           </div>
           {error && <FormErrors errors={{ error: { message: error } }} />}
           <div className="flex gap-5">
-            <Card className="h-96 w-full p-4" noShadow background="weight-1">
+            <Card
+              className="flex h-96 w-full flex-col p-4"
+              noShadow
+              background="weight-1"
+            >
               <div className="mb-5 flex">
                 <h3 className="flex grow items-center gap-x-2 font-medium">
                   <FileInput className="h-5" />
@@ -121,14 +125,20 @@ const JqPlaygroundPage: FC = () => {
                   }}
                 />
               </div>
-              <Editor
-                value={input}
-                language="json"
-                onChange={onInputChange}
-                theme={theme ?? undefined}
-              />
+              <div className="flex grow">
+                <Editor
+                  value={input}
+                  language="json"
+                  onChange={onInputChange}
+                  theme={theme ?? undefined}
+                />
+              </div>
             </Card>
-            <Card className="h-96 w-full p-4" noShadow background="weight-1">
+            <Card
+              className="flex h-96 w-full flex-col p-4"
+              noShadow
+              background="weight-1"
+            >
               <div className="mb-5 flex">
                 <h3 className="flex grow items-center gap-x-2 font-medium">
                   <FileOutput className="h-5" />
@@ -144,14 +154,16 @@ const JqPlaygroundPage: FC = () => {
                   }}
                 />
               </div>
-              <Editor
-                language="json"
-                value={result}
-                options={{
-                  readOnly: true,
-                }}
-                theme={theme ?? undefined}
-              />
+              <div className="flex grow">
+                <Editor
+                  language="json"
+                  value={result}
+                  options={{
+                    readOnly: true,
+                  }}
+                  theme={theme ?? undefined}
+                />
+              </div>
             </Card>
           </div>
         </form>
