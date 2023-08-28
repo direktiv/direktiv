@@ -21,13 +21,13 @@ export default [
   {
     example: "[], {}",
     tip: "array/object construction",
-    query: "{user, title: .titles[]}",
+    query: "[{user, title: .titles[]}]",
     input: '{"user":"stedolan","titles":["JQ Primer", "More JQ"]}',
   },
   {
     example: "length",
     tip: "length of a value",
-    query: ".foo[] | length",
+    query: "[.foo[] | length]",
     input: '{"foo": [[1,2], "string", {"a":2}, null]}',
   },
   {
@@ -39,13 +39,13 @@ export default [
   {
     example: ",",
     tip: "feed input into multiple filters",
-    query: ".foo, .bar",
+    query: "[.foo, .bar]",
     input: '{ "foo": 42, "bar": "something else", "baz": true}',
   },
   {
     example: "|",
     tip: "pipe output of one filter to the next filter",
-    query: ".foo[] | .name",
+    query: "[.foo[] | .name]",
     input:
       '{"foo": [{"name":"JSON", "good":true}, {"name":"XML", "good":false}]}',
   },
