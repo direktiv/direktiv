@@ -1,4 +1,4 @@
-// takes a json input string and formats it as
+// takes a json input string and format it with 4 spaces indentation
 export const prettifyJsonString = (jsonString: string) => {
   try {
     const resultAsJson = JSON.parse(jsonString);
