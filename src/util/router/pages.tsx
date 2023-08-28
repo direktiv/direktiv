@@ -192,6 +192,7 @@ export const pages: PageType = {
     },
     route: {
       path: "explorer/",
+      handle: { explorer: true },
       children: [
         {
           path: "tree/*",
@@ -240,7 +241,7 @@ export const pages: PageType = {
     route: {
       path: "monitoring",
       element: <MonitoringPage />,
-      handle: { isMonitoringPage: true },
+      handle: { monitoring: true, isMonitoringPage: true },
     },
   },
   instances: {
@@ -274,6 +275,7 @@ export const pages: PageType = {
     route: {
       path: "instances",
       element: <InstancesPage />,
+      handle: { instances: true },
       children: [
         {
           path: "",
@@ -310,6 +312,7 @@ export const pages: PageType = {
     route: {
       path: "events",
       element: <EventsPage />,
+      handle: { events: true },
       children: [
         {
           path: "history",
@@ -349,6 +352,7 @@ export const pages: PageType = {
     route: {
       path: "services",
       element: <div className="flex flex-col space-y-5 p-10">Services</div>,
+      handle: { services: true },
     },
   },
   settings: {
@@ -358,6 +362,7 @@ export const pages: PageType = {
     route: {
       path: "settings",
       element: <SettingsPage />,
+      handle: { settings: true },
     },
   },
 };
