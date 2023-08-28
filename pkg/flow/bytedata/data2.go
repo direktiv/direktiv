@@ -2,6 +2,7 @@ package bytedata
 
 import (
 	"path/filepath"
+	"sort"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -117,9 +118,24 @@ func ConvertMirrorProcessToGrpcMirrorActivity(mirror *mirror.Process) *grpc.Mirr
 	}
 }
 
+// ConvertMirrorProcessesToGrpcMirrorActivityInfoList converts a slice of Process pointers
+// into a slice of grpc.MirrorActivityInfo pointers. The resulting slice is sorted
+// by the UpdatedAt field in ascending order.
+// Parameters:
+// list: A slice of pointers to Process objects that need to be converted.
+// Returns:
+// A slice of pointers to grpc.MirrorActivityInfo objects sorted by UpdatedAt.
 func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) []*grpc.MirrorActivityInfo {
+	copiedList := make([]*mirror.Process, len(list))
+	copy(copiedList, list)
+
+	// Sort the copied list by UpdatedAt
+	sort.Slice(copiedList, func(i, j int) bool {
+		return copiedList[i].UpdatedAt.Before(copiedList[j].UpdatedAt)
+	})
+
 	var result []*grpc.MirrorActivityInfo
-	for _, f := range list {
+	for _, f := range copiedList {
 		result = append(result, ConvertMirrorProcessToGrpcMirrorActivity(f))
 	}
 
