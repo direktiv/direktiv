@@ -105,8 +105,7 @@ const JqPlaygroundPage: FC = () => {
         </Button>
       </div>
       <Card className="p-5 text-sm ">
-        JQ Playground is an envrioment where you can quickly test your jq
-        commands against JSON.
+        {t("pages.jqPlayground.description")}
       </Card>
       <Card className="p-5">
         <form
