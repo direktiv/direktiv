@@ -18,11 +18,11 @@ const Examples = ({
         {t("pages.jqPlayground.examples.title")}
       </h3>
       <div className="grid grid-cols-2 gap-5 text-sm">
-        {exampleSnippets.map(({ query, input, tip, example }, index) => (
-          <Card key={index} className="flex gap-2 p-5">
+        {exampleSnippets.map(({ query, key, input, example }) => (
+          <Card key={key} className="flex gap-2 p-5">
             <div className="grid grow grid-cols-2">
               <div className="font-mono text-primary-500">{example}</div>
-              <div>{tip}</div>
+              <div>{t(`pages.jqPlayground.examples.snippets.${key}`)}</div>
             </div>
             <Button
               size="sm"
@@ -35,7 +35,7 @@ const Examples = ({
               }
             >
               <Play />
-              {t("pages.jqPlayground.examples.buttionLabel")}
+              {t("pages.jqPlayground.examples.buttonLabel")}
             </Button>
           </Card>
         ))}

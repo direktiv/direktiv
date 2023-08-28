@@ -535,7 +535,21 @@
       "submitBtn": "Run Query",
       "examples": {
         "title": "Examples",
-        "buttionLabel": "Run"
+        "buttonLabel": "Run",
+        "snippets": {
+          "unchangedInput": "unchanged input",
+          "valueAtKey": "value at key",
+          "arrayOperation": "array operation",
+          "arrayObjectConstruction": "array/object construction",
+          "lengthOfValue": "length of a value",
+          "keysInArray": "keys in an array",
+          "feeedInput": "feed input into multiple filters",
+          "pipeOutput": "pipe output of one filter to the next filter",
+          "inputUnchanged": "input unchanged if foo returns true",
+          "invokeFilter": "invoke filter foo for each input",
+          "conditionals": "conditionals",
+          "stringInterpolation": "string interpolation"
+        }
       }
     }
   },
