@@ -73,6 +73,7 @@ const JqPlaygroundPage: FC = () => {
     query: string;
     input: string;
   }) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     onInputChange(JSON.stringify(JSON.parse(input), null, 4));
     onQueryChange(query);
     executeQuery({ query, inputJsonString: input });
