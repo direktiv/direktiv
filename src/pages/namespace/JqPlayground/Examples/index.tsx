@@ -19,13 +19,12 @@ const Examples = ({
       </h3>
       <div className="grid grid-cols-2 gap-5 text-sm">
         {exampleSnippets.map(({ query, key, input, example }) => (
-          <Card key={key} className="flex gap-2 p-5">
-            <div className="grid grow grid-cols-2">
+          <Card key={key} className="flex items-center gap-2 p-5">
+            <div className="grid grow">
               <div className="font-mono text-primary-500">{example}</div>
               <div>{t(`pages.jqPlayground.examples.snippets.${key}`)}</div>
             </div>
             <Button
-              size="sm"
               variant="outline"
               onClick={() =>
                 onExampleClick({
