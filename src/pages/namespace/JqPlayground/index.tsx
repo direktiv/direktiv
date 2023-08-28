@@ -51,9 +51,12 @@ const JqPlaygroundPage: FC = () => {
     },
   });
 
-  const formId = "jq-playground-form";
-
   const submitQuery = () => {
+    /**
+     * Always clear the output before submiting a new query to the backend.
+     * Otherwise when the request takes longer or produces an error the input
+     * and output displayed to the user would not match.
+     */
     setOutput("");
     executeQuery({ query, inputJsonString: input });
   };
@@ -63,33 +66,27 @@ const JqPlaygroundPage: FC = () => {
     submitQuery();
   };
 
-  const onQueryChange = (newQuery: string) => {
+  const changeQuery = (newQuery: string) => {
     setQuery(newQuery);
     storeQueryInLocalstorage(newQuery);
     setError("");
   };
 
-  const onInputChange = (newData: string | undefined) => {
-    if (newData) {
-      setInput(newData);
-      storeInputInLocalstorage(newData);
-      setError("");
-    }
+  const updateInput = (newData: string | undefined) => {
+    if (!newData) return;
+    setInput(newData);
+    storeInputInLocalstorage(newData);
+    setError("");
   };
 
-  const onTemplateClick = ({
-    query,
-    input,
-  }: {
-    query: string;
-    input: string;
-  }) => {
+  const onRunSnippet = ({ query, input }: { query: string; input: string }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    onInputChange(prettifyJsonString(input));
-    onQueryChange(query);
+    updateInput(prettifyJsonString(input));
+    changeQuery(query);
     submitQuery();
   };
 
+  const formId = "jq-playground-form";
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex">
@@ -121,7 +118,7 @@ const JqPlaygroundPage: FC = () => {
             <Input
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
               value={query}
-              onChange={(e) => onQueryChange(e.target.value)}
+              onChange={(e) => changeQuery(e.target.value)}
             />
             <Button
               className="grow sm:w-44"
@@ -156,7 +153,7 @@ const JqPlaygroundPage: FC = () => {
                 <Editor
                   value={input}
                   language="json"
-                  onChange={onInputChange}
+                  onChange={updateInput}
                   theme={theme ?? undefined}
                 />
               </div>
@@ -191,7 +188,7 @@ const JqPlaygroundPage: FC = () => {
           </div>
         </form>
       </Card>
-      <Examples onExampleClick={onTemplateClick} />
+      <Examples onRunSnippet={onRunSnippet} />
     </div>
   );
 };

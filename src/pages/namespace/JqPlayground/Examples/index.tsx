@@ -6,9 +6,9 @@ import exampleSnippets from "./exampleSnippets";
 import { useTranslation } from "react-i18next";
 
 const Examples = ({
-  onExampleClick,
+  onRunSnippet,
 }: {
-  onExampleClick: (params: { query: string; input: string }) => void;
+  onRunSnippet: (params: { query: string; input: string }) => void;
 }) => {
   const { t } = useTranslation();
   return (
@@ -31,7 +31,7 @@ const Examples = ({
             </div>
             <Button
               onClick={() =>
-                onExampleClick({
+                onRunSnippet({
                   query,
                   input,
                 })
