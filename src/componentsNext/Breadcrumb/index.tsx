@@ -5,6 +5,7 @@ import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
+import PermissionsBreadcrumb from "./PermissionsBreadcrumb";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 
@@ -15,6 +16,7 @@ const Breadcrumb = () => {
   const { isEventsHistoryPage, isEventsListenersPage } =
     pages.events.useParams();
   const { isMonitoringPage } = pages.monitoring.useParams();
+  const { isPermissionsPage } = pages.permissions?.useParams() ?? {};
 
   if (!namespace) return null;
 
@@ -26,6 +28,7 @@ const Breadcrumb = () => {
       {isEventsHistoryPage && <EventHistoryBreadcrumb />}
       {isEventsListenersPage && <EventListenerBreadcrumb />}
       {isMonitoringPage && <MonitoringBreadcrumb />}
+      {isPermissionsPage && <PermissionsBreadcrumb />}
     </BreadcrumbRoot>
   );
 };
