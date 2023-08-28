@@ -6,6 +6,7 @@ import {
   LucideIcon,
   Radio,
   Settings,
+  Users,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
@@ -25,6 +26,7 @@ import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
+import env from "~/config/env";
 
 interface PageBase {
   name: string;
@@ -32,16 +34,19 @@ interface PageBase {
   route: RouteObject;
 }
 
-type KeysWithNoPathParams =
-  | "monitoring"
-  // | "gateway"
-  // | "permissions"
-  | "services"
-  | "settings";
+type KeysWithNoPathParams = "monitoring" | "services" | "settings";
+type EnterpriseKeysWithNoPathParams = "permissions";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
   PageBase & { createHref: (params: { namespace: string }) => string }
+>;
+
+type DefaultEnterprisePageSetup = Partial<
+  Record<
+    EnterpriseKeysWithNoPathParams,
+    PageBase & { createHref: (params: { namespace: string }) => string }
+  >
 >;
 
 type ExplorerSubpages =
@@ -129,11 +134,29 @@ type PageType = DefaultPageSetup &
   EventsPageSetup &
   MonitoringPageSetup;
 
+export const enterprisePages: DefaultEnterprisePageSetup =
+  env.VITE_IS_ENTERPRISE
+    ? {
+        permissions: {
+          name: "components.mainMenu.permissions",
+          icon: Users,
+          createHref: (params) => `/${params.namespace}/permissions`,
+          route: {
+            path: "permissions",
+            element: (
+              <div className="flex flex-col space-y-5 p-10">Permissions</div>
+            ),
+          },
+        },
+      }
+    : {};
+
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
-export const pages: PageType = {
+
+export const pages: PageType & DefaultEnterprisePageSetup = {
   explorer: {
     name: "components.mainMenu.explorer",
     icon: FolderTree,
@@ -333,15 +356,6 @@ export const pages: PageType = {
   //     element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
   //   },
   // },
-  // permissions: {
-  //   name: "components.mainMenu.permissions",
-  //   icon: Users,
-  //   createHref: (params) => `/${params.namespace}/permissions`,
-  //   route: {
-  //     path: "permissions",
-  //     element: <div className="flex flex-col space-y-5 p-10">Permissions</div>,
-  //   },
-  // },
   services: {
     name: "components.mainMenu.services",
     icon: Layers,
@@ -351,6 +365,7 @@ export const pages: PageType = {
       element: <div className="flex flex-col space-y-5 p-10">Services</div>,
     },
   },
+  ...enterprisePages,
   settings: {
     name: "components.mainMenu.settings",
     icon: Settings,
