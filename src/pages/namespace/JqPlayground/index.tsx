@@ -10,10 +10,11 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
+import Examples from "./Examples";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JqQueryErrorSchema } from "~/api/jq/schema";
-import cheatsheet from "./cheatsheet";
+import exampleSnippets from "./Examples/exampleSnippets";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -165,29 +166,7 @@ const JqPlaygroundPage: FC = () => {
           </div>
         </form>
       </Card>
-      <Card className="grid grid-cols-2 gap-5 p-5 text-sm">
-        {cheatsheet.map(({ query, input, tip, example }, index) => (
-          <Card key={index} className="flex gap-2 p-5">
-            <div className="grid grow grid-cols-2">
-              <div className="font-mono text-primary-500">{example}</div>
-              <div>{tip}</div>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                onTemplateClick({
-                  query,
-                  input,
-                })
-              }
-            >
-              <Play />
-              {t("pages.jqPlayground.examples.buttionLabel")}
-            </Button>
-          </Card>
-        ))}
-      </Card>
+      <Examples onExampleClick={onTemplateClick} />
     </div>
   );
 };
