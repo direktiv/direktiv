@@ -20,7 +20,6 @@ import Examples from "./Examples";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JqQueryErrorSchema } from "~/api/jq/schema";
-import { Link } from "react-router-dom";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
