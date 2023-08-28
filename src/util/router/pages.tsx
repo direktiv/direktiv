@@ -26,11 +26,11 @@ import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
-interface PageBase {
+type PageBase = {
   name: string;
   icon: LucideIcon;
   route: RouteObject;
-}
+};
 
 type KeysWithNoPathParams =
   | "monitoring"
