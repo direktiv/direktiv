@@ -97,8 +97,9 @@ const JqPlaygroundPage: FC = () => {
               onChange={(e) => onQueryChange(e.target.value)}
             />
             <Button
-              className="grow sm:w-64"
+              className="grow sm:w-44"
               type="submit"
+              variant="primary"
               disabled={isLoading}
               loading={isLoading}
             >
