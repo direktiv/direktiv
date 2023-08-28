@@ -17,7 +17,7 @@ const Examples = ({
         <Bookmark className="h-5" />
         {t("pages.jqPlayground.examples.title")}
       </h3>
-      <div className="grid grid-cols-2 gap-5 text-sm">
+      <div className="grid grid-cols-1 gap-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
         {exampleSnippets.map(({ query, key, input, example }) => (
           <Card key={key} className="flex items-center gap-2 p-5">
             <div className="grid grow">
