@@ -545,7 +545,8 @@
       "instances": "Instances",
       "eventHistory": "Event History",
       "eventListeners": "Event Listeners",
-      "monitoring": "Monitoring"
+      "monitoring": "Monitoring",
+      "permissions": "Permissions"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",
