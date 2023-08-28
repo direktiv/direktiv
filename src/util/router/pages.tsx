@@ -134,22 +134,38 @@ type PageType = DefaultPageSetup &
   EventsPageSetup &
   MonitoringPageSetup;
 
-export const enterprisePages: DefaultEnterprisePageSetup =
-  env.VITE_IS_ENTERPRISE
-    ? {
-        permissions: {
-          name: "components.mainMenu.permissions",
-          icon: Users,
-          createHref: (params) => `/${params.namespace}/permissions`,
-          route: {
-            path: "permissions",
-            element: (
-              <div className="flex flex-col space-y-5 p-10">Permissions</div>
-            ),
-          },
+type EnterprisePageType = DefaultEnterprisePageSetup & PermissionsPageSetup;
+
+type PermissionsPageSetup = Partial<
+  Record<
+    "permissions",
+    PageBase & {
+      createHref: (params: { namespace: string }) => string;
+      useParams: () => {
+        isPermissionsPage: boolean;
+      };
+    }
+  >
+>;
+
+export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
+  ? {
+      permissions: {
+        name: "components.mainMenu.permissions",
+        icon: Users,
+        createHref: (params) => `/${params.namespace}/permissions`,
+        useParams: () => ({
+          isPermissionsPage: true,
+        }),
+        route: {
+          path: "permissions",
+          element: (
+            <div className="flex flex-col space-y-5 p-10">Permissions</div>
+          ),
         },
-      }
-    : {};
+      },
+    }
+  : {};
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
