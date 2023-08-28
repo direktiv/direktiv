@@ -532,6 +532,7 @@
       "output": "Output",
       "submitBtn": "Run Query",
       "examples": {
+        "title": "Examples",
         "buttionLabel": "Run"
       }
     }
