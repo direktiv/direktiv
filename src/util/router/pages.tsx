@@ -134,8 +134,6 @@ type PageType = DefaultPageSetup &
   EventsPageSetup &
   MonitoringPageSetup;
 
-type EnterprisePageType = DefaultEnterprisePageSetup & PermissionsPageSetup;
-
 type PermissionsPageSetup = Partial<
   Record<
     "permissions",
@@ -148,31 +146,58 @@ type PermissionsPageSetup = Partial<
   >
 >;
 
+type EnterprisePageType = DefaultEnterprisePageSetup & PermissionsPageSetup;
+
 export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
   ? {
       permissions: {
         name: "components.mainMenu.permissions",
         icon: Users,
         createHref: (params) => `/${params.namespace}/permissions`,
-        useParams: () => ({
-          isPermissionsPage: true,
-        }),
+        useParams: () => {
+          const [, secondLevel] = useMatches(); // first level is namespace level
+          const isPermissionsPage = checkHandler(
+            secondLevel,
+            "isPermissionsPage"
+          );
+          return {
+            isPermissionsPage,
+          };
+        },
         route: {
           path: "permissions",
           element: (
             <div className="flex flex-col space-y-5 p-10">Permissions</div>
           ),
+          handle: { isPermissionsPage: true },
         },
       },
     }
   : {};
+
+/**
+   * 
+    name: "components.mainMenu.monitoring",
+    icon: ActivitySquare,
+    createHref: (params) => `/${params.namespace}/monitoring`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
+      return { isMonitoringPage };
+    },
+    route: {
+      path: "monitoring",
+      element: <MonitoringPage />,
+      handle: { isMonitoringPage: true },
+    },
+   */
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
 
-export const pages: PageType & DefaultEnterprisePageSetup = {
+export const pages: PageType & EnterprisePageType = {
   explorer: {
     name: "components.mainMenu.explorer",
     icon: FolderTree,
