@@ -163,7 +163,7 @@ const JqPlaygroundPage: FC = () => {
           </div>
         </form>
       </Card>
-      <Card className="grid grid-cols-2 gap-5 p-5">
+      <Card className="grid grid-cols-2 gap-5 p-5 text-sm">
         {cheatsheet.map(({ query, input, tip, example }, index) => (
           <Card key={index} className="flex gap-2 p-5">
             <div className="grid grow grid-cols-2">
