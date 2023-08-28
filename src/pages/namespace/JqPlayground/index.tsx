@@ -20,6 +20,7 @@ import Examples from "./Examples";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JqQueryErrorSchema } from "~/api/jq/schema";
+import { prettifyJsonString } from "./utils";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -34,16 +35,15 @@ const JqPlaygroundPage: FC = () => {
 
   const [query, setQuery] = useState(useJqPlaygroundQuery() ?? ".");
   const [input, setInput] = useState(useJqPlaygroundInput() ?? "{}");
-  const [result, setResult] = useState("");
+  const [output, setOutput] = useState("");
   const [error, setError] = useState("");
 
   const { mutate: executeQuery, isLoading } = useExecuteJQuery({
     onSuccess: (data) => {
-      const resultAsJson = JSON.parse(data.results?.[0] ?? "{}");
-      setResult(JSON.stringify(resultAsJson, null, 4));
+      setOutput(prettifyJsonString(data.results?.[0] ?? "{}"));
     },
     onError: (error) => {
-      setResult("");
+      setOutput("");
       const errorParsed = JqQueryErrorSchema.safeParse(error);
       if (errorParsed.success) {
         setError(errorParsed.data.message);
@@ -53,9 +53,14 @@ const JqPlaygroundPage: FC = () => {
 
   const formId = "jq-playground-form";
 
+  const submitQuery = () => {
+    setOutput("");
+    executeQuery({ query, inputJsonString: input });
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    executeQuery({ query, inputJsonString: input });
+    submitQuery();
   };
 
   const onQueryChange = (newQuery: string) => {
@@ -80,9 +85,9 @@ const JqPlaygroundPage: FC = () => {
     input: string;
   }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    onInputChange(JSON.stringify(JSON.parse(input), null, 4));
+    onInputChange(prettifyJsonString(input));
     onQueryChange(query);
-    executeQuery({ query, inputJsonString: input });
+    submitQuery();
   };
 
   return (
@@ -163,19 +168,19 @@ const JqPlaygroundPage: FC = () => {
                   {t("pages.jqPlayground.output")}
                 </h3>
                 <CopyButton
-                  value={result}
+                  value={output}
                   buttonProps={{
                     variant: "outline",
                     size: "sm",
                     type: "button",
-                    disabled: !result,
+                    disabled: !output,
                   }}
                 />
               </div>
               <div className="flex grow">
                 <Editor
                   language="json"
-                  value={result}
+                  value={output}
                   options={{
                     readOnly: true,
                   }}
