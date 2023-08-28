@@ -1,5 +1,11 @@
+import {
+  BookOpen,
+  FileInput,
+  FileOutput,
+  Play,
+  PlaySquare,
+} from "lucide-react";
 import { FC, useState } from "react";
-import { FileInput, FileOutput, Play, PlaySquare } from "lucide-react";
 import {
   useJqPlaygroundActions,
   useJqPlaygroundInput,
@@ -14,7 +20,7 @@ import Examples from "./Examples";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JqQueryErrorSchema } from "~/api/jq/schema";
-import exampleSnippets from "./Examples/exampleSnippets";
+import { Link } from "react-router-dom";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -82,10 +88,26 @@ const JqPlaygroundPage: FC = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold">
-        <PlaySquare className="h-5" />
-        {t("pages.jqPlayground.title")}
-      </h3>
+      <div className="flex">
+        <h3 className="flex grow items-center gap-x-2 font-bold">
+          <PlaySquare className="h-5" />
+          {t("pages.jqPlayground.title")}
+        </h3>
+        <Button variant="outline" asChild>
+          <a
+            href="https://stedolan.github.io/jq/manual/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <BookOpen />
+            {t("pages.jqPlayground.openManualBtn")}
+          </a>
+        </Button>
+      </div>
+      <Card className="p-5 text-sm ">
+        JQ Playground is an envrioment where you can quickly test your jq
+        commands against JSON.
+      </Card>
       <Card className="p-5">
         <form
           id={formId}

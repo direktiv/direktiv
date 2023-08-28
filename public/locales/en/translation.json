@@ -527,6 +527,7 @@
     },
     "jqPlayground": {
       "title": "jq Playground",
+      "openManualBtn": "Open jq Manual",
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
