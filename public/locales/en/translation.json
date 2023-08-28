@@ -530,7 +530,10 @@
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
-      "submitBtn": "Execute Query"
+      "submitBtn": "Run Query",
+      "examples": {
+        "buttionLabel": "Run"
+      }
     }
   },
   "components": {

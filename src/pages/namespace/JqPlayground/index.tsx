@@ -180,7 +180,8 @@ const JqPlaygroundPage: FC = () => {
                 })
               }
             >
-              run
+              <Play />
+              {t("pages.jqPlayground.examples.buttionLabel")}
             </Button>
           </Card>
         ))}
