@@ -1,3 +1,5 @@
+import { useApiKey } from "~/util/store/apiKey";
+import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
 import { useMemo } from "react";
 const baseUrl = window.location.origin;
 
@@ -49,8 +51,16 @@ export const useCurlCommand = ({
   url: string;
   body: string;
 }) => {
+  const { isKeyRequired } = useApiKeyHandling();
+  const apiKeyFromLocalstorage = useApiKey();
+
+  const apiKeyHeader =
+    isKeyRequired && apiKeyFromLocalstorage
+      ? `\n -H 'direktiv-token: ${apiKeyFromLocalstorage}' \\`
+      : "";
+
   const bodyEscaped = body.replace(/'/g, "\\'");
-  return `curl '${url}' \\
-  -H 'direktiv-token: Qhxw6U3#6&hu^j' \\
+
+  return `curl '${url}' \\${apiKeyHeader}
   --data-raw $'${bodyEscaped}'`;
 };
