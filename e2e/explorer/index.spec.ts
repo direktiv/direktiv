@@ -11,6 +11,8 @@ import {
 } from "../utils/node";
 import { expect, test } from "@playwright/test";
 
+import { actionWaitForSuccessToast } from "./workflow/utils";
+
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -406,4 +408,52 @@ test(`it is possible to rename a directory`, async ({ page }) => {
 
   const isRenamed = await checkIfNodeExists(namespace, newname);
   await expect(isRenamed).toBeTruthy();
+});
+
+test(`it is possible to deactivate and activate a workflow`, async ({
+  page,
+}) => {
+  const workflow = "testworkflow";
+  test.setTimeout(50000);
+  await createWorkflow(namespace, `${workflow}.yaml`);
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}.yaml`, {
+    waitUntil: "networkidle",
+  });
+  const btnToggle = page.getByTestId("toggle-workflow-active-btn");
+
+  const iconPowerOn = page.getByTestId("active-workflow-on-icon");
+  const iconPowerOff = page.getByTestId("active-workflow-off-icon");
+  const btnRun = page.getByTestId("workflow-header-btn-run");
+
+  await expect(
+    iconPowerOff,
+    "initial state should be active, shows the power-off button"
+  ).toBeVisible();
+  await expect(
+    btnRun,
+    "initial state should be active, run button is active"
+  ).toBeEnabled();
+
+  await btnToggle.click();
+  await actionWaitForSuccessToast(page);
+  await expect(
+    iconPowerOn,
+    "next state should be inactive, shows the power-on button"
+  ).toBeVisible();
+  await expect(
+    btnRun,
+    "next state should be inactive, run button is inactive"
+  ).toBeDisabled();
+
+  await btnRun.click({ force: true }); //nothing happens on this click
+  await expect(btnRun, "run button is still inactive").toBeDisabled();
+
+  await btnToggle.click(); //activate again
+  await actionWaitForSuccessToast(page);
+
+  await btnRun.click(); //run the workflow
+  await expect(
+    page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog from the editor button"
+  ).toBeVisible();
 });
