@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -18,7 +19,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var busStartTimeout = 60 * time.Second
+var (
+	busStartTimeout   = 60 * time.Second
+	dataDirPermission = 0o700
+)
 
 type bus struct {
 	logger *zap.SugaredLogger
@@ -45,6 +49,12 @@ func (bl *busLogger) Output(_ int, s string) error {
 }
 
 func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
+	if logger == nil {
+		logger = zap.NewNop().Sugar()
+	}
+
+	// create data dir if it does not exist
+	// if not set we use a tmp folder
 	dataDir := config.NSQDataDir
 	if dataDir == "" {
 		dir, err := os.MkdirTemp(os.TempDir(), "nsq")
@@ -55,6 +65,13 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	}
 
 	logger.Infof("using %s as nsq data dir", dataDir)
+
+	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
+		err := os.MkdirAll(dataDir, fs.FileMode(dataDirPermission))
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	bus := &bus{
 		logger:  logger,
@@ -78,10 +95,9 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	opts.MaxRdyCount = 10000
 	opts.MemQueueSize = 10000
 
-	// Set default logger and adjust log level based on busLogEnabled
-	opts.Logger = zap.NewStdLog(logger.Desugar())
-	if !busLogEnabled {
-		opts.LogLevel = 2 // Error level
+	opts.Logger = &busLogger{
+		logger: logger,
+		debug:  busLogEnabled,
 	}
 
 	var err error
@@ -100,10 +116,9 @@ func newBus(config Config, logger *zap.SugaredLogger) (*bus, error) {
 	lookupOptions.InactiveProducerTimeout = config.NSQInactiveTimeout
 	lookupOptions.TombstoneLifetime = config.NSQTombstoneTimeout
 
-	// Set default logger and adjust log level based on busLogEnabled
-	lookupOptions.Logger = zap.NewStdLog(logger.Desugar())
-	if !busLogEnabled {
-		lookupOptions.LogLevel = 2 // Error level
+	lookupOptions.Logger = &busLogger{
+		logger: logger,
+		debug:  busLogEnabled,
 	}
 
 	bus.lookup, err = nsqlookupd.New(lookupOptions)
@@ -143,7 +158,8 @@ type producerList struct {
 //lint:ignore U1000 Ignore unused function for testing
 func (b *bus) nodes() (*producerList, error) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
-		fmt.Sprintf("http://127.0.0.1:%d/nodes", b.config.NSQLookupListenHTTPPort), nil)
+		fmt.Sprintf("http://127.0.0.1:%d/nodes",
+			b.config.NSQLookupListenHTTPPort), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,10 +169,6 @@ func (b *bus) nodes() (*producerList, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
 
 	bo, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -177,7 +189,7 @@ func (b *bus) nodes() (*producerList, error) {
 	return &pl, nil
 }
 
-func (b *bus) updateBusNodes(ctx context.Context, nodes []string, client *http.Client) error {
+func (b *bus) updateBusNodes(nodes []string) error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -190,13 +202,14 @@ func (b *bus) updateBusNodes(ctx context.Context, nodes []string, client *http.C
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewBuffer(data)) //nolint
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPut, url, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -210,96 +223,107 @@ func (b *bus) updateBusNodes(ctx context.Context, nodes []string, client *http.C
 	return nil
 }
 
-func (b *bus) start(ctx context.Context, timeout time.Duration) error {
-	// Create a new context with a timeout of 10 seconds
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
+func (b *bus) start() error {
+	errChan := make(chan error, 1)
 
-	errChanNsqd := make(chan error, 1)
-	errChanLookup := make(chan error, 1)
 	go func() {
 		err := b.nsqd.Main()
-		errChanNsqd <- err
+		errChan <- err
 	}()
 
 	go func() {
 		err := b.lookup.Main()
-		errChanLookup <- err
+		errChan <- err
 	}()
 
-	select {
-	case errNsqd := <-errChanNsqd:
-		if errNsqd != nil {
-			return errNsqd
-		}
-	case errLookup := <-errChanLookup:
-		if errLookup != nil {
-			return errLookup
-		}
-	case <-ctx.Done():
-		// Cancel both nsqd and lookup in case of timeout
-		b.nsqd.Exit()
-		b.lookup.Exit()
+	err := <-errChan
 
-		return ctx.Err()
-	}
-
-	return nil
+	return err
 }
 
-func (b *bus) waitTillConnected(ctx context.Context, client *http.Client, tickerTime, timeout time.Duration) error {
-	checkService := func(port int) bool {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d/ping", port), nil)
+func (b *bus) waitTillConnected() error {
+	startCh := make(chan bool)
+
+	ping := func(port int) bool {
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet,
+			fmt.Sprintf("http://127.0.0.1:%d/ping", port), nil)
 		if err != nil {
 			return false
 		}
 
-		resp, err := client.Do(req)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return false
 		}
 		defer resp.Body.Close()
 
-		return resp.StatusCode == http.StatusOK
+		if resp.StatusCode != http.StatusOK {
+			return false
+		}
+
+		bo, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return false
+		}
+
+		if string(bo) == "OK" {
+			return true
+		}
+
+		return false
 	}
 
-	busStarted := make(chan struct{})
 	go func() {
-		for {
-			if checkService(b.config.NSQDListenHTTPPort) && checkService(b.config.NSQLookupListenHTTPPort) {
-				close(busStarted)
+		timeout := time.After(busStartTimeout)
 
-				return
-			}
+		//nolint:gomnd
+		dt := 100 * time.Millisecond
+		attempts := -1
+
+		for {
+			attempts++
 
 			select {
-			case <-time.After(tickerTime):
-			case <-ctx.Done():
+			case <-time.After(dt * (1 << attempts)):
+
+				if !ping(b.config.NSQDListenHTTPPort) {
+					continue
+				}
+
+				if !ping(b.config.NSQLookupListenHTTPPort) {
+					continue
+				}
+
+				startCh <- true
+
+				return
+
+			case <-timeout:
+				startCh <- false
 
 				return
 			}
 		}
 	}()
 
-	select {
-	case <-time.After(timeout):
-		return fmt.Errorf("timed out waiting for nsq bus to start")
-	case <-busStarted:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
+	success := <-startCh
+	if !success {
+		return fmt.Errorf("could not start nsq bus")
 	}
+
+	return nil
 }
 
 //nolint:unused
-func (b *bus) createTopic(ctx context.Context, topic string, client *http.Client) error {
+func (b *bus) createTopic(topic string) error {
 	url := fmt.Sprintf("http://127.0.0.1:%d/topic/create?topic=%s", b.config.NSQDListenHTTPPort, topic)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
 
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -314,7 +338,7 @@ func (b *bus) createTopic(ctx context.Context, topic string, client *http.Client
 }
 
 //nolint:unused
-func (b *bus) createDeleteChannel(ctx context.Context, client *http.Client, topic, channel string, create bool) error {
+func (b *bus) createDeleteChannel(topic, channel string, create bool) error {
 	action := "delete"
 	if create {
 		action = "create"
@@ -322,11 +346,12 @@ func (b *bus) createDeleteChannel(ctx context.Context, client *http.Client, topi
 
 	url := fmt.Sprintf("http://127.0.0.1:%d/channel/%s?topic=%s&channel=%s", b.config.NSQDListenHTTPPort, action, topic, channel)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, nil)
 	if err != nil {
 		return err
 	}
 
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

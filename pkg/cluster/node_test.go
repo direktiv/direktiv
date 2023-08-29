@@ -1,10 +1,7 @@
 package cluster
 
 import (
-	"context"
 	"fmt"
-	"net"
-	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -12,7 +9,6 @@ import (
 	"github.com/hashicorp/serf/serf"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func TestNodeConfig(t *testing.T) {
@@ -38,26 +34,8 @@ func TestNodeConfig(t *testing.T) {
 
 func TestNewNode(t *testing.T) {
 	config := DefaultConfig()
-	finder := NewNodeFinderStatic(nil)
-	transport := &http.Transport{
-		DialContext: (&net.Dialer{
-			Timeout:   time.Minute,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		ResponseHeaderTimeout: time.Minute,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-	}
-	node, _, err := NewNode(context.TODO(),
-		config,
-		finder.GetAddr,
-		finder.GetNodes,
-		2*time.Second,
-		zap.NewNop().Sugar(), &http.Client{
-			Transport: transport,
-			Timeout:   5 * time.Second,
-		}, 5)
+
+	node, err := NewNode(config, NewNodeFinderStatic(nil), nil)
 	require.NoError(t, err)
 	defer node.Stop()
 
@@ -66,28 +44,25 @@ func TestNewNode(t *testing.T) {
 }
 
 func rightNumber(nodes []*Node) bool {
-	for _, node := range nodes {
-		// Check Serf membership
-		mnodes := node.serfServer.Members()
-		if len(mnodes) != len(nodes) {
-			return false
-		}
-		for _, mnode := range mnodes {
-			// Ensure each node is active and reachable
-			if mnode.Status != serf.StatusAlive {
-				return false
+	for i := 0; i < len(nodes); i++ {
+		mnodes := nodes[i].serfServer.Members()
+		count := len(mnodes)
+		for j := 0; j < len(mnodes); j++ {
+			if mnodes[j].Status == serf.StatusLeft {
+				count--
 			}
 		}
 
-		// Check bus producers
-		nn, err := node.bus.nodes()
-		if err != nil || nn.Producers == nil {
-			fmt.Println("Error checking producers:", err)
+		if count != len(nodes) {
 			return false
 		}
+
+		nn, _ := nodes[i].bus.nodes()
+
 		if len(nn.Producers) != len(nodes) {
 			return false
 		}
+
 	}
 
 	return true
@@ -118,21 +93,25 @@ func createConfig(t *testing.T, topics []string, change bool) (Config, []randomP
 }
 
 func createCluster(t *testing.T, count int, topics []string, change bool) ([]*Node, error) {
-	logger := zap.NewNop().Sugar()
+	nfNodes := make([]string, 0)
+	finalNodes := make([]*Node, 0)
 
-	// Preallocate slices to avoid reallocations
-	nfNodes := make([]string, count)
-	configs := make([]Config, count)
+	configs := make([]Config, 0)
 	ports := make([][]randomPort, count)
-	finalNodes := make([]*Node, 0, count)
 
 	hn, _ := os.Hostname()
 
 	for i := 0; i < count; i++ {
 		config, ports1 := createConfig(t, topics, change)
-		nfNodes[i] = fmt.Sprintf("%s:%d", hn, config.SerfPort)
-		configs[i] = config
+		nfNodes = append(nfNodes, fmt.Sprintf("%s:%d", hn, config.SerfPort))
+		configs = append(configs, config)
 		ports[i] = ports1
+		t.Logf("serf port: %+v\n", config.SerfPort)
+		t.Logf("nsq port: %+v\n", config.NSQDPort)
+		t.Logf("nsq http port: %+v\n", config.NSQDListenHTTPPort)
+		t.Logf("nsq lookup port: %+v\n", config.NSQLookupPort)
+		t.Logf("nsq lookup http port: %+v\n", config.NSQLookupListenHTTPPort)
+		t.Logf("----------------------")
 	}
 
 	for i := 0; i < count; i++ {
@@ -140,22 +119,10 @@ func createCluster(t *testing.T, count int, topics []string, change bool) ([]*No
 	}
 
 	nf := NewNodeFinderStatic(nfNodes)
-	transport := &http.Transport{
-		DialContext: (&net.Dialer{
-			Timeout:   time.Minute,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		ResponseHeaderTimeout: time.Minute,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-	}
+
 	for i := 0; i < count; i++ {
 		c := configs[i]
-		node, _, err := NewNode(context.Background(), c, nf.GetAddr, nf.GetNodes, 10*time.Second, logger, &http.Client{
-			Transport: transport,
-			Timeout:   5 * time.Second,
-		}, 5)
+		node, err := NewNode(c, nf, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -173,38 +140,13 @@ func TestClusterSubscribe(t *testing.T) {
 	for i := 0; i < count; i++ {
 		defer nodes[i].Stop()
 	}
+
 	// check three node cluster
 	require.Eventually(t, func() bool {
 		return rightNumber(nodes)
-	}, 5*time.Second, time.Millisecond*20)
+	}, 10*time.Second, time.Millisecond*100)
 
-	// Test topic1 subscription
-	t.Run("TestTopic1Subscription", func(t *testing.T) {
-		testTopic1Subscription(t, nodes)
-	})
-}
-
-func TestClusterSubscribe2(t *testing.T) {
-	count := 3
-	nodes, err := createCluster(t, count, []string{"topic1", "topic2"}, false)
-	require.NoError(t, err)
-
-	for i := 0; i < count; i++ {
-		defer nodes[i].Stop()
-	}
-	// check three node cluster
-	require.Eventually(t, func() bool {
-		return rightNumber(nodes)
-	}, 5*time.Second, time.Millisecond*20)
-
-	// Test topic2 subscription
-	t.Run("TestTopic2Subscription", func(t *testing.T) {
-		testTopic2Subscription(t, nodes)
-	})
-}
-
-func testTopic1Subscription(t *testing.T, nodes []*Node) {
-	err := nodes[0].Publish("topic1", []byte("msg"))
+	err = nodes[0].Publish("topic1", []byte("msg"))
 	require.NoError(t, err)
 
 	counter1 := &counterHandler{}
@@ -214,7 +156,7 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == 1
-	}, 35*time.Second, time.Millisecond*200)
+	}, 30*time.Second, time.Millisecond*100)
 
 	counter2 := &counterHandler{}
 	unsub2, err := nodes[1].Subscribe("topic1", nodes[1].busChannelName, counter2.counter)
@@ -226,13 +168,14 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 	require.NoError(t, err)
 	defer unsub3()
 
-	require.Eventually(t, func() bool {
-		return nodes[0].Publish("topic1", []byte("msg")) == nil
-	}, time.Millisecond*200, time.Millisecond*20)
+	time.Sleep(time.Millisecond * 200)
+
+	err = nodes[0].Publish("topic1", []byte("msg"))
+	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == 2 && counter2.cc == 1 && counter3.cc == 1
-	}, 35*time.Second, time.Millisecond*20)
+	}, 30*time.Second, time.Millisecond*100)
 
 	add := 10
 	for i := 0; i < add; i++ {
@@ -242,38 +185,40 @@ func testTopic1Subscription(t *testing.T, nodes []*Node) {
 
 	require.Eventually(t, func() bool {
 		return counter1.cc == add+2 && counter2.cc == add+1 && counter3.cc == add+1
-	}, 35*time.Second, time.Millisecond*20)
-}
+	}, 30*time.Second, time.Millisecond*100)
 
-func testTopic2Subscription(t *testing.T, nodes []*Node) {
-	err := nodes[0].Publish("topic2", []byte("msg"))
+	err = nodes[0].Publish("topic2", []byte("msg"))
 	require.NoError(t, err)
 
 	// test single subscriber
-	counter1 := &counterHandler{}
-	unsub1, err := nodes[0].Subscribe("topic2", "shared", counter1.counter)
+	counter1 = &counterHandler{}
+	unsub1, err = nodes[0].Subscribe("topic2", "shared", counter1.counter)
 	require.NoError(t, err)
 	defer unsub1()
 
-	counter2 := &counterHandler{}
-	unsub2, err := nodes[1].Subscribe("topic2", "shared", counter2.counter)
+	counter2 = &counterHandler{}
+	unsub2, err = nodes[1].Subscribe("topic2", "shared", counter2.counter)
 	require.NoError(t, err)
 	defer unsub2()
 
-	counter3 := &counterHandler{}
-	unsub3, err := nodes[2].Subscribe("topic2", "shared", counter3.counter)
+	counter3 = &counterHandler{}
+	unsub3, err = nodes[2].Subscribe("topic2", "shared", counter3.counter)
 	require.NoError(t, err)
 	defer unsub3()
 
-	c := 5
-	for i := 0; i < c; i++ {
-		err := nodes[0].Publish("topic2", []byte("msg1"))
+	time.Sleep(time.Millisecond * 200)
+
+	t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
+
+	for i := 0; i < 10; i++ {
+		err = nodes[0].Publish("topic2", []byte("msg1"))
 		require.NoError(t, err)
 	}
 
 	require.Eventually(t, func() bool {
-		return counter1.cc+counter2.cc+counter3.cc >= c+1
-	}, 60*time.Second, time.Second*3, "did not get received events")
+		t.Logf("received events on nodes2: %d %d %d", counter1.cc, counter2.cc, counter3.cc)
+		return counter1.cc+counter2.cc+counter3.cc >= 11
+	}, 30*time.Second, time.Millisecond*100, "did not get recieved events")
 }
 
 type counterHandler struct {
