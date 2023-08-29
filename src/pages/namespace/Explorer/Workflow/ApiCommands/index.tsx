@@ -145,13 +145,13 @@ const ApiCommands = ({
             </Select>
           </fieldset>
           <Card
-            className="flex flex-col gap-2 break-all p-4 text-sm"
+            className="grid grid-cols-[auto_1fr] items-center gap-5 break-all p-4 text-sm"
             noShadow
             background="weight-1"
           >
             <Badge variant="success" className="w-max">
               {selectedTemplate?.method}
-            </Badge>{" "}
+            </Badge>
             <pre className="whitespace-pre-wrap text-primary-500">
               {selectedTemplate?.url}
             </pre>
