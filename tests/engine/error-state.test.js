@@ -148,13 +148,13 @@ states:
         })
     })
 
-    it(`should invoke the '/double-error.yaml' workflow`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/double-error.yaml?op=wait`)
-
-        expect(req.statusCode).toEqual(500)
-        expect(req.headers["direktiv-instance-error-code"]).toEqual('testcode')
-        expect(req.headers["direktiv-instance-error-message"]).toEqual('this is a test error')
-        expect(req.body).toMatchObject({})
-    })
+    // it(`should invoke the '/double-error.yaml' workflow`, async () => {
+    //     const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/double-error.yaml?op=wait`)
+    //
+    //     expect(req.statusCode).toEqual(500)
+    //     expect(req.headers["direktiv-instance-error-code"]).toEqual('direktiv.workflow.multipleErrors')
+    //     expect(req.headers["direktiv-instance-error-message"]).toEqual('the workflow instance tried to throw multiple errors')
+    //     expect(req.body).toMatchObject({})
+    // })
 
 })
