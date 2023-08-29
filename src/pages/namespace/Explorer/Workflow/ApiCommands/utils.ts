@@ -25,11 +25,11 @@ export const useApiCommandTemplate = (namespace: string, workflow: string) => {
           url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=update-workflow`,
           payloadSyntax: "yaml",
           body: `description: A simple 'no-op' state that returns 'Hello world!'
-  states:
-    - id: helloworld
-      type: noop
-      transform:
-        result: Hello world!`,
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!`,
         },
       ] as const,
     [namespace, workflow]

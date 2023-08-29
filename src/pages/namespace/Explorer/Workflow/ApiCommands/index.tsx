@@ -55,8 +55,14 @@ const ApiCommands = ({
   });
 
   useEffect(() => {
-    setBody(selectedTemplate?.body ?? "");
+    if (selectedTemplate) {
+      setBody(
+        preparePayload(selectedTemplate.body, selectedTemplate.payloadSyntax)
+      );
+    }
   }, [selectedTemplate]);
+
+  const disableCopyButton = !namespace || !path;
 
   return (
     <>
@@ -159,11 +165,9 @@ const ApiCommands = ({
               options={{}}
               onChange={(data) => {
                 if (data && selectedTemplate) {
-                  const test = preparePayload(
-                    data,
-                    selectedTemplate?.payloadSyntax
+                  setBody(
+                    preparePayload(data, selectedTemplate?.payloadSyntax)
                   );
-                  setBody(test);
                 }
               }}
               theme={theme ?? undefined}
@@ -190,6 +194,7 @@ const ApiCommands = ({
           buttonProps={{
             variant: "outline",
             className: "w-60",
+            disabled: disableCopyButton,
           }}
         >
           {(copied) =>
