@@ -1,4 +1,4 @@
-import type { MirrorFormSchemaType, NamespaceListSchemaType } from "../schema";
+import type { MirrorPostSchemaType, NamespaceListSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { NamespaceCreatedSchema } from "../schema";
@@ -10,7 +10,7 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const createNamespace = apiFactory({
-  url: ({ name }: { name: string; mirror?: MirrorFormSchemaType }) =>
+  url: ({ name }: { name: string; mirror?: MirrorPostSchemaType }) =>
     `/api/namespaces/${name}`,
   method: "PUT",
   schema: NamespaceCreatedSchema,
@@ -32,7 +32,7 @@ export const useCreateNamespace = ({
       mirror,
     }: {
       name: string;
-      mirror?: MirrorFormSchemaType;
+      mirror?: MirrorPostSchemaType;
     }) =>
       createNamespace({
         apiKey: apiKey ?? undefined,

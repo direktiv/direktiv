@@ -11,7 +11,7 @@ import { fileNameSchema } from "~/api/tree/schema/node";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type getResolverType = (input: {
+type getResolverArgs = (input: {
   isMirror: boolean;
   isNew: boolean;
   authType: MirrorAuthType;
@@ -19,7 +19,7 @@ type getResolverType = (input: {
   existingNamespaces: string[];
 }) => ReturnType<typeof zodResolver>;
 
-export const getResolver: getResolverType = ({
+export const getResolver: getResolverArgs = ({
   isMirror,
   isNew,
   authType,

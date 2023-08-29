@@ -9,6 +9,7 @@ import {
 import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
 import Header from "./Header";
+import { MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
 import Row from "./Row";
 import { treeKeys } from "~/api/tree";
 import { useApiKey } from "~/util/store/apiKey";
@@ -17,7 +18,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 const Activities = () => {
-  const { data } = useMirrorInfo();
+  // TS does not infer the correct type for data via the dynamic UseQueryResult
+  // return type due to the .transform() in the underlying zod schema.
+  const { data } = useMirrorInfo() as {
+    data: MirrorInfoSchemaType | undefined;
+  };
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const apiKey = useApiKey();

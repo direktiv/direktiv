@@ -43,6 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
+  authType: MirrorAuthType;
 } & MirrorFormSchemaType &
   MirrorTokenFormSchemaType &
   MirrorSshFormSchemaType;
@@ -54,23 +55,9 @@ const NamespaceEdit = ({
   mirror?: MirrorInfoSchemaType;
   close: () => void;
 }) => {
-  const getInitialAuthType = (): MirrorAuthType => {
-    if (!mirror) {
-      return "none";
-    }
-    if (mirror?.info.url?.startsWith("git@")) {
-      return "ssh";
-    }
-    if (mirror?.info.passphrase === "-") {
-      return "token";
-    }
-    return "none";
-  };
-
   const { t } = useTranslation();
   const [isMirror, setIsMirror] = useState(!!mirror);
   const [isNew] = useState(!mirror);
-  const [authType, setAuthType] = useState<MirrorAuthType>(getInitialAuthType);
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
@@ -104,9 +91,11 @@ const NamespaceEdit = ({
   };
 
   const {
-    register,
     handleSubmit,
+    register,
+    setValue,
     trigger,
+    watch,
     formState: { isDirty, dirtyFields, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: (values, context, options) =>
@@ -114,11 +103,16 @@ const NamespaceEdit = ({
     defaultValues: mirror
       ? {
           name: mirror.namespace,
+          authType: mirror.info.authType,
           url: mirror.info.url,
           ref: mirror.info.ref,
         }
-      : {},
+      : {
+          authType: "none",
+        },
   });
+
+  const authType: MirrorAuthType = watch("authType");
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
@@ -142,6 +136,7 @@ const NamespaceEdit = ({
     name,
     ref,
     url,
+    authType,
     passphrase,
     publicKey,
     privateKey,
@@ -187,6 +182,7 @@ const NamespaceEdit = ({
       mirror: {
         ref,
         url,
+        authType,
         ...updateAuthValues,
       },
     });
@@ -318,7 +314,9 @@ const NamespaceEdit = ({
                 </label>
                 <Select
                   value={authType}
-                  onValueChange={(value: MirrorAuthType) => setAuthType(value)}
+                  onValueChange={(value: MirrorAuthType) =>
+                    setValue("authType", value, { shouldDirty: true })
+                  }
                 >
                   <SelectTrigger variant="outline" className="w-full">
                     <SelectValue
@@ -332,7 +330,7 @@ const NamespaceEdit = ({
                       <SelectItem
                         key={option}
                         value={option}
-                        onClick={() => setAuthType(option)}
+                        onClick={() => "setAuthType(option)"}
                       >
                         {t(`components.namespaceEdit.authType.${option}`)}
                       </SelectItem>

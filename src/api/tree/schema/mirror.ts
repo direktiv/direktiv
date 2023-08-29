@@ -1,5 +1,6 @@
 import { LogLevelSchema, PageinfoSchema } from "../../schema";
 
+import { MirrorAuthType } from "~/api/namespaces/schema";
 import { z } from "zod";
 
 /**
@@ -32,14 +33,27 @@ import { z } from "zod";
 */
 
 // In the current API implementation, for secret values, "-" means a value exists.
-export const MirrorInfoInfoSchema = z.object({
-  url: z.string(),
-  ref: z.string(),
-  lastSync: z.string().or(z.null()),
-  publicKey: z.string(),
-  privateKey: z.enum(["-", ""]),
-  passphrase: z.enum(["-", ""]),
-});
+export const MirrorInfoInfoSchema = z
+  .object({
+    url: z.string(),
+    ref: z.string(),
+    lastSync: z.string().or(z.null()),
+    publicKey: z.string(),
+    privateKey: z.enum(["-", ""]),
+    passphrase: z.enum(["-", ""]),
+  })
+  .transform((schema) => {
+    let authType: MirrorAuthType = "none";
+    if (schema.url.startsWith("git@")) {
+      authType = "ssh";
+    } else if (schema.passphrase) {
+      authType = "token";
+    }
+    return {
+      ...schema,
+      authType,
+    };
+  });
 
 // According to API spec, but currently dry_run isn't used in the API.
 const MirrorActivityTypeSchema = z.enum(["init", "sync", "dry_run"]);
