@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "private_key_passphrase" text,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "insecure" boolean NOT NULL,
     PRIMARY KEY ("namespace_id"),
     CONSTRAINT "fk_namespaces_mirror_configs"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE

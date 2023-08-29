@@ -167,7 +167,7 @@ func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf, opts GitSo
 }
 
 func (cfg *Config) GetSource(_ context.Context) (Source, error) {
-	insecureSkipTLS := true
+	insecureSkipTLS := cfg.Insecure
 	tempDir := ""
 
 	if cfg.PrivateKey == "" {
