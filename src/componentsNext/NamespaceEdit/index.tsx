@@ -56,8 +56,10 @@ const NamespaceEdit = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
+  // note that isMirror is initially redundant with !isNew, but
+  // isMirror may change through user interaction.
   const [isMirror, setIsMirror] = useState(!!mirror);
-  const [isNew] = useState(!mirror);
+  const isNew = !mirror;
   const { data } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
@@ -70,14 +72,14 @@ const NamespaceEdit = ({
   ): ReturnType<typeof zodResolver> => {
     let keepCredentials = false;
 
-    if (isMirror && authType === "ssh") {
+    if (!isNew && isMirror && authType === "ssh") {
       keepCredentials = !(
         dirtyFields.passphrase ||
         dirtyFields.privateKey ||
         dirtyFields.publicKey
       );
     }
-    if (isMirror && authType === "token") {
+    if (!isNew && isMirror && authType === "token") {
       keepCredentials = !dirtyFields.passphrase;
     }
 
