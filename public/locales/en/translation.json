@@ -4,7 +4,6 @@
       "welcomeTo": "Welcome to",
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
-      "tokenRequired": "An authentication token is required to connect to the API.",
       "links": {
         "docs": {
           "title": "Getting started",
@@ -19,6 +18,15 @@
           "description": "Check out our Github repository"
         }
       }
+    },
+    "authenticate": {
+      "title": "Authenticate",
+      "description": "An authentication token is required to connect to the API.",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter your API Key",
+      "wrongKey": "The API Key is incorrect",
+      "wrongOldKey": "The previously used API Key is incorrect, it may have changed after your last use",
+      "loginBtn": "Login"
     },
     "explorer": {
       "tree": {
@@ -626,20 +634,28 @@
       "fieldInvalid": "this field is invalid"
     },
     "userMenu": {
-      "loggedInAs": "You are logged in as {{name}}",
+      "loggedIn": "You are logged in",
       "logout": "Logout",
       "appearance": "Appearance",
-      "switchToLight": "switch to Light mode",
-      "switchToDark": "switch to Dark mode",
+      "switchToLight": "Switch to Light mode",
+      "switchToDark": "Switch to Dark mode",
       "help": "Help",
-      "showApiCommands": "Show API Commands",
-      "openJQPlayground": "Open JQ Playground",
+      "docs": "Open the Docs",
       "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
   "api": {
     "generic": {
       "error": "An error occurred"
+    },
+    "authentication": {
+      "mutate": {
+        "authenticate": {
+          "error": {
+            "description": "The auth endpoint did not answer as expected 😢"
+          }
+        }
+      }
     },
     "tree": {
       "mutate": {
