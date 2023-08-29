@@ -23,6 +23,8 @@ type Config struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	Insecure bool
 }
 
 // Process different statuses.
