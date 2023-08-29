@@ -112,16 +112,23 @@ const Header: FC = () => {
           <div className="flex gap-x-3">
             <TooltipProvider>
               <ButtonBar>
-                <Button icon variant="outline">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TerminalSquare />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {t("pages.explorer.workflow.apiCommands.tooltip")}
-                    </TooltipContent>
-                  </Tooltip>
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button icon variant="outline">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <TerminalSquare />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("pages.explorer.workflow.apiCommands.tooltip")}
+                        </TooltipContent>
+                      </Tooltip>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-2xl">
+                    <>API Commands</>
+                  </DialogContent>
+                </Dialog>
                 <Button
                   loading={!routerIsFetched}
                   icon
@@ -156,7 +163,6 @@ const Header: FC = () => {
                   {t("pages.explorer.workflow.runBtn")}
                 </Button>
               </DialogTrigger>
-
               <DialogContent className="sm:max-w-2xl">
                 <RunWorkflow path={path} />
               </DialogContent>
