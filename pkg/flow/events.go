@@ -442,7 +442,10 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	resp.Source = cevent.Event.Source()
 	resp.Type = cevent.Event.Type()
 
-	resp.Cloudevent = []byte(cevent.Event.String())
+	resp.Cloudevent, err = cevent.Event.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
 
 	return &resp, nil
 }
@@ -510,13 +513,19 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	resp.Events = new(grpc.Events)
 	finalResults := make([]*grpc.Event, 0, len(res))
 	for _, e := range res {
-		finalResults = append(finalResults, &grpc.Event{
+		x := &grpc.Event{
 			ReceivedAt: timestamppb.New(e.ReceivedAt),
 			Id:         e.Event.ID(),
 			Source:     e.Event.Source(),
 			Type:       e.Event.Type(),
-			Cloudevent: []byte(e.Event.String()),
-		})
+		}
+
+		x.Cloudevent, err = e.Event.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+
+		finalResults = append(finalResults, x)
 	}
 	resp.Events.Results = finalResults
 	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
@@ -580,13 +589,19 @@ resend:
 	resp.Events = new(grpc.Events)
 	finalResults := make([]*grpc.Event, 0, len(res))
 	for _, e := range res {
-		finalResults = append(finalResults, &grpc.Event{
+		x := &grpc.Event{
 			ReceivedAt: timestamppb.New(e.ReceivedAt),
 			Id:         e.Event.ID(),
 			Source:     e.Event.Source(),
 			Type:       e.Event.Type(),
-			Cloudevent: []byte(e.Event.String()),
-		})
+		}
+
+		x.Cloudevent, err = e.Event.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		finalResults = append(finalResults, x)
 	}
 	resp.Events.Results = finalResults
 	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
