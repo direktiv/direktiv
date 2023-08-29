@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import { useApiCommandTemplate, useCurlCommand } from "./utils";
+import { useEffect, useState } from "react";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
@@ -19,8 +21,6 @@ import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
 import Input from "~/design/Input";
-import { useApiCommandTemplate } from "./utils";
-import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -32,19 +32,24 @@ const ApiCommands = ({
   path: string;
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
+
   const [path, setPath] = useState(pathFromUrl);
   const [namespace, setNamespace] = useState(namespaceFromUrl);
+
   const apiCommandTemplates = useApiCommandTemplate(namespace, path);
   const interactions = apiCommandTemplates.map((t) => t.key);
   const [selectedInteraction, setSelectedInteraction] = useState(
     interactions[0]
   );
 
+  const curlCommand = useCurlCommand();
+
   const selectedTemplate = apiCommandTemplates.find(
     (template) => template.key === selectedInteraction
   );
 
-  const { t } = useTranslation();
+  useEffect(() => {}, []);
 
   return (
     <>
@@ -166,7 +171,7 @@ const ApiCommands = ({
           </a>
         </Button>
         <CopyButton
-          value="instance"
+          value={curlCommand}
           buttonProps={{
             variant: "outline",
             className: "w-60",
