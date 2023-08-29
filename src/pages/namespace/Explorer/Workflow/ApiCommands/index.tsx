@@ -19,31 +19,30 @@ import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
 import Input from "~/design/Input";
-import { generateApiCommandTemplate } from "./utils";
-import { pages } from "~/util/router/pages";
-import { useNamespace } from "~/util/store/namespace";
+import { useApiCommandTemplate } from "./utils";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const ApiCommands = () => {
-  const namespaceFromUrl = useNamespace();
-  const { path: pathFromUrl } = pages.explorer.useParams();
+const ApiCommands = ({
+  namespace: namespaceFromUrl,
+  path: pathFromUrl,
+}: {
+  namespace: string;
+  path: string;
+}) => {
   const theme = useTheme();
-  const [path, setPath] = useState(pathFromUrl ?? "");
-  const [namespace, setNamespace] = useState(namespaceFromUrl ?? "");
+  const [path, setPath] = useState(pathFromUrl);
+  const [namespace, setNamespace] = useState(namespaceFromUrl);
 
-  const apiCommandTemplates = generateApiCommandTemplate(namespace, path);
-  const apiCommands = apiCommandTemplates.map((t) => t.key); // TODO: memoize
+  const apiCommandTemplates = useApiCommandTemplate(namespaceFromUrl, path);
+  const interactions = apiCommandTemplates.map((t) => t.key);
 
-  const [selectedCommand, setSelectedCommand] = useState(apiCommands[0]);
-
-  console.log("🚀", selectedCommand);
+  const [selectedInteraction, setSelectedInteraction] = useState(
+    interactions[0]
+  );
 
   const { t } = useTranslation();
-
-  if (!namespaceFromUrl) return null;
-  if (!pathFromUrl) return null;
 
   return (
     <>
@@ -92,26 +91,34 @@ const ApiCommands = () => {
               className="w-[100px] text-right text-[14px]"
               htmlFor="template"
             >
-              {t("pages.explorer.tree.newWorkflow.templateLabel")}
+              {t("pages.explorer.workflow.apiCommands.interaction")}
             </label>
             <Select
               onValueChange={(value) => {
-                const matchingWf = apiCommandTemplates.find(
+                const matchingTemplate = apiCommandTemplates.find(
                   (template) => template.key === value
                 );
-                if (matchingWf) {
-                  setSelectedCommand(matchingWf.key);
+                if (matchingTemplate) {
+                  setSelectedInteraction(matchingTemplate.key);
                 }
               }}
             >
               <SelectTrigger id="template" variant="outline" block>
                 <SelectValue
-                  defaultValue={selectedCommand}
-                  placeholder={selectedCommand}
+                  defaultValue={selectedInteraction}
+                  placeholder={
+                    selectedInteraction
+                      ? t(
+                          `pages.explorer.workflow.apiCommands.labels.${selectedInteraction}`
+                        )
+                      : t(
+                          `pages.explorer.workflow.apiCommands.interactionPlaceholder`
+                        )
+                  }
                 />
               </SelectTrigger>
               <SelectContent>
-                {apiCommands.map((command) => (
+                {interactions.map((command) => (
                   <SelectItem value={command} key={command}>
                     {t(`pages.explorer.workflow.apiCommands.labels.${command}`)}
                   </SelectItem>
@@ -119,7 +126,7 @@ const ApiCommands = () => {
               </SelectContent>
             </Select>
           </fieldset>
-          {/* <div className="flex flex-col text-sm"> */}
+
           <Card
             className="grid grid-cols-2 p-4 text-sm"
             noShadow

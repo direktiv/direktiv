@@ -127,7 +127,7 @@ const Header: FC = () => {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-2xl">
-                    <ApiCommands />
+                    <ApiCommands namespace={namespace} path={path} />
                   </DialogContent>
                 </Dialog>
                 <Button

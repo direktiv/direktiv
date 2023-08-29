@@ -185,6 +185,8 @@
           "namespacePlaceholder": "your-namespace",
           "workflow": "Workflow",
           "workflowPlaceholder": "path-to-workflow",
+          "interaction": "Interaction",
+          "interactionPlaceholder": "select an interaction",
           "copyBtn": "Copy as cURL",
           "copyBtnCopied": "Copied",
           "labels": {
