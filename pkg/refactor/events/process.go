@@ -195,6 +195,8 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			if !typeMatches(types, event) {
 				continue
 			}
+			removeExpired(l)
+
 			if eventTypeAlreadyPresent(l, event) {
 				continue
 			}
@@ -203,7 +205,9 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			}
 			l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
 			ces := make([]*cloudevents.Event, 0, len(l.ReceivedEventsForAndTrigger)+1)
-			ces = removeExpired(l, ces)
+			for _, e := range l.ReceivedEventsForAndTrigger {
+				ces = append(ces, e.Event)
+			}
 			// TODO metrics
 			// _, err := uuid.Parse(l.TriggerWorkflow)
 			// if err != nil {
@@ -226,16 +230,14 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 	}
 }
 
-func removeExpired(l *EventListener, ces []*event.Event) []*event.Event {
-	for i := range l.ReceivedEventsForAndTrigger {
-		e := l.ReceivedEventsForAndTrigger[i]
-		if l.LifespanOfReceivedEvents != 0 && e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).Before(time.Now().UTC()) {
-			continue
-		}
-		ces = append(ces, e.Event)
-	}
-
-	return ces
+func removeExpired(l *EventListener) {
+    var validEvents []*Event
+    for _, e := range l.ReceivedEventsForAndTrigger {
+        if l.LifespanOfReceivedEvents == 0 || e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).After(time.Now().UTC()) {
+            validEvents = append(validEvents, e)
+        }
+    }
+    l.ReceivedEventsForAndTrigger = validEvents
 }
 
 func canTriggerAction(l []*cloudevents.Event, types []string) bool {
