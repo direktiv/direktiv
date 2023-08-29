@@ -1,8 +1,6 @@
-import request from 'supertest'
-
 import common from "../common"
-
 import events from "./send_helper.js"
+import request from 'supertest'
 
 const namespaceName = "sendeventsand"
 
@@ -161,7 +159,6 @@ describe('Test workflow events and', () => {
 
         //  await events.sendEventAndList(namespaceName, basevent("eventtype1", "eventtype1", "world"))
         await events.sendEventAndList(namespaceName, basevent("eventtype2", "eventtype2", "world2"))
-
         var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, "complete")
         expect(instancesResponse).not.toBeFalsy();
 

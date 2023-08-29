@@ -88,34 +88,6 @@ teardown: ## Brings down an existing cluster.
 	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 
 GO_SOURCE_FILES = $(shell find . -type f -name '*.go' -not -name '*_test.go')
-DOCKER_FILES = $(shell find build/docker/ -type f)
-
-# ENT
-
-.PHONY: ent-%
-ent-%: ## Manually regenerates ent database package.
-	docker run -it --rm \
-    -v `pwd`:/app \
-    -w /app \
-	golang:1.20-alpine go run -mod=mod entgo.io/ent/cmd/ent generate --feature sql/upsert,sql/execquery,sql/lock,sql/modifier,sql/execquery ./pkg/$*/ent/schema
-
-.PHONY: ent
-ent: ## Manually regenerates ent database packages.
-ent: ent-flow
-
-# Not need anymore, commented out for now to not accidentally building those
-# Cleans API client inside of pkg api
-# .PHONY: api-clean-client
-# api-clean-client: ## Cleans golang client swagger files
-# api-clean-client:
-# 	rm -rf pkg/api/models
-# 	rm -rf pkg/api/client
-
-# # Generate API client inside of pkg api
-# .PHONY: api-client
-# api-client: ## Generates a golang client to use based off swagger
-# api-client: api-clean-client  api-docs
-# 	swagger generate client -t pkg/api -f scripts/api/swagger.json --name direktivsdk
 
 # API docs
 
@@ -152,7 +124,7 @@ cross-build:
 		$(eval RELEASE_TAG=dev) \
     fi
 	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f build/docker/direktiv/Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
 
 
 .PHONY: grpc-clean
@@ -168,8 +140,6 @@ grpc-build: ## Manually regenerates Go packages built from protobuf.
 grpc-build: grpc-clean
 	docker run -v $$(pwd):/app -w /app bufbuild/buf:$(BUF_VERSION) generate
 
-
-
 # Patterns
 
 .PHONY: scan
@@ -179,7 +149,7 @@ scan: push
 
 .PHONY: image
 image:
-	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv -f build/docker/direktiv/Dockerfile .
+	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${FULL_VERSION} -t direktiv -f Dockerfile .
 	@echo "Make $@: SUCCESS"
 
 .PHONY: push
@@ -304,7 +274,6 @@ upgrade-%: push-% ## Pushes new image deletes, reboots and tail new pod
 	@$(MAKE) wait-$*
 	@$(MAKE) tail-$*
 
-
 .PHONY: upgrade
 upgrade: push ## Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-flow
@@ -326,7 +295,6 @@ UNITTEST_PACKAGES = $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print
 .PHONY: unittest
 unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining TEST_PACKAGES relative to the root directory.
 	go test -cover -timeout 60s ${UNITTEST_PACKAGES}
-
 
 .PHONY: lint 
 lint: VERSION="v1.53"

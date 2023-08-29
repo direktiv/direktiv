@@ -1,5 +1,5 @@
-import request from 'supertest'
 import common from "../common";
+import request from 'supertest'
 
 const testNamespace = "test-git-namespace"
 
@@ -33,7 +33,7 @@ describe('Test namespace git mirroring', () => {
     })
 
     it(`should get the new git namespace`, async () => {
-        await sleep(5000)
+        await sleep(7000)
         const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/aws`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({

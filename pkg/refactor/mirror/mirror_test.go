@@ -234,15 +234,14 @@ func TestInitSync(t *testing.T) {
 	if direktivRoot.ID != rootID {
 		t.Fatal("Got wrong id back")
 	}
-	/*
-		config, err := store.CreateConfig(ctx, &mirror.Config{
-			NamespaceID: nsID,
-			RootName:    "test",
-		})
-		if err != nil {
-			t.Fatalf("unexpected CreateConfig() error = %v", err)
-		}
-	*/
+
+	_, err = store.CreateConfig(ctx, &mirror.Config{
+		NamespaceID: nsID,
+		RootName:    "test",
+	})
+	if err != nil {
+		t.Fatalf("unexpected CreateConfig() error = %v", err)
+	}
 
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)

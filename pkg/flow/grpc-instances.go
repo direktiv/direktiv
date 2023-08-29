@@ -235,7 +235,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 			case "CONTAINS":
 				filter.Kind = instancestore.FilterKindContains
 			case "WORKFLOW":
-				fallthrough
+				filter.Kind = instancestore.FilterKindMatch
 			case "PREFIX":
 				filter.Kind = instancestore.FilterKindPrefix
 			case "MATCH": //nolint:goconst

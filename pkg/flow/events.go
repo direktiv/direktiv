@@ -41,6 +41,7 @@ func init() {
 
 type events struct {
 	*server
+	appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)
 }
 
 type CacheObject struct {
@@ -49,11 +50,11 @@ type CacheObject struct {
 
 var eventFilterCache = &CacheObject{}
 
-func initEvents(srv *server) (*events, error) {
+func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)) (*events, error) {
 	events := new(events)
 
 	events.server = srv
-
+	events.appendStagingEvent = appendStagingEvent
 	return events, nil
 }
 
@@ -180,18 +181,18 @@ func (events *events) flushEvent(ctx context.Context, eventID string, ns *databa
 	return nil
 }
 
-func (events *events) handleEvent(ctx context.Context, ns *database.Namespace, ce *cloudevents.Event) error {
+func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName string, ce *cloudevents.Event) error {
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			// events.metrics.InsertRecord
-			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "invoking workflow")
+			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "invoking workflow")
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...)
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
 			// events.metrics.InsertRecord
-			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "invoking instance %v", instanceID)
+			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "invoking instance %v", instanceID)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
 			defer end()
 			events.engine.wakeEventsWaiter(instanceID, step, ev) // TODO
@@ -214,7 +215,7 @@ func (events *events) handleEvent(ctx context.Context, ns *database.Namespace, c
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
-			events.logger.Debugf(ctx, ns.ID, events.flow.GetAttributes(), "update listener")
+			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "update listener")
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
@@ -236,9 +237,9 @@ func (events *events) handleEvent(ctx context.Context, ns *database.Namespace, c
 	// if err != nil {
 	// 	return err
 	// }
-	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce}, events.sugar.Errorf)
+	e.ProcessEvents(ctx, ns, []event.Event{*ce}, events.sugar.Errorf)
 	// tx.Commit(ctx)
-	metricsCloudEventsCaptured.WithLabelValues(ns.Name, ce.Type(), ce.Source(), ns.Name).Inc()
+	metricsCloudEventsCaptured.WithLabelValues(nsName, ce.Type(), ce.Source(), nsName).Inc()
 	return nil
 }
 
@@ -584,6 +585,7 @@ resend:
 			Id:         e.Event.ID(),
 			Source:     e.Event.Source(),
 			Type:       e.Event.Type(),
+			Cloudevent: []byte(e.Event.String()),
 		})
 	}
 	resp.Events.Results = finalResults
@@ -648,7 +650,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 
 	events.logger.Infof(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
-	err := events.handleEvent(ctx, ns, event)
+	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
 	if err != nil {
 		return err
 	}
@@ -663,7 +665,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
-	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
 
 	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 	ctx, end := traceBrokerMessage(ctx, *event)
@@ -678,14 +680,26 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 
 	// handle event
 	if timer == 0 {
-		err = events.handleEvent(ctx, ns, event)
+		err = events.handleEvent(ctx, ns.ID, ns.Name, event)
 		if err != nil {
 			return err
 		}
 	} else {
-		// if we have a delay we need to update event delay
-		// sending nil as server id so all instances calling it
-		events.pubsub.UpdateEventDelays()
+		_, errs := events.appendStagingEvent(ctx, &pkgevents.StagingEvent{
+			Event: &pkgevents.Event{
+				Namespace:     ns.ID,
+				Event:         event,
+				ReceivedAt:    time.Now().UTC(),
+				NamespaceName: ns.Name,
+			},
+			DatabaseID:   uuid.New(),
+			DelayedUntil: time.Unix(timer, 0),
+		})
+		for _, err2 := range errs {
+			if err2 != nil {
+				events.logger.Errorf(ctx, ns.ID, ns.GetAttributes(), "failed to create delayed event: %v", err2)
+			}
+		}
 	}
 
 	// if eventing is configured, event goes to knative event service
