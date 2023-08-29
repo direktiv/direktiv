@@ -9,27 +9,27 @@ export const useApiCommandTemplate = (namespace: string, workflow: string) => {
           key: "execute",
           method: "POST",
           url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=execute`,
-          body: `{}`,
           payloadSyntax: "json",
+          body: `{}`,
         },
         {
           key: "awaitExecute",
           method: "POST",
           url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
-          body: `{}`,
           payloadSyntax: "json",
+          body: `{}`,
         },
         {
           key: "update",
           method: "POST",
           url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=update-workflow`,
-          body: `description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-type: noop
-transform:
-  result: Hello world!`,
           payloadSyntax: "yaml",
+          body: `description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+    - id: helloworld
+      type: noop
+      transform:
+        result: Hello world!`,
         },
       ] as const,
     [namespace, workflow]
