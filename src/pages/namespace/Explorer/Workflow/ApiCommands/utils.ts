@@ -38,7 +38,12 @@ transform:
   return memoizedTemplates;
 };
 
-export const useCurlCommand =
-  () => `curl 'http://localhost:3000/api/namespaces/stefan/tree/dir/test.yaml?op=execute&ref=latest' \\
+export const useCurlCommand = ({
+  url,
+  body,
+}: {
+  url: string;
+  body: string;
+}) => `curl '${url}' \\
   -H 'direktiv-token: XXXXXXXXXXXXXXX' \\
-  --data-raw $'{}'`;
+  --data-raw $'${body}'`;
