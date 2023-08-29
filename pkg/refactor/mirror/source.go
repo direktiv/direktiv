@@ -185,7 +185,7 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 			URL:    cfg.URL,
 			GitRef: cfg.GitRef,
 		}, GitSourceTokenAuthConf{
-			Token: cfg.PrivateKey,
+			Token: cfg.PrivateKeyPassphrase,
 		}, GitSourceOptions{
 			InsecureSkipTLS: insecureSkipTLS,
 			TempDir:         tempDir,
