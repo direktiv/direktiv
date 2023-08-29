@@ -79,6 +79,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		PublicKey:            settings.PublicKey,
 		PrivateKey:           settings.PrivateKey,
 		PrivateKeyPassphrase: settings.Passphrase,
+		Insecure:             settings.GetInsecure(),
 	})
 	if err != nil {
 		return nil, err
@@ -150,6 +151,9 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	}
 	if s := settings.GetPassphrase(); s != "-" {
 		mirConfig.PrivateKeyPassphrase = s
+	}
+	if settings.Insecure != nil {
+		mirConfig.Insecure = settings.GetInsecure()
 	}
 
 	mirConfig, err = tx.DataStore().Mirror().UpdateConfig(ctx, mirConfig)

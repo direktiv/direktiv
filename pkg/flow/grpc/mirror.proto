@@ -15,6 +15,7 @@ message MirrorSettings {
     string publicKey = 4;
     string privateKey = 5;
     string passphrase = 6;
+    optional bool insecure = 7;
 }
 
 message MirrorActivityInfo {
@@ -39,6 +40,7 @@ message MirrorInfo {
     google.protobuf.Timestamp lastSync = 7;
     string privateKey = 8;
     string passphrase = 9;
+    bool insecure = 10;
 }
 
 message CreateNamespaceMirrorRequest {

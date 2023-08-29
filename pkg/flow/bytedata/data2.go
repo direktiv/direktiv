@@ -105,6 +105,7 @@ func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo
 		// LastSync: ,
 		PrivateKey: config.PrivateKey,
 		Passphrase: config.PrivateKeyPassphrase,
+		Insecure:   config.Insecure,
 	}
 }
 
