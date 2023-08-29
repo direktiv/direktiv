@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
+import ApiCommands from "./ApiCommands";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FC } from "react";
@@ -126,7 +127,7 @@ const Header: FC = () => {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-2xl">
-                    <>API Commands</>
+                    <ApiCommands path={path} />
                   </DialogContent>
                 </Dialog>
                 <Button
