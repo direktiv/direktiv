@@ -7,6 +7,7 @@ import {
   Power,
   PowerOff,
   Settings,
+  TerminalSquare,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
@@ -18,6 +19,7 @@ import {
 } from "~/design/Tooltip";
 
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
 import { FC } from "react";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
@@ -109,23 +111,39 @@ const Header: FC = () => {
           </h3>
           <div className="flex gap-x-3">
             <TooltipProvider>
-              <Button
-                loading={!routerIsFetched}
-                icon
-                variant="outline"
-                onClick={() => toggleLive({ path, value: !isLive })}
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {routerIsFetched && (isLive ? <PowerOff /> : <Power />)}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isLive
-                      ? t("pages.explorer.workflow.toggleActiveBtn.setInactive")
-                      : t("pages.explorer.workflow.toggleActiveBtn.setActive")}
-                  </TooltipContent>
-                </Tooltip>
-              </Button>
+              <ButtonBar>
+                <Button icon variant="outline">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TerminalSquare />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t("pages.explorer.workflow.apiCommands.tooltip")}
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+                <Button
+                  loading={!routerIsFetched}
+                  icon
+                  variant="outline"
+                  onClick={() => toggleLive({ path, value: !isLive })}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {routerIsFetched && (isLive ? <PowerOff /> : <Power />)}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isLive
+                        ? t(
+                            "pages.explorer.workflow.toggleActiveBtn.setInactive"
+                          )
+                        : t(
+                            "pages.explorer.workflow.toggleActiveBtn.setActive"
+                          )}
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+              </ButtonBar>
             </TooltipProvider>
             <Dialog>
               <DialogTrigger asChild>

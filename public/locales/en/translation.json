@@ -177,6 +177,9 @@
           "setActive": "Activate workflow",
           "setInactive": "Deactivate workflow"
         },
+        "apiCommands": {
+          "tooltip": "Open API Commands"
+        },
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
