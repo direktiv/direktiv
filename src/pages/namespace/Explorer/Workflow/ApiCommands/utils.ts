@@ -10,14 +10,14 @@ export const useApiCommandTemplate = (namespace: string, workflow: string) => {
           method: "POST",
           url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=execute`,
           body: `{}`,
-          type: "json",
+          payloadSyntax: "json",
         },
         {
           key: "awaitExecute",
           method: "POST",
           url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
           body: `{}`,
-          type: "json",
+          payloadSyntax: "json",
         },
         {
           key: "update",
@@ -29,7 +29,7 @@ states:
 type: noop
 transform:
   result: Hello world!`,
-          type: "yaml",
+          payloadSyntax: "yaml",
         },
       ] as const,
     [namespace, workflow]

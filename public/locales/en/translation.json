@@ -180,14 +180,14 @@
         "apiCommands": {
           "tooltip": "Open API Commands",
           "title": "Workflow API Interactions",
-          "openDocs": "Open API Docs",
           "namespace": "Namespace",
           "namespacePlaceholder": "your-namespace",
           "workflow": "Workflow",
           "workflowPlaceholder": "path-to-workflow",
           "interaction": "Interaction",
           "interactionPlaceholder": "select an interaction",
-          "copyBtn": "Copy as cURL",
+          "openDocsBtn": "Open API Docs",
+          "copyBtn": "Copy as cURL command",
           "copyBtnCopied": "Copied",
           "labels": {
             "execute": "Execute workflow",

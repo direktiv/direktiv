@@ -34,12 +34,14 @@ const ApiCommands = ({
   const theme = useTheme();
   const [path, setPath] = useState(pathFromUrl);
   const [namespace, setNamespace] = useState(namespaceFromUrl);
-
-  const apiCommandTemplates = useApiCommandTemplate(namespaceFromUrl, path);
+  const apiCommandTemplates = useApiCommandTemplate(namespace, path);
   const interactions = apiCommandTemplates.map((t) => t.key);
-
   const [selectedInteraction, setSelectedInteraction] = useState(
     interactions[0]
+  );
+
+  const selectedTemplate = apiCommandTemplates.find(
+    (template) => template.key === selectedInteraction
   );
 
   const { t } = useTranslation();
@@ -126,38 +128,24 @@ const ApiCommands = ({
               </SelectContent>
             </Select>
           </fieldset>
-
           <Card
-            className="grid grid-cols-2 p-4 text-sm"
+            className="flex flex-col gap-2 break-all p-4 text-sm"
             noShadow
             background="weight-1"
           >
-            <Badge variant="success">POST</Badge>
-            <code className="text-primary-500">
-              http://localhost:3000/api/namespaces/stefan/tree/dir/test.yaml?op=router
-            </code>
+            <Badge variant="success" className="w-max">
+              {selectedTemplate?.method}
+            </Badge>{" "}
+            <pre className="whitespace-pre-wrap text-primary-500">
+              {selectedTemplate?.url}
+            </pre>
           </Card>
           <Card className="h-44 p-4" noShadow background="weight-1">
             <Editor
-              value="workflowData"
-              language="yaml"
+              value={selectedTemplate?.body}
+              language={selectedTemplate?.payloadSyntax}
               options={{}}
-              onChange={(newData) => {
-                // if (newData) {
-                //   setWorkflowData(newData);
-                //   setValue("fileContent", newData);
-                // }
-              }}
-              theme={theme ?? undefined}
-            />
-          </Card>
-          <Card className="h-44 p-4" noShadow background="weight-1">
-            <Editor
-              value="curl 'http://localhost:3000/api/namespaces/stefan/tree/dir/test.yaml?op=router' \
-              -H 'direktiv-token: Qhxw6U3#6&hu^j' \
-              -H 'sec-ch-ua-mobile: ?0' \"
-              language="shell"
-              options={{ readOnly: true }}
+              onChange={() => null}
               theme={theme ?? undefined}
             />
           </Card>
@@ -174,14 +162,14 @@ const ApiCommands = ({
             rel="noopener noreferrer"
           >
             <BookOpen />
-            {t("pages.explorer.workflow.apiCommands.openDocs")}
+            {t("pages.explorer.workflow.apiCommands.openDocsBtn")}
           </a>
         </Button>
         <CopyButton
           value="instance"
           buttonProps={{
             variant: "outline",
-            className: "w-40",
+            className: "w-60",
           }}
         >
           {(copied) =>
