@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import { preparePayload, useApiCommandTemplate, useCurlCommand } from "./utils";
+import { useApiCommandTemplate, useCurlCommand } from "./utils";
 import { useEffect, useState } from "react";
 
 import Badge from "~/design/Badge";
@@ -56,9 +56,7 @@ const ApiCommands = ({
 
   useEffect(() => {
     if (selectedTemplate) {
-      setBody(
-        preparePayload(selectedTemplate.body, selectedTemplate.payloadSyntax)
-      );
+      setBody(selectedTemplate.body);
     }
   }, [selectedTemplate]);
 
@@ -165,9 +163,7 @@ const ApiCommands = ({
               options={{}}
               onChange={(data) => {
                 if (data && selectedTemplate) {
-                  setBody(
-                    preparePayload(data, selectedTemplate?.payloadSyntax)
-                  );
+                  setBody(data);
                 }
               }}
               theme={theme ?? undefined}

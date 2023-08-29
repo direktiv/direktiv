@@ -38,31 +38,15 @@ states:
   return memoizedTemplates;
 };
 
-type SuportedBodySyntax = ReturnType<
-  typeof useApiCommandTemplate
->[number]["payloadSyntax"];
-
-export const preparePayload = (
-  data: string,
-  payloadSyntax: SuportedBodySyntax
-) => {
-  if (payloadSyntax === "json") {
-    return JSON.stringify(data).slice(1, -1);
-  }
-
-  if (payloadSyntax === "yaml") {
-    return data.replace(/'/g, "\\'");
-  }
-
-  return "";
-};
-
 export const useCurlCommand = ({
   url,
   body,
 }: {
   url: string;
   body: string;
-}) => `curl '${url}' \\
-  -H 'direktiv-token: XXXXXXXXXXXXXXX' \\
-  --data-raw $'${body}'`;
+}) => {
+  const bodyEscaped = body.replace(/'/g, "\\'");
+  return `curl '${url}' \\
+  -H 'direktiv-token: Qhxw6U3#6&hu^j' \\
+  --data-raw $'${bodyEscaped}'`;
+};
