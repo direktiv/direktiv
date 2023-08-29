@@ -51,7 +51,7 @@ export const preparePayload = (
   }
 
   if (payloadSyntax === "yaml") {
-    return data;
+    return data.replace(/'/g, "\\'");
   }
 
   return "";
