@@ -38,6 +38,25 @@ transform:
   return memoizedTemplates;
 };
 
+type SuportedBodySyntax = ReturnType<
+  typeof useApiCommandTemplate
+>[number]["payloadSyntax"];
+
+export const preparePayload = (
+  data: string,
+  payloadSyntax: SuportedBodySyntax
+) => {
+  if (payloadSyntax === "json") {
+    return JSON.stringify(data).slice(1, -1);
+  }
+
+  if (payloadSyntax === "yaml") {
+    return data;
+  }
+
+  return "";
+};
+
 export const useCurlCommand = ({
   url,
   body,

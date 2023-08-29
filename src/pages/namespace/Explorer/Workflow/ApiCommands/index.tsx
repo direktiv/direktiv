@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import { useApiCommandTemplate, useCurlCommand } from "./utils";
+import { preparePayload, useApiCommandTemplate, useCurlCommand } from "./utils";
 import { useEffect, useState } from "react";
 
 import Badge from "~/design/Badge";
@@ -43,13 +43,20 @@ const ApiCommands = ({
     interactions[0]
   );
 
-  const curlCommand = useCurlCommand();
-
   const selectedTemplate = apiCommandTemplates.find(
     (template) => template.key === selectedInteraction
   );
 
-  useEffect(() => {}, []);
+  const [body, setBody] = useState(selectedTemplate?.body ?? "");
+
+  const curlCommand = useCurlCommand({
+    url: selectedTemplate?.url ?? "",
+    body,
+  });
+
+  useEffect(() => {
+    setBody(selectedTemplate?.body ?? "");
+  }, [selectedTemplate]);
 
   return (
     <>
@@ -150,7 +157,15 @@ const ApiCommands = ({
               value={selectedTemplate?.body}
               language={selectedTemplate?.payloadSyntax}
               options={{}}
-              onChange={() => null}
+              onChange={(data) => {
+                if (data && selectedTemplate) {
+                  const test = preparePayload(
+                    data,
+                    selectedTemplate?.payloadSyntax
+                  );
+                  setBody(test);
+                }
+              }}
               theme={theme ?? undefined}
             />
           </Card>
