@@ -235,6 +235,14 @@ func TestInitSync(t *testing.T) {
 		t.Fatal("Got wrong id back")
 	}
 
+	_, err = store.CreateConfig(ctx, &mirror.Config{
+		NamespaceID: nsID,
+		RootName:    "test",
+	})
+	if err != nil {
+		t.Fatalf("unexpected CreateConfig() error = %v", err)
+	}
+
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
 	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
