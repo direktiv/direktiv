@@ -146,7 +146,9 @@ const NamespaceEdit = ({
     if (isNew) {
       return createNamespace({
         name,
-        mirror: { ref, url, passphrase, publicKey, privateKey },
+        mirror: isMirror
+          ? { ref, url, passphrase, publicKey, privateKey }
+          : undefined,
       });
     }
 
