@@ -90,7 +90,7 @@ export const RevisionCreatedSchema = z.null();
 export const RevisionDeletedSchema = z.null();
 
 // streaming violates the schema at two fields, so we create a new
-// schema for streaming that will ignore this fields, when updating
+// schema for streaming that will ignore these fields, when updating
 // the cache, we will not update these fields (will not change anyways)
 const RevisionSchemaWhenStreamed = RevisionSchema.omit({
   created: true, // created is a string when received via streaming
