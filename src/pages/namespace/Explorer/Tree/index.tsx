@@ -1,27 +1,17 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { FolderUp, MoreVertical, TextCursorInput, Trash } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
+import FileRow from "./FileRow";
+import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
 import { NodeSchemaType } from "~/api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
-import { fileTypeToIcon } from "~/api/tree/utils";
-import moment from "moment";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -81,92 +71,15 @@ const ExplorerPage: FC = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {results.map((file) => {
-                    const Icon = fileTypeToIcon(file.expandedType);
-
-                    const linkTarget = pages.explorer.createHref({
-                      namespace,
-                      path: file.path,
-                      subpage:
-                        file.expandedType === "workflow"
-                          ? "workflow"
-                          : undefined,
-                    });
-
-                    return (
-                      <TableRow
-                        key={file.name}
-                        data-testid={`explorer-item-${file.name}`}
-                      >
-                        <TableCell>
-                          <div className="flex space-x-3">
-                            <Icon className="h-5" />
-                            <Link
-                              data-testid={`explorer-item-link-${file.name}`}
-                              to={linkTarget}
-                              className="flex-1 hover:underline"
-                            >
-                              {file.name}
-                            </Link>
-                            <span className="text-gray-9 dark:text-gray-dark-9">
-                              {moment(file.updatedAt).fromNow()}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="w-0">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                data-testid="dropdown-trg-node-actions"
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => e.preventDefault()}
-                                icon
-                              >
-                                <MoreVertical />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-40">
-                              <DropdownMenuLabel>
-                                {t(
-                                  "pages.explorer.tree.list.contextMenu.title"
-                                )}
-                              </DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DialogTrigger
-                                className="w-full"
-                                data-testid="node-actions-delete"
-                                onClick={() => {
-                                  setDeleteNode(file);
-                                }}
-                              >
-                                <DropdownMenuItem>
-                                  <Trash className="mr-2 h-4 w-4" />
-                                  {t(
-                                    "pages.explorer.tree.list.contextMenu.delete"
-                                  )}
-                                </DropdownMenuItem>
-                              </DialogTrigger>
-                              <DialogTrigger
-                                className="w-full"
-                                data-testid="node-actions-rename"
-                                onClick={() => {
-                                  setRenameNode(file);
-                                }}
-                              >
-                                <DropdownMenuItem>
-                                  <TextCursorInput className="mr-2 h-4 w-4" />
-                                  {t(
-                                    "pages.explorer.tree.list.contextMenu.rename"
-                                  )}
-                                </DropdownMenuItem>
-                              </DialogTrigger>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {results.map((file) => (
+                    <FileRow
+                      key={file.name}
+                      namespace={namespace}
+                      file={file}
+                      onDeleteClicked={setDeleteNode}
+                      onRenameClicked={setRenameNode}
+                    />
+                  ))}
                 </TableBody>
               </Table>
               <DialogContent>
