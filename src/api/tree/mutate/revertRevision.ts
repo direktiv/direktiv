@@ -18,7 +18,11 @@ const revertRevision = apiFactory({
   schema: WorkflowCreatedSchema,
 });
 
-export const useRevertRevision = () => {
+export const useRevertRevision = ({
+  onSuccess,
+}: {
+  onSuccess?: () => void;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -39,6 +43,7 @@ export const useRevertRevision = () => {
         },
       }),
     onSuccess(data, variables) {
+      onSuccess?.();
       queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
