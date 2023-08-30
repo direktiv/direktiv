@@ -28,7 +28,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
         </DialogTitle>
       </DialogHeader>
       <Card className="grow p-4 pl-0" background="weight-1">
-        <div className="h-[500px]">
+        <div className="h-[700px]">
           <Editor
             language="plaintext"
             value={fileContent}

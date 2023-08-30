@@ -86,7 +86,7 @@ const ExplorerPage: FC = () => {
                   ))}
                 </TableBody>
               </Table>
-              <DialogContent>
+              <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
                 {previewNode && <FileViewer node={previewNode} />}
                 {deleteNode && (
                   <Delete
