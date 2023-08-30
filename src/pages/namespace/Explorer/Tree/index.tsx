@@ -8,14 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { FC, useEffect, useState } from "react";
-import {
-  Folder,
-  FolderUp,
-  MoreVertical,
-  Play,
-  TextCursorInput,
-  Trash,
-} from "lucide-react";
+import { FolderUp, MoreVertical, TextCursorInput, Trash } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
@@ -27,6 +20,7 @@ import NoResult from "./NoResult";
 import { NodeSchemaType } from "~/api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
+import { fileTypeToIcon } from "~/api/tree/utils";
 import moment from "moment";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -88,8 +82,8 @@ const ExplorerPage: FC = () => {
                     </TableRow>
                   )}
                   {results.map((file) => {
-                    const Icon =
-                      file.expandedType === "workflow" ? Play : Folder;
+                    const Icon = fileTypeToIcon(file.expandedType);
+
                     const linkTarget = pages.explorer.createHref({
                       namespace,
                       path: file.path,
