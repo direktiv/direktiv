@@ -11,7 +11,7 @@ import {
   MirrorInfoSchemaType,
 } from "~/api/tree/schema/mirror";
 import {
-  MirrorFormSchemaType,
+  MirrorPublicFormSchemaType,
   MirrorSshFormSchemaType,
   MirrorTokenFormSchemaType,
 } from "~/api/namespaces/schema";
@@ -41,7 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type FormInput = {
   name: string;
   formType: MirrorFormType;
-} & MirrorFormSchemaType &
+} & MirrorPublicFormSchemaType &
   MirrorTokenFormSchemaType &
   MirrorSshFormSchemaType;
 
