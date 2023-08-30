@@ -1,9 +1,9 @@
 import { useApiKey } from "~/util/store/apiKey";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
 import { useMemo } from "react";
-const baseUrl = window.location.origin;
 
 export const useApiCommandTemplate = (namespace: string, workflow: string) => {
+  const baseUrl = window.location.origin;
   const memoizedTemplates = useMemo(
     () =>
       [
@@ -38,7 +38,7 @@ states:
     result: Hello world!`,
         },
       ] as const,
-    [namespace, workflow]
+    [baseUrl, namespace, workflow]
   );
 
   return memoizedTemplates;
