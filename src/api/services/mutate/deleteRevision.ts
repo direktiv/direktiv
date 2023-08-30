@@ -18,11 +18,12 @@ const updateCache = (
   >[0]
 ) => {
   if (!oldData) return undefined;
+  const remainingRevisions = (oldData.revisions ?? []).filter(
+    (service) => service.revision !== variables.revision
+  );
   return {
     ...oldData,
-    revisions: (oldData.revisions ?? []).filter(
-      (service) => service.revision !== variables.revision
-    ),
+    revisions: remainingRevisions,
   };
 };
 
