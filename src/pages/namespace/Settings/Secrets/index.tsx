@@ -98,7 +98,7 @@ const SecretsList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult>
+                <NoResult icon={SquareAsterisk}>
                   {t(
                     isSearch
                       ? "pages.settings.secrets.list.emptySearch"
