@@ -88,14 +88,7 @@ const ExplorerPage: FC = () => {
                 </TableBody>
               </Table>
               <DialogContent>
-                {previewNode && (
-                  <FileViewer
-                    node={previewNode}
-                    close={() => {
-                      setDialogOpen(false);
-                    }}
-                  />
-                )}
+                {previewNode && <FileViewer node={previewNode} />}
                 {deleteNode && (
                   <Delete
                     node={deleteNode}
