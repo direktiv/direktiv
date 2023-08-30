@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
+import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
@@ -326,36 +327,14 @@ const NamespaceEdit = ({
                 >
                   {t("components.namespaceEdit.label.authType")}
                 </label>
-                {/* TODO: SELECT CHOSES BETWEEN FORM TYPE:
-                    when isNew: 
-                      public, ssh, token
-                    when !isNew:
-                      keep-ssh/keep-token, or change to public, ssh/token */}
-                <Select
-                  value={authType}
-                  onValueChange={(value: MirrorAuthType) =>
-                    setValue("authType", value, { shouldDirty: true })
+                <FormTypeSelect
+                  value={formType}
+                  storedValue={initialFormType}
+                  isNew={isNew}
+                  onValueChange={(value: MirrorFormType) =>
+                    setValue("formType", value, { shouldDirty: true })
                   }
-                >
-                  <SelectTrigger variant="outline" className="w-full">
-                    <SelectValue
-                      placeholder={t(
-                        "components.namespaceEdit.placeholder.authType"
-                      )}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mirrorAuthTypes.map((option) => (
-                      <SelectItem
-                        key={option}
-                        value={option}
-                        onClick={() => "setAuthType(option)"}
-                      >
-                        {t(`components.namespaceEdit.authType.${option}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </fieldset>
 
               {!isNew && authType !== "none" && (
