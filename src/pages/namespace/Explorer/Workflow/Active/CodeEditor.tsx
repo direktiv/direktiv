@@ -10,7 +10,7 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 type EditorProps = {
   value: string;
-  setValue: (value: string) => void;
+  onValueChange: (value: string) => void;
   onSave: Parameters<typeof Editor>[0]["onSave"];
   hasUnsavedChanges: boolean;
   createdAt: string | undefined;
@@ -19,7 +19,7 @@ type EditorProps = {
 
 export const CodeEditor: FC<EditorProps> = ({
   value,
-  setValue,
+  onValueChange,
   onSave,
   hasUnsavedChanges,
   createdAt,
@@ -38,7 +38,7 @@ export const CodeEditor: FC<EditorProps> = ({
             editor.focus();
           }}
           onChange={(newData) => {
-            setValue(newData ?? "");
+            onValueChange(newData ?? "");
           }}
           theme={theme ?? undefined}
           onSave={onSave}
