@@ -175,7 +175,7 @@ const DmTokenFormSchema = z.object({
     .url()
     .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
-  passphrase: z.string(),
+  passphrase: z.string().nonempty("token must not be empty"),
 });
 
 const DmSshFormSchema = z.object({
