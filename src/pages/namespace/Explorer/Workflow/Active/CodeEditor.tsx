@@ -1,16 +1,16 @@
-import { Dispatch, FC, SetStateAction } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Bug } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { FC } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 type EditorProps = {
   value: string;
-  setValue: Dispatch<SetStateAction<string>>;
+  setValue: (value: string) => void;
   onSave: Parameters<typeof Editor>[0]["onSave"];
   hasUnsavedChanges: boolean;
   createdAt: string | undefined;
