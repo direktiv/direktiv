@@ -612,10 +612,12 @@
         "namespace": "Namespace",
         "mirror": "Mirror"
       },
-      "authType": {
-        "none": "none",
-        "ssh": "SSH",
-        "token": "token"
+      "formTypeSelect": {
+        "keep-token": "Keep existing token (http)",
+        "keep-ssh": "Keep existing keys (ssh)",
+        "public": "Public",
+        "token": "Token (http)",
+        "ssh": "Key pair (ssh)"
       },
       "placeholder": {
         "name": "new-namespace-name",

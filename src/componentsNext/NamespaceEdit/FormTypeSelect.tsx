@@ -33,7 +33,7 @@ const FormTypeSelect = ({
             value="keep-token"
             onClick={() => onValueChange("keep-token")}
           >
-            Keep existing token
+            {t("components.namespaceEdit.formTypeSelect.keep-token")}
           </SelectItem>
         )}
         {!isNew && storedValue === "keep-ssh" && (
@@ -41,17 +41,17 @@ const FormTypeSelect = ({
             value="keep-ssh"
             onClick={() => onValueChange("keep-ssh")}
           >
-            Keep existing SSH keys
+            {t("components.namespaceEdit.formTypeSelect.keep-ssh")}
           </SelectItem>
         )}
         <SelectItem value="public" onClick={() => onValueChange("public")}>
-          Public
+          {t("components.namespaceEdit.formTypeSelect.public")}
         </SelectItem>
         <SelectItem value="token" onClick={() => onValueChange("token")}>
-          Token
+          {t("components.namespaceEdit.formTypeSelect.token")}
         </SelectItem>
         <SelectItem value="ssh" onClick={() => onValueChange("ssh")}>
-          SSH
+          {t("components.namespaceEdit.formTypeSelect.ssh")}
         </SelectItem>
       </SelectContent>
     </Select>

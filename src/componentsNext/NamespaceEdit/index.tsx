@@ -10,20 +10,12 @@ import {
   MirrorFormSchemaType,
   MirrorSshFormSchemaType,
   MirrorTokenFormSchemaType,
-  mirrorAuthTypes,
 } from "~/api/namespaces/schema";
 import {
   MirrorDiscriminatingFormSchema,
   MirrorFormType,
   MirrorInfoSchemaType,
 } from "~/api/tree/schema/mirror";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
