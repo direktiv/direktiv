@@ -14,6 +14,7 @@ import { NodeSchemaType } from "~/api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -46,6 +47,7 @@ const ExplorerPage: FC = () => {
   const results = data?.children?.results ?? [];
   const showTable = !isRoot || results.length > 0;
   const noResults = isSuccess && results.length === 0;
+  const wideOverlay = !!previewNode;
 
   return (
     <>
@@ -86,7 +88,11 @@ const ExplorerPage: FC = () => {
                   ))}
                 </TableBody>
               </Table>
-              <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+              <DialogContent
+                className={twMergeClsx(
+                  wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
+                )}
+              >
                 {previewNode && <FileViewer node={previewNode} />}
                 {deleteNode && (
                   <Delete
