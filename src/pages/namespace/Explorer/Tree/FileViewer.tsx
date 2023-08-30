@@ -6,8 +6,12 @@ import {
 } from "~/design/Dialog";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import { Folder } from "lucide-react";
 import { NodeSchemaType } from "~/api/tree/schema";
+import { useNodeContent } from "~/api/tree/query/node";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
 const FileViewer = ({
@@ -18,6 +22,10 @@ const FileViewer = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const { data } = useNodeContent({ path: node.path });
+  const fileContent = atob(data?.revision?.source ?? "");
+
   return (
     <>
       <DialogHeader>
@@ -25,7 +33,18 @@ const FileViewer = ({
           <Folder /> {t("pages.explorer.tree.fileViewer.title")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-3">...</div>
+      <Card className="grow p-4 pl-0" background="weight-1">
+        <div className="h-[500px]">
+          <Editor
+            language="plaintext"
+            value={fileContent}
+            options={{
+              readOnly: true,
+            }}
+            theme={theme ?? undefined}
+          />
+        </div>
+      </Card>
       <DialogFooter>
         <DialogClose asChild>
           <Button>{t("pages.explorer.tree.fileViewer.closeBtn")}</Button>
