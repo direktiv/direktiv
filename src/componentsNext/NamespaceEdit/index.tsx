@@ -98,6 +98,7 @@ const NamespaceEdit = ({
   );
 
   const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
+  const mirrorSchema = baseSchema.and(MirrorDiscriminatingFormSchema);
 
   const {
     handleSubmit,
@@ -107,7 +108,7 @@ const NamespaceEdit = ({
     watch,
     formState: { isDirty, dirtyFields, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: zodResolver(baseSchema.and(MirrorDiscriminatingFormSchema)),
+    resolver: zodResolver(isMirror ? mirrorSchema : baseSchema),
     defaultValues: mirror
       ? {
           formType,
