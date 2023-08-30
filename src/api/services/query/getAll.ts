@@ -31,7 +31,7 @@ const fetchServices = async ({
     apiKey,
     urlParams: { namespace },
   }).then((res) => ({
-    // TODO: this should be changed in the backend
+    // [DIR-784] this should be changed in the backend
     // reverse the order of functions (newer first)
     ...res,
     functions: [...(res.functions ?? []).reverse()],
