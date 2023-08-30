@@ -16,7 +16,12 @@ const RevisionConditionSchema = z
     reason: z.string(),
     message: z.string(),
   })
-  // handle status: False with reason: NoTraffic as status: True
+  /**
+   * When the name is "Active" and the reason is "NoTraffic",
+   * the status should be changed to "True". The backend
+   * reports this state as an "error", but it should
+   * not visually be an error, so we change it here
+   */
   .transform((data) => ({
     ...data,
     status:
