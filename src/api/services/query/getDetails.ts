@@ -64,10 +64,10 @@ const updateCache = (
   return {
     ...oldData,
     /**
-     * please note that that streaming the revisions will never add new revisions
-     * because the streamingPayload.event === "ADDED" can not be trusted. This
-     * would also just be usefull to recognize new revisions that are not created
-     * by the window that is currently open. The user might not except that anyways
+     * Please note that we don't add new services to the react-query cache via streaming
+     * because the streamingPayload.event === "ADDED" cannot be trusted. Instead, we 
+     * update the cache manually. The drawback is this will not detect services added outside
+     * of the current browser window.
      */
     revisions: (oldData.revisions ?? [])
       // swap the element that came in (if it already is in the cache)
