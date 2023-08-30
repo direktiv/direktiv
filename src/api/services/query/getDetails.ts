@@ -65,7 +65,7 @@ const updateCache = (
     ...oldData,
     /**
      * Please note that we don't add new services to the react-query cache via streaming
-     * because the streamingPayload.event === "ADDED" cannot be trusted. Instead, we 
+     * because the streamingPayload.event === "ADDED" cannot be trusted. Instead, we
      * update the cache manually. The drawback is this will not detect services added outside
      * of the current browser window.
      */
