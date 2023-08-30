@@ -6,16 +6,15 @@ import {
 } from "~/design/Dialog";
 import { GitCompare, Home, PlusCircle, Save } from "lucide-react";
 import {
-  MirrorAuthType,
-  MirrorFormSchemaType,
-  MirrorSshFormSchemaType,
-  MirrorTokenFormSchemaType,
-} from "~/api/namespaces/schema";
-import {
   MirrorDiscriminatingFormSchema,
   MirrorFormType,
   MirrorInfoSchemaType,
 } from "~/api/tree/schema/mirror";
+import {
+  MirrorFormSchemaType,
+  MirrorSshFormSchemaType,
+  MirrorTokenFormSchemaType,
+} from "~/api/namespaces/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
@@ -42,7 +41,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type FormInput = {
   name: string;
   formType: MirrorFormType;
-  authType: MirrorAuthType;
 } & MirrorFormSchemaType &
   MirrorTokenFormSchemaType &
   MirrorSshFormSchemaType;
@@ -76,10 +74,9 @@ const NamespaceEdit = ({
 
   let initialFormType: MirrorFormType = "public";
 
-  if (mirror?.info.authType === "ssh") {
+  if (mirror?.info.url.startsWith("git@")) {
     initialFormType = "keep-ssh";
-  }
-  if (mirror?.info.authType === "token") {
+  } else if (mirror?.info.passphrase) {
     initialFormType = "keep-token";
   }
 
@@ -96,13 +93,11 @@ const NamespaceEdit = ({
       ? {
           formType: initialFormType,
           name: mirror.namespace,
-          authType: mirror.info.authType,
           url: mirror.info.url,
           ref: mirror.info.ref,
         }
       : {
           formType: initialFormType,
-          authType: "none",
         },
   });
 
@@ -111,7 +106,6 @@ const NamespaceEdit = ({
   // So as a workaround, we infer isDirty from dirtyFields.
   const isDirty = Object.values(dirtyFields).some((value) => value === true);
 
-  const authType: MirrorAuthType = watch("authType");
   const formType: MirrorFormType = watch("formType");
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
@@ -190,7 +184,6 @@ const NamespaceEdit = ({
       mirror: {
         ref,
         url,
-        authType,
         ...updateAuthValues,
       },
     });
@@ -200,7 +193,7 @@ const NamespaceEdit = ({
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  // if the form has errors, we need to re-validate when isMirror or authType
+  // if the form has errors, we need to re-validate when isMirror or formType
   // has been changed, after useForm has updated the resolver.
   useEffect(() => {
     if (isSubmitted && !isValid) {
