@@ -13,6 +13,7 @@ const NodeSchema = z.object({
   oid: z.string(),
   readOnly: z.boolean(),
   expandedType: z.enum(["directory", "workflow", "file", "git"]),
+  mimeType: z.string(),
 });
 
 const RevisionSchema = z.object({
