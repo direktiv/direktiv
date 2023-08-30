@@ -89,7 +89,7 @@ const NamespaceEdit = ({
     setValue,
     trigger,
     watch,
-    formState: { isDirty, errors, isValid, isSubmitted },
+    formState: { dirtyFields, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(isMirror ? mirrorSchema : baseSchema),
     defaultValues: mirror
@@ -105,6 +105,11 @@ const NamespaceEdit = ({
           authType: "none",
         },
   });
+
+  // For some strange reason, useForm's formState.isDirty doesn't react when
+  // the field "ref" becomes dirty, even though it is registered in dirtyFields.
+  // So as a workaround, we infer isDirty from dirtyFields.
+  const isDirty = Object.values(dirtyFields).some((value) => value === true);
 
   const authType: MirrorAuthType = watch("authType");
   const formType: MirrorFormType = watch("formType");
@@ -240,7 +245,6 @@ const NamespaceEdit = ({
 
       <div className="mt-1 mb-3">
         <FormErrors errors={errors} className="mb-5" />
-        <div>form type: {formType}</div>
         <form
           id={formId}
           onSubmit={handleSubmit(onSubmit)}
