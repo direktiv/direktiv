@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
 
 import Button from "~/design/Button";
@@ -34,22 +34,30 @@ const WorkflowEditor: FC<{
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const workflowData = atob(data?.revision?.source ?? "");
+  const workflowDataFromServer = atob(data?.revision?.source ?? "");
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {
       error && setError(error);
     },
+    onSuccess: () => {
+      setHasUnsavedChanges(false);
+    },
   });
 
-  const [value, setValue] = useState(workflowData);
+  const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
   const { mutate: createRevision } = useCreateRevision();
-  const { mutate: revertRevision } = useRevertRevision();
+  const { mutate: revertRevision } = useRevertRevision({
+    onSuccess: () => {
+      setHasUnsavedChanges(false);
+    },
+  });
 
-  useEffect(() => {
-    setHasUnsavedChanges(workflowData !== value);
-  }, [value, workflowData]);
+  const onEditorContentUpdate = (newData: string) => {
+    setHasUnsavedChanges(workflowDataFromServer !== newData);
+    setEditorContent(newData ?? "");
+  };
 
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
@@ -70,12 +78,15 @@ const WorkflowEditor: FC<{
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={
-          <Diagram workflowData={workflowData} layout={currentLayout} />
+          <Diagram
+            workflowData={workflowDataFromServer}
+            layout={currentLayout}
+          />
         }
         editorComponent={
           <CodeEditor
-            value={workflowData}
-            setValue={setValue}
+            value={workflowDataFromServer}
+            setValue={onEditorContentUpdate}
             createdAt={data.revision?.createdAt}
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
@@ -141,7 +152,7 @@ const WorkflowEditor: FC<{
           variant="outline"
           disabled={isLoading}
           onClick={() => {
-            onSave(value);
+            onSave(editorContent);
           }}
           data-testid="workflow-editor-btn-save"
         >
