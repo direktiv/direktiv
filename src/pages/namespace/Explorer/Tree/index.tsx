@@ -14,7 +14,6 @@ import { NodeSchemaType } from "~/api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
-import { preview } from "vite";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
