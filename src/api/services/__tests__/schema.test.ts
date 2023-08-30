@@ -45,7 +45,7 @@ describe("service name schema", () => {
     });
 
     test("must not end with character other than lowercase letter", () => {
-      ["A", "-", ".", "_", "🙃"].forEach((char) => {
+      ["A", "-", ".", "_", "🙃, 1"].forEach((char) => {
         expect(serviceNameSchema.safeParse(`abc${char}`).success).toBe(false);
       });
     });
