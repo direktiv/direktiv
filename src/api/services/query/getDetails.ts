@@ -73,10 +73,10 @@ const updateCache = (
       // swap the element that came in (if it already is in the cache)
       .map((rev) => ({
         /**
-         * we need to spread the old revision, because we don't consume all fields
+         * we need to merge the old revision, because we don't consume all fields
          * when streaming. The streaming payload has some minor inconsistencies
          * with the revision schema. However, the fields that we keep from the
-         * cache are long living oney like the creation date and the name (which
+         * cache are long living ones like the creation date and the name (which
          * acts like an id)
          */
         ...rev,
