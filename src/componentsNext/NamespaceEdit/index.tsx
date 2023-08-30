@@ -312,7 +312,7 @@ const NamespaceEdit = ({
               <fieldset className="flex items-center gap-5">
                 <label
                   className="w-[112px] overflow-hidden text-right text-[14px]"
-                  htmlFor="ref"
+                  htmlFor="formType"
                 >
                   {t("components.namespaceEdit.label.formType")}
                 </label>

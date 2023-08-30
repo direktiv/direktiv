@@ -130,28 +130,7 @@ export const MirrorSyncResponseSchema = z.null();
 
 export const UpdateMirrorResponseSchema = z.null();
 
-/**
- * WIP REWRITE ATTEMPT USING DISCRIMINATED UNION
- *
- * What are the possible scenarios?
- *
- * Simple namespace
- * Public mirror
- * SSH
- * Token
- * Keep Token
- * Keep SSH
- *
- * MirrorDiscriminatingFormSchema below should distinguish all mirror types.
- *
- * Todo next:
- *
- * Update form to use "form-type".
- */
-
-// Enum is not currently used. "namespace" may not be needed.
-const formType = z.enum([
-  "namespace",
+const mirrorFormType = z.enum([
   "public",
   "ssh",
   "token",
@@ -198,11 +177,6 @@ const DmKeepTokenFormSchema = z.object({
   ref: z.string().nonempty(),
 });
 
-// .transform((schema) => ({
-//   ...schema,
-//   passphrase: "-"
-// }));
-
 const DmKeepSshFormSchema = z.object({
   formType: z.literal("keep-ssh"),
   url: gitUrlSchema.nonempty({
@@ -210,13 +184,6 @@ const DmKeepSshFormSchema = z.object({
   }),
   ref: z.string().nonempty(),
 });
-
-// .transform((schema) => ({
-//   ...schema,
-//   passphrase: "-",
-//   publicKey: "-",
-//   privateKey: "-",
-// }))
 
 export const MirrorDiscriminatingFormSchema = z.discriminatedUnion("formType", [
   DmPublicFormSchema,
@@ -243,4 +210,4 @@ export type MirrorInfoSchemaType = z.infer<typeof MirrorInfoSchema>;
 export type UpdateMirrorResponseSchemaType = z.infer<
   typeof UpdateMirrorResponseSchema
 >;
-export type MirrorFormType = z.infer<typeof formType>;
+export type MirrorFormType = z.infer<typeof mirrorFormType>;
