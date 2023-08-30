@@ -78,8 +78,8 @@ const CreateRevision = ({
         }
         /**
          * when no default values are available, it problably means that
-         * there is no previous revision. In this case, we don't let the
-         * user create one
+         * there is no previous revision. In this case, it doesn't make
+         * sense to let the user create one
          */
       ).refine(() => !!defaultValues, {
         message: t("pages.services.revision.create.noDefaultValues"),
