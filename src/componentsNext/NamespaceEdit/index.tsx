@@ -36,7 +36,6 @@ import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";
-// import { getResolver } from "~/api/namespaces/utils/getResolver";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -62,24 +61,6 @@ const NamespaceEdit = ({
   mirror?: MirrorInfoSchemaType;
   close: () => void;
 }) => {
-  // TODO NEXT: When selecting mirror/namespace or authType,
-  // The form type needs to be updated to reflect that.
-
-  // TODO: initialFormType is only a proof of concept implementation
-  // and a bit redundant with the refine method on the MirrorInfoSchema.
-  let initialFormType: MirrorFormType = "namespace";
-
-  if (mirror?.info.authType === "none") {
-    initialFormType = "public";
-  }
-  if (mirror?.info.authType === "ssh") {
-    initialFormType = "keep-ssh";
-  }
-  if (mirror?.info.authType === "token") {
-    initialFormType = "keep-token";
-  }
-
-  const [formType, setFormType] = useState<MirrorFormType>(initialFormType);
   // note that isMirror is initially redundant with !isNew, but
   // isMirror may change through user interaction.
   const [isMirror, setIsMirror] = useState(!!mirror);
@@ -100,6 +81,20 @@ const NamespaceEdit = ({
   const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
   const mirrorSchema = baseSchema.and(MirrorDiscriminatingFormSchema);
 
+  // TODO NEXT: When selecting mirror/namespace or authType,
+  // The form type needs to be updated to reflect that.
+
+  // TODO: initialFormType is only a proof of concept implementation
+  // and a bit redundant with the refine method on the MirrorInfoSchema.
+  let initialFormType: MirrorFormType = "public";
+
+  if (mirror?.info.authType === "ssh") {
+    initialFormType = "keep-ssh";
+  }
+  if (mirror?.info.authType === "token") {
+    initialFormType = "keep-token";
+  }
+
   const {
     handleSubmit,
     register,
@@ -111,18 +106,20 @@ const NamespaceEdit = ({
     resolver: zodResolver(isMirror ? mirrorSchema : baseSchema),
     defaultValues: mirror
       ? {
-          formType,
+          formType: initialFormType,
           name: mirror.namespace,
           authType: mirror.info.authType,
           url: mirror.info.url,
           ref: mirror.info.ref,
         }
       : {
+          formType: initialFormType,
           authType: "none",
         },
   });
 
   const authType: MirrorAuthType = watch("authType");
+  const formType: MirrorFormType = watch("formType");
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
