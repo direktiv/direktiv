@@ -16,11 +16,12 @@ const updateCache = (
   variables: Parameters<ReturnType<typeof useDeleteService>["mutate"]>[0]
 ) => {
   if (!oldData) return undefined;
+  const remainingFunctions = oldData.functions.filter(
+    (service) => service.info.name !== variables.service
+  );
   return {
     ...oldData,
-    functions: oldData.functions.filter(
-      (service) => service.info.name !== variables.service
-    ),
+    functions: remainingFunctions,
   };
 };
 
