@@ -21,7 +21,7 @@ const updateCache = (
   oldData: PodsListSchemaType | undefined,
   streamingPayload: PodsStreamingSchemaType
 ) => {
-  // only react top ADDED events
+  // only react to ADDED events
   if (streamingPayload.event !== "ADDED") return oldData;
 
   if (!oldData) {
