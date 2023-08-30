@@ -44,13 +44,13 @@ describe("service name schema", () => {
       expect(serviceNameSchema.safeParse("fOldername").success).toBe(false);
     });
 
-    test("must not end with character other than lowercase letter", () => {
+    test("must not end with characters other than lowercase letters", () => {
       ["A", "-", ".", "_", "🙃, 1"].forEach((char) => {
         expect(serviceNameSchema.safeParse(`abc${char}`).success).toBe(false);
       });
     });
 
-    test("must not start with character other than lowercase letters", () => {
+    test("must not start with characters other than lowercase letters", () => {
       ["A", "1", ".", "_", "-", ".", "🙃"].forEach((char) => {
         expect(serviceNameSchema.safeParse(`${char}abc`).success).toBe(false);
       });
