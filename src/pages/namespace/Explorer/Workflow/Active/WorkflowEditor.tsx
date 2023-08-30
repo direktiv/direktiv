@@ -32,7 +32,7 @@ const WorkflowEditor: FC<{
   const currentLayout = useEditorLayout();
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
-  const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const workflowData = atob(data?.revision?.source ?? "");
 
@@ -48,7 +48,7 @@ const WorkflowEditor: FC<{
   const { mutate: revertRevision } = useRevertRevision();
 
   useEffect(() => {
-    setHasUnsavedChanged(workflowData !== value);
+    setHasUnsavedChanges(workflowData !== value);
   }, [value, workflowData]);
 
   const onSave = (toSave: string | undefined) => {
@@ -78,7 +78,7 @@ const WorkflowEditor: FC<{
             setValue={setValue}
             createdAt={data.revision?.createdAt}
             error={error}
-            hasUnsavedChanged={hasUnsavedChanged}
+            hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
           />
         }
@@ -90,7 +90,7 @@ const WorkflowEditor: FC<{
           <ButtonBar>
             <Button
               variant="outline"
-              disabled={hasUnsavedChanged}
+              disabled={hasUnsavedChanges}
               onClick={() => {
                 createRevision({
                   path,
@@ -104,7 +104,7 @@ const WorkflowEditor: FC<{
             </Button>
             <DropdownMenuTrigger asChild>
               <Button
-                disabled={hasUnsavedChanged}
+                disabled={hasUnsavedChanges}
                 variant="outline"
                 data-testid="workflow-editor-btn-revision-drop"
               >

@@ -12,7 +12,7 @@ type EditorProps = {
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
   onSave: Parameters<typeof Editor>[0]["onSave"];
-  hasUnsavedChanged: boolean;
+  hasUnsavedChanges: boolean;
   createdAt: string | undefined;
   error: string | undefined;
 };
@@ -21,7 +21,7 @@ export const CodeEditor: FC<EditorProps> = ({
   value,
   setValue,
   onSave,
-  hasUnsavedChanged,
+  hasUnsavedChanges,
   createdAt,
   error,
 }) => {
@@ -71,7 +71,7 @@ export const CodeEditor: FC<EditorProps> = ({
           </Popover>
         )}
 
-        {hasUnsavedChanged && (
+        {hasUnsavedChanges && (
           <span className="text-center">
             {t("pages.explorer.workflow.editor.unsavedNote")}
           </span>
