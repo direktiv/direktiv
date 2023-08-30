@@ -25,7 +25,9 @@ const FormTypeSelect = ({
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger variant="outline" className="w-full">
-        <SelectValue placeholder="TODO: ADD PLACEHOLDER" />
+        <SelectValue
+          placeholder={t("components.namespaceEdit.placeholder.formType")}
+        />
       </SelectTrigger>
       <SelectContent>
         {!isNew && storedValue === "keep-token" && (

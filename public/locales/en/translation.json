@@ -631,7 +631,7 @@
         "publicKey": "Public Key (required)",
         "privateKey": "Private Key (required)",
         "token": "token",
-        "authType": "Select authentication method"
+        "formType": "Select authentication method"
       },
       "label": {
         "name": "Name",
@@ -641,7 +641,7 @@
         "publicKey": "Public key",
         "privateKey": "Private key",
         "token": "Token",
-        "authType": "Auth type"
+        "formType": "Auth type"
       },
       "tooltip": {
         "url": "URL to repository. If auth method is SSH, a git url must be used, e.g. 'git@github.com:direktiv/apps-svc.git'. All other auth methods must use HTTP/S urls.",

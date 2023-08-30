@@ -74,11 +74,6 @@ const NamespaceEdit = ({
   const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
   const mirrorSchema = baseSchema.and(MirrorDiscriminatingFormSchema);
 
-  // TODO NEXT: When selecting mirror/namespace or authType,
-  // The form type needs to be updated to reflect that.
-
-  // TODO: initialFormType is only a proof of concept implementation
-  // and a bit redundant with the refine method on the MirrorInfoSchema.
   let initialFormType: MirrorFormType = "public";
 
   if (mirror?.info.authType === "ssh") {
@@ -94,7 +89,7 @@ const NamespaceEdit = ({
     setValue,
     trigger,
     watch,
-    formState: { isDirty, dirtyFields, errors, isValid, isSubmitted },
+    formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(isMirror ? mirrorSchema : baseSchema),
     defaultValues: mirror
@@ -136,7 +131,7 @@ const NamespaceEdit = ({
     name,
     ref,
     url,
-    authType,
+    formType,
     passphrase,
     publicKey,
     privateKey,
@@ -152,30 +147,36 @@ const NamespaceEdit = ({
 
     let updateAuthValues = {};
 
-    if (authType === "none") {
+    if (formType === "public") {
       updateAuthValues = {
         passphrase: "",
         publicKey: "",
         privateKey: "",
       };
     }
-    if (authType === "ssh") {
-      const overwriteAuth =
-        dirtyFields.passphrase ||
-        dirtyFields.privateKey ||
-        dirtyFields.publicKey;
+    if (formType === "keep-token") {
       updateAuthValues = {
-        passphrase: overwriteAuth ? passphrase : "-",
-        publicKey: overwriteAuth ? publicKey : "-",
-        privateKey: overwriteAuth ? privateKey : "-",
+        passphrase: "-",
       };
     }
-    if (authType === "token") {
-      const overwriteAuth = dirtyFields.passphrase;
+
+    if (formType === "token") {
       updateAuthValues = {
-        passphrase: overwriteAuth ? passphrase : "-",
-        publicKey: "",
-        privateKey: "",
+        passphrase,
+      };
+    }
+    if (formType === "keep-ssh") {
+      updateAuthValues = {
+        passphrase: "-",
+        publicKey: "-",
+        privateKey: "-",
+      };
+    }
+    if (formType === "ssh") {
+      updateAuthValues = {
+        passphrase,
+        publicKey,
+        privateKey,
       };
     }
 
@@ -200,7 +201,7 @@ const NamespaceEdit = ({
     if (isSubmitted && !isValid) {
       trigger();
     }
-  }, [isMirror, authType, isSubmitted, isValid, trigger]);
+  }, [isMirror, formType, isSubmitted, isValid, trigger]);
 
   const formId = `new-namespace`;
   return (
@@ -239,11 +240,7 @@ const NamespaceEdit = ({
 
       <div className="mt-1 mb-3">
         <FormErrors errors={errors} className="mb-5" />
-        <div>
-          {/* TODO: REMOVE DEBUG INFO */}
-          {isValid ? "valid" : "invalid"} {isDirty ? "dirty" : "clean"}{" "}
-          formType: {formType}
-        </div>
+        <div>form type: {formType}</div>
         <form
           id={formId}
           onSubmit={handleSubmit(onSubmit)}
@@ -280,7 +277,7 @@ const NamespaceEdit = ({
                     id="url"
                     data-testid="new-namespace-url"
                     placeholder={t(
-                      authType === "ssh"
+                      formType === "ssh"
                         ? "components.namespaceEdit.placeholder.gitUrl"
                         : "components.namespaceEdit.placeholder.httpUrl"
                     )}
@@ -317,7 +314,7 @@ const NamespaceEdit = ({
                   className="w-[112px] overflow-hidden text-right text-[14px]"
                   htmlFor="ref"
                 >
-                  {t("components.namespaceEdit.label.authType")}
+                  {t("components.namespaceEdit.label.formType")}
                 </label>
                 <FormTypeSelect
                   value={formType}
