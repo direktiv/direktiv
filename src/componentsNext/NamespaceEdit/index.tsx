@@ -201,7 +201,7 @@ const NamespaceEdit = ({
     }
   }, [isMirror, formType, isSubmitted, isValid, trigger]);
 
-  const formId = `new-namespace`;
+  const formId = "new-namespace";
   return (
     <>
       <DialogHeader>
