@@ -607,7 +607,6 @@
       },
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel",
-      "updateAuthInfo": "To overwrite one of the below values, fill in the new value. To keep the existing authentication data, leave them blank.",
       "tab": {
         "namespace": "Namespace",
         "mirror": "Mirror"
@@ -618,6 +617,10 @@
         "public": "Public",
         "token": "Token (http)",
         "ssh": "Key pair (ssh)"
+      },
+      "formTypeMessage": {
+        "keep": "Your authentication data will be kept unless you chose a different option.",
+        "replace": "The new authentication settings will overwrite any stored credentials. Select the 'keep' option above to prevent this."
       },
       "placeholder": {
         "name": "new-namespace-name",

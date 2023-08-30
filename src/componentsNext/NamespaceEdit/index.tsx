@@ -329,13 +329,19 @@ const NamespaceEdit = ({
                 />
               </fieldset>
 
-              {!isNew && authType !== "none" && (
+              {!isNew && formType.startsWith("keep") && (
                 <Alert variant="info" className="text-sm">
-                  {t("components.namespaceEdit.updateAuthInfo")}
+                  {t("components.namespaceEdit.formTypeMessage.keep")}
                 </Alert>
               )}
 
-              {authType === "token" && (
+              {!isNew && !formType.startsWith("keep") && (
+                <Alert variant="info" className="text-sm">
+                  {t("components.namespaceEdit.formTypeMessage.replace")}
+                </Alert>
+              )}
+
+              {formType === "token" && (
                 <fieldset className="flex items-center gap-5">
                   <label
                     className="w-[112px] overflow-hidden text-right text-[14px]"
@@ -359,7 +365,7 @@ const NamespaceEdit = ({
                 </fieldset>
               )}
 
-              {authType === "ssh" && (
+              {formType === "ssh" && (
                 <>
                   <fieldset className="flex items-center gap-5">
                     <label
