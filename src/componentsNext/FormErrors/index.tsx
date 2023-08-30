@@ -13,9 +13,9 @@ const FormErrors: FC<FormErrorsProps> = ({ errors, ...props }) => {
   return entries.length ? (
     <Alert variant="error" {...props}>
       <ul>
-        {entries.map(([key, value]) => (
+        {entries.map(([key, value], index) => (
           // note: key might also be an empty string
-          <li key={key}>{`${key && `${key} :`} ${
+          <li key={index}>{`${key && `${key} :`} ${
             value.message || t("components.formErrors.fieldInvalid")
           }`}</li>
         ))}
