@@ -132,38 +132,51 @@ export const UpdateMirrorResponseSchema = z.null();
 
 /**
  * WIP REWRITE ATTEMPT USING DISCRIMINATED UNION
- * 
+ *
  * What are the possible scenarios?
- * 
+ *
  * Simple namespace
  * Public mirror
  * SSH
  * Token
  * Keep Token
  * Keep SSH
- * 
+ *
  * MirrorDiscriminatingFormSchema below should distinguish all mirror types.
- * 
- * Todo next: 
- * 
+ *
+ * Todo next:
+ *
  * Update form to use "form-type".
  */
 
 // Enum is not currently used. "namespace" may not be needed.
-const formType = z.enum(["namespace", "public", "ssh", "token", "keep-ssh", "keep-token"])
+const formType = z.enum([
+  "namespace",
+  "public",
+  "ssh",
+  "token",
+  "keep-ssh",
+  "keep-token",
+]);
 
 const DmPublicFormSchema = z.object({
   formType: z.literal("public"),
-  url: z.string().url().nonempty({message: "invalid url, must be http(s):// format"}),
+  url: z
+    .string()
+    .url()
+    .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
-})
+});
 
 const DmTokenFormSchema = z.object({
   formType: z.literal("token"),
-  url: z.string().url().nonempty({message: "invalid url, must be http(s):// format"}),
+  url: z
+    .string()
+    .url()
+    .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
   passphrase: z.string(),
-})
+});
 
 const DmSshFormSchema = z.object({
   formType: z.literal("ssh"),
@@ -174,13 +187,16 @@ const DmSshFormSchema = z.object({
   passphrase: z.string().optional(),
   publicKey: z.string().nonempty(),
   privateKey: z.string().nonempty(),
-})
+});
 
 const DmKeepTokenFormSchema = z.object({
   formType: z.literal("keep-token"),
-  url: z.string().url().nonempty({message: "invalid url, must be http(s):// format"}),
+  url: z
+    .string()
+    .url()
+    .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
-})
+});
 
 // .transform((schema) => ({
 //   ...schema,
@@ -193,7 +209,7 @@ const DmKeepSshFormSchema = z.object({
     message: "format must be git@host:path when using SSH",
   }),
   ref: z.string().nonempty(),
-})
+});
 
 // .transform((schema) => ({
 //   ...schema,
@@ -207,8 +223,8 @@ export const MirrorDiscriminatingFormSchema = z.discriminatedUnion("formType", [
   DmSshFormSchema,
   DmTokenFormSchema,
   DmKeepSshFormSchema,
-  DmKeepTokenFormSchema
-])
+  DmKeepTokenFormSchema,
+]);
 
 export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;
 export type MirrorActivityLogSchemaType = z.infer<
