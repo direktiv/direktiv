@@ -6,40 +6,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FC, PropsWithChildren } from "react";
 import { MoreVertical, TextCursorInput, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
+import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
-import { Link } from "react-router-dom";
 import { NodeSchemaType } from "~/api/tree/schema";
 import { fileTypeToIcon } from "~/api/tree/utils";
 import moment from "moment";
-import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
-
-export const LinkWrapper: FC<
-  PropsWithChildren & { file: NodeSchemaType; namespace: string }
-> = ({ file, namespace, children }) => {
-  const isFile = file.expandedType === "file";
-  if (isFile) return <a className="flex-1 hover:underline">{children}</a>;
-  const linkTarget = pages.explorer.createHref({
-    namespace,
-    path: file.path,
-    subpage: file.expandedType === "workflow" ? "workflow" : undefined,
-  });
-
-  return (
-    <Link
-      data-testid={`explorer-item-link-${file.name}`}
-      to={linkTarget}
-      className="flex-1 hover:underline"
-    >
-      {children}
-    </Link>
-  );
-};
 
 const FileRow = ({
   file,
@@ -60,9 +36,9 @@ const FileRow = ({
       <TableCell>
         <div className="flex space-x-3">
           <Icon className="h-5" />
-          <LinkWrapper file={file} namespace={namespace}>
+          <ConditionalLink file={file} namespace={namespace}>
             {file.name}
-          </LinkWrapper>
+          </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
             {moment(file.updatedAt).fromNow()}
           </span>
