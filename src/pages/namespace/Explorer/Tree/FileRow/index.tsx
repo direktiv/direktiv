@@ -18,29 +18,35 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 
 const FileRow = ({
-  file,
+  node,
   namespace,
   onRenameClicked,
   onDeleteClicked,
+  onPreviewClicked,
 }: {
-  file: NodeSchemaType;
+  node: NodeSchemaType;
   namespace: string;
-  onRenameClicked: (file: NodeSchemaType) => void;
-  onDeleteClicked: (file: NodeSchemaType) => void;
+  onRenameClicked: (node: NodeSchemaType) => void;
+  onDeleteClicked: (node: NodeSchemaType) => void;
+  onPreviewClicked: (node: NodeSchemaType) => void;
 }) => {
   const { t } = useTranslation();
-  const Icon = fileTypeToIcon(file.expandedType);
+  const Icon = fileTypeToIcon(node.expandedType);
 
   return (
-    <TableRow data-testid={`explorer-item-${file.name}`}>
+    <TableRow data-testid={`explorer-item-${node.name}`}>
       <TableCell>
         <div className="flex space-x-3">
           <Icon className="h-5" />
-          <ConditionalLink file={file} namespace={namespace}>
-            {file.name}
+          <ConditionalLink
+            node={node}
+            namespace={namespace}
+            onPreviewClicked={onPreviewClicked}
+          >
+            {node.name}
           </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
-            {moment(file.updatedAt).fromNow()}
+            {moment(node.updatedAt).fromNow()}
           </span>
         </div>
       </TableCell>
@@ -66,7 +72,7 @@ const FileRow = ({
               className="w-full"
               data-testid="node-actions-delete"
               onClick={() => {
-                onDeleteClicked(file);
+                onDeleteClicked(node);
               }}
             >
               <DropdownMenuItem>
@@ -78,7 +84,7 @@ const FileRow = ({
               className="w-full"
               data-testid="node-actions-rename"
               onClick={() => {
-                onRenameClicked(file);
+                onRenameClicked(node);
               }}
             >
               <DropdownMenuItem>

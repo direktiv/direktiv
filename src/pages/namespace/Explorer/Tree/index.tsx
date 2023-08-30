@@ -6,6 +6,7 @@ import { Card } from "~/design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
+import FileViewer from "./FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
@@ -13,6 +14,7 @@ import { NodeSchemaType } from "~/api/tree/schema";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { preview } from "vite";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -29,12 +31,14 @@ const ExplorerPage: FC = () => {
   // set the pointer to that node for the dialog
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
+  const [previewNode, setPreviewNode] = useState<NodeSchemaType>();
   const { t } = useTranslation();
 
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteNode(undefined);
       setRenameNode(undefined);
+      setPreviewNode(undefined);
     }
   }, [dialogOpen]);
 
@@ -75,14 +79,23 @@ const ExplorerPage: FC = () => {
                     <FileRow
                       key={file.name}
                       namespace={namespace}
-                      file={file}
+                      node={file}
                       onDeleteClicked={setDeleteNode}
                       onRenameClicked={setRenameNode}
+                      onPreviewClicked={setPreviewNode}
                     />
                   ))}
                 </TableBody>
               </Table>
               <DialogContent>
+                {previewNode && (
+                  <FileViewer
+                    node={previewNode}
+                    close={() => {
+                      setDialogOpen(false);
+                    }}
+                  />
+                )}
                 {deleteNode && (
                   <Delete
                     node={deleteNode}
