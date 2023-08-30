@@ -51,6 +51,7 @@
         },
         "fileViewer": {
           "title": "Preview",
+          "notSupported": "We currently do not support previewing this file type.",
           "closeBtn": "Close"
         },
         "delete": {

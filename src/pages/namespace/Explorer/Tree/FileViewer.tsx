@@ -14,11 +14,28 @@ import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
+const NoPreview = ({ mimeType }: { mimeType?: string }) => {
+  const { t } = useTranslation();
+
+  if (!mimeType) return null; // prevent layout shift
+
+  return (
+    <div className="flex grow flex-col items-center justify-center gap-3 p-10">
+      <div>{t("pages.explorer.tree.fileViewer.notSupported")}</div>
+      <code className="text-sm text-primary-500">{mimeType}</code>
+    </div>
+  );
+};
+
 const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { data } = useNodeContent({ path: node.path });
+
   const fileContent = atob(data?.revision?.source ?? "");
+  const mimeType = data?.node.mimeType;
+
+  const previewSupported = false;
 
   return (
     <>
@@ -27,16 +44,20 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
           <File /> {t("pages.explorer.tree.fileViewer.title")} {node.path}
         </DialogTitle>
       </DialogHeader>
-      <Card className="grow p-4 pl-0" background="weight-1">
-        <div className="h-[700px]">
-          <Editor
-            language="plaintext"
-            value={fileContent}
-            options={{
-              readOnly: true,
-            }}
-            theme={theme ?? undefined}
-          />
+      <Card className="grow p-4" background="weight-1">
+        <div className="flex h-[700px]">
+          {previewSupported ? (
+            <Editor
+              language="plaintext"
+              value={fileContent}
+              options={{
+                readOnly: true,
+              }}
+              theme={theme ?? undefined}
+            />
+          ) : (
+            <NoPreview mimeType={mimeType} />
+          )}
         </div>
       </Card>
       <DialogFooter>
