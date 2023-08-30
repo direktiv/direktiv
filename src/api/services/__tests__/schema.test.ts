@@ -8,49 +8,49 @@ describe("service name schema", () => {
       expect(serviceNameSchema.safeParse("servicename").success).toBe(true);
     });
 
-    test("can container a - in the middle", () => {
+    test("may contain a - in the middle", () => {
       expect(serviceNameSchema.safeParse("service-name").success).toBe(true);
     });
 
-    test("can contain numbers if not the first character", () => {
+    test("may contain numbers if not the first character", () => {
       expect(serviceNameSchema.safeParse("a123").success).toBe(true);
     });
   });
 
   describe("invalid", () => {
-    test("can not contain only numbers", () => {
+    test("must not contain only numbers", () => {
       expect(serviceNameSchema.safeParse("123").success).toBe(false);
     });
 
-    test("can contain any dots", () => {
+    test("must not contain any dots", () => {
       expect(serviceNameSchema.safeParse("service.name").success).toBe(false);
       expect(serviceNameSchema.safeParse("servicename.").success).toBe(false);
       expect(serviceNameSchema.safeParse(".servicename").success).toBe(false);
     });
 
-    test("can contain a _ ", () => {
+    test("must not contain a _ ", () => {
       expect(serviceNameSchema.safeParse("service_name").success).toBe(false);
       expect(serviceNameSchema.safeParse("servicename_").success).toBe(false);
       expect(serviceNameSchema.safeParse("_servicename").success).toBe(false);
     });
 
-    test("can not contain any slashes", () => {
+    test("must not contain any slashes", () => {
       expect(serviceNameSchema.safeParse("some/folder").success).toBe(false);
       expect(serviceNameSchema.safeParse("some/").success).toBe(false);
       expect(serviceNameSchema.safeParse("/folder").success).toBe(false);
     });
 
-    test("can not contain uppercase characters middle", () => {
+    test("must not contain uppercase characters middle", () => {
       expect(serviceNameSchema.safeParse("fOldername").success).toBe(false);
     });
 
-    test("can not end with various characters that are not lowercase characters or a digit", () => {
+    test("must not end with character other than lowercase letter", () => {
       ["A", "-", ".", "_", "🙃"].forEach((char) => {
         expect(serviceNameSchema.safeParse(`abc${char}`).success).toBe(false);
       });
     });
 
-    test("starting with various characters that are not lowercase characters", () => {
+    test("must not start with character other than lowercase letters", () => {
       ["A", "1", ".", "_", "-", ".", "🙃"].forEach((char) => {
         expect(serviceNameSchema.safeParse(`${char}abc`).success).toBe(false);
       });
