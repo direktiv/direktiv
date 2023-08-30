@@ -1,11 +1,11 @@
 {
   "pages": {
     "error": {
-      "status": "Ups!",
+      "status": "Oops!",
       "message": "Something went wrong here....",
-      "goBack": "Go Back",
+      "goBack": "Go back",
       "reload": "Reload",
-      "goHome": "Go to Homepage"
+      "goHome": "Go to homepage"
     },
     "onboarding": {
       "welcomeTo": "Welcome to",
@@ -417,7 +417,7 @@
     "services": {
       "list": {
         "title": "Services",
-        "create": "Create a new Service",
+        "create": "Create a new service",
         "tableHeader": {
           "name": "name",
           "image": "image",
@@ -432,7 +432,7 @@
           "title": "No services exist yet"
         },
         "delete": {
-          "title": "Delete Service",
+          "title": "Delete service",
           "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
@@ -441,7 +441,7 @@
       "revision": {
         "list": {
           "title": "Services \"{{name}}\" revisions",
-          "create": "Create a new Revision",
+          "create": "Create a new revision",
           "relativeTime": "{{relativeTime}} ago",
           "tableHeader": {
             "name": "name",
@@ -457,7 +457,7 @@
             "title": "No revisions exist yet"
           },
           "delete": {
-            "title": "Delete Revision",
+            "title": "Delete revision",
             "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
             "cancelBtn": "Cancel",
             "deleteBtn": "Delete"
@@ -466,19 +466,19 @@
         "create": {
           "noChanges": "Please make some changes before creating a new revision",
           "noDefaultValues": "There seems to be no previous revision, this service might be damaged.",
-          "title": "Create a new Revision",
+          "title": "Create a new revision",
           "imageLabel": "Image",
           "imagePlaceholder": "image/name:tag",
           "scaleLabel": "Scale",
           "sizeLabel": "Size",
-          "sizePlaceholder": "Select Size",
+          "sizePlaceholder": "Select size",
           "sizeValues": {
             "0": "Small",
             "1": "Medium",
             "2": "Large"
           },
           "cmdLabel": "Cmd",
-          "cmdPlaceholder": "Enter the Cmd for a service",
+          "cmdPlaceholder": "Enter the cmd for a service",
           "createBtn": "Create",
           "cancelBtn": "Cancel"
         },
@@ -503,7 +503,7 @@
         }
       },
       "create": {
-        "title": "Create a new Service",
+        "title": "Create a new service",
         "nameLabel": "Name",
         "namePlaceholder": "service-name",
         "nameAlreadyExists": "The name already exists",
@@ -511,14 +511,14 @@
         "imagePlaceholder": "image/name:tag",
         "scaleLabel": "Scale",
         "sizeLabel": "Size",
-        "sizePlaceholder": "Select Size",
+        "sizePlaceholder": "Select size",
         "sizeValues": {
           "0": "Small",
           "1": "Medium",
           "2": "Large"
         },
         "cmdLabel": "Cmd",
-        "cmdPlaceholder": "Enter the Cmd for a service",
+        "cmdPlaceholder": "Enter the cmd for a service",
         "createBtn": "Create",
         "cancelBtn": "Cancel"
       }
@@ -899,7 +899,7 @@
       "mutate": {
         "createService": {
           "success": {
-            "title": "Service create",
+            "title": "Service created",
             "description": "Service {{name}} was created."
           },
           "error": {
@@ -908,7 +908,7 @@
         },
         "createServiceRevision": {
           "success": {
-            "title": "Service revision create",
+            "title": "Service revision created",
             "description": "Service revision was created."
           },
           "error": {
