@@ -284,3 +284,11 @@ export const EmptyListWithoutHeader = () => (
     <NoResult icon={Contact}>no data found</NoResult>
   </Card>
 );
+
+export const EmptyListWithButton = () => (
+  <Card>
+    <NoResult icon={Contact} button={<Button>Some Button</Button>}>
+      no data found
+    </NoResult>
+  </Card>
+);

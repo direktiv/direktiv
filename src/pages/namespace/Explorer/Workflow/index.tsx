@@ -159,6 +159,7 @@ const Header: FC = () => {
                   variant="primary"
                   disabled={!isLive}
                   data-testid="workflow-header-btn-run"
+                  className="grow"
                 >
                   <Play />
                   {t("pages.explorer.workflow.runBtn")}

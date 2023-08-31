@@ -14,7 +14,9 @@ func main() {
 		configDir = os.Args[1]
 	}
 
-	config, err := server.ReadConfigAndPrepare(configDir)
+	var config *server.Config
+
+	err := server.ReadConfigAndPrepare(configDir, &config)
 	if err != nil {
 		log.Fatal().Msgf("can not read config file: %s", err.Error())
 	}
