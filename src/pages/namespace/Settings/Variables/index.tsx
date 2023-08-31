@@ -106,7 +106,7 @@ const VariablesList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult>
+                <NoResult icon={Braces}>
                   {t(
                     isSearch
                       ? "pages.settings.variables.list.emptySearch"

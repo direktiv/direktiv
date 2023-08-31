@@ -69,7 +69,7 @@ const ChildInstances = () => {
           wrapper={(children) => (
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>{children}</PopoverTrigger>
-              <PopoverContent className="w-96 p-0">
+              <PopoverContent className="w-[500px] p-0">
                 <Command>
                   <CommandInput
                     placeholder={
