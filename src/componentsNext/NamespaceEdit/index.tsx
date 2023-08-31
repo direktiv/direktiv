@@ -60,7 +60,7 @@ const NamespaceEdit = ({
 
   const newNameSchema = fileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {
-      message: "The name already exists",
+      message: t("components.namespaceEdit.nameAlreadyExists"),
     })
   );
 
