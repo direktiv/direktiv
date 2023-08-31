@@ -18,15 +18,30 @@ export const mimeTypeToEditorSyntax = (
   return parsed.data;
 };
 
+/**
+ * reference for common mime types
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+ */
 export const editorLanguageSchema = z
   .string()
   .transform((val) => {
-    if (val.startsWith("text/html")) return "html";
-    if (val.startsWith("text/css")) return "css";
-    if (val.startsWith("application/json")) return "json";
-    if (val.startsWith("application/x-csh")) return "sh";
-    if (val.startsWith("application/x-sh")) return "sh";
-    if (val.startsWith("text/")) return "plaintext";
-    return val;
+    switch (val) {
+      case "text/html":
+        return "html";
+
+      case "text/css":
+        return "css";
+      case "application/json":
+        return "json";
+      case "application/x-sh":
+      case "application/x-csh":
+        return "shell";
+      case "text/yaml":
+      default:
+        if (val.startsWith("text/")) {
+          return "plaintext";
+        }
+        return val;
+    }
   })
   .pipe(z.enum(supportedLanguages));
