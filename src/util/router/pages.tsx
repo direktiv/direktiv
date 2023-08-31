@@ -17,12 +17,15 @@ import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import Listeners from "~/pages/namespace/Events/Listeners";
 import MonitoringPage from "~/pages/namespace/Monitoring";
+import PermissionsPage from "~/pages/namespace/Permissions";
+import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
 import ServiceDetailPage from "~/pages/namespace/Services/Detail";
 import ServiceRevisionPage from "~/pages/namespace/Services/Detail/Revision";
 import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
+import TokensPage from "~/pages/namespace/Permissions/Tokens";
 import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
@@ -166,6 +169,9 @@ type PermissionsPageSetup = Partial<
       createHref: (params: { namespace: string }) => string;
       useParams: () => {
         isPermissionsPage: boolean;
+        isPermissionsPolicyPage: boolean;
+        isPermissionsTokenPage: boolean;
+        isPermissionsGroupPage: boolean;
       };
     }
   >
@@ -180,48 +186,61 @@ export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
         icon: Users,
         createHref: (params) => `/${params.namespace}/permissions`,
         useParams: () => {
-          const [, secondLevel] = useMatches(); // first level is namespace level
+          const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
           const isPermissionsPage = checkHandler(
             secondLevel,
-            "isPermissionsPage"
+            "isPermissionsPolicyPage"
           );
+          const isPermissionsPolicyPage = checkHandler(
+            thirdLevel,
+            "isPermissionsPolicyPage"
+          );
+          const isPermissionsTokenPage = checkHandler(
+            thirdLevel,
+            "isPermissionsTokenPage"
+          );
+          const isPermissionsGroupPage = checkHandler(
+            thirdLevel,
+            "isPermissionsGroupPage"
+          );
+
           return {
             isPermissionsPage,
+            isPermissionsPolicyPage,
+            isPermissionsTokenPage,
+            isPermissionsGroupPage,
           };
         },
         route: {
           path: "permissions",
-          element: (
-            <div className="flex flex-col space-y-5 p-10">Permissions</div>
-          ),
+          element: <PermissionsPage />,
           handle: { isPermissionsPage: true },
+          children: [
+            {
+              path: "",
+              element: <PolicyPage />,
+              handle: { isPermissionsPolicyPage: true },
+            },
+            {
+              path: "tokens",
+              element: <TokensPage />,
+              handle: { isPermissionsTokenPage: true },
+            },
+            {
+              path: "groups",
+              element: <PermissionsPage />,
+              handle: { isPermissionsGroupPage: true },
+            },
+          ],
         },
       },
     }
   : {};
 
-/**
-   * 
-    name: "components.mainMenu.monitoring",
-    icon: ActivitySquare,
-    createHref: (params) => `/${params.namespace}/monitoring`,
-    useParams: () => {
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
-      return { isMonitoringPage };
-    },
-    route: {
-      path: "monitoring",
-      element: <MonitoringPage />,
-      handle: { isMonitoringPage: true },
-    },
-   */
-
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
-
 export const pages: PageType & EnterprisePageType = {
   explorer: {
     name: "components.mainMenu.explorer",
