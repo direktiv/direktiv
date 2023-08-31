@@ -28,6 +28,9 @@ const NoPreview = ({ mimeType }: { mimeType?: string }) => {
   );
 };
 
+const imagesSrc = (mimeType: string, source: string) =>
+  `data:${mimeType};base64,${source}`;
+
 const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -36,8 +39,13 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const fileContent = atob(data?.revision?.source ?? "");
   const mimeType = data?.node.mimeType;
 
-  const language = mimeTypeToEditorSyntax(mimeType);
-  const previewSupported = !!language;
+  const supportedLanguage = mimeTypeToEditorSyntax(mimeType);
+  const supportedImage = mimeType?.startsWith("image/");
+
+  const showEditor = supportedLanguage !== undefined;
+  const showImage = !showEditor && supportedImage;
+
+  const noPreview = !showEditor && !showImage;
 
   return (
     <>
@@ -48,18 +56,25 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
       </DialogHeader>
       <Card className="grow p-4" background="weight-1">
         <div className="flex h-[700px]">
-          {previewSupported ? (
+          {showImage && (
+            <img
+              src={imagesSrc(mimeType ?? "", data?.revision?.source ?? "")}
+              className="w-full object-contain"
+            />
+          )}
+
+          {showEditor && (
             <Editor
-              language={language}
+              language={supportedLanguage}
               value={fileContent}
               options={{
                 readOnly: true,
               }}
               theme={theme ?? undefined}
             />
-          ) : (
-            <NoPreview mimeType={mimeType} />
           )}
+
+          {noPreview && <NoPreview mimeType={mimeType} />}
         </div>
       </Card>
       <DialogFooter>
