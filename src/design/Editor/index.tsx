@@ -1,6 +1,7 @@
 import { FC, useRef } from "react";
 
 import AutoSizer from "react-virtualized-auto-sizer";
+import { EditorLanguagesType } from "./utils";
 import type { EditorProps } from "@monaco-editor/react";
 import MonacoEditor from "@monaco-editor/react";
 import themeDark from "./theme-dark";
@@ -12,14 +13,6 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
 };
 
 type EditorType = Parameters<NonNullable<EditorProps["onMount"]>>[0];
-
-export type EditorLanguagesType =
-  | "html"
-  | "css"
-  | "json"
-  | "shell"
-  | "plaintext"
-  | "yaml";
 
 const Editor: FC<
   Omit<EditorProps, "beforeMount" | "onMount" | "onChange"> & {
