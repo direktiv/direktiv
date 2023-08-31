@@ -1,9 +1,9 @@
 import { FC, useRef } from "react";
 
 import AutoSizer from "react-virtualized-auto-sizer";
-import { EditorLanguagesType } from "./utils";
 import type { EditorProps } from "@monaco-editor/react";
 import MonacoEditor from "@monaco-editor/react";
+import { supportedLanguages } from "./utils";
 import themeDark from "./theme-dark";
 import themeLight from "./theme-light";
 
@@ -11,6 +11,8 @@ const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   monaco.editor.defineTheme("direktiv-dark", themeDark);
   monaco.editor.defineTheme("direktiv-light", themeLight);
 };
+
+export type EditorLanguagesType = (typeof supportedLanguages)[number];
 
 type EditorType = Parameters<NonNullable<EditorProps["onMount"]>>[0];
 

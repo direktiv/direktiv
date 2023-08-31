@@ -1,4 +1,5 @@
-import { editorLanguageSchema } from "./schema";
+import { EditorLanguagesType } from ".";
+import { z } from "zod";
 
 export const supportedLanguages = [
   "html",
@@ -9,8 +10,6 @@ export const supportedLanguages = [
   "yaml",
 ] as const;
 
-export type EditorLanguagesType = (typeof supportedLanguages)[number];
-
 export const mimeTypeToEditorSyntax = (
   mimeType: string | undefined
 ): EditorLanguagesType | undefined => {
@@ -18,3 +17,16 @@ export const mimeTypeToEditorSyntax = (
   if (!parsed.success) return undefined;
   return parsed.data;
 };
+
+export const editorLanguageSchema = z
+  .string()
+  .transform((val) => {
+    if (val.startsWith("text/html")) return "html";
+    if (val.startsWith("text/css")) return "css";
+    if (val.startsWith("application/json")) return "json";
+    if (val.startsWith("application/x-csh")) return "sh";
+    if (val.startsWith("application/x-sh")) return "sh";
+    if (val.startsWith("text/")) return "plaintext";
+    return val;
+  })
+  .pipe(z.enum(supportedLanguages));
