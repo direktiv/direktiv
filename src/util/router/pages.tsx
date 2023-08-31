@@ -43,18 +43,10 @@ interface PageBase {
 }
 
 type KeysWithNoPathParams = "monitoring" | "settings";
-type EnterpriseKeysWithNoPathParams = "permissions";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
   PageBase & { createHref: (params: { namespace: string }) => string }
->;
-
-type DefaultEnterprisePageSetup = Partial<
-  Record<
-    EnterpriseKeysWithNoPathParams,
-    PageBase & { createHref: (params: { namespace: string }) => string }
-  >
 >;
 
 type ExplorerSubpages =
@@ -178,7 +170,7 @@ type PermissionsPageSetup = Partial<
   >
 >;
 
-type EnterprisePageType = DefaultEnterprisePageSetup & PermissionsPageSetup;
+type EnterprisePageType = PermissionsPageSetup;
 
 export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
   ? {
