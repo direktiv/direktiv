@@ -65,13 +65,13 @@ export const gitUrlSchema = z
 // note: in the current API implementation, a mirror is created
 // by creating a namespace with the mirror object in the payload.
 
-export const MirrorPublicFormSchema = z.object({
+export const MirrorPublicPostSchema = z.object({
   url: z.string().url().nonempty(),
   ref: z.string().nonempty(),
 });
 
 // When Token auth is used, token is submitted as "passphrase"
-export const MirrorTokenFormSchema = z.object({
+export const MirrorTokenPostSchema = z.object({
   url: z.string().url().nonempty(),
   ref: z.string().nonempty(),
   passphrase: z
@@ -79,7 +79,7 @@ export const MirrorTokenFormSchema = z.object({
     .nonempty({ message: "Required when using token auth" }),
 });
 
-export const MirrorSshFormSchema = z.object({
+export const MirrorSshPostSchema = z.object({
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
   }),
@@ -89,24 +89,12 @@ export const MirrorSshFormSchema = z.object({
   publicKey: z.string().nonempty({ message: "Required when using SSH" }),
 });
 
-export const MirrorKeepTokenFormSchema = MirrorPublicFormSchema;
-
 export const MirrorKeepSSHKeysFormSchema = z.object({
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
   }),
   ref: z.string().nonempty(),
 });
-
-export const MirrorFormSchema = MirrorPublicFormSchema.or(
-  MirrorTokenFormSchema
-).or(MirrorSshFormSchema);
-
-export const MirrorPublicPostSchema = MirrorPublicFormSchema;
-
-export const MirrorTokenPostSchema = MirrorTokenFormSchema;
-
-export const MirrorSshPostSchema = MirrorSshFormSchema;
 
 export const MirrorPostSchema = MirrorPublicPostSchema.or(
   MirrorTokenPostSchema
@@ -115,8 +103,4 @@ export const MirrorPostSchema = MirrorPublicPostSchema.or(
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
 export type NamespaceLogListSchemaType = z.infer<typeof NamespaceLogListSchema>;
 export type NamespaceLogSchemaType = z.infer<typeof NamespaceLogSchema>;
-export type MirrorPublicFormSchemaType = z.infer<typeof MirrorPublicFormSchema>;
-export type MirrorTokenFormSchemaType = z.infer<typeof MirrorTokenFormSchema>;
-export type MirrorSshFormSchemaType = z.infer<typeof MirrorSshFormSchema>;
-export type MirrorFormSchemaType = z.infer<typeof MirrorFormSchema>;
 export type MirrorPostSchemaType = z.infer<typeof MirrorPostSchema>;
