@@ -429,6 +429,9 @@
             "relativeTime": "{{relativeTime}} ago",
             "type": "type",
             "status": "status"
+          },
+          "logs": {
+            "title": "Activity log"
           }
         },
         "tableHeader": {
