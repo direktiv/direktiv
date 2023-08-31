@@ -1,3 +1,4 @@
+import { Pagination, PaginationLink } from "~/design/Pagination";
 import {
   Table,
   TableBody,
@@ -10,12 +11,15 @@ import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
 import Header from "./Header";
 import { MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
+import PaginationProvider from "~/componentsNext/PaginationProvider";
 import Row from "./Row";
 import { treeKeys } from "~/api/tree";
 import { useApiKey } from "~/util/store/apiKey";
 import { useMirrorInfo } from "~/api/tree/query/mirrorInfo";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+
+const pageSize = 10;
 
 const Activities = () => {
   // TS does not infer the correct type for data via the dynamic UseQueryResult
@@ -51,41 +55,71 @@ const Activities = () => {
     <>
       <Header mirror={data} />
 
-      <div className="flex grow flex-col gap-y-4 p-5">
-        <h3 className="flex items-center gap-x-2 font-bold">
-          <GitCompare className="h-5" />
-          {t("pages.mirror.activities.list.title")}
-        </h3>
-        <Card>
-          <Table className="border-gray-5 dark:border-gray-dark-5">
-            <TableHead>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableHeaderCell>
-                  {t("pages.mirror.activities.tableHeader.id")}
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  {t("pages.mirror.activities.tableHeader.type")}
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  {t("pages.mirror.activities.tableHeader.status")}
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  {t("pages.mirror.activities.tableHeader.createdAt")}
-                </TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {activities.map((activity) => (
-                <Row
-                  namespace={data.namespace}
-                  key={activity.id}
-                  item={activity}
+      <PaginationProvider items={activities} pageSize={pageSize}>
+        {({
+          currentItems,
+          goToPage,
+          goToNextPage,
+          goToPreviousPage,
+          currentPage,
+          pagesList,
+          totalPages,
+        }) => (
+          <div className="flex grow flex-col gap-y-4 p-5">
+            <h3 className="flex items-center gap-x-2 font-bold">
+              <GitCompare className="h-5" />
+              {t("pages.mirror.activities.list.title")}
+            </h3>
+            <Card>
+              <Table className="border-gray-5 dark:border-gray-dark-5">
+                <TableHead>
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableHeaderCell>
+                      {t("pages.mirror.activities.tableHeader.id")}
+                    </TableHeaderCell>
+                    <TableHeaderCell>
+                      {t("pages.mirror.activities.tableHeader.type")}
+                    </TableHeaderCell>
+                    <TableHeaderCell>
+                      {t("pages.mirror.activities.tableHeader.status")}
+                    </TableHeaderCell>
+                    <TableHeaderCell>
+                      {t("pages.mirror.activities.tableHeader.createdAt")}
+                    </TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {currentItems.map((activity) => (
+                    <Row
+                      namespace={data.namespace}
+                      key={activity.id}
+                      item={activity}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationLink
+                  icon="left"
+                  onClick={() => goToPreviousPage()}
                 />
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      </div>
+                {pagesList.map((page) => (
+                  <PaginationLink
+                    active={currentPage === page}
+                    key={`${page}`}
+                    onClick={() => goToPage(page)}
+                  >
+                    {page}
+                  </PaginationLink>
+                ))}
+                <PaginationLink icon="right" onClick={() => goToNextPage()} />
+              </Pagination>
+            )}
+          </div>
+        )}
+      </PaginationProvider>
     </>
   );
 };
