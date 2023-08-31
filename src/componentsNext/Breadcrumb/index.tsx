@@ -5,7 +5,7 @@ import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
-import PermissionsBreadcrumb from "./PermissionsBreadcrumb";
+import PermissionsBreadcrumb from "./Permissions";
 import ServicesBreadcrumb from "./ServicesBreadcrumb";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";

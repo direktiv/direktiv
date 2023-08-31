@@ -1,12 +1,12 @@
 import {
   ActivitySquare,
+  BadgeCheck,
   Boxes,
   FolderTree,
   Layers,
   LucideIcon,
   Radio,
   Settings,
-  Users,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
@@ -179,7 +179,7 @@ export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
   ? {
       permissions: {
         name: "components.mainMenu.permissions",
-        icon: Users,
+        icon: BadgeCheck,
         createHref: (params) => {
           let subpage = "";
           if (params.subpage === "groups") {
@@ -194,7 +194,7 @@ export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
           const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
           const isPermissionsPage = checkHandler(
             secondLevel,
-            "isPermissionsPolicyPage"
+            "isPermissionsPage"
           );
           const isPermissionsPolicyPage = checkHandler(
             thirdLevel,

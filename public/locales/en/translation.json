@@ -663,7 +663,10 @@
       "services": "Services",
       "eventListeners": "Event Listeners",
       "monitoring": "Monitoring",
-      "permissions": "Permissions"
+      "permissions": "Permissions",
+      "permissionsPolicy": "Policy",
+      "permissionsTokens": "Tokens",
+      "permissionsGroups": "Groups"
     },
     "namespaceCreate": {
       "title": "Create a new namespace",

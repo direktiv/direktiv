@@ -1,36 +1,34 @@
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { Link } from "react-router-dom";
+import { Users } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-const PermissionsBreadcrumb = () => {
+const GroupsBreadcrumb = () => {
   const namespace = useNamespace();
+  const { isPermissionsGroupPage } = pages.permissions?.useParams() ?? {};
   const { t } = useTranslation();
 
-  const permissions = pages.permissions;
-  if (!permissions) return null;
-
-  const { isPermissionsPage } = permissions.useParams();
-  const { icon: Icon } = permissions;
-
-  if (!isPermissionsPage) return null;
+  if (!isPermissionsGroupPage) return null;
   if (!namespace) return null;
+  if (!pages.permissions) return null;
 
   return (
     <>
       <BreadcrumbLink>
         <Link
-          to={permissions.createHref({
+          to={pages.permissions.createHref({
             namespace,
+            subpage: "groups",
           })}
         >
-          <Icon aria-hidden="true" />
-          {t("components.breadcrumb.permissions")}
+          <Users aria-hidden="true" />
+          {t("components.breadcrumb.permissionsGroups")}
         </Link>
       </BreadcrumbLink>
     </>
   );
 };
 
-export default PermissionsBreadcrumb;
+export default GroupsBreadcrumb;
