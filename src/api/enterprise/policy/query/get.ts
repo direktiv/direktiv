@@ -35,6 +35,7 @@ allow {
     input.path = ["customers", customerID]
     input.user_roles[_] = "support"
 }
+${Date.now()}
 `);
 
 const fetchPolicy = async ({
