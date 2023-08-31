@@ -10,6 +10,7 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
 import { NodeSchemaType } from "~/api/tree/schema";
+import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -35,7 +36,8 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const fileContent = atob(data?.revision?.source ?? "");
   const mimeType = data?.node.mimeType;
 
-  const previewSupported = false;
+  const language = mimeTypeToEditorSyntax(mimeType);
+  const previewSupported = !!language;
 
   return (
     <>
@@ -48,7 +50,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
         <div className="flex h-[700px]">
           {previewSupported ? (
             <Editor
-              language="plaintext"
+              language={language}
               value={fileContent}
               options={{
                 readOnly: true,
