@@ -586,6 +586,10 @@
           "name": {
             "label": "Name",
             "placeholder": "variable-name"
+          },
+          "file": {
+            "label": "Upload a file",
+            "unsupportedMimeType": "Unsupported mime type"
           }
         },
         "edit": {

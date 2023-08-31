@@ -7,6 +7,7 @@ import {
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
+  MimeTypeSchema,
   MimeTypeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
@@ -41,6 +42,7 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const {
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
@@ -65,6 +67,26 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
     createVarMutation(data);
+  };
+
+  const onFilepickerChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const fileContent = await file.text();
+    const mimeType = file?.type ?? defaultMimeType;
+    const parsedMimetype = MimeTypeSchema.safeParse(mimeType);
+
+    if (parsedMimetype.success) {
+      onMimetypeChange(parsedMimetype.data);
+      setBody(fileContent);
+    } else {
+      setError("mimeType", {
+        message: t("pages.settings.variables.create.file.unsupportedMimeType"),
+      });
+    }
   };
 
   return (
@@ -105,6 +127,17 @@ const Create = ({ onSuccess }: CreateProps) => {
             id="mimetype"
             mimeType={mimeType}
             onChange={onMimetypeChange}
+          />
+        </fieldset>
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[150px] text-right" htmlFor="file-upload">
+            {t("pages.settings.variables.create.file.label")}
+          </label>
+          <Input
+            id="file-upload"
+            type="file"
+            placeholder={t("pages.settings.variables.create.name.placeholder")}
+            onChange={onFilepickerChange}
           />
         </fieldset>
 
