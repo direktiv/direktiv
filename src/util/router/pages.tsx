@@ -11,6 +11,7 @@ import {
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import EventsPage from "~/pages/namespace/Events";
+import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
@@ -228,7 +229,7 @@ export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
             },
             {
               path: "groups",
-              element: <PermissionsPage />,
+              element: <GroupsPage />,
               handle: { isPermissionsGroupPage: true },
             },
           ],
