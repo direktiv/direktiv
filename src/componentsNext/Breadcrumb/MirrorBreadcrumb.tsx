@@ -10,7 +10,7 @@ const MirrorBreadcrumb = () => {
   const namespace = useNamespace();
   const { isMirrorPage, isActivityDetailPage, activity } =
     pages.mirror.useParams();
-  const { icon: Icon } = pages.instances;
+  const { icon: Icon } = pages.mirror;
   const { t } = useTranslation();
 
   if (!isMirrorPage) return null;
