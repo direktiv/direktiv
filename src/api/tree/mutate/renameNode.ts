@@ -1,13 +1,5 @@
-import {
-  NodeListSchemaType,
-  NodeRenameSchema,
-  NodeSchemaType,
-} from "../schema";
-import {
-  forceLeadingSlash,
-  removeLeadingSlash,
-  removeTrailingSlash,
-} from "../utils";
+import { NodeRenameSchema, NodeSchemaType } from "../schema";
+import { forceLeadingSlash, removeLeadingSlash } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
