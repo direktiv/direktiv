@@ -170,7 +170,14 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 	insecureSkipTLS := cfg.Insecure
 	tempDir := ""
 
-	if cfg.PrivateKey == "" {
+	if cfg.URL == "" {
+		return nil, fmt.Errorf("URL is missing in the configuration")
+	}
+	if cfg.GitRef == "" {
+		return nil, fmt.Errorf("GitRef is missing in the configuration")
+	}
+
+	if cfg.PrivateKeyPassphrase == "" && cfg.PublicKey == "" && cfg.PrivateKey == "" {
 		return NewGitSourceNoAuth(GitSourceConfig{
 			URL:    cfg.URL,
 			GitRef: cfg.GitRef,
@@ -181,26 +188,33 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 	}
 
 	if strings.HasPrefix(cfg.URL, "http") {
+		if cfg.PrivateKeyPassphrase == "" {
+			return nil, fmt.Errorf("PrivateKeyPassphrase field has to be filled with the auth-token. This is required for token-based source")
+		}
+
 		return newGitSourceToken(GitSourceConfig{
 			URL:    cfg.URL,
 			GitRef: cfg.GitRef,
 		}, GitSourceTokenAuthConf{
 			Token: cfg.PrivateKeyPassphrase,
 		}, GitSourceOptions{
+			InsecureSkipTLS: cfg.Insecure,
+			TempDir:         tempDir,
+		})
+	}
+	if cfg.PrivateKey != "" || cfg.PublicKey != "" {
+		return NewGitSourceSSH(GitSourceConfig{
+			URL:    cfg.URL,
+			GitRef: cfg.GitRef,
+		}, GitSourceSSHAuthConf{
+			PrivateKey:           cfg.PrivateKey,
+			PublicKey:            cfg.PublicKey,
+			PrivateKeyPassphrase: cfg.PrivateKeyPassphrase,
+		}, GitSourceOptions{
 			InsecureSkipTLS: insecureSkipTLS,
 			TempDir:         tempDir,
 		})
 	}
 
-	return NewGitSourceSSH(GitSourceConfig{
-		URL:    cfg.URL,
-		GitRef: cfg.GitRef,
-	}, GitSourceSSHAuthConf{
-		PrivateKey:           cfg.PrivateKey,
-		PublicKey:            cfg.PublicKey,
-		PrivateKeyPassphrase: cfg.PrivateKeyPassphrase,
-	}, GitSourceOptions{
-		InsecureSkipTLS: insecureSkipTLS,
-		TempDir:         tempDir,
-	})
+	return nil, fmt.Errorf("could not detect the git auth mode to use")
 }
