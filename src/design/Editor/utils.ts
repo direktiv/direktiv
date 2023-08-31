@@ -28,7 +28,6 @@ export const editorLanguageSchema = z
     switch (val) {
       case "text/html":
         return "html";
-
       case "text/css":
         return "css";
       case "application/json":
