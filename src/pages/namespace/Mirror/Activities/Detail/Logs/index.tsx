@@ -26,7 +26,7 @@ const Logs = ({ activityId }: { activityId: string }) => {
   const resultCount = data?.results.length ?? 0;
 
   return (
-    <Card className="relative m-5 grid h-[500px] p-5">
+    <Card className="relative m-5 grid h-[500px] grid-rows-[auto,1fr,auto] p-5">
       <div className="mb-5 flex flex-col gap-5 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
