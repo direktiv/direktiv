@@ -10,11 +10,6 @@ import {
   MirrorFormType,
   MirrorInfoSchemaType,
 } from "~/api/tree/schema/mirror";
-import {
-  MirrorPublicFormSchemaType,
-  MirrorSshFormSchemaType,
-  MirrorTokenFormSchemaType,
-} from "~/api/namespaces/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
@@ -41,9 +36,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type FormInput = {
   name: string;
   formType: MirrorFormType;
-} & MirrorPublicFormSchemaType &
-  MirrorTokenFormSchemaType &
-  MirrorSshFormSchemaType;
+  url: string;
+  ref: string;
+  passphrase: string;
+  publicKey: string;
+  privateKey: string;
+};
 
 const NamespaceEdit = ({
   mirror,
