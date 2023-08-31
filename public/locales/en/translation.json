@@ -528,6 +528,9 @@
         "policy": "Policy",
         "tokens": "Tokens",
         "groups": "Groups"
+      },
+      "policy": {
+        "saveBtn": "Save"
       }
     },
     "settings": {
