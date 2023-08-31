@@ -11,7 +11,7 @@ import { z } from "zod";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getPolicy = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespace/${namespace}/policy`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/policy`,
   method: "GET",
   schema: PolicySchema,
 });
