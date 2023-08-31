@@ -530,6 +530,8 @@
         "groups": "Groups"
       },
       "policy": {
+        "unsavedNote": "unsaved changes",
+        "theresOneIssue": "There is an issue",
         "saveBtn": "Save"
       }
     },

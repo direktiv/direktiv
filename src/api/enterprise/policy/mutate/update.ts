@@ -16,11 +16,17 @@ const updatePolicy = apiFactory({
   schema: PolicyCreatedSchema,
 });
 
-const updatePolicyMock = (_params: {
+const updatePolicyMock = (params: {
   apiKey?: string;
   payload: string;
   urlParams: { namespace: string };
-}): Promise<z.infer<typeof PolicyCreatedSchema>> => Promise.resolve(null);
+}): Promise<z.infer<typeof PolicyCreatedSchema>> =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      console.warn("mocking save mutation with", params.payload);
+      resolve(null);
+    }, 1000);
+  });
 
 export const useUpdatePolicy = ({
   onSuccess,
