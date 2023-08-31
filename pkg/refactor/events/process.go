@@ -231,13 +231,13 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 }
 
 func removeExpired(l *EventListener) {
-    var validEvents []*Event
-    for _, e := range l.ReceivedEventsForAndTrigger {
-        if l.LifespanOfReceivedEvents == 0 || e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).After(time.Now().UTC()) {
-            validEvents = append(validEvents, e)
-        }
-    }
-    l.ReceivedEventsForAndTrigger = validEvents
+	var validEvents []*Event
+	for _, e := range l.ReceivedEventsForAndTrigger {
+		if l.LifespanOfReceivedEvents == 0 || e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).After(time.Now().UTC()) {
+			validEvents = append(validEvents, e)
+		}
+	}
+	l.ReceivedEventsForAndTrigger = validEvents
 }
 
 func canTriggerAction(l []*cloudevents.Event, types []string) bool {

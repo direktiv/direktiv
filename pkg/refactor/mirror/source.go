@@ -191,6 +191,7 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 		if cfg.PrivateKeyPassphrase == "" {
 			return nil, fmt.Errorf("PrivateKeyPassphrase field has to be filled with the auth-token. This is required for token-based source")
 		}
+
 		return newGitSourceToken(GitSourceConfig{
 			URL:    cfg.URL,
 			GitRef: cfg.GitRef,
@@ -201,11 +202,10 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 			TempDir:         tempDir,
 		})
 	}
-
 	if cfg.PrivateKey != "" || cfg.PublicKey != "" {
 		return NewGitSourceSSH(GitSourceConfig{
-		URL:    cfg.URL,
-		GitRef: cfg.GitRef,
+			URL:    cfg.URL,
+			GitRef: cfg.GitRef,
 		}, GitSourceSSHAuthConf{
 			PrivateKey:           cfg.PrivateKey,
 			PublicKey:            cfg.PublicKey,
@@ -215,5 +215,6 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 			TempDir:         tempDir,
 		})
 	}
+
 	return nil, fmt.Errorf("could not detect the git auth mode to use")
 }
