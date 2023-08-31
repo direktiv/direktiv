@@ -1,10 +1,10 @@
 import {
+  MirrorPostSchemaType,
   UpdateMirrorResponseSchema,
   UpdateMirrorResponseSchemaType,
 } from "../schema/mirror";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { MirrorPostSchemaType } from "~/api/namespaces/schema";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";

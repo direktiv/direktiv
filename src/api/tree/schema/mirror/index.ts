@@ -1,6 +1,6 @@
-import { LogLevelSchema, PageinfoSchema } from "../../schema";
+import { LogLevelSchema, PageinfoSchema } from "../../../schema";
 
-import { gitUrlSchema } from "~/api/namespaces/schema";
+import { gitUrlSchema } from "./validation";
 import { z } from "zod";
 
 /**
@@ -117,67 +117,49 @@ export const MirrorSyncResponseSchema = z.null();
 
 export const UpdateMirrorResponseSchema = z.null();
 
+// note: in the current API implementation, a mirror is created
+// by creating a namespace with the mirror object in the payload.
+export const MirrorPublicPostSchema = z.object({
+  url: z.string().url().nonempty(),
+  ref: z.string().nonempty(),
+});
+
+// When Token auth is used, token is submitted as "passphrase"
+export const MirrorTokenPostSchema = z.object({
+  url: z.string().url().nonempty(),
+  ref: z.string().nonempty(),
+  passphrase: z
+    .string()
+    .nonempty({ message: "Required when using token auth" }),
+});
+
+export const MirrorSshPostSchema = z.object({
+  url: gitUrlSchema.nonempty({
+    message: "format must be git@host:path when using SSH",
+  }),
+  ref: z.string().nonempty(),
+  passphrase: z.string().optional(),
+  privateKey: z.string().nonempty({ message: "Required when using SSH" }),
+  publicKey: z.string().nonempty({ message: "Required when using SSH" }),
+});
+
+export const MirrorKeepSSHKeysFormSchema = z.object({
+  url: gitUrlSchema.nonempty({
+    message: "format must be git@host:path when using SSH",
+  }),
+  ref: z.string().nonempty(),
+});
+
+export const MirrorPostSchema = MirrorPublicPostSchema.or(
+  MirrorTokenPostSchema
+).or(MirrorSshPostSchema);
+
 const mirrorFormType = z.enum([
   "public",
   "ssh",
   "token",
   "keep-ssh",
   "keep-token",
-]);
-
-const PublicValidationSchema = z.object({
-  formType: z.literal("public"),
-  url: z
-    .string()
-    .url()
-    .nonempty({ message: "invalid url, must be http(s):// format" }),
-  ref: z.string().nonempty(),
-});
-
-const TokenValidationSchema = z.object({
-  formType: z.literal("token"),
-  url: z
-    .string()
-    .url()
-    .nonempty({ message: "invalid url, must be http(s):// format" }),
-  ref: z.string().nonempty(),
-  passphrase: z.string().nonempty("token must not be empty"),
-});
-
-const SshValidationSchema = z.object({
-  formType: z.literal("ssh"),
-  url: gitUrlSchema.nonempty({
-    message: "format must be git@host:path when using SSH",
-  }),
-  ref: z.string().nonempty(),
-  passphrase: z.string().optional(),
-  publicKey: z.string().nonempty(),
-  privateKey: z.string().nonempty(),
-});
-
-const KeepTokenValidationSchema = z.object({
-  formType: z.literal("keep-token"),
-  url: z
-    .string()
-    .url()
-    .nonempty({ message: "invalid url, must be http(s):// format" }),
-  ref: z.string().nonempty(),
-});
-
-const KeepSshValidationSchema = z.object({
-  formType: z.literal("keep-ssh"),
-  url: gitUrlSchema.nonempty({
-    message: "format must be git@host:path when using SSH",
-  }),
-  ref: z.string().nonempty(),
-});
-
-export const MirrorValidationSchema = z.discriminatedUnion("formType", [
-  PublicValidationSchema,
-  SshValidationSchema,
-  TokenValidationSchema,
-  KeepSshValidationSchema,
-  KeepTokenValidationSchema,
 ]);
 
 export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;
@@ -194,6 +176,7 @@ export type MirrorSyncResponseSchemaType = z.infer<
   typeof MirrorSyncResponseSchema
 >;
 export type MirrorInfoSchemaType = z.infer<typeof MirrorInfoSchema>;
+export type MirrorPostSchemaType = z.infer<typeof MirrorPostSchema>;
 export type UpdateMirrorResponseSchemaType = z.infer<
   typeof UpdateMirrorResponseSchema
 >;
