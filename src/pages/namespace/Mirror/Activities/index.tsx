@@ -53,7 +53,7 @@ const Activities = () => {
 
   return (
     <>
-      <Header mirror={data} />
+      <Header mirror={data} loading={!!pendingActivities.length} />
 
       <PaginationProvider items={activities} pageSize={pageSize}>
         {({

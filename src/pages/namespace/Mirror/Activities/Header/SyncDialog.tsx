@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useSyncMirror } from "~/api/tree/mutate/syncMirror";
 import { useTranslation } from "react-i18next";
 
-const SyncDialog = () => {
+const SyncDialog = ({ loading }: { loading: boolean }) => {
   const [syncModal, setSyncModal] = useState(false);
   const { mutate: performSync } = useSyncMirror({
     onSuccess: () => setSyncModal(false),
@@ -24,8 +24,8 @@ const SyncDialog = () => {
   return (
     <Dialog open={syncModal} onOpenChange={setSyncModal}>
       <DialogTrigger asChild>
-        <Button variant="primary" className="max-md:w-full">
-          <RefreshCcw />
+        <Button variant="primary" loading={loading} className="max-md:w-full">
+          {!loading && <RefreshCcw />}
           {t("pages.mirror.header.sync")}
         </Button>
       </DialogTrigger>

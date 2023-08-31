@@ -3,7 +3,13 @@ import { GitCompare } from "lucide-react";
 import { MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
 import SyncDialog from "./SyncDialog";
 
-const Header = ({ mirror }: { mirror: MirrorInfoSchemaType }) => {
+const Header = ({
+  mirror,
+  loading,
+}: {
+  mirror: MirrorInfoSchemaType;
+  loading: boolean;
+}) => {
   const repoInfo = `${mirror.info.url} (${mirror.info.ref})`;
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -16,7 +22,7 @@ const Header = ({ mirror }: { mirror: MirrorInfoSchemaType }) => {
         </div>
         <div className="flex grow justify-end gap-4">
           <EditDialog mirror={mirror} />
-          <SyncDialog />
+          <SyncDialog loading={loading} />
         </div>
       </div>
     </div>
