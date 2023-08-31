@@ -159,7 +159,10 @@ type PermissionsPageSetup = Partial<
   Record<
     "permissions",
     PageBase & {
-      createHref: (params: { namespace: string }) => string;
+      createHref: (params: {
+        namespace: string;
+        subpage?: "tokens" | "groups"; // policy is the default page
+      }) => string;
       useParams: () => {
         isPermissionsPage: boolean;
         isPermissionsPolicyPage: boolean;
@@ -177,7 +180,16 @@ export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
       permissions: {
         name: "components.mainMenu.permissions",
         icon: Users,
-        createHref: (params) => `/${params.namespace}/permissions`,
+        createHref: (params) => {
+          let subpage = "";
+          if (params.subpage === "groups") {
+            subpage = "/groups";
+          }
+          if (params.subpage === "tokens") {
+            subpage = "/tokens";
+          }
+          return `/${params.namespace}/permissions${subpage}`;
+        },
         useParams: () => {
           const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
           const isPermissionsPage = checkHandler(
