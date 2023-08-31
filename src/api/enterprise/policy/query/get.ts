@@ -7,7 +7,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { z } from "zod";
 
-// TODO: remove this
+// TODO: remove the line below and delete the mock function
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getPolicy = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
