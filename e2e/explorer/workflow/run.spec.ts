@@ -160,17 +160,11 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   });
 
   const inputResponseString = atob(res.data);
-  const inputResponseAsJson = JSON.parse(inputResponseString);
-  const userInputAsJson = JSON.parse(userInputString);
 
   expect(
     inputResponseString,
-    "the server result is not exactly the same as the input that was sent (keys were sorted and the order of the array was changed))"
-  ).not.toBe(userInputString);
-  expect(
-    inputResponseAsJson,
-    "the JSON representation of the server result equals the client input"
-  ).toEqual(userInputAsJson);
+    "the server result is the same as the input that was sent"
+  ).toBe(userInputString);
 });
 
 test("it is possible to provide the input via generated form", async ({

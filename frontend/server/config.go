@@ -35,9 +35,7 @@ const (
 	DebugLog = "debug"
 )
 
-func ReadConfigAndPrepare(configDir string) (*Config, error) {
-
-	var c Config
+func ReadConfigAndPrepare(configDir string, c interface{}) error {
 
 	viper.SetConfigName("direktiv")
 	viper.AddConfigPath(configDir)
@@ -60,7 +58,7 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 		log.Info().Msgf("starting direktiv with config file direktiv.yaml in %s", configDir)
 		err := viper.ReadInConfig()
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		log.Info().Msgf("starting direktiv without config file")
@@ -68,7 +66,7 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 
 	err := viper.Unmarshal(&c)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -83,12 +81,10 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if viper.GetString("log.api") == DebugLog {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-
 		b, _ := json.MarshalIndent(c, "", "   ")
-
 		log.Debug().Msgf("%s", string(b))
 	}
 
-	return &c, nil
+	return nil
 
 }
