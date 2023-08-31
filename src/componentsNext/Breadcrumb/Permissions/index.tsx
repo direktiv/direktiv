@@ -32,8 +32,8 @@ const PermissionsBreadcrumb = () => {
           {t("components.breadcrumb.permissions")}
         </Link>
       </BreadcrumbLink>
-      <GroupsBreadcrumb />
       <PolicyBreadcrumb />
+      <GroupsBreadcrumb />
       <TokensBreadcrumb />
     </>
   );
