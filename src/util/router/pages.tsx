@@ -123,8 +123,8 @@ type MirrorPageSetup = Record<
     createHref: (params: { namespace: string; activity?: string }) => string;
     useParams: () => {
       activity?: string;
-      isMirrorActivityPage: boolean;
-      isMirrorLogsPage: boolean;
+      isMirrorPage: boolean;
+      isActivityDetailPage: boolean;
     };
   }
 >;
@@ -377,21 +377,19 @@ export const pages: PageType = {
       }`,
     useParams: () => {
       const { activity } = useParams();
-      const [, , thirdLevel] = useMatches(); // first level is namespace level
-      const isMirrorActivityPage = checkHandler(
-        thirdLevel,
-        "isMirrorActivityPage"
-      );
-      const isMirrorLogsPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+      const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
+      const isActivityDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
       return {
-        isMirrorActivityPage,
-        isMirrorLogsPage,
-        activity: isMirrorLogsPage ? activity : undefined,
+        isMirrorPage,
+        isActivityDetailPage,
+        activity: isActivityDetailPage ? activity : undefined,
       };
     },
     route: {
       path: "mirror",
       element: <MirrorPage />,
+      handle: { isMirrorPage: true },
       children: [
         {
           path: "",
