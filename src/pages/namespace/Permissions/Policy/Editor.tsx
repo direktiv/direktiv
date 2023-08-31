@@ -46,7 +46,7 @@ const PolicyEditor: FC<PolicyEditorProps> = ({ policyFromServer }) => {
   };
 
   return (
-    <div className="flex grow flex-col space-y-4 p-5">
+    <>
       <Card className="flex grow flex-col p-4">
         <div className="grow">
           <Editor
@@ -96,7 +96,7 @@ const PolicyEditor: FC<PolicyEditorProps> = ({ policyFromServer }) => {
           {t("pages.permissions.policy.saveBtn")}
         </Button>
       </div>
-    </div>
+    </>
   );
 };
 
