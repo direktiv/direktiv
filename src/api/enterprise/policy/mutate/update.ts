@@ -7,12 +7,20 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { z } from "zod";
 
-export const updatePolicy = apiFactory({
+// TODO: remove the line below and delete the mock function
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const updatePolicy = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/policy`,
   method: "PUT",
   schema: PolicyCreatedSchema,
 });
+
+const updatePolicyMock = (_params: {
+  apiKey?: string;
+  payload: string;
+  urlParams: { namespace: string };
+}): Promise<z.infer<typeof PolicyCreatedSchema>> => Promise.resolve(null);
 
 export const useUpdatePolicy = ({
   onSuccess,
@@ -31,7 +39,7 @@ export const useUpdatePolicy = ({
 
   return useMutation({
     mutationFn: ({ policyContent }: { policyContent: string }) =>
-      updatePolicy({
+      updatePolicyMock({
         apiKey: apiKey ?? undefined,
         payload: policyContent,
         urlParams: {
