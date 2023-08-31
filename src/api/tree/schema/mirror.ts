@@ -125,7 +125,7 @@ const mirrorFormType = z.enum([
   "keep-token",
 ]);
 
-const DmPublicFormSchema = z.object({
+const PublicValidationSchema = z.object({
   formType: z.literal("public"),
   url: z
     .string()
@@ -134,7 +134,7 @@ const DmPublicFormSchema = z.object({
   ref: z.string().nonempty(),
 });
 
-const DmTokenFormSchema = z.object({
+const TokenValidationSchema = z.object({
   formType: z.literal("token"),
   url: z
     .string()
@@ -144,7 +144,7 @@ const DmTokenFormSchema = z.object({
   passphrase: z.string().nonempty("token must not be empty"),
 });
 
-const DmSshFormSchema = z.object({
+const SshValidationSchema = z.object({
   formType: z.literal("ssh"),
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
@@ -155,7 +155,7 @@ const DmSshFormSchema = z.object({
   privateKey: z.string().nonempty(),
 });
 
-const DmKeepTokenFormSchema = z.object({
+const KeepTokenValidationSchema = z.object({
   formType: z.literal("keep-token"),
   url: z
     .string()
@@ -164,7 +164,7 @@ const DmKeepTokenFormSchema = z.object({
   ref: z.string().nonempty(),
 });
 
-const DmKeepSshFormSchema = z.object({
+const KeepSshValidationSchema = z.object({
   formType: z.literal("keep-ssh"),
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
@@ -172,12 +172,12 @@ const DmKeepSshFormSchema = z.object({
   ref: z.string().nonempty(),
 });
 
-export const MirrorDiscriminatingFormSchema = z.discriminatedUnion("formType", [
-  DmPublicFormSchema,
-  DmSshFormSchema,
-  DmTokenFormSchema,
-  DmKeepSshFormSchema,
-  DmKeepTokenFormSchema,
+export const MirrorValidationSchema = z.discriminatedUnion("formType", [
+  PublicValidationSchema,
+  SshValidationSchema,
+  TokenValidationSchema,
+  KeepSshValidationSchema,
+  KeepTokenValidationSchema,
 ]);
 
 export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;

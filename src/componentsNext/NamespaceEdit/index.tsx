@@ -6,9 +6,9 @@ import {
 } from "~/design/Dialog";
 import { GitCompare, Home, PlusCircle, Save } from "lucide-react";
 import {
-  MirrorDiscriminatingFormSchema,
   MirrorFormType,
   MirrorInfoSchemaType,
+  MirrorValidationSchema,
 } from "~/api/tree/schema/mirror";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
@@ -68,7 +68,7 @@ const NamespaceEdit = ({
   );
 
   const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
-  const mirrorSchema = baseSchema.and(MirrorDiscriminatingFormSchema);
+  const mirrorSchema = baseSchema.and(MirrorValidationSchema);
 
   let initialFormType: MirrorFormType = "public";
 
