@@ -31,3 +31,5 @@ const TokenSchema = z.object({
 export const TokenListSchema = z.object({
   tokens: z.array(TokenSchema),
 });
+
+export type TokenSchemaType = z.infer<typeof TokenSchema>;

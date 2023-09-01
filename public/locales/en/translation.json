@@ -541,6 +541,15 @@
           "permissions": "Permissions"
         },
         "noGroups": "There are no groups yet."
+      },
+      "tokens": {
+        "tableHeader": {
+          "description": "Description",
+          "permissions": "Permissions",
+          "created": "created",
+          "expires": "expires"
+        },
+        "noTokens": "There are no tokens yet."
       }
     },
     "settings": {
