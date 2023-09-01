@@ -17,7 +17,7 @@ import {
   WorkflowVariableFormSchema,
   WorkflowVariableFormSchemaType,
   WorkflowVariableSchemaType,
-} from "~/api/tree/schema";
+} from "~/api/tree/schema/workflowVariable";
 import { useEffect, useState } from "react";
 
 import Alert from "~/design/Alert";

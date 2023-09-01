@@ -414,6 +414,57 @@
         }
       }
     },
+    "mirror": {
+      "header": {
+        "ref": "ref",
+        "url": "url",
+        "editMirror": "Edit mirror",
+        "sync": "Sync"
+      },
+      "syncDialog": {
+        "title": "Sync {{namespace}}",
+        "description": "Fetch and sync mirror with latest content from remote repository?",
+        "confirm": "Sync"
+      },
+      "activities": {
+        "list": {
+          "title": "Activities"
+        },
+        "detail": {
+          "header": {
+            "createdAt": "started",
+            "relativeTime": "{{relativeTime}} ago",
+            "type": "type",
+            "status": "status"
+          },
+          "logs": {
+            "title": "Activity log"
+          }
+        },
+        "tableHeader": {
+          "createdAt": "Started",
+          "id": "Activity ID",
+          "status": "Status",
+          "type": "Type"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
+        }
+      },
+      "noMirror": {
+        "title": "This namespace is not a mirror",
+        "description1": "This page is only available for Git mirrors.",
+        "description2": "When you create a new namespace, you can set it up as a Git mirror. This means the contents of a Git repository will be imported, and changes to your files will be synched between namespace and repository.",
+        "docs": {
+          "title": "Git mirrors",
+          "description": "Read more about Git synching in our docs."
+        },
+        "example": {
+          "title": "Try it out!",
+          "description": "Create a mirror using our examples repository."
+        }
+      }
+    },
     "services": {
       "list": {
         "title": "Services",
@@ -651,7 +702,8 @@
       "gateway": "Gateway",
       "permissions": "Permissions",
       "services": "Services",
-      "settings": "Settings"
+      "settings": "Settings",
+      "mirror": "Mirror"
     },
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",
@@ -662,21 +714,34 @@
       "eventHistory": "Event History",
       "services": "Services",
       "eventListeners": "Event Listeners",
-      "monitoring": "Monitoring"
+      "monitoring": "Monitoring",
+      "mirror": "Mirror"
     },
-    "namespaceCreate": {
-      "title": "Create a new namespace",
-      "createBtn": "Create",
+    "namespaceEdit": {
+      "title": {
+        "new": "Create a new namespace",
+        "edit": "Update mirror {{namespace}}"
+      },
+      "submitBtn": {
+        "create": "Create",
+        "save": "Save"
+      },
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel",
       "tab": {
         "namespace": "Namespace",
         "mirror": "Mirror"
       },
-      "authType": {
-        "none": "none",
-        "ssh": "SSH",
-        "token": "token"
+      "formTypeSelect": {
+        "keep-token": "Keep existing token (http)",
+        "keep-ssh": "Keep existing keys (ssh)",
+        "public": "Public",
+        "token": "Token (http)",
+        "ssh": "Key pair (ssh)"
+      },
+      "formTypeMessage": {
+        "keep": "Your authentication data will be kept unless you chose a different option.",
+        "replace": "The new authentication settings will overwrite any stored credentials. Select the 'keep' option above to prevent this."
       },
       "placeholder": {
         "name": "new-namespace-name",
@@ -687,7 +752,7 @@
         "publicKey": "Public Key (required)",
         "privateKey": "Private Key (required)",
         "token": "token",
-        "authType": "Select authentication method"
+        "formType": "Select authentication method"
       },
       "label": {
         "name": "Name",
@@ -697,7 +762,7 @@
         "publicKey": "Public key",
         "privateKey": "Private key",
         "token": "Token",
-        "authType": "Auth type"
+        "formType": "Auth type"
       },
       "tooltip": {
         "url": "URL to repository. If auth method is SSH, a git url must be used, e.g. 'git@github.com:direktiv/apps-svc.git'. All other auth methods must use HTTP/S urls.",
@@ -869,6 +934,24 @@
           },
           "error": {
             "description": "could not delete namespace 😢"
+          }
+        },
+        "syncMirror": {
+          "success": {
+            "title": "Sync namespace",
+            "description": "Triggered sync for namespace {{namespace}}"
+          },
+          "error": {
+            "description": "could not sync namespace 😢"
+          }
+        },
+        "updateMirror": {
+          "success": {
+            "title": "Update mirror",
+            "description": "Settings for mirror {{namespace}} were updated"
+          },
+          "error": {
+            "description": "could not update mirror settings 😢"
           }
         }
       }

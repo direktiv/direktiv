@@ -12,7 +12,7 @@ import { ComponentPropsWithoutRef, FC, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
-import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
+import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
