@@ -597,6 +597,7 @@
           "description": "description",
           "permissions": "permissions"
         },
+        "createBtn": "Create a new group",
         "noGroups": "There are no groups yet."
       },
       "tokens": {
