@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 const GroupsPage = () => {
   const { t } = useTranslation();
   const { data, isFetched } = useGroups();
-  const noResults = true; //isFetched && data?.groups.length === 0;
+  const noResults = isFetched && data?.groups.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
 
