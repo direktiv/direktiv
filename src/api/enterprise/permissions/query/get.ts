@@ -70,5 +70,6 @@ export const usePermissionKeys = () => {
   return useQuery({
     queryKey: permissionKeys.get({ apiKey: apiKey ?? undefined }),
     queryFn: fetchpermissionKeys,
+    staleTime: Infinity, // this is a long lived static list, no refetch needed until the page is refreshed
   });
 };
