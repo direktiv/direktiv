@@ -1042,6 +1042,19 @@
           }
         }
       }
+    },
+    "tokens": {
+      "mutate": {
+        "createToken": {
+          "success": {
+            "title": "Token created",
+            "description": "The token {{name}} was created"
+          },
+          "error": {
+            "description": "The token could not be created 😢"
+          }
+        }
+      }
     }
   }
 }

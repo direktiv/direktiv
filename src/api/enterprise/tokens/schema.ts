@@ -32,4 +32,22 @@ export const TokenListSchema = z.object({
   tokens: z.array(TokenSchema),
 });
 
+export const TokenCreatedSchema = z.null();
+
+/**
+ * example
+ * 
+  {
+    "description": "my first token",
+    "duration": "P1Y",
+    "permissions": ["permissionsView", "workflowView"]
+  }
+ */
+export const TokenFormSchema = z.object({
+  description: z.string(),
+  duration: z.string(), // ISO8601 duration string
+  permissions: z.array(z.string()),
+});
+
 export type TokenSchemaType = z.infer<typeof TokenSchema>;
+export type TokenFormSchemaType = z.infer<typeof TokenFormSchema>;
