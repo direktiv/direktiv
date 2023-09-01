@@ -59,7 +59,7 @@ const getTokensMock = (_params: {
             ],
             created: new Date().toISOString(),
             expires: moment().add(1, "day").toISOString(),
-            expired: faker.datatype.boolean(),
+            expired: false,
           },
           {
             id: faker.datatype.uuid(),
@@ -67,7 +67,7 @@ const getTokensMock = (_params: {
             permissions: [],
             created: new Date().toISOString(),
             expires: moment().add(1, "month").toISOString(),
-            expired: faker.datatype.boolean(),
+            expired: false,
           },
           {
             id: faker.datatype.uuid(),
