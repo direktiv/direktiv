@@ -1,4 +1,3 @@
-import { KeyRound, Users } from "lucide-react";
 import {
   NoResult,
   Table,
@@ -10,6 +9,7 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
+import { KeyRound } from "lucide-react";
 import Row from "./Row";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
 import { useTranslation } from "react-i18next";
@@ -18,6 +18,7 @@ const TokensPage = () => {
   const { t } = useTranslation();
   const { data, isFetched } = useTokens();
   const noResults = isFetched && data?.tokens.length === 0;
+
   return (
     <Card className="m-5">
       <Table>
