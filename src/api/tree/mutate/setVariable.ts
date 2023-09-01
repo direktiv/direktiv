@@ -13,17 +13,19 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const setVariable = apiFactory({
+export const setVariable = apiFactory({
   url: ({
+    baseUrl,
     namespace,
     path,
     name,
   }: {
+    baseUrl?: string;
     namespace: string;
     path: string;
     name: string;
   }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
+    `${baseUrl ?? ""}/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
     )}?op=set-var&var=${name}`,
   method: "PUT",

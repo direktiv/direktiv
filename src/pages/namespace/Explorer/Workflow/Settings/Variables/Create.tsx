@@ -77,6 +77,7 @@ const Create = ({ onSuccess, path }: CreateProps) => {
         id="create-variable"
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col space-y-5"
+        data-testid="wf-form-create-variable"
       >
         <DialogHeader>
           <DialogHeader>

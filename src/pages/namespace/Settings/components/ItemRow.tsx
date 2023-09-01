@@ -27,7 +27,7 @@ const ItemRow = <ItemType,>({
   const { t } = useTranslation();
 
   return (
-    <TableRow>
+    <TableRow data-testid={`wf-settings-var-row-${item.name}`}>
       <TableCell data-testid="item-name">{item.name}</TableCell>
       <TableCell className="w-0">
         <DropdownMenu>

@@ -119,6 +119,7 @@ const VariablesList = ({ path }: { path: string }) => {
             {totalPages > 1 && (
               <Pagination>
                 <PaginationLink
+                  data-testid="pagination-btn-left"
                   icon="left"
                   onClick={() => goToPreviousPage()}
                 />
@@ -131,7 +132,11 @@ const VariablesList = ({ path }: { path: string }) => {
                     {page}
                   </PaginationLink>
                 ))}
-                <PaginationLink icon="right" onClick={() => goToNextPage()} />
+                <PaginationLink
+                  data-testid="pagination-btn-right"
+                  icon="right"
+                  onClick={() => goToNextPage()}
+                />
               </Pagination>
             )}
           </>
