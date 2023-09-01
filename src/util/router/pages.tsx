@@ -21,6 +21,10 @@ import Logs from "~/pages/namespace/Mirror/Activities/Detail";
 import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";
+import ServiceDetailPage from "~/pages/namespace/Services/Detail";
+import ServiceRevisionPage from "~/pages/namespace/Services/Detail/Revision";
+import ServicesListPage from "~/pages/namespace/Services/List";
+import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
 import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
@@ -40,7 +44,6 @@ type KeysWithNoPathParams =
   | "monitoring"
   // | "gateway"
   // | "permissions"
-  | "services"
   | "settings";
 
 type DefaultPageSetup = Record<
@@ -103,6 +106,26 @@ type InstancesPageSetup = Record<
   }
 >;
 
+type ServicesPageSetup = Record<
+  "services",
+  PageBase & {
+    createHref: (params: {
+      namespace: string;
+      service?: string;
+      revision?: string;
+    }) => string;
+    useParams: () => {
+      namespace: string | undefined;
+      service: string | undefined;
+      revision: string | undefined;
+      isServicePage: boolean;
+      isServiceListPage: boolean;
+      isServiceDetailPage: boolean;
+      isServiceRevisionPage: boolean;
+    };
+  }
+>;
+
 type EventsPageSetup = Record<
   "events",
   PageBase & {
@@ -142,6 +165,7 @@ type MonitoringPageSetup = Record<
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
+  ServicesPageSetup &
   EventsPageSetup &
   MonitoringPageSetup &
   MirrorPageSetup;
@@ -362,10 +386,64 @@ export const pages: PageType = {
   services: {
     name: "components.mainMenu.services",
     icon: Layers,
-    createHref: (params) => `/${params.namespace}/services`,
+    createHref: (params) =>
+      `/${params.namespace}/services${
+        params.service ? `/${params.service}` : ""
+      }${params.revision ? `/${params.revision}` : ""}`,
+    useParams: () => {
+      const { namespace, service, revision } = useParams();
+
+      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+
+      const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
+      const isServiceDetailPage = checkHandler(
+        fourthLvl,
+        "isServiceDetailPage"
+      );
+      const isServiceRevisionPage = checkHandler(
+        fourthLvl,
+        "isServiceRevisionPage"
+      );
+
+      const isServicePage =
+        isServiceListPage || isServiceDetailPage || isServiceRevisionPage;
+
+      return {
+        namespace: isServicePage ? namespace : undefined,
+        service: isServicePage || isServiceRevisionPage ? service : undefined,
+        revision: isServiceRevisionPage ? revision : undefined,
+        isServicePage,
+        isServiceListPage,
+        isServiceDetailPage,
+        isServiceRevisionPage,
+      };
+    },
+
     route: {
       path: "services",
-      element: <div className="flex flex-col space-y-5 p-10">Services</div>,
+      element: <ServicesPage />,
+      children: [
+        {
+          path: "",
+          element: <ServicesListPage />,
+          handle: { isServiceListPage: true },
+        },
+        {
+          path: ":service",
+          children: [
+            {
+              path: "",
+              element: <ServiceDetailPage />,
+              handle: { isServiceDetailPage: true },
+            },
+            {
+              path: ":revision",
+              element: <ServiceRevisionPage />,
+              handle: { isServiceRevisionPage: true },
+            },
+          ],
+        },
+      ],
     },
   },
   mirror: {

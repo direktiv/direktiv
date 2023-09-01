@@ -133,6 +133,7 @@ const Header: FC = () => {
                   variant="primary"
                   disabled={!isLive}
                   data-testid="workflow-header-btn-run"
+                  className="grow"
                 >
                   <Play />
                   {t("pages.explorer.workflow.runBtn")}
@@ -147,7 +148,7 @@ const Header: FC = () => {
         </div>
         <div>
           <nav className="-mb-px flex space-x-8">
-            <Tabs defaultValue={tabs.find((x) => x.active)?.value}>
+            <Tabs value={tabs.find((x) => x.active)?.value}>
               <TabsList>
                 {tabs.map((tab) => (
                   <TabsTrigger

@@ -11,8 +11,7 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const createNamespace = apiFactory({
-  url: ({ name }: { name: string; mirror?: MirrorPostSchemaType }) =>
-    `/api/namespaces/${name}`,
+  url: ({ name }: { name: string }) => `/api/namespaces/${name}`,
   method: "PUT",
   schema: NamespaceCreatedSchema,
 });
