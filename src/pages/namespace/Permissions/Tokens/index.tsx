@@ -24,11 +24,8 @@ const TokensPage = () => {
       <Table>
         <TableHead>
           <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-            <TableHeaderCell className="w-32">
-              {t("pages.permissions.tokens.tableHeader.description")}
-            </TableHeaderCell>
             <TableHeaderCell>
-              {t("pages.permissions.tokens.tableHeader.permissions")}
+              {t("pages.permissions.tokens.tableHeader.description")}
             </TableHeaderCell>
             <TableHeaderCell className="w-32">
               {t("pages.permissions.tokens.tableHeader.created")}
@@ -36,12 +33,15 @@ const TokensPage = () => {
             <TableHeaderCell className="w-32">
               {t("pages.permissions.tokens.tableHeader.expires")}
             </TableHeaderCell>
+            <TableHeaderCell className="w-32">
+              {t("pages.permissions.tokens.tableHeader.permissions")}
+            </TableHeaderCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {noResults ? (
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableCell colSpan={3}>
+              <TableCell colSpan={4}>
                 <NoResult icon={KeyRound}>
                   {t("pages.permissions.tokens.noTokens")}
                 </NoResult>
