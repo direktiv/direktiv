@@ -526,7 +526,6 @@ export const pages: PageType & EnterprisePageType = {
       ],
     },
   },
-  ...enterprisePages,
   mirror: {
     name: "components.mainMenu.mirror",
     icon: GitCompare,
@@ -563,6 +562,7 @@ export const pages: PageType & EnterprisePageType = {
       ],
     },
   },
+  ...enterprisePages,
   settings: {
     name: "components.mainMenu.settings",
     icon: Settings,
