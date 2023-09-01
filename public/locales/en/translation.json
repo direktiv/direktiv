@@ -597,6 +597,21 @@
           "description": "description",
           "permissions": "permissions"
         },
+        "create": {
+          "title": "Create a group",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "group": {
+            "label": "Name",
+            "placeholder": "groupname",
+            "alreadyExist": "The name already exists"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          },
+          "permissions": "permissions"
+        },
         "createBtn": "Create a new group",
         "noGroups": "There are no groups yet."
       },
