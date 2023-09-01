@@ -20,7 +20,9 @@ const getPolicyMock = (_params: {
   apiKey?: string;
   urlParams: { namespace: string };
 }): Promise<z.infer<typeof PolicySchema>> =>
-  Promise.resolve(`package authorization
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`package authorization
 
 default allow = false
 
@@ -37,6 +39,8 @@ allow {
 }
 ${Date.now()}
 `);
+    }, 500);
+  });
 
 const fetchPolicy = async ({
   queryKey: [{ apiKey, namespace }],
