@@ -534,6 +534,11 @@
         "theresOneIssue": "There is an issue",
         "saveBtn": "Save"
       },
+      "permissionsInfo": {
+        "all": "all permissions",
+        "partial": "{{count}} permisions",
+        "partial_one": "{{count}} permision"
+      },
       "groups": {
         "tableHeader": {
           "name": "Name",
