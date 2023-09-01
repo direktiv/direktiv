@@ -7,7 +7,6 @@ import {
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
-  MimeTypeSchema,
   MimeTypeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
@@ -42,7 +41,6 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const {
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
@@ -74,19 +72,12 @@ const Create = ({ onSuccess }: CreateProps) => {
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    const fileContent = await file.text();
     const mimeType = file?.type ?? defaultMimeType;
-    const parsedMimetype = MimeTypeSchema.safeParse(mimeType);
-
-    if (parsedMimetype.success) {
-      onMimetypeChange(parsedMimetype.data);
-      setBody(fileContent);
-    } else {
-      setError("mimeType", {
-        message: t("pages.settings.variables.create.file.unsupportedMimeType"),
-      });
-    }
+    createVarMutation({
+      name: "justuploaded",
+      content: file as unknown as string,
+      mimeType: mimeType as unknown as MimeTypeType,
+    });
   };
 
   return (
