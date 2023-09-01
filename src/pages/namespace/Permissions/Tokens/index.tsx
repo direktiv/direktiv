@@ -18,7 +18,6 @@ const TokensPage = () => {
   const { t } = useTranslation();
   const { data, isFetched } = useTokens();
   const noResults = isFetched && data?.tokens.length === 0;
-
   return (
     <Card className="m-5">
       <Table>
