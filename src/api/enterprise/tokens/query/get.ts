@@ -11,7 +11,7 @@ import { z } from "zod";
 
 // TODO: remove the line below and delete the mock function
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getTokens = apiFactory({
+const getTokens = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
   method: "GET",
