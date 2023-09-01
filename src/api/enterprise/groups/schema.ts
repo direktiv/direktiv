@@ -14,7 +14,7 @@ import { z } from "zod";
   }
  */
 
-const GroupsSchema = z.object({
+const GroupSchema = z.object({
   id: z.string(),
   group: z.string(),
   description: z.string(),
@@ -28,6 +28,6 @@ const GroupsSchema = z.object({
     "groups": [...]
   }
  */
-export const GroupslistSchema = z.object({
-  groups: z.array(GroupsSchema),
+export const GroupsListSchema = z.object({
+  groups: z.array(GroupSchema),
 });

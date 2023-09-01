@@ -1,6 +1,6 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
-import { GroupslistSchema } from "../schema";
+import { GroupsListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { groupsKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -10,7 +10,7 @@ export const getGroups = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
   method: "GET",
-  schema: GroupslistSchema,
+  schema: GroupsListSchema,
 });
 
 const fetchGroups = async ({
