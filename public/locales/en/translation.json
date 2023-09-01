@@ -533,6 +533,14 @@
         "unsavedNote": "unsaved changes",
         "theresOneIssue": "There is an issue",
         "saveBtn": "Save"
+      },
+      "groups": {
+        "tableHeader": {
+          "name": "Name",
+          "description": "Description",
+          "permissions": "Permissions"
+        },
+        "noGroups": "There are no groups yet."
       }
     },
     "settings": {

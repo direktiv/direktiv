@@ -31,3 +31,5 @@ const GroupSchema = z.object({
 export const GroupsListSchema = z.object({
   groups: z.array(GroupSchema),
 });
+
+export type GroupSchemaType = z.infer<typeof GroupSchema>;
