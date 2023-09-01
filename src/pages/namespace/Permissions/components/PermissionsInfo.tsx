@@ -1,8 +1,9 @@
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "~/design/HoverCard";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
 import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
@@ -20,28 +21,30 @@ const PermissionsInfo = ({ permissions }: { permissions: string[] }) => {
   if (!isSuccess) return null;
 
   return (
-    <HoverCard>
-      <HoverCardTrigger>
-        <Badge className="cursor-pointer" variant={badgeVariant}>
-          {hasAllPermissions
-            ? t("pages.permissions.permissionsInfo.all")
-            : t("pages.permissions.permissionsInfo.partial", {
-                count: permissions.length,
-              })}
-        </Badge>
-      </HoverCardTrigger>
-      <HoverCardContent className="flex max-w-xl flex-wrap gap-3">
-        {availablePermissions.map((permission) => (
-          <Badge
-            key={permission}
-            className="cursor-pointer"
-            variant={permissions.includes(permission) ? "success" : "outline"}
-          >
-            {permission}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <Badge className="cursor-pointer" variant={badgeVariant}>
+            {hasAllPermissions
+              ? t("pages.permissions.permissionsInfo.all")
+              : t("pages.permissions.permissionsInfo.partial", {
+                  count: permissions.length,
+                })}
           </Badge>
-        ))}
-      </HoverCardContent>
-    </HoverCard>
+        </TooltipTrigger>
+        <TooltipContent className="flex max-w-xl flex-wrap gap-3">
+          {availablePermissions.map((permission) => (
+            <Badge
+              key={permission}
+              className="cursor-pointer"
+              variant={permissions.includes(permission) ? "success" : "outline"}
+            >
+              {permission}
+            </Badge>
+          ))}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
