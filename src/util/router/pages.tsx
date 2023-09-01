@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Boxes,
   FolderTree,
+  GitCompare,
   Layers,
   LucideIcon,
   Radio,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import Activities from "~/pages/namespace/Mirror/Activities";
 import EventsPage from "~/pages/namespace/Events";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
@@ -17,6 +19,8 @@ import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import Listeners from "~/pages/namespace/Events/Listeners";
+import Logs from "~/pages/namespace/Mirror/Activities/Detail";
+import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
@@ -138,6 +142,18 @@ type EventsPageSetup = Record<
   }
 >;
 
+type MirrorPageSetup = Record<
+  "mirror",
+  PageBase & {
+    createHref: (params: { namespace: string; activity?: string }) => string;
+    useParams: () => {
+      activity?: string;
+      isMirrorPage: boolean;
+      isActivityDetailPage: boolean;
+    };
+  }
+>;
+
 type MonitoringPageSetup = Record<
   "monitoring",
   PageBase & {
@@ -153,7 +169,8 @@ type PageType = DefaultPageSetup &
   InstancesPageSetup &
   ServicesPageSetup &
   EventsPageSetup &
-  MonitoringPageSetup;
+  MonitoringPageSetup &
+  MirrorPageSetup;
 
 type PermissionsPageSetup = Partial<
   Record<
@@ -510,6 +527,42 @@ export const pages: PageType & EnterprisePageType = {
     },
   },
   ...enterprisePages,
+  mirror: {
+    name: "components.mainMenu.mirror",
+    icon: GitCompare,
+    createHref: (params) =>
+      `/${params.namespace}/mirror/${
+        params?.activity ? `logs/${params.activity}` : ""
+      }`,
+    useParams: () => {
+      const { activity } = useParams();
+      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+      const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
+      const isActivityDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+      return {
+        isMirrorPage,
+        isActivityDetailPage,
+        activity: isActivityDetailPage ? activity : undefined,
+      };
+    },
+    route: {
+      path: "mirror",
+      element: <MirrorPage />,
+      handle: { isMirrorPage: true },
+      children: [
+        {
+          path: "",
+          element: <Activities />,
+          handle: { isMirrorActivitiesPage: true },
+        },
+        {
+          path: "logs/:activity",
+          element: <Logs />,
+          handle: { isMirrorLogsPage: true },
+        },
+      ],
+    },
+  },
   settings: {
     name: "components.mainMenu.settings",
     icon: Settings,

@@ -8,7 +8,7 @@ import Delete from "./Delete";
 import { GitMerge } from "lucide-react";
 import Revert from "../../components/Revert";
 import RevisionTableRow from "./Row";
-import type { TrimmedRevisionSchemaType } from "~/api/tree/schema";
+import type { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useNodeRevisions } from "~/api/tree/query/revisions";
 import { useNodeTags } from "~/api/tree/query/tags";

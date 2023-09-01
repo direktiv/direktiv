@@ -1,4 +1,4 @@
-import { WorkflowStartedSchema } from "../schema";
+import { WorkflowStartedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";

@@ -1,4 +1,4 @@
-import { NodeListSchemaType } from "~/api/tree/schema";
+import { NodeListSchemaType } from "~/api/tree/schema/node";
 import { headers } from "./testutils";
 
 const apiUrl = process.env.VITE_DEV_API_DOMAIN;
