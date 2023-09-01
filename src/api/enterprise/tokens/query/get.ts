@@ -3,7 +3,7 @@ import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { TokenListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { faker } from "@faker-js/faker";
-import { set } from "date-fns";
+import moment from "moment";
 import { tokenKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
@@ -28,7 +28,7 @@ const getTokensMock = (_params: {
         tokens: [
           {
             id: faker.datatype.uuid(),
-            description: faker.lorem.sentence(),
+            description: "some super token",
             permissions: [
               "opaManage",
               "variablesView",
@@ -58,24 +58,24 @@ const getTokensMock = (_params: {
               "eventsManage",
             ],
             created: new Date().toISOString(),
-            expires: set(new Date(), { year: 2022 }).toISOString(),
+            expires: moment().add(1, "day").toISOString(),
             expired: faker.datatype.boolean(),
           },
           {
             id: faker.datatype.uuid(),
-            description: faker.lorem.sentence(),
+            description: "some useless token",
             permissions: [],
             created: new Date().toISOString(),
-            expires: set(new Date(), { year: 2022 }).toISOString(),
+            expires: moment().add(1, "month").toISOString(),
             expired: faker.datatype.boolean(),
           },
           {
             id: faker.datatype.uuid(),
-            description: faker.lorem.sentence(),
+            description: "some expired token",
             permissions: ["workflowView", "permissionsView"],
             created: new Date().toISOString(),
-            expires: set(new Date(), { year: 2022 }).toISOString(),
-            expired: faker.datatype.boolean(),
+            expires: moment().subtract(1, "day").toISOString(),
+            expired: true,
           },
         ],
       });

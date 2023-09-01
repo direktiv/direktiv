@@ -27,14 +27,14 @@ const getGroupsMock = (_params: {
         groups: [
           {
             id: faker.datatype.uuid(),
-            group: faker.word.adjective(),
-            description: faker.lorem.sentence(),
+            group: "some-group",
+            description: "this is just a test group",
             permissions: ["workflowView", "permissionsView"],
           },
           {
             id: faker.datatype.uuid(),
-            group: faker.word.adjective(),
-            description: faker.lorem.sentence(),
+            group: "super-admin",
+            description: "this is the super admin group",
             permissions: [
               "opaManage",
               "variablesView",
@@ -66,8 +66,8 @@ const getGroupsMock = (_params: {
           },
           {
             id: faker.datatype.uuid(),
-            group: faker.word.adjective(),
-            description: faker.lorem.sentence(),
+            group: "can-t-do-anything",
+            description: "this user can't do anything",
             permissions: [],
           },
         ],
