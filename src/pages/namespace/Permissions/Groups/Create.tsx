@@ -112,6 +112,7 @@ const CreateGroup = ({
             >
               {t("pages.permissions.groups.create.permissions")}
             </label>
+            <div>Permissions will go here</div>
           </fieldset>
         </form>
       </div>

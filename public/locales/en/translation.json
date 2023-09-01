@@ -610,7 +610,7 @@
             "label": "Description",
             "placeholder": "Enter a description for the group"
           },
-          "permissions": "permissions"
+          "permissions": "Permissions"
         },
         "createBtn": "Create a new group",
         "noGroups": "There are no groups yet."
