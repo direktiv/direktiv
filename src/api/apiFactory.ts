@@ -100,7 +100,9 @@ export const apiFactory =
       ...(payload
         ? {
             body:
-              typeof payload === "string" ? payload : JSON.stringify(payload),
+              typeof payload === "string" || payload instanceof File
+                ? payload
+                : JSON.stringify(payload),
           }
         : {}),
     });
