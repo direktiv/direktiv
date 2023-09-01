@@ -204,7 +204,7 @@ const CreateRevision = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.services.revision.create.createBtn")}
+            {t("pages.services.revision.create.cancelBtn")}
           </Button>
         </DialogClose>
         <Button

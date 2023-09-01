@@ -196,7 +196,7 @@ const CreateService = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.services.create.createBtn")}
+            {t("pages.services.create.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
