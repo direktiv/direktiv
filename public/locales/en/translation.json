@@ -537,7 +537,8 @@
       "permissionsInfo": {
         "all": "all permissions",
         "partial": "{{count}} permisions",
-        "partial_one": "{{count}} permision"
+        "partial_one": "{{count}} permision",
+        "partial_zero": "no permissions"
       },
       "groups": {
         "tableHeader": {
