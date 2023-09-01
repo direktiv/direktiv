@@ -30,7 +30,7 @@ const GroupsPage = () => {
             <TableHeaderCell>
               {t("pages.permissions.groups.tableHeader.description")}
             </TableHeaderCell>
-            <TableHeaderCell className="w-32">
+            <TableHeaderCell className="w-36">
               {t("pages.permissions.groups.tableHeader.permissions")}
             </TableHeaderCell>
           </TableRow>
