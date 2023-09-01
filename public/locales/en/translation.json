@@ -542,16 +542,16 @@
       },
       "groups": {
         "tableHeader": {
-          "name": "Name",
-          "description": "Description",
-          "permissions": "Permissions"
+          "name": "name",
+          "description": "description",
+          "permissions": "permissions"
         },
         "noGroups": "There are no groups yet."
       },
       "tokens": {
         "tableHeader": {
-          "description": "Description",
-          "permissions": "Permissions",
+          "description": "description",
+          "permissions": "permissions",
           "created": "created",
           "expires": "expires"
         },
