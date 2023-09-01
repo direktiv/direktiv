@@ -2,10 +2,15 @@ import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
 import { TokenListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
+import { faker } from "@faker-js/faker";
+import { set } from "date-fns";
 import { tokenKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { z } from "zod";
 
+// TODO: remove the line below and delete the mock function
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getTokens = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
@@ -13,10 +18,47 @@ export const getTokens = apiFactory({
   schema: TokenListSchema,
 });
 
+const getTokensMock = (_params: {
+  apiKey?: string;
+  urlParams: { namespace: string };
+}): Promise<z.infer<typeof TokenListSchema>> =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        tokens: [
+          {
+            id: faker.datatype.uuid(),
+            description: faker.lorem.sentence(),
+            permissions: ["workflowView", "permissionsView"],
+            created: new Date().toISOString(),
+            expires: set(new Date(), { year: 2022 }).toISOString(),
+            expired: faker.datatype.boolean(),
+          },
+          {
+            id: faker.datatype.uuid(),
+            description: faker.lorem.sentence(),
+            permissions: ["workflowView", "permissionsView"],
+            created: new Date().toISOString(),
+            expires: set(new Date(), { year: 2022 }).toISOString(),
+            expired: faker.datatype.boolean(),
+          },
+          {
+            id: faker.datatype.uuid(),
+            description: faker.lorem.sentence(),
+            permissions: ["workflowView", "permissionsView"],
+            created: new Date().toISOString(),
+            expires: set(new Date(), { year: 2022 }).toISOString(),
+            expired: faker.datatype.boolean(),
+          },
+        ],
+      });
+    }, 500);
+  });
+
 const fetchTokens = async ({
   queryKey: [{ apiKey, namespace }],
 }: QueryFunctionContext<ReturnType<(typeof tokenKeys)["tokenList"]>>) =>
-  getTokens({
+  getTokensMock({
     apiKey,
     urlParams: { namespace },
   });
