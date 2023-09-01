@@ -555,6 +555,9 @@
           "created": "created",
           "expires": "expires"
         },
+        "created": "{{relativeTime}} ago",
+        "expiresIn": "in {{relativeTime}}",
+        "expiredAgo": "{{relativeTime}} ago",
         "noTokens": "There are no tokens yet."
       }
     },
