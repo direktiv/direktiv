@@ -1138,6 +1138,19 @@
           }
         }
       }
+    },
+    "groups": {
+      "mutate": {
+        "createGroup": {
+          "success": {
+            "title": "Group created",
+            "description": "The group {{name}} was created"
+          },
+          "error": {
+            "description": "The group could not be created 😢"
+          }
+        }
+      }
     }
   }
 }

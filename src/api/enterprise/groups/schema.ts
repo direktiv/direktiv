@@ -32,4 +32,22 @@ export const GroupsListSchema = z.object({
   groups: z.array(GroupSchema),
 });
 
+export const GroupCreatedSchema = z.null();
+
+/**
+ * example
+ * 
+  {
+    "description": "desc1",
+    "group": "mygroup",
+    "permissions": ["permissionsView", "workflowView"]
+  }
+ */
+export const GroupFormSchema = z.object({
+  description: z.string(),
+  group: z.string(),
+  permissions: z.array(z.string()),
+});
+
 export type GroupSchemaType = z.infer<typeof GroupSchema>;
+export type GroupFormSchemaType = z.infer<typeof GroupFormSchema>;
