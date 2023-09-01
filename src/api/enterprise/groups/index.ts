@@ -1,8 +1,8 @@
-export const groupsKeys = {
+export const groupKeys = {
   groupList: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "groups",
+        scope: "group-list",
         apiKey,
         namespace,
       },

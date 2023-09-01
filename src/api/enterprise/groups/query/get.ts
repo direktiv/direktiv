@@ -2,7 +2,7 @@ import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
 import { GroupsListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
-import { groupsKeys } from "..";
+import { groupKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 
@@ -15,7 +15,7 @@ export const getGroups = apiFactory({
 
 const fetchGroups = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof groupsKeys)["groupList"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof groupKeys)["groupList"]>>) =>
   getGroups({
     apiKey,
     urlParams: { namespace },
@@ -30,7 +30,7 @@ export const useGroups = () => {
   }
 
   return useQuery({
-    queryKey: groupsKeys.groupList(namespace, {
+    queryKey: groupKeys.groupList(namespace, {
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchGroups,
