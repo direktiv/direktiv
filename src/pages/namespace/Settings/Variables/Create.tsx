@@ -10,6 +10,7 @@ import MimeTypeSelect, {
   MimeTypeSchema,
   MimeTypeType,
   TextMimeTypeType,
+  getEditorLanguage,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -37,12 +38,15 @@ const Create = ({ onSuccess }: CreateProps) => {
   const [name, setName] = useState<string | undefined>();
   const [body, setBody] = useState<string | File | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
+  const [previewAvailable, setPreviewAvailable] = useState(false);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
   );
 
   const {
+    watch,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
@@ -57,8 +61,15 @@ const Create = ({ onSuccess }: CreateProps) => {
   });
 
   const onMimeTypeChange = (value: MimeTypeType) => {
+    console.log("🚀 setting", value);
     setMimeType(value);
-    setEditorLanguage(mimeTypeToLanguageDict[value]);
+    const editorLanguage = getEditorLanguage(value);
+    if (editorLanguage) {
+      setPreviewAvailable(true);
+      setEditorLanguage(editorLanguage);
+    } else {
+      setPreviewAvailable(false);
+    }
   };
 
   const { mutate: createVarMutation } = useUpdateVar({
@@ -74,12 +85,21 @@ const Create = ({ onSuccess }: CreateProps) => {
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const fileContent = await file.text();
     const mimeType = file?.type ?? defaultMimeType;
-    createVarMutation({
-      name: "justuploaded",
-      content: file as unknown as string,
-      mimeType: mimeType as unknown as MimeTypeType,
-    });
+    const parsedMimetype = MimeTypeSchema.safeParse(mimeType);
+
+    setValue("mimeType", mimeType);
+    onMimeTypeChange(mimeType);
+    setBody(file);
+
+    // if (parsedMimetype.success) {
+    // } else {
+    //   setError("mimeType", {
+    //     message: t("pages.settings.variables.create.file.unsupportedMimeType"),
+    //   });
+    // }
   };
 
   return (
@@ -97,9 +117,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             </DialogTitle>
           </DialogHeader>
         </DialogHeader>
-
         <FormErrors errors={errors} className="mb-5" />
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.variables.create.name.label")}
@@ -111,7 +129,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={(event) => setName(event.target.value)}
           />
         </fieldset>
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="mimetype">
             {t("pages.settings.variables.edit.mimeType.label")}
@@ -133,7 +150,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={onFilepickerChange}
           />
         </fieldset>
-
+        mimeType: {watch("mimeType")} | {mimeType}
         <Card
           className="grow p-4 pl-0"
           background="weight-1"
@@ -141,7 +158,8 @@ const Create = ({ onSuccess }: CreateProps) => {
         >
           <div className="h-[500px]">
             <Editor
-              value={body}
+              // TODO: handle if not string
+              // value={body}
               onChange={(newData) => {
                 setBody(newData);
               }}
@@ -151,7 +169,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             />
           </div>
         </Card>
-
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">
