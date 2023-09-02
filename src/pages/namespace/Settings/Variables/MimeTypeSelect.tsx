@@ -33,7 +33,7 @@ export const getEditorLanguage = (mimeType: string) => {
       mimeType as keyof typeof mimeTypeToLanguageDict
     ];
   }
-  return "plaintext";
+  return undefined;
 };
 
 export const MimeTypeSchema = z.string();
@@ -63,18 +63,23 @@ const MimeTypeSelect = ({
 }) => {
   const { t } = useTranslation();
 
+  const hasNonTextMimeType = !TextMimeTypeSchema.safeParse(mimeType).success;
+
   return (
-    <Select value={mimeType} onValueChange={onChange}>
+    <Select onValueChange={onChange} defaultValue={mimeType}>
       <SelectTrigger
         id={id}
         loading={loading}
         variant="outline"
         block
         data-testid="variable-trg-mimetype"
+        disabled={hasNonTextMimeType}
       >
         <SelectValue
           placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}
-        />
+        >
+          {mimeType}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {mimeTypes.map((type) => (
