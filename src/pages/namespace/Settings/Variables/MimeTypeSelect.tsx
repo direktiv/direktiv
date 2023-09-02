@@ -28,10 +28,9 @@ export const mimeTypeToLanguageDict = {
 } as const;
 
 export const getEditorLanguage = (mimeType: string) => {
-  if (Object.keys(mimeTypeToLanguageDict).includes(mimeType)) {
-    return mimeTypeToLanguageDict[
-      mimeType as keyof typeof mimeTypeToLanguageDict
-    ];
+  const parsed = TextMimeTypeSchema.safeParse(mimeType);
+  if (parsed.success) {
+    return mimeTypeToLanguageDict[parsed.data];
   }
   return undefined;
 };
