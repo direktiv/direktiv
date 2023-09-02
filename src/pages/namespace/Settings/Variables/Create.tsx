@@ -35,7 +35,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   const theme = useTheme();
 
   const [name, setName] = useState<string | undefined>();
-  const [body, setBody] = useState<string | undefined>();
+  const [body, setBody] = useState<string | File | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
