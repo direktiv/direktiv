@@ -8,7 +8,7 @@ import { ToastAction, useToast } from "~/design/Toast";
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
+import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { Undo } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";

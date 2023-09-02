@@ -12,7 +12,7 @@ import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
-import { WorkflowVariableSchemaType } from "~/api/tree/schema";
+import { WorkflowVariableSchemaType } from "~/api/tree/schema/workflowVariable";
 import { useDeleteWorkflowVariable } from "~/api/tree/mutate/deleteVariable";
 import { useTranslation } from "react-i18next";
 import { useWorkflowVariables } from "~/api/tree/query/variables";
