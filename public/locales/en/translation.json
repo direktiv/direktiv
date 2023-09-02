@@ -545,7 +545,8 @@
         "create": {
           "description": "Add a secret",
           "name": "Name",
-          "file": "Upload a file"
+          "file": "Upload a file",
+          "fileError": "There was an error uploading the file"
         }
       },
       "registries": {
