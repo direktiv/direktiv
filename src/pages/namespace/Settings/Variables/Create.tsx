@@ -7,7 +7,9 @@ import {
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
+  MimeTypeSchema,
   MimeTypeType,
+  TextMimeTypeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -26,7 +28,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };
 
-const defaultMimeType: MimeTypeType = "application/json";
+const defaultMimeType: TextMimeTypeType = "application/json";
 
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
@@ -36,7 +38,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
-    getEditorLanguage(defaultMimeType)
+    mimeTypeToLanguageDict[defaultMimeType]
   );
 
   const {
