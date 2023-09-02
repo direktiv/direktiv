@@ -56,7 +56,7 @@ const Create = ({ onSuccess }: CreateProps) => {
     },
   });
 
-  const onMimetypeChange = (value: MimeTypeType) => {
+  const onMimeTypeChange = (value: MimeTypeType) => {
     setMimeType(value);
     setEditorLanguage(mimeTypeToLanguageDict[value]);
   };
@@ -119,7 +119,7 @@ const Create = ({ onSuccess }: CreateProps) => {
           <MimeTypeSelect
             id="mimetype"
             mimeType={mimeType}
-            onChange={onMimetypeChange}
+            onChange={onMimeTypeChange}
           />
         </fieldset>
         <fieldset className="flex items-center gap-5">
