@@ -544,7 +544,8 @@
         },
         "create": {
           "description": "Add a secret",
-          "name": "Name"
+          "name": "Name",
+          "file": "Upload a file"
         }
       },
       "registries": {
