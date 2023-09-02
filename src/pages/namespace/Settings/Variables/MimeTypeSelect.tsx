@@ -36,14 +36,7 @@ export const getEditorLanguage = (mimeType: string) => {
   return "plaintext";
 };
 
-export const MimeTypeSchema = z.enum([
-  "application/json",
-  "application/yaml",
-  "application/x-sh",
-  "text/plain",
-  "text/html",
-  "text/css",
-]);
+export const MimeTypeSchema = z.string();
 
 export type MimeTypeType = z.infer<typeof MimeTypeSchema>;
 
