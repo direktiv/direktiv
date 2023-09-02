@@ -2,7 +2,7 @@ import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { BroadcastsSchemaKeys } from "~/api/broadcasts/schema";
-import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
+import { TextMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { actionWaitForSuccessToast } from "../explorer/workflow/utils";
 import { createBroadcasts } from "../utils/broadcasts";
 import { createRegistries } from "../utils/registries";
@@ -11,7 +11,7 @@ import { createVariables } from "../utils/variables";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
 
-const { options } = MimeTypeSchema;
+const { options } = TextMimeTypeSchema;
 
 let namespace = "";
 
