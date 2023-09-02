@@ -36,7 +36,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   const [body, setBody] = useState<string | undefined>();
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
-    mimeTypeToLanguageDict[defaultMimeType]
+    getEditorLanguage(defaultMimeType)
   );
 
   const {
