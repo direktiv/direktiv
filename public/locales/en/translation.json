@@ -597,7 +597,8 @@
           "description": "Add a secret",
           "name": "Name",
           "file": "Upload a file",
-          "fileError": "There was an error uploading the file"
+          "fileError": "There was an error uploading the file",
+          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "registries": {
