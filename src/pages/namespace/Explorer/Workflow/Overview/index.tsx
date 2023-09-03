@@ -1,4 +1,4 @@
-import { Boxes, PieChart } from "lucide-react";
+import { Boxes, Network, PieChart } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
@@ -7,8 +7,8 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
+import { CategoryBar } from "@tremor/react";
 import { FC } from "react";
 import { InstanceCard } from "~/pages/namespace/Monitoring/Instances/InstanceCard";
 import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
@@ -19,15 +19,11 @@ import { forceLeadingSlash } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 import { useInstances } from "~/api/instances/query/get";
 import { useMetrics } from "~/api/tree/query/metrics";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
 
 const ActiveWorkflowPage: FC = () => {
   const { path } = pages.explorer.useParams();
-  const { data } = useNodeContent({
-    path,
-  });
   const { data: routerData } = useRouter({ path });
   const {
     data: instances,
@@ -77,37 +73,6 @@ const ActiveWorkflowPage: FC = () => {
 
   return (
     <div className="flex flex-col space-y-4 p-4">
-      <Card className="p-4">
-        <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
-      </Card>
-
-      <Card className="flex flex-col">
-        <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
-          <PieChart className="h-5" />
-          <h3 className="grow">
-            {t("pages.explorer.tree.workflow.overview.metrics.header")}
-          </h3>
-        </div>
-        {metrics ? (
-          <Metrics data={metrics} />
-        ) : (
-          <NoResult icon={PieChart}>
-            {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
-          </NoResult>
-        )}
-      </Card>
-
-      <Card className="p-4">
-        <ul>
-          <li>
-            Traffic distribution:{" "}
-            {routes && routes[0] && routes[1]
-              ? `${routes[0].ref}: ${routes[0].weight} - ${routes[1].ref}: ${routes[1].weight}`
-              : "not configured"}
-          </li>
-        </ul>
-      </Card>
-
       <InstanceCard
         headline={t("pages.explorer.tree.workflow.overview.instances.header")}
         icon={Boxes}
@@ -129,6 +94,53 @@ const ActiveWorkflowPage: FC = () => {
           </ScrollArea>
         )}
       </InstanceCard>
+
+      <Card className="flex flex-col">
+        <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+          <PieChart className="h-5" />
+          <h3 className="grow">
+            {t("pages.explorer.tree.workflow.overview.metrics.header")}
+          </h3>
+        </div>
+        {metrics ? (
+          <Metrics data={metrics} />
+        ) : (
+          <NoResult icon={PieChart}>
+            {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
+          </NoResult>
+        )}
+      </Card>
+
+      <Card>
+        <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+          <Network className="h-5" />
+          <h3 className="grow">
+            {t(
+              "pages.explorer.tree.workflow.overview.trafficDistribution.header"
+            )}
+          </h3>
+        </div>
+        {routes && routes[0] && routes[1] ? (
+          <div className="p-5 pt-1">
+            <CategoryBar
+              values={[35, 65]}
+              colors={["indigo", "gray"]}
+              markerValue={35}
+              className="mt-3"
+            />
+            <div className="flex flex-row justify-between">
+              <div>{routes[0].ref.slice(0, 8)}</div>
+              <div>{routes[1].ref.slice(0, 8)}</div>
+            </div>
+          </div>
+        ) : (
+          <NoResult>
+            {t(
+              "pages.explorer.tree.workflow.overview.trafficDistribution.noResult"
+            )}
+          </NoResult>
+        )}
+      </Card>
     </div>
   );
 };
