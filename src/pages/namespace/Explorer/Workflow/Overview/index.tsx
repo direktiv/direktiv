@@ -47,14 +47,12 @@ const ActiveWorkflowPage: FC = () => {
   const successful = Number(successData?.results[0]?.value[1]);
   const failed = Number(failedData?.results[0]?.value[1]);
   const metrics =
-    successful && failed
+    successful || failed
       ? {
-          successful,
-          failed,
+          successful: successful || 0,
+          failed: failed || 0,
         }
       : undefined;
-
-  if (!metrics) return null;
 
   const refetchButton = (
     <TooltipProvider>
@@ -90,7 +88,13 @@ const ActiveWorkflowPage: FC = () => {
             {t("pages.explorer.tree.workflow.overview.metrics.header")}
           </h3>
         </div>
-        <Metrics data={metrics} />
+        {metrics ? (
+          <Metrics data={metrics} />
+        ) : (
+          <NoResult icon={PieChart}>
+            {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
+          </NoResult>
+        )}
       </Card>
 
       <Card className="p-4">
