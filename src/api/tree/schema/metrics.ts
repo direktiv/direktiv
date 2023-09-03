@@ -32,13 +32,7 @@ import { z } from "zod";
 export const MetricsListSchema = z.object({
   results: z.array(
     z.object({
-      metric: z.object({
-        __name__: z.string(),
-      }),
-      value: z.tuple([
-        z.number(),
-        z.string().transform((string) => Number(string)),
-      ]),
+      value: z.tuple([z.number(), z.string()]),
     })
   ),
 });

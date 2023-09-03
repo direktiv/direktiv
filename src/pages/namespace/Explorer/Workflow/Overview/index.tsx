@@ -1,3 +1,4 @@
+import { Boxes, PieChart } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
@@ -7,17 +8,17 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
-import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import { FC } from "react";
 import { InstanceCard } from "~/pages/namespace/Monitoring/Instances/InstanceCard";
 import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
-import MetricsCard from "./MetricsCard";
+import Metrics from "./Metrics";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 import { useInstances } from "~/api/instances/query/get";
+import { useMetrics } from "~/api/tree/query/metrics";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
@@ -37,11 +38,23 @@ const ActiveWorkflowPage: FC = () => {
     offset: 0,
     filters: { AS: { type: "WORKFLOW", value: forceLeadingSlash(path) } },
   });
+  const { data: successData } = useMetrics({ path, type: "successful" });
+  const { data: failedData } = useMetrics({ path, type: "failed" });
   const { t } = useTranslation();
 
   const routes = routerData?.routes;
 
-  if (!path) return null;
+  const successful = Number(successData?.results[0]?.value[1]);
+  const failed = Number(failedData?.results[0]?.value[1]);
+  const metrics =
+    successful && failed
+      ? {
+          successful,
+          failed,
+        }
+      : undefined;
+
+  if (!metrics) return null;
 
   const refetchButton = (
     <TooltipProvider>
@@ -69,7 +82,17 @@ const ActiveWorkflowPage: FC = () => {
       <Card className="p-4">
         <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
       </Card>
-      <MetricsCard path={path} />
+
+      <Card className="flex flex-col">
+        <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+          <PieChart className="h-5" />
+          <h3 className="grow">
+            {t("pages.explorer.tree.workflow.overview.metrics.header")}
+          </h3>
+        </div>
+        <Metrics data={metrics} />
+      </Card>
+
       <Card className="p-4">
         <ul>
           <li>
