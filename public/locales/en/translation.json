@@ -167,6 +167,12 @@
                 "title": "Edit {{name}}"
               }
             }
+          },
+          "overview": {
+            "instances": {
+              "header": "Workflow instances",
+              "noResult": "No instances of this workflow have been executed recently."
+            }
           }
         }
       },
@@ -289,7 +295,7 @@
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
         "updateTooltip": "refetch instances",
-        "successfullExecutions": {
+        "successfulExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recent successful executions."
         },
