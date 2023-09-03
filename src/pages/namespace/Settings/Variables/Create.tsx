@@ -53,8 +53,8 @@ const Create = ({ onSuccess }: CreateProps) => {
     // MimeTypeSelect
     values: {
       name,
-      content: typeof body === "string" ? body : "",
-      mimeType: mimeType ?? defaultMimeType,
+      content: body,
+      mimeType,
     },
   });
 
