@@ -14,6 +14,7 @@ import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
 import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
+import { useDownloadVar } from "~/api/variables/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
 import { useVars } from "~/api/variables/query/useVariables";
 
@@ -44,6 +45,22 @@ const VariablesList: FC = () => {
     },
   });
 
+  const { mutate: downloadVar } = useDownloadVar({
+    onSuccess: (blob, name) => {
+      debugger;
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+
+      document.body.appendChild(a);
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    },
+  });
+
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteItem(undefined);
@@ -53,6 +70,10 @@ const VariablesList: FC = () => {
   }, [dialogOpen]);
 
   if (!isFetched) return null;
+
+  const download = (name: string) => {
+    downloadVar(name);
+  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -101,6 +122,7 @@ const VariablesList: FC = () => {
                         key={i}
                         onDelete={setDeleteItem}
                         onEdit={() => setEditItem(item)}
+                        onDownload={() => download(item.name)}
                       />
                     ))}
                   </TableBody>

@@ -1045,6 +1045,11 @@
           "error": {
             "description": "Could not delete variable 😢"
           }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "Could not download variable 😢"
+          }
         }
       }
     },
