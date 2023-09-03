@@ -1,6 +1,6 @@
 import { ResponseParser, apiFactory } from "~/api/apiFactory";
-import { VarContentSchema, VarDownloadSchema } from "../schema";
 
+import { VarDownloadSchema } from "../schema";
 import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
