@@ -12,12 +12,12 @@ import { Card } from "~/design/Card";
 import { FC } from "react";
 import { InstanceCard } from "~/pages/namespace/Monitoring/Instances/InstanceCard";
 import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
+import MetricsCard from "./MetricsCard";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 import { useInstances } from "~/api/instances/query/get";
-import { useMetrics } from "~/api/tree/query/metrics";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
@@ -28,8 +28,6 @@ const ActiveWorkflowPage: FC = () => {
     path,
   });
   const { data: routerData } = useRouter({ path });
-  const { data: successData } = useMetrics({ path, type: "successful" });
-  const { data: failedData } = useMetrics({ path, type: "failed" });
   const {
     data: instances,
     isFetching: isFetchingInstances,
@@ -42,6 +40,8 @@ const ActiveWorkflowPage: FC = () => {
   const { t } = useTranslation();
 
   const routes = routerData?.routes;
+
+  if (!path) return null;
 
   const refetchButton = (
     <TooltipProvider>
@@ -69,6 +69,7 @@ const ActiveWorkflowPage: FC = () => {
       <Card className="p-4">
         <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
       </Card>
+      <MetricsCard path={path} />
       <Card className="p-4">
         <ul>
           <li>
@@ -76,10 +77,6 @@ const ActiveWorkflowPage: FC = () => {
             {routes && routes[0] && routes[1]
               ? `${routes[0].ref}: ${routes[0].weight} - ${routes[1].ref}: ${routes[1].weight}`
               : "not configured"}
-          </li>
-          <li>
-            Success / failure rate: {successData?.results[0]?.value[1]}/
-            {failedData?.results[0]?.value[1]}
           </li>
         </ul>
       </Card>

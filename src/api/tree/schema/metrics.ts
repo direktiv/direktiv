@@ -35,7 +35,10 @@ export const MetricsListSchema = z.object({
       metric: z.object({
         __name__: z.string(),
       }),
-      value: z.tuple([z.number(), z.string()]),
+      value: z.tuple([
+        z.number(),
+        z.string().transform((string) => Number(string)),
+      ]),
     })
   ),
 });
