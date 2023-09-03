@@ -13,6 +13,7 @@ import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
+import { triggerDownloadFromBlob } from "~/util/helpers";
 import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
 import { useDownloadVar } from "~/api/variables/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
@@ -47,16 +48,11 @@ const VariablesList: FC = () => {
 
   const { mutate: downloadVar } = useDownloadVar({
     onSuccess: (response, name) => {
-      const url = window.URL.createObjectURL(response.blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = name;
-
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
+      triggerDownloadFromBlob({
+        blob: response.blob,
+        filename: name,
+        mimeType: response.headers["content-type"],
+      });
     },
   });
 
