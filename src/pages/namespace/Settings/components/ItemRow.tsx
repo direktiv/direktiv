@@ -1,3 +1,4 @@
+import { DownloadCloud, MoreVertical, Pencil, Trash } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,7 +7,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { MoreVertical, Pencil, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
@@ -17,11 +17,13 @@ type ItemRowProps<TItem> = {
   item: TItem;
   onDelete: (item: TItem) => void;
   onEdit?: () => void;
+  onDownload?: () => void;
 };
 
 const ItemRow = <ItemType,>({
   item,
   onDelete,
+  onDownload,
   onEdit,
 }: ItemRowProps<ItemType & { name: string }>) => {
   const { t } = useTranslation();
@@ -57,6 +59,19 @@ const ItemRow = <ItemType,>({
                 <DropdownMenuItem>
                   <Pencil className="mr-2 h-4 w-4" />
                   {t("pages.settings.generic.contextMenu.edit")}
+                </DropdownMenuItem>
+              </DialogTrigger>
+            )}
+
+            {onDownload && (
+              <DialogTrigger
+                className="w-full"
+                data-testid="dropdown-actions-download"
+                onClick={onDownload}
+              >
+                <DropdownMenuItem>
+                  <DownloadCloud className="mr-2 h-4 w-4" />
+                  {t("pages.settings.generic.contextMenu.download")}
                 </DropdownMenuItem>
               </DialogTrigger>
             )}

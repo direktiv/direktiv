@@ -579,7 +579,8 @@
         "contextMenu": {
           "title": "Actions",
           "delete": "Delete",
-          "edit": "Edit"
+          "edit": "Edit",
+          "download": "Download"
         }
       },
       "secrets": {
