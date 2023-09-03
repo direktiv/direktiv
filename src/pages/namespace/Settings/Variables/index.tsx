@@ -46,9 +46,8 @@ const VariablesList: FC = () => {
   });
 
   const { mutate: downloadVar } = useDownloadVar({
-    onSuccess: (blob, name) => {
-      debugger;
-      const url = window.URL.createObjectURL(blob);
+    onSuccess: (response, name) => {
+      const url = window.URL.createObjectURL(response.blob);
 
       const a = document.createElement("a");
       a.href = url;

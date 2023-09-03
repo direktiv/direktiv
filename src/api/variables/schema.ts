@@ -29,6 +29,13 @@ export const VarContentSchema = z.object({
   }),
 });
 
+export const VarDownloadSchema = z.object({
+  blob: z.instanceof(Blob),
+  headers: z.object({
+    "content-type": z.string(),
+  }),
+});
+
 export const VarListSchema = z.object({
   namespace: z.string(),
   variables: z.object({
