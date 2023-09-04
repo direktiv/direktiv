@@ -64,8 +64,7 @@ const CreateGroup = ({
   });
 
   const onSubmit: SubmitHandler<GroupFormSchemaType> = (params) => {
-    console.log("🚀", params);
-    // createGroup(params);
+    createGroup(params);
   };
 
   // you can not submit if the form has not changed or if there are any errors and
@@ -86,6 +85,14 @@ const CreateGroup = ({
   const allSelected =
     watch("permissions").length === availablePermissions?.length;
   const noneSelected = watch("permissions").length === 0;
+
+  const onCheckedChange = (permissionValue: string, isChecked: boolean) => {
+    const currentPermissions = watch("permissions");
+    const newPermissions = isChecked
+      ? [...currentPermissions, permissionValue]
+      : currentPermissions.filter((p) => p !== permissionValue);
+    setValue("permissions", newPermissions);
+  };
 
   return (
     <>
@@ -141,12 +148,17 @@ const CreateGroup = ({
                   className="flex items-center gap-2 text-sm"
                   htmlFor={permission}
                 >
-                  <input
+                  <Checkbox
                     id={permission}
-                    {...register("permissions")}
                     value={permission}
-                    type="checkbox"
+                    checked={watch("permissions").includes(permission)}
+                    onCheckedChange={(checked) => {
+                      if (checked !== "indeterminate") {
+                        onCheckedChange(permission, checked);
+                      }
+                    }}
                   />
+
                   {permission}
                 </label>
               ))}
