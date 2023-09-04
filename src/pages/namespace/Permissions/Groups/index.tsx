@@ -15,6 +15,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateGroup from "./Create";
 import Delete from "./Delete";
+import EditGroup from "./Edit";
 import { GroupSchemaType } from "~/api/enterprise/groups/schema";
 import Row from "./Row";
 import { useGroups } from "~/api/enterprise/groups/query/get";
@@ -92,7 +93,15 @@ const GroupsPage = () => {
           {deleteGroup && (
             <Delete group={deleteGroup} close={() => setDialogOpen(false)} />
           )}
-          {editGroup && "edit"}
+          {editGroup && (
+            <EditGroup
+              group={editGroup}
+              close={() => setDialogOpen(false)}
+              unallowedNames={allAvailableNames.filter(
+                (name) => name !== editGroup.group
+              )}
+            />
+          )}
           {createGroup && (
             <CreateGroup
               close={() => setDialogOpen(false)}
