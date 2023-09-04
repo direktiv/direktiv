@@ -113,7 +113,7 @@ const CreateGroup = ({
             <label className="w-[90px] text-right text-[14px]">
               {t("pages.permissions.groups.create.permissions")}
             </label>
-            <div className="grid w-full gap-2 sm:grid-cols-2 ">
+            <div className="grid w-full gap-2 sm:grid-cols-3 ">
               {availablePermissions?.map((permission) => (
                 <label
                   key={permission}

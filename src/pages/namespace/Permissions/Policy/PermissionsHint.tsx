@@ -23,7 +23,7 @@ const PermissionsHint = () => {
             <BadgeCheck className="h-5" />
             {t("pages.permissions.policy.permissionsHintTitle")}
           </h3>
-          <div className="grid w-max grid-cols-2 gap-x-8 gap-y-2">
+          <div className="grid w-max grid-cols-3 gap-x-8 gap-y-2">
             {availablePermissions?.map((permission) => (
               <div key={permission} className="group flex items-center gap-5">
                 <code className="grow text-sm">{permission}</code>
