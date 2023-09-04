@@ -32,7 +32,18 @@ export const TokenListSchema = z.object({
   tokens: z.array(TokenSchema),
 });
 
-export const TokenCreatedSchema = z.null();
+/**
+ * example:
+ * 
+  {
+    "id": "7eff49c1-ec13-4d81-8278-9ad8e15ff1f5",
+    "token": "6656c247e8cb6cd6dc623e571956b29d1bc196869dc5f9a91fa19d03788a87e782818c22bc9c4fe3819fcc8ddf69501a829ebe07271b7ff63a49f124d2daf5854140"
+  }
+ */
+export const TokenCreatedSchema = z.object({
+  id: z.string(),
+  token: z.string(),
+});
 
 export const ISO8601durationSchema = z
   .string()
