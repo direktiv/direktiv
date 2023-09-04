@@ -1,4 +1,4 @@
-import { GroupCreatedSchema, GroupFormSchemaType } from "../schema";
+import { GroupCreatedEditedSchema, GroupFormSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -12,7 +12,7 @@ const createGroup = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
   method: "POST",
-  schema: GroupCreatedSchema,
+  schema: GroupCreatedEditedSchema,
 });
 
 type ResolvedCreateGroup = Awaited<ReturnType<typeof createGroup>>;

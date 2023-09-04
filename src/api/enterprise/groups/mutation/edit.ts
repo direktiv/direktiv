@@ -1,4 +1,4 @@
-import { GroupEditedSchema, GroupFormSchemaType } from "../schema";
+import { GroupCreatedEditedSchema, GroupFormSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -19,7 +19,7 @@ const editGroup = apiFactory({
     groupId: string;
   }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups/${groupId}`,
   method: "PUT",
-  schema: GroupEditedSchema,
+  schema: GroupCreatedEditedSchema,
 });
 
 type ResolvedCreateGroup = Awaited<ReturnType<typeof editGroup>>;

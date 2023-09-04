@@ -32,8 +32,14 @@ export const GroupsListSchema = z.object({
   groups: z.array(GroupSchema),
 });
 
-export const GroupCreatedSchema = z.null();
-export const GroupEditedSchema = z.null();
+/**
+ * example:
+ * 
+  { "id": "e18d5300-7b16-4d77-afb2-d6c969978895" }
+ */
+export const GroupCreatedEditedSchema = z.object({
+  id: z.string(),
+});
 
 /**
  * example
