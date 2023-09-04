@@ -603,6 +603,12 @@
           "description": "description",
           "permissions": "permissions"
         },
+        "createBtn": "Create a new group",
+        "noGroups": "There are no groups yet.",
+        "contextMenu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
         "create": {
           "title": "Create a group",
           "cancelBtn": "Cancel",
@@ -617,11 +623,11 @@
             "placeholder": "Enter a description for the group"
           }
         },
-        "createBtn": "Create a new group",
-        "noGroups": "There are no groups yet.",
-        "contextMenu": {
-          "edit": "Edit",
-          "delete": "Delete"
+        "delete": {
+          "title": "Delete group",
+          "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
         }
       },
       "tokens": {

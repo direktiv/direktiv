@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateGroup from "./Create";
+import Delete from "./Delete";
 import { GroupSchemaType } from "~/api/enterprise/groups/schema";
 import Row from "./Row";
 import { useGroups } from "~/api/enterprise/groups/query/get";
@@ -88,7 +89,9 @@ const GroupsPage = () => {
           </TableBody>
         </Table>
         <DialogContent className="sm:max-w-2xl">
-          {deleteGroup && "delete"}
+          {deleteGroup && (
+            <Delete group={deleteGroup} close={() => setDialogOpen(false)} />
+          )}
           {editGroup && "edit"}
           {createGroup && (
             <CreateGroup
