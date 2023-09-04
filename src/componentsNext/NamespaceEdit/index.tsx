@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { Checkbox } from "~/design/Checkbox";
 import FormErrors from "~/componentsNext/FormErrors";
 import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
@@ -38,6 +39,7 @@ type FormInput = {
   passphrase: string;
   publicKey: string;
   privateKey: string;
+  insecure: boolean;
 };
 
 const NamespaceEdit = ({
@@ -90,9 +92,11 @@ const NamespaceEdit = ({
           name: mirror.namespace,
           url: mirror.info.url,
           ref: mirror.info.ref,
+          insecure: mirror.info.insecure,
         }
       : {
           formType: initialFormType,
+          insecure: false,
         },
   });
 
@@ -102,6 +106,7 @@ const NamespaceEdit = ({
   const isDirty = Object.values(dirtyFields).some((value) => value === true);
 
   const formType: MirrorFormType = watch("formType");
+  const insecure: boolean = watch("insecure");
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
@@ -129,12 +134,13 @@ const NamespaceEdit = ({
     passphrase,
     publicKey,
     privateKey,
+    insecure,
   }) => {
     if (isNew) {
       return createNamespace({
         name,
         mirror: isMirror
-          ? { ref, url, passphrase, publicKey, privateKey }
+          ? { ref, url, passphrase, publicKey, privateKey, insecure }
           : undefined,
       });
     }
@@ -180,6 +186,7 @@ const NamespaceEdit = ({
         ref,
         url,
         ...updateAuthValues,
+        insecure,
       },
     });
   };
@@ -422,6 +429,24 @@ const NamespaceEdit = ({
                   </fieldset>
                 </>
               )}
+
+              <fieldset className="flex items-center justify-between gap-5">
+                <label className="pl-5 text-[14px]" htmlFor="insecure">
+                  {t("components.namespaceEdit.label.insecure")}
+                </label>
+                <div className="flex gap-5 pr-2">
+                  <Checkbox
+                    id="insecure"
+                    checked={insecure}
+                    onCheckedChange={() =>
+                      setValue("insecure", !insecure, { shouldDirty: true })
+                    }
+                  />
+                  <InfoTooltip>
+                    {t("components.namespaceEdit.tooltip.insecure")}
+                  </InfoTooltip>
+                </div>
+              </fieldset>
             </>
           )}
         </form>
