@@ -18,11 +18,11 @@ const Metrics = ({
 
   const chartData = [
     {
-      title: "failed",
+      name: "failed",
       count: failed,
     },
     {
-      title: "successful",
+      name: "successful",
       count: successful,
     },
   ];
@@ -32,7 +32,6 @@ const Metrics = ({
   return (
     <>
       <DonutChart
-        noDataText="TBD i18n key"
         showAnimation={false}
         showLabel={false}
         className="mt-6"

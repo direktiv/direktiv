@@ -72,8 +72,9 @@ const ActiveWorkflowPage: FC = () => {
   );
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
+    <div className="grid gap-5 p-4 md:grid-cols-[2fr_1fr]">
       <InstanceCard
+        className="row-span-2"
         headline={t("pages.explorer.tree.workflow.overview.instances.header")}
         icon={Boxes}
         refetchButton={refetchButton}
