@@ -39,7 +39,7 @@ const Metrics = ({
         category="count"
         index="name"
         valueFormatter={valueFormatter}
-        colors={["red", "green"]}
+        colors={["red", "emerald"]}
       />
       <div className="mb-5 flex justify-evenly">
         <div>
