@@ -31,13 +31,13 @@ export const useCreateToken = ({
   }
 
   return useMutation({
-    mutationFn: (serviceFormProps: TokenFormSchemaType) =>
+    mutationFn: (tokenFormProps: TokenFormSchemaType) =>
       createToken({
         apiKey: apiKey ?? undefined,
         urlParams: {
           namespace,
         },
-        payload: serviceFormProps,
+        payload: tokenFormProps,
       }),
     onSuccess(data, { description }) {
       queryClient.invalidateQueries(
