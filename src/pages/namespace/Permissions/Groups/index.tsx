@@ -9,13 +9,14 @@ import {
   TableRow,
 } from "~/design/Table";
 import { PlusCircle, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateGroup from "./Create";
+import { GroupSchemaType } from "~/api/enterprise/groups/schema";
 import Row from "./Row";
 import { useGroups } from "~/api/enterprise/groups/query/get";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const GroupsPage = () => {
@@ -24,8 +25,18 @@ const GroupsPage = () => {
   const noResults = isFetched && data?.groups.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createGroup, setCreateGroup] = useState(false);
+  const [deleteGroup, setDeleteGroup] = useState<GroupSchemaType>();
+  const [editGroup, setEditGroup] = useState<GroupSchemaType>();
 
   const allAvailableNames = data?.groups.map((group) => group.group) ?? [];
+
+  useEffect(() => {
+    if (dialogOpen === false) {
+      setCreateGroup(false);
+      setDeleteGroup(undefined);
+      setEditGroup(undefined);
+    }
+  }, [dialogOpen]);
 
   const createNewButton = (
     <DialogTrigger asChild>
@@ -52,6 +63,7 @@ const GroupsPage = () => {
               <TableHeaderCell className="w-36">
                 {t("pages.permissions.groups.tableHeader.permissions")}
               </TableHeaderCell>
+              <TableHeaderCell className="w-16" />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -64,11 +76,20 @@ const GroupsPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              data?.groups.map((group) => <Row key={group.id} group={group} />)
+              data?.groups.map((group) => (
+                <Row
+                  key={group.id}
+                  group={group}
+                  onDeleteClicked={setDeleteGroup}
+                  onEditClicked={setEditGroup}
+                />
+              ))
             )}
           </TableBody>
         </Table>
         <DialogContent className="sm:max-w-2xl">
+          {deleteGroup && "delete"}
+          {editGroup && "edit"}
           {createGroup && (
             <CreateGroup
               close={() => setDialogOpen(false)}

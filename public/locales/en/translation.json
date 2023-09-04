@@ -618,7 +618,11 @@
           }
         },
         "createBtn": "Create a new group",
-        "noGroups": "There are no groups yet."
+        "noGroups": "There are no groups yet.",
+        "contextMenu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        }
       },
       "tokens": {
         "tableHeader": {
