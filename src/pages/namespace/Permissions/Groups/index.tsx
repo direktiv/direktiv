@@ -23,13 +23,13 @@ const GroupsPage = () => {
   const { data, isFetched } = useGroups();
   const noResults = isFetched && data?.groups.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [createToken, setCreateToken] = useState(false);
+  const [createGroup, setCreateGroup] = useState(false);
 
   const allAvailableNames = data?.groups.map((group) => group.group) ?? [];
 
   const createNewButton = (
     <DialogTrigger asChild>
-      <Button onClick={() => setCreateToken(true)} variant="outline">
+      <Button onClick={() => setCreateGroup(true)} variant="outline">
         <PlusCircle />
         {t("pages.permissions.groups.createBtn")}
       </Button>
@@ -69,7 +69,7 @@ const GroupsPage = () => {
           </TableBody>
         </Table>
         <DialogContent className="sm:max-w-2xl">
-          {createToken && (
+          {createGroup && (
             <CreateGroup
               close={() => setDialogOpen(false)}
               unallowedNames={allAvailableNames}
