@@ -21,34 +21,36 @@ const getPermissionsKeysMock = (_params: {
 }): Promise<z.infer<typeof PermissionKeysSchema>> =>
   new Promise((resolve) => {
     setTimeout(() => {
-      resolve([
-        "opaManage",
-        "variablesView",
-        "registriesManage",
-        "explorerManage",
-        "registriesView",
-        "nsconfigView",
-        "eventsSend",
-        "instancesView",
-        "secretsView",
-        "secretsManage",
-        "servicesView",
-        "servicesManage",
-        "instancesManage",
-        "explorerView",
-        "workflowView",
-        "workflowManage",
-        "variablesManage",
-        "nsconfigManage",
-        "deleteNamespace",
-        "eventsView",
-        "workflowExecute",
-        "workflowStore",
-        "permissionsView",
-        "permissionsManage",
-        "opaView",
-        "eventsManage",
-      ]);
+      resolve(
+        [
+          "opaManage",
+          "variablesView",
+          "registriesManage",
+          "explorerManage",
+          "registriesView",
+          "nsconfigView",
+          "eventsSend",
+          "instancesView",
+          "secretsView",
+          "secretsManage",
+          "servicesView",
+          "servicesManage",
+          "instancesManage",
+          "explorerView",
+          "workflowView",
+          "workflowManage",
+          "variablesManage",
+          "nsconfigManage",
+          "deleteNamespace",
+          "eventsView",
+          "workflowExecute",
+          "workflowStore",
+          "permissionsView",
+          "permissionsManage",
+          "opaView",
+          "eventsManage",
+        ].sort()
+      );
     }, 500);
   });
 
