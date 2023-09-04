@@ -123,7 +123,7 @@ const CreateGroup = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.services.create.cancelBtn")}
+            {t("pages.permissions.groups.create.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
