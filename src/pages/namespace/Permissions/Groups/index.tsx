@@ -68,7 +68,7 @@ const GroupsPage = () => {
             )}
           </TableBody>
         </Table>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           {createToken && (
             <CreateGroup
               close={() => setDialogOpen(false)}
