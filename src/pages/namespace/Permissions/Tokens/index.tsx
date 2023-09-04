@@ -86,7 +86,7 @@ const TokensPage = () => {
             )}
           </TableBody>
         </Table>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl md:max-w-3xl">
           {deleteToken && (
             <Delete token={deleteToken} close={() => setDialogOpen(false)} />
           )}

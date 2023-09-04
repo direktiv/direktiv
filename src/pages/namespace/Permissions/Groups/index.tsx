@@ -88,7 +88,7 @@ const GroupsPage = () => {
             )}
           </TableBody>
         </Table>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl md:max-w-3xl">
           {deleteGroup && (
             <Delete group={deleteGroup} close={() => setDialogOpen(false)} />
           )}
