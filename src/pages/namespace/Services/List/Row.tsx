@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
-  setDeleteService: (service: string | undefined) => void;
+  setDeleteService: (service: string) => void;
 }> = ({ service, setDeleteService }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
