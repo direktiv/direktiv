@@ -1214,6 +1214,15 @@
             "description": "The group could not be created 😢"
           }
         },
+        "editGroup": {
+          "success": {
+            "title": "Group updated",
+            "description": "The group {{name}} was updated"
+          },
+          "error": {
+            "description": "The group could not be updated 😢"
+          }
+        },
         "deleteGroup": {
           "success": {
             "title": "Group deleted",

@@ -33,6 +33,7 @@ export const GroupsListSchema = z.object({
 });
 
 export const GroupCreatedSchema = z.null();
+export const GroupEditedSchema = z.null();
 
 /**
  * example
