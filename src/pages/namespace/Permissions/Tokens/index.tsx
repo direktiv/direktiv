@@ -12,7 +12,7 @@ import {
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import CreateToken from "../Groups/Create"; //  TODO: swap this import
+import CreateToken from "./Create";
 import Row from "./Row";
 import { useState } from "react";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
@@ -70,12 +70,7 @@ const TokensPage = () => {
           </TableBody>
         </Table>
         <DialogContent className="sm:max-w-2xl">
-          {createToken && (
-            <CreateToken
-              close={() => setDialogOpen(false)}
-              unallowedNames={[]}
-            />
-          )}
+          {createToken && <CreateToken close={() => setDialogOpen(false)} />}
         </DialogContent>
       </Dialog>
     </Card>

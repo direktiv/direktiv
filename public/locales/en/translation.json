@@ -627,6 +627,19 @@
           "created": "created",
           "expires": "expires"
         },
+        "create": {
+          "title": "Create a token",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          },
+          "duration": {
+            "label": "Duration",
+            "placeholder": "Lifetime (ISO 8601), like e.g P1Y, P1DT6H or PT12H"
+          }
+        },
         "createBtn": "Create a new token",
         "created": "{{relativeTime}} ago",
         "expiresIn": "in {{relativeTime}}",
