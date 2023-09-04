@@ -58,5 +58,8 @@ export const TokenFormSchema = z.object({
   permissions: z.array(z.string()),
 });
 
+export const TokenDeletedSchema = z.null();
+
 export type TokenSchemaType = z.infer<typeof TokenSchema>;
+export type TokenListSchemaType = z.infer<typeof TokenListSchema>;
 export type TokenFormSchemaType = z.infer<typeof TokenFormSchema>;

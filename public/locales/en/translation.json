@@ -1179,6 +1179,15 @@
           "error": {
             "description": "The token could not be created 😢"
           }
+        },
+        "deleteToken": {
+          "success": {
+            "title": "Token deleted",
+            "description": "The token was deleted"
+          },
+          "error": {
+            "description": "The token could not be deleted 😢"
+          }
         }
       }
     },
