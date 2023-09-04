@@ -583,7 +583,8 @@
       "policy": {
         "unsavedNote": "unsaved changes",
         "theresOneIssue": "There is an issue",
-        "saveBtn": "Save"
+        "saveBtn": "Save",
+        "permissionsHintTitle": "Available permissions"
       },
       "permissionsInfo": {
         "all": "all permissions",

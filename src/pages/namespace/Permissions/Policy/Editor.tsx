@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import PermissionsHint from "./PermissionsHint";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdatePolicy } from "~/api/enterprise/policy/mutate/update";
@@ -84,6 +85,7 @@ const PolicyEditor: FC<PolicyEditorProps> = ({ policyFromServer }) => {
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        <PermissionsHint />
         <Button
           variant="outline"
           disabled={isLoading}
