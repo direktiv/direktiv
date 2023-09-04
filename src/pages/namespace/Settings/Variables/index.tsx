@@ -51,7 +51,6 @@ const VariablesList: FC = () => {
       triggerDownloadFromBlob({
         blob: response.blob,
         filename: name,
-        mimeType: response.headers["content-type"],
       });
     },
   });

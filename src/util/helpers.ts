@@ -53,43 +53,17 @@ export const logLevelToLogEntryVariant = (
   }
 };
 
-const mimeTypeToFileExtension = (mimeType: string) => {
-  switch (mimeType) {
-    case "application/json":
-      return ".json";
-    case "text/plain":
-      return ".txt";
-    case "application/x-sh":
-      return ".sh";
-    case "application/yaml":
-    case "text/yaml":
-      return ".yaml";
-    case "text/html":
-      return ".html";
-    case "text/xml":
-      return ".xml";
-    case "text/csv":
-      return ".csv";
-    default:
-      return "";
-  }
-};
-
 export const triggerDownloadFromBlob = ({
   filename,
   blob,
-  mimeType,
 }: {
   filename: string;
   blob: Blob;
-  mimeType: string;
 }) => {
   const url = window.URL.createObjectURL(blob);
   const aTag = document.createElement("a");
-  const fileExtension = mimeTypeToFileExtension(mimeType);
   aTag.href = url;
-  aTag.download = `${filename}${fileExtension}`;
-
+  aTag.download = filename;
   document.body.appendChild(aTag);
   aTag.click();
   window.URL.revokeObjectURL(url);
