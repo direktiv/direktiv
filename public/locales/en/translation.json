@@ -644,7 +644,11 @@
         "created": "{{relativeTime}} ago",
         "expiresIn": "in {{relativeTime}}",
         "expiredAgo": "{{relativeTime}} ago",
-        "noTokens": "There are no tokens yet."
+        "noTokens": "There are no tokens yet.",
+        "contextMenu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        }
       }
     },
     "settings": {

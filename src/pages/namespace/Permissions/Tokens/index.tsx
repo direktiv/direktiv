@@ -9,12 +9,13 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateToken from "./Create";
 import Row from "./Row";
-import { useState } from "react";
+import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -24,6 +25,16 @@ const TokensPage = () => {
   const noResults = isFetched && data?.tokens.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
+  const [deleteToken, setDeleteToken] = useState<TokenSchemaType>();
+  const [editToken, setEditToken] = useState<TokenSchemaType>();
+
+  useEffect(() => {
+    if (dialogOpen === false) {
+      setCreateToken(false);
+      setDeleteToken(undefined);
+      setEditToken(undefined);
+    }
+  }, [dialogOpen]);
 
   const createNewButton = (
     <DialogTrigger asChild>
@@ -53,6 +64,7 @@ const TokensPage = () => {
               <TableHeaderCell className="w-36">
                 {t("pages.permissions.tokens.tableHeader.permissions")}
               </TableHeaderCell>
+              <TableHeaderCell className="w-16" />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -65,11 +77,20 @@ const TokensPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              data?.tokens.map((token) => <Row key={token.id} token={token} />)
+              data?.tokens.map((token) => (
+                <Row
+                  key={token.id}
+                  token={token}
+                  onDeleteClicked={setDeleteToken}
+                  onEditClicked={setEditToken}
+                />
+              ))
             )}
           </TableBody>
         </Table>
         <DialogContent className="sm:max-w-2xl">
+          {deleteToken && "delete"}
+          {editToken && "edit"}
           {createToken && <CreateToken close={() => setDialogOpen(false)} />}
         </DialogContent>
       </Dialog>

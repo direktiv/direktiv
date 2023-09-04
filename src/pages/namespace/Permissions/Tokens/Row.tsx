@@ -1,3 +1,10 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/design/Dropdown";
+import { MoreVertical, Pencil, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,
@@ -7,12 +14,22 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
+import Button from "~/design/Button";
+import { DialogTrigger } from "~/design/Dialog";
 import PermissionsInfo from "../components/PermissionsInfo";
 import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const Row = ({ token }: { token: TokenSchemaType }) => {
+const Row = ({
+  token,
+  onDeleteClicked,
+  onEditClicked,
+}: {
+  token: TokenSchemaType;
+  onDeleteClicked: (group: TokenSchemaType) => void;
+  onEditClicked: (group: TokenSchemaType) => void;
+}) => {
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(token.created);
   const expiresAt = useUpdatedAt(token.expires);
@@ -48,6 +65,46 @@ const Row = ({ token }: { token: TokenSchemaType }) => {
         </TableCell>
         <TableCell>
           <PermissionsInfo permissions={token.permissions} />
+        </TableCell>
+        <TableCell>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => e.preventDefault()}
+                icon
+              >
+                <MoreVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40">
+              <DialogTrigger
+                className="w-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteClicked(token);
+                }}
+              >
+                <DropdownMenuItem>
+                  <Trash className="mr-2 h-4 w-4" />
+                  {t("pages.permissions.tokens.contextMenu.delete")}
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogTrigger
+                className="w-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditClicked(token);
+                }}
+              >
+                <DropdownMenuItem>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t("pages.permissions.tokens.contextMenu.edit")}
+                </DropdownMenuItem>
+              </DialogTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </TableCell>
       </TableRow>
     </TooltipProvider>
