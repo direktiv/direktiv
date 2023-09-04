@@ -26,7 +26,9 @@ const PermissionsHint = () => {
           <div className="grid w-max grid-cols-3 gap-x-8 gap-y-2">
             {availablePermissions?.map((permission) => (
               <div key={permission} className="group flex items-center gap-5">
-                <code className="grow text-sm">{permission}</code>
+                <code className="grow text-sm text-primary-500">
+                  {permission}
+                </code>
                 <CopyButton
                   value={permission}
                   buttonProps={{
