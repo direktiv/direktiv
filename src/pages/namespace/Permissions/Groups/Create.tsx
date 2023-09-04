@@ -141,7 +141,12 @@ const CreateGroup = ({
                   className="flex items-center gap-2 text-sm"
                   htmlFor={permission}
                 >
-                  <Checkbox id={permission} {...register("permissions")} />{" "}
+                  <input
+                    id={permission}
+                    {...register("permissions")}
+                    value={permission}
+                    type="checkbox"
+                  />
                   {permission}
                 </label>
               ))}
@@ -170,11 +175,6 @@ const CreateGroup = ({
             </Button>
           </div>
         </form>
-      </div>
-      <div>
-        <code className="w-[300px] overflow-auto">
-          {watch("permissions").join(", ")}
-        </code>
       </div>
       <DialogFooter>
         <DialogClose asChild>
