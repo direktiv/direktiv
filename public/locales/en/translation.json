@@ -627,6 +627,7 @@
           "created": "created",
           "expires": "expires"
         },
+        "createBtn": "Create a new token",
         "created": "{{relativeTime}} ago",
         "expiresIn": "in {{relativeTime}}",
         "expiredAgo": "{{relativeTime}} ago",
