@@ -4,7 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { MoreVertical, Pencil, Trash } from "lucide-react";
+import { MoreVertical, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,
@@ -24,11 +24,9 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 const Row = ({
   token,
   onDeleteClicked,
-  onEditClicked,
 }: {
   token: TokenSchemaType;
   onDeleteClicked: (group: TokenSchemaType) => void;
-  onEditClicked: (group: TokenSchemaType) => void;
 }) => {
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(token.created);
@@ -89,18 +87,6 @@ const Row = ({
                 <DropdownMenuItem>
                   <Trash className="mr-2 h-4 w-4" />
                   {t("pages.permissions.tokens.contextMenu.delete")}
-                </DropdownMenuItem>
-              </DialogTrigger>
-              <DialogTrigger
-                className="w-full"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEditClicked(token);
-                }}
-              >
-                <DropdownMenuItem>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {t("pages.permissions.tokens.contextMenu.edit")}
                 </DropdownMenuItem>
               </DialogTrigger>
             </DropdownMenuContent>

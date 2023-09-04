@@ -27,13 +27,11 @@ const TokensPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
   const [deleteToken, setDeleteToken] = useState<TokenSchemaType>();
-  const [editToken, setEditToken] = useState<TokenSchemaType>();
 
   useEffect(() => {
     if (dialogOpen === false) {
       setCreateToken(false);
       setDeleteToken(undefined);
-      setEditToken(undefined);
     }
   }, [dialogOpen]);
 
@@ -83,7 +81,6 @@ const TokensPage = () => {
                   key={token.id}
                   token={token}
                   onDeleteClicked={setDeleteToken}
-                  onEditClicked={setEditToken}
                 />
               ))
             )}
@@ -93,7 +90,6 @@ const TokensPage = () => {
           {deleteToken && (
             <Delete token={deleteToken} close={() => setDialogOpen(false)} />
           )}
-          {editToken && "edit"}
           {createToken && <CreateToken close={() => setDialogOpen(false)} />}
         </DialogContent>
       </Dialog>

@@ -643,7 +643,6 @@
         "expiredAgo": "{{relativeTime}} ago",
         "noTokens": "There are no tokens yet.",
         "contextMenu": {
-          "edit": "Edit",
           "delete": "Delete"
         },
         "create": {
