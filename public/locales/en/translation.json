@@ -637,6 +637,15 @@
           "created": "created",
           "expires": "expires"
         },
+        "createBtn": "Create a new token",
+        "created": "{{relativeTime}} ago",
+        "expiresIn": "in {{relativeTime}}",
+        "expiredAgo": "{{relativeTime}} ago",
+        "noTokens": "There are no tokens yet.",
+        "contextMenu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
         "create": {
           "title": "Create a token",
           "cancelBtn": "Cancel",
@@ -650,14 +659,11 @@
             "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
           }
         },
-        "createBtn": "Create a new token",
-        "created": "{{relativeTime}} ago",
-        "expiresIn": "in {{relativeTime}}",
-        "expiredAgo": "{{relativeTime}} ago",
-        "noTokens": "There are no tokens yet.",
-        "contextMenu": {
-          "edit": "Edit",
-          "delete": "Delete"
+        "delete": {
+          "title": "Delete token",
+          "msg": "Are you sure you want to delete this token? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
         }
       }
     },

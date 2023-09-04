@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateToken from "./Create";
+import Delete from "./Delete";
 import Row from "./Row";
 import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
@@ -89,7 +90,9 @@ const TokensPage = () => {
           </TableBody>
         </Table>
         <DialogContent className="sm:max-w-2xl">
-          {deleteToken && "delete"}
+          {deleteToken && (
+            <Delete token={deleteToken} close={() => setDialogOpen(false)} />
+          )}
           {editToken && "edit"}
           {createToken && <CreateToken close={() => setDialogOpen(false)} />}
         </DialogContent>
