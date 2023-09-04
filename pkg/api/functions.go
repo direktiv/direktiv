@@ -37,6 +37,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -865,41 +866,17 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 
 func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
-
+	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
+	annotations[functions.ServiceHeaderWorkflowID] = wf
 	h.listServices(annotations, w, r)
 }
 
 func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
-
+	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
+	annotations[functions.ServiceHeaderWorkflowID] = wf
 	h.listServicesSSE(annotations, w, r)
 }
 
