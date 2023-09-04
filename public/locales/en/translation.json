@@ -592,6 +592,11 @@
         "partial_one": "{{count}} permision",
         "partial_zero": "no permissions"
       },
+      "permissionsSelector": {
+        "permissions": "Permissions",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all"
+      },
       "groups": {
         "tableHeader": {
           "name": "name",
@@ -610,10 +615,7 @@
           "description": {
             "label": "Description",
             "placeholder": "Enter a description for the group"
-          },
-          "permissions": "Permissions",
-          "selectAll": "Select all",
-          "deselectAll": "Deselect all"
+          }
         },
         "createBtn": "Create a new group",
         "noGroups": "There are no groups yet."

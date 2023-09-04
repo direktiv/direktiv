@@ -4,12 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import {
-  Diamond,
-  MousePointerSquare,
-  MousePointerSquareDashed,
-  PlusCircle,
-} from "lucide-react";
+import { Diamond, PlusCircle } from "lucide-react";
 import {
   GroupFormSchema,
   GroupFormSchemaType,
@@ -17,9 +12,9 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import { Checkbox } from "~/design/Checkbox";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
+import PermissionsSelector from "../components/PermisionsSelector";
 import { useCreateGroup } from "~/api/enterprise/groups/mutation/create";
 import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useTranslation } from "react-i18next";
@@ -73,27 +68,6 @@ const CreateGroup = ({
 
   const formId = `new-group`;
 
-  const selectAllPermissions = () => {
-    if (availablePermissions) {
-      setValue("permissions", availablePermissions);
-    }
-  };
-  const deselectAllPermissions = () => {
-    setValue("permissions", []);
-  };
-
-  const allSelected =
-    watch("permissions").length === availablePermissions?.length;
-  const noneSelected = watch("permissions").length === 0;
-
-  const onCheckedChange = (permissionValue: string, isChecked: boolean) => {
-    const currentPermissions = watch("permissions");
-    const newPermissions = isChecked
-      ? [...currentPermissions, permissionValue]
-      : currentPermissions.filter((p) => p !== permissionValue);
-    setValue("permissions", newPermissions);
-  };
-
   return (
     <>
       <DialogHeader>
@@ -137,55 +111,13 @@ const CreateGroup = ({
               {...register("description")}
             />
           </fieldset>
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[14px]">
-              {t("pages.permissions.groups.create.permissions")}
-            </label>
-            <div className="grid w-full gap-2 sm:grid-cols-3 ">
-              {availablePermissions?.map((permission) => (
-                <label
-                  key={permission}
-                  className="flex items-center gap-2 text-sm"
-                  htmlFor={permission}
-                >
-                  <Checkbox
-                    id={permission}
-                    value={permission}
-                    checked={watch("permissions").includes(permission)}
-                    onCheckedChange={(checked) => {
-                      if (checked !== "indeterminate") {
-                        onCheckedChange(permission, checked);
-                      }
-                    }}
-                  />
-
-                  {permission}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <div className="flex justify-end gap-x-2">
-            <Button
-              variant="link"
-              type="button"
-              size="sm"
-              onClick={selectAllPermissions}
-              disabled={allSelected}
-            >
-              <MousePointerSquare />
-              {t("pages.permissions.groups.create.selectAll")}
-            </Button>
-            <Button
-              variant="link"
-              size="sm"
-              type="button"
-              onClick={deselectAllPermissions}
-              disabled={noneSelected}
-            >
-              <MousePointerSquareDashed />
-              {t("pages.permissions.groups.create.deselectAll")}
-            </Button>
-          </div>
+          <PermissionsSelector
+            availablePermissions={availablePermissions ?? []}
+            selectedPermissions={watch("permissions")}
+            setPermissions={(permissions) =>
+              setValue("permissions", permissions)
+            }
+          />
         </form>
       </div>
       <DialogFooter>
