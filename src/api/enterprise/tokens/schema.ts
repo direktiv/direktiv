@@ -34,6 +34,15 @@ export const TokenListSchema = z.object({
 
 export const TokenCreatedSchema = z.null();
 
+export const ISO8601durationSchema = z
+  .string()
+  .regex(
+    /^P(?!$)(\d+(?:\.\d+)?Y)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?W)?(\d+(?:\.\d+)?D)?(T(?=\d)(\d+(?:\.\d+)?H)?(\d+(?:\.\d+)?M)?(\d+(?:\.\d+)?S)?)?$/,
+    {
+      message: "Invalid ISO 8601 duration format",
+    }
+  );
+
 /**
  * example
  * 
@@ -45,7 +54,7 @@ export const TokenCreatedSchema = z.null();
  */
 export const TokenFormSchema = z.object({
   description: z.string(),
-  duration: z.string(), // ISO8601 duration string
+  duration: ISO8601durationSchema,
   permissions: z.array(z.string()),
 });
 
