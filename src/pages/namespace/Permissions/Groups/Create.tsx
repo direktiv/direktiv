@@ -12,9 +12,11 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { Checkbox } from "~/design/Checkbox";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { useCreateGroup } from "~/api/enterprise/groups/mutation/create";
+import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -26,6 +28,7 @@ const CreateGroup = ({
   unallowedNames?: string[];
 }) => {
   const { t } = useTranslation();
+  const { data: availablePermissions } = usePermissionKeys();
   const { mutate: createGroup, isLoading } = useCreateGroup({
     onSuccess: () => {
       close();
@@ -107,13 +110,21 @@ const CreateGroup = ({
             />
           </fieldset>
           <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[90px] text-right text-[14px]"
-              htmlFor="permissions"
-            >
+            <label className="w-[90px] text-right text-[14px]">
               {t("pages.permissions.groups.create.permissions")}
             </label>
-            <div>Permissions will go here</div>
+            <div className="grid w-full gap-2 sm:grid-cols-2 ">
+              {availablePermissions?.map((permission) => (
+                <label
+                  key={permission}
+                  className="flex items-center gap-2"
+                  htmlFor={permission}
+                >
+                  <Checkbox id={permission} {...register("permissions")} />{" "}
+                  {permission}
+                </label>
+              ))}
+            </div>
           </fieldset>
         </form>
       </div>
