@@ -117,7 +117,7 @@ const CreateGroup = ({
               {availablePermissions?.map((permission) => (
                 <label
                   key={permission}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-sm"
                   htmlFor={permission}
                 >
                   <Checkbox id={permission} {...register("permissions")} />{" "}
