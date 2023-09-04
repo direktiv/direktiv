@@ -87,6 +87,7 @@ const CreateGroup = ({
               placeholder={t(
                 "pages.permissions.groups.create.group.placeholder"
               )}
+              autoComplete="off"
               {...register("group")}
             />
           </fieldset>
