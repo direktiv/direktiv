@@ -31,13 +31,13 @@ export const useCreateGroup = ({
   }
 
   return useMutation({
-    mutationFn: (serviceFormProps: GroupFormSchemaType) =>
+    mutationFn: (tokenFormProps: GroupFormSchemaType) =>
       createGroup({
         apiKey: apiKey ?? undefined,
         urlParams: {
           namespace,
         },
-        payload: serviceFormProps,
+        payload: tokenFormProps,
       }),
     onSuccess(data, { description }) {
       queryClient.invalidateQueries(
