@@ -49,5 +49,8 @@ export const GroupFormSchema = z.object({
   permissions: z.array(z.string()),
 });
 
+export const GroupDeletedSchema = z.null();
+
 export type GroupSchemaType = z.infer<typeof GroupSchema>;
+export type GroupsListSchemaType = z.infer<typeof GroupsListSchema>;
 export type GroupFormSchemaType = z.infer<typeof GroupFormSchema>;

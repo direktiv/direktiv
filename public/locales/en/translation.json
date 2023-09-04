@@ -1192,6 +1192,15 @@
           "error": {
             "description": "The group could not be created 😢"
           }
+        },
+        "deleteGroup": {
+          "success": {
+            "title": "Group deleted",
+            "description": "The group {{name}} was deleted"
+          },
+          "error": {
+            "description": "The group could not be deleted 😢"
+          }
         }
       }
     }
