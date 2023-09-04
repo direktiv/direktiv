@@ -637,7 +637,7 @@
           },
           "duration": {
             "label": "Duration",
-            "placeholder": "Lifetime (ISO 8601), like e.g P1Y, P1DT6H or PT12H"
+            "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
           }
         },
         "createBtn": "Create a new token",
