@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import PermissionsHint from "./PermissionsHint";
+import PermissionsHint from "../components/PermissionsHint";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdatePolicy } from "~/api/enterprise/policy/mutate/update";
