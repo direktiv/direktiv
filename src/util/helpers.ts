@@ -52,6 +52,29 @@ export const logLevelToLogEntryVariant = (
       break;
   }
 };
+
+const mimeTypeToFileExtension = (mimeType: string) => {
+  switch (mimeType) {
+    case "application/json":
+      return ".json";
+    case "text/plain":
+      return ".txt";
+    case "application/x-sh":
+      return ".sh";
+    case "application/yaml":
+    case "text/yaml":
+      return ".yaml";
+    case "text/html":
+      return ".html";
+    case "text/xml":
+      return ".xml";
+    case "text/csv":
+      return ".csv";
+    default:
+      return "";
+  }
+};
+
 export const triggerDownloadFromBlob = ({
   filename,
   blob,
@@ -62,10 +85,12 @@ export const triggerDownloadFromBlob = ({
   mimeType: string;
 }) => {
   const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
+  const aTag = document.createElement("a");
+  const fileExtension = mimeTypeToFileExtension(mimeType);
+  aTag.href = url;
+  aTag.download = `${filename}${fileExtension}`;
+
+  document.body.appendChild(aTag);
+  aTag.click();
   window.URL.revokeObjectURL(url);
 };
