@@ -4,7 +4,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { Diamond, PlusCircle } from "lucide-react";
+import {
+  Diamond,
+  MousePointerSquare,
+  MousePointerSquareDashed,
+  PlusCircle,
+} from "lucide-react";
 import {
   GroupFormSchema,
   GroupFormSchemaType,
@@ -37,7 +42,9 @@ const CreateGroup = ({
 
   const {
     register,
+    setValue,
     handleSubmit,
+    watch,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<GroupFormSchemaType>({
     defaultValues: {
@@ -57,7 +64,8 @@ const CreateGroup = ({
   });
 
   const onSubmit: SubmitHandler<GroupFormSchemaType> = (params) => {
-    createGroup(params);
+    console.log("🚀", params);
+    // createGroup(params);
   };
 
   // you can not submit if the form has not changed or if there are any errors and
@@ -65,6 +73,19 @@ const CreateGroup = ({
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   const formId = `new-group`;
+
+  const selectAllPermissions = () => {
+    if (availablePermissions) {
+      setValue("permissions", availablePermissions);
+    }
+  };
+  const deselectAllPermissions = () => {
+    setValue("permissions", []);
+  };
+
+  const allSelected =
+    watch("permissions").length === availablePermissions?.length;
+  const noneSelected = watch("permissions").length === 0;
 
   return (
     <>
@@ -126,7 +147,34 @@ const CreateGroup = ({
               ))}
             </div>
           </fieldset>
+          <div className="flex justify-end gap-x-2">
+            <Button
+              variant="link"
+              type="button"
+              size="sm"
+              onClick={selectAllPermissions}
+              disabled={allSelected}
+            >
+              <MousePointerSquare />
+              {t("pages.permissions.groups.create.selectAll")}
+            </Button>
+            <Button
+              variant="link"
+              size="sm"
+              type="button"
+              onClick={deselectAllPermissions}
+              disabled={noneSelected}
+            >
+              <MousePointerSquareDashed />
+              {t("pages.permissions.groups.create.deselectAll")}
+            </Button>
+          </div>
         </form>
+      </div>
+      <div>
+        <code className="w-[300px] overflow-auto">
+          {watch("permissions").join(", ")}
+        </code>
       </div>
       <DialogFooter>
         <DialogClose asChild>
