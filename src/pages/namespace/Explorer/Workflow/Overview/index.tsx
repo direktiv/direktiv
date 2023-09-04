@@ -1,11 +1,5 @@
 import { Boxes, Network, PieChart } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
 
 import { Card } from "~/design/Card";
 import { CategoryBar } from "@tremor/react";
@@ -34,8 +28,22 @@ const ActiveWorkflowPage: FC = () => {
     offset: 0,
     filters: { AS: { type: "WORKFLOW", value: forceLeadingSlash(path) } },
   });
-  const { data: successData } = useMetrics({ path, type: "successful" });
-  const { data: failedData } = useMetrics({ path, type: "failed" });
+  const {
+    data: successData,
+    isFetching: isFetchingSuccessful,
+    refetch: refetchSuccessful,
+  } = useMetrics({
+    path,
+    type: "successful",
+  });
+  const {
+    data: failedData,
+    isFetching: isFetchingFailed,
+    refetch: refetchFailed,
+  } = useMetrics({
+    path,
+    type: "failed",
+  });
   const { t } = useTranslation();
 
   const routes = routerData?.routes;
@@ -50,25 +58,35 @@ const ActiveWorkflowPage: FC = () => {
         }
       : undefined;
 
-  const refetchButton = (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RefreshButton
-            icon
-            size="sm"
-            variant="ghost"
-            disabled={isFetchingInstances}
-            onClick={() => {
-              refetchInstances();
-            }}
-          />
-        </TooltipTrigger>
-        <TooltipContent>
-          {t(`pages.monitoring.instances.updateTooltip`)}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+  const isFetchingMetrics = isFetchingFailed || isFetchingSuccessful;
+
+  const refetchMetrics = () => {
+    refetchSuccessful();
+    refetchFailed();
+  };
+
+  const instancesRefetchButton = (
+    <RefreshButton
+      icon
+      size="sm"
+      variant="ghost"
+      disabled={isFetchingInstances}
+      onClick={() => {
+        refetchInstances();
+      }}
+    />
+  );
+
+  const MetricsRefetchButton = () => (
+    <RefreshButton
+      icon
+      size="sm"
+      variant="ghost"
+      disabled={isFetchingMetrics}
+      onClick={() => {
+        refetchMetrics();
+      }}
+    />
   );
 
   return (
@@ -77,7 +95,7 @@ const ActiveWorkflowPage: FC = () => {
         className="row-span-2"
         headline={t("pages.explorer.tree.workflow.overview.instances.header")}
         icon={Boxes}
-        refetchButton={refetchButton}
+        refetchButton={instancesRefetchButton}
       >
         {instances?.instances?.results.length === 0 ? (
           <NoResult icon={Boxes}>
@@ -102,6 +120,7 @@ const ActiveWorkflowPage: FC = () => {
           <h3 className="grow">
             {t("pages.explorer.tree.workflow.overview.metrics.header")}
           </h3>
+          <MetricsRefetchButton />
         </div>
         {metrics ? (
           <Metrics data={metrics} />

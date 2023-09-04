@@ -1,11 +1,5 @@
 import { Boxes, CheckCircle2, XCircle } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
 
 import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
@@ -50,24 +44,15 @@ export const Instances = () => {
   const { t } = useTranslation();
 
   const refetchButton = (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RefreshButton
-            icon
-            size="sm"
-            variant="ghost"
-            disabled={isFetchingSuccessfulInstances}
-            onClick={() => {
-              refetchSuccessfulInstances();
-            }}
-          />
-        </TooltipTrigger>
-        <TooltipContent>
-          {t(`pages.monitoring.instances.updateTooltip`)}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <RefreshButton
+      icon
+      size="sm"
+      variant="ghost"
+      disabled={isFetchingSuccessfulInstances}
+      onClick={() => {
+        refetchSuccessfulInstances();
+      }}
+    />
   );
 
   if (!isFetchedSuccessfulInstances || !isFetchedFailedInstances) return null;
@@ -99,24 +84,15 @@ export const Instances = () => {
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
         refetchButton={
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <RefreshButton
-                  icon
-                  size="sm"
-                  variant="ghost"
-                  disabled={isFetchingFailedInstances}
-                  onClick={() => {
-                    refetchFailedInstances();
-                  }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {t(`pages.monitoring.instances.updateTooltip`)}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <RefreshButton
+            icon
+            size="sm"
+            variant="ghost"
+            disabled={isFetchingFailedInstances}
+            onClick={() => {
+              refetchFailedInstances();
+            }}
+          />
         }
       >
         {failedInstances?.instances?.results.length === 0 ? (

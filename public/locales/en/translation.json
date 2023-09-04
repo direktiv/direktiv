@@ -304,7 +304,6 @@
       },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
-        "updateTooltip": "refetch instances",
         "successfulExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recent successful executions."
@@ -331,7 +330,6 @@
           "updatedAt": "last updated",
           "childInstances": {
             "label": "spawned",
-            "updateTooltip": "refetch child instances",
             "instanceCount": "{{count}} instances",
             "instanceCountMax": "+ {{count}} instances",
             "searchPlaceholder": "Search child instances...",
