@@ -625,7 +625,7 @@
         },
         "delete": {
           "title": "Delete group",
-          "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
         }

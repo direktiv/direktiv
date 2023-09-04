@@ -34,7 +34,7 @@ const Delete = ({
       </DialogHeader>
       <div className="my-3">
         <Trans
-          i18nKey="pages.services.list.delete.msg"
+          i18nKey="pages.permissions.tokens.delete.msg"
           values={{ name: group.group }}
         />
       </div>
