@@ -92,7 +92,6 @@ const ServicesTableRow: FC<{
             <DropdownMenuContent className="w-40">
               <DialogTrigger
                 className="w-full"
-                data-testid="node-actions-delete"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeleteService(service.info.name);
