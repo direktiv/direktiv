@@ -115,7 +115,10 @@ const CreateGroup = ({
             availablePermissions={availablePermissions ?? []}
             selectedPermissions={watch("permissions")}
             setPermissions={(permissions) =>
-              setValue("permissions", permissions)
+              setValue("permissions", permissions, {
+                shouldDirty: true,
+                shouldTouch: true,
+              })
             }
           />
         </form>
