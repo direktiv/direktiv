@@ -11,7 +11,6 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 const updateCache = (
   oldData: TokenListSchemaType | undefined,
@@ -27,8 +26,6 @@ const updateCache = (
   };
 };
 
-// TODO: remove the line below and delete the mock function
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const deleteToken = apiFactory({
   url: ({ namespace, tokenId }: { namespace: string; tokenId: string }) =>
     `/api/v2/namespaces/${namespace}/tokens/${tokenId}`,
@@ -36,15 +33,16 @@ const deleteToken = apiFactory({
   schema: TokenDeletedSchema,
 });
 
-const deleteTockenMock = (_params: {
-  apiKey?: string;
-  urlParams: { namespace: string; tokenId: string };
-}): Promise<z.infer<typeof TokenDeletedSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(null);
-    }, 500);
-  });
+// TODO: remove this mock
+// const deleteTockenMock = (_params: {
+//   apiKey?: string;
+//   urlParams: { namespace: string; tokenId: string };
+// }): Promise<z.infer<typeof TokenDeletedSchema>> =>
+//   new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve(null);
+//     }, 500);
+//   });
 
 export const useDeleteToken = ({
   onSuccess,
@@ -61,7 +59,7 @@ export const useDeleteToken = ({
 
   return useMutation({
     mutationFn: (token: TokenSchemaType) =>
-      deleteTockenMock({
+      deleteToken({
         apiKey: apiKey ?? undefined,
         urlParams: {
           tokenId: token.id,
