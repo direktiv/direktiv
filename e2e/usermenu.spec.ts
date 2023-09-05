@@ -19,7 +19,7 @@ test("it is possible to switch between light and dark mode", async ({
 
   expect(
     await themeSwitchBtn.textContent(),
-    "the theme button should display 'switch to Dark mode' initially"
+    "the theme button should display 'switch to dark mode' initially"
   ).toMatch(/Switch to dark mode/);
 
   // switch to dark mode
@@ -34,7 +34,7 @@ test("it is possible to switch between light and dark mode", async ({
 
   expect(
     await themeSwitchBtn.textContent(),
-    "the theme button should now display 'switch to Light mode'"
+    "the theme button should now display 'switch to light mode'"
   ).toMatch(/Switch to light mode/);
 
   // back to light mode again

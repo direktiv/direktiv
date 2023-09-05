@@ -192,6 +192,24 @@
           "setActive": "Activate workflow",
           "setInactive": "Deactivate workflow"
         },
+        "apiCommands": {
+          "tooltip": "Open API Commands",
+          "title": "Workflow API Interactions",
+          "namespace": "Namespace",
+          "namespacePlaceholder": "your-namespace",
+          "workflow": "Workflow",
+          "workflowPlaceholder": "path-to-workflow",
+          "interaction": "Interaction",
+          "interactionPlaceholder": "select an interaction",
+          "openDocsBtn": "Open API Docs",
+          "copyBtn": "Copy as cURL command",
+          "copyBtnCopied": "Copied",
+          "labels": {
+            "execute": "Execute workflow",
+            "awaitExecute": "Execute workflow and wait",
+            "update": "Update a workflow"
+          }
+        },
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
