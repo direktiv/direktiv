@@ -2,12 +2,16 @@ import { FC, PropsWithChildren, useEffect } from "react";
 import { useApiActions, useApiKey } from "~/util/store/apiKey";
 
 import { Authdialog } from "../Authdialog";
+import env from "~/config/env";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
+import { useRefreshSession } from "~/api/enterprise/session/query/ping";
 
 export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { isFetched, isCurrentKeyValid, isKeyRequired } = useApiKeyHandling();
   const { setApiKey: storeApiKey } = useApiActions();
   const apiKeyFromLocalStorage = useApiKey();
+
+  useRefreshSession({ enabled: env.VITE_IS_ENTERPRISE });
 
   /**
    * clean up old api keys from local storage
