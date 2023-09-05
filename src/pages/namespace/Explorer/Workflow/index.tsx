@@ -173,7 +173,7 @@ const Header: FC = () => {
         </div>
         <div>
           <nav className="-mb-px flex space-x-8">
-            <Tabs defaultValue={tabs.find((x) => x.active)?.value}>
+            <Tabs value={tabs.find((x) => x.active)?.value}>
               <TabsList>
                 {tabs.map((tab) => (
                   <TabsTrigger

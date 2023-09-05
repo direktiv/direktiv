@@ -2,8 +2,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { forceLeadingSlash, sortByRef } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { RouterSchema } from "../schema";
-import type { RouterSchemaType } from "../schema";
+import { RouterSchema } from "../schema/node";
+import type { RouterSchemaType } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";

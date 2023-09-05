@@ -1,7 +1,7 @@
 import { forceLeadingSlash, sortByRef } from "../utils";
 
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import { RouterSchema } from "../schema";
+import { RouterSchema } from "../schema/node";
 import { apiFactory } from "../../apiFactory";
 import { treeKeys } from "../";
 import { useApiKey } from "../../../util/store/apiKey";

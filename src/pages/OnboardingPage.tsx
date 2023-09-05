@@ -5,7 +5,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import Button from "~/design/Button";
 import Logo from "~/design/Logo";
-import NamespaceCreate from "~/componentsNext/NamespaceCreate";
+import NamespaceCreate from "~/componentsNext/NamespaceEdit";
 import { pages } from "~/util/router/pages";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
