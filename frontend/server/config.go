@@ -18,8 +18,8 @@ type Log struct {
 
 type APIServer struct {
 	Listen      string `yaml:"listen"`
-	TLSCert     string `yaml:"tls-cert"`
-	TLSKey      string `yaml:"tls-key"`
+	TLSCert     string `yaml:"tlscert"`
+	TLSKey      string `yaml:"tlskey"`
 	Assets      string `yaml:"assets"`
 	Backend     string `yaml:"backend"`
 	BackendSkip bool   `yaml:"skipverify"`
