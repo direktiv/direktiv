@@ -1,27 +1,27 @@
-import { Dispatch, FC, SetStateAction } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Bug } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { FC } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
 type EditorProps = {
   value: string;
-  setValue: Dispatch<SetStateAction<string>>;
+  onValueChange: (value: string) => void;
   onSave: Parameters<typeof Editor>[0]["onSave"];
-  hasUnsavedChanged: boolean;
+  hasUnsavedChanges: boolean;
   createdAt: string | undefined;
   error: string | undefined;
 };
 
 export const CodeEditor: FC<EditorProps> = ({
   value,
-  setValue,
+  onValueChange,
   onSave,
-  hasUnsavedChanged,
+  hasUnsavedChanges,
   createdAt,
   error,
 }) => {
@@ -38,7 +38,7 @@ export const CodeEditor: FC<EditorProps> = ({
             editor.focus();
           }}
           onChange={(newData) => {
-            setValue(newData ?? "");
+            onValueChange(newData ?? "");
           }}
           theme={theme ?? undefined}
           onSave={onSave}
@@ -71,7 +71,7 @@ export const CodeEditor: FC<EditorProps> = ({
           </Popover>
         )}
 
-        {hasUnsavedChanged && (
+        {hasUnsavedChanges && (
           <span className="text-center">
             {t("pages.explorer.workflow.editor.unsavedNote")}
           </span>

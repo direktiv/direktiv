@@ -213,9 +213,7 @@ describe("processApiResponse", () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
-      expect(errorMock.mock.calls?.[0]?.[0]).toMatchInlineSnapshot(
-        '"error 401 for GET http://localhost/my-api"'
-      );
+      expect(errorMock.mock.calls?.[0]?.[0]).toMatchInlineSnapshot("401");
     });
   });
 
@@ -308,9 +306,7 @@ describe("processApiResponse", () => {
       // ignore it for now, since typesafety is not important here
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(
-        '"error 404 for GET http://localhost/404"'
-      );
+      expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot("404");
     });
   });
 

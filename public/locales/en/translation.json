@@ -11,7 +11,6 @@
       "welcomeTo": "Welcome to",
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
-      "tokenRequired": "An authentication token is required to connect to the API.",
       "links": {
         "docs": {
           "title": "Getting started",
@@ -26,6 +25,15 @@
           "description": "Check out our Github repository"
         }
       }
+    },
+    "authenticate": {
+      "title": "Authenticate",
+      "description": "An authentication token is required to connect to the API.",
+      "apiKey": "API key",
+      "apiKeyPlaceholder": "Enter your API key",
+      "wrongKey": "The API key is incorrect",
+      "wrongOldKey": "The previously used API key is incorrect, it may have changed after your last use",
+      "loginBtn": "Login"
     },
     "explorer": {
       "tree": {
@@ -55,6 +63,11 @@
           "nameAlreadyExists": "The name already exists",
           "createBtn": "Create",
           "cancelBtn": "Cancel"
+        },
+        "fileViewer": {
+          "title": "Preview",
+          "notSupported": "Preview for this mime type is not currently supported.",
+          "closeBtn": "Close"
         },
         "delete": {
           "title": "Delete",
@@ -183,6 +196,24 @@
         "toggleActiveBtn": {
           "setActive": "Activate workflow",
           "setInactive": "Deactivate workflow"
+        },
+        "apiCommands": {
+          "tooltip": "Open API Commands",
+          "title": "Workflow API Interactions",
+          "namespace": "Namespace",
+          "namespacePlaceholder": "your-namespace",
+          "workflow": "Workflow",
+          "workflowPlaceholder": "path-to-workflow",
+          "interaction": "Interaction",
+          "interactionPlaceholder": "select an interaction",
+          "openDocsBtn": "Open API Docs",
+          "copyBtn": "Copy as cURL command",
+          "copyBtnCopied": "Copied",
+          "labels": {
+            "execute": "Execute workflow",
+            "awaitExecute": "Execute workflow and wait",
+            "update": "Update a workflow"
+          }
         },
         "editor": {
           "unsavedNote": "unsaved changes",
@@ -702,6 +733,33 @@
       "namespacesList": {
         "title": "Namespaces"
       }
+    },
+    "jqPlayground": {
+      "title": "jq Playground",
+      "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
+      "openManualBtn": "Open jq Manual",
+      "queryPlaceholder": "Enter your jq query here...",
+      "input": "Input",
+      "output": "Output",
+      "submitBtn": "Run Query",
+      "examples": {
+        "title": "Examples",
+        "buttonLabel": "Run",
+        "snippets": {
+          "unchangedInput": "unchanged input",
+          "valueAtKey": "value at key",
+          "arrayOperation": "array operation",
+          "arrayObjectConstruction": "array/object construction",
+          "lengthOfValue": "length of a value",
+          "keysInArray": "keys in an array",
+          "feeedInput": "feed input into multiple filters",
+          "pipeOutput": "pipe output of one filter to the next filter",
+          "inputUnchanged": "input unchanged if foo returns true",
+          "invokeFilter": "invoke filter foo for each input",
+          "conditionals": "conditionals",
+          "stringInterpolation": "string interpolation"
+        }
+      }
     }
   },
   "components": {
@@ -714,6 +772,7 @@
       "permissions": "Permissions",
       "services": "Services",
       "settings": "Settings",
+      "jqPlayground": "jq Playground",
       "mirror": "Mirror"
     },
     "breadcrumb": {
@@ -726,6 +785,8 @@
       "services": "Services",
       "eventListeners": "Event Listeners",
       "monitoring": "Monitoring",
+      "settings": "Settings",
+      "jqPlayground": "jq Playground",
       "mirror": "Mirror"
     },
     "namespaceEdit": {
@@ -801,20 +862,28 @@
       "fieldInvalid": "this field is invalid"
     },
     "userMenu": {
-      "loggedInAs": "You are logged in as {{name}}",
+      "loggedIn": "You are logged in",
       "logout": "Logout",
       "appearance": "Appearance",
-      "switchToLight": "switch to Light mode",
-      "switchToDark": "switch to Dark mode",
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode",
       "help": "Help",
-      "showApiCommands": "Show API Commands",
-      "openJQPlayground": "Open JQ Playground",
+      "docs": "Open the docs",
       "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
   "api": {
     "generic": {
       "error": "An error occurred"
+    },
+    "authentication": {
+      "mutate": {
+        "authenticate": {
+          "error": {
+            "description": "The auth endpoint did not answer as expected 😢"
+          }
+        }
+      }
     },
     "tree": {
       "mutate": {

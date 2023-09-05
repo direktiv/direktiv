@@ -127,8 +127,6 @@ export const apiFactory =
       return Promise.reject(json);
     } catch (error) {
       process.env.NODE_ENV !== "test" && console.error(error);
-      return Promise.reject(
-        `error ${res.status} for ${method} ${url(urlParams)}`
-      );
+      return Promise.reject(res.status);
     }
   };
