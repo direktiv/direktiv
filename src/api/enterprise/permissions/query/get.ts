@@ -5,10 +5,7 @@ import { apiFactory } from "~/api/apiFactory";
 import { permissionKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
-import { z } from "zod";
 
-// TODO: remove the line below and delete the mock function
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getPermissionKeys = apiFactory({
   url: ({ baseUrl }: { baseUrl?: string }) =>
     `${baseUrl ?? ""}/api/v2/info/permissions`,
@@ -16,49 +13,50 @@ const getPermissionKeys = apiFactory({
   schema: PermissionKeysSchema,
 });
 
-const getPermissionsKeysMock = (_params: {
-  apiKey?: string;
-}): Promise<z.infer<typeof PermissionKeysSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(
-        [
-          "opaManage",
-          "variablesView",
-          "registriesManage",
-          "explorerManage",
-          "registriesView",
-          "nsconfigView",
-          "eventsSend",
-          "instancesView",
-          "secretsView",
-          "secretsManage",
-          "servicesView",
-          "servicesManage",
-          "instancesManage",
-          "explorerView",
-          "workflowView",
-          "workflowManage",
-          "variablesManage",
-          "nsconfigManage",
-          "deleteNamespace",
-          "eventsView",
-          "workflowExecute",
-          "workflowStore",
-          "permissionsView",
-          "permissionsManage",
-          "opaView",
-          "eventsManage",
-        ].sort()
-      );
-    }, 500);
-  });
+// const getPermissionsKeysMock = (_params: {
+//   apiKey?: string;
+// }): Promise<z.infer<typeof PermissionKeysSchema>> =>
+//   new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve(
+//         [
+//           "opaManage",
+//           "variablesView",
+//           "registriesManage",
+//           "explorerManage",
+//           "registriesView",
+//           "nsconfigView",
+//           "eventsSend",
+//           "instancesView",
+//           "secretsView",
+//           "secretsManage",
+//           "servicesView",
+//           "servicesManage",
+//           "instancesManage",
+//           "explorerView",
+//           "workflowView",
+//           "workflowManage",
+//           "variablesManage",
+//           "nsconfigManage",
+//           "deleteNamespace",
+//           "eventsView",
+//           "workflowExecute",
+//           "workflowStore",
+//           "permissionsView",
+//           "permissionsManage",
+//           "opaView",
+//           "eventsManage",
+//         ].sort()
+//       );
+//     }, 500);
+//   });
 
 const fetchpermissionKeys = async ({
   queryKey: [{ apiKey }],
 }: QueryFunctionContext<ReturnType<(typeof permissionKeys)["get"]>>) =>
-  getPermissionsKeysMock({
+  getPermissionKeys({
     apiKey,
+    urlParams: {},
   });
 
 export const usePermissionKeys = () => {
