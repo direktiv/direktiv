@@ -598,8 +598,7 @@
           "description": "Add a secret",
           "name": "Name",
           "file": "Upload a file",
-          "fileError": "There was an error uploading the file",
-          "noPreview": "Only text based mime types are supported for preview and editing"
+          "fileError": "There was an error uploading the file"
         }
       },
       "registries": {
@@ -643,9 +642,9 @@
             "placeholder": "variable-name"
           },
           "file": {
-            "label": "Upload a file",
-            "unsupportedMimeType": "Unsupported mime type"
-          }
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
         },
         "edit": {
           "title": "Edit {{name}}",
@@ -653,7 +652,11 @@
           "mimeType": {
             "label": "Mimetype",
             "placeholder": "Select a mimetype"
-          }
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "broadcasts": {

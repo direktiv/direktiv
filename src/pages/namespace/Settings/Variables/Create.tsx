@@ -134,12 +134,7 @@ const Create = ({ onSuccess }: CreateProps) => {
           <label className="w-[150px] text-right" htmlFor="file-upload">
             {t("pages.settings.variables.create.file.label")}
           </label>
-          <Input
-            id="file-upload"
-            type="file"
-            placeholder={t("pages.settings.variables.create.name.placeholder")}
-            onChange={onFilepickerChange}
-          />
+          <Input id="file-upload" type="file" onChange={onFilepickerChange} />
         </fieldset>
         <Card
           className="grow p-4 pl-0"
@@ -162,7 +157,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             ) : (
               <div className="flex grow p-10 text-center">
                 <div className="flex items-center justify-center text-sm">
-                  {t("pages.settings.secrets.create.noPreview")}
+                  {t("pages.settings.variables.create.noPreview")}
                 </div>
               </div>
             )}
