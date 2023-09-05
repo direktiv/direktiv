@@ -118,6 +118,7 @@ const CreateGroup = ({
               setValue("permissions", permissions, {
                 shouldDirty: true,
                 shouldTouch: true,
+                shouldValidate: true,
               })
             }
           />

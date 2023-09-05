@@ -108,6 +108,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                   setValue("duration", duration, {
                     shouldDirty: true,
                     shouldTouch: true,
+                    shouldValidate: true,
                   });
                 }}
               />
@@ -120,6 +121,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
               setValue("permissions", permissions, {
                 shouldDirty: true,
                 shouldTouch: true,
+                shouldValidate: true,
               })
             }
           />

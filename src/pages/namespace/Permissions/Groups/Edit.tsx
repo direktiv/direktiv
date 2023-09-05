@@ -122,6 +122,7 @@ const EditGroup = ({
               setValue("permissions", permissions, {
                 shouldDirty: true,
                 shouldTouch: true,
+                shouldValidate: true,
               })
             }
           />
