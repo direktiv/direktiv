@@ -7,9 +7,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
-// TODO: remove the line below and delete the mock function
 const editGroup = apiFactory({
   url: ({
     namespace,
@@ -24,18 +22,19 @@ const editGroup = apiFactory({
   schema: GroupCreatedEditedSchema,
 });
 
-const editGroupMock = (_params: {
-  apiKey?: string;
-  urlParams: { namespace: string; groupId: string };
-  payload: GroupFormSchemaType;
-}): Promise<z.infer<typeof GroupCreatedEditedSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: _params.urlParams.groupId,
-      });
-    }, 500);
-  });
+// TODO: remove this mock
+// const editGroupMock = (_params: {
+//   apiKey?: string;
+//   urlParams: { namespace: string; groupId: string };
+//   payload: GroupFormSchemaType;
+// }): Promise<z.infer<typeof GroupCreatedEditedSchema>> =>
+//   new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve({
+//         id: _params.urlParams.groupId,
+//       });
+//     }, 500);
+//   });
 
 type ResolvedCreateGroup = Awaited<ReturnType<typeof editGroup>>;
 
@@ -60,7 +59,7 @@ export const useEditGroup = ({
       groupId: string;
       tokenFormProps: GroupFormSchemaType;
     }) =>
-      editGroupMock({
+      editGroup({
         apiKey: apiKey ?? undefined,
         urlParams: {
           groupId,
