@@ -592,6 +592,14 @@
         "partial_one": "{{count}} permision",
         "partial_zero": "no permissions"
       },
+      "durationHint": {
+        "title": "Token lifetime",
+        "description": "The token lifetime must be a valid ISO 8601 duration string.",
+        "examples": "Examples:",
+        "P1Y": "1 year",
+        "PT48H": "48 hours",
+        "P1Y2M15D": "1 year, 2 months, and 15 days"
+      },
       "permissionsSelector": {
         "permissions": "Permissions",
         "selectAll": "Select all",
