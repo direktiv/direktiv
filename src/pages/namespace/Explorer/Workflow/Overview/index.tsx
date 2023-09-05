@@ -1,5 +1,9 @@
 import { Boxes, Network, PieChart } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
+import {
+  ServicesStreamingSubscriber,
+  useServices,
+} from "~/api/services/query/getAll";
 
 import { Card } from "~/design/Card";
 import { CategoryBar } from "@tremor/react";
@@ -43,6 +47,9 @@ const ActiveWorkflowPage: FC = () => {
   } = useMetrics({
     path,
     type: "failed",
+  });
+  const { data: servicesData } = useServices({
+    workflow: path,
   });
   const { t } = useTranslation();
 
@@ -160,6 +167,17 @@ const ActiveWorkflowPage: FC = () => {
             )}
           </NoResult>
         )}
+      </Card>
+
+      <Card>
+        <ServicesStreamingSubscriber workflow={path} />
+        <ul>
+          {servicesData?.functions.map((service, index) => (
+            <li key={index}>
+              {service.info.name} {service.info.image}
+            </li>
+          ))}
+        </ul>
       </Card>
     </div>
   );

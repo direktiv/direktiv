@@ -1,10 +1,14 @@
 export const serviceKeys = {
-  servicesList: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  servicesList: (
+    namespace: string,
+    { apiKey, workflow }: { apiKey?: string; workflow?: string }
+  ) =>
     [
       {
         scope: "service-list",
         apiKey,
         namespace,
+        workflow,
       },
     ] as const,
   serviceDetail: (
