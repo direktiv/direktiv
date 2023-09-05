@@ -64,6 +64,11 @@
           "createBtn": "Create",
           "cancelBtn": "Cancel"
         },
+        "fileViewer": {
+          "title": "Preview",
+          "notSupported": "Preview for this mime type is not currently supported.",
+          "closeBtn": "Close"
+        },
         "delete": {
           "title": "Delete",
           "commonMsg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
