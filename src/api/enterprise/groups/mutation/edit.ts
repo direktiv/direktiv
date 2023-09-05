@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 // TODO: remove the line below and delete the mock function
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const editGroup = apiFactory({
   url: ({
     namespace,
