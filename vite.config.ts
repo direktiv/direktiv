@@ -49,6 +49,7 @@ export default ({ mode }) => {
         ? {
             "/api": {
               target: apiDomain,
+              secure: false,
             },
           }
         : {},
