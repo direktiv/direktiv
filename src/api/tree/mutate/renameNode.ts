@@ -1,4 +1,4 @@
-import { NodeRenameSchema, NodeSchemaType } from "../schema";
+import { NodeRenameSchema, NodeSchemaType } from "../schema/node";
 import { forceLeadingSlash, removeLeadingSlash } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

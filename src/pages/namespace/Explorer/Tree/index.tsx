@@ -10,7 +10,7 @@ import FileViewer from "./FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "~/api/tree/schema";
+import { NodeSchemaType } from "~/api/tree/schema/node";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";

@@ -39,7 +39,7 @@ const EventsPage = () => {
   return (
     <>
       <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
-        <Tabs defaultValue={tabs.find((tab) => tab.active)?.value}>
+        <Tabs value={tabs.find((tab) => tab.active)?.value}>
           <TabsList>
             {tabs.map((tab) => (
               <TabsTrigger

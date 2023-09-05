@@ -1,6 +1,6 @@
 import { File, Folder, Play } from "lucide-react";
 
-import { NodeSchemaType } from "./schema";
+import { NodeSchemaType } from "./schema/node";
 
 export const forceLeadingSlash = (path?: string) => {
   if (!path) {

@@ -14,7 +14,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import {
   WorkflowVariableFormSchema,
   WorkflowVariableFormSchemaType,
-} from "~/api/tree/schema";
+} from "~/api/tree/schema/workflowVariable";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
