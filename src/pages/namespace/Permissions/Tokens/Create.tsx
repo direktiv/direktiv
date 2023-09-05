@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { Diamond, Info, PlusCircle } from "lucide-react";
+import { Diamond, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
   TokenFormSchema,
