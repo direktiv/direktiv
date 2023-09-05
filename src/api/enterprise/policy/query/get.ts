@@ -22,23 +22,25 @@ const getPolicyMock = (_params: {
 }): Promise<z.infer<typeof PolicySchema>> =>
   new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`package authorization
+      resolve({
+        body: `package authorization
 
-default allow = false
-
-allow {
-    input.method == "GET"
-    input.path = ["customers", customerID]
-    input.user_roles[_] = "admin"
-}
-
-allow {
-    input.method == "GET"
-    input.path = ["customers", customerID]
-    input.user_roles[_] = "support"
-}
-${Date.now()}
-`);
+      default allow = false
+      
+      allow {
+          input.method == "GET"
+          input.path = ["customers", customerID]
+          input.user_roles[_] = "admin"
+      }
+      
+      allow {
+          input.method == "GET"
+          input.path = ["customers", customerID]
+          input.user_roles[_] = "support"
+      }
+      ${Date.now()}
+      `,
+      });
     }, 500);
   });
 
