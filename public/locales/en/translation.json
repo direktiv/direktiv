@@ -29,10 +29,10 @@
     "authenticate": {
       "title": "Authenticate",
       "description": "An authentication token is required to connect to the API.",
-      "apiKey": "API Key",
-      "apiKeyPlaceholder": "Enter your API Key",
-      "wrongKey": "The API Key is incorrect",
-      "wrongOldKey": "The previously used API Key is incorrect, it may have changed after your last use",
+      "apiKey": "API key",
+      "apiKeyPlaceholder": "Enter your API key",
+      "wrongKey": "The API key is incorrect",
+      "wrongOldKey": "The previously used API key is incorrect, it may have changed after your last use",
       "loginBtn": "Login"
     },
     "explorer": {
@@ -736,10 +736,10 @@
       "loggedIn": "You are logged in",
       "logout": "Logout",
       "appearance": "Appearance",
-      "switchToLight": "Switch to Light mode",
-      "switchToDark": "Switch to Dark mode",
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode",
       "help": "Help",
-      "docs": "Open the Docs",
+      "docs": "Open the docs",
       "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
