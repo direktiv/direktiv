@@ -7,8 +7,6 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { z } from "zod";
 
-// TODO: remove the line below and delete the mock function
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updatePolicy = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/policy`,
@@ -16,17 +14,18 @@ const updatePolicy = apiFactory({
   schema: PolicyCreatedSchema,
 });
 
-const updatePolicyMock = (params: {
-  apiKey?: string;
-  payload: string;
-  urlParams: { namespace: string };
-}): Promise<z.infer<typeof PolicyCreatedSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      console.warn("mocking save mutation with", params.payload);
-      resolve(null);
-    }, 1000);
-  });
+// TODO: remove this mock
+// const updatePolicyMock = (params: {
+//   apiKey?: string;
+//   payload: string;
+//   urlParams: { namespace: string };
+// }): Promise<z.infer<typeof PolicyCreatedSchema>> =>
+//   new Promise((resolve) => {
+//     setTimeout(() => {
+//       console.warn("mocking save mutation with", params.payload);
+//       resolve({});
+//     }, 1000);
+// });
 
 export const useUpdatePolicy = ({
   onSuccess,
@@ -45,7 +44,7 @@ export const useUpdatePolicy = ({
 
   return useMutation({
     mutationFn: ({ policyContent }: { policyContent: string }) =>
-      updatePolicyMock({
+      updatePolicy({
         apiKey: apiKey ?? undefined,
         payload: policyContent,
         urlParams: {

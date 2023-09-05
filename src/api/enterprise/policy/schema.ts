@@ -4,4 +4,4 @@ export const PolicySchema = z.object({
   body: z.string(),
 });
 
-export const PolicyCreatedSchema = z.null();
+export const PolicyCreatedSchema = z.object({});
