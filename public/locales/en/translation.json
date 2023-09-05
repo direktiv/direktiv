@@ -58,7 +58,7 @@
         },
         "fileViewer": {
           "title": "Preview",
-          "notSupported": "We currently do not support previewing this mime type.",
+          "notSupported": "Preview for this mime type is not currently supported.",
           "closeBtn": "Close"
         },
         "delete": {
