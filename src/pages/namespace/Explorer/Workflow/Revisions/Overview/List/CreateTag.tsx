@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Tag } from "lucide-react";
-import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
+import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { useCreateTag } from "~/api/tree/mutate/createTag";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

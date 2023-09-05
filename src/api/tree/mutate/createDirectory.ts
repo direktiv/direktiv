@@ -1,4 +1,4 @@
-import { FolderCreatedSchema } from "../schema";
+import { FolderCreatedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";

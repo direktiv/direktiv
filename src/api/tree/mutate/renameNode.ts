@@ -2,7 +2,7 @@ import {
   NodeListSchemaType,
   NodeRenameSchema,
   NodeSchemaType,
-} from "../schema";
+} from "../schema/node";
 import {
   forceLeadingSlash,
   removeLeadingSlash,
