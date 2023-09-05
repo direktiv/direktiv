@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema";
+import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema/node";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";

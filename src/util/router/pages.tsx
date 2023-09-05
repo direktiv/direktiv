@@ -2,19 +2,25 @@ import {
   ActivitySquare,
   Boxes,
   FolderTree,
+  GitCompare,
   Layers,
   LucideIcon,
+  PlaySquare,
   Radio,
   Settings,
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import Activities from "~/pages/namespace/Mirror/Activities";
 import EventsPage from "~/pages/namespace/Events";
 import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
+import JqPlaygroundPage from "~/pages/namespace/JqPlayground";
 import Listeners from "~/pages/namespace/Events/Listeners";
+import Logs from "~/pages/namespace/Mirror/Activities/Detail";
+import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import type { RouteObject } from "react-router-dom";
 import ServiceDetailPage from "~/pages/namespace/Services/Detail";
@@ -40,7 +46,8 @@ type KeysWithNoPathParams =
   | "monitoring"
   // | "gateway"
   // | "permissions"
-  | "settings";
+  | "settings"
+  | "jqPlayground";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
@@ -136,12 +143,41 @@ type EventsPageSetup = Record<
   }
 >;
 
+type MirrorPageSetup = Record<
+  "mirror",
+  PageBase & {
+    createHref: (params: { namespace: string; activity?: string }) => string;
+    useParams: () => {
+      activity?: string;
+      isMirrorPage: boolean;
+      isActivityDetailPage: boolean;
+    };
+  }
+>;
+
 type MonitoringPageSetup = Record<
   "monitoring",
   PageBase & {
-    createHref: (params: { namespace: string }) => string;
     useParams: () => {
       isMonitoringPage: boolean;
+    };
+  }
+>;
+
+type SettingsPageSetup = Record<
+  "settings",
+  PageBase & {
+    useParams: () => {
+      isSettingsPage: boolean;
+    };
+  }
+>;
+
+type JqPlaygroundPageSetup = Record<
+  "jqPlayground",
+  PageBase & {
+    useParams: () => {
+      isJqPlaygroundPage: boolean;
     };
   }
 >;
@@ -151,7 +187,10 @@ type PageType = DefaultPageSetup &
   InstancesPageSetup &
   ServicesPageSetup &
   EventsPageSetup &
-  MonitoringPageSetup;
+  MonitoringPageSetup &
+  SettingsPageSetup &
+  JqPlaygroundPageSetup &
+  MirrorPageSetup;
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
@@ -433,14 +472,73 @@ export const pages: PageType = {
       ],
     },
   },
+  mirror: {
+    name: "components.mainMenu.mirror",
+    icon: GitCompare,
+    createHref: (params) =>
+      `/${params.namespace}/mirror/${
+        params?.activity ? `logs/${params.activity}` : ""
+      }`,
+    useParams: () => {
+      const { activity } = useParams();
+      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+      const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
+      const isActivityDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+      return {
+        isMirrorPage,
+        isActivityDetailPage,
+        activity: isActivityDetailPage ? activity : undefined,
+      };
+    },
+    route: {
+      path: "mirror",
+      element: <MirrorPage />,
+      handle: { isMirrorPage: true },
+      children: [
+        {
+          path: "",
+          element: <Activities />,
+          handle: { isMirrorActivitiesPage: true },
+        },
+        {
+          path: "logs/:activity",
+          element: <Logs />,
+          handle: { isMirrorLogsPage: true },
+        },
+      ],
+    },
+  },
   settings: {
     name: "components.mainMenu.settings",
     icon: Settings,
     createHref: (params) => `/${params.namespace}/settings`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
+      return { isSettingsPage };
+    },
     route: {
       path: "settings",
       element: <SettingsPage />,
-      handle: { settings: true },
+      handle: { settings: true, isSettingsPage: true },
+    },
+  },
+  jqPlayground: {
+    name: "components.mainMenu.jqPlayground",
+    icon: PlaySquare,
+    createHref: (params) => `/${params.namespace}/jq`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isJqPlaygroundPage = checkHandler(
+        secondLevel,
+        "isJqPlaygroundPage"
+      );
+      return { isJqPlaygroundPage };
+    },
+    route: {
+      path: "jq",
+      element: <JqPlaygroundPage />,
+      handle: { isJqPlaygroundPage: true },
     },
   },
 };

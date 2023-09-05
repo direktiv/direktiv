@@ -1,6 +1,6 @@
 import { ToastAction, useToast } from "~/design/Toast";
 
-import { WorkflowCreatedSchema } from "../schema";
+import { WorkflowCreatedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { pages } from "~/util/router/pages";

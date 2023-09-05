@@ -1,4 +1,6 @@
-import { NodeSchemaType } from "./schema";
+import { File, Folder, Play } from "lucide-react";
+
+import { NodeSchemaType } from "./schema/node";
 
 export const forceLeadingSlash = (path?: string) => {
   if (!path) {
@@ -41,3 +43,14 @@ export const sortByName = (a: { name: string }, b: { name: string }): number =>
 
 export const sortByRef = (a: { ref: string }, b: { ref: string }): number =>
   a.ref.localeCompare(b.ref);
+
+export const fileTypeToIcon = (type: NodeSchemaType["expandedType"]) => {
+  switch (type) {
+    case "directory":
+      return Folder;
+    case "workflow":
+      return Play;
+    default:
+      return File;
+  }
+};
