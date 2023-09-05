@@ -55,6 +55,7 @@ const ServicesListPage = () => {
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <ServicesStreamingSubscriber />
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">

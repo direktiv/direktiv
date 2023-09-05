@@ -182,6 +182,9 @@
             "trafficDistribution": {
               "header": "Traffic Distribution",
               "noResult": "Traffic shaping is not configured for this workflow."
+            },
+            "services": {
+              "header": "Workflow services"
             }
           }
         }

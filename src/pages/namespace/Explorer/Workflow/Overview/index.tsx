@@ -1,4 +1,4 @@
-import { Boxes, Network, PieChart } from "lucide-react";
+import { Boxes, Layers, Network, PieChart } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import {
   ServicesStreamingSubscriber,
@@ -169,8 +169,14 @@ const ActiveWorkflowPage: FC = () => {
         )}
       </Card>
 
-      <Card>
+      <Card className="col-span-2">
         <ServicesStreamingSubscriber workflow={path} />
+        <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+          <Layers className="h-5" />
+          <h3 className="grow">
+            {t("pages.explorer.tree.workflow.overview.services.header")}
+          </h3>
+        </div>
         <ul>
           {servicesData?.functions.map((service, index) => (
             <li key={index}>
