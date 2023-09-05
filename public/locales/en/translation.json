@@ -634,7 +634,7 @@
         "edit": {
           "title": "Update group",
           "cancelBtn": "Cancel",
-          "editBtn": "Edit",
+          "editBtn": "Save",
           "group": {
             "label": "Name",
             "placeholder": "groupname",
