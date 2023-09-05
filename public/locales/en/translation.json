@@ -965,6 +965,9 @@
         "confirm": "Confirmation required"
       }
     },
+    "copyButton": {
+      "notSuported": "Copy to clipboard is not available in your current environment (HTTPS is required)"
+    },
     "formErrors": {
       "fieldInvalid": "this field is invalid"
     },

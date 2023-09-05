@@ -9,6 +9,7 @@ import {
 
 import Button from "../Button";
 import { ConditionalWrapper } from "~/util/helpers";
+import { useTranslation } from "react-i18next";
 
 type ButtonPropsType = ComponentProps<typeof Button>;
 
@@ -19,6 +20,7 @@ const CopyButton: FC<{
 }> = ({ value, buttonProps: { onClick, ...buttonProps } = {}, children }) => {
   const [copied, setCopied] = useState(false);
   const clipboardNotAvailable = !navigator.clipboard;
+  const { t } = useTranslation();
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -42,10 +44,7 @@ const CopyButton: FC<{
             <TooltipContent>
               <div className="flex w-56 flex-col items-center gap-2 text-center">
                 <Frown />
-                <div>
-                  Copy to clipboard is not available in your current environment
-                  (HTTPS is required)
-                </div>
+                <div>{t("components.copyButton.notSuported")}</div>
               </div>
             </TooltipContent>
           </Tooltip>
