@@ -84,12 +84,14 @@ const Create = ({ onSuccess }: CreateProps) => {
             {...register("name")}
           />
         </fieldset>
+
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="file-upload">
             {t("pages.settings.secrets.create.file")}
           </label>
           <Input id="file-upload" type="file" onChange={onFilepickerChange} />
         </fieldset>
+
         <fieldset className="flex items-start gap-5">
           <Textarea
             className="h-96"
