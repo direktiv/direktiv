@@ -11,7 +11,6 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 const updateCache = (
   oldData: GroupsListSchemaType | undefined,
@@ -27,8 +26,6 @@ const updateCache = (
   };
 };
 
-// TODO: remove the line below and delete the mock function
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const deleteGroup = apiFactory({
   url: ({ namespace, groupId }: { namespace: string; groupId: string }) =>
     `/api/v2/namespaces/${namespace}/groups/${groupId}`,
@@ -36,15 +33,16 @@ const deleteGroup = apiFactory({
   schema: GroupDeletedSchema,
 });
 
-const deleteGroupMock = (_params: {
-  apiKey?: string;
-  urlParams: { namespace: string; groupId: string };
-}): Promise<z.infer<typeof GroupDeletedSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(null);
-    }, 500);
-  });
+// TODO: remove this mock
+// const deleteGroupMock = (_params: {
+//   apiKey?: string;
+//   urlParams: { namespace: string; groupId: string };
+// }): Promise<z.infer<typeof GroupDeletedSchema>> =>
+//   new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve(null);
+//     }, 500);
+//   });
 
 export const useDeleteGroup = ({
   onSuccess,
@@ -61,7 +59,7 @@ export const useDeleteGroup = ({
 
   return useMutation({
     mutationFn: (group: GroupSchemaType) =>
-      deleteGroupMock({
+      deleteGroup({
         apiKey: apiKey ?? undefined,
         urlParams: {
           groupId: group.id,
