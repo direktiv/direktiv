@@ -55,7 +55,7 @@ const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
     if (textResult !== "") parsedResponse = { body: textResult };
   }
   if (parsedResponse) {
-    return schema.parse({ ...parsedResponse });
+    return schema.parse(parsedResponse);
   }
   return schema.parse(null);
 };
