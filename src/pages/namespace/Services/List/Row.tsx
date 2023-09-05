@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
-  setDeleteService: (service: string | undefined) => void;
+  setDeleteService: (service: ServiceSchemaType) => void;
 }> = ({ service, setDeleteService }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ const ServicesTableRow: FC<{
                 data-testid="node-actions-delete"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDeleteService(service.info.name);
+                  setDeleteService(service);
                 }}
               >
                 <DropdownMenuItem>

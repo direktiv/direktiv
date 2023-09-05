@@ -1,26 +1,33 @@
-import { Boxes, Layers, Network, PieChart } from "lucide-react";
+import { Boxes, Layers, Network, PieChart, RotateCcw } from "lucide-react";
+import { Dialog, DialogContent } from "~/design/Dialog";
+import { FC, useState } from "react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import {
   ServicesStreamingSubscriber,
   useServices,
 } from "~/api/services/query/getAll";
+import { Trans, useTranslation } from "react-i18next";
 
 import { Card } from "~/design/Card";
 import { CategoryBar } from "@tremor/react";
-import { FC } from "react";
+import Delete from "~/pages/namespace/Services/List/Delete";
 import { InstanceCard } from "~/pages/namespace/Monitoring/Instances/InstanceCard";
 import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
 import Metrics from "./Metrics";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
+import { ServiceSchemaType } from "~/api/services/schema/services";
+import ServicesTable from "~/pages/namespace/Services/List/Table";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 import { useInstances } from "~/api/instances/query/get";
 import { useMetrics } from "~/api/tree/query/metrics";
 import { useRouter } from "~/api/tree/query/router";
-import { useTranslation } from "react-i18next";
 
 const ActiveWorkflowPage: FC = () => {
+  const [deleteService, setDeleteService] = useState<ServiceSchemaType>();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const { path } = pages.explorer.useParams();
   const { data: routerData } = useRouter({ path });
   const {
@@ -48,7 +55,7 @@ const ActiveWorkflowPage: FC = () => {
     path,
     type: "failed",
   });
-  const { data: servicesData } = useServices({
+  const { data: servicesData, isSuccess: servicesIsSuccess } = useServices({
     workflow: path,
   });
   const { t } = useTranslation();
@@ -171,19 +178,43 @@ const ActiveWorkflowPage: FC = () => {
 
       <Card className="col-span-2">
         <ServicesStreamingSubscriber workflow={path} />
-        <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
-          <Layers className="h-5" />
-          <h3 className="grow">
-            {t("pages.explorer.tree.workflow.overview.services.header")}
-          </h3>
-        </div>
-        <ul>
-          {servicesData?.functions.map((service, index) => (
-            <li key={index}>
-              {service.info.name} {service.info.image}
-            </li>
-          ))}
-        </ul>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+            <Layers className="h-5" />
+            <h3 className="grow">
+              {t("pages.explorer.tree.workflow.overview.services.header")}
+            </h3>
+          </div>
+
+          <ServicesTable
+            items={servicesData}
+            isSuccess={servicesIsSuccess}
+            setDeleteService={setDeleteService}
+          />
+
+          <DialogContent>
+            {deleteService && (
+              <Delete
+                icon={RotateCcw}
+                header={t(
+                  "pages.explorer.tree.workflow.overview.services.delete.title"
+                )}
+                message={
+                  <Trans
+                    i18nKey="pages.explorer.tree.workflow.overview.services.delete.message"
+                    values={{ name: deleteService.info.name }}
+                  />
+                }
+                service={deleteService.info.name}
+                workflow={path}
+                version={deleteService.info.revision}
+                close={() => {
+                  setDialogOpen(false);
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </Card>
     </div>
   );
