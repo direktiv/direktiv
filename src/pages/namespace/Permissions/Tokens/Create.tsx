@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { Diamond, PlusCircle } from "lucide-react";
+import { Diamond, Info, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
   TokenFormSchema,
@@ -12,8 +12,10 @@ import {
 } from "~/api/enterprise/tokens/schema";
 
 import Button from "~/design/Button";
+import DurationHint from "../components/DurationHint";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
+import { InputWithButton } from "~/design/InputWithButton";
 import PermissionsSelector from "../components/PermisionsSelector";
 import { useCreateToken } from "~/api/enterprise/tokens/mutate/create";
 import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
@@ -92,13 +94,24 @@ const CreateToken = ({ close }: { close: () => void }) => {
             >
               {t("pages.permissions.tokens.create.duration.label")}
             </label>
-            <Input
-              id="duration"
-              placeholder={t(
-                "pages.permissions.tokens.create.duration.placeholder"
-              )}
-              {...register("duration")}
-            />
+
+            <InputWithButton>
+              <Input
+                id="duration"
+                placeholder={t(
+                  "pages.permissions.tokens.create.duration.placeholder"
+                )}
+                {...register("duration")}
+              />
+              <DurationHint
+                onDurationSelect={(duration) => {
+                  setValue("duration", duration, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  });
+                }}
+              />
+            </InputWithButton>
           </fieldset>
           <PermissionsSelector
             availablePermissions={availablePermissions ?? []}
