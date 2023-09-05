@@ -407,7 +407,7 @@ func getKnativeFunction(name string) (*igrpc.FunctionsGetFunctionResponse, error
 	resp.Scope = &strings.Split(name, "-")[0]
 
 	rs, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(),
-		metav1.ListOptions{LabelSelector: fmt.Sprintf("serving.knative.dev/service=%s", name)})
+		metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", ServiceKnativeHeaderName, name)})
 	if err != nil {
 		logger.Errorf("error getting knative service: %v", err)
 		return resp, k8sToGRPCError(err)
@@ -641,7 +641,7 @@ func (is *functionsServer) reconstructServices(ctx context.Context) error {
 }
 
 func (is *functionsServer) CancelWorfklow(ctx context.Context, in *igrpc.FunctionsCancelWorkflowRequest) (*emptypb.Empty, error) {
-	label := "serving.knative.dev/service"
+	label := ServiceKnativeHeaderName
 
 	svn := SanitizeLabel(in.GetServiceName())
 	aid := in.GetActionID()
