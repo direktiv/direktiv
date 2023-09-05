@@ -2,6 +2,7 @@ import { CalendarDays, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
+import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
 const useExamples = () => {
@@ -49,7 +50,7 @@ const DurationHint = ({
           <b>{t("pages.permissions.durationHint.examples")}</b>
           <div className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-3">
             {examples.map(({ title, duration }) => (
-              <>
+              <Fragment key={duration}>
                 <div>{title}</div>
                 <Button
                   variant="outline"
@@ -58,7 +59,7 @@ const DurationHint = ({
                 >
                   {duration}
                 </Button>
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
