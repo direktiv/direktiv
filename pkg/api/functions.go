@@ -37,6 +37,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/functions/grpc"
@@ -865,41 +866,19 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 
 func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
-
+	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
+	annotations[functions.ServiceHeaderWorkflowID] = wf
+	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 	h.listServices(annotations, w, r)
 }
 
 func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
-
+	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
+	annotations[functions.ServiceHeaderWorkflowID] = wf
+	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 	h.listServicesSSE(annotations, w, r)
 }
 
@@ -922,18 +901,7 @@ func (h *functionHandler) singleWorkflowService(w http.ResponseWriter, r *http.R
 func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
-
 	vers := r.URL.Query().Get("version")
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
 
 	hash, err := strconv.ParseUint(vers, 10, 64)
 	if err != nil {
@@ -941,7 +909,7 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
+	svc := functions.AssembleWorkflowServiceName(hash)
 
 	annotations := make(map[string]string)
 
@@ -1009,7 +977,6 @@ func (h *functionHandler) listServices(
 func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
 	path, _ := pathAndRef(r)
 
 	ver := r.URL.Query().Get("version")
@@ -1023,17 +990,10 @@ func (h *functionHandler) deleteWorkflowServices(w http.ResponseWriter, r *http.
 		return
 	}
 
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      path,
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderWorkflowID] = resp.GetOid()
+	wf := bytedata.ShortChecksum("/" + path)
+	annotations[functions.ServiceHeaderWorkflowID] = wf
+	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 	annotations[functions.ServiceHeaderName] = svn
 	annotations[functions.ServiceHeaderRevision] = ver
 
@@ -1364,18 +1324,7 @@ func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r
 func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
-
 	vers := r.URL.Query().Get("version")
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
 
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
@@ -1388,7 +1337,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
+	svc := functions.AssembleWorkflowServiceName(hash)
 
 	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
 }
@@ -1415,17 +1364,7 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
 	vers := r.URL.Query().Get("version")
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
 
 	hash, err := strconv.ParseUint(vers, 10, 64)
 	if err != nil {
@@ -1433,7 +1372,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
+	svc := functions.AssembleWorkflowServiceName(hash)
 
 	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
 }
@@ -1561,17 +1500,6 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
 		rev = "00001"
@@ -1585,14 +1513,15 @@ func (h *functionHandler) listWorkflowPods(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
+	svc := functions.AssembleWorkflowServiceName(hash)
 
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
 	annotations := make(map[string]string)
-
+	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
+	annotations[functions.ServiceHeaderWorkflowID] = wf
+	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 	annotations[functions.ServiceKnativeHeaderRevision] = knrev
-	annotations[functions.ServiceHeaderWorkflowID] = resp.Oid
 
 	h.listPods(annotations, w, r)
 }
@@ -1616,17 +1545,6 @@ func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Re
 func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	ctx := r.Context()
-
-	resp, err := h.client.Workflow(ctx, &igrpc.WorkflowRequest{
-		Namespace: mux.Vars(r)["ns"],
-		Path:      mux.Vars(r)["path"],
-	})
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
 		rev = "00001"
@@ -1640,7 +1558,7 @@ func (h *functionHandler) listWorkflowPodsSSE(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	svc := functions.AssembleWorkflowServiceName(resp.Oid, hash)
+	svc := functions.AssembleWorkflowServiceName(hash)
 
 	knrev := fmt.Sprintf("%s-%s", svc, rev)
 
