@@ -402,24 +402,24 @@ export function TabbedButtons(props) {
 }
 
 const apiHelps = (namespace, workflow) => {
-  const url = window.location.origin;
+  const baseUrl = window.location.origin;
   return [
     {
       method: "GET",
-      url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
+      url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
       description: `Execute a Workflow`,
     },
     {
       method: "POST",
       description: `Execute a Workflow With Body`,
-      url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
+      url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=wait`,
       body: `{}`,
       type: "json",
     },
     {
       method: "POST",
       description: `Update a workflow `,
-      url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=update-workflow`,
+      url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=update-workflow`,
       body: `description: A simple 'no-op' state that returns 'Hello world!'
 states:
 - id: helloworld
@@ -431,7 +431,7 @@ transform:
     {
       method: "POST",
       description: "Execute a workflow",
-      url: `${url}/api/namespaces/${namespace}/tree/${workflow}?op=execute`,
+      url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=execute`,
       body: `{}`,
       type: "json",
     },

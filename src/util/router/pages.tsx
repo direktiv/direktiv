@@ -6,6 +6,7 @@ import {
   GitCompare,
   Layers,
   LucideIcon,
+  PlaySquare,
   Radio,
   Settings,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
 import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
+import JqPlaygroundPage from "~/pages/namespace/JqPlayground";
 import Listeners from "~/pages/namespace/Events/Listeners";
 import Logs from "~/pages/namespace/Mirror/Activities/Detail";
 import MirrorPage from "~/pages/namespace/Mirror";
@@ -40,13 +42,13 @@ import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 import env from "~/config/env";
 
-interface PageBase {
+type PageBase = {
   name: string;
   icon: LucideIcon;
   route: RouteObject;
-}
+};
 
-type KeysWithNoPathParams = "monitoring" | "settings";
+type KeysWithNoPathParams = "monitoring" | "settings" | "jqPlayground";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
@@ -157,9 +159,26 @@ type MirrorPageSetup = Record<
 type MonitoringPageSetup = Record<
   "monitoring",
   PageBase & {
-    createHref: (params: { namespace: string }) => string;
     useParams: () => {
       isMonitoringPage: boolean;
+    };
+  }
+>;
+
+type SettingsPageSetup = Record<
+  "settings",
+  PageBase & {
+    useParams: () => {
+      isSettingsPage: boolean;
+    };
+  }
+>;
+
+type JqPlaygroundPageSetup = Record<
+  "jqPlayground",
+  PageBase & {
+    useParams: () => {
+      isJqPlaygroundPage: boolean;
     };
   }
 >;
@@ -170,6 +189,8 @@ type PageType = DefaultPageSetup &
   ServicesPageSetup &
   EventsPageSetup &
   MonitoringPageSetup &
+  SettingsPageSetup &
+  JqPlaygroundPageSetup &
   MirrorPageSetup;
 
 type PermissionsPageSetup = Partial<
@@ -322,6 +343,7 @@ export const pages: PageType & EnterprisePageType = {
     },
     route: {
       path: "explorer/",
+      handle: { explorer: true },
       children: [
         {
           path: "tree/*",
@@ -370,7 +392,7 @@ export const pages: PageType & EnterprisePageType = {
     route: {
       path: "monitoring",
       element: <MonitoringPage />,
-      handle: { isMonitoringPage: true },
+      handle: { monitoring: true, isMonitoringPage: true },
     },
   },
   instances: {
@@ -404,6 +426,7 @@ export const pages: PageType & EnterprisePageType = {
     route: {
       path: "instances",
       element: <InstancesPage />,
+      handle: { instances: true },
       children: [
         {
           path: "",
@@ -440,6 +463,7 @@ export const pages: PageType & EnterprisePageType = {
     route: {
       path: "events",
       element: <EventsPage />,
+      handle: { events: true },
       children: [
         {
           path: "history",
@@ -502,6 +526,7 @@ export const pages: PageType & EnterprisePageType = {
     route: {
       path: "services",
       element: <ServicesPage />,
+      handle: { services: true },
       children: [
         {
           path: "",
@@ -567,9 +592,33 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.settings",
     icon: Settings,
     createHref: (params) => `/${params.namespace}/settings`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
+      return { isSettingsPage };
+    },
     route: {
       path: "settings",
       element: <SettingsPage />,
+      handle: { settings: true, isSettingsPage: true },
+    },
+  },
+  jqPlayground: {
+    name: "components.mainMenu.jqPlayground",
+    icon: PlaySquare,
+    createHref: (params) => `/${params.namespace}/jq`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isJqPlaygroundPage = checkHandler(
+        secondLevel,
+        "isJqPlaygroundPage"
+      );
+      return { isJqPlaygroundPage };
+    },
+    route: {
+      path: "jq",
+      element: <JqPlaygroundPage />,
+      handle: { isJqPlaygroundPage: true },
     },
   },
 };
