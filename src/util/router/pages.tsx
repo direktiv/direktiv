@@ -36,11 +36,11 @@ import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
-interface PageBase {
+type PageBase = {
   name: string;
   icon: LucideIcon;
   route: RouteObject;
-}
+};
 
 type KeysWithNoPathParams =
   | "monitoring"
@@ -255,6 +255,7 @@ export const pages: PageType = {
     },
     route: {
       path: "explorer/",
+      handle: { explorer: true },
       children: [
         {
           path: "tree/*",
@@ -303,7 +304,7 @@ export const pages: PageType = {
     route: {
       path: "monitoring",
       element: <MonitoringPage />,
-      handle: { isMonitoringPage: true },
+      handle: { monitoring: true, isMonitoringPage: true },
     },
   },
   instances: {
@@ -337,6 +338,7 @@ export const pages: PageType = {
     route: {
       path: "instances",
       element: <InstancesPage />,
+      handle: { instances: true },
       children: [
         {
           path: "",
@@ -373,6 +375,7 @@ export const pages: PageType = {
     route: {
       path: "events",
       element: <EventsPage />,
+      handle: { events: true },
       children: [
         {
           path: "history",
@@ -444,6 +447,7 @@ export const pages: PageType = {
     route: {
       path: "services",
       element: <ServicesPage />,
+      handle: { services: true },
       children: [
         {
           path: "",
@@ -516,7 +520,7 @@ export const pages: PageType = {
     route: {
       path: "settings",
       element: <SettingsPage />,
-      handle: { isSettingsPage: true },
+      handle: { settings: true, isSettingsPage: true },
     },
   },
   jqPlayground: {
