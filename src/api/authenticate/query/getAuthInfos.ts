@@ -15,6 +15,4 @@ export const useAuthTest = ({
     queryKey: authenticationKeys.authentication(apikey),
     queryFn: authTest,
     enabled,
-    // TODO: use stale time to infinity?
-    // TODO: handle errors
   });
