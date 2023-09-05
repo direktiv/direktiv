@@ -2,7 +2,7 @@ import { FC, PropsWithChildren } from "react";
 
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
-import { NodeSchemaType } from "~/api/tree/schema";
+import { NodeSchemaType } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
