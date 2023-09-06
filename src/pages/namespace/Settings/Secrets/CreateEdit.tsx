@@ -17,8 +17,8 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { useCreateSecret } from "~/api/secrets/mutate/updateSecret";
 import { useTranslation } from "react-i18next";
+import { useUpdateSecret } from "~/api/secrets/mutate/updateSecret";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { item?: SecretSchemaType; onSuccess: () => void };
@@ -26,7 +26,7 @@ type CreateProps = { item?: SecretSchemaType; onSuccess: () => void };
 const Create = ({ onSuccess, item }: CreateProps) => {
   const { t } = useTranslation();
 
-  const { mutate: createSecretMutation } = useCreateSecret({
+  const { mutate: createSecretMutation } = useUpdateSecret({
     onSuccess,
   });
 

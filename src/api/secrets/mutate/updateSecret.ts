@@ -1,4 +1,4 @@
-import { SecretCreatedSchema, SecretCreatedSchemaType } from "../schema";
+import { SecretUpdatedSchema, SecretUpdatedSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -8,8 +8,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-// rename to upodate secret
-export const createSecret = apiFactory({
+export const updateSecret = apiFactory({
   url: ({
     baseUrl,
     namespace,
@@ -20,13 +19,13 @@ export const createSecret = apiFactory({
     baseUrl?: string;
   }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/secrets/${name}`,
   method: "PUT",
-  schema: SecretCreatedSchema,
+  schema: SecretUpdatedSchema,
 });
 
-export const useCreateSecret = ({
+export const useUpdateSecret = ({
   onSuccess,
 }: {
-  onSuccess?: (secret: SecretCreatedSchemaType) => void;
+  onSuccess?: (secret: SecretUpdatedSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -40,7 +39,7 @@ export const useCreateSecret = ({
 
   return useMutation({
     mutationFn: ({ name, value }: { name: string; value: string }) =>
-      createSecret({
+      updateSecret({
         apiKey: apiKey ?? undefined,
         payload: value,
         urlParams: {
