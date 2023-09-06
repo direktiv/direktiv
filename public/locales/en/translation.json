@@ -621,7 +621,7 @@
           "createBtn": "Create secret",
           "searchPlaceholder": "Filter secrets...",
           "emptySearch": "No secret matches your search",
-          "initializeBtn": "Create secret",
+          "initializeBtn": "Initialize secret",
           "notInitializedTooltip": "We created a placeholder for this secret because we detected a reference to it in one of your workflows. Please initialize the secret by uploading a file or entering a value."
         },
         "delete": {
