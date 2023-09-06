@@ -65,7 +65,7 @@ const MimeTypeSelect = ({
   const hasNonTextMimeType = !TextMimeTypeSchema.safeParse(mimeType).success;
 
   return (
-    <Select onValueChange={onChange} defaultValue={mimeType}>
+    <Select onValueChange={onChange} defaultValue={mimeType} value={mimeType}>
       <SelectTrigger
         id={id}
         loading={loading}
