@@ -620,7 +620,9 @@
           "empty": "No secrets exist yet",
           "createBtn": "Create secret",
           "searchPlaceholder": "Filter secrets...",
-          "emptySearch": "No secret matches your search"
+          "emptySearch": "No secret matches your search",
+          "initializeBtn": "Create secret",
+          "notInitializedTooltip": "We found a secret in your repository, but it is not yet initialized. Click here to initialize it."
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
