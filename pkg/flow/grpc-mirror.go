@@ -460,10 +460,12 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 	}
 
 	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "cancelled by api request")
-	err = flow.mirrorManager.Cancel(ctx, mirProcessID)
-	if err != nil {
-		return nil, err
-	}
+	flow.pubsub.CancelMirrorProcess(mirProcessID)
+
+	// err = flow.mirrorManager.Cancel(ctx, mirProcessID)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	var resp emptypb.Empty
 
 	return &resp, nil

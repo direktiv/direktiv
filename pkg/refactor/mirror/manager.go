@@ -6,16 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 // TODO: validate credentials helper
-// TODO: failed mirror garbage collector?
 
 type Manager struct {
 	callbacks Callbacks
+	local     sync.Map
 }
 
 func NewManager(callbacks Callbacks) *Manager {
@@ -82,8 +83,18 @@ func (d *Manager) gc() {
 }
 
 // Cancel stops a currently running mirroring process.
-func (d *Manager) Cancel(_ context.Context, _ uuid.UUID) error {
-	// TODO
+func (d *Manager) Cancel(_ context.Context, id uuid.UUID) error {
+	v, ok := d.local.Load(id.String())
+	if !ok {
+		return nil // Not running on this machine. It's the caller's responsibility to ensure the whole cluster gets this call.
+	}
+
+	cancel, ok := v.(func())
+	if !ok {
+		panic(v)
+	}
+
+	cancel()
 
 	return nil
 }
@@ -120,6 +131,14 @@ func (d *Manager) setProcessStatus(ctx context.Context, process *Process, status
 
 // Execute ..
 func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.Context) (Source, error), applyer Applyer) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer func() {
+		cancel()
+		// TODO: find a way to store a separate status 'cancelled' instead of 'error'?
+		d.local.Delete(p.ID.String())
+	}()
+	d.local.Store(p.ID.String(), cancel)
+
 	err := d.setProcessStatus(ctx, p, ProcessStatusExecuting)
 	if err != nil {
 		//nolint:contextcheck
