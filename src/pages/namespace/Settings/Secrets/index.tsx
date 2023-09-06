@@ -3,7 +3,7 @@ import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
-import Create from "./Create";
+import CreateEdit from "./CreateEdit";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
@@ -20,9 +20,9 @@ const pageSize = 10;
 
 const SecretsList: FC = () => {
   const { t } = useTranslation();
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteSecret, setDeleteSecret] = useState<SecretSchemaType>();
+  const [editItem, setEditItem] = useState<SecretSchemaType>();
   const [createSecret, setCreateSecret] = useState(false);
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
@@ -48,6 +48,7 @@ const SecretsList: FC = () => {
     if (dialogOpen === false) {
       setDeleteSecret(undefined);
       setCreateSecret(false);
+      setEditItem(undefined);
     }
   }, [dialogOpen]);
 
@@ -93,7 +94,14 @@ const SecretsList: FC = () => {
                 <Table>
                   <TableBody>
                     {currentItems.map((item, i) => (
-                      <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
+                      <ItemRow
+                        item={item}
+                        key={i}
+                        onDelete={setDeleteSecret}
+                        onEdit={() => setEditItem(item)}
+                      >
+                        {item.name}
+                      </ItemRow>
                     ))}
                   </TableBody>
                 </Table>
@@ -134,7 +142,16 @@ const SecretsList: FC = () => {
           onConfirm={() => deleteSecretMutation({ secret: deleteSecret })}
         />
       )}
-      {createSecret && <Create onSuccess={() => setDialogOpen(false)} />}
+      {createSecret && <CreateEdit onSuccess={() => setDialogOpen(false)} />}
+
+      {editItem && (
+        <CreateEdit
+          item={editItem}
+          onSuccess={() => {
+            setDialogOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };

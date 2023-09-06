@@ -630,6 +630,9 @@
           "name": "Name",
           "file": "Upload a file",
           "fileError": "There was an error uploading the file"
+        },
+        "edit": {
+          "description": "Edit {{name}}"
         }
       },
       "registries": {
