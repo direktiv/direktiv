@@ -1,33 +1,12 @@
-import {
-  SecretCreatedSchema,
-  SecretCreatedSchemaType,
-  SecretListSchemaType,
-  SecretSchemaType,
-} from "../schema";
+import { SecretCreatedSchema, SecretCreatedSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { secretKeys } from "..";
-import { sortByName } from "~/api/tree/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-
-const updateCache = (
-  oldData: SecretListSchemaType | undefined,
-  createdItem: SecretCreatedSchemaType
-) => {
-  if (!oldData) return undefined;
-  const newListItem: SecretSchemaType = { name: createdItem.key };
-  const oldResults = oldData.secrets.results;
-  return {
-    ...oldData,
-    secrets: {
-      results: [...oldResults, newListItem].sort(sortByName),
-    },
-  };
-};
 
 export const createSecret = apiFactory({
   url: ({
@@ -69,11 +48,10 @@ export const useCreateSecret = ({
         },
       }),
     onSuccess: (secret) => {
-      queryClient.setQueryData<SecretListSchemaType>(
+      queryClient.invalidateQueries(
         secretKeys.secretsList(namespace, {
           apiKey: apiKey ?? undefined,
-        }),
-        (oldData) => updateCache(oldData, secret)
+        })
       );
       toast({
         title: t("api.secrets.mutate.createSecret.success.title"),
