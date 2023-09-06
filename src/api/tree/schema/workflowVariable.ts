@@ -1,3 +1,4 @@
+import { FileSchema } from "~/api/schema";
 import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { z } from "zod";
 
@@ -55,7 +56,7 @@ export const WorkflowVariableDownloadSchema = z.object({
 export const WorkflowVariableFormSchema = z.object({
   name: z.string().nonempty(),
   path: z.string().nonempty(),
-  content: z.string().nonempty().or(z.instanceof(File)),
+  content: z.string().nonempty().or(FileSchema),
   mimeType: MimeTypeSchema,
 });
 
