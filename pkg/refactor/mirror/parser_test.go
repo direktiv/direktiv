@@ -27,10 +27,6 @@ func (src *memSource) FS() fs.FS {
 	return src.fs
 }
 
-func (src *memSource) Unwrap() mirror.Source {
-	return src
-}
-
 func (src *memSource) Free() error {
 	return nil
 }
