@@ -19,15 +19,5 @@ export const PageinfoSchema = z.object({
   total: z.number(),
 });
 
-/**
- * FileSchema is an alternative to z.instanceof(File), since
- * Playwright throws an "File is not defined" error.
- */
-export const FileSchema = z.object({
-  name: z.string(),
-  size: z.number(),
-  stream: z.function(),
-});
-
 export const LogLevelSchema = z.enum(["debug", "info", "error"]);
 export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
