@@ -108,7 +108,9 @@ const Create = ({ onSuccess }: CreateProps) => {
             </DialogTitle>
           </DialogHeader>
         </DialogHeader>
+
         <FormErrors errors={errors} className="mb-5" />
+
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.variables.create.name.label")}
@@ -120,6 +122,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={(event) => setName(event.target.value)}
           />
         </fieldset>
+
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="mimetype">
             {t("pages.settings.variables.edit.mimeType.label")}
@@ -130,12 +133,14 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={onMimeTypeChange}
           />
         </fieldset>
+
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="file-upload">
             {t("pages.settings.variables.create.file.label")}
           </label>
           <Input id="file-upload" type="file" onChange={onFilepickerChange} />
         </fieldset>
+
         <Card
           className="grow p-4 pl-0"
           background="weight-1"
