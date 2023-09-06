@@ -21,7 +21,7 @@ export const PageinfoSchema = z.object({
 
 /**
  * FileSchema is an alternative to z.instanceof(File), since
- * Playwright throws an "File is not defined" error.
+ * Playwright throws a "File is not defined" error.
  */
 export const FileSchema = z.custom<File>((value) => {
   if (
