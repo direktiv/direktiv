@@ -27,7 +27,7 @@ export const mimeTypeToLanguageDict = {
   "text/css": "css",
 } as const;
 
-export const getEditorLanguage = (mimeType: string) => {
+export const getLanguageFromMimeType = (mimeType: string) => {
   const parsed = TextMimeTypeSchema.safeParse(mimeType);
   if (parsed.success) {
     return mimeTypeToLanguageDict[parsed.data];

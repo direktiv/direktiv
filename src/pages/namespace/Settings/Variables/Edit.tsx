@@ -10,7 +10,7 @@ import MimeTypeSelect, {
   MimeTypeType,
   TextMimeTypeSchema,
   TextMimeTypeType,
-  getEditorLanguage,
+  getLanguageFromMimeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -74,7 +74,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const onMimeTypeChange = (value: MimeTypeType) => {
     setMimeType(value);
     setDisableSubmit(false);
-    const editorLanguage = getEditorLanguage(value);
+    const editorLanguage = getLanguageFromMimeType(value);
     if (editorLanguage) {
       setEditorLanguage(editorLanguage);
       setEditable(true);
