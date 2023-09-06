@@ -243,7 +243,9 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(subjectDropdownSelector).click();
   await page.getByTestId("dropdown-actions-edit").click();
 
-  const textArea = page.getByRole("textbox");
+  const textArea = page
+    .getByTestId("variable-editor-card")
+    .getByRole("textbox");
   await expect
     .poll(
       async () => await textArea.inputValue(),
