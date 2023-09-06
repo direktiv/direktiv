@@ -117,7 +117,9 @@ const VariablesList: FC = () => {
                         onDelete={setDeleteItem}
                         onEdit={() => setEditItem(item)}
                         onDownload={() => download(item.name)}
-                      />
+                      >
+                        {item.name}
+                      </ItemRow>
                     ))}
                   </TableBody>
                 </Table>
