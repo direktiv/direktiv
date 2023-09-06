@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const SecretSchema = z.object({
   name: z.string(),
+  initialized: z.boolean(),
 });
 
 export const SecretCreatedSchema = z.object({
