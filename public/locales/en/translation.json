@@ -1135,13 +1135,13 @@
     },
     "secrets": {
       "mutate": {
-        "createSecret": {
+        "updateSecret": {
           "success": {
-            "title": "Secret created",
-            "description": "Secret {{name}} was created."
+            "title": "Secret saved",
+            "description": "Secret {{name}} was saved."
           },
           "error": {
-            "description": "Could not create secret 😢"
+            "description": "Could not save secret 😢"
           }
         },
         "deleteSecret": {

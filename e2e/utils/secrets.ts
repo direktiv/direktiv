@@ -1,4 +1,4 @@
-import { createSecret } from "~/api/secrets/mutate/createSecret";
+import { createSecret } from "~/api/secrets/mutate/updateSecret";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 

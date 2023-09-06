@@ -8,6 +8,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
+// rename to upodate secret
 export const createSecret = apiFactory({
   url: ({
     baseUrl,
@@ -54,8 +55,8 @@ export const useCreateSecret = ({
         })
       );
       toast({
-        title: t("api.secrets.mutate.createSecret.success.title"),
-        description: t("api.secrets.mutate.createSecret.success.description", {
+        title: t("api.secrets.mutate.updateSecret.success.title"),
+        description: t("api.secrets.mutate.updateSecret.success.description", {
           name: secret.key,
         }),
         variant: "success",
@@ -65,7 +66,7 @@ export const useCreateSecret = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.secrets.mutate.createSecret.error.description"),
+        description: t("api.secrets.mutate.updateSecret.error.description"),
         variant: "error",
       });
     },
