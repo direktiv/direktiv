@@ -29,32 +29,33 @@ func NewManager(callbacks Callbacks) *Manager {
 	return mgr
 }
 
-// garbage collector
+// Garbage collector.
 func (d *Manager) gc() {
 	ctx := context.Background()
 
-	jitter := 1000 // milliseconds
-	interval := time.Second * 10
-	maxRunTime := 5 * time.Minute
-	maxRecordTime := time.Hour * 48
+	jitter := 1000                  //nolint:gomnd milliseconds
+	interval := time.Second * 10    //nolint:gomnd
+	maxRunTime := 5 * time.Minute   //nolint:gomnd
+	maxRecordTime := time.Hour * 48 //nolint:gomnd
 
 	// TODO: gracefully close the loop
 	for {
-		a, _ := rand.Int(rand.Reader, big.NewInt(int64(jitter)*2))
-		delta := int(a.Int64()) - jitter // this gets a value between +/- jitter
+		a, _ := rand.Int(rand.Reader, big.NewInt(int64(jitter)*2)) //nolint:gomnd
+		delta := int(a.Int64()) - jitter                           // this gets a value between +/- jitter
 		time.Sleep(interval + time.Duration(delta*int(time.Millisecond)))
 
 		// this first loop looks for operations that seem to have timed out
 		procs, err := d.callbacks.Store().GetUnfinishedProcesses(ctx)
 		if err != nil {
 			d.callbacks.SysLogCrit(fmt.Sprintf("Failed to query unfinished mirror processes: %v", err))
+
 			continue
 		}
 
 		for _, proc := range procs {
 			if time.Since(proc.CreatedAt) > maxRunTime {
 				d.callbacks.SysLogCrit(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.NamespaceID.String()))
-				c, cancel := context.WithTimeout(ctx, 5*time.Second)
+				c, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:gomnd
 				err = d.Cancel(c, proc.ID)
 				cancel()
 				if err != nil {
@@ -64,6 +65,7 @@ func (d *Manager) gc() {
 				p, err := d.callbacks.Store().GetProcess(ctx, proc.ID)
 				if err != nil {
 					d.callbacks.SysLogCrit(fmt.Sprintf("Error requerying old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.NamespaceID.String(), err))
+
 					continue
 				}
 
@@ -77,6 +79,7 @@ func (d *Manager) gc() {
 		err = d.callbacks.Store().DeleteOldProcesses(ctx, time.Now().Add(-1*maxRecordTime))
 		if err != nil {
 			d.callbacks.SysLogCrit(fmt.Sprintf("Failed to query old mirror processes: %v", err))
+
 			continue
 		}
 	}
