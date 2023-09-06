@@ -131,7 +131,10 @@ const SecretsList: FC = () => {
                                     </Button>
                                   </DialogTrigger>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent
+                                  className="w-96 whitespace-pre-wrap break-words"
+                                  align="end"
+                                >
                                   {t(
                                     "pages.settings.secrets.list.notInitializedTooltip"
                                   )}
