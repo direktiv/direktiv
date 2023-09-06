@@ -64,7 +64,6 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
-
     values: {
       name: item.name,
       content: body ?? "",
@@ -177,12 +176,14 @@ const Edit = ({ item, onSuccess }: EditProps) => {
               onChange={onMimeTypeChange}
             />
           </fieldset>
+
           <fieldset className="flex items-center gap-5">
             <label className="w-[150px] text-right" htmlFor="file-upload">
               {t("pages.settings.variables.edit.file.label")}
             </label>
             <Input id="file-upload" type="file" onChange={onFilepickerChange} />
           </fieldset>
+
           <Card
             className="grow p-4 pl-0"
             background="weight-1"
