@@ -73,7 +73,16 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 
 	res := s.db.WithContext(ctx).Table("mirror_configs").
 		Where("namespace_id", config.NamespaceID).
-		Updates(config)
+		Updates(map[string]interface{}{
+			"root_name":              config.RootName,
+			"url":                    config.URL,
+			"git_ref":                config.GitRef,
+			"git_commit_hash":        config.GitCommitHash,
+			"public_key":             config.PublicKey,
+			"private_key":            config.PrivateKey,
+			"private_key_passphrase": config.PrivateKeyPassphrase,
+			"insecure":               config.Insecure,
+		})
 	if res.Error != nil {
 		return nil, res.Error
 	}
