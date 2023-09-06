@@ -52,7 +52,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
 
   const [editable, setEditable] = useState(true);
-  const [disableButton, setDisableButton] = useState(false);
+  const [disableSubmit, setDisableSubmit] = useState(false);
 
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[fallbackMimeType]
@@ -64,6 +64,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
+
     values: {
       name: item.name,
       content: body ?? "",
@@ -73,7 +74,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
   const onMimeTypeChange = (value: MimeTypeType) => {
     setMimeType(value);
-    setDisableButton(false);
+    setDisableSubmit(false);
     const editorLanguage = getEditorLanguage(value);
     if (editorLanguage) {
       setEditorLanguage(editorLanguage);
@@ -95,7 +96,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
         // when the initial loaded content is from a non text mime type
         // we can't edit or save it, because at this file, we have applied
         // res.text() to the response body, which means we can't save it back
-        setDisableButton(true);
+        setDisableSubmit(true);
       }
     }
   }, [data, isInitialized, setValue]);
@@ -119,7 +120,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
 
     const parsedMimetype = TextMimeTypeSchema.safeParse(mimeType);
 
-    setValue("mimeType", mimeType);
+    setValue("mimeType", mimeType, { shouldDirty: true });
     onMimeTypeChange(mimeType);
 
     if (parsedMimetype.success) {
@@ -220,7 +221,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
             <Button
               type="submit"
               data-testid="var-edit-submit"
-              disabled={disableButton}
+              disabled={disableSubmit}
             >
               {t("components.button.label.save")}
             </Button>
