@@ -1,3 +1,4 @@
+import { FileSchema } from "./schema";
 import { z } from "zod";
 
 const getAuthHeader = (apiKey: string) => ({
@@ -91,6 +92,17 @@ export const apiFactory =
     TSchema
   > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
+    const payloadFileCheck = FileSchema.safeParse(payload);
+
+    let body;
+    if (typeof payload === "string") {
+      body = payload;
+    } else if (payloadFileCheck.success) {
+      body = payloadFileCheck.data;
+    } else {
+      body = JSON.stringify(payload);
+    }
+
     const res = await fetch(url(urlParams), {
       method,
       headers: {
@@ -99,10 +111,7 @@ export const apiFactory =
       },
       ...(payload
         ? {
-            body:
-              typeof payload === "string" || payload instanceof File
-                ? payload
-                : JSON.stringify(payload),
+            body,
           }
         : {}),
     });
