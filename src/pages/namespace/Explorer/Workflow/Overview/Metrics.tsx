@@ -30,9 +30,9 @@ const Metrics = ({
   const valueFormatter = (number: number) => number.toString();
 
   return (
-    <div className="py-4">
+    <div className="flex flex-col items-center py-4">
       <DonutChart
-        className="h-36 pb-2"
+        className="h-36 w-36 pb-2"
         showAnimation={false}
         showLabel={false}
         data={chartData}

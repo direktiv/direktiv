@@ -123,7 +123,7 @@ const ActiveWorkflowPage: FC = () => {
   return (
     <div className="grid gap-5 p-4 md:grid-cols-[2fr_1fr]">
       <InstanceCard
-        className="row-span-2"
+        className="md:row-span-2"
         headline={t("pages.explorer.tree.workflow.overview.instances.header")}
         icon={Boxes}
         refetchButton={instancesRefetchButton}
@@ -162,7 +162,7 @@ const ActiveWorkflowPage: FC = () => {
         )}
       </Card>
 
-      <Card>
+      <Card className="flex flex-col">
         <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
           <Network className="h-5" />
           <h3 className="grow">
@@ -172,7 +172,7 @@ const ActiveWorkflowPage: FC = () => {
           </h3>
         </div>
         {routes && routes[0] && routes[1] ? (
-          <div className="p-5 pt-1">
+          <div className="flex h-full flex-col justify-center p-5 pt-1">
             <CategoryBar
               values={[routes[0].weight, routes[1].weight]}
               colors={["indigo", "gray"]}
@@ -193,7 +193,7 @@ const ActiveWorkflowPage: FC = () => {
         )}
       </Card>
 
-      <Card className="col-span-2">
+      <Card className="md:col-span-2">
         <ServicesStreamingSubscriber workflow={path} />
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
