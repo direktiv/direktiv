@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -162,6 +163,37 @@ func (s sqlMirrorStore) GetProcessesByNamespaceID(ctx context.Context, namespace
 	}
 
 	return process, nil
+}
+
+func (s sqlMirrorStore) GetUnfinishedProcesses(ctx context.Context) ([]*mirror.Process, error) {
+	var process []*mirror.Process
+
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM mirror_processes
+					WHERE ended_at IS NULL`).
+		Find(&process)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return process, nil
+}
+
+func (s sqlMirrorStore) DeleteOldProcesses(ctx context.Context, before time.Time) error {
+	var process []*mirror.Process
+
+	res := s.db.WithContext(ctx).Raw(`
+					DELETE FROM mirror_processes
+					WHERE ended_at < ?`, before).
+		Find(&process)
+
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
 }
 
 var _ mirror.Store = sqlMirrorStore{}
