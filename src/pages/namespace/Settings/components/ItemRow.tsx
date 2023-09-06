@@ -64,7 +64,8 @@ const ItemRow = <ItemType,>({
             )}
 
             {onDownload && (
-              <DialogTrigger
+              <div
+                role="button"
                 className="w-full"
                 data-testid="dropdown-actions-download"
                 onClick={onDownload}
@@ -73,7 +74,7 @@ const ItemRow = <ItemType,>({
                   <DownloadCloud className="mr-2 h-4 w-4" />
                   {t("pages.settings.generic.contextMenu.download")}
                 </DropdownMenuItem>
-              </DialogTrigger>
+              </div>
             )}
 
             <DialogTrigger
