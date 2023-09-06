@@ -56,8 +56,14 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
   const [body, setBody] = useState<string | File>("");
   const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
 
-  const [editable, setEditable] = useState(true);
-  const [disableSubmit, setDisableSubmit] = useState(false);
+  /**
+   * when the initial loaded content is from a non text mime type
+   * we can't edit or save it, because we have applied res.text()
+   * to the response body, which means we can't save it back to its
+   * original format. Saving would not make much sense anyway, since
+   * nothing would be changed.
+   */
+  const [saveable, setSaveable] = useState(true);
 
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[fallbackMimeType]
@@ -79,13 +85,10 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
 
   const onMimeTypeChange = (value: MimeTypeType) => {
     setMimeType(value);
-    setDisableSubmit(false);
+    setSaveable(true);
     const editorLanguage = getLanguageFromMimeType(value);
     if (editorLanguage) {
       setEditorLanguage(editorLanguage);
-      setEditable(true);
-    } else {
-      setEditable(false);
     }
   };
 
@@ -98,10 +101,7 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
       if (safeParsedContentType.success) {
         setBody(data.body);
       } else {
-        // when the initial loaded content is from a non text mime type
-        // we can't edit or save it, because at this file, we have applied
-        // res.text() to the response body, which means we can't save it back
-        setDisableSubmit(true);
+        setSaveable(false);
       }
     }
   }, [data, isInitialized, setValue]);
@@ -137,7 +137,7 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
 
   if (!isInitialized) return null;
 
-  const showEditor = editable && typeof body === "string";
+  const showEditor = saveable && typeof body === "string";
 
   return (
     <DialogContent>
@@ -229,7 +229,7 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
             <Button
               type="submit"
               data-testid="var-edit-submit"
-              disabled={disableSubmit}
+              disabled={!saveable}
             >
               {t("components.button.label.save")}
             </Button>
