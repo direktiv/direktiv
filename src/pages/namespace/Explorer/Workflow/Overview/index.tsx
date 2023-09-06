@@ -174,9 +174,9 @@ const ActiveWorkflowPage: FC = () => {
         {routes && routes[0] && routes[1] ? (
           <div className="p-5 pt-1">
             <CategoryBar
-              values={[35, 65]}
+              values={[routes[0].weight, routes[1].weight]}
               colors={["indigo", "gray"]}
-              markerValue={35}
+              markerValue={routes[0].weight}
               className="mt-3"
             />
             <div className="flex flex-row justify-between">
