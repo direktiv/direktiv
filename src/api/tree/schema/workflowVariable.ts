@@ -44,6 +44,13 @@ export const WorkflowVariableContentSchema = z.object({
   }),
 });
 
+export const WorkflowVariableDownloadSchema = z.object({
+  blob: z.instanceof(Blob),
+  headers: z.object({
+    "content-type": z.string(),
+  }),
+});
+
 /* needed for validation, but not all properties are editable in the form */
 export const WorkflowVariableFormSchema = z.object({
   name: z.string().nonempty(),

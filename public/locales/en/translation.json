@@ -993,6 +993,11 @@
           "error": {
             "description": "could not revert workflow 😢"
           }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "could not download variable 😢"
+          }
         }
       }
     },
