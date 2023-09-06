@@ -1,4 +1,11 @@
-import { Boxes, Layers, Network, PieChart, RotateCcw } from "lucide-react";
+import {
+  Boxes,
+  Layers,
+  Network,
+  PieChart,
+  RefreshCcw,
+  RotateCcw,
+} from "lucide-react";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { NoResult, Table, TableBody } from "~/design/Table";
@@ -103,6 +110,16 @@ const ActiveWorkflowPage: FC = () => {
     />
   );
 
+  const DeleteMenuItem = () => {
+    const { t } = useTranslation();
+    return (
+      <>
+        <RefreshCcw className="mr-2 h-4 w-4" />
+        {t("pages.explorer.tree.workflow.overview.services.deleteMenuItem")}
+      </>
+    );
+  };
+
   return (
     <div className="grid gap-5 p-4 md:grid-cols-[2fr_1fr]">
       <InstanceCard
@@ -190,6 +207,7 @@ const ActiveWorkflowPage: FC = () => {
             items={servicesData}
             isSuccess={servicesIsSuccess}
             setDeleteService={setDeleteService}
+            deleteMenuItem={<DeleteMenuItem />}
           />
 
           <DialogContent>

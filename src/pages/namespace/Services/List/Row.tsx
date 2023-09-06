@@ -22,10 +22,27 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+const DefaultDeleteMenuItem = () => {
+  const { t } = useTranslation();
+  return (
+    <>
+      <DropdownMenuItem>
+        <Trash className="mr-2 h-4 w-4" />
+        {t("pages.services.list.contextMenu.delete")}
+      </DropdownMenuItem>
+    </>
+  );
+};
+
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
   setDeleteService: (service: ServiceSchemaType) => void;
-}> = ({ service, setDeleteService }) => {
+  deleteMenuItem?: JSX.Element;
+}> = ({
+  service,
+  setDeleteService,
+  deleteMenuItem = <DefaultDeleteMenuItem />,
+}) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -98,10 +115,7 @@ const ServicesTableRow: FC<{
                   setDeleteService(service);
                 }}
               >
-                <DropdownMenuItem>
-                  <Trash className="mr-2 h-4 w-4" />
-                  {t("pages.services.list.contextMenu.delete")}
-                </DropdownMenuItem>
+                <DropdownMenuItem>{deleteMenuItem}</DropdownMenuItem>
               </DialogTrigger>
             </DropdownMenuContent>
           </DropdownMenu>
