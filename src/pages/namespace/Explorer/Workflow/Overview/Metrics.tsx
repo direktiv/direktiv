@@ -30,18 +30,18 @@ const Metrics = ({
   const valueFormatter = (number: number) => number.toString();
 
   return (
-    <>
+    <div className="py-4">
       <DonutChart
+        className="h-36 pb-2"
         showAnimation={false}
         showLabel={false}
-        className="mt-6"
         data={chartData}
         category="count"
         index="name"
         valueFormatter={valueFormatter}
         colors={["red", "emerald"]}
       />
-      <div className="mb-5 flex justify-evenly">
+      <div className="flex justify-evenly">
         <div>
           {t("pages.explorer.tree.workflow.overview.metrics.successful", {
             percentage: percentages.successful.toFixed(0),
@@ -53,7 +53,7 @@ const Metrics = ({
           })}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
