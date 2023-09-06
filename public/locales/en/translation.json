@@ -622,7 +622,7 @@
           "searchPlaceholder": "Filter secrets...",
           "emptySearch": "No secret matches your search",
           "initializeBtn": "Create secret",
-          "notInitializedTooltip": "We found a secret in your repository, but it is not yet initialized. Click here to initialize it."
+          "notInitializedTooltip": "We created a placeholder for this secret because we detected a reference to it in one of your workflows. Please initialize the secret by uploading a file or entering a value."
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
