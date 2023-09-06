@@ -15,7 +15,6 @@ import (
 
 type Source interface {
 	FS() fs.FS
-	Unwrap() Source
 	Free() error
 	Notes() map[string]string
 }
@@ -34,10 +33,6 @@ func NewDirectorySource(dir string) *DirectorySource {
 
 func (src *DirectorySource) FS() fs.FS {
 	return src.fs
-}
-
-func (src *DirectorySource) Unwrap() Source {
-	return src
 }
 
 func (src *DirectorySource) Free() error {
@@ -108,10 +103,6 @@ func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions, opts GitSourceOpti
 
 func (src *gitSource) FS() fs.FS {
 	return src.fs
-}
-
-func (src *gitSource) Unwrap() Source {
-	return src
 }
 
 func (src *gitSource) Free() error {
