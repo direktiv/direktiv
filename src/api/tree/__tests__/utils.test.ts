@@ -21,6 +21,7 @@ const itemTemplate: NodeSchemaType = {
   oid: "",
   readOnly: true,
   expandedType: "git",
+  mimeType: "text/plain; charset=utf-8",
 };
 
 describe("sortFoldersFirst", () => {

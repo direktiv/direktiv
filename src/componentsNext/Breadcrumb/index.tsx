@@ -3,10 +3,12 @@ import EventHistoryBreadcrumb from "./Events/HistoryBreadcrumb";
 import EventListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
+import JqPlaygroundBreadcrumb from "./JqPlaygroundBreadcrumb";
 import MirrorBreadcrumb from "./MirrorBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
 import ServicesBreadcrumb from "./ServicesBreadcrumb";
+import SettingsBreadcrumb from "./SettingsBreadcrumb";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 
@@ -18,6 +20,8 @@ const Breadcrumb = () => {
   const { isEventsHistoryPage, isEventsListenersPage } =
     pages.events.useParams();
   const { isMonitoringPage } = pages.monitoring.useParams();
+  const { isSettingsPage } = pages.settings.useParams();
+  const { isJqPlaygroundPage } = pages.jqPlayground.useParams();
   const { isMirrorPage } = pages.mirror.useParams();
 
   if (!namespace) return null;
@@ -31,6 +35,8 @@ const Breadcrumb = () => {
       {isEventsHistoryPage && <EventHistoryBreadcrumb />}
       {isEventsListenersPage && <EventListenerBreadcrumb />}
       {isMonitoringPage && <MonitoringBreadcrumb />}
+      {isSettingsPage && <SettingsBreadcrumb />}
+      {isJqPlaygroundPage && <JqPlaygroundBreadcrumb />}
       {isMirrorPage && <MirrorBreadcrumb />}
     </BreadcrumbRoot>
   );

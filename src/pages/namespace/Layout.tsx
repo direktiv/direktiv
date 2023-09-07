@@ -19,7 +19,7 @@ import { Menu } from "lucide-react";
 import Navigation from "~/componentsNext/Navigation";
 import UserMenu from "~/componentsNext/UserMenu";
 import { useEffect } from "react";
-import { useVersion } from "~/api/version";
+import { useVersion } from "~/api/version/query/get";
 
 const Layout = () => {
   const { data: version } = useVersion();
