@@ -121,6 +121,6 @@ export const apiFactory =
       }
     }
 
-    const responseObj = await createApiErrorFromResponse(res);
-    return Promise.reject(responseObj);
+    const apiError = await createApiErrorFromResponse(res);
+    return Promise.reject(apiError);
   };
