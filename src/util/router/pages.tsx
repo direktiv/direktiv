@@ -257,7 +257,7 @@ export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
         route: {
           path: "permissions",
           element: <PermissionsPage />,
-          handle: { isPermissionsPage: true },
+          handle: { permissions: true, isPermissionsPage: true },
           children: [
             {
               path: "",
@@ -572,7 +572,7 @@ export const pages: PageType & EnterprisePageType = {
     route: {
       path: "mirror",
       element: <MirrorPage />,
-      handle: { isMirrorPage: true },
+      handle: { mirror: true, isMirrorPage: true },
       children: [
         {
           path: "",
@@ -618,7 +618,7 @@ export const pages: PageType & EnterprisePageType = {
     route: {
       path: "jq",
       element: <JqPlaygroundPage />,
-      handle: { isJqPlaygroundPage: true },
+      handle: { jqPlayground: true, isJqPlaygroundPage: true },
     },
   },
 };
