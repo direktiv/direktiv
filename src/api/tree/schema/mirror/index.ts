@@ -148,13 +148,6 @@ export const MirrorSshPostSchema = z.object({
   insecure: z.boolean(),
 });
 
-// export const MirrorKeepSSHKeysFormSchema = z.object({
-//   url: gitUrlSchema.nonempty({
-//     message: "format must be git@host:path when using SSH",
-//   }),
-//   ref: z.string().nonempty(),
-// });
-
 export const MirrorPostSchema = MirrorPublicPostSchema.or(
   MirrorTokenPostSchema
 ).or(MirrorSshPostSchema);
