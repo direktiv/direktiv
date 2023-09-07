@@ -1,6 +1,7 @@
 import { JqQueryResult, JqQueryResultType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
+import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 
@@ -15,7 +16,7 @@ export const useExecuteJQuery = ({
   onError,
 }: {
   onSuccess?: (data: JqQueryResultType) => void;
-  onError?: (error: unknown) => void;
+  onError?: (error?: string) => void;
 } = {}) => {
   const apiKey = useApiKey();
 
@@ -39,7 +40,7 @@ export const useExecuteJQuery = ({
       onSuccess?.(res);
     },
     onError: (e) => {
-      onError?.(e);
+      onError?.(getMessageFromApiError(e));
     },
   });
 };
