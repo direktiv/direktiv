@@ -1,19 +1,37 @@
 import { TokenCreatedSchema, TokenFormSchemaType } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "~/api/apiFactory";
+import { faker } from "@faker-js/faker";
 import { tokenKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
-const createToken = apiFactory({
-  url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
-  method: "POST",
-  schema: TokenCreatedSchema,
-});
+// const createToken = apiFactory({
+//   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
+//     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
+//   method: "POST",
+//   schema: TokenCreatedSchema,
+// });
+
+// TODO: remove this mock
+const createToken = (_params: {
+  apiKey?: string;
+  urlParams: { namespace: string };
+  payload: TokenFormSchemaType;
+}): Promise<z.infer<typeof TokenCreatedSchema>> =>
+  new Promise((resolve) => {
+    setTimeout(
+      () =>
+        resolve({
+          id: faker.datatype.uuid(),
+          token: faker.datatype.uuid(),
+        }),
+      500
+    );
+  });
 
 type ResolvedCreateToken = Awaited<ReturnType<typeof createToken>>;
 

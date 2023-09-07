@@ -5,12 +5,12 @@ import {
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiFactory } from "~/api/apiFactory";
 import { tokenKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 const updateCache = (
   oldData: TokenListSchemaType | undefined,
@@ -26,23 +26,23 @@ const updateCache = (
   };
 };
 
-const deleteToken = apiFactory({
-  url: ({ namespace, tokenId }: { namespace: string; tokenId: string }) =>
-    `/api/v2/namespaces/${namespace}/tokens/${tokenId}`,
-  method: "DELETE",
-  schema: TokenDeletedSchema,
-});
+// const deleteToken = apiFactory({
+//   url: ({ namespace, tokenId }: { namespace: string; tokenId: string }) =>
+//     `/api/v2/namespaces/${namespace}/tokens/${tokenId}`,
+//   method: "DELETE",
+//   schema: TokenDeletedSchema,
+// });
 
 // TODO: remove this mock
-// const deleteTockenMock = (_params: {
-//   apiKey?: string;
-//   urlParams: { namespace: string; tokenId: string };
-// }): Promise<z.infer<typeof TokenDeletedSchema>> =>
-//   new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve(null);
-//     }, 500);
-//   });
+const deleteToken = (_params: {
+  apiKey?: string;
+  urlParams: { namespace: string; tokenId: string };
+}): Promise<z.infer<typeof TokenDeletedSchema>> =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(null);
+    }, 500);
+  });
 
 export const useDeleteToken = ({
   onSuccess,
