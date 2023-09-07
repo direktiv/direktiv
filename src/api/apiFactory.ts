@@ -1,3 +1,4 @@
+import { createApiErrorFromResponse } from "./errorHandling";
 import { z } from "zod";
 
 const getAuthHeader = (apiKey: string) => ({
@@ -120,11 +121,6 @@ export const apiFactory =
       }
     }
 
-    try {
-      const json = await res.json();
-      return Promise.reject(json);
-    } catch (error) {
-      process.env.NODE_ENV !== "test" && console.error(error);
-      return Promise.reject(res.status);
-    }
+    const responseObj = await createApiErrorFromResponse(res);
+    return Promise.reject(responseObj);
   };
