@@ -1,10 +1,10 @@
 import { WorkflowStartedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
+import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
-import { z } from "zod";
 
 export const runWorkflow = apiFactory({
   url: ({
@@ -53,12 +53,7 @@ export const useRunWorkflow = ({
       onSuccess?.(data);
     },
     onError: (error) => {
-      const errorResponse = z.object({
-        code: z.number(),
-        message: z.string(),
-      });
-      const parsedError = errorResponse.safeParse(error);
-      onError?.(parsedError.success ? parsedError.data.message : undefined);
+      onError?.(getMessageFromApiError(error));
     },
   });
 };
