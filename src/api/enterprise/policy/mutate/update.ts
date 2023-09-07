@@ -2,10 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PolicyCreatedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
+import { getMessageFromApiError } from "~/api/errorHandling";
 import { policyKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
-import { z } from "zod";
 
 const updatePolicy = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
@@ -60,12 +60,7 @@ export const useUpdatePolicy = ({
       onSuccess?.();
     },
     onError: (e) => {
-      const message = z
-        .object({
-          message: z.string(),
-        })
-        .safeParse(e);
-      message.success ? onError?.(message.data.message) : onError?.(undefined);
+      onError?.(getMessageFromApiError(e));
     },
   });
 };
