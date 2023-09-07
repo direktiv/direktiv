@@ -52,8 +52,8 @@ export const useRunWorkflow = ({
     onSuccess: (data) => {
       onSuccess?.(data);
     },
-    onError: (error) => {
-      onError?.(getMessageFromApiError(error));
+    onError: (e) => {
+      onError?.(getMessageFromApiError(e));
     },
   });
 };
