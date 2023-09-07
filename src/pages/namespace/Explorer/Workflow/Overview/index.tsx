@@ -208,6 +208,7 @@ const ActiveWorkflowPage: FC = () => {
             isSuccess={servicesIsSuccess}
             setDeleteService={setDeleteService}
             deleteMenuItem={<DeleteMenuItem />}
+            workflow={path}
           />
 
           <DialogContent>

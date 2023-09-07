@@ -38,10 +38,12 @@ const ServicesTableRow: FC<{
   service: ServiceSchemaType;
   setDeleteService: (service: ServiceSchemaType) => void;
   deleteMenuItem?: JSX.Element;
+  workflow?: string;
 }> = ({
   service,
   setDeleteService,
   deleteMenuItem = <DefaultDeleteMenuItem />,
+  workflow,
 }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
@@ -62,6 +64,7 @@ const ServicesTableRow: FC<{
             pages.services.createHref({
               namespace,
               service: service.info.name,
+              workflow,
             })
           );
         }}

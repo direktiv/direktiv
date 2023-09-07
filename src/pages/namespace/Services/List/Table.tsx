@@ -23,12 +23,14 @@ const ServicesTable = ({
   setDeleteService,
   createNewButton,
   deleteMenuItem,
+  workflow,
 }: {
   items?: ServicesListSchemaType;
   isSuccess: boolean;
   setDeleteService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
   createNewButton?: JSX.Element;
   deleteMenuItem?: JSX.Element;
+  workflow?: string;
 }) => {
   const { t } = useTranslation();
 
@@ -65,6 +67,7 @@ const ServicesTable = ({
               key={service.serviceName}
               setDeleteService={setDeleteService}
               deleteMenuItem={deleteMenuItem}
+              workflow={workflow}
             />
           ))}
         {noResults && (
