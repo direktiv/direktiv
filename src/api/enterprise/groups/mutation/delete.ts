@@ -5,12 +5,12 @@ import {
 } from "../schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { apiFactory } from "~/api/apiFactory";
 import { groupKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 const updateCache = (
   oldData: GroupsListSchemaType | undefined,
@@ -26,23 +26,23 @@ const updateCache = (
   };
 };
 
-// const deleteGroup = apiFactory({
-//   url: ({ namespace, groupId }: { namespace: string; groupId: string }) =>
-//     `/api/v2/namespaces/${namespace}/groups/${groupId}`,
-//   method: "DELETE",
-//   schema: GroupDeletedSchema,
-// });
+const deleteGroup = apiFactory({
+  url: ({ namespace, groupId }: { namespace: string; groupId: string }) =>
+    `/api/v2/namespaces/${namespace}/groups/${groupId}`,
+  method: "DELETE",
+  schema: GroupDeletedSchema,
+});
 
 // TODO: remove this mock
-const deleteGroup = (_params: {
-  apiKey?: string;
-  urlParams: { namespace: string; groupId: string };
-}): Promise<z.infer<typeof GroupDeletedSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(null);
-    }, 500);
-  });
+// const deleteGroupMock = (_params: {
+//   apiKey?: string;
+//   urlParams: { namespace: string; groupId: string };
+// }): Promise<z.infer<typeof GroupDeletedSchema>> =>
+//   new Promise((resolve) => {
+//     setTimeout(() => {
+//       resolve(null);
+//     }, 500);
+//   });
 
 export const useDeleteGroup = ({
   onSuccess,
