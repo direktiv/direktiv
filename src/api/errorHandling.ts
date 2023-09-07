@@ -32,9 +32,5 @@ export const createApiErrorFromResponse = async (
 export const isApiErrorSchema = (error: unknown): error is ApiErrorSchemaType =>
   ApiErrorSchema.safeParse(error).success;
 
-export const getMessageFromApiError = (error: unknown) => {
-  if (isApiErrorSchema(error)) {
-    return error.json?.message ?? undefined;
-  }
-  return undefined;
-};
+export const getMessageFromApiError = (error: unknown) =>
+  isApiErrorSchema(error) ? error.json?.message : undefined;
