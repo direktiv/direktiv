@@ -709,6 +709,13 @@
           "duration": {
             "label": "Duration",
             "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
+          },
+          "success": {
+            "title": "Token was Created",
+            "description": "Your token was created successfully. Please copy it and store it in a safe place as it will not be shown again.",
+            "copy": "Copy token",
+            "copied": "Copied!",
+            "close": "Close"
           }
         },
         "delete": {
@@ -1277,10 +1284,6 @@
     "tokens": {
       "mutate": {
         "createToken": {
-          "success": {
-            "title": "Token created",
-            "description": "The token {{name}} was created"
-          },
           "error": {
             "description": "The token could not be created 😢"
           }

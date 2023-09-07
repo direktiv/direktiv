@@ -57,19 +57,12 @@ export const useCreateToken = ({
         },
         payload: tokenFormProps,
       }),
-    onSuccess(data, { description }) {
+    onSuccess(data) {
       queryClient.invalidateQueries(
         tokenKeys.tokenList(namespace, {
           apiKey: apiKey ?? undefined,
         })
       );
-      toast({
-        title: t("api.tokens.mutate.createToken.success.title"),
-        description: t("api.tokens.mutate.createToken.success.description", {
-          name: description,
-        }),
-        variant: "success",
-      });
       onSuccess?.(data);
     },
     onError: () => {
