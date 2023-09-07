@@ -2,7 +2,13 @@ import { z } from "zod";
 
 export const ApiErrorSchema = z.object({
   response: z.instanceof(Response),
-  json: z.object({}).passthrough().optional(),
+  json: z
+    .object({
+      code: z.number().optional(),
+      message: z.string().optional(),
+    })
+    .passthrough()
+    .optional(),
 });
 
 type ApiErrorSchemaType = z.infer<typeof ApiErrorSchema>;
