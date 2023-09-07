@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+/**
+ * The ApiErrorSchema is a special schema we use to standardize api error handling
+ * across the app. It contains the response object from the fetch api, and an
+ * optional json object that may contain the error code and message. Since errors
+ * are always typed as unknown, we can use the the custom type guard isApiErrorSchema
+ * to check if an error conforms to the ApiErrorSchema and have typesafe way to process
+ * the error.
+ */
 export const ApiErrorSchema = z.object({
   response: z.instanceof(Response),
   json: z
