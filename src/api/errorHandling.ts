@@ -1,5 +1,6 @@
 import { UseMutationOptions, useMutation } from "@tanstack/react-query";
 
+import { t } from "i18next";
 import { useToast } from "~/design/Toast";
 import { z } from "zod";
 
@@ -96,8 +97,8 @@ export const useMutationWithPermissionHandling = <
       const res = getPermissionStatus(error);
       if (!res.isAllowed) {
         toast({
-          title: "not allowed",
-          description: res.message ?? "you are not allowed to do this",
+          title: t("api.generic.noPermissionTitle"),
+          description: res.message ?? t("api.generic.noPermissionDescription"),
           variant: "error",
         });
         return;

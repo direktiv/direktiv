@@ -991,7 +991,9 @@
   },
   "api": {
     "generic": {
-      "error": "An error occurred"
+      "error": "An error occurred",
+      "noPermissionTitle": "No permission ",
+      "noPermissionDescription": "You do not have permission to perform this action"
     },
     "authentication": {
       "mutate": {
