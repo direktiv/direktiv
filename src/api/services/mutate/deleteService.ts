@@ -2,12 +2,13 @@ import {
   ServiceDeletedSchema,
   ServicesListSchemaType,
 } from "../schema/services";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import { useMutationWithPermissionHandling } from "~/api/errorHandling";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -45,7 +46,7 @@ export const useDeleteService = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn: ({ service }: { service: string }) =>
       deleteService({
         apiKey: apiKey ?? undefined,

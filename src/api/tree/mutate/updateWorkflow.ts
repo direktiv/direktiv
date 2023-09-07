@@ -1,12 +1,15 @@
 import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema/node";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getMessageFromApiError,
+  useMutationWithPermissionHandling,
+} from "~/api/errorHandling";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
-import { getMessageFromApiError } from "~/api/errorHandling";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const updateWorkflow = apiFactory({
   url: ({
@@ -40,7 +43,7 @@ export const useUpdateWorkflow = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn: ({
       path,
       fileContent,

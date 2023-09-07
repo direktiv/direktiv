@@ -1,7 +1,7 @@
 import { RegistryTestConnectionSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
+import { useMutationWithPermissionHandling } from "~/api/errorHandling";
 import { useNamespace } from "~/util/store/namespace";
 
 export const testConnection = apiFactory({
@@ -25,7 +25,7 @@ export const useTestConnection = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn: ({
       url,
       username,

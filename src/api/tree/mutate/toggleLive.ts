@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { ToggleLiveSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import { useMutationWithPermissionHandling } from "~/api/errorHandling";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -41,7 +41,7 @@ export const useToggleLive = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(

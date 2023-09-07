@@ -2,7 +2,7 @@ import { FolderCreatedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
+import { useMutationWithPermissionHandling } from "~/api/errorHandling";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -38,7 +38,7 @@ export const useCreateDirectory = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn: ({ path, directory }: { path?: string; directory: string }) =>
       createDirectory({
         apiKey: apiKey ?? undefined,

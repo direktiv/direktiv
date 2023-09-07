@@ -1,9 +1,12 @@
+import {
+  getMessageFromApiError,
+  useMutationWithPermissionHandling,
+} from "~/api/errorHandling";
+
 import { WorkflowStartedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
-import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
 import { useNamespace } from "~/util/store/namespace";
 
 export const runWorkflow = apiFactory({
@@ -39,7 +42,7 @@ export const useRunWorkflow = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn: ({ path, payload }: { path: string; payload: string }) =>
       runWorkflow({
         apiKey: apiKey ?? undefined,

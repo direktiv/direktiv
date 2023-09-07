@@ -3,11 +3,12 @@ import {
   VarUpdatedSchema,
   VarUpdatedSchemaType,
 } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
+import { useMutationWithPermissionHandling } from "~/api/errorHandling";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
@@ -56,7 +57,7 @@ export const useUpdateVar = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn,
     onSuccess: (data, variables) => {
       // Two cache invalidations are needed due to the current API,

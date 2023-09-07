@@ -1,11 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getMessageFromApiError,
+  useMutationWithPermissionHandling,
+} from "~/api/errorHandling";
 
 import { PolicyCreatedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
-import { getMessageFromApiError } from "~/api/errorHandling";
 import { policyKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 
 const updatePolicy = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
@@ -42,7 +45,7 @@ export const useUpdatePolicy = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissionHandling({
     mutationFn: ({ policyContent }: { policyContent: string }) =>
       updatePolicy({
         apiKey: apiKey ?? undefined,
