@@ -28,3 +28,13 @@ export const createApiErrorFromResponse = async (
     json,
   };
 };
+
+export const isApiErrorSchema = (error: unknown): error is ApiErrorSchemaType =>
+  ApiErrorSchema.safeParse(error).success;
+
+export const getMessageFromApiError = (error: unknown) => {
+  if (isApiErrorSchema(error)) {
+    return error.json?.message ?? undefined;
+  }
+  return undefined;
+};
