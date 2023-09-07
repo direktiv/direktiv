@@ -22,13 +22,21 @@ import Delete from "./Delete";
 import { RevisionSchemaType } from "~/api/services/schema/revisions";
 import Row from "./Row";
 import { pages } from "~/util/router/pages";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const ServiceDetailPage = () => {
+  const [searchParams] = useSearchParams();
+  const workflow = searchParams.get("workflow") || undefined;
+  const version = searchParams.get("version") || undefined;
+
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
+
   const { data, isSuccess } = useServiceDetails({
     service: service ?? "",
+    workflow,
+    version,
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);

@@ -114,6 +114,7 @@ type ServicesPageSetup = Record<
       service?: string;
       revision?: string;
       workflow?: string;
+      version?: string;
     }) => string;
     useParams: () => {
       namespace: string | undefined;
@@ -391,7 +392,9 @@ export const pages: PageType = {
       `/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
       }${params.revision ? `/${params.revision}` : ""}${
-        params.workflow ? `?workflow=${params.workflow}` : ""
+        params.workflow && params.version
+          ? `?workflow=${params.workflow}&version=${params.version}`
+          : ""
       }`,
     useParams: () => {
       const { namespace, service, revision } = useParams();

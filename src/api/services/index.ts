@@ -13,7 +13,12 @@ export const serviceKeys = {
     ] as const,
   serviceDetail: (
     namespace: string,
-    { apiKey, service }: { apiKey?: string; service: string }
+    {
+      apiKey,
+      service,
+      workflow,
+      version,
+    }: { apiKey?: string; service: string; workflow?: string; version?: string }
   ) =>
     [
       {
@@ -21,6 +26,8 @@ export const serviceKeys = {
         apiKey,
         namespace,
         service,
+        workflow,
+        version,
       },
     ] as const,
   serviceRevisionDetail: (

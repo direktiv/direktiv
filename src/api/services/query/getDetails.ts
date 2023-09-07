@@ -11,6 +11,7 @@ import {
 } from "../schema/revisions";
 
 import { apiFactory } from "~/api/apiFactory";
+import { forceLeadingSlash } from "~/api/tree/utils";
 import { memo } from "react";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -22,24 +23,37 @@ export const getServiceDetails = apiFactory({
     baseUrl,
     namespace,
     service,
+    workflow,
+    version,
   }: {
     baseUrl?: string;
     namespace: string;
     service: string;
-  }) =>
-    `${
-      baseUrl ?? ""
-    }/api/functions/namespaces/${namespace}/function/${service}`,
+    workflow?: string;
+    version?: string;
+  }) => {
+    const url =
+      workflow && version
+        ? `${
+            baseUrl ?? ""
+          }/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
+            workflow
+          )}?op=function-revisions&svn=${service}&version=${version}`
+        : `${
+            baseUrl ?? ""
+          }/api/functions/namespaces/${namespace}/function/${service}`;
+    return url;
+  },
   method: "GET",
   schema: RevisionsListSchema,
 });
 
 const fetchServiceDetails = async ({
-  queryKey: [{ apiKey, namespace, service }],
+  queryKey: [{ apiKey, namespace, service, workflow, version }],
 }: QueryFunctionContext<ReturnType<(typeof serviceKeys)["serviceDetail"]>>) =>
   getServiceDetails({
     apiKey,
-    urlParams: { namespace, service },
+    urlParams: { namespace, service, workflow, version },
   }).then((res) => ({
     // revisions must be sorted by creation date, to figure out the latest revision
     ...res,
@@ -96,7 +110,15 @@ const updateCache = (
 
 export const useServiceDetailsStream = (
   service: string,
-  { enabled = true }: { enabled?: boolean } = {}
+  {
+    enabled = true,
+    workflow,
+    version,
+  }: {
+    enabled?: boolean;
+    workflow?: string;
+    version?: string;
+  } = {}
 ) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -107,7 +129,12 @@ export const useServiceDetailsStream = (
   }
 
   return useStreaming({
-    url: `/api/functions/namespaces/${namespace}/function/${service}/revisions`,
+    url:
+      workflow && version
+        ? `/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
+            workflow
+          )}?op=function-revisions&svn=${service}&version=${version}`
+        : `/api/functions/namespaces/${namespace}/function/${service}/revisions`,
     apiKey: apiKey ?? undefined,
     enabled,
     schema: RevisionStreamingSchema,
@@ -116,6 +143,8 @@ export const useServiceDetailsStream = (
         serviceKeys.serviceDetail(namespace, {
           apiKey: apiKey ?? undefined,
           service,
+          workflow,
+          version,
         }),
         (oldData) => updateCache(oldData, msg)
       );
@@ -126,11 +155,17 @@ export const useServiceDetailsStream = (
 type ServiceRevisionStreamingSubscriberType = {
   service: string;
   enabled?: boolean;
+  workflow?: string;
+  version?: string;
 };
 
 export const ServiceDetailsStreamingSubscriber = memo(
-  ({ service, enabled }: ServiceRevisionStreamingSubscriberType) => {
-    useServiceDetailsStream(service, { enabled: enabled ?? true });
+  ({ service, workflow, version }: ServiceRevisionStreamingSubscriberType) => {
+    useServiceDetailsStream(service, {
+      enabled: true,
+      workflow,
+      version,
+    });
     return null;
   }
 );
@@ -138,7 +173,15 @@ export const ServiceDetailsStreamingSubscriber = memo(
 ServiceDetailsStreamingSubscriber.displayName =
   "ServiceDetailsStreamingSubscriber";
 
-export const useServiceDetails = ({ service }: { service: string }) => {
+export const useServiceDetails = ({
+  service,
+  workflow,
+  version,
+}: {
+  service: string;
+  workflow?: string;
+  version?: string;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -150,6 +193,8 @@ export const useServiceDetails = ({ service }: { service: string }) => {
     queryKey: serviceKeys.serviceDetail(namespace, {
       apiKey: apiKey ?? undefined,
       service,
+      workflow,
+      version,
     }),
     queryFn: fetchServiceDetails,
     enabled: !!service,

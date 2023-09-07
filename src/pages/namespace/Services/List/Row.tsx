@@ -65,6 +65,7 @@ const ServicesTableRow: FC<{
               namespace,
               service: service.info.name,
               workflow,
+              version: service.info.revision,
             })
           );
         }}
