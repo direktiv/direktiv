@@ -1,3 +1,6 @@
+import { UseMutationOptions, useMutation } from "@tanstack/react-query";
+
+import { useToast } from "~/design/Toast";
 import { z } from "zod";
 
 /**
@@ -12,7 +15,7 @@ export const ApiErrorSchema = z.object({
   response: z.instanceof(Response),
   json: z
     .object({
-      code: z.number().optional(),
+      code: z.string().or(z.number()).optional(),
       message: z.string().optional(),
     })
     .passthrough()
@@ -42,3 +45,64 @@ export const isApiErrorSchema = (error: unknown): error is ApiErrorSchemaType =>
 
 export const getMessageFromApiError = (error: unknown) =>
   isApiErrorSchema(error) ? error.json?.message : undefined;
+
+type PermissionStatus =
+  | {
+      isAllowed: true;
+    }
+  | {
+      isAllowed: false;
+      message?: string;
+    };
+
+export const getPermissionStatus = (error: unknown): PermissionStatus => {
+  if (isApiErrorSchema(error)) {
+    if (error.response.status === 401 || error.response.status === 403) {
+      return {
+        isAllowed: false,
+        message: getMessageFromApiError(error),
+      };
+    }
+  }
+
+  return {
+    isAllowed: true,
+  };
+};
+
+type UseMutationParam<TData, TError, TVariables> = UseMutationOptions<
+  TData,
+  TError,
+  TVariables
+>;
+
+/**
+ * useMutationWithPermissionHandling is a wrapper around useMutation that will
+ * hook into the onError callback and check if the error is a permission error.
+ * If it is, it will display a toast message to the user and early return. So
+ * that no further error handling will be done.
+ */
+export const useMutationWithPermissionHandling = <
+  TData = unknown,
+  TError = unknown,
+  TVariables = void
+>(
+  useMutationParams: UseMutationParam<TData, TError, TVariables>
+) => {
+  const { toast } = useToast();
+  return useMutation({
+    ...useMutationParams,
+    onError: (error, variable, context) => {
+      const res = getPermissionStatus(error);
+      if (!res.isAllowed) {
+        toast({
+          title: "not allowed",
+          description: res.message ?? "you are not allowed to do this",
+          variant: "error",
+        });
+        return;
+      }
+      useMutationParams.onError?.(error, variable, context);
+    },
+  });
+};
