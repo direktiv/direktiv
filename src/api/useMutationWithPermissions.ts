@@ -31,7 +31,8 @@ const useMutationWithPermissions = <
       if (!res.isAllowed) {
         toast({
           title: t("api.generic.noPermissionTitle"),
-          description: res.message ?? t("api.generic.noPermissionDescription"),
+          description:
+            res.message ?? t("api.generic.noPermissionMutationDescription"),
           variant: "error",
         });
         return;

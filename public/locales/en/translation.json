@@ -993,7 +993,8 @@
     "generic": {
       "error": "An error occurred",
       "noPermissionTitle": "No permission",
-      "noPermissionDescription": "You do not have permission to perform this action"
+      "noPermissionMutationDescription": "You do not have permission to perform this action",
+      "noPermissionQueryDescription": "You do not have permission to view this data"
     },
     "authentication": {
       "mutate": {

@@ -63,7 +63,8 @@ const useQueryWithPermissions = <
     const isAllowed = permissionStatus.isAllowed;
     if (isAllowed === false) {
       const noPermissionMessage =
-        permissionStatus.message ?? t("api.generic.noPermissionDescription");
+        permissionStatus.message ??
+        t("api.generic.noPermissionQueryDescription");
       return { ...useQueryReturnValue, isAllowed, noPermissionMessage };
     }
   }
