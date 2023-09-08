@@ -1,6 +1,12 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+import {
+  NoPermissions,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "~/design/Table";
 
 import { Card } from "~/design/Card";
 import Delete from "./Delete";
@@ -22,7 +28,10 @@ import { useTranslation } from "react-i18next";
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const { data, isSuccess } = useNodeContent({ path });
+  const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
+    useNodeContent({
+      path,
+    });
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -43,6 +52,14 @@ const ExplorerPage: FC = () => {
   }, [dialogOpen]);
 
   if (!namespace) return null;
+  if (!isFetched) return null;
+
+  if (!isAllowed)
+    return (
+      <Card className="m-5 flex grow flex-col p-4">
+        <NoPermissions>{noPermissionMessage}</NoPermissions>
+      </Card>
+    );
 
   const results = data?.children?.results ?? [];
   const showTable = !isRoot || results.length > 0;
