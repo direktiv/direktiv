@@ -4,17 +4,14 @@ import {
   PodsStreamingSchema,
   PodsStreamingSchemaType,
 } from "../../../schema/pods";
-import {
-  QueryFunctionContext,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { memo } from "react";
 import { serviceKeys } from "../../..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
 const updateCache = (
@@ -135,7 +132,7 @@ export const usePods = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: serviceKeys.servicePods(namespace, {
       apiKey: apiKey ?? undefined,
       revision,
