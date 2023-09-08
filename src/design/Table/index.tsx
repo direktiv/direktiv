@@ -136,9 +136,7 @@ export const NoPermissions: FC<PropsWithChildren> = ({ children }) => (
     className="flex grow flex-col items-center justify-center gap-1 p-10"
     data-testid="no-permissions"
   >
-    <Ban className="h-auto w-16 text-danger-10 dark:text-danger-dark-10" />
-    <span className="text-center text-sm text-danger-10 dark:text-danger-dark-10">
-      {children}
-    </span>
+    <Ban className="h-auto w-16 text-gray-3 dark:text-gray-dark-3" />
+    <span className="text-center text-sm">{children}</span>
   </div>
 );
