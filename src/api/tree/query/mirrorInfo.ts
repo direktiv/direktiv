@@ -39,8 +39,13 @@ export const useMirrorInfo = () => {
 };
 
 export const useMirrorActivity = ({ id }: { id: string }) => {
-  const { data: mirrorInfo } = useMirrorInfo();
+  const {
+    data: mirrorInfo,
+    isAllowed,
+    noPermissionMessage,
+    isFetched,
+  } = useMirrorInfo();
 
   const data = mirrorInfo?.activities.results.find((item) => item.id === id);
-  return { data };
+  return { data, isAllowed, noPermissionMessage, isFetched };
 };
