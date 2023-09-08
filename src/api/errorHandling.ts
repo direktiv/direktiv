@@ -137,9 +137,9 @@ type ExtendedUseQueryReturn =
     };
 
 /**
- * useQueryWithPermissionHandling is a wrapper around useQuery that will add permission
- * handling to the useQuery result. It checkes for the error and determines if the error
- * is a permission error.
+ * useQueryWithPermissions is a wrapper around useQuery that will add permission handling to
+ * the useQuery result. It checkes for the error and determines if the error is a permission
+ * error.
  *
  * It behaves the same way as useQuery but has two additional properties:
  *
@@ -151,7 +151,7 @@ type ExtendedUseQueryReturn =
  * message in the translation file if the API does not return any specific message. This propery
  * is undefined when isAllowed is true and always a string when isAllowed is false.
  */
-export const useQueryWithPermissionHandling = <
+export const useQueryWithPermissions = <
   TQueryFnData = unknown,
   TError = unknown,
   TData = TQueryFnData,
