@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { NoResult, Table, TableBody } from "~/design/Table";
+import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
@@ -27,7 +27,7 @@ const SecretsList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched } = useSecrets();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useSecrets();
 
   const filteredItems = useMemo(
     () =>
@@ -89,22 +89,32 @@ const SecretsList: FC = () => {
               </CreateItemButton>
             </div>
             <Card className="mb-4">
-              {currentItems.length ? (
-                <Table>
-                  <TableBody>
-                    {currentItems.map((item, i) => (
-                      <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <NoResult icon={SquareAsterisk}>
-                  {t(
-                    isSearch
-                      ? "pages.settings.secrets.list.emptySearch"
-                      : "pages.settings.secrets.list.empty"
+              {isAllowed ? (
+                <>
+                  {currentItems.length ? (
+                    <Table>
+                      <TableBody>
+                        {currentItems.map((item, i) => (
+                          <ItemRow
+                            item={item}
+                            key={i}
+                            onDelete={setDeleteSecret}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <NoResult icon={SquareAsterisk}>
+                      {t(
+                        isSearch
+                          ? "pages.settings.secrets.list.emptySearch"
+                          : "pages.settings.secrets.list.empty"
+                      )}
+                    </NoResult>
                   )}
-                </NoResult>
+                </>
+              ) : (
+                <NoPermissions>{noPermissionMessage}</NoPermissions>
               )}
             </Card>
             {totalPages > 1 && (

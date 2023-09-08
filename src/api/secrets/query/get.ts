@@ -4,7 +4,7 @@ import { apiFactory } from "../../apiFactory";
 import { secretKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
-import { useQuery } from "@tanstack/react-query";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getSecrets = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
@@ -29,7 +29,7 @@ export const useSecrets = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: secretKeys.secretsList(namespace, {
       apiKey: apiKey ?? undefined,
     }),
