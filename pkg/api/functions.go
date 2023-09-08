@@ -49,7 +49,7 @@ import (
 type functionHandler = flowHandler
 
 func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
-	// swagger:operation GET /api/logs/{pod} podLogs
+	// swagger:operation GET /api/functions/namespaces/{namespace}/logs/{pod} podLogs
 	// ---
 	// description: |
 	//    Watches logs of the pods for a service. This can be a namespace service or a workflow service.
@@ -65,7 +65,7 @@ func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully watching pod logs"
-	r.HandleFunc("/logs/pod/{pod}", h.watchPodLogs).Methods(http.MethodGet).Name(RN_WatchPodLogs)
+	r.HandleFunc("/namespaces/{ns}/logs/pod/{pod}", h.watchPodLogs).Methods(http.MethodGet).Name(RN_WatchPodLogs)
 
 	// namespace
 
