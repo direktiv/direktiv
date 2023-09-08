@@ -21,11 +21,14 @@ import {
 import ApiCommands from "./ApiCommands";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
+import { Card } from "~/design/Card";
 import { FC } from "react";
+import { NoPermissions } from "~/design/Table";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { useNodeContent } from "~/api/tree/query/node";
 import { useRouter } from "~/api/tree/query/router";
 import { useToggleLive } from "~/api/tree/mutate/toggleLive";
 import { useTranslation } from "react-i18next";
@@ -44,6 +47,11 @@ const Header: FC = () => {
   const filename = segments[segments.length - 1];
 
   const { data: router, isFetched: routerIsFetched } = useRouter({ path });
+  const {
+    isAllowed,
+    noPermissionMessage,
+    isFetched: isPermissionCheckFetched,
+  } = useNodeContent({ path });
 
   const { mutate: toggleLive } = useToggleLive();
 
@@ -98,6 +106,15 @@ const Header: FC = () => {
       }),
     },
   ] as const;
+
+  if (!isPermissionCheckFetched) return null;
+
+  if (isAllowed === false)
+    return (
+      <Card className="m-5 flex grow">
+        <NoPermissions>{noPermissionMessage}</NoPermissions>
+      </Card>
+    );
 
   return (
     <>
