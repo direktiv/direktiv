@@ -15,6 +15,7 @@ import { memo } from "react";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
 export const getServices = apiFactory({
@@ -119,7 +120,7 @@ export const useServices = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: serviceKeys.servicesList(namespace, {
       apiKey: apiKey ?? undefined,
     }),

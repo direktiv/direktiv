@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Layers, PlusCircle } from "lucide-react";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -24,7 +25,12 @@ import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
   const { t } = useTranslation();
-  const { data: serviceList, isSuccess } = useServices();
+  const {
+    data: serviceList,
+    isSuccess,
+    isAllowed,
+    noPermissionMessage,
+  } = useServices();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteService, setDeleteService] = useState<string>();
@@ -86,20 +92,30 @@ const ServicesListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {showTable &&
-                serviceList?.functions.map((service) => (
-                  <Row
-                    service={service}
-                    key={service.serviceName}
-                    setDeleteService={setDeleteService}
-                  />
-                ))}
-              {noResults && (
+              {isAllowed ? (
+                <>
+                  {showTable &&
+                    serviceList?.functions.map((service) => (
+                      <Row
+                        service={service}
+                        key={service.serviceName}
+                        setDeleteService={setDeleteService}
+                      />
+                    ))}
+                  {noResults && (
+                    <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                      <TableCell colSpan={6}>
+                        <NoResult icon={Layers} button={createNewButton}>
+                          {t("pages.services.list.empty.title")}
+                        </NoResult>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
+              ) : (
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>
-                    <NoResult icon={Layers} button={createNewButton}>
-                      {t("pages.services.list.empty.title")}
-                    </NoResult>
+                    <NoPermissions>{noPermissionMessage}</NoPermissions>
                   </TableCell>
                 </TableRow>
               )}
