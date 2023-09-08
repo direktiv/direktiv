@@ -1,8 +1,4 @@
-import {
-  QueryFunctionContext,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
 import {
   RevisionStreamingSchema,
   RevisionStreamingSchemaType,
@@ -15,6 +11,7 @@ import { memo } from "react";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
 export const getServiceDetails = apiFactory({
@@ -146,7 +143,7 @@ export const useServiceDetails = ({ service }: { service: string }) => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: serviceKeys.serviceDetail(namespace, {
       apiKey: apiKey ?? undefined,
       service,
