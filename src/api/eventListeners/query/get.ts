@@ -2,16 +2,13 @@ import {
   EventListenersListSchema,
   EventListenersListSchemaType,
 } from "../schema";
-import {
-  QueryFunctionContext,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { eventListenerKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
 const getUrl = ({
@@ -59,7 +56,7 @@ export const useEventListeners = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: eventListenerKeys.eventListenersList(namespace, {
       apiKey: apiKey ?? undefined,
       limit,
