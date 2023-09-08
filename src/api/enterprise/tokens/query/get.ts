@@ -5,6 +5,7 @@ import { apiFactory } from "~/api/apiFactory";
 import { tokenKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getTokens = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
@@ -93,7 +94,7 @@ export const useTokens = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: tokenKeys.tokenList(namespace, {
       apiKey: apiKey ?? undefined,
     }),

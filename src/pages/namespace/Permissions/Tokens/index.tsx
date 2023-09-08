@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { KeyRound, PlusCircle } from "lucide-react";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -22,7 +23,7 @@ import { useTranslation } from "react-i18next";
 
 const TokensPage = () => {
   const { t } = useTranslation();
-  const { data, isFetched } = useTokens();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useTokens();
   const noResults = isFetched && data?.tokens.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
@@ -67,22 +68,32 @@ const TokensPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {noResults ? (
+            {isAllowed ? (
+              <>
+                {noResults ? (
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableCell colSpan={4}>
+                      <NoResult icon={KeyRound} button={createNewButton}>
+                        {t("pages.permissions.tokens.noTokens")}
+                      </NoResult>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.tokens.map((token) => (
+                    <Row
+                      key={token.id}
+                      token={token}
+                      onDeleteClicked={setDeleteToken}
+                    />
+                  ))
+                )}
+              </>
+            ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={4}>
-                  <NoResult icon={KeyRound} button={createNewButton}>
-                    {t("pages.permissions.tokens.noTokens")}
-                  </NoResult>
+                  <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>
-            ) : (
-              data?.tokens.map((token) => (
-                <Row
-                  key={token.id}
-                  token={token}
-                  onDeleteClicked={setDeleteToken}
-                />
-              ))
             )}
           </TableBody>
         </Table>
