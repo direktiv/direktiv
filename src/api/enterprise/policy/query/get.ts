@@ -1,10 +1,10 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
 import { PolicySchema } from "../schema";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { policyKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getPolicy = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
@@ -60,7 +60,7 @@ export const usePolicy = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: policyKeys.get(namespace, { apiKey: apiKey ?? undefined }),
     queryFn: fetchPolicy,
   });
