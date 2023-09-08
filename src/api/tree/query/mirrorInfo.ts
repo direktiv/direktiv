@@ -1,10 +1,10 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
 import { MirrorInfoSchema } from "../schema/mirror";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getMirrorInfo = apiFactory({
   url: ({ namespace }: { namespace: string; path?: string }) =>
@@ -29,7 +29,7 @@ export const useMirrorInfo = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: treeKeys.mirrorInfo(namespace, {
       apiKey: apiKey ?? undefined,
     }),

@@ -9,7 +9,11 @@ const MirrorPage = () => {
 
   const isMirror = data.node.expandedType === "git";
 
-  return <div>{isMirror ? <Outlet /> : <NoMirror />}</div>;
+  return (
+    <div className="flex grow flex-col">
+      {isMirror ? <Outlet /> : <NoMirror />}
+    </div>
+  );
 };
 
 export default MirrorPage;

@@ -1,11 +1,12 @@
-import { Pagination, PaginationLink } from "~/design/Pagination";
 import {
+  NoPermissions,
   Table,
   TableBody,
   TableHead,
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
@@ -21,12 +22,19 @@ import { useTranslation } from "react-i18next";
 const pageSize = 10;
 
 const Activities = () => {
-  const { data } = useMirrorInfo();
+  const { data, isAllowed, noPermissionMessage } = useMirrorInfo();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const apiKey = useApiKey();
 
   const activities = data?.activities.results;
+
+  if (!isAllowed)
+    return (
+      <Card className="m-5 flex grow flex-col p-4">
+        <NoPermissions>{noPermissionMessage}</NoPermissions>
+      </Card>
+    );
 
   if (!activities) return null;
 
@@ -49,7 +57,6 @@ const Activities = () => {
   return (
     <>
       <Header mirror={data} loading={!!pendingActivities.length} />
-
       <PaginationProvider items={activities} pageSize={pageSize}>
         {({
           currentItems,
