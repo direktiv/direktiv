@@ -1,10 +1,10 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
 import { InstancesListSchema } from "../schema";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 export const triggerValues = ["api", "cloudevent", "instance", "cron"] as const;
 
@@ -122,7 +122,7 @@ export const useInstances = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: instanceKeys.instancesList(namespace, {
       apiKey: apiKey ?? undefined,
       limit,
