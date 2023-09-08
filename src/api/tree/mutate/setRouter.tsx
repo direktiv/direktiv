@@ -6,7 +6,7 @@ import type { RouterSchemaType } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
@@ -31,7 +31,7 @@ export const useSetRouter = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({
       path,
       routeA,

@@ -6,7 +6,7 @@ import {
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,7 @@ export const useSendEvent = ({
       },
     });
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: () => {
       /* Cache for scope: events-list is not invalidated here because in the

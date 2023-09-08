@@ -5,7 +5,7 @@ import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { pages } from "~/util/router/pages";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -38,7 +38,7 @@ export const useCreateRevision = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({ path }: { path: string }) =>
       createRevision({
         apiKey: apiKey ?? undefined,

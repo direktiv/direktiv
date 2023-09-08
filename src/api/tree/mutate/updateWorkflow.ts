@@ -1,13 +1,11 @@
 import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema/node";
-import {
-  getMessageFromApiError,
-  useMutationWithPermissionHandling,
-} from "~/api/errorHandling";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
+import { getMessageFromApiError } from "~/api/errorHandling";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -43,7 +41,7 @@ export const useUpdateWorkflow = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({
       path,
       fileContent,

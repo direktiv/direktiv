@@ -1,12 +1,9 @@
-import {
-  getMessageFromApiError,
-  useMutationWithPermissionHandling,
-} from "~/api/errorHandling";
-
 import { WorkflowStartedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
+import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
 export const runWorkflow = apiFactory({
@@ -42,7 +39,7 @@ export const useRunWorkflow = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({ path, payload }: { path: string; payload: string }) =>
       runWorkflow({
         apiKey: apiKey ?? undefined,

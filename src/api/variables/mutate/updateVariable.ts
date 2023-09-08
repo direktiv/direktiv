@@ -6,7 +6,7 @@ import {
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
@@ -57,7 +57,7 @@ export const useUpdateVar = ({
       },
     });
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
       // Two cache invalidations are needed due to the current API,

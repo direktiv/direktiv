@@ -1,11 +1,9 @@
 import { JqQueryResult, JqQueryResultType } from "../schema";
-import {
-  getMessageFromApiError,
-  useMutationWithPermissionHandling,
-} from "~/api/errorHandling";
 
 import { apiFactory } from "~/api/apiFactory";
+import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 
 export const executeJquery = apiFactory({
   url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/jq`,
@@ -21,7 +19,7 @@ export const useExecuteJQuery = ({
   onError?: (error?: string) => void;
 } = {}) => {
   const apiKey = useApiKey();
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({
       query,
       inputJsonString,

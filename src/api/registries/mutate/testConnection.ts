@@ -1,7 +1,7 @@
 import { RegistryTestConnectionSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
 export const testConnection = apiFactory({
@@ -25,7 +25,7 @@ export const useTestConnection = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({
       url,
       username,

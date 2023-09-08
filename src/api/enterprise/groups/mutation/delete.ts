@@ -7,7 +7,7 @@ import {
 import { apiFactory } from "~/api/apiFactory";
 import { groupKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
@@ -58,7 +58,7 @@ export const useDeleteGroup = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: (group: GroupSchemaType) =>
       deleteGroup({
         apiKey: apiKey ?? undefined,

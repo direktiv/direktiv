@@ -7,7 +7,7 @@ import {
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,7 @@ export const useUpdateMirror = ({
       },
     });
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(

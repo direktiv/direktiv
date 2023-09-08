@@ -3,7 +3,7 @@ import { TokenCreatedSchema, TokenFormSchemaType } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { tokenKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
@@ -31,7 +31,7 @@ export const useCreateToken = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: (tokenFormProps: TokenFormSchemaType) =>
       createToken({
         apiKey: apiKey ?? undefined,

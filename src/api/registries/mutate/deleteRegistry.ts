@@ -7,7 +7,7 @@ import {
 import { apiFactory } from "../../apiFactory";
 import { registriesKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
-import { useMutationWithPermissionHandling } from "~/api/errorHandling";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "../../../util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../../design/Toast";
@@ -52,7 +52,7 @@ export const useDeleteRegistry = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutationWithPermissionHandling({
+  return useMutationWithPermissions({
     mutationFn: ({ registry }: { registry: RegistrySchemaType }) =>
       deleteRegistry({
         apiKey: apiKey ?? undefined,
