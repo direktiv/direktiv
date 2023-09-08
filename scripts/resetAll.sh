@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -r: reinstall secure registry
-# -d <DB>: reinstall database, can be 'pg' or 'crunchy'
+# -d <DB>: reinstall database, can be 'pg' or 'operator'
 # -l: reinstall linkerd
 # -w: do not wipe k3s
 # -k: don not install knative
@@ -29,6 +29,7 @@ echo registry: $REGISTRY
 echo linkerd: $LINKERD
 echo architecture: $ARCH
 echo knative: $KNATIVE
+echo database: $DB
 
 # get current dir
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -39,6 +40,11 @@ if [[ $WIPE == true ]]; then
 fi
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+if [ ! -d "$dir/direktiv-charts" ]; then
+  git clone https://github.com/direktiv/direktiv-charts.git $dir/direktiv-charts;
+  # git -C $dir/direktiv-charts checkout develop;
+fi
 
 install_knative() {
 
@@ -80,11 +86,11 @@ install_db() {
 
   dbsecret="psql-single-postgresql"
 
-  if [[ ${DB} == "crunchy" ]]; then
-    echo "install crunchy db"
-    helm install -n postgres --set singleNamespace=true postgres $dir/direktiv-charts/charts/pgo --wait
-    kubectl apply -f $dir/../kubernetes/install/db/basic.yaml
-    dbsecret="direktiv-pguser-direktiv"
+  if [[ ${DB} == "operator" ]]; then
+    echo "install postgres db as operator"
+    helm install -n postgres postgres $dir/direktiv-charts/charts/percona-postgres --wait
+    kubectl apply -n postgres -f $dir/../kubernetes/install/db/basic.yaml
+    dbsecret="direktiv-cluster-pguser-direktiv"
   fi
 
   if [[ ${DB} == "pg" ]]; then
@@ -198,11 +204,11 @@ if [ $DB == "pg" ]; then
   sslmode: disable" >> $dir/dev.yaml
 else 
   echo "database:
-    host: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)\"
-    port: $(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
-    user: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)\"
-    password: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)\"
-    name: \"$(kubectl get secrets -n postgres direktiv-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)\"
+    host: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)\"
+    port: $(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)
+    user: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)\"
+    password: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)\"
+    name: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)\"
     sslmode: require" >> $dir/dev.yaml
 fi
 
