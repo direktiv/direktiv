@@ -1,4 +1,11 @@
-import { UseMutationOptions, useMutation } from "@tanstack/react-query";
+import {
+  QueryKey,
+  UseMutationOptions,
+  UseQueryOptions,
+  UseQueryResult,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 import { t } from "i18next";
 import { useToast } from "~/design/Toast";
@@ -107,3 +114,22 @@ export const useMutationWithPermissionHandling = <
     },
   });
 };
+
+type UseQueryParam<
+  TQueryFnData,
+  TError,
+  TData,
+  TQueryKey extends QueryKey
+> = UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>;
+
+export const useQueryWithPermissionHandling = <
+  TQueryFnData = unknown,
+  TError = unknown,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey
+>(
+  useQueryParams: UseQueryParam<TQueryFnData, TError, TData, TQueryKey>
+): UseQueryResult<TData, TError> =>
+  useQuery({
+    ...useQueryParams,
+  });
