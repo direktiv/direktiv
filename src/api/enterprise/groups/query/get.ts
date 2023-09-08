@@ -1,10 +1,10 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
 import { GroupsListSchema } from "../schema";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { groupKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getGroups = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
@@ -88,7 +88,7 @@ export const useGroups = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: groupKeys.groupList(namespace, {
       apiKey: apiKey ?? undefined,
     }),

@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -23,7 +24,7 @@ import { useTranslation } from "react-i18next";
 
 const GroupsPage = () => {
   const { t } = useTranslation();
-  const { data, isFetched } = useGroups();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useGroups();
   const noResults = isFetched && data?.groups.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createGroup, setCreateGroup] = useState(false);
@@ -69,23 +70,33 @@ const GroupsPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {noResults ? (
+            {isAllowed ? (
+              <>
+                {noResults ? (
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableCell colSpan={3}>
+                      <NoResult icon={Users} button={createNewButton}>
+                        {t("pages.permissions.groups.noGroups")}
+                      </NoResult>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.groups.map((group) => (
+                    <Row
+                      key={group.id}
+                      group={group}
+                      onDeleteClicked={setDeleteGroup}
+                      onEditClicked={setEditGroup}
+                    />
+                  ))
+                )}
+              </>
+            ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={3}>
-                  <NoResult icon={Users} button={createNewButton}>
-                    {t("pages.permissions.groups.noGroups")}
-                  </NoResult>
+                  <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>
-            ) : (
-              data?.groups.map((group) => (
-                <Row
-                  key={group.id}
-                  group={group}
-                  onDeleteClicked={setDeleteGroup}
-                  onEditClicked={setEditGroup}
-                />
-              ))
             )}
           </TableBody>
         </Table>
