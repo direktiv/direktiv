@@ -1,8 +1,4 @@
-import {
-  QueryFunctionContext,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
 import {
   ServiceStreamingSchema,
   ServiceStreamingSchemaType,

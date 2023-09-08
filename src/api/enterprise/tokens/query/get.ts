@@ -1,5 +1,4 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { TokenListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { tokenKeys } from "..";
