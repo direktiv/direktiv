@@ -1,15 +1,9 @@
 import { Boxes, CheckCircle2, XCircle } from "lucide-react";
 import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
 
 import { InstanceCard } from "./instanceCard";
 import { InstanceRow } from "./Row";
-import RefreshButton from "~/design/RefreshButton";
+import RefetchButton from "./RefetchButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
@@ -53,27 +47,6 @@ export const Instances = () => {
 
   const { t } = useTranslation();
 
-  const refetchButton = (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RefreshButton
-            icon
-            size="sm"
-            variant="ghost"
-            disabled={isFetchingSucessfullinstances}
-            onClick={() => {
-              refetchSucessfullInstances();
-            }}
-          />
-        </TooltipTrigger>
-        <TooltipContent>
-          {t(`pages.monitoring.instances.updateTooltip`)}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-
   if (!isFetchedSucessfullInstances || !isFetchedFailedInstances) return null;
 
   return (
@@ -81,7 +54,12 @@ export const Instances = () => {
       <InstanceCard
         headline={t("pages.monitoring.instances.successfullExecutions.title")}
         icon={CheckCircle2}
-        refetchButton={refetchButton}
+        refetchButton={
+          <RefetchButton
+            disabled={isFetchingSucessfullinstances}
+            onClick={refetchSucessfullInstances}
+          />
+        }
       >
         {isAllowedSucessfullInstances ? (
           <>
@@ -111,24 +89,10 @@ export const Instances = () => {
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
         refetchButton={
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <RefreshButton
-                  icon
-                  size="sm"
-                  variant="ghost"
-                  disabled={isFetchingFailedInstances}
-                  onClick={() => {
-                    refetchFailedInstances();
-                  }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {t(`pages.monitoring.instances.updateTooltip`)}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <RefetchButton
+            disabled={isFetchingFailedInstances}
+            onClick={refetchFailedInstances}
+          />
         }
       >
         {isAllowedFailedInstances ? (
