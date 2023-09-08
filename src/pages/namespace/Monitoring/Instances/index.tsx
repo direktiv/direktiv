@@ -1,5 +1,5 @@
 import { Boxes, CheckCircle2, XCircle } from "lucide-react";
-import { NoResult, Table, TableBody } from "~/design/Table";
+import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +20,8 @@ export const Instances = () => {
     isFetched: isFetchedSucessfullInstances,
     isFetching: isFetchingSucessfullinstances,
     refetch: refetchSucessfullInstances,
+    isAllowed: isAllowedSucessfullInstances,
+    noPermissionMessage: noPermissionMessageSucessfullInstances,
   } = useInstances({
     limit: 10,
     offset: 0,
@@ -36,6 +38,8 @@ export const Instances = () => {
     isFetched: isFetchedFailedInstances,
     isFetching: isFetchingFailedInstances,
     refetch: refetchFailedInstances,
+    isAllowed: isAllowedFailedInstances,
+    noPermissionMessage: noPermissionMessageFailedInstances,
   } = useInstances({
     limit: 10,
     offset: 0,
@@ -79,20 +83,28 @@ export const Instances = () => {
         icon={CheckCircle2}
         refetchButton={refetchButton}
       >
-        {sucessfullInstances?.instances?.results.length === 0 ? (
-          <NoResult icon={Boxes}>
-            {t("pages.monitoring.instances.successfullExecutions.empty")}
-          </NoResult>
+        {isAllowedSucessfullInstances ? (
+          <>
+            {sucessfullInstances?.instances?.results.length === 0 ? (
+              <NoResult icon={Boxes}>
+                {t("pages.monitoring.instances.successfullExecutions.empty")}
+              </NoResult>
+            ) : (
+              <ScrollArea className="h-full">
+                <Table>
+                  <TableBody>
+                    {sucessfullInstances?.instances?.results.map((instance) => (
+                      <InstanceRow key={instance.id} instance={instance} />
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            )}
+          </>
         ) : (
-          <ScrollArea className="h-full">
-            <Table>
-              <TableBody>
-                {sucessfullInstances?.instances?.results.map((instance) => (
-                  <InstanceRow key={instance.id} instance={instance} />
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+          <NoPermissions>
+            {noPermissionMessageSucessfullInstances}
+          </NoPermissions>
         )}
       </InstanceCard>
       <InstanceCard
@@ -119,20 +131,26 @@ export const Instances = () => {
           </TooltipProvider>
         }
       >
-        {failedInstances?.instances?.results.length === 0 ? (
-          <NoResult icon={Boxes}>
-            {t("pages.monitoring.instances.failedExecutions.empty")}
-          </NoResult>
+        {isAllowedFailedInstances ? (
+          <>
+            {failedInstances?.instances?.results.length === 0 ? (
+              <NoResult icon={Boxes}>
+                {t("pages.monitoring.instances.failedExecutions.empty")}
+              </NoResult>
+            ) : (
+              <ScrollArea className="h-full">
+                <Table>
+                  <TableBody>
+                    {failedInstances?.instances?.results.map((instance) => (
+                      <InstanceRow key={instance.id} instance={instance} />
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            )}
+          </>
         ) : (
-          <ScrollArea className="h-full">
-            <Table>
-              <TableBody>
-                {failedInstances?.instances?.results.map((instance) => (
-                  <InstanceRow key={instance.id} instance={instance} />
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+          <NoPermissions>{noPermissionMessageFailedInstances}</NoPermissions>
         )}
       </InstanceCard>
     </>
