@@ -57,7 +57,9 @@ const Rename = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    rename({ node, newName: addYamlFileExtension(name) });
+    const newName =
+      node.type === "workflow" ? addYamlFileExtension(name) : name;
+    rename({ node, newName });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
