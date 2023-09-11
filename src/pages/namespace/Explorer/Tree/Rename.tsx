@@ -11,6 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
+import { addYamlFileExtension } from "./NewWorkflow/utils";
 import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -56,7 +57,7 @@ const Rename = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    rename({ node, newName: name });
+    rename({ node, newName: addYamlFileExtension(name) });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
