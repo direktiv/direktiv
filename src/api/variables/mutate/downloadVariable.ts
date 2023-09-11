@@ -2,7 +2,7 @@ import { ResponseParser, apiFactory } from "~/api/apiFactory";
 
 import { VarDownloadSchema } from "../schema";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -46,7 +46,7 @@ export const useDownloadVar = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, name) => {
       onSuccess?.(data, name);
