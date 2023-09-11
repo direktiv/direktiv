@@ -383,6 +383,55 @@ test(`renaming a workflow will automatically add a yaml extension`, async ({
   await expect(isRenamed).toBeTruthy();
 });
 
+test(`it is not possible to rename a workflow when the name already exists`, async ({
+  page,
+}) => {
+  const tobeRenamed = "workflow-a.yaml";
+  const alreadyExists = "workflow-b.yaml";
+  await createWorkflow(namespace, tobeRenamed);
+  await createWorkflow(namespace, alreadyExists);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+
+  await page
+    .getByTestId(`explorer-item-${tobeRenamed}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(alreadyExists);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(page.getByTestId("form-error")).toContainText(
+    "The name already exists"
+  );
+});
+
+test(`it is not possible to rename a workflow when the name already exists (even with not file extensions specified)`, async ({
+  page,
+}) => {
+  const tobeRenamed = "workflow-a.yaml";
+  const alreadyExists = "workflow-b.yaml";
+  const alreadyExistsWithoutExtension = "workflow-b";
+  await createWorkflow(namespace, tobeRenamed);
+  await createWorkflow(namespace, alreadyExists);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+
+  await page
+    .getByTestId(`explorer-item-${tobeRenamed}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page
+    .getByTestId("node-rename-input")
+    .fill(alreadyExistsWithoutExtension);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(page.getByTestId("form-error")).toHaveText(
+    "The name already exists"
+  );
+});
+
 test(`it is possible to delete a directory`, async ({ page }) => {
   const name = "directory";
   await createDirectory(namespace, name);
