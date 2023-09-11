@@ -7,8 +7,10 @@ import {
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
-  MimeTypeSchema,
+  EditorMimeTypeSchema,
   MimeTypeType,
+  TextMimeTypeType,
+  getLanguageFromMimeType,
   mimeTypeToLanguageDict,
 } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -25,6 +27,7 @@ import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/componentsNext/FormErrors";
+import Input from "~/design/Input";
 import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useTheme } from "~/util/store/theme";
 import { useWorkflowVariableContent } from "~/api/tree/query/variableContent";
@@ -38,26 +41,37 @@ type EditProps = {
 
 // mimeType should always be initialized in the form, to avoid the backend
 // setting defaults that may not fit with the options in MimeTypeSelect
-const fallbackMimeType: MimeTypeType = "text/plain";
+const fallbackMimeType: TextMimeTypeType = "text/plain";
 
 const Edit = ({ item, onSuccess, path }: EditProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const { data, isFetched, isError } = useWorkflowVariableContent(
-    item.name,
-    path
-  );
+  const {
+    data,
+    isSuccess: isInitialized,
+    isError,
+  } = useWorkflowVariableContent(item.name, path);
 
-  const [body, setBody] = useState<string | undefined>();
+  const [body, setBody] = useState<string | File>("");
   const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+
+  /**
+   * when the initial loaded content is from a non text mime type
+   * we can't edit or save it, because we have applied res.text()
+   * to the response body, which means we can't save it back to its
+   * original format. Saving would not make much sense anyway, since
+   * nothing would be changed.
+   */
+  const [saveable, setSaveable] = useState(true);
+
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[fallbackMimeType]
   );
 
   const {
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<WorkflowVariableFormSchemaType>({
     resolver: zodResolver(WorkflowVariableFormSchema),
@@ -69,23 +83,28 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
     },
   });
 
-  useEffect(() => {
-    if (!isInitialized && isFetched) {
-      setBody(data?.body);
-
-      const contentType = data?.headers["content-type"];
-
-      const safeParsedContentType = MimeTypeSchema.safeParse(contentType);
-      if (!safeParsedContentType.success) {
-        return console.error(
-          `Unexpected content-type, defaulting to ${fallbackMimeType}`
-        );
-      }
-      setMimeType(safeParsedContentType.data);
-      setEditorLanguage(mimeTypeToLanguageDict[safeParsedContentType.data]);
-      setIsInitialized(true);
+  const onMimeTypeChange = (value: MimeTypeType) => {
+    setMimeType(value);
+    setSaveable(true);
+    const editorLanguage = getLanguageFromMimeType(value);
+    if (editorLanguage) {
+      setEditorLanguage(editorLanguage);
     }
-  }, [data, isFetched, isInitialized]);
+  };
+
+  useEffect(() => {
+    if (isInitialized) {
+      const contentType = data.headers["content-type"];
+      const safeParsedContentType = EditorMimeTypeSchema.safeParse(contentType);
+      setValue("mimeType", contentType);
+      onMimeTypeChange(contentType);
+      if (safeParsedContentType.success) {
+        setBody(data.body);
+      } else {
+        setSaveable(false);
+      }
+    }
+  }, [data, isInitialized, setValue]);
 
   const { mutate: setVariable } = useSetWorkflowVariable({
     onSuccess,
@@ -94,6 +113,31 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
   const onSubmit: SubmitHandler<WorkflowVariableFormSchemaType> = (data) => {
     setVariable(data);
   };
+
+  const onFilepickerChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const fileContent = await file.text();
+    const mimeType = file?.type ?? fallbackMimeType;
+
+    const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
+
+    setValue("mimeType", mimeType, { shouldDirty: true });
+    onMimeTypeChange(mimeType);
+
+    if (parsedMimetype.success) {
+      setBody(fileContent);
+    } else {
+      setBody(file);
+    }
+  };
+
+  if (!isInitialized) return null;
+
+  const showEditor = saveable && typeof body === "string";
 
   return (
     <DialogContent>
@@ -134,10 +178,17 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
             </label>
             <MimeTypeSelect
               id="mimetype"
-              loading={!isFetched}
+              loading={!isInitialized}
               mimeType={mimeType}
               onChange={setMimeType}
             />
+          </fieldset>
+
+          <fieldset className="flex items-center gap-5">
+            <label className="w-[150px] text-right" htmlFor="file-upload">
+              {t("pages.settings.variables.edit.file.label")}
+            </label>
+            <Input id="file-upload" type="file" onChange={onFilepickerChange} />
           </fieldset>
 
           <Card
@@ -145,18 +196,26 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
             background="weight-1"
             data-testid="variable-editor-card"
           >
-            <div className="h-[500px]">
-              {isFetched && body && (
+            <div className="flex h-[400px]">
+              {showEditor ? (
                 <Editor
                   value={body}
                   onChange={(newData) => {
-                    setBody(newData);
+                    if (newData) {
+                      setBody(newData);
+                    }
                   }}
                   onMount={(editor) => editor.focus()}
                   theme={theme ?? undefined}
                   data-testid="variable-editor"
                   language={editorLanguage}
                 />
+              ) : (
+                <div className="flex grow p-10 text-center">
+                  <div className="flex items-center justify-center text-sm">
+                    {t("pages.settings.variables.edit.noPreview")}
+                  </div>
+                </div>
               )}
             </div>
           </Card>
@@ -167,7 +226,11 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
                 {t("components.button.label.cancel")}
               </Button>
             </DialogClose>
-            <Button type="submit" data-testid="var-edit-submit">
+            <Button
+              type="submit"
+              data-testid="var-edit-submit"
+              disabled={!saveable}
+            >
               {t("components.button.label.save")}
             </Button>
           </DialogFooter>
