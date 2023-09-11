@@ -1381,9 +1381,6 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
-	//svcName := mux.Vars(r)["svn"]
-	//nsName := mux.Vars(r)["ns"]
-
 	vers := r.URL.Query().Get("version")
 	hash, err := strconv.ParseUint(vers, 10, 64)
 	if err != nil {
@@ -1392,11 +1389,6 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 	}
 	svc := functions.AssembleWorkflowServiceName(hash)
 	h.logger.Debugf("Handeling singleWorkflowServiceRevisions for version: %v hash: %v, svc:", vers, hash, svc)
-
-	// svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
-	// 	NamespaceName: &nsName,
-	// 	Name:          &svcName,
-	// })
 	req := &grpc.FunctionsWatchRevisionsRequest{
 		ServiceName: &svc,
 	}
