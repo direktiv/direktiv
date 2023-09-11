@@ -50,7 +50,6 @@ const CreateService = ({
     register,
     handleSubmit,
     watch,
-    getValues,
     setValue,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<ServiceFormSchemaType>({

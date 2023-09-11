@@ -54,7 +54,6 @@ const CreateRevision = ({
     register,
     handleSubmit,
     watch,
-    getValues,
     setValue,
     formState: { errors },
   } = useForm<RevisionFormSchemaType>({
