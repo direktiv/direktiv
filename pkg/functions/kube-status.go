@@ -89,7 +89,6 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 }
 
 func (is *functionsServer) ListRevisions(ctx context.Context, in *igrpc.FunctionsWatchRevisionsRequest) (*igrpc.FunctionsGetFunctionResponse, error) {
-	_ = ctx
 	var revisionFilter string
 
 	if in.GetServiceName() == "" {
@@ -113,7 +112,7 @@ func (is *functionsServer) ListRevisions(ctx context.Context, in *igrpc.Function
 	labels := labels.Set(l).String()
 	listOpts := metav1.ListOptions{LabelSelector: labels}
 
-	revisionList, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(context.Background(), listOpts)
+	revisionList, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(ctx, listOpts)
 	if err != nil {
 		logger.Errorf("error fetching revisions: %s", err.Error())
 		return nil, err

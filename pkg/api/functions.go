@@ -1381,8 +1381,8 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
-	// svcName := mux.Vars(r)["svn"]
-	// nsName := mux.Vars(r)["ns"]
+	//svcName := mux.Vars(r)["svn"]
+	//nsName := mux.Vars(r)["ns"]
 
 	vers := r.URL.Query().Get("version")
 	hash, err := strconv.ParseUint(vers, 10, 64)
@@ -1390,17 +1390,15 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 		respond(w, nil, err)
 		return
 	}
-
 	svc := functions.AssembleWorkflowServiceName(hash)
+	h.logger.Debugf("Handeling singleWorkflowServiceRevisions for version: %v hash: %v, svc:", vers, hash, svc)
 
 	// svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
 	// 	NamespaceName: &nsName,
 	// 	Name:          &svcName,
 	// })
-	rev := ""
 	req := &grpc.FunctionsWatchRevisionsRequest{
-		ServiceName:  &svc,
-		RevisionName: &rev,
+		ServiceName: &svc,
 	}
 
 	revisions, err := h.functionsClient.ListRevisions(r.Context(), req)
@@ -1412,69 +1410,6 @@ func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, 
 	respond(w, revisions, nil)
 }
 
-func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	vers := r.URL.Query().Get("version")
-
-	hash, err := strconv.ParseUint(vers, 10, 64)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	svc := functions.AssembleWorkflowServiceName(hash)
-
-	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
-}
-
-func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
-	w http.ResponseWriter, r *http.Request,
-) {
-	if rev != "" {
-		rev = fmt.Sprintf("%s-%s", svc, rev)
-	}
-
-	grpcReq := &grpc.FunctionsWatchRevisionsRequest{
-		ServiceName:  &svc,
-		RevisionName: &rev,
-		// Scope:        &scope,
-	}
-
-	client, err := h.functionsClient.WatchRevisions(r.Context(), grpcReq)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = client.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := client.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
-}
 
 func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
