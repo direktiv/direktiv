@@ -59,7 +59,7 @@ export const useCreateRevision = () => {
         action: (
           <ToastAction
             data-testid="make-revision-toast-success-action"
-            altText="Open Revision"
+            altText={t("api.tree.mutate.createRevision.success.action")}
             onClick={() => {
               variables.createLink(variables.path);
             }}
