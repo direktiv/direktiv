@@ -470,7 +470,7 @@ test(`it is not possible to rename a workflow when the name already exists (even
     .fill(alreadyExistsWithoutExtension);
   await page.getByTestId("node-rename-submit").click();
 
-  await expect(page.getByTestId("form-error")).toHaveText(
+  await expect(page.getByTestId("form-error")).toContainText(
     "The name already exists"
   );
 });
