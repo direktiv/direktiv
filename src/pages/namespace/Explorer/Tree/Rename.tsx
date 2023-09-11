@@ -47,8 +47,9 @@ const Rename = ({
             .refine(
               (name) =>
                 !unallowedNames.some(
-                  (n) =>
-                    removeYamlFileExtension(n) === removeYamlFileExtension(name)
+                  (unallowedName) =>
+                    removeYamlFileExtension(unallowedName) ===
+                    removeYamlFileExtension(name)
                 ),
               {
                 message: t("pages.explorer.tree.rename.nameAlreadyExists"),
