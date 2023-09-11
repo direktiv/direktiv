@@ -6,17 +6,17 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message FunctionsWatchRevisionsRequest {
+message WatchRevisionsRequest {
 	optional string ServiceName = 1;
 	optional string RevisionName = 2;
 	optional string scope = 6;
 }
 
-message FunctionsWatchRevisionsResponse {
+message WatchRevisionsResponse {
 	optional string event = 1;
 	optional string name = 2;
 	optional string namespace = 3;
 	optional string workflow = 4;
 	optional FunctionsConfig config = 5;
-	optional FunctionsRevision revision = 6;
+	optional Revision revision = 6;
 }

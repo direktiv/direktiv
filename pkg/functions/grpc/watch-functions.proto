@@ -6,19 +6,19 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message FunctionsTraffic {
+message Traffic {
 	optional string revisionName = 1;
 	optional int64 traffic = 2;
 	optional int64 generation = 3;
 }
 
 
-message FunctionsWatchFunctionsRequest {
+message WatchFunctionsRequest {
 	map<string, string> annotations = 1;
 }
 
-message FunctionsWatchFunctionsResponse {
+message WatchFunctionsResponse {
 	optional string event = 1;
 	optional FunctionsInfo function = 2;
-	repeated FunctionsTraffic traffic = 3;
+	repeated Traffic traffic = 3;
 }

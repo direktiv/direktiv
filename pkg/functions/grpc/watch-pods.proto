@@ -6,12 +6,12 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message FunctionsWatchPodsResponse {
+message WatchPodsResponse {
 	optional string event = 1;
-	optional FunctionsPodsInfo pod = 2;
+	optional PodsInfo pod = 2;
 }
 
-message FunctionsWatchPodsRequest {
+message WatchPodsRequest {
 	optional string ServiceName = 1;
 	optional string RevisionName = 2;
 }

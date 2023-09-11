@@ -4,7 +4,7 @@ package direktiv_functions;
 
 option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
-message FunctionsStoreRegistryRequest {
+message StoreRegistryRequest {
 	optional string namespace = 1;
 	optional string name = 2;
 	optional bytes data = 3;

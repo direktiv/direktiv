@@ -4,18 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/ent"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/lib/pq"
@@ -26,9 +23,6 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	logger2 "gorm.io/gorm/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -49,8 +43,8 @@ const (
 )
 
 type functionsServer struct {
-	igrpc.UnimplementedFunctionsServer
-	dbStore core.ServicesStore
+	igrpc.UnimplementedFunctionsServiceServer
+	db *ent.Client
 
 	reusableCacheLock  sync.Mutex
 	reusableCache      map[string]*cacheTuple
@@ -71,46 +65,31 @@ func StartServer(echan chan error) {
 	logger.Infof("loading config file %s", confFile)
 	readConfig(confFile, &functionsConfig)
 
+	// start watcher for congfig changes
+	go configWatcher()
+
 	err = initLocks(os.Getenv(util.DBConn))
 	if err != nil {
 		echan <- err
 		return
 	}
 
-	gormDB, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  os.Getenv(util.DBConn),
-		PreferSimpleProtocol: false, // disables implicit prepared statement usage
-		// Conn:                 edb.DB(),
-	}), &gorm.Config{
-		Logger: logger2.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
-			logger2.Config{
-				LogLevel: logger2.Silent,
-			},
-		),
-	})
+	// Setup database
+	db, err := ent.Open("postgres", os.Getenv(util.DBConn))
 	if err != nil {
-		echan <- fmt.Errorf("creating services store, err: %w", err)
-		return
+		logger.Errorf("failed to connect database client: %w", err)
+		echan <- fmt.Errorf("failed to connect database client: %w", err)
 	}
-
-	gdb, err := gormDB.DB()
-	if err != nil {
-		echan <- fmt.Errorf("connecting via gorm driver, err: %w", err)
-		return
-	}
-	gdb.SetMaxIdleConns(8)
-	gdb.SetMaxOpenConns(8)
 
 	fServer := functionsServer{
-		dbStore:            datastoresql.NewServicesStore(gormDB),
+		db:                 db,
 		reusableCache:      make(map[string]*cacheTuple),
 		reusableCacheIndex: make(map[string]*cacheTuple),
 	}
 
 	err = util.GrpcStart(&grpcServer, "functions",
 		fmt.Sprintf(":%d", port), func(srv *grpc.Server) {
-			igrpc.RegisterFunctionsServer(srv, &fServer)
+			igrpc.RegisterFunctionsServiceServer(srv, &fServer)
 			reflection.Register(srv)
 		})
 	if err != nil {
@@ -186,6 +165,7 @@ type HeartbeatTuple struct {
 	NamespaceName      string
 	NamespaceID        string
 	WorkflowPath       string
+	WorkflowID         string
 	Revision           string
 	FunctionDefinition *model.ReusableFunctionDefinition
 }
@@ -199,13 +179,11 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 		size := int32(tuple.FunctionDefinition.Size)
 		minscale := int32(0)
 
-		wf := bytedata.ShortChecksum(tuple.WorkflowPath)
-
-		in := &igrpc.FunctionsCreateFunctionRequest{
-			Info: &igrpc.FunctionsBaseInfo{
+		in := &igrpc.CreateFunctionRequest{
+			Info: &igrpc.BaseInfo{
 				Name:          &tuple.FunctionDefinition.ID,
 				Namespace:     &tuple.NamespaceID,
-				Workflow:      &wf,
+				Workflow:      &tuple.WorkflowID,
 				Image:         &tuple.FunctionDefinition.Image,
 				Cmd:           &tuple.FunctionDefinition.Cmd,
 				Size:          &size,
@@ -222,13 +200,13 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
 		fServer.reusableCacheLock.Lock()
 
-		ct, exists := fServer.reusableCache[wf]
+		ct, exists := fServer.reusableCache[tuple.WorkflowID]
 		if exists {
 			ct.Add(name)
 		} else {
 			ct = new(cacheTuple)
 			ct.Add(name)
-			fServer.reusableCache[wf] = ct
+			fServer.reusableCache[tuple.WorkflowID] = ct
 		}
 		fServer.reusableCacheIndex[name] = ct
 		fServer.reusableCacheLock.Unlock()
@@ -253,7 +231,7 @@ func (fServer *functionsServer) reusableGC() {
 
 		logger.Debugf("reusable heartbeat garbage collector running.")
 
-		cutoff := time.Now().UTC().Add(time.Minute * -15)
+		cutoff := time.Now().Add(time.Minute * -15)
 
 		fServer.reusableCacheLock.Lock()
 
@@ -273,7 +251,7 @@ type cacheTuple struct {
 }
 
 func (ct *cacheTuple) Add(name string) {
-	ct.t = time.Now().UTC()
+	ct.t = time.Now()
 
 	sort.Strings(ct.names)
 
@@ -311,7 +289,7 @@ func (fServer *functionsServer) reusableFree(k string) {
 	for i := range x.names {
 		name := x.names[i]
 
-		in := &igrpc.FunctionsGetFunctionRequest{
+		in := &igrpc.GetFunctionRequest{
 			ServiceName: &name,
 		}
 
@@ -361,12 +339,12 @@ func (fServer *functionsServer) orphansGC() {
 			fServer.reusableCacheLock.Unlock()
 
 			if !exists {
-				if !item.CreationTimestamp.Time.Before(time.Now().UTC().Add(time.Minute * -60)) {
+				if !item.CreationTimestamp.Time.Before(time.Now().Add(time.Minute * -60)) {
 					continue
 				}
 				logger.Debugf("Reusable orphans garbage collector deleting detected orphan function: %s", item.Name)
 
-				_, err := fServer.DeleteFunction(ctx, &igrpc.FunctionsGetFunctionRequest{
+				_, err := fServer.DeleteFunction(ctx, &igrpc.GetFunctionRequest{
 					ServiceName: &item.Name,
 				})
 				if err != nil {
@@ -378,8 +356,8 @@ func (fServer *functionsServer) orphansGC() {
 	}
 }
 
-func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.FunctionsBuildResponse, error) {
-	var resp igrpc.FunctionsBuildResponse
+func (is *functionsServer) Build(ctx context.Context, in *emptypb.Empty) (*igrpc.BuildResponse, error) {
+	var resp igrpc.BuildResponse
 	resp.Build = version.Version
 	return &resp, nil
 }

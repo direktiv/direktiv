@@ -4,7 +4,7 @@ package direktiv_functions;
 
 option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
-message FunctionsBaseInfo {
+message BaseInfo {
 	optional string name = 1;
 	optional string namespace = 2;
 	optional string workflow = 3;
@@ -21,7 +21,7 @@ message FunctionsBaseInfo {
 	map<string, string> envs = 11;
 }
 
-message FunctionsCondition {
+message Condition {
 	optional string name = 1;
 	optional string status = 2;
 	optional string reason = 3;
@@ -33,20 +33,20 @@ message FunctionsConfig {
 }
 
 message FunctionsInfo {
-	optional FunctionsBaseInfo info = 1;
+	optional BaseInfo info = 1;
 	optional string status = 2;
-	repeated FunctionsCondition conditions = 3;
+	repeated Condition conditions = 3;
 	optional string serviceName = 4;
 }
 
-message FunctionsPodsInfo {
+message PodsInfo {
 	optional string name = 1;
 	optional string status = 2;
 	optional string serviceName = 3;
 	optional string serviceRevision = 4;
 }
 
-message FunctionsRevision {
+message Revision {
 	optional string name = 1;
 	optional string image = 2;
 	optional string cmd = 3;
@@ -57,7 +57,7 @@ message FunctionsRevision {
 	optional int64 created = 7;
 
 	optional string status = 8;
-	repeated FunctionsCondition conditions = 9;
+	repeated Condition conditions = 9;
 
 	optional int64 traffic = 10;
 

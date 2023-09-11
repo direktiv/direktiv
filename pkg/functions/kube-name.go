@@ -35,7 +35,7 @@ func fixAnnotations(in map[string]string) map[string]string {
 }
 
 // GenerateServiceName generates a knative name based on workflow details.
-func GenerateServiceName(info *igrpc.FunctionsBaseInfo /* ns, wf, n string*/) (string, string, string) {
+func GenerateServiceName(info *igrpc.BaseInfo /* ns, wf, n string*/) (string, string, string) {
 	var name, scope, hash string
 
 	if info.GetWorkflow() != "" {
@@ -58,7 +58,7 @@ func GenerateServiceName(info *igrpc.FunctionsBaseInfo /* ns, wf, n string*/) (s
 }
 
 // GenerateWorkflowServiceName generates a knative name based on workflow details.
-func GenerateWorkflowServiceName(info *igrpc.FunctionsBaseInfo) (string, string) {
+func GenerateWorkflowServiceName(info *igrpc.BaseInfo) (string, string) {
 	wf := info.GetWorkflow()
 	fndef := fndefFromBaseInfo(info)
 
@@ -73,7 +73,7 @@ func GenerateWorkflowServiceName(info *igrpc.FunctionsBaseInfo) (string, string)
 		panic(err)
 	}
 
-	h, err := hash.Hash(fmt.Sprintf("%s-%s-%s", info.GetNamespace(), wf, def), hash.FormatV2, nil)
+	h, err := hash.Hash(fmt.Sprintf("%s-%s", wf, def), hash.FormatV2, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func GenerateWorkflowServiceName(info *igrpc.FunctionsBaseInfo) (string, string)
 	return SanitizeLabel(name), fmt.Sprintf("%v", h)
 }
 
-func fndefFromBaseInfo(info *igrpc.FunctionsBaseInfo) *model.ReusableFunctionDefinition {
+func fndefFromBaseInfo(info *igrpc.BaseInfo) *model.ReusableFunctionDefinition {
 	size := int(info.GetSize())
 
 	return &model.ReusableFunctionDefinition{
@@ -95,6 +95,6 @@ func fndefFromBaseInfo(info *igrpc.FunctionsBaseInfo) *model.ReusableFunctionDef
 }
 
 // AssembleWorkflowServiceName generates a knative name based on workflow details.
-func AssembleWorkflowServiceName(hash uint64) string {
+func AssembleWorkflowServiceName(wf string, hash uint64) string {
 	return SanitizeLabel(fmt.Sprintf("%s-%d", PrefixWorkflow, hash))
 }

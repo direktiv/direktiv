@@ -6,6 +6,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
 import "pkg/functions/grpc/functions-common.proto";
 
-message FunctionsCreateFunctionRequest {
-	optional FunctionsBaseInfo info = 1;
+message CreateFunctionRequest {
+	optional BaseInfo info = 1;
 }

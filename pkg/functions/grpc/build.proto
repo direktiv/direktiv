@@ -4,6 +4,6 @@ package direktiv_functions;
 
 option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
 
-message FunctionsBuildResponse {
+message BuildResponse {
 	string build = 1;
 }
