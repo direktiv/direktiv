@@ -1318,7 +1318,32 @@ func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.
 func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	http.Error(w, "text/event-stream only", http.StatusBadRequest)
+	vers := r.URL.Query().Get("version")
+	rev := r.URL.Query().Get("rev")
+	if rev == "" {
+		rev = "00001"
+	}
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svc := functions.AssembleWorkflowServiceName(hash)
+
+	req := &grpc.FunctionsWatchRevisionsRequest{
+		ServiceName:  &svc,
+		RevisionName: &rev,
+	}
+
+	revisions, err := h.functionsClient.ListRevisions(r.Context(), req)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	respond(w, revisions, nil)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter, r *http.Request) {
@@ -1356,25 +1381,15 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	svcName := mux.Vars(r)["svn"]
+	nsName := mux.Vars(r)["ns"]
 
-	vers := r.URL.Query().Get("version")
-	rev := r.URL.Query().Get("rev")
-	if rev == "" {
-		rev = "00001"
-	}
-
-	hash, err := strconv.ParseUint(vers, 10, 64)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	svc := functions.AssembleWorkflowServiceName(hash)
-
+	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+		NamespaceName: &nsName,
+		Name:          &svcName,
+	})
 	req := &grpc.FunctionsWatchRevisionsRequest{
-		ServiceName:  &svc,
-		RevisionName: &rev,
+		ServiceName: &svn,
 	}
 
 	revisions, err := h.functionsClient.ListRevisions(r.Context(), req)
