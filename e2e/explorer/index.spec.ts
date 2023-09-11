@@ -379,7 +379,7 @@ test(`it is possible to rename a workflow`, async ({ page }) => {
   await expect(isRenamed).toBeTruthy();
 });
 
-test(`renaming a workflow will automatically add a yaml extension`, async ({
+test(`it will automatically add a yaml extension when renaming a workflow`, async ({
   page,
 }) => {
   const oldname = "old-name.yaml";
