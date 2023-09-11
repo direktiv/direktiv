@@ -1,4 +1,10 @@
 import { Box, FileSymlink, XCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
@@ -75,14 +81,23 @@ const Header = () => {
         </div>
         <ChildInstances />
         <div className="flex grow justify-end gap-5">
-          <Button
-            disabled={!canBeCanceled}
-            variant="destructive"
-            onClick={onCancelInstanceClick}
-            type="button"
-          >
-            <XCircle />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  disabled={!canBeCanceled}
+                  variant="destructive"
+                  onClick={onCancelInstanceClick}
+                  type="button"
+                >
+                  <XCircle />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("pages.instances.detail.header.cancelWorkflow")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button asChild variant="primary" className="max-md:w-full">
             <Link to={link}>
               <FileSymlink />
