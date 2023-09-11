@@ -6,6 +6,7 @@ import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 export const createRevision = apiFactory({
@@ -29,6 +30,7 @@ export const useCreateRevision = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   if (!namespace) {
@@ -61,7 +63,7 @@ export const useCreateRevision = () => {
             data-testid="make-revision-toast-success-action"
             altText={t("api.tree.mutate.createRevision.success.action")}
             onClick={() => {
-              variables.createLink(variables.path);
+              navigate(variables.createLink(variables.path));
             }}
           >
             {t("api.tree.mutate.createRevision.success.action")}
