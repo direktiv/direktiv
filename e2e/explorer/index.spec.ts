@@ -264,6 +264,49 @@ test("it is possible to create a workflow without providing the .yaml file exten
   await expect(nodeCreated).toBeTruthy();
 });
 
+test("it is not possible to create a workflow when the name already exixts", async ({
+  page,
+}) => {
+  const alreadyExists = "workflow.yaml";
+  await createWorkflow(namespace, alreadyExists);
+
+  // go to tree root
+  await page.goto(`/${namespace}/explorer/tree`);
+
+  // create workflow
+  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByTestId("new-workflow").click();
+  await page.getByTestId("new-workflow-name").fill(alreadyExists);
+  await page.getByTestId("new-workflow-submit").click();
+
+  await expect(page.getByTestId("form-error")).toContainText(
+    "The name already exists"
+  );
+});
+
+test("it is not possible to create a workflow when the name already exixts (even with not file extensions specified)", async ({
+  page,
+}) => {
+  const alreadyExists = "workflow.yaml";
+  const alreadyExistsWithoutExtension = "workflow";
+  await createWorkflow(namespace, alreadyExists);
+
+  // go to tree root
+  await page.goto(`/${namespace}/explorer/tree`);
+
+  // create workflow
+  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByTestId("new-workflow").click();
+  await page
+    .getByTestId("new-workflow-name")
+    .fill(alreadyExistsWithoutExtension);
+  await page.getByTestId("new-workflow-submit").click();
+
+  await expect(page.getByTestId("form-error")).toContainText(
+    "The name already exists"
+  );
+});
+
 test(`it is possible to delete a worfklow`, async ({ page }) => {
   const name = "workflow.yaml";
   await createWorkflow(namespace, name);
