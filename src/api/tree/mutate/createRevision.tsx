@@ -3,11 +3,9 @@ import { ToastAction, useToast } from "~/design/Toast";
 import { WorkflowCreatedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
-import { pages } from "~/util/router/pages";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 export const createRevision = apiFactory({
@@ -31,7 +29,6 @@ export const useCreateRevision = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   if (!namespace) {
@@ -39,7 +36,12 @@ export const useCreateRevision = () => {
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({ path }: { path: string }) =>
+    mutationFn: ({
+      path,
+    }: {
+      path: string;
+      createLink: (revision: string) => string;
+    }) =>
       createRevision({
         apiKey: apiKey ?? undefined,
         urlParams: {
@@ -59,14 +61,7 @@ export const useCreateRevision = () => {
             data-testid="make-revision-toast-success-action"
             altText="Open Revision"
             onClick={() => {
-              navigate(
-                pages.explorer.createHref({
-                  namespace,
-                  path: variables.path,
-                  subpage: "workflow-revisions",
-                  revision: data.revision.name,
-                })
-              );
+              variables.createLink(variables.path);
             }}
           >
             {t("api.tree.mutate.createRevision.success.action")}

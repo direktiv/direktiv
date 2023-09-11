@@ -16,8 +16,10 @@ import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { WorkspaceLayout } from "~/componentsNext/WorkspaceLayout";
+import { pages } from "~/util/router/pages";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useEditorLayout } from "~/util/store/editor";
+import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
 import { useTranslation } from "react-i18next";
@@ -31,6 +33,7 @@ const WorkflowEditor: FC<{
 }> = ({ data, path }) => {
   const currentLayout = useEditorLayout();
   const { t } = useTranslation();
+  const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -69,6 +72,8 @@ const WorkflowEditor: FC<{
     }
   };
 
+  if (!namespace) return null;
+
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <h3 className="flex items-center gap-x-2 font-bold">
@@ -105,6 +110,13 @@ const WorkflowEditor: FC<{
               onClick={() => {
                 createRevision({
                   path,
+                  createLink: (revision) =>
+                    pages.explorer.createHref({
+                      namespace,
+                      path,
+                      subpage: "workflow-revisions",
+                      revision,
+                    }),
                 });
               }}
               className="grow"
