@@ -1,7 +1,7 @@
 import { InstanceCancelSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
 export const cancelInstance = apiFactory({
@@ -38,7 +38,7 @@ export const useCancelInstance = () => {
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
   });
 };
