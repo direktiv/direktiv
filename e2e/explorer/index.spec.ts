@@ -264,6 +264,39 @@ test("it is possible to create a workflow without providing the .yaml file exten
   await expect(nodeCreated).toBeTruthy();
 });
 
+test("it is possible to create a workflow with the name of a folder from the same directory", async ({
+  page,
+}) => {
+  const directoryName = "directory";
+  await createDirectory(namespace, directoryName);
+
+  // go to tree root
+  await page.goto(`/${namespace}/explorer/tree`);
+
+  // create workflow
+  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByTestId("new-workflow").click();
+  await page.getByTestId("new-workflow-name").fill(directoryName);
+  await page.getByTestId("new-workflow-submit").click();
+
+  // assert it has created and navigated to workflow
+  await expect(
+    page,
+    "it creates the workflow and loads the active revision page"
+  ).toHaveURL(`${namespace}/explorer/workflow/active/${directoryName}.yaml`);
+
+  await expect(
+    page.getByTestId("workflow-header"),
+    "the page heading contains the file name"
+  ).toHaveText(`${directoryName}.yaml`);
+
+  const nodeCreated = await checkIfNodeExists(
+    namespace,
+    `${directoryName}.yaml`
+  );
+  await expect(nodeCreated).toBeTruthy();
+});
+
 test("it is not possible to create a workflow when the name already exixts", async ({
   page,
 }) => {
