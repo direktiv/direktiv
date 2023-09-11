@@ -288,7 +288,7 @@ test(`it is possible to delete a worfklow`, async ({ page }) => {
 
   await expect(
     page.getByTestId(`explorer-item-${name}`),
-    "it does not render the old folder name"
+    "it does not render the old workflow name"
   ).toHaveCount(0);
 
   const nodeExists = await checkIfNodeExists(namespace, name);
@@ -308,7 +308,7 @@ test(`it is possible to rename a workflow`, async ({ page }) => {
 
   await expect(
     page.getByTestId(`explorer-item-${oldname}`),
-    "it renders the folder"
+    "it renders the workflow"
   ).toBeVisible();
 
   await page
@@ -321,12 +321,12 @@ test(`it is possible to rename a workflow`, async ({ page }) => {
 
   await expect(
     page.getByTestId(`explorer-item-${newname}`),
-    "it renders the new folder name"
+    "it renders the new workflow name"
   ).toBeVisible();
 
   await expect(
     page.getByTestId(`explorer-item-${oldname}`),
-    "it does not render the old folder name"
+    "it does not render the old workflow name"
   ).toHaveCount(0);
 
   const originalExists = await checkIfNodeExists(namespace, oldname);
