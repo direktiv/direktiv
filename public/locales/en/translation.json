@@ -387,6 +387,7 @@
       "detail": {
         "header": {
           "openWorkflow": "Open workflow",
+          "cancelWorkflow": "Cancel workflow",
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
@@ -839,7 +840,8 @@
         "publicKey": "Public key",
         "privateKey": "Private key",
         "token": "Token",
-        "formType": "Auth type"
+        "formType": "Auth type",
+        "insecure": "Skip certificate validation"
       },
       "tooltip": {
         "url": "URL to repository. If auth method is SSH, a git url must be used, e.g. 'git@github.com:direktiv/apps-svc.git'. All other auth methods must use HTTP/S urls.",
@@ -847,7 +849,8 @@
         "token": "Personal access token (for authentication with a HTTP/S url).",
         "passphrase": "Passphrase to decrypt keys (optional).",
         "privateKey": "Private SSH key used for authentication via git@ url.",
-        "publicKey": "Public SSH key used for authenticating via git@ url."
+        "publicKey": "Public SSH key used for authenticating via git@ url.",
+        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)"
       }
     },
     "button": {

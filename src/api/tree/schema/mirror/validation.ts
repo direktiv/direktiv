@@ -15,6 +15,7 @@ const PublicValidationSchema = z.object({
     .url()
     .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
+  insecure: z.boolean(),
 });
 
 const TokenValidationSchema = z.object({
@@ -25,6 +26,7 @@ const TokenValidationSchema = z.object({
     .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
   passphrase: z.string().nonempty("token must not be empty"),
+  insecure: z.boolean(),
 });
 
 const SshValidationSchema = z.object({
@@ -36,6 +38,7 @@ const SshValidationSchema = z.object({
   passphrase: z.string().optional(),
   publicKey: z.string().nonempty(),
   privateKey: z.string().nonempty(),
+  insecure: z.boolean(),
 });
 
 const KeepTokenValidationSchema = z.object({
@@ -45,6 +48,7 @@ const KeepTokenValidationSchema = z.object({
     .url()
     .nonempty({ message: "invalid url, must be http(s):// format" }),
   ref: z.string().nonempty(),
+  insecure: z.boolean(),
 });
 
 const KeepSshValidationSchema = z.object({
@@ -53,6 +57,7 @@ const KeepSshValidationSchema = z.object({
     message: "format must be git@host:path when using SSH",
   }),
   ref: z.string().nonempty(),
+  insecure: z.boolean(),
 });
 
 export const MirrorValidationSchema = z.discriminatedUnion("formType", [
