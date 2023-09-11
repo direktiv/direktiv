@@ -412,6 +412,51 @@ test(`it is possible to rename a workflow`, async ({ page }) => {
   await expect(isRenamed).toBeTruthy();
 });
 
+test(`it is possible to rename a workflow to a name of a folder inside the same directory`, async ({
+  page,
+}) => {
+  const oldName = "old-name.yaml";
+  const directoryName = "directory";
+  const newName = `${directoryName}.yaml`;
+  await createDirectory(namespace, directoryName);
+  await createWorkflow(namespace, oldName);
+
+  await page.goto(`/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it renders the workflow"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldName}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(directoryName);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newName}`),
+    "it renders the new workflow name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it does not render the old workflow name"
+  ).toHaveCount(0);
+
+  const originalExists = await checkIfNodeExists(namespace, oldName);
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = await checkIfNodeExists(namespace, newName);
+  await expect(isRenamed).toBeTruthy();
+});
+
 test(`it will automatically add a yaml extension when renaming a workflow`, async ({
   page,
 }) => {
