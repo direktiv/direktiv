@@ -52,3 +52,19 @@ export const logLevelToLogEntryVariant = (
       break;
   }
 };
+
+export const triggerDownloadFromBlob = ({
+  filename,
+  blob,
+}: {
+  filename: string;
+  blob: Blob;
+}) => {
+  const url = window.URL.createObjectURL(blob);
+  const aTag = document.createElement("a");
+  aTag.href = url;
+  aTag.download = filename;
+  document.body.appendChild(aTag);
+  aTag.click();
+  window.URL.revokeObjectURL(url);
+};

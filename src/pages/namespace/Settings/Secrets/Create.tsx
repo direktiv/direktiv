@@ -36,10 +36,27 @@ const Create = ({ onSuccess }: CreateProps) => {
   const {
     register,
     handleSubmit,
+    setValue,
+    setError,
     formState: { errors },
   } = useForm<SecretFormSchemaType>({
     resolver: zodResolver(SecretFormSchema),
   });
+
+  const onFilepickerChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const fileContent = await file.text();
+      setValue("value", fileContent);
+    } catch (e) {
+      setError("value", {
+        message: t("pages.settings.secrets.create.fileError"),
+      });
+    }
+  };
 
   return (
     <DialogContent>
@@ -66,6 +83,13 @@ const Create = ({ onSuccess }: CreateProps) => {
             placeholder="secret-name"
             {...register("name")}
           />
+        </fieldset>
+
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[150px] text-right" htmlFor="file-upload">
+            {t("pages.settings.secrets.create.file")}
+          </label>
+          <Input id="file-upload" type="file" onChange={onFilepickerChange} />
         </fieldset>
 
         <fieldset className="flex items-start gap-5">

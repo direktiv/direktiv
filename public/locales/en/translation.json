@@ -611,7 +611,8 @@
         "contextMenu": {
           "title": "Actions",
           "delete": "Delete",
-          "edit": "Edit"
+          "edit": "Edit",
+          "download": "Download"
         }
       },
       "secrets": {
@@ -627,7 +628,9 @@
         },
         "create": {
           "description": "Add a secret",
-          "name": "Name"
+          "name": "Name",
+          "file": "Upload a file",
+          "fileError": "There was an error uploading the file"
         }
       },
       "registries": {
@@ -669,7 +672,11 @@
           "name": {
             "label": "Name",
             "placeholder": "variable-name"
-          }
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
         },
         "edit": {
           "title": "Edit {{name}}",
@@ -677,7 +684,11 @@
           "mimeType": {
             "label": "Mimetype",
             "placeholder": "Select a mimetype"
-          }
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "broadcasts": {
@@ -985,6 +996,11 @@
           "error": {
             "description": "could not revert workflow 😢"
           }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "could not download variable 😢"
+          }
         }
       }
     },
@@ -1108,6 +1124,11 @@
           },
           "error": {
             "description": "Could not delete variable 😢"
+          }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "Could not download variable 😢"
           }
         }
       }
