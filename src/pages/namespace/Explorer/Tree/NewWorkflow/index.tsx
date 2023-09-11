@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { addYamlFileExtension, removeYamlFileExtension } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -20,7 +21,6 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addYamlFileExtension } from "./utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -68,9 +68,16 @@ const NewWorkflow = ({
         name: fileNameSchema.and(
           z
             .string()
-            .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
-              message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
-            })
+            .refine(
+              (name) =>
+                !(unallowedNames ?? []).some(
+                  (n) =>
+                    removeYamlFileExtension(n) === removeYamlFileExtension(name)
+                ),
+              {
+                message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
+              }
+            )
         ),
         fileContent: z.string(),
       })
