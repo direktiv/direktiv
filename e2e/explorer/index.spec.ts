@@ -284,7 +284,7 @@ test("it is not possible to create a workflow when the name already exixts", asy
   );
 });
 
-test("it is not possible to create a workflow when the name already exixts (even with not file extensions specified)", async ({
+test("it is not possible to create a workflow when the name already exists (even with not file extensions specified)", async ({
   page,
 }) => {
   const alreadyExists = "workflow.yaml";
