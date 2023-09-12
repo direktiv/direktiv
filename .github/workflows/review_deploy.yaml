@@ -9,6 +9,8 @@ on:
 jobs:
   ssh_to_review:
     runs-on: ubuntu-latest
+    environment:
+      name: Review
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
