@@ -26,7 +26,7 @@ jobs:
         run: |
           ssh-keyscan ${{ secrets.REVIEW_ENV_SERVER_IP }}
       - name: SSH and update image tags
-        uses: webfactory/ssh-agent@v0.4.1
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_REVIEW_ENV }}
       - run: |
