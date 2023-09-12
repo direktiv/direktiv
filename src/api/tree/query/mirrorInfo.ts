@@ -23,6 +23,8 @@ const fetchMirrorInfo = async ({
     ...res,
     activities: {
       ...res.activities,
+      // This should be changed in the backend in [DIR-833]
+      // reverse the order of activities (newer first)
       results: [...(res.activities.results ?? []).reverse()],
     },
   }));
