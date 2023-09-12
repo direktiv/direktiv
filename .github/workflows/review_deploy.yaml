@@ -31,8 +31,8 @@ jobs:
           script: |
             helm upgrade -f /home/nonroot/dev.yaml direktiv /home/nonroot/direktiv-charts/charts/direktiv/ \
             --set flow.tag="${{ steps.get_commit_hash.outputs.hash }}" \
-            --set api.image.tag="${{ steps.get_commit_hash.outputs.hash }}" \
-            --set functions.image.tag="${{ steps.get_commit_hash.outputs.hash }}"
+            --set api.tag="${{ steps.get_commit_hash.outputs.hash }}" \
+            --set functions.tag="${{ steps.get_commit_hash.outputs.hash }}"
 
       # # Optionally, add a step to send notifications in case of failure
       # - name: Notify on failure
