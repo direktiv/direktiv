@@ -29,7 +29,7 @@ jobs:
           key: ${{ secrets.SSH_REVIEW_ENV }}
           port: 22
           script: |
-            helm upgrade -f /home/nonroot/dev.yaml direktiv /home/nonroot/direktiv-charts/charts/direktiv/ \
+            KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade -f /home/nonroot/dev.yaml direktiv /home/nonroot/direktiv-charts/charts/direktiv/ \
             --set flow.tag="${{ steps.get_commit_hash.outputs.hash }}" \
             --set api.tag="${{ steps.get_commit_hash.outputs.hash }}" \
             --set functions.tag="${{ steps.get_commit_hash.outputs.hash }}"
