@@ -1,0 +1,48 @@
+name: Review Environment Deployment
+
+on:
+  deployment:
+    environments:
+      - Review
+  workflow_dispatch:
+
+jobs:
+  ssh_to_review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set commit hash
+        id: get_commit_hash
+        run: |
+          echo "::set-output name=hash::$(echo $GITHUB_SHA | cut -c1-7)"
+
+      - name: SSH and update image tags
+        uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_REVIEW_ENV }}
+      - run: |
+          set -e  # Exit the script if any command fails
+          echo "${{ secrets.REVIEW_ENV_SSH_HOST_KEY }}" >> ~/.ssh/known_hosts
+          output=$(ssh nonroot@${{ secrets.REVIEW_ENV_SERVER_IP }} << EOF
+            # Run helm upgrade with --set to override values
+            helm upgrade -f /home/nonroot/dev.yaml /home/nonroot/direktiv direktiv-charts/charts/direktiv/ \
+            --set flow.tag=${{ steps.get_commit_hash.outputs.hash }} \
+            --set dbimage.tag=${{ steps.get_commit_hash.outputs.hash }} \
+            --set api.image.tag=${{ steps.get_commit_hash.outputs.hash }} \
+            --set functions.image.tag=${{ steps.get_commit_hash.outputs.hash }}
+          EOF
+          )
+          echo "$output"
+          if [[ ! "$output" =~ "release \"direktiv\" has been upgraded" ]]; then
+            echo "Helm upgrade failed."
+            exit 1
+          fi
+
+      # # Optionally, add a step to send notifications in case of failure
+      # - name: Notify on failure
+      #   if: failure()
+      #   uses: some-slack-notification-action  # Replace this with an action that sends notifications to your choice of platform
+      #   with:
+      #     # appropriate parameters for the notification action
