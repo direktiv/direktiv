@@ -144,7 +144,7 @@ func (is *functionsServer) DeleteFunctions(ctx context.Context,
 
 	deletesCount := 0
 	for i := range svcList {
-		err := is.dbStore.DeleteByName(ctx, svcList[i])
+		err := is.dbStore.DeleteByURL(ctx, svcList[i])
 		if errors.Is(err, datastore.ErrNotFound) {
 			continue
 		}
@@ -259,7 +259,7 @@ func (is *functionsServer) DeleteFunction(ctx context.Context,
 	}
 
 	if strings.HasPrefix(in.GetServiceName(), "namespace-") {
-		err = is.dbStore.DeleteByName(ctx, in.GetServiceName())
+		err = is.dbStore.DeleteByURL(ctx, in.GetServiceName())
 		if err != nil {
 			logger.Errorf("successfully delete service, but could not delete backup record: %v", err)
 			return &empty, fmt.Errorf("successfully delete service, but could not delete backup record: %w", err)
