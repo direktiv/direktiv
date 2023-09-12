@@ -1207,7 +1207,6 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
-
 	var wf string
 	if cr.WorkflowPath != "" {
 		wf = bytedata.ShortChecksum(cr.WorkflowPath)
