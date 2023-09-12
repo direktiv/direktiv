@@ -1,34 +1,59 @@
-apiVersion: postgres-operator.crunchydata.com/v1beta1
-kind: PostgresCluster
+apiVersion: pgv2.percona.com/v2
+kind: PerconaPGCluster
 metadata:
-  name: direktiv
+  name: direktiv-cluster
   namespace: postgres
 spec:
-  postgresVersion: 14
+  crVersion: 2.3.0
+
+  users:
+    - name: direktiv
+      databases:
+        - direktiv
+    - name: postgres
+
+  image: perconalab/percona-postgresql-operator:main-ppg15-postgres
+  imagePullPolicy: Always
+  postgresVersion: 15
+  port: 5432
+
   instances:
-    - name: "direktiv"
+  - name: instance1
+    replicas: 1
+    dataVolumeClaimSpec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
+  proxy:
+    pgBouncer:
       replicas: 1
-      dataVolumeClaimSpec:
-        accessModes:
-        - "ReadWriteOnce"
-        resources:
-          requests:
-            storage: "1Gi"
+      image: perconalab/percona-postgresql-operator:main-ppg15-pgbouncer
+
   backups:
     pgbackrest:
+      image: perconalab/percona-postgresql-operator:main-ppg15-pgbackrest
       global:
         # Keep 4 Backups
         repo1-retention-full: "4"
         repo1-retention-full-type: count
+      manual:
+        repoName: repo1
+        options:
+         - --type=full
       repos:
       - name: repo1
         schedules:
-          # Run every Sunday
-          full: "0 1 * * 0"
+          full: "0 0 * * 6"
         volume:
           volumeClaimSpec:
             accessModes:
-            - "ReadWriteOnce"
+            - ReadWriteOnce
             resources:
               requests:
-                storage: "4Gi"
+                storage: 1Gi
+  pmm:
+    enabled: false
+    image: percona/pmm-client:2.37.0

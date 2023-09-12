@@ -380,6 +380,24 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 	}
 }
 
+func sseOnce(w http.ResponseWriter, ch <-chan interface{}) {
+	x, more := <-ch
+	if !more {
+		return
+	}
+
+	err, ok := x.(error)
+	if ok {
+		sseError(w, nil, err)
+		return
+	}
+
+	err = sseWriteJSON(w, nil, x)
+	if err != nil {
+		return
+	}
+}
+
 func sseError(w http.ResponseWriter, flusher http.Flusher, err error) {
 	eo := GenerateErrObject(err)
 
@@ -393,7 +411,9 @@ func sseError(w http.ResponseWriter, flusher http.Flusher, err error) {
 		return
 	}
 
-	flusher.Flush()
+	if flusher != nil {
+		flusher.Flush()
+	}
 }
 
 func sseSetup(w http.ResponseWriter) (http.Flusher, error) {
@@ -425,7 +445,11 @@ func sseWrite(w http.ResponseWriter, flusher http.Flusher, data []byte) error {
 	if err != nil {
 		return err
 	}
-	flusher.Flush()
+
+	if flusher != nil {
+		flusher.Flush()
+	}
+
 	return nil
 }
 

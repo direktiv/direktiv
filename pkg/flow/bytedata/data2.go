@@ -71,30 +71,6 @@ func ConvertRevisionToGrpcRevision(rev *filestore.Revision) *grpc.Revision {
 	}
 }
 
-func ConvertRevisionsToGrpcRevisionList(list []*filestore.Revision) []*grpc.Revision {
-	var result []*grpc.Revision
-	for _, f := range list {
-		result = append(result, ConvertRevisionToGrpcRevision(f))
-	}
-
-	return result
-}
-
-func ConvertRevisionToGrpcRef(rev *filestore.Revision) *grpc.Ref {
-	return &grpc.Ref{
-		Name: rev.ID.String(),
-	}
-}
-
-func ConvertRevisionsToGrpcRefList(list []*filestore.Revision) []*grpc.Ref {
-	var result []*grpc.Ref
-	for _, f := range list {
-		result = append(result, ConvertRevisionToGrpcRef(f))
-	}
-
-	return result
-}
-
 func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo {
 	return &grpc.MirrorInfo{
 		Url: config.URL,
@@ -220,7 +196,7 @@ func ConvertNamespaceToGrpc(item *core.Namespace, annotations *core.FileAnnotati
 	}
 
 	if annotations != nil {
-		ns.Notes = map[string]string(annotations.Data)
+		ns.Notes = annotations.Data
 	}
 
 	return ns
