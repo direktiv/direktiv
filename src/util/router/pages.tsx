@@ -75,8 +75,9 @@ type ExplorerPageSetup = Record<
     createHref: (
       params: {
         namespace: string;
-        path?: string;
-        // if no subpage is provided, it opens the tree view
+        path?: string; // if no subpage is provided, it opens the tree view
+        serviceRevision?: string; // only needed on services sub page
+        serviceName?: string; // only needed on services sub page
       } & ExplorerSubpagesParams
     ) => string;
     useParams: () => {
@@ -115,8 +116,6 @@ type ServicesPageSetup = Record<
       namespace: string;
       service?: string;
       revision?: string;
-      workflow?: string;
-      version?: string;
     }) => string;
     useParams: () => {
       namespace: string | undefined;
@@ -187,7 +186,6 @@ export const pages: PageType = {
       if (params.path) {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
-
       const subfolder: Record<ExplorerSubpages, string> = {
         workflow: "workflow/active",
         "workflow-revisions": "workflow/revisions",
@@ -196,12 +194,35 @@ export const pages: PageType = {
         "workflow-services": "workflow/services",
       };
 
-      const searchParams = new URLSearchParams({
-        ...(params.subpage === "workflow-revisions" && params.revision
-          ? { revision: params.revision }
-          : {}),
-      });
+      let searchParamsObj;
+
+      if (params.subpage === "workflow-revisions" && params.revision) {
+        searchParamsObj = { revision: params.revision };
+      }
+
+      if (
+        params.subpage === "workflow-services" &&
+        params.serviceName &&
+        !params.serviceRevision
+      ) {
+        searchParamsObj = { name: params.serviceName };
+      }
+
+      if (
+        params.subpage === "workflow-services" &&
+        params.serviceName &&
+        params.serviceRevision
+      ) {
+        searchParamsObj = {
+          name: params.serviceName,
+          revision: params.serviceRevision,
+        };
+      }
+
+      const searchParams = new URLSearchParams(searchParamsObj);
+
       const subpage = params.subpage ? subfolder[params.subpage] : "tree";
+
       return `/${
         params.namespace
       }/explorer/${subpage}${path}?${searchParams.toString()}`;
@@ -401,11 +422,7 @@ export const pages: PageType = {
     createHref: (params) =>
       `/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
-      }${params.revision ? `/${params.revision}` : ""}${
-        params.workflow && params.version
-          ? `?workflow=${params.workflow}&version=${params.version}`
-          : ""
-      }`,
+      }${params.revision ? `/${params.revision}` : ""}`,
     useParams: () => {
       const { namespace, service, revision } = useParams();
 

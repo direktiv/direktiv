@@ -60,12 +60,20 @@ const ServicesTableRow: FC<{
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          navigate(
+          if (workflow) {
+            return navigate(
+              pages.explorer.createHref({
+                namespace,
+                path: workflow,
+                subpage: "workflow-services",
+                serviceName: service.info.name,
+              })
+            );
+          }
+          return navigate(
             pages.services.createHref({
               namespace,
               service: service.info.name,
-              workflow,
-              version: service.info.revision,
             })
           );
         }}
