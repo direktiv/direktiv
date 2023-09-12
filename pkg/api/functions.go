@@ -1207,7 +1207,11 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
-	wf := bytedata.ShortChecksum(cr.WorkflowPath)
+
+	var wf string
+	if cr.WorkflowPath != "" {
+		wf = bytedata.ShortChecksum(cr.WorkflowPath)
+	}
 
 	grpcReq := new(grpc.FunctionsCreateFunctionRequest)
 	grpcReq.Info = &grpc.FunctionsBaseInfo{
