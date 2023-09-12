@@ -22,30 +22,25 @@ jobs:
         id: get_commit_hash
         run: |
           echo "::set-output name=hash::$(echo $GITHUB_SHA | cut -c1-7)"
-      - name: Check SSH Key
-        run: |
-          ssh-keyscan ${{ secrets.REVIEW_ENV_SERVER_IP }}
-      - name: SSH and update image tags
-        uses: webfactory/ssh-agent@v0.4.1
-        with:
-          ssh-private-key: ${{ secrets.SSH_REVIEW_ENV }}
-      - run: |
-          set -e  # Exit the script if any command fails
-          echo "${{ secrets.REVIEW_ENV_SSH_HOST_KEY }}" >> ~/.ssh/known_hosts
-          output=$(ssh nonroot@${{ secrets.REVIEW_ENV_SERVER_IP }} << EOF
-            # Run helm upgrade with --set to override values
-            helm upgrade -f /home/nonroot/dev.yaml /home/nonroot/direktiv direktiv-charts/charts/direktiv/ \
-            --set flow.tag=${{ steps.get_commit_hash.outputs.hash }} \
-            --set dbimage.tag=${{ steps.get_commit_hash.outputs.hash }} \
-            --set api.image.tag=${{ steps.get_commit_hash.outputs.hash }} \
-            --set functions.image.tag=${{ steps.get_commit_hash.outputs.hash }}
-          EOF
-          )
-          echo "$output"
-          if [[ ! "$output" =~ "release \"direktiv\" has been upgraded" ]]; then
-            echo "Helm upgrade failed."
-            exit 1
-          fi
+          - name: Execute remote SSH commands
+          uses: appleboy/ssh-action@v1.0.0
+          with:
+            host: ${{ secrets.REVIEW_ENV_SERVER_IP }}
+            username: nonroot
+            key: ${{ secrets.REVIEW_ENV_SSH_HOST_KEY }}
+            port: 22
+            script: |
+              set -e  # Exit the script if any command fails
+              # Running the helm upgrade command
+              output=$(helm upgrade -f /home/nonroot/dev.yaml /home/nonroot/direktiv direktiv-charts/charts/direktiv/ \
+              --set flow.tag=${{ steps.get_commit_hash.outputs.hash }} \
+              --set api.image.tag=${{ steps.get_commit_hash.outputs.hash }} \
+              --set functions.image.tag=${{ steps.get_commit_hash.outputs.hash }})
+              echo "$output"
+              if [[ ! "$output" =~ "release \"direktiv\" has been upgraded" ]]; then
+                echo "Helm upgrade failed."
+                exit 1
+              fi
 
       # # Optionally, add a step to send notifications in case of failure
       # - name: Notify on failure
