@@ -88,6 +88,92 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 	}
 }
 
+func (is *functionsServer) ListRevisions(ctx context.Context, in *igrpc.FunctionsWatchRevisionsRequest) (*igrpc.FunctionsGetFunctionResponse, error) {
+	var revisionFilter string
+
+	if in.GetServiceName() == "" {
+		return nil, fmt.Errorf("service name cannot be nil")
+	}
+
+	cs, err := fetchServiceAPI()
+	if err != nil {
+		return nil, fmt.Errorf("could not create fetch client: %w", err)
+	}
+
+	l := map[string]string{
+		ServiceKnativeHeaderName: SanitizeLabel(in.GetServiceName()),
+		// ServiceHeaderScope:       in.GetScope(),
+	}
+
+	if in.GetRevisionName() != "" {
+		revisionFilter = SanitizeLabel(in.GetRevisionName())
+	}
+
+	labels := labels.Set(l).String()
+	listOpts := metav1.ListOptions{LabelSelector: labels}
+
+	revisionList, err := cs.ServingV1().Revisions(functionsConfig.Namespace).List(ctx, listOpts)
+	if err != nil {
+		logger.Errorf("error fetching revisions: %s", err.Error())
+		return nil, err
+	}
+
+	var revisions igrpc.FunctionsGetFunctionResponse
+	for _, rev := range revisionList.Items {
+		if revisionFilter != "" && rev.Name != revisionFilter {
+			continue // skip revisions not matching the filter
+		}
+		info := &igrpc.FunctionsRevision{}
+
+		// size and scale
+		var sz, scale int32
+		var gen int64
+		fmt.Sscan(rev.Annotations[ServiceHeaderSize], &sz)
+		fmt.Sscan(rev.Annotations["autoscaling.knative.dev/minScale"], &scale)
+		fmt.Sscan(rev.Labels[ServiceTemplateGeneration], &gen)
+
+		info.Size = &sz
+		info.MinScale = &scale
+		info.Generation = &gen
+
+		// set status
+		status, conds := statusFromCondition(rev.Status.Conditions)
+		info.Status = &status
+		info.Conditions = conds
+
+		img, cmd := containerFromList(rev.Spec.Containers)
+		info.Image = &img
+		info.Cmd = &cmd
+
+		// name
+		svn := rev.Name
+		info.Name = &svn
+
+		ss := strings.Split(rev.Name, "-")
+		info.Rev = &ss[len(ss)-1]
+
+		info.ActualReplicas = int64(0)
+		info.DesiredReplicas = int64(0)
+
+		// replicas
+		if rev.Status.ActualReplicas != nil {
+			info.ActualReplicas = int64(*rev.Status.ActualReplicas)
+		}
+
+		if rev.Status.DesiredReplicas != nil {
+			info.DesiredReplicas = int64(*rev.Status.DesiredReplicas)
+		}
+
+		// creation date
+		t := rev.CreationTimestamp.Unix()
+		info.Created = &t
+
+		revisions.Revisions = append(revisions.Revisions, info)
+	}
+
+	return &revisions, nil
+}
+
 func (is *functionsServer) WatchRevisions(in *igrpc.FunctionsWatchRevisionsRequest, out igrpc.Functions_WatchRevisionsServer) error {
 	var revisionFilter string
 

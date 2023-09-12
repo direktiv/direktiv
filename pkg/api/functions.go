@@ -1336,7 +1336,6 @@ func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r
 	h.logger.Debugf("Handling request: %s", this())
 
 	vers := r.URL.Query().Get("version")
-
 	rev := r.URL.Query().Get("rev")
 	if rev == "" {
 		rev = "00001"
@@ -1350,7 +1349,18 @@ func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r
 
 	svc := functions.AssembleWorkflowServiceName(hash)
 
-	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r, true)
+	req := &grpc.FunctionsWatchRevisionsRequest{
+		ServiceName:  &svc,
+		RevisionName: &rev,
+	}
+
+	revisions, err := h.functionsClient.ListRevisions(r.Context(), req)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	respond(w, revisions, nil)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter, r *http.Request) {
@@ -1388,19 +1398,25 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
 	vers := r.URL.Query().Get("version")
-
 	hash, err := strconv.ParseUint(vers, 10, 64)
 	if err != nil {
 		respond(w, nil, err)
 		return
 	}
-
 	svc := functions.AssembleWorkflowServiceName(hash)
+	h.logger.Debugf("Handeling singleWorkflowServiceRevisions for version: %v hash: %v, svc:", vers, hash, svc)
+	req := &grpc.FunctionsWatchRevisionsRequest{
+		ServiceName: &svc,
+	}
 
-	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r, true)
+	revisions, err := h.functionsClient.ListRevisions(r.Context(), req)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	respond(w, revisions, nil)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWriter, r *http.Request) {

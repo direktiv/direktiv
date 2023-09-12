@@ -34,6 +34,7 @@ const (
 	Functions_WatchFunctions_FullMethodName      = "/direktiv_functions.Functions/WatchFunctions"
 	Functions_WatchPods_FullMethodName           = "/direktiv_functions.Functions/WatchPods"
 	Functions_WatchRevisions_FullMethodName      = "/direktiv_functions.Functions/WatchRevisions"
+	Functions_ListRevisions_FullMethodName       = "/direktiv_functions.Functions/ListRevisions"
 	Functions_WatchLogs_FullMethodName           = "/direktiv_functions.Functions/WatchLogs"
 	Functions_ListPods_FullMethodName            = "/direktiv_functions.Functions/ListPods"
 	Functions_Build_FullMethodName               = "/direktiv_functions.Functions/Build"
@@ -58,6 +59,7 @@ type FunctionsClient interface {
 	WatchFunctions(ctx context.Context, in *FunctionsWatchFunctionsRequest, opts ...grpc.CallOption) (Functions_WatchFunctionsClient, error)
 	WatchPods(ctx context.Context, in *FunctionsWatchPodsRequest, opts ...grpc.CallOption) (Functions_WatchPodsClient, error)
 	WatchRevisions(ctx context.Context, in *FunctionsWatchRevisionsRequest, opts ...grpc.CallOption) (Functions_WatchRevisionsClient, error)
+	ListRevisions(ctx context.Context, in *FunctionsWatchRevisionsRequest, opts ...grpc.CallOption) (*FunctionsGetFunctionResponse, error)
 	WatchLogs(ctx context.Context, in *FunctionsWatchLogsRequest, opts ...grpc.CallOption) (Functions_WatchLogsClient, error)
 	ListPods(ctx context.Context, in *FunctionsListPodsRequest, opts ...grpc.CallOption) (*FunctionsListPodsResponse, error)
 	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*FunctionsBuildResponse, error)
@@ -267,6 +269,15 @@ func (x *functionsWatchRevisionsClient) Recv() (*FunctionsWatchRevisionsResponse
 	return m, nil
 }
 
+func (c *functionsClient) ListRevisions(ctx context.Context, in *FunctionsWatchRevisionsRequest, opts ...grpc.CallOption) (*FunctionsGetFunctionResponse, error) {
+	out := new(FunctionsGetFunctionResponse)
+	err := c.cc.Invoke(ctx, Functions_ListRevisions_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *functionsClient) WatchLogs(ctx context.Context, in *FunctionsWatchLogsRequest, opts ...grpc.CallOption) (Functions_WatchLogsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Functions_ServiceDesc.Streams[3], Functions_WatchLogs_FullMethodName, opts...)
 	if err != nil {
@@ -344,6 +355,7 @@ type FunctionsServer interface {
 	WatchFunctions(*FunctionsWatchFunctionsRequest, Functions_WatchFunctionsServer) error
 	WatchPods(*FunctionsWatchPodsRequest, Functions_WatchPodsServer) error
 	WatchRevisions(*FunctionsWatchRevisionsRequest, Functions_WatchRevisionsServer) error
+	ListRevisions(context.Context, *FunctionsWatchRevisionsRequest) (*FunctionsGetFunctionResponse, error)
 	WatchLogs(*FunctionsWatchLogsRequest, Functions_WatchLogsServer) error
 	ListPods(context.Context, *FunctionsListPodsRequest) (*FunctionsListPodsResponse, error)
 	Build(context.Context, *emptypb.Empty) (*FunctionsBuildResponse, error)
@@ -396,6 +408,9 @@ func (UnimplementedFunctionsServer) WatchPods(*FunctionsWatchPodsRequest, Functi
 }
 func (UnimplementedFunctionsServer) WatchRevisions(*FunctionsWatchRevisionsRequest, Functions_WatchRevisionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchRevisions not implemented")
+}
+func (UnimplementedFunctionsServer) ListRevisions(context.Context, *FunctionsWatchRevisionsRequest) (*FunctionsGetFunctionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRevisions not implemented")
 }
 func (UnimplementedFunctionsServer) WatchLogs(*FunctionsWatchLogsRequest, Functions_WatchLogsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchLogs not implemented")
@@ -683,6 +698,24 @@ func (x *functionsWatchRevisionsServer) Send(m *FunctionsWatchRevisionsResponse)
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Functions_ListRevisions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FunctionsWatchRevisionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FunctionsServer).ListRevisions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Functions_ListRevisions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FunctionsServer).ListRevisions(ctx, req.(*FunctionsWatchRevisionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Functions_WatchLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(FunctionsWatchLogsRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -808,6 +841,10 @@ var Functions_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteRevision",
 			Handler:    _Functions_DeleteRevision_Handler,
+		},
+		{
+			MethodName: "ListRevisions",
+			Handler:    _Functions_ListRevisions_Handler,
 		},
 		{
 			MethodName: "ListPods",

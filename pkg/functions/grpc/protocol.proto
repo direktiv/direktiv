@@ -44,6 +44,7 @@ service Functions {
   rpc WatchFunctions(FunctionsWatchFunctionsRequest) returns (stream FunctionsWatchFunctionsResponse)  {}
   rpc WatchPods(FunctionsWatchPodsRequest) returns (stream FunctionsWatchPodsResponse)  {}
   rpc WatchRevisions(FunctionsWatchRevisionsRequest) returns (stream FunctionsWatchRevisionsResponse)  {}
+  rpc ListRevisions(FunctionsWatchRevisionsRequest) returns (FunctionsGetFunctionResponse)  {}
   rpc WatchLogs(FunctionsWatchLogsRequest) returns (stream FunctionsWatchLogsResponse)  {}
   rpc ListPods(FunctionsListPodsRequest) returns (FunctionsListPodsResponse)  {}
   rpc Build(google.protobuf.Empty) returns (FunctionsBuildResponse) {}
