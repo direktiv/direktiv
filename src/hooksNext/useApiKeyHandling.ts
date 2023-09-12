@@ -4,7 +4,9 @@ import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
 
 /**
  * Send test request to check if api needs auth. In enterprise
- * mode, this test will be skipped and will always return true
+ * mode, this test will be skipped and will always return false
+ * because the api authentication will not be managed by the react
+ * app
  */
 const useIsAuthRequired = () => {
   const { VITE_IS_ENTERPRISE: isEnterprise } = env;
@@ -12,7 +14,7 @@ const useIsAuthRequired = () => {
     enabled: !isEnterprise,
   });
   return isEnterprise
-    ? { authRequired: true, isFinished: true }
+    ? { authRequired: false, isFinished: true }
     : { authRequired: !testSucceeded, isFinished: isFnished };
 };
 
