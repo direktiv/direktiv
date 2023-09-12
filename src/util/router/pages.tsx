@@ -31,6 +31,7 @@ import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
 import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions";
+import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
@@ -55,7 +56,8 @@ type ExplorerSubpages =
   | "workflow"
   | "workflow-revisions"
   | "workflow-overview"
-  | "workflow-settings";
+  | "workflow-settings"
+  | "workflow-services";
 
 type ExplorerSubpagesParams =
   | {
@@ -191,6 +193,7 @@ export const pages: PageType = {
         "workflow-revisions": "workflow/revisions",
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
+        "workflow-services": "workflow/services",
       };
 
       const searchParams = new URLSearchParams({
@@ -219,6 +222,7 @@ export const pages: PageType = {
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
       const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
+      const isWorkflowServicesPage = checkHandler(fourthLvl, "isServicesPage");
 
       return {
         path: isExplorerPage ? path : undefined,
@@ -231,6 +235,7 @@ export const pages: PageType = {
         isWorkflowRevPage,
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
+        isWorkflowServicesPage,
       };
     },
     route: {
@@ -265,6 +270,11 @@ export const pages: PageType = {
               path: "settings/*",
               element: <WorkflowPageSettings />,
               handle: { isSettingsPage: true },
+            },
+            {
+              path: "services/*",
+              element: <WorkflowPageServices />,
+              handle: { isServicesPage: true },
             },
           ],
         },
