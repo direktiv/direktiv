@@ -2,9 +2,12 @@ name: Review Environment Deployment
 
 on:
   deployment:
-    environments:
-      - Review
   workflow_dispatch:
+  pull_request:
+    branches:
+      - stable
+    types:
+      - closed
 
 jobs:
   ssh_to_review:
@@ -19,7 +22,9 @@ jobs:
         id: get_commit_hash
         run: |
           echo "::set-output name=hash::$(echo $GITHUB_SHA | cut -c1-7)"
-
+      - name: Check SSH Key
+        run: |
+          ssh-keyscan ${{ secrets.REVIEW_ENV_SERVER_IP }}
       - name: SSH and update image tags
         uses: webfactory/ssh-agent@v0.4.1
         with:
