@@ -2,9 +2,12 @@ name: Review Environment Deployment
 
 on:
   deployment:
-    environments:
-      - Review
   workflow_dispatch:
+  pull_request:
+    branches:
+      - stable
+    types:
+      - closed
 
 jobs:
   ssh_to_review:
