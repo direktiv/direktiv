@@ -19,7 +19,13 @@ const fetchMirrorInfo = async ({
   getMirrorInfo({
     apiKey,
     urlParams: { namespace },
-  });
+  }).then((res) => ({
+    ...res,
+    activities: {
+      ...res.activities,
+      results: [...(res.activities.results ?? []).reverse()],
+    },
+  }));
 
 export const useMirrorInfo = () => {
   const apiKey = useApiKey();
