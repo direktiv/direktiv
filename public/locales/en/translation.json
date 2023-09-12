@@ -1,10 +1,16 @@
 {
   "pages": {
+    "error": {
+      "status": "Oops!",
+      "message": "Something went wrong here....",
+      "goBack": "Go back",
+      "reload": "Reload",
+      "goHome": "Go to homepage"
+    },
     "onboarding": {
       "welcomeTo": "Welcome to",
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
-      "tokenRequired": "An authentication token is required to connect to the API.",
       "links": {
         "docs": {
           "title": "Getting started",
@@ -19,6 +25,15 @@
           "description": "Check out our Github repository"
         }
       }
+    },
+    "authenticate": {
+      "title": "Authenticate",
+      "description": "An authentication token is required to connect to the API.",
+      "apiKey": "API key",
+      "apiKeyPlaceholder": "Enter your API key",
+      "wrongKey": "The API key is incorrect",
+      "wrongOldKey": "The previously used API key is incorrect, it may have changed after your last use",
+      "loginBtn": "Login"
     },
     "explorer": {
       "tree": {
@@ -48,6 +63,11 @@
           "nameAlreadyExists": "The name already exists",
           "createBtn": "Create",
           "cancelBtn": "Cancel"
+        },
+        "fileViewer": {
+          "title": "Preview",
+          "notSupported": "Preview for this mime type is not currently supported.",
+          "closeBtn": "Close"
         },
         "delete": {
           "title": "Delete",
@@ -176,6 +196,24 @@
         "toggleActiveBtn": {
           "setActive": "Activate workflow",
           "setInactive": "Deactivate workflow"
+        },
+        "apiCommands": {
+          "tooltip": "Open API Commands",
+          "title": "Workflow API Interactions",
+          "namespace": "Namespace",
+          "namespacePlaceholder": "your-namespace",
+          "workflow": "Workflow",
+          "workflowPlaceholder": "path-to-workflow",
+          "interaction": "Interaction",
+          "interactionPlaceholder": "select an interaction",
+          "openDocsBtn": "Open API Docs",
+          "copyBtn": "Copy as cURL command",
+          "copyBtnCopied": "Copied",
+          "labels": {
+            "execute": "Execute workflow",
+            "awaitExecute": "Execute workflow and wait",
+            "update": "Update a workflow"
+          }
         },
         "editor": {
           "unsavedNote": "unsaved changes",
@@ -349,6 +387,7 @@
       "detail": {
         "header": {
           "openWorkflow": "Open workflow",
+          "cancelWorkflow": "Cancel workflow",
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
@@ -407,12 +446,173 @@
         }
       }
     },
+    "mirror": {
+      "header": {
+        "ref": "ref",
+        "url": "url",
+        "editMirror": "Edit mirror",
+        "sync": "Sync"
+      },
+      "syncDialog": {
+        "title": "Sync {{namespace}}",
+        "description": "Fetch and sync mirror with latest content from remote repository?",
+        "confirm": "Sync"
+      },
+      "activities": {
+        "list": {
+          "title": "Activities"
+        },
+        "detail": {
+          "header": {
+            "createdAt": "started",
+            "relativeTime": "{{relativeTime}} ago",
+            "type": "type",
+            "status": "status"
+          },
+          "logs": {
+            "title": "Activity log"
+          }
+        },
+        "tableHeader": {
+          "createdAt": "Started",
+          "id": "Activity ID",
+          "status": "Status",
+          "type": "Type"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
+        }
+      },
+      "noMirror": {
+        "title": "This namespace is not a mirror",
+        "description1": "This page is only available for Git mirrors.",
+        "description2": "When you create a new namespace, you can set it up as a Git mirror. This means the contents of a Git repository will be imported, and changes to your files will be synched between namespace and repository.",
+        "docs": {
+          "title": "Git mirrors",
+          "description": "Read more about Git synching in our docs."
+        },
+        "example": {
+          "title": "Try it out!",
+          "description": "Create a mirror using our examples repository."
+        }
+      }
+    },
+    "services": {
+      "list": {
+        "title": "Services",
+        "create": "Create a new service",
+        "tableHeader": {
+          "name": "name",
+          "image": "image",
+          "scale": "scale",
+          "size": "size",
+          "cmd": "cmd"
+        },
+        "contextMenu": {
+          "delete": "Delete"
+        },
+        "empty": {
+          "title": "No services exist yet"
+        },
+        "delete": {
+          "title": "Delete service",
+          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        }
+      },
+      "revision": {
+        "list": {
+          "title": "Services \"{{name}}\" revisions",
+          "create": "Create a new revision",
+          "relativeTime": "{{relativeTime}} ago",
+          "tableHeader": {
+            "name": "name",
+            "image": "image",
+            "scale": "scale",
+            "size": "size",
+            "createdAt": "created at"
+          },
+          "contextMenu": {
+            "delete": "Delete"
+          },
+          "empty": {
+            "title": "No revisions exist yet"
+          },
+          "delete": {
+            "title": "Delete revision",
+            "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+            "cancelBtn": "Cancel",
+            "deleteBtn": "Delete"
+          }
+        },
+        "create": {
+          "noChanges": "Please make some changes before creating a new revision",
+          "noDefaultValues": "There seems to be no previous revision, this service might be damaged.",
+          "title": "Create a new revision",
+          "imageLabel": "Image",
+          "imagePlaceholder": "image/name:tag",
+          "scaleLabel": "Scale",
+          "sizeLabel": "Size",
+          "sizePlaceholder": "Select size",
+          "sizeValues": {
+            "0": "Small",
+            "1": "Medium",
+            "2": "Large"
+          },
+          "cmdLabel": "Cmd",
+          "cmdPlaceholder": "Enter the cmd for a service",
+          "createBtn": "Create",
+          "cancelBtn": "Cancel"
+        },
+        "detail": {
+          "created": "Created",
+          "realtiveTime": "{{relativeTime}} ago",
+          "size": "Size",
+          "Generation": "Generation",
+          "scale": "Scale",
+          "replicas": "Replicas",
+          "logs": {
+            "noPods": "No running pods",
+            "title": "Logs for {{name}}",
+            "followLogs": "Follow logs",
+            "logsCount": "received {{count}} log entries",
+            "logsCount_one": "received {{count}} log entry",
+            "tab": "Pod {{number}} of {{total}}",
+            "tooltips": {
+              "copy": "Copy logs"
+            }
+          }
+        }
+      },
+      "create": {
+        "title": "Create a new service",
+        "nameLabel": "Name",
+        "namePlaceholder": "service-name",
+        "nameAlreadyExists": "The name already exists",
+        "imageLabel": "Image",
+        "imagePlaceholder": "image/name:tag",
+        "scaleLabel": "Scale",
+        "sizeLabel": "Size",
+        "sizePlaceholder": "Select size",
+        "sizeValues": {
+          "0": "Small",
+          "1": "Medium",
+          "2": "Large"
+        },
+        "cmdLabel": "Cmd",
+        "cmdPlaceholder": "Enter the cmd for a service",
+        "createBtn": "Create",
+        "cancelBtn": "Cancel"
+      }
+    },
     "settings": {
       "generic": {
         "contextMenu": {
           "title": "Actions",
           "delete": "Delete",
-          "edit": "Edit"
+          "edit": "Edit",
+          "download": "Download"
         }
       },
       "secrets": {
@@ -428,7 +628,9 @@
         },
         "create": {
           "description": "Add a secret",
-          "name": "Name"
+          "name": "Name",
+          "file": "Upload a file",
+          "fileError": "There was an error uploading the file"
         }
       },
       "registries": {
@@ -470,7 +672,11 @@
           "name": {
             "label": "Name",
             "placeholder": "variable-name"
-          }
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
         },
         "edit": {
           "title": "Edit {{name}}",
@@ -478,7 +684,11 @@
           "mimeType": {
             "label": "Mimetype",
             "placeholder": "Select a mimetype"
-          }
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "broadcasts": {
@@ -524,6 +734,33 @@
       "namespacesList": {
         "title": "Namespaces"
       }
+    },
+    "jqPlayground": {
+      "title": "jq Playground",
+      "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
+      "openManualBtn": "Open jq Manual",
+      "queryPlaceholder": "Enter your jq query here...",
+      "input": "Input",
+      "output": "Output",
+      "submitBtn": "Run Query",
+      "examples": {
+        "title": "Examples",
+        "buttonLabel": "Run",
+        "snippets": {
+          "unchangedInput": "unchanged input",
+          "valueAtKey": "value at key",
+          "arrayOperation": "array operation",
+          "arrayObjectConstruction": "array/object construction",
+          "lengthOfValue": "length of a value",
+          "keysInArray": "keys in an array",
+          "feeedInput": "feed input into multiple filters",
+          "pipeOutput": "pipe output of one filter to the next filter",
+          "inputUnchanged": "input unchanged if foo returns true",
+          "invokeFilter": "invoke filter foo for each input",
+          "conditionals": "conditionals",
+          "stringInterpolation": "string interpolation"
+        }
+      }
     }
   },
   "components": {
@@ -535,7 +772,9 @@
       "gateway": "Gateway",
       "permissions": "Permissions",
       "services": "Services",
-      "settings": "Settings"
+      "settings": "Settings",
+      "jqPlayground": "jq Playground",
+      "mirror": "Mirror"
     },
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",
@@ -544,22 +783,38 @@
       "loading": "loading...",
       "instances": "Instances",
       "eventHistory": "Event History",
+      "services": "Services",
       "eventListeners": "Event Listeners",
-      "monitoring": "Monitoring"
+      "monitoring": "Monitoring",
+      "settings": "Settings",
+      "jqPlayground": "jq Playground",
+      "mirror": "Mirror"
     },
-    "namespaceCreate": {
-      "title": "Create a new namespace",
-      "createBtn": "Create",
+    "namespaceEdit": {
+      "title": {
+        "new": "Create a new namespace",
+        "edit": "Update mirror {{namespace}}"
+      },
+      "submitBtn": {
+        "create": "Create",
+        "save": "Save"
+      },
       "nameAlreadyExists": "The name already exists",
       "cancelBtn": "Cancel",
       "tab": {
         "namespace": "Namespace",
         "mirror": "Mirror"
       },
-      "authType": {
-        "none": "none",
-        "ssh": "SSH",
-        "token": "token"
+      "formTypeSelect": {
+        "keep-token": "Keep existing token (http)",
+        "keep-ssh": "Keep existing keys (ssh)",
+        "public": "Public",
+        "token": "Token (http)",
+        "ssh": "Key pair (ssh)"
+      },
+      "formTypeMessage": {
+        "keep": "Your authentication data will be kept unless you chose a different option.",
+        "replace": "The new authentication settings will overwrite any stored credentials. Select the 'keep' option above to prevent this."
       },
       "placeholder": {
         "name": "new-namespace-name",
@@ -570,7 +825,7 @@
         "publicKey": "Public Key (required)",
         "privateKey": "Private Key (required)",
         "token": "token",
-        "authType": "Select authentication method"
+        "formType": "Select authentication method"
       },
       "label": {
         "name": "Name",
@@ -580,7 +835,8 @@
         "publicKey": "Public key",
         "privateKey": "Private key",
         "token": "Token",
-        "authType": "Auth type"
+        "formType": "Auth type",
+        "insecure": "Skip certificate validation"
       },
       "tooltip": {
         "url": "URL to repository. If auth method is SSH, a git url must be used, e.g. 'git@github.com:direktiv/apps-svc.git'. All other auth methods must use HTTP/S urls.",
@@ -588,7 +844,8 @@
         "token": "Personal access token (for authentication with a HTTP/S url).",
         "passphrase": "Passphrase to decrypt keys (optional).",
         "privateKey": "Private SSH key used for authentication via git@ url.",
-        "publicKey": "Public SSH key used for authenticating via git@ url."
+        "publicKey": "Public SSH key used for authenticating via git@ url.",
+        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)"
       }
     },
     "button": {
@@ -608,20 +865,28 @@
       "fieldInvalid": "this field is invalid"
     },
     "userMenu": {
-      "loggedInAs": "You are logged in as {{name}}",
+      "loggedIn": "You are logged in",
       "logout": "Logout",
       "appearance": "Appearance",
-      "switchToLight": "switch to Light mode",
-      "switchToDark": "switch to Dark mode",
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode",
       "help": "Help",
-      "showApiCommands": "Show API Commands",
-      "openJQPlayground": "Open JQ Playground",
+      "docs": "Open the docs",
       "supportChannelOnSlack": "Support Channel on Slack"
     }
   },
   "api": {
     "generic": {
       "error": "An error occurred"
+    },
+    "authentication": {
+      "mutate": {
+        "authenticate": {
+          "error": {
+            "description": "The auth endpoint did not answer as expected 😢"
+          }
+        }
+      }
     },
     "tree": {
       "mutate": {
@@ -731,6 +996,11 @@
           "error": {
             "description": "could not revert workflow 😢"
           }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "could not download variable 😢"
+          }
         }
       }
     },
@@ -752,6 +1022,24 @@
           },
           "error": {
             "description": "could not delete namespace 😢"
+          }
+        },
+        "syncMirror": {
+          "success": {
+            "title": "Sync namespace",
+            "description": "Triggered sync for namespace {{namespace}}"
+          },
+          "error": {
+            "description": "could not sync namespace 😢"
+          }
+        },
+        "updateMirror": {
+          "success": {
+            "title": "Update mirror",
+            "description": "Settings for mirror {{namespace}} were updated"
+          },
+          "error": {
+            "description": "could not update mirror settings 😢"
           }
         }
       }
@@ -778,6 +1066,46 @@
         }
       }
     },
+    "services": {
+      "mutate": {
+        "createService": {
+          "success": {
+            "title": "Service created",
+            "description": "Service {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create service 😢"
+          }
+        },
+        "createServiceRevision": {
+          "success": {
+            "title": "Service revision created",
+            "description": "Service revision was created."
+          },
+          "error": {
+            "description": "Could not create service revision 😢"
+          }
+        },
+        "deleteService": {
+          "success": {
+            "title": "Service deleted",
+            "description": "Service {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete service 😢"
+          }
+        },
+        "deleteServiceRevision": {
+          "success": {
+            "title": "Service revision deleted",
+            "description": "Service revision {name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete service revision 😢"
+          }
+        }
+      }
+    },
     "variables": {
       "mutate": {
         "updateVariable": {
@@ -796,6 +1124,11 @@
           },
           "error": {
             "description": "Could not delete variable 😢"
+          }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "Could not download variable 😢"
           }
         }
       }

@@ -1,4 +1,4 @@
-import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema";
+import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema/node";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";

@@ -12,8 +12,10 @@ import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
-import { WorkflowVariableSchemaType } from "~/api/tree/schema";
+import { WorkflowVariableSchemaType } from "~/api/tree/schema/workflowVariable";
+import { triggerDownloadFromBlob } from "~/util/helpers";
 import { useDeleteWorkflowVariable } from "~/api/tree/mutate/deleteVariable";
+import { useDownloadVar } from "~/api/tree/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
 import { useWorkflowVariables } from "~/api/tree/query/variables";
 
@@ -32,6 +34,14 @@ const VariablesList = ({ path }: { path: string }) => {
   const { data, isFetched } = useWorkflowVariables({ path });
 
   const { mutate: deleteWorkflowVariable } = useDeleteWorkflowVariable();
+  const { mutate: downloadVar } = useDownloadVar({
+    onSuccess: (response, name) => {
+      triggerDownloadFromBlob({
+        blob: response.blob,
+        filename: name,
+      });
+    },
+  });
 
   const filteredItems = useMemo(
     () =>
@@ -50,6 +60,13 @@ const VariablesList = ({ path }: { path: string }) => {
   }, [dialogOpen]);
 
   if (!isFetched) return null;
+
+  const download = (name: string) => {
+    downloadVar({
+      name,
+      path,
+    });
+  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -102,6 +119,7 @@ const VariablesList = ({ path }: { path: string }) => {
                         key={i}
                         onDelete={setDeleteItem}
                         onEdit={() => setEditItem(item)}
+                        onDownload={() => download(item.name)}
                       />
                     ))}
                   </TableBody>

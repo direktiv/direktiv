@@ -2,7 +2,7 @@ import {
   NodeDeletedSchema,
   RevisionsListSchemaType,
   TagsListSchemaType,
-} from "../schema";
+} from "../schema/node";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";

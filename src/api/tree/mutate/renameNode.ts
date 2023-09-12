@@ -1,13 +1,5 @@
-import {
-  NodeListSchemaType,
-  NodeRenameSchema,
-  NodeSchemaType,
-} from "../schema";
-import {
-  forceLeadingSlash,
-  removeLeadingSlash,
-  removeTrailingSlash,
-} from "../utils";
+import { NodeRenameSchema, NodeSchemaType } from "../schema/node";
+import { forceLeadingSlash, removeLeadingSlash } from "../utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -58,44 +50,13 @@ export const useRenameNode = ({
         },
       }),
     onSuccess(data, variables) {
-      queryClient.setQueryData<NodeListSchemaType>(
+      queryClient.invalidateQueries(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,
-          path: variables.node.parent,
-        }),
-        (oldData) => {
-          if (!oldData) return undefined;
-          const oldChildren = oldData?.children;
-          return {
-            ...oldData,
-            ...(oldChildren
-              ? {
-                  children: {
-                    ...oldChildren,
-                    results: oldChildren?.results.map((child) => {
-                      if (child.path === variables.node.path) {
-                        return {
-                          ...data.node,
-                          // there is a bug in the API where the returned data after
-                          // a rename is wrong. The name and updatedAt are not updated
-                          // and the parent will have a trailing slash, which it does
-                          // not have in the original data from the tree list
-                          name: variables.newName,
-                          parent:
-                            variables.node.parent === "/"
-                              ? "/"
-                              : removeTrailingSlash(variables.node.parent),
-                          updatedAt: new Date().toISOString(),
-                        };
-                      }
-                      return child;
-                    }),
-                  },
-                }
-              : {}),
-          };
-        }
+          path: data.node.parent,
+        })
       );
+
       toast({
         title: t("api.tree.mutate.renameNode.success.title", {
           type: variables.node.type === "workflow" ? "workflow" : "directory",

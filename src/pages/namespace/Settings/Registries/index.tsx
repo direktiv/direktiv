@@ -104,7 +104,7 @@ const RegistriesList: FC = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult>
+                <NoResult icon={Container}>
                   {t(
                     isSearch
                       ? "pages.settings.registries.list.emptySearch"

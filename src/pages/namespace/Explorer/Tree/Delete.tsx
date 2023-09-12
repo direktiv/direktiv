@@ -7,7 +7,7 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { NodeSchemaType } from "~/api/tree/schema";
+import { NodeSchemaType } from "~/api/tree/schema/node";
 import { Trash } from "lucide-react";
 import { useDeleteNode } from "~/api/tree/mutate/deleteNode";
 
