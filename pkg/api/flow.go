@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"strconv"
 	"strings"
 
@@ -32,6 +33,21 @@ type flowHandler struct {
 	client          grpc.FlowClient
 	functionsClient grpc2.FunctionsClient
 	prometheus      prometheus.Client
+
+	apiV2Address string
+}
+
+func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *httputil.ReverseProxy {
+	director := func(req *http.Request) {
+		req = patchReq(req)
+		if _, ok := req.Header["User-Agent"]; !ok {
+			req.Header.Set("User-Agent", "")
+		}
+	}
+
+	return &httputil.ReverseProxy{
+		Director: director,
+	}
 }
 
 func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Config) (*flowHandler, error) {
@@ -57,6 +73,7 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 		logger:          logger,
 		client:          grpc.NewFlowClient(flowConn),
 		functionsClient: grpc2.NewFunctionsClient(funcConn),
+		apiV2Address:    fmt.Sprintf("%s:6667", conf.FlowService),
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.PrometheusBackend)
@@ -70,6 +87,17 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 
 	h.initRoutes(router)
 	h.initFunctionsRoutes(router.PathPrefix("/functions").Subrouter())
+
+	proxy := newSingleHostReverseProxy(func(req *http.Request) *http.Request {
+		req.Host = ""
+		req.URL.Host = h.apiV2Address
+		req.URL.Scheme = "http"
+
+		return req
+	})
+	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxy.ServeHTTP(w, r)
+	}))
 
 	return h, nil
 }

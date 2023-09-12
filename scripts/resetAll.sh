@@ -43,7 +43,7 @@ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 if [ ! -d "$dir/direktiv-charts" ]; then
   git clone https://github.com/direktiv/direktiv-charts.git $dir/direktiv-charts;
-  # git -C $dir/direktiv-charts checkout develop;
+  git -C $dir/direktiv-charts checkout new-port;
 fi
 
 install_knative() {

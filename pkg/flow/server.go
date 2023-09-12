@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -517,6 +519,9 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer stopNode()
+
+	apiV2Done := runApiV2Server()
+
 	srv.sugar.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)
@@ -530,6 +535,8 @@ func (srv *server) start(ctx context.Context) error {
 	}(node)
 	wg.Wait()
 
+	<-apiV2Done
+
 	closelogworker()
 
 	if err != nil {
@@ -537,6 +544,55 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func runApiV2Server() <-chan struct{} {
+	// ApiV2 Server
+	server := &http.Server{Addr: "0.0.0.0:6667", Handler: apiV2Service()}
+
+	// Server run context
+	serverCtx, serverStopCtx := context.WithCancel(context.Background())
+
+	// Listen for syscall signals for process to interrupt/quit
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sig
+
+		// Shutdown signal with grace period of 5 seconds
+		shutdownCtx, _ := context.WithTimeout(serverCtx, 5*time.Second)
+
+		go func() {
+			<-shutdownCtx.Done()
+			if shutdownCtx.Err() == context.DeadlineExceeded {
+				log.Fatal("graceful shutdown timed out.. forcing exit.")
+			}
+		}()
+
+		// Trigger graceful shutdown
+		err := server.Shutdown(shutdownCtx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		serverStopCtx()
+	}()
+
+	// Run the server
+	err := server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+
+	return serverCtx.Done()
+}
+
+func apiV2Service() http.Handler {
+	r := chi.NewRouter()
+	r.Get("/api/v2", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello world from flow apiv2 2"))
+	})
+
+	return r
 }
 
 func (srv *server) cleanup(closer func() error) {
