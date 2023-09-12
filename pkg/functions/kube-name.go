@@ -95,6 +95,6 @@ func fndefFromBaseInfo(info *igrpc.FunctionsBaseInfo) *model.ReusableFunctionDef
 }
 
 // AssembleWorkflowServiceName generates a knative name based on workflow details.
-func AssembleWorkflowServiceName(wf string, hash uint64) string {
+func AssembleWorkflowServiceName(hash uint64) string {
 	return SanitizeLabel(fmt.Sprintf("%s-%d", PrefixWorkflow, hash))
 }

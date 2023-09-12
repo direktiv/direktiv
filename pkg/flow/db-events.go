@@ -45,46 +45,50 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
-	deletedIds := []*uuid.UUID{}
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
-		deletedIds = ids
-		return err
+		if err != nil {
+			return err
+		}
+
+		for _, id := range ids {
+			err = tx.DataStore().EventListenerTopics().Delete(ctx, *id)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
-	for _, id := range deletedIds {
-		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-			return tx.DataStore().EventListenerTopics().Delete(ctx, *id)
-		})
-		if err != nil {
-			return err
-		}
-	}
+
 	events.pubsub.NotifyEventListeners(nsID)
 
 	return nil
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	deletedIds := []*uuid.UUID{}
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
-		deletedIds = ids
-		return err
+		if err != nil {
+			return err
+		}
+
+		for _, id := range ids {
+			err = tx.DataStore().EventListenerTopics().Delete(ctx, *id)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
-	for _, id := range deletedIds {
-		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-			return tx.DataStore().EventListenerTopics().Delete(ctx, *id)
-		})
-		if err != nil {
-			return err
-		}
-	}
+
 	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
@@ -140,18 +144,22 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 
 		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-			return tx.DataStore().EventListener().Append(ctx, fEv)
-		})
-		if err != nil {
-			return err
-		}
-		for _, t := range fEv.ListeningForEventTypes {
-			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-				return tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t)
-			})
+			err := tx.DataStore().EventListener().Append(ctx, fEv)
 			if err != nil {
 				return err
 			}
+
+			for _, t := range fEv.ListeningForEventTypes {
+				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
 		}
 	}
 
@@ -192,19 +200,24 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 	}
 
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-		return tx.DataStore().EventListener().Append(ctx, fEv)
+		err := tx.DataStore().EventListener().Append(ctx, fEv)
+		if err != nil {
+			return err
+		}
+
+		for _, t := range fEv.ListeningForEventTypes {
+			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
-	for _, t := range fEv.ListeningForEventTypes {
-		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-			return tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t)
-		})
-		if err != nil {
-			return err
-		}
-	}
+
 	events.pubsub.NotifyEventListeners(namespace)
 
 	return nil

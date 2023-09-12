@@ -9,7 +9,7 @@ import (
 )
 
 func (d *Manager) NewProcess(ctx context.Context, nsID, rootID uuid.UUID, processType string) (*Process, error) {
-	// TODO: make this check threadsafe in HA
+	// TODO: make this check 100% threadsafe in HA
 
 	procs, err := d.callbacks.Store().GetProcessesByNamespaceID(ctx, nsID)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/google/uuid"
 )
 
 func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]*states.ChildInfo, error) {
@@ -159,4 +160,40 @@ func (engine *engine) cancelRunning(id string) {
 		cancel()
 	}
 	engine.cancellersLock.Unlock()
+}
+
+func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
+	args := make([]interface{}, 0)
+
+	err := json.Unmarshal([]byte(req.Key), &args)
+	if err != nil {
+		engine.sugar.Error(err)
+		return
+	}
+
+	var ok bool
+	var id string
+	var uid uuid.UUID
+
+	if len(args) != 1 {
+		goto bad
+	}
+
+	id, ok = args[0].(string)
+	if !ok {
+		goto bad
+	}
+
+	uid, err = uuid.Parse(id)
+	if err != nil {
+		goto bad
+	}
+
+	_ = engine.mirrorManager.Cancel(context.Background(), uid)
+
+	return
+
+bad:
+
+	engine.sugar.Error(errors.New("bad input to mirror process cancel pubsub"))
 }
