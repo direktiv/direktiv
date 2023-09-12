@@ -1,43 +1,80 @@
-apiVersion: postgres-operator.crunchydata.com/v1beta1
-kind: PostgresCluster
+apiVersion: pgv2.percona.com/v2
+kind: PerconaPGCluster
 metadata:
-  name: direktiv
+  name: direktiv-cluster
   namespace: postgres
 spec:
-  postgresVersion: 14
+  crVersion: 2.3.0
+
+  users:
+    - name: direktiv
+      databases:
+        - direktiv
+    - name: postgres
+
+  image: perconalab/percona-postgresql-operator:main-ppg15-postgres
+  imagePullPolicy: Always
+  postgresVersion: 15
+  port: 5432
+
   instances:
-    - name: "instance1"
-      replicas: 3
+  - name: instance1
+    replicas: 2
+    resources:
+      limits:
+        cpu: 2.0
+        memory: 4Gi
+    dataVolumeClaimSpec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 4Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          postgres-operator.crunchydata.com/instance-set: instance1
+
+  proxy:
+    pgBouncer:
+      replicas: 2
+      image: perconalab/percona-postgresql-operator:main-ppg15-pgbouncer
       affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: "postgres-operator.crunchydata.com/cluster"
-                  operator: In
-                  values:
-                  - direktiv
-            topologyKey: "kubernetes.io/hostname"
-      dataVolumeClaimSpec:
-        accessModes:
-        - "ReadWriteOnce"
-        resources:
-          requests:
-            storage: "1Gi"
+       podAntiAffinity:
+         preferredDuringSchedulingIgnoredDuringExecution:
+         - weight: 1
+           podAffinityTerm:
+             labelSelector:
+               matchLabels:
+                 postgres-operator.crunchydata.com/cluster: keycloakdb
+                 postgres-operator.crunchydata.com/role: pgbouncer
+             topologyKey: kubernetes.io/hostname
+
   backups:
     pgbackrest:
+      image: perconalab/percona-postgresql-operator:main-ppg15-pgbackrest
       global:
         repo1-retention-full: "4"
         repo1-retention-full-type: count
+      manual:
+        repoName: repo1
+        options:
+         - --type=full
       repos:
       - name: repo1
         schedules:
-          full: "0 1 * * 0"
+          full: "0 0 * * 6"
           differential: "0 1 * * 1-6"
         volume:
           volumeClaimSpec:
             accessModes:
-            - "ReadWriteOnce"
+            - ReadWriteOnce
             resources:
               requests:
-                storage: "4Gi"
+                storage: 4Gi
+  pmm:
+    enabled: false
+    image: percona/pmm-client:2.37.0

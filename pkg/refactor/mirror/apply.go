@@ -9,6 +9,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -307,7 +308,15 @@ func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
 }
 
 func (o *DirektivApplyer) copyNamespaceServices(_ context.Context) error {
-	// TODO
+	var services []*api.Service
+	for _, service := range o.parser.Services {
+		services = append(services, service)
+	}
+
+	err := o.callbacks.SetNamespaceServices(o.proc.NamespaceID, services)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -87,4 +87,10 @@ type Store interface {
 
 	// GetProcessesByNamespaceID gets all processes that belong to a namespace from the store.
 	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
+
+	// GetUnfinishedProcesses gets all processes that haven't completed from the store.
+	GetUnfinishedProcesses(ctx context.Context) ([]*Process, error)
+
+	// DeleteOldProcesses deletes all old processes.
+	DeleteOldProcesses(ctx context.Context, before time.Time) error
 }

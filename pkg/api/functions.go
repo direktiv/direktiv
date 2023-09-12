@@ -41,7 +41,6 @@ import (
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/functions"
 	"github.com/direktiv/direktiv/pkg/functions/grpc"
-	grpcfunc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/gorilla/mux"
 	"github.com/heroku/docker-registry-client/registry"
 )
@@ -49,7 +48,7 @@ import (
 type functionHandler = flowHandler
 
 func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
-	// swagger:operation GET /api/logs/{pod} podLogs
+	// swagger:operation GET /api/functions/namespaces/{namespace}/logs/{pod} podLogs
 	// ---
 	// description: |
 	//    Watches logs of the pods for a service. This can be a namespace service or a workflow service.
@@ -65,7 +64,7 @@ func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully watching pod logs"
-	r.HandleFunc("/logs/pod/{pod}", h.watchPodLogs).Methods(http.MethodGet).Name(RN_WatchPodLogs)
+	r.HandleFunc("/namespaces/{ns}/logs/pod/{pod}", h.watchPodLogs).Methods(http.MethodGet).Name(RN_WatchPodLogs)
 
 	// namespace
 
@@ -861,7 +860,7 @@ func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *htt
 	annotations[functions.ServiceHeaderNamespaceID] = resp.Namespace.GetOid()
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 
-	h.listServicesSSE(annotations, w, r)
+	h.listServicesSSE(annotations, w, r, false)
 }
 
 func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Request) {
@@ -870,6 +869,7 @@ func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Re
 	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
 	annotations[functions.ServiceHeaderWorkflowID] = wf
 	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
+	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
 	h.listServices(annotations, w, r)
 }
 
@@ -879,7 +879,8 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
 	annotations[functions.ServiceHeaderWorkflowID] = wf
 	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
-	h.listServicesSSE(annotations, w, r)
+	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
+	h.listServicesSSE(annotations, w, r, false)
 }
 
 func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *http.Request) {
@@ -889,13 +890,27 @@ func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *ht
 	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
 	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
 
-	h.listServicesSSE(annotations, w, r)
+	h.listServicesSSE(annotations, w, r, false)
 }
 
 func (h *functionHandler) singleWorkflowService(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
-	http.Error(w, "text/event-stream only", http.StatusBadRequest)
+	vers := r.URL.Query().Get("version")
+
+	hash, err := strconv.ParseUint(vers, 10, 64)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+
+	svc := functions.AssembleWorkflowServiceName(hash)
+
+	annotations := make(map[string]string)
+
+	annotations[functions.ServiceKnativeHeaderName] = svc
+
+	h.listServicesSSE(annotations, w, r, true)
 }
 
 func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *http.Request) {
@@ -915,13 +930,13 @@ func (h *functionHandler) singleWorkflowServiceSSE(w http.ResponseWriter, r *htt
 
 	annotations[functions.ServiceKnativeHeaderName] = svc
 
-	h.listServicesSSE(annotations, w, r)
+	h.listServicesSSE(annotations, w, r, false)
 }
 
 func (h *functionHandler) listServicesSSE(
-	annotations map[string]string, w http.ResponseWriter, r *http.Request,
+	annotations map[string]string, w http.ResponseWriter, r *http.Request, once bool,
 ) {
-	grpcReq := grpcfunc.FunctionsWatchFunctionsRequest{
+	grpcReq := grpc.FunctionsWatchFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -958,13 +973,17 @@ func (h *functionHandler) listServicesSSE(
 		}
 	}()
 
-	sse(w, ch)
+	if once {
+		sseOnce(w, ch)
+	} else {
+		sse(w, ch)
+	}
 }
 
 func (h *functionHandler) listServices(
 	annotations map[string]string, w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := grpcfunc.FunctionsListFunctionsRequest{
+	grpcReq := grpc.FunctionsListFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -1014,7 +1033,7 @@ func (h *functionHandler) deleteNamespaceService(w http.ResponseWriter, r *http.
 func (h *functionHandler) deleteService(annotations map[string]string,
 	w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := grpcfunc.FunctionsListFunctionsRequest{
+	grpcReq := grpc.FunctionsListFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -1050,7 +1069,7 @@ func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Req
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1062,7 +1081,7 @@ func (h *functionHandler) getNamespaceService(w http.ResponseWriter, r *http.Req
 func (h *functionHandler) getServiceSSE(annotations map[string]string,
 	w http.ResponseWriter, r *http.Request) {
 
-	grpcReq := &grpcfunc.WatchFunctionsRequest{
+	grpcReq := &grpc.WatchFunctionsRequest{
 		Annotations: annotations,
 	}
 
@@ -1155,7 +1174,7 @@ type createNamespaceServiceRequest struct {
 	Namespace    string
 	NamespaceOID string
 	WorkflowPath string
-	Workflow     string
+	// Workflow     string
 }
 
 func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -1188,11 +1207,13 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
-	grpcReq := new(grpcfunc.FunctionsCreateFunctionRequest)
+	wf := bytedata.ShortChecksum(cr.WorkflowPath)
+
+	grpcReq := new(grpc.FunctionsCreateFunctionRequest)
 	grpcReq.Info = &grpc.FunctionsBaseInfo{
 		Name:          &cr.Name,
 		Namespace:     &cr.NamespaceOID,
-		Workflow:      &cr.Workflow,
+		Workflow:      &wf,
 		Image:         &cr.Image,
 		Cmd:           &cr.Cmd,
 		Size:          &cr.Size,
@@ -1239,7 +1260,7 @@ func (h *functionHandler) updateNamespaceService(w http.ResponseWriter, r *http.
 		return
 	}
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1254,7 +1275,7 @@ func (h *functionHandler) updateService(svc, name string, ns *igrpc.Namespace, w
 		return
 	}
 
-	grpcReq := new(grpcfunc.FunctionsUpdateFunctionRequest)
+	grpcReq := new(grpc.FunctionsUpdateFunctionRequest)
 	grpcReq.ServiceName = &svc
 
 	nsOID := ns.GetOid()
@@ -1281,7 +1302,7 @@ func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, 
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
@@ -1293,7 +1314,7 @@ func (h *functionHandler) deleteNamespaceServiceRevision(w http.ResponseWriter, 
 func (h *functionHandler) deleteRevision(rev string,
 	w http.ResponseWriter, r *http.Request,
 ) {
-	grpcReq := &grpcfunc.FunctionsDeleteRevisionRequest{
+	grpcReq := &grpc.FunctionsDeleteRevisionRequest{
 		Revision: &rev,
 	}
 
@@ -1307,12 +1328,12 @@ func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
 
-	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r)
+	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r, false)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevision(w http.ResponseWriter, r *http.Request) {
@@ -1364,7 +1385,7 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 
 	svc := functions.AssembleWorkflowServiceName(hash)
 
-	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r)
+	h.watchRevisions(svc, rev /*functions.PrefixWorkflow,*/, w, r, false)
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
@@ -1372,12 +1393,12 @@ func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})
 
-	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r)
+	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r, false)
 }
 
 func (h *functionHandler) singleWorkflowServiceRevisions(w http.ResponseWriter, r *http.Request) {
@@ -1415,11 +1436,11 @@ func (h *functionHandler) singleWorkflowServiceRevisionsSSE(w http.ResponseWrite
 
 	svc := functions.AssembleWorkflowServiceName(hash)
 
-	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r)
+	h.watchRevisions(svc, "" /*functions.PrefixWorkflow,*/, w, r, false)
 }
 
 func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
-	w http.ResponseWriter, r *http.Request,
+	w http.ResponseWriter, r *http.Request, once bool,
 ) {
 	if rev != "" {
 		rev = fmt.Sprintf("%s-%s", svc, rev)
@@ -1463,7 +1484,11 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 		}
 	}()
 
-	sse(w, ch)
+	if once {
+		sseOnce(w, ch)
+	} else {
+		sse(w, ch)
+	}
 }
 
 func (h *functionHandler) watchPodLogs(w http.ResponseWriter, r *http.Request) {
@@ -1527,7 +1552,7 @@ func (h *functionHandler) listNamespacePods(w http.ResponseWriter, r *http.Reque
 
 	annotations := make(map[string]string)
 
-	svn, _, _ = functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ = functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &ns,
 		Name:          &svn,
 	})
@@ -1573,7 +1598,7 @@ func (h *functionHandler) listNamespacePodsSSE(w http.ResponseWriter, r *http.Re
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
 
-	svn, _, _ := functions.GenerateServiceName(&grpcfunc.FunctionsBaseInfo{
+	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
 		NamespaceName: &nsName,
 		Name:          &svcName,
 	})

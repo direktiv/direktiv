@@ -15,7 +15,6 @@ import (
 
 type Source interface {
 	FS() fs.FS
-	Unwrap() Source
 	Free() error
 	Notes() map[string]string
 }
@@ -36,10 +35,6 @@ func (src *DirectorySource) FS() fs.FS {
 	return src.fs
 }
 
-func (src *DirectorySource) Unwrap() Source {
-	return src
-}
-
 func (src *DirectorySource) Free() error {
 	return nil
 }
@@ -49,11 +44,8 @@ func (src *DirectorySource) Notes() map[string]string {
 }
 
 type GitSourceConfig struct {
-	URL    string
-	GitRef string
-}
-
-type GitSourceOptions struct {
+	URL             string
+	GitRef          string
 	InsecureSkipTLS bool
 	TempDir         string
 }
@@ -67,17 +59,17 @@ type gitSource struct {
 
 var _ Source = &gitSource{}
 
-func basicCloneOpts(conf GitSourceConfig, opts GitSourceOptions) *git.CloneOptions {
+func basicCloneOpts(conf GitSourceConfig) *git.CloneOptions {
 	return &git.CloneOptions{
-		InsecureSkipTLS: opts.InsecureSkipTLS,
+		InsecureSkipTLS: conf.InsecureSkipTLS,
 		URL:             conf.URL,
 		Progress:        nil,
 		ReferenceName:   plumbing.NewBranchReferenceName(conf.GitRef),
 	}
 }
 
-func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions, opts GitSourceOptions) (Source, error) {
-	path, err := os.MkdirTemp(opts.TempDir, "direktiv_clone_*")
+func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions) (Source, error) {
+	path, err := os.MkdirTemp(conf.TempDir, "direktiv_clone_*")
 	if err != nil {
 		return nil, err
 	}
@@ -110,10 +102,6 @@ func (src *gitSource) FS() fs.FS {
 	return src.fs
 }
 
-func (src *gitSource) Unwrap() Source {
-	return src
-}
-
 func (src *gitSource) Free() error {
 	err := os.RemoveAll(src.path)
 	if err != nil {
@@ -127,21 +115,21 @@ func (src *gitSource) Notes() map[string]string {
 	return src.notes
 }
 
-func NewGitSourceNoAuth(conf GitSourceConfig, opts GitSourceOptions) (Source, error) {
-	return clone(conf, basicCloneOpts(conf, opts), opts)
+func NewGitSourceNoAuth(conf GitSourceConfig) (Source, error) {
+	return clone(conf, basicCloneOpts(conf))
 }
 
 type GitSourceTokenAuthConf struct {
 	Token string
 }
 
-func newGitSourceToken(conf GitSourceConfig, auth GitSourceTokenAuthConf, opts GitSourceOptions) (Source, error) {
-	cloneOpts := basicCloneOpts(conf, opts)
+func newGitSourceToken(conf GitSourceConfig, auth GitSourceTokenAuthConf) (Source, error) {
+	cloneOpts := basicCloneOpts(conf)
 
 	prefix := "https://"
 	cloneOpts.URL = fmt.Sprintf("%s%s@", prefix, auth.Token) + strings.TrimPrefix(conf.URL, prefix)
 
-	return clone(conf, cloneOpts, opts)
+	return clone(conf, cloneOpts)
 }
 
 type GitSourceSSHAuthConf struct {
@@ -150,8 +138,8 @@ type GitSourceSSHAuthConf struct {
 	PrivateKeyPassphrase string
 }
 
-func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf, opts GitSourceOptions) (Source, error) {
-	cloneOpts := basicCloneOpts(conf, opts)
+func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf) (Source, error) {
+	cloneOpts := basicCloneOpts(conf)
 
 	publicKeys, err := gitssh.NewPublicKeys("git", []byte(auth.PrivateKey), auth.PrivateKeyPassphrase)
 	if err != nil {
@@ -163,7 +151,7 @@ func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf, opts GitSo
 	}
 	cloneOpts.Auth = publicKeys
 
-	return clone(conf, cloneOpts, opts)
+	return clone(conf, cloneOpts)
 }
 
 func (cfg *Config) GetSource(_ context.Context) (Source, error) {
@@ -179,9 +167,8 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 
 	if cfg.PrivateKeyPassphrase == "" && cfg.PublicKey == "" && cfg.PrivateKey == "" {
 		return NewGitSourceNoAuth(GitSourceConfig{
-			URL:    cfg.URL,
-			GitRef: cfg.GitRef,
-		}, GitSourceOptions{
+			URL:             cfg.URL,
+			GitRef:          cfg.GitRef,
 			InsecureSkipTLS: insecureSkipTLS,
 			TempDir:         tempDir,
 		})
@@ -193,26 +180,24 @@ func (cfg *Config) GetSource(_ context.Context) (Source, error) {
 		}
 
 		return newGitSourceToken(GitSourceConfig{
-			URL:    cfg.URL,
-			GitRef: cfg.GitRef,
-		}, GitSourceTokenAuthConf{
-			Token: cfg.PrivateKeyPassphrase,
-		}, GitSourceOptions{
+			URL:             cfg.URL,
+			GitRef:          cfg.GitRef,
 			InsecureSkipTLS: cfg.Insecure,
 			TempDir:         tempDir,
+		}, GitSourceTokenAuthConf{
+			Token: cfg.PrivateKeyPassphrase,
 		})
 	}
 	if cfg.PrivateKey != "" || cfg.PublicKey != "" {
 		return NewGitSourceSSH(GitSourceConfig{
-			URL:    cfg.URL,
-			GitRef: cfg.GitRef,
+			URL:             cfg.URL,
+			GitRef:          cfg.GitRef,
+			InsecureSkipTLS: insecureSkipTLS,
+			TempDir:         tempDir,
 		}, GitSourceSSHAuthConf{
 			PrivateKey:           cfg.PrivateKey,
 			PublicKey:            cfg.PublicKey,
 			PrivateKeyPassphrase: cfg.PrivateKeyPassphrase,
-		}, GitSourceOptions{
-			InsecureSkipTLS: insecureSkipTLS,
-			TempDir:         tempDir,
 		})
 	}
 

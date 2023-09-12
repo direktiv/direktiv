@@ -27,6 +27,7 @@ const (
 	PubsubConfigureRouterFunction      = "configureRouter"
 	PubsubUpdateEventDelays            = "updateEventDelays"
 	FlowSync                           = "flowsync"
+	PubsubCancelMirrorProcessFunction  = "cancelMirrorProcess"
 )
 
 type Pubsub struct {
@@ -678,5 +679,18 @@ func (pubsub *Pubsub) CancelWorkflow(id, code, message string, soft bool) {
 func (pubsub *Pubsub) UpdateEventDelays() {
 	pubsub.Publish(&PubsubUpdate{
 		Handler: PubsubUpdateEventDelays,
+	})
+}
+
+func (pubsub *Pubsub) CancelMirrorProcess(id uuid.UUID) {
+	m := []interface{}{id}
+	data, err := json.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+
+	pubsub.Publish(&PubsubUpdate{
+		Handler: PubsubCancelMirrorProcessFunction,
+		Key:     string(data),
 	})
 }

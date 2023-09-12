@@ -1,32 +1,58 @@
-  apiVersion: postgres-operator.crunchydata.com/v1beta1
-  kind: PostgresCluster
-  metadata:
-    name: direktiv
-    namespace: postgres
-  spec:
-    postgresVersion: 14
-    instances:
-      - name: "instance1"
-        replicas: 1
-        dataVolumeClaimSpec:
-          accessModes:
-          - "ReadWriteOnce"
-          resources:
-            requests:
-              storage: "1Gi"
-    backups:
-      pgbackrest:
-        configuration:
-        - secret:
-            name: direktiv-pgbackrest-secret
-        global:
-          repo1-retention-full: "4"
-          repo1-retention-full-type: count
-        repos:
-        - name: repo1
-          s3:
-            bucket: my-bucket
-            endpoint: s3.eu-central-1.amazonaws.com:443
-            region: eu-central-1
-          schedules:
-            full: "0 1 * * 0"
+apiVersion: pgv2.percona.com/v2
+kind: PerconaPGCluster
+metadata:
+  name: direktiv-cluster
+  namespace: postgres
+spec:
+  crVersion: 2.3.0
+
+  users:
+    - name: direktiv
+      databases:
+        - direktiv
+    - name: postgres
+
+  image: perconalab/percona-postgresql-operator:main-ppg15-postgres
+  imagePullPolicy: Always
+  postgresVersion: 15
+  port: 5432
+
+  instances:
+  - name: instance1
+    replicas: 1
+    dataVolumeClaimSpec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+
+  proxy:
+    pgBouncer:
+      replicas: 1
+      image: perconalab/percona-postgresql-operator:main-ppg15-pgbouncer
+
+  backups:
+    pgbackrest:
+      image: perconalab/percona-postgresql-operator:main-ppg15-pgbackrest
+      global:
+        repo1-retention-full: "4"
+        repo1-retention-full-type: time
+      configuration:
+      - secret:
+          name: direktiv-pgbackrest-secret
+      manual:
+        repoName: repo1
+        options:
+         - --type=full
+      repos:
+      - name: repo1
+        s3:
+         bucket: direktiv-backup
+         endpoint: "https://eu-central-1.linodeobjects.com"
+         region: "US"
+        schedules:
+          full: "0 1 * * 0"
+  pmm:
+    enabled: false
+    image: percona/pmm-client:2.37.0
