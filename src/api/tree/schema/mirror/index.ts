@@ -15,7 +15,8 @@ import { z } from "zod";
     "commitId":  "",
     "lastSync":  null,
     "privateKey":  "",
-    "passphrase":  ""
+    "passphrase":  "",
+    "insecure": false
   },
   "activities":  {
     "pageInfo":  null,
@@ -40,6 +41,7 @@ export const MirrorInfoInfoSchema = z.object({
   publicKey: z.string(),
   privateKey: z.enum(["-", ""]),
   passphrase: z.enum(["-", ""]),
+  insecure: z.boolean(),
 });
 
 // According to API spec, but currently dry_run isn't used in the API.
@@ -122,6 +124,7 @@ export const UpdateMirrorResponseSchema = z.null();
 export const MirrorPublicPostSchema = z.object({
   url: z.string().url().nonempty(),
   ref: z.string().nonempty(),
+  insecure: z.boolean(),
 });
 
 // When Token auth is used, token is submitted as "passphrase"
@@ -131,6 +134,7 @@ export const MirrorTokenPostSchema = z.object({
   passphrase: z
     .string()
     .nonempty({ message: "Required when using token auth" }),
+  insecure: z.boolean(),
 });
 
 export const MirrorSshPostSchema = z.object({
@@ -141,13 +145,7 @@ export const MirrorSshPostSchema = z.object({
   passphrase: z.string().optional(),
   privateKey: z.string().nonempty({ message: "Required when using SSH" }),
   publicKey: z.string().nonempty({ message: "Required when using SSH" }),
-});
-
-export const MirrorKeepSSHKeysFormSchema = z.object({
-  url: gitUrlSchema.nonempty({
-    message: "format must be git@host:path when using SSH",
-  }),
-  ref: z.string().nonempty(),
+  insecure: z.boolean(),
 });
 
 export const MirrorPostSchema = MirrorPublicPostSchema.or(

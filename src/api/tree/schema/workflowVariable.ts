@@ -1,3 +1,4 @@
+import { FileSchema } from "~/api/schema";
 import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { z } from "zod";
 
@@ -44,11 +45,18 @@ export const WorkflowVariableContentSchema = z.object({
   }),
 });
 
+export const WorkflowVariableDownloadSchema = z.object({
+  blob: z.instanceof(Blob),
+  headers: z.object({
+    "content-type": z.string(),
+  }),
+});
+
 /* needed for validation, but not all properties are editable in the form */
 export const WorkflowVariableFormSchema = z.object({
   name: z.string().nonempty(),
   path: z.string().nonempty(),
-  content: z.string().nonempty(),
+  content: z.string().nonempty().or(FileSchema),
   mimeType: MimeTypeSchema,
 });
 

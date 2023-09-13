@@ -7,7 +7,10 @@ import {
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
+  EditorMimeTypeSchema,
   MimeTypeType,
+  TextMimeTypeType,
+  getLanguageFromMimeType,
   mimeTypeToLanguageDict,
 } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -29,14 +32,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void; path: string };
 
-const defaultMimeType: MimeTypeType = "application/json";
+const defaultMimeType: TextMimeTypeType = "application/json";
 
 const Create = ({ onSuccess, path }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const [name, setName] = useState<string | undefined>();
-  const [body, setBody] = useState<string | undefined>();
+  const [name, setName] = useState("");
+  const [body, setBody] = useState<string | File>("");
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
@@ -44,6 +47,7 @@ const Create = ({ onSuccess, path }: CreateProps) => {
 
   const {
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<WorkflowVariableFormSchemaType>({
     resolver: zodResolver(WorkflowVariableFormSchema),
@@ -51,16 +55,19 @@ const Create = ({ onSuccess, path }: CreateProps) => {
     // "text/plain, charset=utf-8", which does not fit the options in
     // MimeTypeSelect
     values: {
-      name: name ?? "",
+      name,
       path,
-      content: body ?? "",
-      mimeType: mimeType ?? defaultMimeType,
+      content: body,
+      mimeType,
     },
   });
 
-  const onMimetypeChange = (value: MimeTypeType) => {
+  const onMimeTypeChange = (value: MimeTypeType) => {
     setMimeType(value);
-    setEditorLanguage(mimeTypeToLanguageDict[value]);
+    const editorLanguage = getLanguageFromMimeType(value);
+    if (editorLanguage) {
+      setEditorLanguage(editorLanguage);
+    }
   };
 
   const { mutate: createVarMutation } = useSetWorkflowVariable({
@@ -69,6 +76,25 @@ const Create = ({ onSuccess, path }: CreateProps) => {
 
   const onSubmit: SubmitHandler<WorkflowVariableFormSchemaType> = (data) => {
     createVarMutation(data);
+  };
+
+  const onFilepickerChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const fileContent = await file.text();
+    const mimeType = file?.type ?? defaultMimeType;
+    const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
+
+    setValue("mimeType", mimeType);
+    onMimeTypeChange(mimeType);
+    if (parsedMimetype.success) {
+      setBody(fileContent);
+    } else {
+      setBody(file);
+    }
   };
 
   return (
@@ -110,8 +136,15 @@ const Create = ({ onSuccess, path }: CreateProps) => {
           <MimeTypeSelect
             id="mimetype"
             mimeType={mimeType}
-            onChange={onMimetypeChange}
+            onChange={onMimeTypeChange}
           />
+        </fieldset>
+
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[150px] text-right" htmlFor="file-upload">
+            {t("pages.settings.variables.create.file.label")}
+          </label>
+          <Input id="file-upload" type="file" onChange={onFilepickerChange} />
         </fieldset>
 
         <Card
@@ -119,16 +152,26 @@ const Create = ({ onSuccess, path }: CreateProps) => {
           background="weight-1"
           data-testid="variable-create-card"
         >
-          <div className="h-[500px]">
-            <Editor
-              value={body}
-              onChange={(newData) => {
-                setBody(newData);
-              }}
-              theme={theme ?? undefined}
-              data-testid="variable-editor"
-              language={editorLanguage}
-            />
+          <div className="flex h-[400px]">
+            {typeof body === "string" ? (
+              <Editor
+                value={body}
+                onChange={(newData) => {
+                  if (newData) {
+                    setBody(newData);
+                  }
+                }}
+                theme={theme ?? undefined}
+                data-testid="variable-editor"
+                language={editorLanguage}
+              />
+            ) : (
+              <div className="flex grow p-10 text-center">
+                <div className="flex items-center justify-center text-sm">
+                  {t("pages.settings.variables.create.noPreview")}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 

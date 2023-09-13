@@ -1,4 +1,3 @@
-import ApiKey from "./ApiKey";
 import Broadcasts from "./Broadcasts";
 import DeleteNamespace from "./DeleteNamespace";
 import { FC } from "react";
@@ -55,10 +54,6 @@ const SettingsPage: FC = () => {
 
       <section data-testid="namespace-section">
         <DeleteNamespace />
-      </section>
-
-      <section>
-        <ApiKey />
       </section>
     </div>
   );
