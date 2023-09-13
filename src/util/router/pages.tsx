@@ -91,6 +91,7 @@ type ExplorerPageSetup = Record<
       isWorkflowRevPage: boolean;
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
+      isWorkflowServicesPage: boolean;
     };
   }
 >;

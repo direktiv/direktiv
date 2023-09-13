@@ -199,7 +199,8 @@
           "activeRevision": "Active Revision",
           "revisions": "Revisions",
           "overview": "Overview",
-          "settings": "Settings"
+          "settings": "Settings",
+          "services": "Services"
         },
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
