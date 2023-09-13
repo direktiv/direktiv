@@ -56,7 +56,14 @@ export const GroupFormSchema = z.object({
   permissions: z.array(z.string()),
 });
 
-export const GroupDeletedSchema = z.null();
+/**
+ * example
+ * 
+  { "id" : "e3105633-2509-4dc3-8f69-81806fd2e565" }
+ */
+export const GroupDeletedSchema = z.object({
+  id: z.string(),
+});
 
 export type GroupSchemaType = z.infer<typeof GroupSchema>;
 export type GroupsListSchemaType = z.infer<typeof GroupsListSchema>;
