@@ -872,6 +872,7 @@ func (h *functionHandler) listWorkflowServices(w http.ResponseWriter, r *http.Re
 	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
 	annotations[functions.ServiceHeaderWorkflowID] = wf
 	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
+	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
 	h.listServices(annotations, w, r)
 }
 
@@ -881,6 +882,7 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 	wf := bytedata.ShortChecksum("/" + mux.Vars(r)["path"])
 	annotations[functions.ServiceHeaderWorkflowID] = wf
 	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
+	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
 	h.listServicesSSE(annotations, w, r, false)
 }
 
@@ -1187,7 +1189,7 @@ type createNamespaceServiceRequest struct {
 	Namespace    string
 	NamespaceOID string
 	WorkflowPath string
-	Workflow     string
+	// Workflow     string
 }
 
 func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.Request) {
@@ -1220,11 +1222,16 @@ func (h *functionHandler) createNamespaceService(w http.ResponseWriter, r *http.
 }
 
 func (h *functionHandler) createService(cr createNamespaceServiceRequest, r *http.Request, w http.ResponseWriter) {
+	var wf string
+	if cr.WorkflowPath != "" {
+		wf = bytedata.ShortChecksum(cr.WorkflowPath)
+	}
+
 	grpcReq := new(grpc.FunctionsCreateFunctionRequest)
 	grpcReq.Info = &grpc.FunctionsBaseInfo{
 		Name:          &cr.Name,
 		Namespace:     &cr.NamespaceOID,
-		Workflow:      &cr.Workflow,
+		Workflow:      &wf,
 		Image:         &cr.Image,
 		Cmd:           &cr.Cmd,
 		Size:          &cr.Size,

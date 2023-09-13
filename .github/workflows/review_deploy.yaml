@@ -1,0 +1,42 @@
+name: Review Environment Deployment
+
+on:
+  deployment:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - stable
+    types:
+      - closed
+
+jobs:
+  ssh_to_review:
+    runs-on: ubuntu-latest
+    environment:
+      name: Review
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Extract hash
+        id: get_commit_hash
+        run: echo "::set-output name=hash::${GITHUB_SHA:0:7}"
+      - name: Deploy
+        id: deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.REVIEW_ENV_SERVER_IP }}
+          username: nonroot
+          key: ${{ secrets.SSH_REVIEW_ENV }}
+          port: 22
+          script: |
+            KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade -f /home/nonroot/dev.yaml direktiv /home/nonroot/direktiv-charts/charts/direktiv/ \
+            --set flow.tag="review-${{ steps.get_commit_hash.outputs.hash }}" \
+            --set api.tag="review-${{ steps.get_commit_hash.outputs.hash }}" \
+            --set functions.tag="review-${{ steps.get_commit_hash.outputs.hash }}"
+
+      # # Optionally, add a step to send notifications in case of failure
+      # - name: Notify on failure
+      #   if: failure()
+      #   uses: some-slack-notification-action  # Replace this with an action that sends notifications to your choice of platform
+      #   with:
+      #     # appropriate parameters for the notification action
