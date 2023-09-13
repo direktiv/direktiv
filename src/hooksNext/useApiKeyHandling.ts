@@ -37,6 +37,11 @@ const useIsApiKeyRequired = () => {
  *
  * isFetched: indicates if the api key handling is finished. As long as
  * this is false, isApiKeyRequired and isCurrentKeyValid can be undefined
+ *
+ * showUsermenu: indicates whether the usermenu should be shown. In the
+ * enterprise version this is always true (and is independent from any
+ * api key handling), in the open source version this is only true if
+ * the api is required
  */
 
 const useApiKeyHandling = () => {
@@ -64,6 +69,7 @@ const useApiKeyHandling = () => {
     isApiKeyRequired,
     isCurrentKeyValid,
     isFetched,
+    showUsermenu: isEnterprise ? true : isApiKeyRequired,
   };
 };
 
