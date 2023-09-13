@@ -140,8 +140,7 @@ func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully watching service"
-	handlerPair(r, RN_WatchServices, "/namespaces/{ns}/function/{svn}", h.singleNamespaceService, h.singleNamespaceServiceSSE)
-	// r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}", h.singleNamespaceServiceSSE).Name(RN_WatchServices).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions watchNamespaceServiceRevisionList
 	// ---
@@ -167,8 +166,7 @@ func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully watching service revisions"
-	handlerPair(r, RN_WatchRevisions, "/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions, h.watchNamespaceRevisionsSSE)
-	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions", h.watchNamespaceRevisions).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	// swagger:operation GET /api/functions/namespaces/{namespace}/function/{serviceName}/revisions/{revisionGeneration} watchNamespaceServiceRevision
 	// ---
@@ -201,8 +199,7 @@ func (h *functionHandler) initFunctionsRoutes(r *mux.Router) {
 	// responses:
 	//   '200':
 	//     "description": "successfully watching service revision"
-	handlerPair(r, RN_WatchRevisions, "/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision, h.watchNamespaceRevisionSSE)
-	// r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
+	r.HandleFunc("/namespaces/{ns}/function/{svn}/revisions/{rev}", h.watchNamespaceRevision).Name(RN_WatchRevisions).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
 
 	// swagger:operation POST /api/functions/namespaces/{namespace} createNamespaceService
 	// ---
@@ -847,7 +844,7 @@ func (h *functionHandler) listNamespaceServices(w http.ResponseWriter, r *http.R
 }
 
 func (h *functionHandler) listNamespaceServicesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Infof("Handling request: %s", this())
+	h.logger.Debugf("Handling request: %s", this())
 
 	ctx := r.Context()
 
@@ -884,16 +881,6 @@ func (h *functionHandler) listWorkflowServicesSSE(w http.ResponseWriter, r *http
 	annotations[functions.ServiceHeaderNamespaceName] = mux.Vars(r)["ns"]
 	annotations[functions.ServiceHeaderScope] = functions.PrefixWorkflow
 	h.listServicesSSE(annotations, w, r, false)
-}
-
-func (h *functionHandler) singleNamespaceService(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
-	annotations[functions.ServiceHeaderName] = mux.Vars(r)["svn"]
-
-	h.listServicesSSE(annotations, w, r, true)
 }
 
 func (h *functionHandler) singleNamespaceServiceSSE(w http.ResponseWriter, r *http.Request) {
@@ -962,16 +949,14 @@ func (h *functionHandler) listServicesSSE(
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-		go func() {
-			_ = client.CloseSend()
+		_ = client.CloseSend()
 
-			for {
-				_, more := <-ch
-				if !more {
-					return
-				}
+		for {
+			_, more := <-ch
+			if !more {
+				return
 			}
-		}()
+		}
 	}()
 
 	go func() {
@@ -1351,20 +1336,6 @@ func (h *functionHandler) watchNamespaceRevision(w http.ResponseWriter, r *http.
 		Name:          &svcName,
 	})
 
-	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r, true)
-}
-
-func (h *functionHandler) watchNamespaceRevisionSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	svcName := mux.Vars(r)["svn"]
-	nsName := mux.Vars(r)["ns"]
-
-	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
-		NamespaceName: &nsName,
-		Name:          &svcName,
-	})
-
 	h.watchRevisions(svn, mux.Vars(r)["rev"] /*functions.PrefixNamespace,*/, w, r, false)
 }
 
@@ -1421,19 +1392,6 @@ func (h *functionHandler) singleWorkflowServiceRevisionSSE(w http.ResponseWriter
 }
 
 func (h *functionHandler) watchNamespaceRevisions(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-	svcName := mux.Vars(r)["svn"]
-	nsName := mux.Vars(r)["ns"]
-
-	svn, _, _ := functions.GenerateServiceName(&grpc.FunctionsBaseInfo{
-		NamespaceName: &nsName,
-		Name:          &svcName,
-	})
-
-	h.watchRevisions(svn, "" /*functions.PrefixNamespace,*/, w, r, true)
-}
-
-func (h *functionHandler) watchNamespaceRevisionsSSE(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 	svcName := mux.Vars(r)["svn"]
 	nsName := mux.Vars(r)["ns"]
@@ -1505,16 +1463,14 @@ func (h *functionHandler) watchRevisions(svc, rev /*, scope*/ string,
 	ch := make(chan interface{}, 1)
 
 	defer func() {
-		go func() {
-			_ = client.CloseSend()
+		_ = client.CloseSend()
 
-			for {
-				_, more := <-ch
-				if !more {
-					return
-				}
+		for {
+			_, more := <-ch
+			if !more {
+				return
 			}
-		}()
+		}
 	}()
 
 	go func() {
