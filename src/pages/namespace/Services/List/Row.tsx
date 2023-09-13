@@ -76,7 +76,7 @@ const ServicesTableRow: FC<{
         <TableCell>{service.info.image}</TableCell>
         <TableCell>{service.info.minScale}</TableCell>
         <TableCell>{sizeLabel}</TableCell>
-        <TableCell>{service.info.cmd}</TableCell>
+        <TableCell className="whitespace-normal">{service.info.cmd}</TableCell>
         <TableCell>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
