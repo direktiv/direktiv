@@ -25,7 +25,12 @@ const RevisionDetails = () => {
       <div className="flex-none">
         <Header service={service} revision={serviceRevision} />
       </div>
-      <Pods revision={serviceRevision} service={service} />
+      <Pods
+        workflow={workflow}
+        service={service}
+        revision={serviceRevision}
+        version={serviceVersion}
+      />
     </div>
   );
 };

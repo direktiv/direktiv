@@ -53,7 +53,15 @@ export const serviceKeys = {
       apiKey,
       service,
       revision,
-    }: { apiKey?: string; service: string; revision: string }
+      workflow,
+      version,
+    }: {
+      apiKey?: string;
+      service: string;
+      revision: string;
+      workflow?: string;
+      version?: string;
+    }
   ) =>
     [
       {
@@ -62,6 +70,8 @@ export const serviceKeys = {
         namespace,
         service,
         revision,
+        workflow,
+        version,
       },
     ] as const,
   podLogs: ({
