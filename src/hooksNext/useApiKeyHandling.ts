@@ -2,26 +2,43 @@ import env from "~/config/env";
 import { useApiKey } from "~/util/store/apiKey";
 import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
 
+const { VITE_IS_ENTERPRISE: isEnterprise } = env;
+
 /**
- * Send test request to check if api needs auth. In enterprise
+ * Send test request to check if api needs an api key. In enterprise
  * mode, this test will be skipped and will always return false
  * because the api authentication will not be managed by the react
  * app
  */
-const useIsAuthRequired = () => {
-  const { VITE_IS_ENTERPRISE: isEnterprise } = env;
-  const { data: testSucceeded, isFetched: isFnished } = useAuthTest({
+const useIsApiKeyRequired = () => {
+  const { data: testSucceeded, isFetched: isFinished } = useAuthTest({
     enabled: !isEnterprise,
   });
   return isEnterprise
-    ? { authRequired: false, isFinished: true }
-    : { authRequired: !testSucceeded, isFinished: isFnished };
+    ? { isApiKeyRequired: false, isFinished: true }
+    : {
+        isApiKeyRequired:
+          testSucceeded === undefined ? undefined : !testSucceeded,
+        isFinished,
+      };
 };
 
 /**
- * this hook will test, whether the the api needs an auth key by sending a
- * request. It also tests, whether the stored key is valid (if there is one)
+ * This hook will provide information about api key handling with the
+ * following properties:
+ *
+ * isApiKeyRequired: indicates if the api needs an api key to work.
+ * In enterprise mode this is always false, because the login in handled
+ * by a different layer in front of the api/UI
+ *
+ * isCurrentKeyValid: indicates if this stored key from the user can be
+ * successfully used to authenticate against the api. The user might not
+ * have a stored key and this test will then be run with an undefined key
+ *
+ * isFetched: indicates if the api key handling is finished. As long as
+ * this is false, isApiKeyRequired and isCurrentKeyValid can be undefined
  */
+
 const useApiKeyHandling = () => {
   const storedKey = useApiKey();
   const keyIsPresent = !!storedKey;
@@ -32,14 +49,21 @@ const useApiKeyHandling = () => {
       enabled: keyIsPresent,
     });
 
-  const { authRequired, isFinished: authCheckFinished } = useIsAuthRequired();
+  const { isApiKeyRequired, isFinished: authCheckFinished } =
+    useIsApiKeyRequired();
+
+  const isCurrentKeyValid = keyIsPresent
+    ? storedKeyTestResult
+    : !isApiKeyRequired;
+
+  const isFetched = keyIsPresent
+    ? authCheckFinished && testWithStoredKeyFinished
+    : authCheckFinished;
 
   return {
-    isKeyRequired: authRequired,
-    isCurrentKeyValid: keyIsPresent ? storedKeyTestResult : !authRequired,
-    isFetched: keyIsPresent
-      ? authCheckFinished && testWithStoredKeyFinished
-      : authCheckFinished,
+    isApiKeyRequired,
+    isCurrentKeyValid,
+    isFetched,
   };
 };
 
