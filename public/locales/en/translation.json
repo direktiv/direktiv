@@ -546,7 +546,7 @@
       },
       "revision": {
         "list": {
-          "title": "Services \"{{name}}\" revisions",
+          "title": "Service \"{{name}}\" revisions",
           "create": "Create a new revision",
           "relativeTime": "{{relativeTime}} ago",
           "tableHeader": {

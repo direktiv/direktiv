@@ -80,6 +80,7 @@ type ExplorerPageSetup = Record<
         namespace: string;
         path?: string; // if no subpage is provided, it opens the tree view
         serviceRevision?: string; // only needed on services sub page
+        serviceVersion?: string; // only needed on services sub page
         serviceName?: string; // only needed on services sub page
       } & ExplorerSubpagesParams
     ) => string;
@@ -226,9 +227,12 @@ export const pages: PageType = {
       if (
         params.subpage === "workflow-services" &&
         params.serviceName &&
-        !params.serviceRevision
+        params.serviceVersion
       ) {
-        searchParamsObj = { name: params.serviceName };
+        searchParamsObj = {
+          name: params.serviceName,
+          version: params.serviceVersion,
+        };
       }
 
       if (

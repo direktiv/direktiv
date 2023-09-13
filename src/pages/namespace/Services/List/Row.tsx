@@ -67,6 +67,7 @@ const ServicesTableRow: FC<{
                 path: workflow,
                 subpage: "workflow-services",
                 serviceName: service.info.name,
+                serviceVersion: service.info.revision,
               })
             );
           }

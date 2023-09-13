@@ -27,16 +27,12 @@ import { useTranslation } from "react-i18next";
 
 const ServiceDetailPage = () => {
   const [searchParams] = useSearchParams();
-  const workflow = searchParams.get("workflow") || undefined;
-  const version = searchParams.get("version") || undefined;
 
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
 
   const { data, isSuccess } = useServiceDetails({
     service: service ?? "",
-    workflow,
-    version,
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
