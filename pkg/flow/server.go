@@ -5,9 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
+	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -60,7 +59,7 @@ type server struct {
 	fnLogger *zap.SugaredLogger
 	conf     *util.Config
 
-	// db       *ent.Client
+	// db       *ent.client
 	pubsub *pubsub.Pubsub
 	locks  *locks
 	timers *timers
@@ -112,15 +111,6 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	srv.initJQ()
 
 	return srv, nil
-}
-
-type gormLogger struct {
-	*zap.SugaredLogger
-}
-
-func (g gormLogger) Write(p []byte) (n int, err error) {
-	g.Debugw(string(p), "component", "GORM")
-	return len(p), nil
 }
 
 type mirrorProcessLogger struct {
@@ -251,30 +241,20 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
-	jsonV := "json"
-	gormLogLevel := logger.Warn
-	if os.Getenv(util.DirektivDebug) == "true" {
-		gormLogLevel = logger.Info
-	}
-	gormLogger := log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags)
-	if os.Getenv(util.DirektivLogJSON) != jsonV {
-		gormLogger = log.New(os.Stdout, "\r\n", log.LstdFlags)
-	}
-	gormConf := &gorm.Config{
-		Logger: logger.New(
-			gormLogger,
-			logger.Config{
-				LogLevel:                  gormLogLevel,
-				IgnoreRecordNotFoundError: true,
-			},
-		),
-	}
 
 	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  db,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 		// Conn:                 edb.DB(),
-	}), gormConf)
+	}), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+			logger.Config{
+				SlowThreshold: time.Second,   // Slow SQL threshold
+				LogLevel:      logger.Silent, // Log level
+			},
+		),
+	})
 
 	if err != nil {
 		return fmt.Errorf("creating gorm db driver, err: %w", err)
@@ -520,7 +500,7 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer stopNode()
 
-	apiV2Done := runApiV2Server()
+	newMainWG := cmd.NewMain()
 
 	srv.sugar.Info("Flow server started.")
 
@@ -535,7 +515,7 @@ func (srv *server) start(ctx context.Context) error {
 	}(node)
 	wg.Wait()
 
-	<-apiV2Done
+	newMainWG.Wait()
 
 	closelogworker()
 
@@ -544,55 +524,6 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func runApiV2Server() <-chan struct{} {
-	// ApiV2 Server
-	server := &http.Server{Addr: "0.0.0.0:6667", Handler: apiV2Service()}
-
-	// Server run context
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
-
-	// Listen for syscall signals for process to interrupt/quit
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sig
-
-		// Shutdown signal with grace period of 5 seconds
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 5*time.Second)
-
-		go func() {
-			<-shutdownCtx.Done()
-			if shutdownCtx.Err() == context.DeadlineExceeded {
-				log.Fatal("graceful shutdown timed out.. forcing exit.")
-			}
-		}()
-
-		// Trigger graceful shutdown
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			log.Fatal(err)
-		}
-		serverStopCtx()
-	}()
-
-	// Run the server
-	err := server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-
-	return serverCtx.Done()
-}
-
-func apiV2Service() http.Handler {
-	r := chi.NewRouter()
-	r.Get("/api/v2", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hello world from flow apiv2 2"))
-	})
-
-	return r
 }
 
 func (srv *server) cleanup(closer func() error) {

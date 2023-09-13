@@ -11,6 +11,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.10.2
 	github.com/gabriel-vasile/mimetype v1.4.2
 	github.com/glebarez/sqlite v1.8.0
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-git/go-git/v5 v5.8.1
 	github.com/gobwas/glob v0.2.3
 	github.com/google/uuid v1.3.0
@@ -84,7 +85,6 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.1 // indirect
-	github.com/go-chi/chi/v5 v5.0.10 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect

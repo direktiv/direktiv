@@ -34,7 +34,7 @@ var RootCmd = &cobra.Command{
 }
 
 func cmdPrepareSharedValues() {
-	// Load Config From flags / config
+	// Load config From flags / config
 	addr := getAddr()
 	namespace := GetNamespace()
 

@@ -145,7 +145,7 @@ func TestDryRun(t *testing.T) {
 		t.Fatal("Got wrong id back")
 	}
 	/*
-		config, err := store.CreateConfig(ctx, &mirror.Config{
+		config, err := store.CreateConfig(ctx, &mirror.config{
 			NamespaceID: nsID,
 			RootName:    "test",
 		})
