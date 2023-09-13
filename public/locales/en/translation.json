@@ -11,6 +11,7 @@
       "welcomeTo": "Welcome to",
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
+      "error": "There was an error fetching the namespaces",
       "links": {
         "docs": {
           "title": "Getting started",
