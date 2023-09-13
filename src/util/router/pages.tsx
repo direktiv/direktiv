@@ -238,10 +238,12 @@ export const pages: PageType = {
       if (
         params.subpage === "workflow-services" &&
         params.serviceName &&
+        params.serviceVersion &&
         params.serviceRevision
       ) {
         searchParamsObj = {
           name: params.serviceName,
+          version: params.serviceVersion,
           revision: params.serviceRevision,
         };
       }
