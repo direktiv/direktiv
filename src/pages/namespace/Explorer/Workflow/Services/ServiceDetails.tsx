@@ -63,7 +63,7 @@ const ServiceDetails = ({
           </TableHead>
           <TableBody>
             {showTable &&
-              data?.revisions?.map((revision, index) => (
+              data?.revisions?.map((revision) => (
                 <Row
                   revision={revision}
                   service={service}

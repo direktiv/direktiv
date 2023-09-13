@@ -22,12 +22,9 @@ import Delete from "./Delete";
 import { RevisionSchemaType } from "~/api/services/schema/revisions";
 import Row from "./Row";
 import { pages } from "~/util/router/pages";
-import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const ServiceDetailPage = () => {
-  const [searchParams] = useSearchParams();
-
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
 

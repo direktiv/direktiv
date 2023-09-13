@@ -54,15 +54,27 @@ const fetchServiceDetails = async ({
   getServiceDetails({
     apiKey,
     urlParams: { namespace, service, workflow, version },
-  }).then((res) => ({
+  }).then((response) => ({
     // revisions must be sorted by creation date, to figure out the latest revision
-    ...res,
-    revisions: (res.revisions ?? []).sort((a, b) => {
-      if (a.revision > b.revision) {
-        return -1;
+    ...response,
+    revisions: (response.revisions ?? []).sort((a, b) => {
+      // quick and dirty workaround for schema inconsistency, in some contexts
+      // the prop is called "revision", on some "rev".
+      if (a.revision && b.revision) {
+        if (a.revision > b.revision) {
+          return -1;
+        }
+        if (a.revision < b.revision) {
+          return 1;
+        }
       }
-      if (a.revision < b.revision) {
-        return 1;
+      if (a.rev && b.rev) {
+        if (a.rev > b.rev) {
+          return -1;
+        }
+        if (a.rev < b.rev) {
+          return 1;
+        }
       }
       return 0;
     }),

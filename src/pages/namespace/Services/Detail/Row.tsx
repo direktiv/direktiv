@@ -39,7 +39,14 @@ const ServicesTableRow: FC<{
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const createdAtDate = moment.unix(revision.created);
+  // quick and dirty fix because backend will return string or number
+  // depending on the endpoint consumed
+  const createdNumber =
+    typeof revision.created === "number"
+      ? revision.created
+      : Number(revision.created);
+
+  const createdAtDate = moment.unix(createdNumber);
   const createdAt = useUpdatedAt(createdAtDate);
 
   if (!namespace) return null;
