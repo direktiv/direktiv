@@ -52,7 +52,7 @@ export const GroupCreatedEditedSchema = z.object({
  */
 export const GroupFormSchema = z.object({
   description: z.string(),
-  group: z.string().nonempty(),
+  group: z.string(),
   permissions: z.array(z.string()),
 });
 
