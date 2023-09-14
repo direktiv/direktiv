@@ -62,7 +62,7 @@ const MimeTypeSelect = ({
 }) => {
   const { t } = useTranslation();
 
-  const hasEditableMimeType = !EditorMimeTypeSchema.safeParse(mimeType).success;
+  const hasEditableMimeType = EditorMimeTypeSchema.safeParse(mimeType).success;
 
   return (
     <Select
