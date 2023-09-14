@@ -19,7 +19,7 @@ import Editor from "~/design/Editor";
 import Examples from "./Examples";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import { prettifyJsonString } from "./utils";
+import { prettifyJsonString } from "~/util/helpers";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";

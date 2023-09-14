@@ -65,13 +65,17 @@ const NewWorkflow = ({
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema.and(
-          z
-            .string()
-            .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
+        name: fileNameSchema
+          .transform((enteredName) => addYamlFileExtension(enteredName))
+          .refine(
+            (nameWithExtension) =>
+              !(unallowedNames ?? []).some(
+                (unallowedName) => unallowedName === nameWithExtension
+              ),
+            {
               message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
-            })
-        ),
+            }
+          ),
         fileContent: z.string(),
       })
     ),
@@ -95,7 +99,7 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createWorkflow({ path, name: addYamlFileExtension(name), fileContent });
+    createWorkflow({ path, name, fileContent });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

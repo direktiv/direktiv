@@ -167,6 +167,29 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   ).toBe(userInputString);
 });
 
+test("it is not possible to run the workflow when the editor has unsaved changes", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createWorkflow({
+    payload: basicWorkflow.data,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: workflowName,
+    },
+    headers,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+
+  await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
+
+  await page.type("textarea", faker.random.alphaNumeric(9));
+
+  await expect(page.getByTestId("workflow-editor-btn-run")).toBeDisabled();
+});
+
 test("it is possible to provide the input via generated form", async ({
   page,
 }) => {
