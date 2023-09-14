@@ -3,6 +3,8 @@ kind: PerconaPGCluster
 metadata:
   name: direktiv-cluster
   namespace: postgres
+  #  finalizers:
+  #  - percona.com/delete-pvc
 spec:
   crVersion: 2.3.0
 
@@ -12,9 +14,9 @@ spec:
         - direktiv
     - name: postgres
 
-  image: perconalab/percona-postgresql-operator:main-ppg15-postgres
+  image: perconalab/percona-postgresql-operator:main-ppg14-postgres
   imagePullPolicy: Always
-  postgresVersion: 15
+  postgresVersion: 14
   port: 5432
 
   instances:
@@ -30,11 +32,11 @@ spec:
   proxy:
     pgBouncer:
       replicas: 1
-      image: perconalab/percona-postgresql-operator:main-ppg15-pgbouncer
+      image: perconalab/percona-postgresql-operator:main-ppg14-pgbouncer
 
   backups:
     pgbackrest:
-      image: perconalab/percona-postgresql-operator:main-ppg15-pgbackrest
+      image: perconalab/percona-postgresql-operator:main-ppg14-pgbackrest
       global:
         # Keep 4 Backups
         repo1-retention-full: "4"
