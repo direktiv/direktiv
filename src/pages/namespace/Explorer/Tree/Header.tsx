@@ -143,7 +143,7 @@ const ExplorerHeader: FC = () => {
               <NewWorkflow
                 path={data?.node?.path}
                 unallowedNames={(data?.children?.results ?? []).map(
-                  (x) => x.name
+                  (file) => file.name
                 )}
                 close={() => setDialogOpen(false)}
               />
