@@ -1,5 +1,6 @@
 import { GroupCreatedEditedSchema, GroupFormSchemaType } from "../schema";
 
+import { apiFactory } from "~/api/apiFactory";
 import { groupKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -7,34 +8,20 @@ import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
-// const editGroup = apiFactory({
-//   url: ({
-//     namespace,
-//     baseUrl,
-//     groupId,
-//   }: {
-//     baseUrl?: string;
-//     namespace: string;
-//     groupId: string;
-//   }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups/${groupId}`,
-//   method: "PUT",
-//   schema: GroupCreatedEditedSchema,
-// });
-
-const editGroup = (_params: {
-  apiKey?: string;
-  urlParams: { namespace: string; groupId: string };
-  payload: GroupFormSchemaType;
-}): Promise<z.infer<typeof GroupCreatedEditedSchema>> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: _params.urlParams.groupId,
-      });
-    }, 500);
-  });
+const editGroup = apiFactory({
+  url: ({
+    namespace,
+    baseUrl,
+    groupId,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    groupId: string;
+  }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups/${groupId}`,
+  method: "PUT",
+  schema: GroupCreatedEditedSchema,
+});
 
 type ResolvedCreateGroup = Awaited<ReturnType<typeof editGroup>>;
 
