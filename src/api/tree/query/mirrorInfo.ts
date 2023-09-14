@@ -19,7 +19,15 @@ const fetchMirrorInfo = async ({
   getMirrorInfo({
     apiKey,
     urlParams: { namespace },
-  });
+  }).then((res) => ({
+    ...res,
+    activities: {
+      ...res.activities,
+      // This should be changed in the backend in [DIR-833]
+      // reverse the order of activities (newer first)
+      results: [...(res.activities.results ?? []).reverse()],
+    },
+  }));
 
 export const useMirrorInfo = () => {
   const apiKey = useApiKey();
