@@ -12,6 +12,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Radio } from "lucide-react";
+import { prettifyJsonString } from "~/util/helpers";
 import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -36,6 +37,9 @@ const ViewEvent = ({
 
   const { handleSubmit } = useForm<NewEventSchemaType>({});
 
+  const eventData = atob(event.cloudevent);
+  const eventDataPretty = prettifyJsonString(eventData);
+
   return (
     <form
       id="send-event"
@@ -58,7 +62,7 @@ const ViewEvent = ({
       >
         <div className="h-[500px]">
           <Editor
-            value={atob(event.cloudevent)}
+            value={eventDataPretty}
             language="json"
             theme={theme ?? undefined}
             options={{ readOnly: true }}
