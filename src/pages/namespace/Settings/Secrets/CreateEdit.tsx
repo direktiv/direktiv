@@ -13,6 +13,7 @@ import {
 } from "~/api/secrets/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { EditorMimeTypeSchema } from "../Variables/MimeTypeSelect";
 import FormErrors from "~/componentsNext/FormErrors";
@@ -79,6 +80,8 @@ const Create = ({ onSuccess, item }: CreateProps) => {
     }
   };
 
+  const showEditNote = item?.initialized === true;
+
   return (
     <DialogContent>
       <form
@@ -96,6 +99,12 @@ const Create = ({ onSuccess, item }: CreateProps) => {
               : t("pages.settings.secrets.create.description")}
           </DialogTitle>
         </DialogHeader>
+
+        {showEditNote && (
+          <Alert variant="info">
+            {t("pages.settings.secrets.edit.editNote")}
+          </Alert>
+        )}
 
         <FormErrors errors={errors} className="mb-5" />
         {!editMode && (

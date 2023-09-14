@@ -636,7 +636,8 @@
           "unsupported": "This mime type is not supported"
         },
         "edit": {
-          "description": "Edit {{name}}"
+          "description": "Edit {{name}}",
+          "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
       "registries": {
