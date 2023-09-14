@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   GitCommit,
   GitMerge,
+  Layers,
   PieChart,
   Play,
   Power,
@@ -41,6 +42,7 @@ const Header: FC = () => {
     isWorkflowRevPage,
     isWorkflowOverviewPage,
     isWorkflowSettingsPage,
+    isWorkflowServicesPage,
   } = pages.explorer.useParams();
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
@@ -92,6 +94,17 @@ const Header: FC = () => {
         namespace,
         path,
         subpage: "workflow-overview",
+      }),
+    },
+    {
+      value: "services",
+      active: isWorkflowServicesPage,
+      icon: <Layers aria-hidden="true" />,
+      title: t("pages.explorer.workflow.menu.services"),
+      link: pages.explorer.createHref({
+        namespace,
+        path,
+        subpage: "workflow-services",
       }),
     },
     {

@@ -39,7 +39,7 @@ const CreateService = ({
 }) => {
   const { t } = useTranslation();
 
-  const { data } = useServices();
+  const { data } = useServices({});
   const { mutate: createService, isLoading } = useCreateService({
     onSuccess: () => {
       close();

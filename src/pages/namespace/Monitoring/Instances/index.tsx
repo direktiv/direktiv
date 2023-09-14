@@ -1,9 +1,9 @@
 import { Boxes, CheckCircle2, XCircle } from "lucide-react";
 import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
 
-import { InstanceCard } from "./instanceCard";
+import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
-import RefetchButton from "./RefetchButton";
+import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
@@ -52,12 +52,17 @@ export const Instances = () => {
   return (
     <>
       <InstanceCard
-        headline={t("pages.monitoring.instances.successfullExecutions.title")}
+        headline={t("pages.monitoring.instances.successfulExecutions.title")}
         icon={CheckCircle2}
         refetchButton={
-          <RefetchButton
+          <RefreshButton
+            icon
+            size="sm"
+            variant="ghost"
             disabled={isFetchingSucessfullinstances}
-            onClick={refetchSucessfullInstances}
+            onClick={() => {
+              refetchSucessfullInstances();
+            }}
           />
         }
       >
@@ -65,7 +70,7 @@ export const Instances = () => {
           <>
             {sucessfullInstances?.instances?.results.length === 0 ? (
               <NoResult icon={Boxes}>
-                {t("pages.monitoring.instances.successfullExecutions.empty")}
+                {t("pages.monitoring.instances.successfulExecutions.empty")}
               </NoResult>
             ) : (
               <ScrollArea className="h-full">
@@ -89,9 +94,14 @@ export const Instances = () => {
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
         refetchButton={
-          <RefetchButton
+          <RefreshButton
+            icon
+            size="sm"
+            variant="ghost"
             disabled={isFetchingFailedInstances}
-            onClick={refetchFailedInstances}
+            onClick={() => {
+              refetchFailedInstances();
+            }}
           />
         }
       >

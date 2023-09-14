@@ -29,16 +29,30 @@ import { useTranslation } from "react-i18next";
 export const Pods = ({
   service,
   revision,
+  workflow,
+  version,
 }: {
   service: string;
   revision: string;
+  workflow?: string;
+  version?: string;
 }) => {
-  const { data: podsList, isSuccess } = usePods({ revision, service });
+  const { data: podsList, isSuccess } = usePods({
+    revision,
+    service,
+    workflow,
+    version,
+  });
   if (!isSuccess) return null;
 
   return (
     <>
-      <PodsSubscriber revision={revision} service={service} />
+      <PodsSubscriber
+        revision={revision}
+        service={service}
+        workflow={workflow}
+        version={version}
+      />
       <PodsWithData pods={podsList.pods} />
     </>
   );

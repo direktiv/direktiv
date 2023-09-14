@@ -4,6 +4,7 @@ import {
 } from "../schema/services";
 
 import { apiFactory } from "~/api/apiFactory";
+import { forceLeadingSlash } from "~/api/tree/utils";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -27,15 +28,31 @@ const updateCache = (
 };
 
 const deleteService = apiFactory({
-  url: ({ namespace, service }: { namespace: string; service: string }) =>
-    `/api/functions/namespaces/${namespace}/function/${service}`,
+  url: ({
+    namespace,
+    service,
+    workflow,
+    version,
+  }: {
+    namespace: string;
+    service: string;
+    workflow?: string;
+    version?: string;
+  }) =>
+    workflow && version
+      ? `/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
+          workflow
+        )}?op=delete-service&svn=${service}&version=${version}`
+      : `/api/functions/namespaces/${namespace}/function/${service}`,
   method: "DELETE",
   schema: ServiceDeletedSchema,
 });
 
 export const useDeleteService = ({
+  workflow,
+  version,
   onSuccess,
-}: { onSuccess?: () => void } = {}) => {
+}: { workflow?: string; version?: string; onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -47,18 +64,27 @@ export const useDeleteService = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({ service }: { service: string }) =>
+    mutationFn: ({
+      service,
+    }: {
+      service: string;
+      workflow?: string;
+      version?: string;
+    }) =>
       deleteService({
         apiKey: apiKey ?? undefined,
         urlParams: {
           service,
           namespace,
+          workflow,
+          version,
         },
       }),
     onSuccess(_, variables) {
       queryClient.setQueryData<ServicesListSchemaType>(
         serviceKeys.servicesList(namespace, {
           apiKey: apiKey ?? undefined,
+          workflow,
         }),
         (oldData) => updateCache(oldData, variables)
       );
