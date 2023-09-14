@@ -62,7 +62,12 @@ const ActiveWorkflowPage: FC = () => {
     path,
     type: "failed",
   });
-  const { data: servicesData, isSuccess: servicesIsSuccess } = useServices({
+  const {
+    data: servicesData,
+    isSuccess: servicesIsSuccess,
+    isAllowed,
+    noPermissionMessage,
+  } = useServices({
     workflow: path,
   });
   const { t } = useTranslation();
@@ -209,6 +214,8 @@ const ActiveWorkflowPage: FC = () => {
             setDeleteService={setDeleteService}
             deleteMenuItem={<DeleteMenuItem />}
             workflow={path}
+            isAllowed={isAllowed}
+            noPermissionMessage={noPermissionMessage}
           />
 
           <DialogContent>

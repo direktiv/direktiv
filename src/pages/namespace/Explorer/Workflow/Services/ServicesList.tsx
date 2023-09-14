@@ -17,7 +17,12 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteService, setDeleteService] = useState<ServiceSchemaType>();
 
-  const { data, isSuccess: servicesIsSuccess } = useServices({
+  const {
+    data,
+    isSuccess: servicesIsSuccess,
+    isAllowed,
+    noPermissionMessage,
+  } = useServices({
     workflow,
   });
 
@@ -51,6 +56,8 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
             setDeleteService={setDeleteService}
             deleteMenuItem={<DeleteMenuItem />}
             workflow={workflow}
+            isAllowed={isAllowed}
+            noPermissionMessage={noPermissionMessage}
           />
 
           <DialogContent>
