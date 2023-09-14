@@ -203,6 +203,9 @@
                 "title": "Redeploy workflow service",
                 "message": "This will delete the pods running to support service <b>{{name}}</b>. They will be recreated the next time an action requiring this service is executed."
               }
+            },
+            "serviceRevisions": {
+              "header": "Workflow service \"{{name}}\" revisions"
             }
           }
         }
