@@ -35,23 +35,23 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
 
   return (
     <div className="flex flex-col space-y-10 p-5">
-      <Card className="md:col-span-2">
+      <section className="flex flex-col gap-4">
         <ServicesStreamingSubscriber workflow={workflow} />
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+          <h3 className="flex items-center gap-x-2 font-bold">
             <Layers className="h-5" />
-            <h3 className="grow">
-              {t("pages.explorer.tree.workflow.overview.services.header")}
-            </h3>
-          </div>
+            {t("pages.explorer.tree.workflow.overview.services.header")}
+          </h3>
 
-          <ServicesTable
-            items={data}
-            isSuccess={servicesIsSuccess}
-            setDeleteService={setDeleteService}
-            deleteMenuItem={<DeleteMenuItem />}
-            workflow={workflow}
-          />
+          <Card className="flex flex-col gap-y-6">
+            <ServicesTable
+              items={data}
+              isSuccess={servicesIsSuccess}
+              setDeleteService={setDeleteService}
+              deleteMenuItem={<DeleteMenuItem />}
+              workflow={workflow}
+            />
+          </Card>
 
           <DialogContent>
             {deleteService && (
@@ -76,7 +76,7 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
             )}
           </DialogContent>
         </Dialog>
-      </Card>
+      </section>
     </div>
   );
 };
