@@ -264,7 +264,7 @@ test("it is possible to create a workflow without providing the .yaml file exten
   await expect(nodeCreated).toBeTruthy();
 });
 
-test("it is possible to create a workflow with the name of a folder from the same directory", async ({
+test("when creating a workflow, the name (before extension) may be the same as a directory name at the same level", async ({
   page,
 }) => {
   const directoryName = "directory";
@@ -317,11 +317,11 @@ test("it is not possible to create a workflow when the name already exixts", asy
   );
 });
 
-test("it is not possible to create a workflow when the name already exists (even with not file extensions specified)", async ({
+test("it is not possible to create a workflow when the name already exists and the file extension is added automatically", async ({
   page,
 }) => {
   const alreadyExists = "workflow.yaml";
-  const alreadyExistsWithoutExtension = "workflow";
+  const typedInName = "workflow";
   await createWorkflow(namespace, alreadyExists);
 
   // go to tree root
@@ -332,7 +332,7 @@ test("it is not possible to create a workflow when the name already exists (even
   await page.getByTestId("new-workflow").click();
   await page
     .getByTestId("new-workflow-name")
-    .fill(alreadyExistsWithoutExtension);
+    .fill(typedInName);
   await page.getByTestId("new-workflow-submit").click();
 
   await expect(page.getByTestId("form-error")).toContainText(
@@ -412,7 +412,7 @@ test(`it is possible to rename a workflow`, async ({ page }) => {
   await expect(isRenamed).toBeTruthy();
 });
 
-test(`it is possible to rename a workflow to a name of a folder inside the same directory`, async ({
+test(`when renaming a workflow, the name (before extension) may be the same as a directory name at the same level`, async ({
   page,
 }) => {
   const oldName = "old-name.yaml";
@@ -527,7 +527,7 @@ test(`it is not possible to rename a workflow when the name already exists`, asy
   );
 });
 
-test(`it is not possible to rename a workflow when the name already exists (even with not file extensions specified)`, async ({
+test(`it is not possible to rename a workflow when the name already exists and extension is added automatically`, async ({
   page,
 }) => {
   const tobeRenamed = "workflow-a.yaml";
