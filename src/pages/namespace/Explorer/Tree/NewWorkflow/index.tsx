@@ -68,9 +68,9 @@ const NewWorkflow = ({
         name: fileNameSchema
           .transform((enteredName) => addYamlFileExtension(enteredName))
           .refine(
-            (enteredName) =>
+            (nameWithExtension) =>
               !(unallowedNames ?? []).some(
-                (unallowedName) => unallowedName === enteredName
+                (unallowedName) => unallowedName === nameWithExtension
               ),
             {
               message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
