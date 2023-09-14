@@ -330,9 +330,7 @@ test("it is not possible to create a workflow when the name already exists and t
   // create workflow
   await page.getByTestId("dropdown-trg-new").click();
   await page.getByTestId("new-workflow").click();
-  await page
-    .getByTestId("new-workflow-name")
-    .fill(typedInName);
+  await page.getByTestId("new-workflow-name").fill(typedInName);
   await page.getByTestId("new-workflow-submit").click();
 
   await expect(page.getByTestId("form-error")).toContainText(
