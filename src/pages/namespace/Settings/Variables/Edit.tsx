@@ -7,8 +7,8 @@ import {
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
+  EditorMimeTypeSchema,
   MimeTypeType,
-  TextMimeTypeSchema,
   TextMimeTypeType,
   getLanguageFromMimeType,
   mimeTypeToLanguageDict,
@@ -89,7 +89,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   useEffect(() => {
     if (isInitialized) {
       const contentType = data.headers["content-type"];
-      const safeParsedContentType = TextMimeTypeSchema.safeParse(contentType);
+      const safeParsedContentType = EditorMimeTypeSchema.safeParse(contentType);
       setValue("mimeType", contentType);
       onMimeTypeChange(contentType);
       if (safeParsedContentType.success) {
@@ -117,7 +117,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     const fileContent = await file.text();
     const mimeType = file?.type ?? fallbackMimeType;
 
-    const parsedMimetype = TextMimeTypeSchema.safeParse(mimeType);
+    const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
 
     setValue("mimeType", mimeType, { shouldDirty: true });
     onMimeTypeChange(mimeType);
