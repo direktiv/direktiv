@@ -1,5 +1,6 @@
-import { addYamlFileExtension, removeYamlFileExtension } from "../utils";
 import { describe, expect, test } from "vitest";
+
+import { addYamlFileExtension } from "../utils";
 
 describe("addYamlFileExtension", () => {
   test("it adds .yaml to a string that does not end on .yaml or yml", () => {
@@ -24,40 +25,5 @@ describe("addYamlFileExtension", () => {
 
   test("it will do nothing when the string ends with .yml", () => {
     expect(addYamlFileExtension("some-file.yml")).toBe("some-file.yml");
-  });
-});
-
-describe("removeYamlFileExtension", () => {
-  test("it removes .yaml from a string that end on .yaml", () => {
-    expect(removeYamlFileExtension("somefile.yaml")).toBe("somefile");
-  });
-
-  test("it removes .yml from a string that end on .yml", () => {
-    expect(removeYamlFileExtension("somefile.yml")).toBe("somefile");
-  });
-
-  test("it will trim the string before removing the extension", () => {
-    expect(removeYamlFileExtension("somefile.yml ")).toBe("somefile");
-    expect(removeYamlFileExtension("somefile.yaml ")).toBe("somefile");
-  });
-
-  test("it will not change other file extensions", () => {
-    expect(removeYamlFileExtension("somefile.jpg")).toBe("somefile.jpg");
-    expect(removeYamlFileExtension("somefile.ymly")).toBe("somefile.ymly");
-  });
-
-  test("it will not remove anything from files without any file extension", () => {
-    expect(removeYamlFileExtension("somefile")).toBe("somefile");
-    expect(removeYamlFileExtension("somefileendingwithyaml")).toBe(
-      "somefileendingwithyaml"
-    );
-    expect(removeYamlFileExtension("somefileendingwithyml")).toBe(
-      "somefileendingwithyml"
-    );
-  });
-
-  test("it will trim the filename, even if no extension was found", () => {
-    expect(removeYamlFileExtension("somefile ")).toBe("somefile");
-    expect(removeYamlFileExtension("somefile.jpg ")).toBe("somefile.jpg");
   });
 });
