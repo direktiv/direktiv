@@ -46,8 +46,10 @@ const Rename = ({
             return enteredName;
           })
           .refine(
-            (name) =>
-              !unallowedNames.some((unallowedName) => unallowedName === name),
+            (nameWithExtension) =>
+              !unallowedNames.some(
+                (unallowedName) => unallowedName === nameWithExtension
+              ),
             {
               message: t("pages.explorer.tree.rename.nameAlreadyExists"),
             }
