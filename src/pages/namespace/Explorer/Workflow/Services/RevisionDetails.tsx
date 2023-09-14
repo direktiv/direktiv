@@ -30,6 +30,7 @@ const RevisionDetails = () => {
         service={service}
         revision={serviceRevision}
         version={serviceVersion}
+        className="md:h-[calc(100vh-38rem)] lg:h-[calc(100vh-33rem)]"
       />
     </div>
   );

@@ -1,59 +1,77 @@
-import { DonutChart } from "@tremor/react";
+import { Card } from "~/design/Card";
+import { NoResult } from "~/design/Table";
+import { PieChart } from "lucide-react";
+import RefreshButton from "~/design/RefreshButton";
+import SuccessFailure from "./SuccessFailure";
+import { useMetrics } from "~/api/tree/query/metrics";
 import { useTranslation } from "react-i18next";
 
-const Metrics = ({
-  data,
-}: {
-  data: { successful: number; failed: number };
-}) => {
+const Metrics = ({ workflow }: { workflow: string }) => {
   const { t } = useTranslation();
 
-  const { successful, failed } = data;
-  const total = data.successful + data.failed;
+  const {
+    data: successData,
+    isFetching: isFetchingSuccessful,
+    refetch: refetchSuccessful,
+  } = useMetrics({
+    path: workflow,
+    type: "successful",
+  });
+  const {
+    data: failedData,
+    isFetching: isFetchingFailed,
+    refetch: refetchFailed,
+  } = useMetrics({
+    path: workflow,
+    type: "failed",
+  });
 
-  const percentages = {
-    successful: (successful / total) * 100,
-    failed: (failed / total) * 100,
+  const successful = Number(successData?.results[0]?.value[1]);
+  const failed = Number(failedData?.results[0]?.value[1]);
+  const metrics =
+    successful || failed
+      ? {
+          successful: successful || 0,
+          failed: failed || 0,
+        }
+      : undefined;
+
+  const isFetchingMetrics = isFetchingFailed || isFetchingSuccessful;
+
+  const refetchMetrics = () => {
+    refetchSuccessful();
+    refetchFailed();
   };
 
-  const chartData = [
-    {
-      name: "failed",
-      count: failed,
-    },
-    {
-      name: "successful",
-      count: successful,
-    },
-  ];
-
-  const valueFormatter = (number: number) => number.toString();
+  const MetricsRefetchButton = () => (
+    <RefreshButton
+      icon
+      size="sm"
+      variant="ghost"
+      disabled={isFetchingMetrics}
+      onClick={() => {
+        refetchMetrics();
+      }}
+    />
+  );
 
   return (
-    <div className="flex flex-col items-center py-4">
-      <DonutChart
-        className="h-36 w-36 pb-2"
-        showAnimation={false}
-        showLabel={false}
-        data={chartData}
-        category="count"
-        index="name"
-        valueFormatter={valueFormatter}
-        colors={["red", "emerald"]}
-      />
-      <div className="flex justify-evenly">
-        <div>
-          {t("pages.explorer.tree.workflow.overview.metrics.successful", {
-            percentage: percentages.successful.toFixed(0),
-          })}
-        </div>
-        <div>
-          {t("pages.explorer.tree.workflow.overview.metrics.failed", {
-            percentage: percentages.failed.toFixed(0),
-          })}
-        </div>
+    <Card className="flex flex-col">
+      <div className="flex h-full items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+        <PieChart className="h-5" />
+        <h3 className="grow">
+          {t("pages.explorer.tree.workflow.overview.metrics.header")}
+        </h3>
+        <MetricsRefetchButton />
       </div>
-    </div>
+      {metrics ? (
+        <SuccessFailure data={metrics} />
+      ) : (
+        <NoResult icon={PieChart}>
+          {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
+        </NoResult>
+      )}
+    </Card>
   );
 };
 

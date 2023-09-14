@@ -37,53 +37,60 @@ const ServiceDetails = ({
   const noResults = isSuccess && data.revisions.length === 0;
 
   return (
-    <div>
-      Revisions List
-      <Card>
-        <Table>
-          <TableHead>
-            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell>
-                {t("pages.services.revision.list.tableHeader.name")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-48">
-                {t("pages.services.revision.list.tableHeader.image")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-16">
-                {t("pages.services.revision.list.tableHeader.scale")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-20">
-                {t("pages.services.revision.list.tableHeader.size")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-40">
-                {t("pages.services.revision.list.tableHeader.createdAt")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-16" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {showTable &&
-              data?.revisions?.map((revision, index) => (
-                <Row
-                  key={index}
-                  revision={revision}
-                  service={service}
-                  workflow={workflow}
-                  version={version}
-                />
-              ))}
-            {noResults && (
+    <div className="flex flex-col space-y-10 p-5">
+      <section className="flex flex-col gap-4">
+        <h3 className="flex items-center gap-x-2 font-bold">
+          <Diamond className="h-5" />
+          {t("pages.explorer.tree.workflow.overview.serviceRevisions.header", {
+            name: service,
+          })}
+        </h3>
+        <Card>
+          <Table>
+            <TableHead>
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={6}>
-                  <NoResult icon={Diamond}>
-                    {t("pages.services.revision.list.empty.title")}
-                  </NoResult>
-                </TableCell>
+                <TableHeaderCell>
+                  {t("pages.services.revision.list.tableHeader.name")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-48">
+                  {t("pages.services.revision.list.tableHeader.image")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-16">
+                  {t("pages.services.revision.list.tableHeader.scale")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-20">
+                  {t("pages.services.revision.list.tableHeader.size")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-40">
+                  {t("pages.services.revision.list.tableHeader.createdAt")}
+                </TableHeaderCell>
+                <TableHeaderCell className="w-16" />
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+            </TableHead>
+            <TableBody>
+              {showTable &&
+                data?.revisions?.map((revision, index) => (
+                  <Row
+                    key={index}
+                    revision={revision}
+                    service={service}
+                    workflow={workflow}
+                    version={version}
+                  />
+                ))}
+              {noResults && (
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableCell colSpan={6}>
+                    <NoResult icon={Diamond}>
+                      {t("pages.services.revision.list.empty.title")}
+                    </NoResult>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+      </section>
     </div>
   );
 };
