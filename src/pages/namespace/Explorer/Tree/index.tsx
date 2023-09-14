@@ -109,9 +109,7 @@ const ExplorerPage: FC = () => {
                       setDialogOpen(false);
                     }}
                     unallowedNames={
-                      data?.children?.results
-                        .filter((file) => file.type === "workflow")
-                        .map((file) => file.name) || []
+                      data?.children?.results.map((file) => file.name) || []
                     }
                   />
                 )}

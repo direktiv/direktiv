@@ -6,15 +6,12 @@ import {
 } from "~/design/Dialog";
 import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema/node";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  addYamlFileExtension,
-  removeYamlFileExtension,
-} from "./NewWorkflow/utils";
 
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
+import { addYamlFileExtension } from "./NewWorkflow/utils";
 import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -41,21 +38,20 @@ const Rename = ({
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema.and(
-          z
-            .string()
-            .refine(
-              (name) =>
-                !unallowedNames.some(
-                  (unallowedName) =>
-                    removeYamlFileExtension(unallowedName) ===
-                    removeYamlFileExtension(name)
-                ),
-              {
-                message: t("pages.explorer.tree.rename.nameAlreadyExists"),
-              }
-            )
-        ),
+        name: fileNameSchema
+          .transform((enteredName) => {
+            if (node.type === "workflow") {
+              return addYamlFileExtension(enteredName);
+            }
+            return enteredName;
+          })
+          .refine(
+            (name) =>
+              !unallowedNames.some((unallowedName) => unallowedName === name),
+            {
+              message: t("pages.explorer.tree.rename.nameAlreadyExists"),
+            }
+          ),
       })
     ),
     defaultValues: {
@@ -70,9 +66,7 @@ const Rename = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    const newName =
-      node.type === "workflow" ? addYamlFileExtension(name) : name;
-    rename({ node, newName });
+    rename({ node, newName: name });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
