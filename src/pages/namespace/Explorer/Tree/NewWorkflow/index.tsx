@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { addYamlFileExtension, removeYamlFileExtension } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -21,6 +20,7 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
+import { addYamlFileExtension } from "./utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -65,20 +65,17 @@ const NewWorkflow = ({
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema.and(
-          z
-            .string()
-            .refine(
-              (name) =>
-                !(unallowedNames ?? []).some(
-                  (n) =>
-                    removeYamlFileExtension(n) === removeYamlFileExtension(name)
-                ),
-              {
-                message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
-              }
-            )
-        ),
+        name: fileNameSchema
+          .transform((enteredName) => addYamlFileExtension(enteredName))
+          .refine(
+            (enteredName) =>
+              !(unallowedNames ?? []).some(
+                (unallowedName) => unallowedName === enteredName
+              ),
+            {
+              message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
+            }
+          ),
         fileContent: z.string(),
       })
     ),
@@ -102,7 +99,7 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createWorkflow({ path, name: addYamlFileExtension(name), fileContent });
+    createWorkflow({ path, name, fileContent });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

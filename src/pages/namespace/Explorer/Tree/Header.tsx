@@ -142,9 +142,9 @@ const ExplorerHeader: FC = () => {
             {selectedDialog === "new-workflow" && (
               <NewWorkflow
                 path={data?.node?.path}
-                unallowedNames={(data?.children?.results ?? [])
-                  .filter((file) => file.type === "workflow")
-                  .map((x) => x.name)}
+                unallowedNames={(data?.children?.results ?? []).map(
+                  (file) => file.name
+                )}
                 close={() => setDialogOpen(false)}
               />
             )}
