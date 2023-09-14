@@ -88,8 +88,11 @@ install_db() {
 
   if [[ ${DB} == "operator" ]]; then
     echo "install postgres db as operator"
-    helm install -n postgres postgres $dir/direktiv-charts/charts/percona-postgres --wait
-    kubectl apply -n postgres -f $dir/../kubernetes/install/db/basic.yaml
+
+helm repo add linkerd https://helm.linkerd.io/stable;
+    helm repo add percona https://percona.github.io/percona-helm-charts/
+    helm install -n postgres pg-operator percona/pg-operator --wait
+    kubectl apply -n postgres -f $dir/../kubernetes/install/db/basic.yaml 
     dbsecret="direktiv-cluster-pguser-direktiv"
   fi
 
@@ -205,7 +208,7 @@ if [ $DB == "pg" ]; then
 else 
   echo "database:
     host: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)\"
-    port: $(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)
+    port: $(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-port"}}' | base64 --decode)
     user: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)\"
     password: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)\"
     name: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)\"

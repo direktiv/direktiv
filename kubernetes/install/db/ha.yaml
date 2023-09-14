@@ -12,9 +12,9 @@ spec:
         - direktiv
     - name: postgres
 
-  image: perconalab/percona-postgresql-operator:main-ppg15-postgres
+  image: perconalab/percona-postgresql-operator:main-ppg14-postgres
   imagePullPolicy: Always
-  postgresVersion: 15
+  postgresVersion: 14
   port: 5432
 
   instances:
@@ -41,7 +41,7 @@ spec:
   proxy:
     pgBouncer:
       replicas: 2
-      image: perconalab/percona-postgresql-operator:main-ppg15-pgbouncer
+      image: perconalab/percona-postgresql-operator:main-ppg14-pgbouncer
       affinity:
        podAntiAffinity:
          preferredDuringSchedulingIgnoredDuringExecution:
@@ -55,7 +55,7 @@ spec:
 
   backups:
     pgbackrest:
-      image: perconalab/percona-postgresql-operator:main-ppg15-pgbackrest
+      image: perconalab/percona-postgresql-operator:main-ppg14-pgbackrest
       global:
         repo1-retention-full: "4"
         repo1-retention-full-type: count
