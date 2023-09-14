@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -24,6 +25,8 @@ const ServicesTable = ({
   createNewButton,
   deleteMenuItem,
   workflow,
+  isAllowed,
+  noPermissionMessage,
 }: {
   items?: ServicesListSchemaType;
   isSuccess: boolean;
@@ -31,6 +34,8 @@ const ServicesTable = ({
   createNewButton?: JSX.Element;
   deleteMenuItem?: JSX.Element;
   workflow?: string;
+  isAllowed: boolean;
+  noPermissionMessage?: string;
 }) => {
   const { t } = useTranslation();
 
@@ -60,22 +65,32 @@ const ServicesTable = ({
         </TableRow>
       </TableHead>
       <TableBody>
-        {showTable &&
-          items?.functions.map((service) => (
-            <Row
-              service={service}
-              key={service.serviceName}
-              setDeleteService={setDeleteService}
-              deleteMenuItem={deleteMenuItem}
-              workflow={workflow}
-            />
-          ))}
-        {noResults && (
+        {isAllowed ? (
+          <>
+            {showTable &&
+              items?.functions.map((service) => (
+                <Row
+                  service={service}
+                  key={service.serviceName}
+                  setDeleteService={setDeleteService}
+                  deleteMenuItem={deleteMenuItem}
+                  workflow={workflow}
+                />
+              ))}
+            {noResults && (
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                <TableCell colSpan={6}>
+                  <NoResult icon={Layers} button={createNewButton}>
+                    {t("pages.services.list.empty.title")}
+                  </NoResult>
+                </TableCell>
+              </TableRow>
+            )}
+          </>
+        ) : (
           <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
             <TableCell colSpan={6}>
-              <NoResult icon={Layers} button={createNewButton}>
-                {t("pages.services.list.empty.title")}
-              </NoResult>
+              <NoPermissions>{noPermissionMessage}</NoPermissions>
             </TableCell>
           </TableRow>
         )}
