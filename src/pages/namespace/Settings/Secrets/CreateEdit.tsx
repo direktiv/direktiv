@@ -14,6 +14,7 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { EditorMimeTypeSchema } from "../Variables/MimeTypeSelect";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
@@ -42,6 +43,7 @@ const Create = ({ onSuccess, item }: CreateProps) => {
     handleSubmit,
     setValue,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm<SecretFormSchemaType>({
     defaultValues: {
@@ -56,10 +58,19 @@ const Create = ({ onSuccess, item }: CreateProps) => {
   const onFilepickerChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    clearErrors();
     const file = event.target.files?.[0];
     if (!file) return;
     try {
       const fileContent = await file.text();
+      const mimeType = file?.type ?? "";
+      const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
+      if (!parsedMimetype.success) {
+        setError("value", {
+          message: t("pages.settings.secrets.create.unsupported"),
+        });
+        return;
+      }
       setValue("value", fileContent);
     } catch (e) {
       setError("value", {
