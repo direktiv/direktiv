@@ -31,11 +31,13 @@ export const Pods = ({
   revision,
   workflow,
   version,
+  className,
 }: {
   service: string;
   revision: string;
   workflow?: string;
   version?: string;
+  className?: string;
 }) => {
   const { data: podsList, isSuccess } = usePods({
     revision,
@@ -53,15 +55,17 @@ export const Pods = ({
         workflow={workflow}
         version={version}
       />
-      <PodsWithData pods={podsList.pods} />
+      <PodsWithData pods={podsList.pods} className={className} />
     </>
   );
 };
 
 export const PodsWithData = ({
   pods,
+  className,
 }: {
   pods: PodsListSchemaType["pods"];
+  className?: string;
 }) => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(pods[0]?.name ?? "");
@@ -122,7 +126,8 @@ export const PodsWithData = ({
             "relative grid grow grid-rows-[1fr_auto]",
             "h-[calc(100vh-1rem)]",
             "md:h-[calc(100vh-30rem)]",
-            "lg:h-[calc(100vh-26rem)]"
+            "lg:h-[calc(100vh-26rem)]",
+            className
           )}
         >
           <ScrollContainer logs={logs} />
