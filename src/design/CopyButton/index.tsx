@@ -1,15 +1,7 @@
-import { Check, Copy, Frown } from "lucide-react";
+import { Check, Copy, XCircle } from "lucide-react";
 import { ComponentProps, FC, useEffect, useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../Tooltip";
 
 import Button from "../Button";
-import { ConditionalWrapper } from "~/util/helpers";
-import { useTranslation } from "react-i18next";
 
 type ButtonPropsType = ComponentProps<typeof Button>;
 
@@ -19,8 +11,7 @@ const CopyButton: FC<{
   children?: (copied: boolean) => React.ReactNode;
 }> = ({ value, buttonProps: { onClick, ...buttonProps } = {}, children }) => {
   const [copied, setCopied] = useState(false);
-  const clipboardNotAvailable = !navigator.clipboard;
-  const { t } = useTranslation();
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -32,39 +23,46 @@ const CopyButton: FC<{
     return () => clearTimeout(timeout);
   }, [copied]);
 
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (error === true) {
+      timeout = setTimeout(() => {
+        setError(false);
+      }, 1000);
+    }
+    return () => clearTimeout(timeout);
+  }, [error]);
+
+  const getIcon = () => {
+    if (error) {
+      return <XCircle />;
+    }
+    if (copied) {
+      return <Check />;
+    }
+    return <Copy />;
+  };
+
   return (
-    <ConditionalWrapper
-      condition={clipboardNotAvailable}
-      wrapper={(children) => (
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>{children}</div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="flex w-56 flex-col items-center gap-2 text-center">
-                <Frown />
-                <div>{t("components.copyButton.notSuported")}</div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-    >
-      <Button
-        variant="ghost"
-        onClick={(e) => {
+    <Button
+      variant="ghost"
+      onClick={(e) => {
+        if (navigator.clipboard) {
           navigator.clipboard.writeText(value);
           setCopied(true);
-          onClick?.(e);
-        }}
-        {...buttonProps}
-        {...(clipboardNotAvailable ? { disabled: true } : {})}
-      >
-        {copied ? <Check /> : <Copy />}
-        {children && children(copied)}
-      </Button>
-    </ConditionalWrapper>
+        } else {
+          setError(true);
+          console.warn(
+            "Clipboard API is not available, you migh not be on HTTPS"
+          );
+        }
+        onClick?.(e);
+      }}
+      {...buttonProps}
+    >
+      {getIcon()}
+      {children && children(copied)}
+    </Button>
   );
 };
 
