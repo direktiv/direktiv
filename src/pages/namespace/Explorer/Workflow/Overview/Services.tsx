@@ -1,16 +1,16 @@
+import { DeleteMenuItem, ServiceDelete } from "../components/ServiceDelete";
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { Layers, RefreshCcw, RotateCcw } from "lucide-react";
 import {
   ServicesStreamingSubscriber,
   useServices,
 } from "~/api/services/query/getAll";
-import { Trans, useTranslation } from "react-i18next";
 
 import { Card } from "~/design/Card";
-import Delete from "~/pages/namespace/Services/List/Delete";
+import { Layers } from "lucide-react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "~/pages/namespace/Services/List/Table";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Services = ({ workflow }: { workflow: string }) => {
   const { t } = useTranslation();
@@ -20,16 +20,6 @@ const Services = ({ workflow }: { workflow: string }) => {
   const { data, isSuccess, isAllowed, noPermissionMessage } = useServices({
     workflow,
   });
-
-  const DeleteMenuItem = () => {
-    const { t } = useTranslation();
-    return (
-      <>
-        <RefreshCcw className="mr-2 h-4 w-4" />
-        {t("pages.explorer.tree.workflow.overview.services.deleteMenuItem")}
-      </>
-    );
-  };
 
   return (
     <Card className="md:col-span-2">
@@ -54,23 +44,10 @@ const Services = ({ workflow }: { workflow: string }) => {
 
         <DialogContent>
           {deleteService && (
-            <Delete
-              icon={RotateCcw}
-              header={t(
-                "pages.explorer.tree.workflow.overview.services.delete.title"
-              )}
-              message={
-                <Trans
-                  i18nKey="pages.explorer.tree.workflow.overview.services.delete.message"
-                  values={{ name: deleteService.info.name }}
-                />
-              }
-              service={deleteService.info.name}
+            <ServiceDelete
               workflow={workflow}
-              version={deleteService.info.revision}
-              close={() => {
-                setDialogOpen(false);
-              }}
+              service={deleteService}
+              onClose={() => setDialogOpen(false)}
             />
           )}
         </DialogContent>
