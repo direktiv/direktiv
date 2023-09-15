@@ -84,7 +84,7 @@ const Layout = () => {
   // wait until namespaces are fetched to avoid layout shifts
   // either the useEffect will redirect or the onboarding screen
   // will be shown
-  if (!isFetched || isRefetching) {
+  if (!isFetched) {
     return null;
   }
 
