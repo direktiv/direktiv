@@ -11,6 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
+import { addYamlFileExtension } from "./NewWorkflow/utils";
 import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -37,11 +38,22 @@ const Rename = ({
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema.and(
-          z.string().refine((name) => !unallowedNames.some((n) => n === name), {
-            message: t("pages.explorer.tree.rename.nameAlreadyExists"),
+        name: fileNameSchema
+          .transform((enteredName) => {
+            if (node.type === "workflow") {
+              return addYamlFileExtension(enteredName);
+            }
+            return enteredName;
           })
-        ),
+          .refine(
+            (nameWithExtension) =>
+              !unallowedNames.some(
+                (unallowedName) => unallowedName === nameWithExtension
+              ),
+            {
+              message: t("pages.explorer.tree.rename.nameAlreadyExists"),
+            }
+          ),
       })
     ),
     defaultValues: {

@@ -95,11 +95,9 @@ const RegistriesList: FC = () => {
                 <Table>
                   <TableBody>
                     {currentItems.map((item, i) => (
-                      <ItemRow
-                        key={i}
-                        item={item}
-                        onDelete={setDeleteRegistry}
-                      />
+                      <ItemRow key={i} item={item} onDelete={setDeleteRegistry}>
+                        {item.name}
+                      </ItemRow>
                     ))}
                   </TableBody>
                 </Table>

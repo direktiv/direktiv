@@ -60,7 +60,7 @@ export const useSetWorkflowVariable = ({
         name,
       },
       headers: {
-        "content-type": mimeType,
+        "Content-Type": mimeType,
       },
     });
 
