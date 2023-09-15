@@ -13,7 +13,11 @@ import { useTranslation } from "react-i18next";
 
 const Layout = () => {
   const { t } = useTranslation();
-  const { data: availableNamespaces, isRefetching } = useListNamespaces();
+  const {
+    data: availableNamespaces,
+    isFetched,
+    isRefetching,
+  } = useListNamespaces();
   const activeNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
   const [, setDialogOpen] = useState(false);
@@ -76,6 +80,13 @@ const Layout = () => {
     navigate,
     setNamespace,
   ]);
+
+  // wait until namespaces are fetched to avoid layout shifts
+  // either the useEffect will redirect or the onboarding screen
+  // will be shown
+  if (!isFetched || isRefetching) {
+    return null;
+  }
 
   return (
     <main className="grid min-h-full place-items-center py-24 px-6 sm:py-32 lg:px-8">
