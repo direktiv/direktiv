@@ -621,7 +621,9 @@
           "empty": "No secrets exist yet",
           "createBtn": "Create secret",
           "searchPlaceholder": "Filter secrets...",
-          "emptySearch": "No secret matches your search"
+          "emptySearch": "No secret matches your search",
+          "initializeBtn": "Initialize secret",
+          "notInitializedTooltip": "We created a placeholder for this secret because we detected a reference to it in one of your workflows. Please initialize the secret by uploading a file or entering a value."
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -630,7 +632,12 @@
           "description": "Add a secret",
           "name": "Name",
           "file": "Upload a file",
-          "fileError": "There was an error uploading the file"
+          "fileError": "There was an error uploading the file",
+          "unsupported": "This mime type is not supported"
+        },
+        "edit": {
+          "description": "Edit {{name}}",
+          "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
       "registries": {
@@ -1135,13 +1142,13 @@
     },
     "secrets": {
       "mutate": {
-        "createSecret": {
+        "updateSecret": {
           "success": {
-            "title": "Secret created",
-            "description": "Secret {{name}} was created."
+            "title": "Secret saved",
+            "description": "Secret {{name}} was saved."
           },
           "error": {
-            "description": "Could not create secret 😢"
+            "description": "Could not save secret 😢"
           }
         },
         "deleteSecret": {

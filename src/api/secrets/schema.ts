@@ -2,9 +2,10 @@ import { z } from "zod";
 
 export const SecretSchema = z.object({
   name: z.string(),
+  initialized: z.boolean(),
 });
 
-export const SecretCreatedSchema = z.object({
+export const SecretUpdatedSchema = z.object({
   key: z.string(),
   namespace: z.string(),
 });
@@ -24,6 +25,6 @@ export const SecretFormSchema = z.object({
 });
 
 export type SecretSchemaType = z.infer<typeof SecretSchema>;
-export type SecretCreatedSchemaType = z.infer<typeof SecretCreatedSchema>;
+export type SecretUpdatedSchemaType = z.infer<typeof SecretUpdatedSchema>;
 export type SecretListSchemaType = z.infer<typeof SecretListSchema>;
 export type SecretFormSchemaType = z.infer<typeof SecretFormSchema>;
