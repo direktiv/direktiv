@@ -1,13 +1,7 @@
 import { Boxes, CheckCircle2, XCircle } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
 
-import { InstanceCard } from "./instanceCard";
+import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
@@ -16,10 +10,10 @@ import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
   const {
-    data: sucessfullInstances,
-    isFetched: isFetchedSucessfullInstances,
-    isFetching: isFetchingSucessfullinstances,
-    refetch: refetchSucessfullInstances,
+    data: SuccessfulInstances,
+    isFetched: isFetchedSuccessfulInstances,
+    isFetching: isFetchingSuccessfulInstances,
+    refetch: refetchSuccessfulInstances,
   } = useInstances({
     limit: 10,
     offset: 0,
@@ -50,44 +44,35 @@ export const Instances = () => {
   const { t } = useTranslation();
 
   const refetchButton = (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RefreshButton
-            icon
-            size="sm"
-            variant="ghost"
-            disabled={isFetchingSucessfullinstances}
-            onClick={() => {
-              refetchSucessfullInstances();
-            }}
-          />
-        </TooltipTrigger>
-        <TooltipContent>
-          {t(`pages.monitoring.instances.updateTooltip`)}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <RefreshButton
+      icon
+      size="sm"
+      variant="ghost"
+      disabled={isFetchingSuccessfulInstances}
+      onClick={() => {
+        refetchSuccessfulInstances();
+      }}
+    />
   );
 
-  if (!isFetchedSucessfullInstances || !isFetchedFailedInstances) return null;
+  if (!isFetchedSuccessfulInstances || !isFetchedFailedInstances) return null;
 
   return (
     <>
       <InstanceCard
-        headline={t("pages.monitoring.instances.successfullExecutions.title")}
+        headline={t("pages.monitoring.instances.successfulExecutions.title")}
         icon={CheckCircle2}
         refetchButton={refetchButton}
       >
-        {sucessfullInstances?.instances?.results.length === 0 ? (
+        {SuccessfulInstances?.instances?.results.length === 0 ? (
           <NoResult icon={Boxes}>
-            {t("pages.monitoring.instances.successfullExecutions.empty")}
+            {t("pages.monitoring.instances.successfulExecutions.empty")}
           </NoResult>
         ) : (
           <ScrollArea className="h-full">
             <Table>
               <TableBody>
-                {sucessfullInstances?.instances?.results.map((instance) => (
+                {SuccessfulInstances?.instances?.results.map((instance) => (
                   <InstanceRow key={instance.id} instance={instance} />
                 ))}
               </TableBody>
@@ -99,24 +84,15 @@ export const Instances = () => {
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
         refetchButton={
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <RefreshButton
-                  icon
-                  size="sm"
-                  variant="ghost"
-                  disabled={isFetchingFailedInstances}
-                  onClick={() => {
-                    refetchFailedInstances();
-                  }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {t(`pages.monitoring.instances.updateTooltip`)}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <RefreshButton
+            icon
+            size="sm"
+            variant="ghost"
+            disabled={isFetchingFailedInstances}
+            onClick={() => {
+              refetchFailedInstances();
+            }}
+          />
         }
       >
         {failedInstances?.instances?.results.length === 0 ? (

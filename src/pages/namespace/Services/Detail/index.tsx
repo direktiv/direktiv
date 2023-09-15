@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 const ServiceDetailPage = () => {
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
+
   const { data, isSuccess } = useServiceDetails({
     service: service ?? "",
   });

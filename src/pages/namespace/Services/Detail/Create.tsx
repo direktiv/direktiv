@@ -107,7 +107,7 @@ const CreateRevision = ({
 
   const formId = `new-service-revision`;
 
-  const maxScale = data?.config.maxscale;
+  const maxScale = data?.config?.maxscale;
   if (maxScale === undefined) return null;
 
   const size = watch("size");

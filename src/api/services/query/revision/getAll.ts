@@ -5,6 +5,7 @@ import {
 } from "../../schema/revisions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { forceLeadingSlash } from "~/api/tree/utils";
 import { memo } from "react";
 import { serviceKeys } from "../..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -21,7 +22,12 @@ const updateCache = (
 };
 
 export const useServiceRevisionStream = (
-  { service, revision }: { service: string; revision: string },
+  {
+    service,
+    revision,
+    workflow,
+    version,
+  }: { service: string; revision: string; workflow?: string; version?: string },
   { enabled = true }: { enabled?: boolean } = {}
 ) => {
   const apiKey = useApiKey();
@@ -32,8 +38,15 @@ export const useServiceRevisionStream = (
     throw new Error("namespace is undefined");
   }
 
+  const url =
+    workflow && version
+      ? `/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
+          workflow
+        )}?op=function-revision&svn=${service}&rev=${revision}&version=${version}`
+      : `/api/functions/namespaces/${namespace}/function/${service}/revisions/${revision}`;
+
   return useStreaming({
-    url: `/api/functions/namespaces/${namespace}/function/${service}/revisions/${revision}`,
+    url,
     apiKey: apiKey ?? undefined,
     enabled,
     schema: RevisionDetailStreamingSchema,
@@ -53,13 +66,21 @@ export const useServiceRevisionStream = (
 type ServiceRevisionStreamingSubscriberType = {
   service: string;
   revision: string;
+  workflow?: string;
+  version?: string;
   enabled?: boolean;
 };
 
 export const ServiceRevisionStreamingSubscriber = memo(
-  ({ service, revision, enabled }: ServiceRevisionStreamingSubscriberType) => {
+  ({
+    service,
+    revision,
+    workflow,
+    version,
+    enabled,
+  }: ServiceRevisionStreamingSubscriberType) => {
     useServiceRevisionStream(
-      { service, revision },
+      { service, revision, workflow, version },
       { enabled: enabled ?? true }
     );
     return null;

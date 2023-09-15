@@ -32,14 +32,23 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 const ServicesTableRow: FC<{
   service: string;
   revision: RevisionSchemaType;
+  workflow?: string;
+  version?: string;
   // not passing a function will disable the delete button
   setDeleteRevision?: (service: RevisionSchemaType | undefined) => void;
-}> = ({ revision, service, setDeleteRevision }) => {
+}> = ({ revision, service, workflow, version, setDeleteRevision }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const createdAtDate = moment.unix(revision.created);
+  // quick and dirty fix because backend will return string or number
+  // depending on the endpoint consumed
+  const createdNumber =
+    typeof revision.created === "number"
+      ? revision.created
+      : Number(revision.created);
+
+  const createdAtDate = moment.unix(createdNumber);
   const createdAt = useUpdatedAt(createdAtDate);
 
   if (!namespace) return null;
@@ -53,7 +62,19 @@ const ServicesTableRow: FC<{
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          navigate(
+          if (workflow && version) {
+            return navigate(
+              pages.explorer.createHref({
+                namespace,
+                path: workflow,
+                serviceName: service,
+                serviceVersion: version,
+                serviceRevision: revision.rev,
+                subpage: "workflow-services",
+              })
+            );
+          }
+          return navigate(
             pages.services.createHref({
               namespace,
               service,

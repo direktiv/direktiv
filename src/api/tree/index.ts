@@ -90,12 +90,30 @@ export const treeKeys = {
   activityLog: (
     namespace: string,
     { activityId, apiKey }: { activityId: string; apiKey?: string }
-  ) => [
+  ) =>
+    [
+      {
+        scope: "activity-log",
+        activityId,
+        apiKey,
+        namespace,
+      },
+    ] as const,
+  metrics: (
+    namespace: string,
     {
-      scope: "activity-log",
-      activityId,
       apiKey,
-      namespace,
-    },
-  ],
+      path,
+      type,
+    }: { apiKey?: string; path?: string; type: "successful" | "failed" }
+  ) =>
+    [
+      {
+        scope: "metrics",
+        type,
+        apiKey,
+        namespace,
+        path: forceLeadingSlash(path),
+      },
+    ] as const,
 };

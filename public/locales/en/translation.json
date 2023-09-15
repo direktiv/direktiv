@@ -180,6 +180,33 @@
                 "title": "Edit {{name}}"
               }
             }
+          },
+          "overview": {
+            "instances": {
+              "header": "Workflow instances",
+              "noResult": "No instances of this workflow have been executed recently."
+            },
+            "metrics": {
+              "header": "Success / failure rate",
+              "successful": "Successful: {{percentage}}%",
+              "failed": "Failed: {{percentage}}%",
+              "noResult": "No data available"
+            },
+            "trafficDistribution": {
+              "header": "Traffic Distribution",
+              "noResult": "Traffic shaping is not configured for this workflow."
+            },
+            "services": {
+              "header": "Workflow services",
+              "deleteMenuItem": "Redeploy",
+              "delete": {
+                "title": "Redeploy workflow service",
+                "message": "This will delete the pods running to support service <b>{{name}}</b>. They will be recreated the next time an action requiring this service is executed."
+              }
+            },
+            "serviceRevisions": {
+              "header": "Workflow service \"{{name}}\" revisions"
+            }
           }
         }
       },
@@ -188,7 +215,8 @@
           "activeRevision": "Active Revision",
           "revisions": "Revisions",
           "overview": "Overview",
-          "settings": "Settings"
+          "settings": "Settings",
+          "services": "Services"
         },
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
@@ -319,8 +347,7 @@
       },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
-        "updateTooltip": "refetch instances",
-        "successfullExecutions": {
+        "successfulExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recent successful executions."
         },
@@ -346,7 +373,6 @@
           "updatedAt": "last updated",
           "childInstances": {
             "label": "spawned",
-            "updateTooltip": "refetch child instances",
             "instanceCount": "{{count}} instances",
             "instanceCountMax": "+ {{count}} instances",
             "searchPlaceholder": "Search child instances...",
@@ -523,7 +549,7 @@
       },
       "revision": {
         "list": {
-          "title": "Services \"{{name}}\" revisions",
+          "title": "Service \"{{name}}\" revisions",
           "create": "Create a new revision",
           "relativeTime": "{{relativeTime}} ago",
           "tableHeader": {

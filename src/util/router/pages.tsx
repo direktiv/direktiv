@@ -33,6 +33,7 @@ import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
 import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions";
+import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
 
@@ -58,7 +59,8 @@ type ExplorerSubpages =
   | "workflow"
   | "workflow-revisions"
   | "workflow-overview"
-  | "workflow-settings";
+  | "workflow-settings"
+  | "workflow-services";
 
 type ExplorerSubpagesParams =
   | {
@@ -76,8 +78,10 @@ type ExplorerPageSetup = Record<
     createHref: (
       params: {
         namespace: string;
-        path?: string;
-        // if no subpage is provided, it opens the tree view
+        path?: string; // if no subpage is provided, it opens the tree view
+        serviceRevision?: string; // only needed on services sub page
+        serviceVersion?: string; // only needed on services sub page
+        serviceName?: string; // only needed on services sub page
       } & ExplorerSubpagesParams
     ) => string;
     useParams: () => {
@@ -91,6 +95,7 @@ type ExplorerPageSetup = Record<
       isWorkflowRevPage: boolean;
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
+      isWorkflowServicesPage: boolean;
     };
   }
 >;
@@ -205,20 +210,48 @@ export const pages: PageType = {
       if (params.path) {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
-
       const subfolder: Record<ExplorerSubpages, string> = {
         workflow: "workflow/active",
         "workflow-revisions": "workflow/revisions",
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
+        "workflow-services": "workflow/services",
       };
 
-      const searchParams = new URLSearchParams({
-        ...(params.subpage === "workflow-revisions" && params.revision
-          ? { revision: params.revision }
-          : {}),
-      });
+      let searchParamsObj;
+
+      if (params.subpage === "workflow-revisions" && params.revision) {
+        searchParamsObj = { revision: params.revision };
+      }
+
+      if (
+        params.subpage === "workflow-services" &&
+        params.serviceName &&
+        params.serviceVersion
+      ) {
+        searchParamsObj = {
+          name: params.serviceName,
+          version: params.serviceVersion,
+        };
+      }
+
+      if (
+        params.subpage === "workflow-services" &&
+        params.serviceName &&
+        params.serviceVersion &&
+        params.serviceRevision
+      ) {
+        searchParamsObj = {
+          name: params.serviceName,
+          version: params.serviceVersion,
+          revision: params.serviceRevision,
+        };
+      }
+
+      const searchParams = new URLSearchParams(searchParamsObj);
+
       const subpage = params.subpage ? subfolder[params.subpage] : "tree";
+
       return `/${
         params.namespace
       }/explorer/${subpage}${path}?${searchParams.toString()}`;
@@ -239,6 +272,7 @@ export const pages: PageType = {
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
       const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
+      const isWorkflowServicesPage = checkHandler(fourthLvl, "isServicesPage");
 
       return {
         path: isExplorerPage ? path : undefined,
@@ -251,6 +285,7 @@ export const pages: PageType = {
         isWorkflowRevPage,
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
+        isWorkflowServicesPage,
       };
     },
     route: {
@@ -286,6 +321,11 @@ export const pages: PageType = {
               path: "settings/*",
               element: <WorkflowPageSettings />,
               handle: { isSettingsPage: true },
+            },
+            {
+              path: "services/*",
+              element: <WorkflowPageServices />,
+              handle: { isServicesPage: true },
             },
           ],
         },
