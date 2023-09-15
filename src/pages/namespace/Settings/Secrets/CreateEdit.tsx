@@ -5,24 +5,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { SecretFormSchema, SecretFormSchemaType } from "~/api/secrets/schema";
+import { PlusCircle, SquareAsterisk } from "lucide-react";
+import {
+  SecretFormSchema,
+  SecretFormSchemaType,
+  SecretSchemaType,
+} from "~/api/secrets/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { EditorMimeTypeSchema } from "../Variables/MimeTypeSelect";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import { PlusCircle } from "lucide-react";
 import { Textarea } from "~/design/TextArea";
-import { useCreateSecret } from "~/api/secrets/mutate/createSecret";
 import { useTranslation } from "react-i18next";
+import { useUpdateSecret } from "~/api/secrets/mutate/updateSecret";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type CreateProps = { onSuccess: () => void };
+type CreateProps = { item?: SecretSchemaType; onSuccess: () => void };
 
-const Create = ({ onSuccess }: CreateProps) => {
+const Create = ({ onSuccess, item }: CreateProps) => {
   const { t } = useTranslation();
 
-  const { mutate: createSecretMutation } = useCreateSecret({
+  const { mutate: createSecretMutation } = useUpdateSecret({
     onSuccess,
   });
 
@@ -38,18 +44,34 @@ const Create = ({ onSuccess }: CreateProps) => {
     handleSubmit,
     setValue,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm<SecretFormSchemaType>({
+    defaultValues: {
+      name: item?.name ?? "",
+      value: "",
+    },
     resolver: zodResolver(SecretFormSchema),
   });
+
+  const editMode = !!item;
 
   const onFilepickerChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    clearErrors();
     const file = event.target.files?.[0];
     if (!file) return;
     try {
       const fileContent = await file.text();
+      const mimeType = file?.type ?? "";
+      const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
+      if (!parsedMimetype.success) {
+        setError("value", {
+          message: t("pages.settings.secrets.create.unsupported"),
+        });
+        return;
+      }
       setValue("value", fileContent);
     } catch (e) {
       setError("value", {
@@ -57,6 +79,8 @@ const Create = ({ onSuccess }: CreateProps) => {
       });
     }
   };
+
+  const showEditNote = item?.initialized === true;
 
   return (
     <DialogContent>
@@ -67,23 +91,35 @@ const Create = ({ onSuccess }: CreateProps) => {
       >
         <DialogHeader>
           <DialogTitle>
-            <PlusCircle /> {t("pages.settings.secrets.create.description")}
+            {editMode ? <SquareAsterisk /> : <PlusCircle />}
+            {editMode
+              ? t("pages.settings.secrets.edit.description", {
+                  name: item?.name ?? "",
+                })
+              : t("pages.settings.secrets.create.description")}
           </DialogTitle>
         </DialogHeader>
 
-        <FormErrors errors={errors} className="mb-5" />
+        {showEditNote && (
+          <Alert variant="info">
+            {t("pages.settings.secrets.edit.editNote")}
+          </Alert>
+        )}
 
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="name">
-            {t("pages.settings.secrets.create.name")}
-          </label>
-          <Input
-            id="name"
-            data-testid="new-secret-name"
-            placeholder="secret-name"
-            {...register("name")}
-          />
-        </fieldset>
+        <FormErrors errors={errors} className="mb-5" />
+        {!editMode && (
+          <fieldset className="flex items-center gap-5">
+            <label className="w-[150px] text-right" htmlFor="name">
+              {t("pages.settings.secrets.create.name")}
+            </label>
+            <Input
+              id="name"
+              data-testid="new-secret-name"
+              placeholder="secret-name"
+              {...register("name")}
+            />
+          </fieldset>
+        )}
 
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="file-upload">
@@ -107,7 +143,9 @@ const Create = ({ onSuccess }: CreateProps) => {
             </Button>
           </DialogClose>
           <Button data-testid="secret-create-submit" type="submit">
-            {t("components.button.label.create")}
+            {editMode
+              ? t("components.button.label.save")
+              : t("components.button.label.create")}
           </Button>
         </DialogFooter>
       </form>

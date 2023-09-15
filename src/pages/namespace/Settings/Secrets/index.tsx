@@ -1,17 +1,24 @@
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useMemo, useState } from "react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
+import { PlusCircle, SquareAsterisk } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import Create from "./Create";
+import CreateEdit from "./CreateEdit";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
-import { Dialog } from "~/design/Dialog";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { SecretSchemaType } from "~/api/secrets/schema";
-import { SquareAsterisk } from "lucide-react";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useTranslation } from "react-i18next";
@@ -20,9 +27,9 @@ const pageSize = 10;
 
 const SecretsList: FC = () => {
   const { t } = useTranslation();
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteSecret, setDeleteSecret] = useState<SecretSchemaType>();
+  const [editItem, setEditItem] = useState<SecretSchemaType>();
   const [createSecret, setCreateSecret] = useState(false);
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
@@ -48,6 +55,7 @@ const SecretsList: FC = () => {
     if (dialogOpen === false) {
       setDeleteSecret(undefined);
       setCreateSecret(false);
+      setEditItem(undefined);
     }
   }, [dialogOpen]);
 
@@ -90,13 +98,55 @@ const SecretsList: FC = () => {
             </div>
             <Card className="mb-4">
               {currentItems.length ? (
-                <Table>
-                  <TableBody>
-                    {currentItems.map((item, i) => (
-                      <ItemRow item={item} key={i} onDelete={setDeleteSecret} />
-                    ))}
-                  </TableBody>
-                </Table>
+                <TooltipProvider>
+                  <Table>
+                    <TableBody>
+                      {currentItems.map((item, i) => (
+                        <ItemRow
+                          item={item}
+                          key={i}
+                          onDelete={setDeleteSecret}
+                          onEdit={() => setEditItem(item)}
+                        >
+                          <div className="flex">
+                            <div className="grow">{item.name}</div>
+                            {!item.initialized && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <DialogTrigger
+                                    onClick={() => {
+                                      setEditItem(item);
+                                    }}
+                                    asChild
+                                  >
+                                    <Button
+                                      type="button"
+                                      variant="primary"
+                                      size="sm"
+                                    >
+                                      <PlusCircle />
+                                      {t(
+                                        "pages.settings.secrets.list.initializeBtn"
+                                      )}
+                                    </Button>
+                                  </DialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  className="w-96 whitespace-pre-wrap break-words"
+                                  align="end"
+                                >
+                                  {t(
+                                    "pages.settings.secrets.list.notInitializedTooltip"
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </ItemRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TooltipProvider>
               ) : (
                 <NoResult icon={SquareAsterisk}>
                   {t(
@@ -134,7 +184,16 @@ const SecretsList: FC = () => {
           onConfirm={() => deleteSecretMutation({ secret: deleteSecret })}
         />
       )}
-      {createSecret && <Create onSuccess={() => setDialogOpen(false)} />}
+      {createSecret && <CreateEdit onSuccess={() => setDialogOpen(false)} />}
+
+      {editItem && (
+        <CreateEdit
+          item={editItem}
+          onSuccess={() => {
+            setDialogOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };

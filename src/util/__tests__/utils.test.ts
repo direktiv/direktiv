@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { prettifyJsonString } from "../utils";
+import { prettifyJsonString } from "../helpers";
 
 describe("prettifyJsonString", () => {
   test("empty json string", () => {
