@@ -13,7 +13,11 @@ import { useTranslation } from "react-i18next";
 
 const Layout = () => {
   const { t } = useTranslation();
-  const { data: availableNamespaces, isFetched } = useListNamespaces();
+  const {
+    data: availableNamespaces,
+    isFetched,
+    isRefetching,
+  } = useListNamespaces();
   const activeNamespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
   const [, setDialogOpen] = useState(false);
@@ -42,7 +46,16 @@ const Layout = () => {
   ];
 
   useEffect(() => {
-    if (availableNamespaces && availableNamespaces.results[0]) {
+    if (
+      availableNamespaces &&
+      availableNamespaces.results[0] &&
+      /**
+       * the namespace list might still be refetching after a cache invalidation. This could be caused by a
+       * namespace delete action that was just triggered. We have to wait until the refetch is done to avoid
+       * using an old namespaces list.
+       */
+      !isRefetching
+    ) {
       // if there is a prefered namespace in localStorage, redirect to it
       if (
         activeNamespace &&
@@ -60,7 +73,13 @@ const Layout = () => {
       );
       return;
     }
-  }, [activeNamespace, availableNamespaces, navigate, setNamespace]);
+  }, [
+    activeNamespace,
+    availableNamespaces,
+    isRefetching,
+    navigate,
+    setNamespace,
+  ]);
 
   // wait until namespaces are fetched to avoid layout shifts
   // either the useEffect will redirect or the onboarding screen
