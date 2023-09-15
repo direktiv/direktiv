@@ -1,13 +1,7 @@
-import {
-  SecretCreatedSchema,
-  SecretCreatedSchemaType,
-  SecretListSchemaType,
-  SecretSchemaType,
-} from "../schema";
+import { SecretUpdatedSchema, SecretUpdatedSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { secretKeys } from "..";
-import { sortByName } from "~/api/tree/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -15,22 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const updateCache = (
-  oldData: SecretListSchemaType | undefined,
-  createdItem: SecretCreatedSchemaType
-) => {
-  if (!oldData) return undefined;
-  const newListItem: SecretSchemaType = { name: createdItem.key };
-  const oldResults = oldData.secrets.results;
-  return {
-    ...oldData,
-    secrets: {
-      results: [...oldResults, newListItem].sort(sortByName),
-    },
-  };
-};
-
-export const createSecret = apiFactory({
+export const updateSecret = apiFactory({
   url: ({
     baseUrl,
     namespace,
@@ -41,13 +20,13 @@ export const createSecret = apiFactory({
     baseUrl?: string;
   }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/secrets/${name}`,
   method: "PUT",
-  schema: SecretCreatedSchema,
+  schema: SecretUpdatedSchema,
 });
 
-export const useCreateSecret = ({
+export const useUpdateSecret = ({
   onSuccess,
 }: {
-  onSuccess?: (secret: SecretCreatedSchemaType) => void;
+  onSuccess?: (secret: SecretUpdatedSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -61,7 +40,7 @@ export const useCreateSecret = ({
 
   return useMutationWithPermissions({
     mutationFn: ({ name, value }: { name: string; value: string }) =>
-      createSecret({
+      updateSecret({
         apiKey: apiKey ?? undefined,
         payload: value,
         urlParams: {
@@ -70,15 +49,14 @@ export const useCreateSecret = ({
         },
       }),
     onSuccess: (secret) => {
-      queryClient.setQueryData<SecretListSchemaType>(
+      queryClient.invalidateQueries(
         secretKeys.secretsList(namespace, {
           apiKey: apiKey ?? undefined,
-        }),
-        (oldData) => updateCache(oldData, secret)
+        })
       );
       toast({
-        title: t("api.secrets.mutate.createSecret.success.title"),
-        description: t("api.secrets.mutate.createSecret.success.description", {
+        title: t("api.secrets.mutate.updateSecret.success.title"),
+        description: t("api.secrets.mutate.updateSecret.success.description", {
           name: secret.key,
         }),
         variant: "success",
@@ -88,7 +66,7 @@ export const useCreateSecret = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.secrets.mutate.createSecret.error.description"),
+        description: t("api.secrets.mutate.updateSecret.error.description"),
         variant: "error",
       });
     },

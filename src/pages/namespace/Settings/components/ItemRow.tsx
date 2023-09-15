@@ -18,6 +18,7 @@ type ItemRowProps<TItem> = {
   onDelete: (item: TItem) => void;
   onEdit?: () => void;
   onDownload?: () => void;
+  children?: React.ReactNode;
 };
 
 const ItemRow = <ItemType,>({
@@ -25,12 +26,13 @@ const ItemRow = <ItemType,>({
   onDelete,
   onDownload,
   onEdit,
+  children,
 }: ItemRowProps<ItemType & { name: string }>) => {
   const { t } = useTranslation();
 
   return (
     <TableRow>
-      <TableCell data-testid="item-name">{item.name}</TableCell>
+      <TableCell data-testid="item-name">{children}</TableCell>
       <TableCell className="w-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

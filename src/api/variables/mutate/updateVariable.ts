@@ -53,7 +53,7 @@ export const useUpdateVar = ({
         name,
       },
       headers: {
-        "content-type": mimeType,
+        "Content-Type": mimeType,
       },
     });
 

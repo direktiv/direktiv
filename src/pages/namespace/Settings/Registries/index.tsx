@@ -101,7 +101,9 @@ const RegistriesList: FC = () => {
                             key={i}
                             item={item}
                             onDelete={setDeleteRegistry}
-                          />
+                          >
+                            {item.name}
+                          </ItemRow>
                         ))}
                       </TableBody>
                     </Table>
