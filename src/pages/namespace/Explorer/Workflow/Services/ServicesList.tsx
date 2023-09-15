@@ -1,17 +1,17 @@
-import { Layers, RefreshCcw, RotateCcw } from "lucide-react";
+import { DeleteMenuItem, ServiceDelete } from "../components/ServiceDelete";
 import {
   ServicesStreamingSubscriber,
   useServices,
 } from "~/api/services/query/getAll";
-import { Trans, useTranslation } from "react-i18next";
 
 import { Card } from "~/design/Card";
-import Delete from "~/pages/namespace/Services/List/Delete";
 import { Dialog } from "@radix-ui/react-dialog";
 import { DialogContent } from "~/design/Dialog";
+import { Layers } from "lucide-react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "~/pages/namespace/Services/List/Table";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const ServicesList = ({ workflow }: { workflow: string }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -20,16 +20,6 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
   const { data, isSuccess: servicesIsSuccess } = useServices({
     workflow,
   });
-
-  const DeleteMenuItem = () => {
-    const { t } = useTranslation();
-    return (
-      <>
-        <RefreshCcw className="mr-2 h-4 w-4" />
-        {t("pages.explorer.tree.workflow.overview.services.deleteMenuItem")}
-      </>
-    );
-  };
 
   const { t } = useTranslation();
 
@@ -55,23 +45,10 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
 
           <DialogContent>
             {deleteService && (
-              <Delete
-                icon={RotateCcw}
-                header={t(
-                  "pages.explorer.tree.workflow.overview.services.delete.title"
-                )}
-                message={
-                  <Trans
-                    i18nKey="pages.explorer.tree.workflow.overview.services.delete.message"
-                    values={{ name: deleteService.info.name }}
-                  />
-                }
-                service={deleteService.info.name}
+              <ServiceDelete
+                service={deleteService}
                 workflow={workflow}
-                version={deleteService.info.revision}
-                close={() => {
-                  setDialogOpen(false);
-                }}
+                onClose={() => setDialogOpen(false)}
               />
             )}
           </DialogContent>
