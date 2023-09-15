@@ -116,11 +116,13 @@ const JqPlaygroundPage: FC = () => {
         >
           <div className="flex flex-col gap-5 sm:flex-row">
             <Input
+              data-testid="jq-query-input"
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
               value={query}
               onChange={(e) => changeQuery(e.target.value)}
             />
             <Button
+              data-testid="jq-run"
               className="grow sm:w-44"
               type="submit"
               variant="primary"
@@ -149,7 +151,7 @@ const JqPlaygroundPage: FC = () => {
                   }}
                 />
               </div>
-              <div className="flex grow">
+              <div data-testid="jq-input-editor" className="flex grow">
                 <Editor
                   value={input}
                   language="json"
@@ -172,9 +174,10 @@ const JqPlaygroundPage: FC = () => {
                     type: "button",
                     disabled: !output,
                   }}
+                  testid="copy-output"
                 />
               </div>
-              <div className="flex grow">
+              <div data-testid="jq-output-editor" className="flex grow">
                 <Editor
                   language="json"
                   value={output}

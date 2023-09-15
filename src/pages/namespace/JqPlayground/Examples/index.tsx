@@ -30,6 +30,7 @@ const Examples = ({
               <div>{t(`pages.jqPlayground.examples.snippets.${key}`)}</div>
             </div>
             <Button
+              data-testid={`jq-run-snippets-${key}`}
               onClick={() =>
                 onRunSnippet({
                   query,
