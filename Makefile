@@ -57,3 +57,13 @@ cross:
 	@docker buildx create --use --name=direktiv --node=direktiv
 	docker buildx build --platform linux/amd64,linux/arm64 -f ${DOCKERFILE_SERVER} \
 		-t ${docker_repo}/${docker_image}:${docker_tag} --push .
+
+
+.PHONY: forward-api
+forward-api: 
+	kubectl port-forward svc/direktiv-api 7755:1644
+
+# requires forward-api to run in different console
+.PHONY: run-container
+run-container: 
+	docker run --network host  -e DIREKTIV_SERVER_BACKEND=http://127.0.0.1:7755 -p 2304:2304 localhost:5000/ui
