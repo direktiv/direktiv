@@ -17,6 +17,62 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_FileVariableParcelsServer) error {
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	inst, err := internal.getInstance(ctx, req.GetInstance())
+	if err != nil {
+		return err
+	}
+
+	tx, err := internal.beginSqlTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	file, err := tx.FileStore().ForRootNamespaceAndName(inst.Instance.NamespaceID, defaultRootName).GetFile(ctx, req.GetKey())
+	if err != nil {
+		return err
+	}
+
+	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+	if err != nil {
+		return err
+	}
+
+	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	if err != nil {
+		return err
+	}
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		return err
+	}
+
+	tx.Rollback()
+
+	iresp := &grpc.VariableInternalResponse{
+		Instance:  inst.Instance.ID.String(),
+		Key:       file.Path,
+		CreatedAt: timestamppb.New(file.CreatedAt),
+		UpdatedAt: timestamppb.New(revision.UpdatedAt),
+		Checksum:  revision.Checksum,
+		TotalSize: int64(len(data)),
+		Data:      data,
+		MimeType:  file.MIMEType,
+	}
+
+	err = srv.Send(iresp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_NamespaceVariableParcelsServer) error {
 	internal.sugar.Debugf("Handling gRPC request: %s", this())
 
