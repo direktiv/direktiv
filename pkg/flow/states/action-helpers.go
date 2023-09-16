@@ -180,7 +180,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: got zero-length string", idx)
 		}
 
-		if !util.VarNameRegex.MatchString(file.Key) {
+		if file.Scope != util.VarScopeFileSystem && !util.VarNameRegex.MatchString(file.Key) {
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: must start with a letter and only contain letters, numbers and '_'", idx)
 		}
 
