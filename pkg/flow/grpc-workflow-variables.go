@@ -30,7 +30,7 @@ func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequ
 	}
 
 	resp, err := internal.flow.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
-		Namespace: inst.Instance.NamespaceID.String(),
+		Namespace: inst.TelemetryInfo.NamespaceName,
 		Path:      inst.Instance.WorkflowPath,
 		Key:       req.GetKey(),
 	})

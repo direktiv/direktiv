@@ -84,7 +84,7 @@ func (internal *internal) NamespaceVariableParcels(req *grpc.VariableInternalReq
 	}
 
 	resp, err := internal.flow.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
-		Namespace: inst.Instance.NamespaceID.String(),
+		Namespace: inst.TelemetryInfo.NamespaceName,
 		Key:       req.GetKey(),
 	})
 	if err != nil {

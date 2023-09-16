@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"time"
 
@@ -23,15 +24,17 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	inst, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
+		fmt.Println("> A", err)
 		return err
 	}
 
 	resp, err := internal.flow.InstanceVariable(ctx, &grpc.InstanceVariableRequest{
-		Namespace: inst.Instance.NamespaceID.String(),
+		Namespace: inst.TelemetryInfo.NamespaceName,
 		Instance:  inst.Instance.ID.String(),
 		Key:       req.GetKey(),
 	})
 	if err != nil {
+		fmt.Println("> B", err)
 		return err
 	}
 
@@ -48,6 +51,7 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	err = srv.Send(iresp)
 	if err != nil {
+		fmt.Println("> C", err)
 		return err
 	}
 
