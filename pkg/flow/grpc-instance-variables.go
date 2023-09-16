@@ -1,11 +1,15 @@
 package flow
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"io"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -228,4 +232,118 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 			time.Sleep(time.Second * 5)
 		}
 	}
+}
+
+func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstanceVariableRequest) (*grpc.SetInstanceVariableResponse, error) {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+
+	inst, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
+		NamespaceID: inst.Instance.NamespaceID,
+		InstanceID:  inst.Instance.ID,
+		Name:        req.GetKey(),
+		Data:        req.GetData(),
+		MimeType:    req.GetMimeType(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	// TODO: Alex, please fix here.
+
+	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Set namespace variable '%s'.", req.GetKey())
+	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
+
+	var resp grpc.SetInstanceVariableResponse
+
+	resp.Namespace = inst.TelemetryInfo.NamespaceName
+	resp.Instance = inst.Instance.ID.String()
+	resp.Key = req.GetKey()
+	resp.CreatedAt = timestamppb.New(newVar.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(newVar.UpdatedAt)
+	resp.TotalSize = int64(newVar.Size)
+	resp.MimeType = newVar.MimeType
+
+	return &resp, nil
+}
+
+func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
+	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	ctx := srv.Context()
+
+	req, err := srv.Recv()
+	if err != nil {
+		return err
+	}
+
+	firstReq := req
+
+	totalSize := int(req.GetTotalSize())
+
+	buf := new(bytes.Buffer)
+
+	for {
+		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		if err != nil {
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		}
+
+		req, err = srv.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		if req.TotalSize <= 0 {
+			if buf.Len() >= totalSize {
+				break
+			}
+		} else {
+			if req == nil {
+				break
+			}
+		}
+
+		if int(req.GetTotalSize()) != totalSize {
+			return errors.New("totalSize changed mid stream")
+		}
+	}
+
+	if buf.Len() > totalSize {
+		return errors.New("received more data than expected")
+	}
+
+	firstReq.Data = buf.Bytes()
+	resp, err := flow.SetInstanceVariable(ctx, firstReq)
+	if err != nil {
+		return err
+	}
+	err = srv.SendAndClose(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
