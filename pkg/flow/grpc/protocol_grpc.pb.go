@@ -7059,6 +7059,7 @@ const (
 	Internal_SetWorkflowVariableParcels_FullMethodName  = "/direktiv_flow.Internal/SetWorkflowVariableParcels"
 	Internal_InstanceVariableParcels_FullMethodName     = "/direktiv_flow.Internal/InstanceVariableParcels"
 	Internal_SetInstanceVariableParcels_FullMethodName  = "/direktiv_flow.Internal/SetInstanceVariableParcels"
+	Internal_FileVariableParcels_FullMethodName         = "/direktiv_flow.Internal/FileVariableParcels"
 )
 
 // InternalClient is the client API for Internal service.
@@ -7073,6 +7074,7 @@ type InternalClient interface {
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetWorkflowVariableParcelsClient, error)
 	InstanceVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_InstanceVariableParcelsClient, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Internal_SetInstanceVariableParcelsClient, error)
+	FileVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_FileVariableParcelsClient, error)
 }
 
 type internalClient struct {
@@ -7299,6 +7301,38 @@ func (x *internalSetInstanceVariableParcelsClient) CloseAndRecv() (*SetVariableI
 	return m, nil
 }
 
+func (c *internalClient) FileVariableParcels(ctx context.Context, in *VariableInternalRequest, opts ...grpc.CallOption) (Internal_FileVariableParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Internal_ServiceDesc.Streams[6], Internal_FileVariableParcels_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &internalFileVariableParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Internal_FileVariableParcelsClient interface {
+	Recv() (*VariableInternalResponse, error)
+	grpc.ClientStream
+}
+
+type internalFileVariableParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *internalFileVariableParcelsClient) Recv() (*VariableInternalResponse, error) {
+	m := new(VariableInternalResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // InternalServer is the server API for Internal service.
 // All implementations must embed UnimplementedInternalServer
 // for forward compatibility
@@ -7311,6 +7345,7 @@ type InternalServer interface {
 	SetWorkflowVariableParcels(Internal_SetWorkflowVariableParcelsServer) error
 	InstanceVariableParcels(*VariableInternalRequest, Internal_InstanceVariableParcelsServer) error
 	SetInstanceVariableParcels(Internal_SetInstanceVariableParcelsServer) error
+	FileVariableParcels(*VariableInternalRequest, Internal_FileVariableParcelsServer) error
 	mustEmbedUnimplementedInternalServer()
 }
 
@@ -7341,6 +7376,9 @@ func (UnimplementedInternalServer) InstanceVariableParcels(*VariableInternalRequ
 }
 func (UnimplementedInternalServer) SetInstanceVariableParcels(Internal_SetInstanceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetInstanceVariableParcels not implemented")
+}
+func (UnimplementedInternalServer) FileVariableParcels(*VariableInternalRequest, Internal_FileVariableParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method FileVariableParcels not implemented")
 }
 func (UnimplementedInternalServer) mustEmbedUnimplementedInternalServer() {}
 
@@ -7532,6 +7570,27 @@ func (x *internalSetInstanceVariableParcelsServer) Recv() (*SetVariableInternalR
 	return m, nil
 }
 
+func _Internal_FileVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(VariableInternalRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(InternalServer).FileVariableParcels(m, &internalFileVariableParcelsServer{stream})
+}
+
+type Internal_FileVariableParcelsServer interface {
+	Send(*VariableInternalResponse) error
+	grpc.ServerStream
+}
+
+type internalFileVariableParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *internalFileVariableParcelsServer) Send(m *VariableInternalResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Internal_ServiceDesc is the grpc.ServiceDesc for Internal service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -7578,6 +7637,11 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SetInstanceVariableParcels",
 			Handler:       _Internal_SetInstanceVariableParcels_Handler,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "FileVariableParcels",
+			Handler:       _Internal_FileVariableParcels_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "pkg/flow/grpc/protocol.proto",
