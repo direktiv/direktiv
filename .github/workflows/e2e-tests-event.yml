@@ -1,4 +1,4 @@
-name: Run most E2E Tests
+name: Run Event E2E Tests
 on:
   push:
     tags:
@@ -149,41 +149,11 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('test//package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      # - name: Run errors tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: errors/
-
-      - name: Run filesystem tests
+      - name: Run events tests
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
-          JEST_PREFIX: filesystem/
-
-      - name: Run engine tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-          JEST_PREFIX: engine/
-
-      # - name: Run namespaces tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: namespaces/
-
-      # - name: Run events tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: events/
-
-      # - name: Run mirror tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: mirror/
+          JEST_PREFIX: events/
 
       - name: Show logs
         run: |

@@ -1,0 +1,163 @@
+name: Run mirror E2E Tests
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
+
+env:
+  KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  SRVTAG: v0.8.0
+
+jobs:
+  test:
+    # container:
+    #   image: direktiv/direktiv:env.SRVTAG
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Ubuntu packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-packages-
+
+      - name: Setup k3s
+        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+
+      - name: Install Helm
+        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Install a database
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install psql-single bitnami/postgresql
+
+      - name: Add Direktiv Helm repository
+        run: helm repo add direktiv https://chart.direktiv.io
+
+      - name: Clone Direktiv-charts repository
+        run: |
+          git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
+          git -C direktiv-charts checkout develop
+          helm dependency update direktiv-charts/charts/direktiv
+
+      - name: Wait for PostgreSQL pod to be ready
+        run: |
+          while ! kubectl get secret --namespace default psql-single-postgresql; do
+              sleep 2
+          done
+
+      - name: Create dev.yaml file
+        run: |
+          cat <<EOF > dev.yaml
+          pullPolicy: IfNotPresent
+          debug: "true"
+
+          secrets:
+            image: "direktiv/direktiv"
+            tag: "${{ env.SRVTAG }}"
+
+          flow:
+            image: "direktiv/direktiv"
+            dbimage: "direktiv/direktiv"
+            tag: "${{ env.SRVTAG }}"
+
+          ui:
+            image: "direktiv/ui"
+            tag: "latest"
+
+          api:
+            image: "direktiv/direktiv"
+            tag: "${{ env.SRVTAG }}"
+
+          functions:
+            namespace: direktiv-services-direktiv
+            image: "direktiv/direktiv"
+            tag: "${{ env.SRVTAG }}"
+            sidecar: "direktiv/direktiv"
+            initPodImage: "direktiv/init-pod"
+          database:
+            host: "psql-single-postgresql"
+            port: 5432
+            user: "postgres"
+            password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
+            name: "postgres"
+            sslmode: "disable"
+          EOF
+      - name: Cache Docker layers
+        id: docker-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.docker
+          key: docker-${{ runner.os }}-${{ hashFiles('build/docker/direktiv/Dockerfile') }}
+          restore-keys: |
+            docker-${{ runner.os }}-
+
+      - name: Build images
+        run: |
+          docker build -t direktiv/direktiv:${{ env.SRVTAG }} -f build/docker/direktiv/Dockerfile .
+          docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv:${{ env.SRVTAG }}.tar
+          sudo k3s ctr images import direktiv:${{ env.SRVTAG }}.tar
+        env:
+          DOCKER_BUILDKIT: 1
+      - name: Install Direktiv chart
+        run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
+
+      - name: Wait for Direktiv pods to be ready
+        run: |
+          sleep 1
+          kubectl get all
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
+          echo "Listing all pods:"
+          kubectl get all
+
+      - name: List all pods
+        run: |
+          kubectl get pods 
+          kubectl describe deployments/direktiv-flow
+
+      - name: Get Internal IP
+        id: getInternalIP
+        run: |
+          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
+          echo "::set-output name=internal_ip::$internal_ip"
+
+      - name: Set Environment Variables
+        run: echo "DIREKTIV_HOST=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
+
+      - name: Wait for Direktiv function pods to be ready
+        run: |
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-functions --timeout=120s
+          echo "Listing all pods:"
+          kubectl get all
+
+      - name: List all pods
+        run: |
+          kubectl get pods 
+          kubectl logs deployments/direktiv-flow | tail -n 200
+
+      - name: Cache test dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('test//package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Run mirror tests
+        run: |
+          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+        env:
+          JEST_PREFIX: mirror/
+
+      - name: Show logs
+        run: |
+          kubectl logs deployments/direktiv-flow | tail -n 200
+
+      - name: Cleanup test cache
+        run: npm cache clean --force
