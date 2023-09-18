@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
@@ -167,6 +168,21 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 
 	item, err := tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, ns.ID, file.Path, req.GetKey())
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			t := time.Now()
+
+			return &grpc.WorkflowVariableResponse{
+				Namespace: ns.Name,
+				Path:      file.Path,
+				Key:       req.GetKey(),
+				CreatedAt: timestamppb.New(t),
+				UpdatedAt: timestamppb.New(t),
+				TotalSize: int64(0),
+				MimeType:  "",
+				Data:      make([]byte, 0),
+			}, nil
+		}
+
 		return nil, err
 	}
 
