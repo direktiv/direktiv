@@ -33,7 +33,7 @@ export default defineConfig({
     // trace: "on-first-retry",
     /* temporary override: this is expensive, but useful for debugging tests */
     trace: "retain-on-failure",
-    permissions: ["clipboard-read"],
+    permissions: ["clipboard-read", "clipboard-write"],
   },
 
   timeout: 30000, // defaults to 30000

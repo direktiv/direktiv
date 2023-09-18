@@ -13,17 +13,19 @@ type SnippetKey =
   | "conditionals"
   | "stringInterpolation";
 
+export interface KeyVal {
+  /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
+  [key: string]: string | number | any;
+}
 export interface Snippet {
   key: SnippetKey;
   example: string;
   query: string;
   input: string;
   output:
-    | {
-        [key: string]: any;
-      }
-    | string
-    | number;
+  | KeyVal
+  | string
+  | number;
 }
 
 const snippets: Snippet[] = [

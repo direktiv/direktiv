@@ -1,7 +1,6 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
+import exampleSnippets, { KeyVal } from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
 import { expect, test } from "@playwright/test";
-
-import exampleSnippets from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
 
 let namespace = "";
 
@@ -14,7 +13,7 @@ test.afterEach(async () => {
     namespace = "";
 });
 
-function deepObjectsAreEqual(objA: any, objB: any): boolean {
+function deepObjectsAreEqual(objA: KeyVal, objB: KeyVal): boolean {
     if (objA === objB) return true;
 
     if (typeof objA !== "object" || typeof objB !== "object") return false;
@@ -33,7 +32,7 @@ function deepObjectsAreEqual(objA: any, objB: any): boolean {
     return true;
 }
 
-const xCompare = (output: string, expectation: any) => {
+const xCompare = (output: string, expectation: KeyVal) => {
     if (typeof expectation === "number") {
         return parseFloat(output) == expectation;
     } else if (typeof expectation === "string") {
@@ -127,12 +126,13 @@ test("it is possible to run snippets", async ({ page }) => {
             .toBe(true);
         if (i === 0) {
             // test copy button
-            // await page.getByTestId("copy-output").click({ force: true });
-            // await page.waitForTimeout(1000)
-            // const clipboardText = await page.evaluate(() => {
-            //     return navigator.clipboard.readText();
-            // });
-            // expect(clipboardText, "").toBe("Test")
+            await page.getByTestId("copy-output").click({ force: true });
+            await page.waitForTimeout(1000);
+            const clipboardText = await page.evaluate(() =>
+                navigator.clipboard.readText()
+            );
+            const comparedClipboard = xCompare(clipboardText, item?.output);
+            expect(comparedClipboard, "").toBe(true);
         }
     }
 });
