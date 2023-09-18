@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -138,6 +139,21 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 
 	item, err := tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, inst.Instance.ID, req.GetKey())
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			t := time.Now()
+
+			return &grpc.InstanceVariableResponse{
+				Namespace: req.GetNamespace(),
+				Instance:  inst.Instance.ID.String(),
+				Key:       req.GetKey(),
+				CreatedAt: timestamppb.New(t),
+				UpdatedAt: timestamppb.New(t),
+				TotalSize: int64(0),
+				MimeType:  "",
+				Data:      make([]byte, 0),
+			}, nil
+		}
+
 		return nil, err
 	}
 

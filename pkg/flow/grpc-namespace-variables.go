@@ -10,7 +10,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -33,36 +35,59 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 	}
 	defer tx.Rollback()
 
+	var data []byte
+	var path, checksum, mime string
+	var createdAt, updatedAt *timestamppb.Timestamp
+
+	path, err = filestore.SanitizePath(req.GetKey())
+	if err != nil {
+		return err
+	}
+
 	file, err := tx.FileStore().ForRootNamespaceAndName(inst.Instance.NamespaceID, defaultRootName).GetFile(ctx, req.GetKey())
-	if err != nil {
-		return err
-	}
+	if err == nil {
+		revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+		if err != nil {
+			return err
+		}
 
-	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-	if err != nil {
-		return err
-	}
+		path = file.Path
+		checksum = revision.Checksum
+		createdAt = timestamppb.New(file.CreatedAt)
+		updatedAt = timestamppb.New(revision.UpdatedAt)
+		mime = file.MIMEType
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return err
-	}
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		return err
+		dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+		if err != nil {
+			return err
+		}
+
+		data, err = io.ReadAll(dataReader)
+		if err != nil {
+			return err
+		}
+	} else {
+		if errors.Is(err, filestore.ErrNotFound) {
+			data = make([]byte, 0)
+			checksum = bytedata.Checksum(data)
+			createdAt = timestamppb.New(time.Now())
+			updatedAt = createdAt
+		} else {
+			return err
+		}
 	}
 
 	tx.Rollback()
 
 	iresp := &grpc.VariableInternalResponse{
 		Instance:  inst.Instance.ID.String(),
-		Key:       file.Path,
-		CreatedAt: timestamppb.New(file.CreatedAt),
-		UpdatedAt: timestamppb.New(revision.UpdatedAt),
-		Checksum:  revision.Checksum,
+		Key:       path,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+		Checksum:  checksum,
 		TotalSize: int64(len(data)),
 		Data:      data,
-		MimeType:  file.MIMEType,
+		MimeType:  mime,
 	}
 
 	err = srv.Send(iresp)
@@ -189,6 +214,20 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 
 	item, err := tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, ns.ID, req.GetKey())
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			t := time.Now()
+
+			return &grpc.NamespaceVariableResponse{
+				Namespace: ns.Name,
+				Key:       req.GetKey(),
+				CreatedAt: timestamppb.New(t),
+				UpdatedAt: timestamppb.New(t),
+				TotalSize: int64(0),
+				MimeType:  "",
+				Data:      make([]byte, 0),
+			}, nil
+		}
+
 		return nil, err
 	}
 
