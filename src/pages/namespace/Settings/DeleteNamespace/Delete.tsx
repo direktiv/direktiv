@@ -77,7 +77,12 @@ const Delete = ({ close }: DeleteProps) => {
               values={{ namespace }}
             />
           </label>
-          <Input id="confirm" value={confirmText} onChange={onInputChange} />
+          <Input
+            data-testid="inp-delete-namespace-confirm"
+            id="confirm"
+            value={confirmText}
+            onChange={onInputChange}
+          />
         </div>
       </form>
 
