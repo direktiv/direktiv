@@ -320,3 +320,71 @@ test("it is possible to update broadcasts", async ({ page }) => {
       .toBe(!broadcasts[key]);
   }
 });
+
+test("it is possible to test connection when create registries", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("registry-create").click();
+
+  const newRegistry = {
+    url: faker.internet.url(),
+    user: faker.internet.userName(),
+    password: faker.internet.password(),
+  };
+
+  const validUrl = "https://google.com";
+  const invalidUrl = "https://hub.dokcer.com)";
+
+  const testConnectionButton = page.getByTestId("btn-test-connection");
+  await expect(
+    testConnectionButton,
+    "test connection button should be disabled before we fill all the input"
+  ).toBeDisabled();
+  await page.getByTestId("new-registry-url").type(validUrl);
+  await expect(
+    testConnectionButton,
+    "test connection button should be disabled before we fill all the input"
+  ).toBeDisabled();
+  await page.getByTestId("new-registry-pwd").type(newRegistry.password);
+  await expect(
+    testConnectionButton,
+    "test connection button should be disabled before we fill all the input"
+  ).toBeDisabled();
+  await page.getByTestId("new-registry-user").type(newRegistry.user);
+  await expect(
+    testConnectionButton,
+    "test connection button should be enabled after we fill all the input"
+  ).toBeEnabled();
+  await expect(
+    testConnectionButton,
+    "connection button title should be Test connection"
+  ).toHaveText("Test connection");
+
+  await testConnectionButton.click();
+  await expect(
+    testConnectionButton,
+    "this button should be disabled while checking"
+  ).toBeDisabled();
+  await expect(
+    testConnectionButton,
+    "this button should be enabled after checking"
+  ).toBeEnabled();
+  // test against https://google.com fails
+  await expect(
+    testConnectionButton,
+    "connection button title should be Connection successful"
+  ).toHaveText("Connection failed");
+
+  await page.getByTestId("new-registry-url").fill(invalidUrl);
+  await expect(
+    testConnectionButton,
+    "connection button title should be Connection failed"
+  ).toHaveText("Connection failed");
+
+  await page.waitForTimeout(3000);
+  await expect(
+    testConnectionButton,
+    "connection button title should get back to initial state"
+  ).toHaveText("Test connection");
+});
