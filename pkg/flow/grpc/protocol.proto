@@ -244,6 +244,7 @@ service Internal {
 	rpc SetWorkflowVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc InstanceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
+	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
 
 service Eventing {

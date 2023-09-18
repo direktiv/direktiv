@@ -383,6 +383,16 @@ type varClientMsg interface {
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
 	switch scope {
+	case util.VarScopeFileSystem:
+		var nvClient grpc.Internal_NamespaceVariableParcelsClient
+		nvClient, err = srv.flow.FileVariableParcels(ctx, &grpc.VariableInternalRequest{
+			Instance: ir.instanceId,
+			Key:      key,
+		})
+		client = nvClient
+		recv = func() (varClientMsg, error) {
+			return nvClient.Recv()
+		}
 	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_NamespaceVariableParcelsClient
 		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
@@ -443,6 +453,8 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	var send func(*varSetClientMsg) error
 
 	switch scope {
+	case util.VarScopeFileSystem:
+		return errors.New("file-system variables are read-only")
 	case util.VarScopeNamespace:
 		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
 		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
