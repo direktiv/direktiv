@@ -3,11 +3,11 @@ name: Review Environment Deployment
 on:
   deployment:
   workflow_dispatch:
-  pull_request:
+  push:
+    tags:
+      - v*
     branches:
-      - stable
-    types:
-      - closed
+      - review-deployment
 
 jobs:
   ssh_to_review:
