@@ -307,6 +307,7 @@ lint: ## Runs very strict linting on the project.
 	golangci/golangci-lint:${VERSION} golangci-lint run
 	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
+.PHONY: test
 test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
