@@ -860,7 +860,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// add api headers
 	for k, vs := range ar.Headers {
 		for a := range vs {
-			fmt.Printf("ADDING HEADER!!!!! %v %v\n", k, vs[a])
 			req.Header.Add(k, vs[a])
 		}
 	}

@@ -577,8 +577,6 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
-	flow.sugar.Infof("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
 	ctx := srv.Context()
 	phash := ""
 	nhash := ""
@@ -625,19 +623,6 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 		hs := md.Get("headers-bin")
 
 		if len(hs) > 0 {
-
-			bb := []byte(hs[0])
-
-			flow.sugar.Infof("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v", string(bb))
-			// var header http.Header
-
-			// dec := gob.NewDecoder(strings.NewReader(hs[0]))
-			// err = dec.Decode(&header)
-			// if err != nil {
-			// 	flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create headers: %v", err)
-			// }
-
-			// // we set headers anyways
 			args.Headers = []byte(hs[0])
 		}
 	}

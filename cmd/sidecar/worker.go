@@ -103,7 +103,6 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	for k, vs := range ir.originalHeaders {
 		for i := range vs {
 			if k != actionIDHeader && k != IteratorHeader {
-				fmt.Println("ADDING HEADER %v %v", k, vs[i])
 				req.Header.Add(k, vs[i])
 			}
 		}
