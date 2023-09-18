@@ -1,4 +1,4 @@
-name: Run most E2E Tests
+name: Run events E2E Tests
 on:
   push:
     tags:
