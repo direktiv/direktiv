@@ -22,10 +22,7 @@ export interface Snippet {
   example: string;
   query: string;
   input: string;
-  output:
-  | KeyVal
-  | string
-  | number;
+  output: KeyVal | string | number;
 }
 
 const snippets: Snippet[] = [
