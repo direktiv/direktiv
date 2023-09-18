@@ -353,14 +353,15 @@ func (srv *LocalServer) run() {
 }
 
 type functionRequest struct {
-	actionId   string
-	instanceId string
-	namespace  string
-	step       int
-	deadline   time.Time
-	input      []byte
-	files      []*functionFiles
-	iterator   int
+	actionId        string
+	instanceId      string
+	namespace       string
+	step            int
+	deadline        time.Time
+	input           []byte
+	files           []*functionFiles
+	iterator        int
+	originalHeaders http.Header
 }
 
 type functionFiles struct {
@@ -395,6 +396,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 		}
 
 	case util.VarScopeWorkflow:
+
 		var wvClient grpc.Internal_WorkflowVariableParcelsClient
 		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,6 +26,7 @@ import (
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 )
 
 type flowHandler struct {
@@ -4029,6 +4031,25 @@ func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Reques
 	respond(w, resp, err)
 }
 
+func gobHeaders(ctx context.Context, r *http.Request) (context.Context, error) {
+
+	r.Header.Del("direktiv-token")
+
+	var headers bytes.Buffer
+	enc := gob.NewEncoder(&headers)
+	err := enc.Encode(r.Header)
+	if err != nil {
+		return ctx, err
+	}
+
+	md := metadata.Pairs(
+		"headers-bin", headers.String(),
+	)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	return ctx, nil
+
+}
+
 func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -4047,6 +4068,12 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 		Path:      path,
 		Ref:       ref,
 		Input:     input,
+	}
+
+	// add all headers to request
+	ctx, err = gobHeaders(ctx, r)
+	if err != nil {
+		h.logger.Errorf("can not encode headers: %v", err)
 	}
 
 	resp, err := h.client.StartWorkflow(ctx, in)
@@ -4095,6 +4122,12 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 		Path:      path,
 		Ref:       ref,
 		Input:     input,
+	}
+
+	// add all headers to request
+	ctx, err = gobHeaders(ctx, r)
+	if err != nil {
+		h.logger.Errorf("can not encode headers: %v", err)
 	}
 
 	c, err := h.client.AwaitWorkflow(ctx, in)

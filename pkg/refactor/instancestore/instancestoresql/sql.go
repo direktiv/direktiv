@@ -37,8 +37,8 @@ const (
 	fieldOutput         = "output"
 	fieldErrorMessage   = "error_message"
 	fieldMetadata       = "metadata"
-
-	desc = "desc"
+	fieldHeaders        = "headers"
+	desc                = "desc"
 )
 
 var (
@@ -46,7 +46,7 @@ var (
 		fieldID, fieldNamespaceID, fieldRevisionID, fieldRootInstanceID,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
-		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
+		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldHeaders, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
@@ -97,6 +97,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		ChildrenInfo:   args.ChildrenInfo,
 		Input:          args.Input,
 		LiveData:       args.LiveData,
+		Headers:        args.Headers,
 		StateMemory:    []byte(`{}`),
 		Output:         nil,
 		ErrorMessage:   nil,
@@ -107,7 +108,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		fieldID, fieldNamespaceID, fieldRevisionID, fieldRootInstanceID,
 		fieldStatus, fieldWorkflowPath, fieldErrorCode, fieldInvoker, fieldDefinition,
 		fieldSettings, fieldDescentInfo, fieldTelemetryInfo, fieldRuntimeInfo,
-		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory,
+		fieldChildrenInfo, fieldInput, fieldLiveData, fieldHeaders, fieldStateMemory,
 	}
 	query := generateInsertQuery(columns)
 
@@ -115,7 +116,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		idata.ID, idata.NamespaceID, idata.RevisionID, idata.RootInstanceID,
 		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
 		idata.Settings, idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
-		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)
+		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.Headers, idata.StateMemory)
 	if res.Error != nil {
 		return nil, res.Error
 	}

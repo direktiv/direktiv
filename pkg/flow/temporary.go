@@ -1,11 +1,14 @@
 package flow
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -470,7 +473,21 @@ type knativeHandle struct {
 
 func (child *knativeHandle) Run(ctx context.Context) {
 	go func(ctx context.Context, im *instanceMemory, ar *functionRequest) {
-		err := child.engine.doActionRequest(ctx, ar)
+
+		// add headers here
+		var header http.Header
+
+		dec := gob.NewDecoder(bytes.NewReader(im.instance.Instance.Headers))
+		err := dec.Decode(&header)
+		if err != nil {
+			im.engine.logger.Errorf(ctx, im.GetInstanceID(),
+				make(map[string]string, 0), "failed to decode headers")
+		}
+
+		// set headers
+		ar.Headers = header
+
+		err = child.engine.doActionRequest(ctx, ar)
 		if err != nil {
 			return
 		}

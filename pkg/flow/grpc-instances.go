@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -576,6 +577,8 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
+	flow.sugar.Infof("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
 	ctx := srv.Context()
 	phash := ""
 	nhash := ""
@@ -614,6 +617,29 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 			// TODO: alan, CallPath: ,
 			NamespaceName: ns.Name,
 		},
+	}
+
+	// get headers
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		hs := md.Get("headers-bin")
+
+		if len(hs) > 0 {
+
+			bb := []byte(hs[0])
+
+			flow.sugar.Infof("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v", string(bb))
+			// var header http.Header
+
+			// dec := gob.NewDecoder(strings.NewReader(hs[0]))
+			// err = dec.Decode(&header)
+			// if err != nil {
+			// 	flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create headers: %v", err)
+			// }
+
+			// // we set headers anyways
+			args.Headers = []byte(hs[0])
+		}
 	}
 
 	im, err := flow.engine.NewInstance(ctx, args)

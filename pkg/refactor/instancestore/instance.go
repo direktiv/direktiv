@@ -131,6 +131,7 @@ type InstanceData struct {
 	Output         []byte
 	ErrorMessage   []byte
 	Metadata       []byte
+	Headers        []byte
 }
 
 // GetNamespaceInstancesResults returns the results as well as the total number that would be returned if LIMIT & OFFSET were both zero.
@@ -155,6 +156,7 @@ type CreateInstanceDataArgs struct {
 	DescentInfo    []byte
 	RuntimeInfo    []byte
 	ChildrenInfo   []byte
+	Headers        []byte
 }
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.

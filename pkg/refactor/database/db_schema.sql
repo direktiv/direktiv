@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "output" bytea,
     "error_message" bytea,
     "metadata" bytea,
+    "headers" bytea,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_instances"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE

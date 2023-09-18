@@ -65,6 +65,8 @@ type newInstanceArgs struct {
 	Invoker       string
 	DescentInfo   *enginerefactor.InstanceDescentInfo
 	TelemetryInfo *enginerefactor.InstanceTelemetryInfo
+	// Headers       map[string][]string
+	Headers []byte
 }
 
 const (
@@ -206,6 +208,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		DescentInfo:    descentInfo,
 		RuntimeInfo:    riData,
 		ChildrenInfo:   ciData,
+		Headers:        args.Headers,
 	})
 	if err != nil {
 		return nil, err
@@ -852,6 +855,14 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if err != nil {
 		engine.reportError(ar, err)
 		return
+	}
+
+	// add api headers
+	for k, vs := range ar.Headers {
+		for a := range vs {
+			fmt.Printf("ADDING HEADER!!!!! %v %v\n", k, vs[a])
+			req.Header.Add(k, vs[a])
+		}
 	}
 
 	// add headers

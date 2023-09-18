@@ -99,6 +99,16 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
 
+	// add rest of headers
+	for k, vs := range ir.originalHeaders {
+		for i := range vs {
+			if k != actionIDHeader && k != IteratorHeader {
+				fmt.Println("ADDING HEADER %v %v", k, vs[i])
+				req.Header.Add(k, vs[i])
+			}
+		}
+	}
+
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
 
@@ -712,6 +722,9 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 
 func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *functionRequest {
 	ir := new(functionRequest)
+
+	// keep original headers
+	ir.originalHeaders = req.r.Header
 
 	var step string
 	var deadline string
