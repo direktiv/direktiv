@@ -10,6 +10,7 @@ In addition to any timeouts applied on a state-by-state basis, every workflow ha
 | `kill` | An ISO8601 duration string. Sets the time to wait before throwing an uncatchable `direktiv.cancels.timeout.hard` error. This is a hard timeout. | string | no |
 
 ```yaml title="Workflow Timeout"
+direktiv_api: workflow/v1
 timeouts:
   interrupt: PT60M
   kill: PT30M
