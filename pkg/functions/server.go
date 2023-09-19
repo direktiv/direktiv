@@ -152,6 +152,7 @@ func StartServer(echan chan error) {
 			}
 
 			if notification == nil {
+				time.Sleep(100 * time.Millisecond)
 				continue
 			}
 
