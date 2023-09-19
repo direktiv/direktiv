@@ -11,12 +11,116 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func (internal *internal) WorkflowVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_WorkflowVariableParcelsServer) error {
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	ctx := srv.Context()
+
+	inst, err := internal.getInstance(ctx, req.GetInstance())
+	if err != nil {
+		return err
+	}
+
+	resp, err := internal.flow.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
+		Namespace: inst.TelemetryInfo.NamespaceName,
+		Path:      inst.Instance.WorkflowPath,
+		Key:       req.GetKey(),
+	})
+	if err != nil {
+		return err
+	}
+
+	iresp := &grpc.VariableInternalResponse{
+		Instance:  inst.Instance.ID.String(),
+		Key:       resp.GetKey(),
+		CreatedAt: resp.GetCreatedAt(),
+		UpdatedAt: resp.GetUpdatedAt(),
+		Checksum:  resp.GetChecksum(),
+		TotalSize: resp.GetTotalSize(),
+		Data:      resp.GetData(),
+		MimeType:  resp.GetMimeType(),
+	}
+
+	err = srv.Send(iresp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type setWorkflowVariableParcelsTranslator struct {
+	internal *internal
+	inst     *libengine.Instance
+	grpc.Internal_SetWorkflowVariableParcelsServer
+}
+
+func (srv *setWorkflowVariableParcelsTranslator) SendAndClose(resp *grpc.SetWorkflowVariableResponse) error {
+	var inst string
+	if srv.inst != nil {
+		inst = srv.inst.Instance.ID.String()
+	}
+
+	return srv.Internal_SetWorkflowVariableParcelsServer.SendAndClose(&grpc.SetVariableInternalResponse{
+		Instance:  inst,
+		Key:       resp.GetKey(),
+		CreatedAt: resp.GetCreatedAt(),
+		UpdatedAt: resp.GetUpdatedAt(),
+		Checksum:  resp.GetChecksum(),
+		TotalSize: resp.GetTotalSize(),
+		MimeType:  resp.GetMimeType(),
+	})
+}
+
+func (srv *setWorkflowVariableParcelsTranslator) Recv() (*grpc.SetWorkflowVariableRequest, error) {
+	req, err := srv.Internal_SetWorkflowVariableParcelsServer.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	if srv.inst == nil {
+		ctx := srv.Context()
+
+		srv.inst, err = srv.internal.getInstance(ctx, req.GetInstance())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &grpc.SetWorkflowVariableRequest{
+		Namespace: srv.inst.TelemetryInfo.NamespaceName,
+		Path:      srv.inst.Instance.WorkflowPath,
+		Key:       req.GetKey(),
+		TotalSize: req.GetTotalSize(),
+		Data:      req.GetData(),
+		MimeType:  req.GetMimeType(),
+	}, nil
+}
+
+func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkflowVariableParcelsServer) error {
+	internal.sugar.Debugf("Handling gRPC request: %s", this())
+
+	fsrv := &setWorkflowVariableParcelsTranslator{
+		internal: internal,
+		Internal_SetWorkflowVariableParcelsServer: srv,
+	}
+
+	err := internal.flow.SetWorkflowVariableParcels(fsrv)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *database.Namespace, f *filestore.File, err error) {
 	tx, err := flow.beginSqlTx(ctx)
@@ -64,6 +168,21 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 
 	item, err := tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, ns.ID, file.Path, req.GetKey())
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			t := time.Now()
+
+			return &grpc.WorkflowVariableResponse{
+				Namespace: ns.Name,
+				Path:      file.Path,
+				Key:       req.GetKey(),
+				CreatedAt: timestamppb.New(t),
+				UpdatedAt: timestamppb.New(t),
+				TotalSize: int64(0),
+				MimeType:  "",
+				Data:      make([]byte, 0),
+			}, nil
+		}
+
 		return nil, err
 	}
 

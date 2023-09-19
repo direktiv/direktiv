@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strconv"
 	"time"
 
@@ -43,7 +43,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 	defer tx.Rollback()
 
 	for _, selector := range vars {
-		if selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
+		if selector.Scope == "" || selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
 			if selector.Scope == "" {
 				selector.Scope = util.VarScopeNamespace
 			}
@@ -84,18 +84,18 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if selector.Scope == util.VarScopeFileSystem {
-			file, err := tx.FileStore().ForRootID(im.instance.Instance.NamespaceID).GetFile(ctx, selector.Key)
+			file, err := tx.FileStore().ForRootNamespaceAndName(im.instance.Instance.NamespaceID, defaultRootName).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
 					Scope: selector.Scope,
 					Key:   selector.Key,
-					Data:  []byte{},
+					Data:  make([]byte, 0),
 				})
 			} else if err != nil {
 				return nil, err
 			} else {
 				// TODO: alan, maybe need to enhance the GetData function to also return us some information like mime type, checksum, and size
-				if file.Typ != filestore.FileTypeFile {
+				if file.Typ == filestore.FileTypeDirectory {
 					return nil, model.ErrVarNotFile
 				}
 				rc, err := tx.FileStore().ForFile(file).GetData(ctx)
@@ -103,7 +103,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 					return nil, err
 				}
 				defer func() { _ = rc.Close() }()
-				data, err := ioutil.ReadAll(rc)
+				data, err := io.ReadAll(rc)
 				if err != nil {
 					return nil, err
 				}

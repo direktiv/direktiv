@@ -100,8 +100,8 @@ func (s *sqlServicesStore) GetAll(ctx context.Context) ([]*core.Service, error) 
 	return services, nil
 }
 
-func (s *sqlServicesStore) DeleteByName(ctx context.Context, name string) error {
-	res := s.db.WithContext(ctx).Exec(`DELETE FROM services WHERE  name=?`, name)
+func (s *sqlServicesStore) DeleteByURL(ctx context.Context, name string) error {
+	res := s.db.WithContext(ctx).Exec(`DELETE FROM services WHERE  url=?`, name)
 	if res.Error != nil {
 		return res.Error
 	}
