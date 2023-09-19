@@ -117,6 +117,11 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 		return out, nil
 	}
 
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		out.errCode = "container failed"
+		out.errMsg = string(out.data)
+	}
+
 	cap := int64(134217728) // 128 MiB (changed to same value as API)
 	if resp.ContentLength > cap {
 		return nil, errors.New("service response is too large")
