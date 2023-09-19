@@ -64,8 +64,9 @@ Some function types support loading variable directly from storage onto their fi
 
 ## VariableScopeDefinition
 
-Every variable exists within a single scope. The scope dictates what can access it and how persistent it is. There are three defined [scopes](../variables/variables.md):
+Every variable exists within a single scope. The scope dictates what can access it and how persistent it is. There are four defined [scopes](../variables/variables.md):
 
 * `instance`
 * `workflow`
 * `namespace`
+* `file`

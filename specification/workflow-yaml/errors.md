@@ -3,6 +3,7 @@
 Errors can happen for many reasons. Direktiv allows you to catch and handle these errors using a common field 'catch'. This field takes an array of [ErrorCatchDefinition](#errorcatchdefinition) objects, each specifying one or more errors that apply and where to transition to next in order to handle them. When an error is thrown, the list of error catchers is evaluated in order until a match is found. If no match is found, the instance fails. 
 
 ```yaml
+direktiv_api: workflow/v1
 states:
 - id: a
   type: consumeEvent

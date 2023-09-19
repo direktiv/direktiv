@@ -136,7 +136,10 @@ func createKnativeFunction(functionsClient igrpc.FunctionsClient,
 	sz := int32(ir.Container.Size)
 	scale := int32(ir.Container.Scale)
 
-	wf := bytedata.ShortChecksum(ir.Workflow.Path)
+	var wf string
+	if ir.Workflow.Path != "" {
+		wf = bytedata.ShortChecksum(ir.Workflow.Path)
+	}
 
 	cr := igrpc.FunctionsCreateFunctionRequest{
 		Info: &igrpc.FunctionsBaseInfo{
@@ -150,6 +153,7 @@ func createKnativeFunction(functionsClient igrpc.FunctionsClient,
 			Path:          &ir.Workflow.Path,
 			Revision:      &ir.Workflow.Revision,
 			Workflow:      &wf,
+			Envs:          make(map[string]string),
 		},
 	}
 

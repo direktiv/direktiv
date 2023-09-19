@@ -16,6 +16,7 @@ These are the currently available function types:
 The following example demonstrate how to define and reference a function within a workflow:
 
 ```yaml title="Workflow"
+direktiv_api: workflow/v1
 description: |
   A basic demonstration of functions.
 functions:
