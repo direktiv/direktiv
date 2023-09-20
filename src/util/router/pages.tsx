@@ -340,9 +340,10 @@ export const pages: PageType & EnterprisePageType = {
 
       const subpage = params.subpage ? subfolder[params.subpage] : "tree";
 
-      return `/${
-        params.namespace
-      }/explorer/${subpage}${path}?${searchParams.toString()}`;
+      const searchParamsString = searchParams.toString();
+      const urlParams = searchParamsString ? `?${searchParamsString}` : "";
+
+      return `/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
