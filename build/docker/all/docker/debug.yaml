@@ -12,7 +12,7 @@ flow:
   dbimage: "direktiv/direktiv"
   tag: "dev"
 ui:
-  image: "direktiv/ui"
+  image: "direktiv/frontend"
   tag: "dev"
 api:
   image: "direktiv/direktiv"
