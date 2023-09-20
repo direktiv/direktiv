@@ -56,10 +56,10 @@ install_knative() {
   fi
 
   echo "install knative"  
-  kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml
+  kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.5/operator.yaml
   kubectl create ns knative-serving
   kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
-  kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.9.3/contour.yaml
+  kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.0/contour.yaml
   kubectl delete namespace contour-external --wait=false
 }
 
@@ -170,9 +170,11 @@ flow:
   dbimage: "direktiv"
   tag: "latest"
 
-ui:
+frontend:
   image: "ui"
   tag: "latest"
+  logging:
+    json: false
 
 api:
   image: "direktiv"
