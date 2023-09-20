@@ -56,7 +56,11 @@ func (is *functionsServer) watcherFunctions(cs *versioned.Clientset, labels stri
 
 	for {
 		select {
-		case event := <-watch.ResultChan():
+		case event, more := <-watch.ResultChan():
+			if !more {
+				return false, nil
+			}
+
 			s, ok := event.Object.(*v1.Service)
 			if !ok {
 				return false, nil
@@ -223,12 +227,16 @@ func (is *functionsServer) watcherRevisions(cs *versioned.Clientset, labels stri
 
 	for {
 		select {
-		case event := <-watch.ResultChan():
+		case event, more := <-watch.ResultChan():
+			if !more {
+				return false, nil
+			}
 
 			rev, ok := event.Object.(*v1.Revision)
 			if !ok {
 				return false, nil
 			} else if revisionFilter != "" && rev.Name != revisionFilter {
+				time.Sleep(time.Second)
 				continue // skip
 			}
 			info := &igrpc.FunctionsRevision{}
@@ -342,7 +350,11 @@ func (is *functionsServer) watcherPods(cs *kubernetes.Clientset, labels string, 
 
 	for {
 		select {
-		case event := <-watch.ResultChan():
+		case event, more := <-watch.ResultChan():
+			if !more {
+				return false, nil
+			}
+
 			p, ok := event.Object.(*corev1.Pod)
 			if !ok {
 				return false, nil
@@ -415,6 +427,7 @@ func (is *functionsServer) WatchLogs(in *igrpc.FunctionsWatchLogsRequest, out ig
 		buf := make([]byte, 2000)
 		numBytes, err := plogs.Read(buf)
 		if numBytes == 0 {
+			time.Sleep(time.Second)
 			continue
 		}
 		if errors.Is(err, io.EOF) {
