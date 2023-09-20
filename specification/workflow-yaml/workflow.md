@@ -5,6 +5,7 @@
 This document describes the rules for Direktiv workflow definition files. These files are written in YAML and dictate the behaviour of a workflow running on Direktiv. 
 
 ```yaml title="Workflow"
+direktiv_api: workflow/v1
 description: |
   A simple "Hello, world" demonstration.
 states:
@@ -31,6 +32,7 @@ This is the top-level structure of a Direktiv workflow definition. All workflows
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
+| `direktiv_api` | Set it to 'workflow/v1' to reduce ambiguity, enabling tools to better identify this file as a workflow. | string | no |
 | `url` | Link to further information. | string | no |
 | `description` | Short description of the workflow.  | string | no |
 | `functions` | List of function definitions for use by function-based `states`. | [[]FunctionDefinition](/spec/workflow-yaml/functions/#functiondefinition) | no |
