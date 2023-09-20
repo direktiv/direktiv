@@ -174,8 +174,8 @@ docker-ui: ## Manually clone and build the latest UI.
 docker-all: ## Build the all-in-one image.
 docker-all:
 	cp -Rf kubernetes build/docker/all
-	docker build -t direktiv-kube build/docker/all/docker
-	cd build/docker/all/multipass && ./generate-init.sh direktiv/direktiv direktiv/ui dev
+	docker build --no-cache -t direktiv-kube build/docker/all/docker
+#cd build/docker/all/multipass && ./generate-init.sh direktiv/direktiv direktiv/ui dev
 
 .PHONY: template-configmaps
 template-configmaps:
