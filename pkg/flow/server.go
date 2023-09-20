@@ -59,7 +59,7 @@ type server struct {
 	fnLogger *zap.SugaredLogger
 	conf     *util.Config
 
-	// db       *ent.client
+	// db       *ent.Client
 	pubsub *pubsub.Pubsub
 	locks  *locks
 	timers *timers

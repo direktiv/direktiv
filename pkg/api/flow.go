@@ -156,7 +156,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   required: true
 	//   description: 'target namespace to update'
 	// - in: body
-	//   name: config Payload
+	//   name: Config Payload
 	//   description: "Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set."
 	//   schema:
 	//     example:
