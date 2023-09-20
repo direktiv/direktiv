@@ -14,7 +14,7 @@ jobs:
       name: Review
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Extract hash
         id: get_commit_hash
         run: echo "::set-output name=hash::${GITHUB_SHA:0:7}"
