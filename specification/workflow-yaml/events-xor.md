@@ -1,6 +1,7 @@
 # EventsXor State 
 
 ```yaml
+direktiv_api: workflow/v1
 states:
 - id: a
   type: eventsXor

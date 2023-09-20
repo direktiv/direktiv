@@ -8,7 +8,9 @@ Direktiv can store data separately to [instance data](../instance-data/instance-
 
 ## Scopes
 
-All variables belong to a scope. The scopes are `instance`, `workflow`, and `namespace`. Instance scoped variables are only accessible to the singular instance that created them. Workflow scoped variables can be used and shared between multiple instances of the same workflow. Namespace scoped variables are available to all instances of all workflows on the namespace. All variables are identified by a name, and each name is unique within its scope. 
+All variables belong to a scope. The scopes are `instance`, `workflow`, `namespace`, and `file`. Instance scoped variables are only accessible to the singular instance that created them. Workflow scoped variables can be used and shared between multiple instances of the same workflow. Namespace scoped variables are available to all instances of all workflows on the namespace. For these first three scopes, variables are identified by a name, and each name is unique within its scope.
+
+The `file` scope is treated similarly. It looks for a file in the namespace's filetree to use. This means `file` scoped variables are available to all instances of all workflows on the namespace, which is similar to `namespace` scoped variables. However, instead of using just a name, you need to reference them by a filepath. Additionally, the `file` scope is considered read-only: instances do not have permission to delete, modify, or create files on the filetree.
 
 ## States
 
