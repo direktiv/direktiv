@@ -118,13 +118,13 @@ api-swagger:
 
 .PHONY: cross
 cross:
-	@if [ "${RELEASE_TAG}" = "" ]; then\
+	@if [ "${RELEASE}" = "" ]; then\
 		echo "setting release to dev"; \
-		$(eval RELEASE_TAG=dev) \
+		$(eval RELEASE=dev) \
     fi
 	@docker buildx create --use --name=direktiv --node=direktiv
 	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile --platform linux/amd64,linux/arm64 \
-		-t ${DOCKER_REPO}/direktiv:${RELEASE_TAG} --push .
+		-t ${DOCKER_REPO}/direktiv:${RELEASE} --push .
 
 
 .PHONY: grpc-clean
