@@ -5,6 +5,7 @@ Instance metadata is a way to monitor an instance. An instance can update its me
 All states can write to instance metadata via a common field `metadata`. This field uses [structured jx](../instance-data/structured-jx.md) to support querying instance data and inserting it into the metadata. 
 
 ```yaml
+direktiv_api: workflow/v1
 states:
 - id: a
   type: delay

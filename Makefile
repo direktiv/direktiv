@@ -109,21 +109,22 @@ api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to ch
 api-swagger:
 	scripts/api/swagger.sh $(host)
 
-# multi-arch build
-.PHONY: cross-prepare
-cross-prepare:
-	docker buildx create --use      
-	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
-	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+# # multi-arch build
+# .PHONY: cross-prepare
+# cross-prepare:
+# 	docker buildx create --use      
+# 	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+# 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-.PHONY: cross-build
-cross-build:
+.PHONY: cross
+cross:
 	@if [ "${RELEASE_TAG}" = "" ]; then\
 		echo "setting release to dev"; \
 		$(eval RELEASE_TAG=dev) \
     fi
-	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
+	@docker buildx create --use --name=direktiv --node=direktiv
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile --platform linux/amd64,linux/arm64 \
+		-t ${DOCKER_REPO}/direktiv:${RELEASE_TAG} --push .
 
 
 .PHONY: grpc-clean
@@ -302,6 +303,7 @@ lint: ## Runs very strict linting on the project.
 	golangci/golangci-lint:${VERSION} golangci-lint run
 	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
+.PHONY: test
 test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \

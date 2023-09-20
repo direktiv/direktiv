@@ -152,6 +152,7 @@ func StartServer(echan chan error) {
 			}
 
 			if notification == nil {
+				time.Sleep(100 * time.Millisecond)
 				continue
 			}
 
@@ -218,17 +219,19 @@ func (fServer *functionsServer) heartbeat(tuples []*HeartbeatTuple) {
 
 		name, _, _ := GenerateServiceName(in.Info)
 
+		wfID := name // NOTE: alan, we used to use a different value here to group services by workflow, but I can't figure out why we wanted to do that and I now believe that was causing bugs. I think this means there's no longer any sense keeping two different caches (cache + cache index), but I don't want to mess with what's working right now.
+
 		logger.Debugf("checking service %s in heartbeat", name)
 
 		fServer.reusableCacheLock.Lock()
 
-		ct, exists := fServer.reusableCache[wf]
+		ct, exists := fServer.reusableCache[wfID]
 		if exists {
 			ct.Add(name)
 		} else {
 			ct = new(cacheTuple)
 			ct.Add(name)
-			fServer.reusableCache[wf] = ct
+			fServer.reusableCache[wfID] = ct
 		}
 		fServer.reusableCacheIndex[name] = ct
 		fServer.reusableCacheLock.Unlock()
