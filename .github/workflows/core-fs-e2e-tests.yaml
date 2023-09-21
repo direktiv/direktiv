@@ -199,6 +199,7 @@ jobs:
         env:
           JEST_PREFIX: engine/
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
+          GITHUB_ACTIONS: true
 
       - name: Show logs
         run: |
