@@ -42,13 +42,13 @@ jobs:
           DOCKER_BUILDKIT: 1
 
       - name: Save Docker image to tar file
-        run: docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv:${{ env.SRVTAG }}.tar
+        run: docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv.tar
 
       - name: Upload Docker image as artifact
         uses: actions/upload-artifact@v2
         with:
           name: direktiv-image
-          path: direktiv:${{ env.SRVTAG }}.tar
+          path: direktiv.tar
   test:
     needs: build
     # container:
@@ -146,7 +146,7 @@ jobs:
 
       - name: Build images
         run: |
-          sudo k3s ctr images import direktiv:${{ env.SRVTAG }}.tar
+          sudo k3s ctr images import direktiv.tar
         env:
           DOCKER_BUILDKIT: 1
       - name: Install Direktiv chart
