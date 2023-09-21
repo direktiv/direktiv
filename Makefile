@@ -72,6 +72,7 @@ cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the 
 cluster: push
 	if [ ! -d scripts/direktiv-charts ]; then \
 		git clone https://github.com/direktiv/direktiv-charts.git scripts/direktiv-charts; \
+		helm dependency build scripts/direktiv-charts/charts/direktiv; \
 		helm dependency update scripts/direktiv-charts/charts/direktiv; \
 	fi
 	if helm status direktiv; then helm uninstall direktiv; fi
