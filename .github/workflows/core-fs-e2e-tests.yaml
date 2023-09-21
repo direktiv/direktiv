@@ -165,7 +165,7 @@ jobs:
       - name: Get Internal IP
         id: getInternalIP
         run: |
-          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
+          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.externalIP}')
           echo "internal_ip=$internal_ip" >> $GITHUB_ENV
 
       - name: Set Environment Variables
