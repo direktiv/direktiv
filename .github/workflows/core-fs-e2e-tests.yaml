@@ -86,7 +86,6 @@ jobs:
       - name: Clone Direktiv-charts repository
         run: |
           git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
-          git -C direktiv-charts checkout develop
           helm dependency update direktiv-charts/charts/direktiv
 
       - name: Wait for PostgreSQL pod to be ready
