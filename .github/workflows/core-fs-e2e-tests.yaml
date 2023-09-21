@@ -56,11 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
-      - name: Download Docker image artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: direktiv-image
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -71,6 +66,10 @@ jobs:
           key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
           restore-keys: |
             ${{ runner.os }}-apt-packages-
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: direktiv-image
 
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
@@ -144,11 +143,16 @@ jobs:
           restore-keys: |
             docker-${{ runner.os }}-
 
-      - name: Build images
+      - name: Apply images
         run: |
           sudo k3s ctr images import direktiv.tar
-        env:
-          DOCKER_BUILDKIT: 1
+
+          - name: List Files
+          run: ls -l
+
+      - name: Print Working Directory
+        run: pwd
+
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
 
