@@ -56,10 +56,10 @@ install_knative() {
   fi
 
   echo "install knative"  
-  kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml
+  kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.5/operator.yaml
   kubectl create ns knative-serving
   kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
-  kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.9.3/contour.yaml
+  kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.0/contour.yaml
   kubectl delete namespace contour-external --wait=false
 }
 
@@ -88,8 +88,11 @@ install_db() {
 
   if [[ ${DB} == "operator" ]]; then
     echo "install postgres db as operator"
-    helm install -n postgres postgres $dir/direktiv-charts/charts/percona-postgres --wait
-    kubectl apply -n postgres -f $dir/../kubernetes/install/db/basic.yaml
+
+helm repo add linkerd https://helm.linkerd.io/stable;
+    helm repo add percona https://percona.github.io/percona-helm-charts/
+    helm install -n postgres pg-operator percona/pg-operator --wait
+    kubectl apply -n postgres -f $dir/../kubernetes/install/db/basic.yaml 
     dbsecret="direktiv-cluster-pguser-direktiv"
   fi
 
@@ -167,9 +170,11 @@ flow:
   dbimage: "direktiv"
   tag: "latest"
 
-ui:
+frontend:
   image: "ui"
   tag: "latest"
+  logging:
+    json: false
 
 api:
   image: "direktiv"
@@ -205,7 +210,7 @@ if [ $DB == "pg" ]; then
 else 
   echo "database:
     host: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)\"
-    port: $(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-host"}}' | base64 --decode)
+    port: $(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "pgbouncer-port"}}' | base64 --decode)
     user: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)\"
     password: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)\"
     name: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)\"

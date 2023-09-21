@@ -35,9 +35,10 @@ RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | b
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 RUN install -o 0 -g 0 -m 0755 kubectl /usr/local/bin/kubectl
 
-RUN git clone -b one-binary https://github.com/direktiv/direktiv-charts.git
+RUN git clone https://github.com/direktiv/direktiv-charts.git
 RUN helm repo add nginx https://kubernetes.github.io/ingress-nginx
 RUN helm repo add prometheus https://prometheus-community.github.io/helm-charts
+RUN helm repo update
 RUN helm dependency build /direktiv-charts/charts/direktiv
 
 # This/

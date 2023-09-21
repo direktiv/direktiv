@@ -65,7 +65,7 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			return nil, derrors.NewCatchableError(ErrCodeJQNotString, "failed to evaluate key as a string for variable at index [%v]", idx)
 		}
 
-		if ok := util.MatchesVarRegex(key); !ok {
+		if ok := util.MatchesVarRegex(key); !ok && v.Scope != util.VarScopeFileSystem {
 			return nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", util.RegexPattern, key)
 		}
 

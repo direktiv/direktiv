@@ -37,6 +37,6 @@ type ServicesStore interface {
 	// GetAll lists all services.
 	GetAll(ctx context.Context) ([]*Service, error)
 
-	// DeleteByName removes entries by name. if no record to delete, it returns datastore.ErrNotFound error.
-	DeleteByName(ctx context.Context, name string) error
+	// DeleteByURL removes entries by name. if no record to delete, it returns datastore.ErrNotFound error.
+	DeleteByURL(ctx context.Context, name string) error
 }

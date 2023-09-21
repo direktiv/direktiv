@@ -814,7 +814,10 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// otherwise generate baes on action request
 	svn := ar.Container.Service
 
-	wf := bytedata.ShortChecksum(ar.Workflow.Path)
+	var wf string
+	if ar.Workflow.Path != "" {
+		wf = bytedata.ShortChecksum(ar.Workflow.Path)
+	}
 
 	if ar.Container.Type == model.ReusableContainerFunctionType {
 		scale := int32(ar.Container.Scale)

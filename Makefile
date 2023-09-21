@@ -72,12 +72,12 @@ cluster: ## Updates images at $DOCKER_REPO, then uses $HELM_CONFIG to build the 
 cluster: push
 	if [ ! -d scripts/direktiv-charts ]; then \
 		git clone https://github.com/direktiv/direktiv-charts.git scripts/direktiv-charts; \
+		helm dependency build scripts/direktiv-charts/charts/direktiv; \
 		helm dependency update scripts/direktiv-charts/charts/direktiv; \
 	fi
 	if helm status direktiv; then helm uninstall direktiv; fi
 	kubectl wait --for=delete namespace/direktiv-services-direktiv --timeout=60s
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv || true
-	kubectl delete --all jobs -n direktiv-services-direktiv || true
 	helm install -f ${HELM_CONFIG} direktiv scripts/direktiv-charts/charts/direktiv/
 
 .PHONY: teardown
@@ -110,21 +110,22 @@ api-swagger: ## runs swagger server. Use make host=192.168.0.1 api-swagger to ch
 api-swagger:
 	scripts/api/swagger.sh $(host)
 
-# multi-arch build
-.PHONY: cross-prepare
-cross-prepare:
-	docker buildx create --use      
-	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
-	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+# # multi-arch build
+# .PHONY: cross-prepare
+# cross-prepare:
+# 	docker buildx create --use      
+# 	docker run --privileged --rm docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+# 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-.PHONY: cross-build
-cross-build:
-	@if [ "${RELEASE_TAG}" = "" ]; then\
+.PHONY: cross
+cross:
+	@if [ "${RELEASE}" = "" ]; then\
 		echo "setting release to dev"; \
-		$(eval RELEASE_TAG=dev) \
+		$(eval RELEASE=dev) \
     fi
-	echo "building ${RELEASE}:${RELEASE_TAG}, full version ${FULL_VERSION}"
-	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} --platform=linux/arm64,linux/amd64 -f Dockerfile --push -t direktiv/direktiv:${RELEASE_TAG} .
+	@docker buildx create --use --name=direktiv --node=direktiv
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile --platform linux/amd64,linux/arm64 \
+		-t ${DOCKER_REPO}/direktiv:${RELEASE} --push .
 
 
 .PHONY: grpc-clean
@@ -164,22 +165,18 @@ push: image
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone -b feature/0.7.5 https://github.com/direktiv/direktiv-ui.git; \
+		git clone -b feature/redesign https://github.com/direktiv/direktiv-ui.git; \
+		cd direktiv-ui && make react && make local; \
 	fi
-	if [ -z "${RELEASE}" ]; then \
-		cd direktiv-ui && DOCKER_REPO=${DOCKER_REPO} DOCKER_IMAGE=ui make server; \
-	else \
-		cd direktiv-ui && make update-containers RV=${RELEASE}; \
-	fi
-
+	
 # Misc
 
 .PHONY: docker-all
 docker-all: ## Build the all-in-one image.
 docker-all:
 	cp -Rf kubernetes build/docker/all
-	docker build -t direktiv-kube build/docker/all/docker
-	cd build/docker/all/multipass && ./generate-init.sh direktiv/direktiv direktiv/ui dev
+	docker build --no-cache -t direktiv-kube build/docker/all/docker
+#cd build/docker/all/multipass && ./generate-init.sh direktiv/direktiv direktiv/ui dev
 
 .PHONY: template-configmaps
 template-configmaps:
@@ -307,6 +304,7 @@ lint: ## Runs very strict linting on the project.
 	golangci/golangci-lint:${VERSION} golangci-lint run
 	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
+.PHONY: test
 test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
