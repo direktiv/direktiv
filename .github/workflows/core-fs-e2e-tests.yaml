@@ -70,7 +70,7 @@ jobs:
             tag: "${{ env.SRVTAG }}"
 
           ui:
-            image: "direktiv/ui"
+            image: "direktiv/frontend"
             tag: "latest"
 
           api:
@@ -96,7 +96,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('build/docker/direktiv/Dockerfile') }}
+          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
           restore-keys: |
             docker-${{ runner.os }}-
 
