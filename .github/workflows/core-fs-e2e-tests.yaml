@@ -170,6 +170,7 @@ jobs:
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
           JEST_PREFIX: engine/
+          DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
 
       - name: Run logparser tests
         run: |
