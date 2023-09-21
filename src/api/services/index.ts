@@ -81,7 +81,7 @@ export const serviceKeys = {
   }: {
     apiKey?: string;
     name: string;
-    namespace?: string;
+    namespace: string;
   }) =>
     [
       {
