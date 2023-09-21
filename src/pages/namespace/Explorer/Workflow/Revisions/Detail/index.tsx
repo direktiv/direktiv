@@ -89,7 +89,7 @@ const WorkflowRevisionsPage = () => {
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <EditorLayoutSwitcher />
-        <Button asChild variant="outline">
+        <Button asChild isAnchor variant="outline">
           <Link
             data-testid="revisions-detail-back-link"
             to={pages.explorer.createHref({
