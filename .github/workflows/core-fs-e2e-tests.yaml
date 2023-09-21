@@ -147,12 +147,6 @@ jobs:
         run: |
           sudo k3s ctr images import direktiv.tar
 
-          - name: List Files
-          run: ls -l
-
-      - name: Print Working Directory
-        run: pwd
-
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
 
