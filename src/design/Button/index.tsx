@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 import { twMergeClsx } from "~/util/helpers";
 
+// asChild only works with exactly one child, so when asChild is true, we can not have a loading property
 type AsChildOrLoading =
   | {
       loading?: boolean;
