@@ -13,12 +13,54 @@ env:
   IS_GITHUB_ACTIONS: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Ubuntu packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-packages-
+      - name: Cache Docker layers
+        id: docker-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.docker
+          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            docker-${{ runner.os }}-
+
+      - name: Build Docker image
+        run: docker build -t direktiv/direktiv:${{ env.SRVTAG }} .
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Save Docker image to tar file
+        run: docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv:${{ env.SRVTAG }}.tar
+
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: direktiv-image
+          path: direktiv:${{ env.SRVTAG }}.tar
   test:
+    needs: build
     # container:
     #   image: direktiv/direktiv:env.SRVTAG
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: direktiv-image
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -69,9 +111,11 @@ jobs:
             dbimage: "direktiv/direktiv"
             tag: "${{ env.SRVTAG }}"
 
-          ui:
-            image: "direktiv/frontend"
+          frontend:
+            image: "ui"
             tag: "latest"
+            logging:
+              json: false
 
           api:
             image: "direktiv/direktiv"
@@ -102,8 +146,6 @@ jobs:
 
       - name: Build images
         run: |
-          docker build -t direktiv/direktiv:${{ env.SRVTAG }} .
-          docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv:${{ env.SRVTAG }}.tar
           sudo k3s ctr images import direktiv:${{ env.SRVTAG }}.tar
         env:
           DOCKER_BUILDKIT: 1
@@ -153,48 +195,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('test//package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
 
-      # - name: Run errors tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: errors/
-
-      # - name: Run filesystem tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #     JEST_PREFIX: filesystem/
-
       - name: Run engine tests
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
           JEST_PREFIX: engine/
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
-
-      - name: Run logparser tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-          JEST_PREFIX: logparser/
-
-      # - name: Run namespaces tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: namespaces/
-
-      # - name: Run events tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: events/
-
-      # - name: Run mirror tests
-      #   run: |
-      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-      #   env:
-      #    JEST_PREFIX: mirror/
 
       - name: Show logs
         run: |
