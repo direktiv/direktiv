@@ -10,6 +10,7 @@ on:
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   SRVTAG: v0.8.0
+  IS_GITHUB_ACTIONS: true
 
 jobs:
   test:

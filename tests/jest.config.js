@@ -1,7 +1,9 @@
+const isGithubActions = process.env.GITHUB_ACTIONS === "true";
+
 module.exports = {
-    testTimeout: 10000,
-    watchPlugins: [
-        "jest-watch-typeahead/filename",
-        "jest-watch-typeahead/testname",
-    ],
+  testTimeout: isGithubActions ? 40000 : 10000,
+  watchPlugins: [
+    "jest-watch-typeahead/filename",
+    "jest-watch-typeahead/testname",
+  ],
 };
