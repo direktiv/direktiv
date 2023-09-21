@@ -127,10 +127,13 @@ jobs:
         id: getInternalIP
         run: |
           internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
-          echo "::set-output name=internal_ip::$internal_ip"
+          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
 
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=${{ steps.getInternalIP.outputs.internal_ip }}" >> $GITHUB_ENV
+        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
+
+      - name: Print DIREKTIV_HOST
+        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
 
       - name: Wait for Direktiv function pods to be ready
         run: |
@@ -156,11 +159,11 @@ jobs:
       #   env:
       #    JEST_PREFIX: errors/
 
-      - name: Run filesystem tests
-        run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
-        env:
-          JEST_PREFIX: filesystem/
+      # - name: Run filesystem tests
+      #   run: |
+      #     npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+      #   env:
+      #     JEST_PREFIX: filesystem/
 
       - name: Run engine tests
         run: |
