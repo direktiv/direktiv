@@ -39,6 +39,16 @@ This repository contains the user interface for [direktiv](https://github.com/di
 - `yarn run e2e:headless` runs all Playwright e2e tests in headless mode
 - `yarn run e2e:ui` runs all Playwright e2e tests in ui mode
 
+# Recommended Development Environment
+
+## Visual Studio Code Users
+
+If you're using [Visual Studio Code](https://code.visualstudio.com/) as your code editor, we highly recommend installing the extensions listed in the `.vscode/extensions.json` file. These extensions are designed to enhance your development experience by automatically resolving certain linting issues and formatting your code. When you open this project folder in VS Code for the first time, it should prompt you to install the recommended extensions.
+
+## Non-VS Code Users
+
+For those not using Visual Studio Code, we strongly recommend using [Prettier](https://prettier.io/) as your code formatter. Prettier will help you maintain a consistent code style, making it easier to collaborate with other developers. Prettier formatting checks will be enforced during the CI process.
+
 # Code of Conduct
 
 We have adopted the [Contributor Covenant](https://github.com/direktiv/.github/blob/master/CODE_OF_CONDUCT.md) code of conduct.
