@@ -2,7 +2,18 @@
 
 This repository contains the user interface for [direktiv](https://github.com/direktiv/direktiv).
 
-<img src="assets/images/screenshot.png" alt="direktiv ui">
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/images/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/images/logo-light.png">
+    <img alt="direktiv logo" src="assets/images/logo-dark.png">
+</picture>
+</div>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/screenshot-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/screenshot-light.png">
+  <img alt="direktiv ui" src="assets/images/screenshot-dark.png">
+</picture>
 
 # Setup development environment
 
