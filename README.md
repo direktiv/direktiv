@@ -2,9 +2,7 @@
 
 This repository contains the user interface for [direktiv](https://github.com/direktiv/direktiv).
 
-<p align="center" style="width: 50%; height:50%">
-  <img src="assets/images/ui.png" alt="direktiv ui">
-</p>
+<img src="assets/images/screenshot.png" alt="direktiv ui">
 
 # Setup development environment
 
