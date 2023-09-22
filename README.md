@@ -32,10 +32,10 @@ This repository contains the user interface for [direktiv](https://github.com/di
 - `yarn run storybook` opens the storybook and documentation
 - `yarn run test` runs the tests in watch mode
 - `yarn run check` runs all the checks that will run in CI:
-  - `yarm run check:lint` runs the linter
-  - `yarm run check:types` checks all types
-  - `yarm run check:test` runs the tests in ci mode
-  - `yarm run check:prettier` checks if all prettier formatting was applied (`yarn run prettier`)
+  - `yarn run check:lint` runs the linter
+  - `yarn run check:types` checks all types
+  - `yarn run check:test` runs the tests in ci mode
+  - `yarn run check:prettier` checks if all prettier formatting was applied (`yarn run prettier`)
 - `yarn run e2e:headless` runs all Playwright e2e tests in headless mode
 - `yarn run e2e:ui` runs all Playwright e2e tests in ui mode
 
