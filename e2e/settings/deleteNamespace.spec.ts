@@ -1,6 +1,5 @@
+import { checkIfNamespaceExists, createNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
-
-import { createNamespace } from "../utils/namespace";
 
 test("it is possible to delete namespaces", async ({ page }) => {
   const namespace = await createNamespace();
@@ -24,11 +23,16 @@ test("it is possible to delete namespaces", async ({ page }) => {
   expect(page.url(), "url should navigate to the very initial state").toBe(
     "http://localhost:3333/"
   );
-  // this shows the onboarding
-  //on this page, we are navigating again to the first namespace in the list, which happens with in a sec
-  // this test user has the namespace "sebxian" at the top
-  await page.waitForURL("/sebxian/explorer/tree");
-  expect(page.url(), "url should navigate to the very initial state").toBe(
-    "http://localhost:3333/sebxian/explorer/tree"
-  );
+  const regex = /^http:\/\/localhost:3333\/[a-zA-Z0-9]+\/explorer\/tree$/;
+  await expect
+    .poll(
+      async () => page.url(),
+      "redirected url should match with namespace path regexp"
+    )
+    .toMatch(regex);
+  const ifExists = await checkIfNamespaceExists(namespace);
+  expect(
+    ifExists,
+    "check result should be false as the namespace doesn't exist anymore"
+  ).toBe(false);
 });
