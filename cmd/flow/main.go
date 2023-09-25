@@ -175,7 +175,12 @@ var serverCmd = &cobra.Command{
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
 
-		conf, err := util.ReadConfig(args[0])
+		path := args[0]
+		if os.Getenv("DIREKTIV_CONFIG") != "" {
+			path = os.Getenv("DIREKTIV_CONFIG")
+		}
+
+		conf, err := util.ReadConfig(path)
 		if err != nil {
 			exit(err)
 		}

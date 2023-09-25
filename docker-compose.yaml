@@ -1,0 +1,34 @@
+version: '3.9'
+services:
+
+  postgres:
+    image: postgres:buster
+    command: [ "postgres",
+               "-c", "log_statement=all",
+               "-c", "log_destination=stderr"]
+    environment:
+      POSTGRES_USER: myadmin
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+      POSTGRES_INITDB_ARGS: "-A password"
+    ports:
+      - "5432:5432"
+    volumes: []
+
+  flow:
+    image: ${DIREKTIV_IMAGE}
+    command: ["/bin/direktiv", "server", "dddd"]
+    volumes:
+      - ./config.yaml:/config.yaml
+    environment:
+      - DIREKTIV_APP=flow
+      - DIREKTIV_CONFIG=/config.yaml
+      - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
+      - DIREKTIV_SECRETS_KEY=01234567890123456789012345678912
+      - PORT=8080
+
+    ports:
+      # api port
+      - "8080:8080"
+    depends_on:
+      - postgres

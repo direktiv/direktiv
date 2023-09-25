@@ -232,7 +232,15 @@ func (srv *server) start(ctx context.Context) error {
 
 	db := os.Getenv(util.DBConn)
 
-	srv.locks, err = initLocks(db)
+	err = nil
+	for i := 0; i < 10; i++ {
+		srv.locks, err = initLocks(util.DBConn)
+		if err == nil {
+			break
+		}
+		srv.sugar.Infow("Connecting to database...")
+		time.Sleep(time.Second)
+	}
 	if err != nil {
 		return err
 	}
@@ -249,11 +257,18 @@ func (srv *server) start(ctx context.Context) error {
 		),
 	}
 
-	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
-		DSN:                  db,
-		PreferSimpleProtocol: false, // disables implicit prepared statement usage
-		// Conn:                 edb.DB(),
-	}), gormConf)
+	for i := 0; i < 10; i++ {
+		srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
+			DSN:                  db,
+			PreferSimpleProtocol: false, // disables implicit prepared statement usage
+			// Conn:                 edb.DB(),
+		}), gormConf)
+		if err == nil {
+			break
+		}
+		srv.sugar.Infow("Connecting to database...")
+		time.Sleep(time.Second)
+	}
 
 	if err != nil {
 		return fmt.Errorf("creating gorm db driver, err: %w", err)
