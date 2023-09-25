@@ -182,7 +182,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
-                        mimeType: "text/plain; charset=utf-8",
+                        mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -208,7 +208,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
-                        mimeType: "text/plain; charset=utf-8",
+                        mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -312,7 +312,7 @@ describe('Test behaviour specific to the root node', () => {
                         attributes: [],
                         oid: "",
                         readOnly: false,
-                        mimeType: "text/plain; charset=utf-8",
+                        mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -591,7 +591,7 @@ describe('Test behaviour specific to the root node', () => {
                 pageInfo: null,
                 results: [
                     {
-                        mimeType: "text/html; charset=utf-8",
+                        mimeType: "text/html",
                         name: "page.html",
                         size: "221",
                         checksum: "",
@@ -642,7 +642,7 @@ describe('Test behaviour specific to the root node', () => {
                 pageInfo: null,
                 results: [
                     {
-                        mimeType: "text/html; charset=utf-8",
+                        mimeType: "text/html",
                         name: "Page.HTML",
                         size: "233",
                         checksum: "",
@@ -780,7 +780,7 @@ describe('Test behaviour specific to the root node', () => {
                 results: expect.arrayContaining([
                     {
                         checksum: "",
-                        mimeType: "text/plain; charset=utf-8",
+                        mimeType: "text/plain",
                         name: "alpha.csv",
                         size: "7", // TODO: this is a string, which is probably a bug
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
@@ -844,7 +844,7 @@ describe('Test behaviour specific to the root node', () => {
                     },
                     {
                         checksum: "",
-                        mimeType: "text/plain; charset=utf-8",
+                        mimeType: "text/plain",
                         name: "gamma.css",
                         size: "103",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
