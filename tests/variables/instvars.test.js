@@ -62,7 +62,7 @@ states:
 
 describe('Test workflow variable operations', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create a namespace`, async () => {
         var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)

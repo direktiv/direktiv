@@ -6,7 +6,7 @@ const testNamespace = "nslogstest"
 
 describe('Test that basic namespace operations generate expected logs.', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create a namespace`, async () => {
         const createResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}`)

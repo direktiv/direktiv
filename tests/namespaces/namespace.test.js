@@ -16,7 +16,7 @@ const testNamespace = "a"
 
 describe('Test basic namespace operation.', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create a namespace`, async () => {
         const createResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}`)

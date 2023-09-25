@@ -39,7 +39,6 @@ var expectedChildNodeObject = {
 
 describe('Test basic directory operations', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
 
     it(`should fail to create a non-root directory because of a missing namespace`, async () => {
         var createDirectoryResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${subdirName}?op=create-directory`)

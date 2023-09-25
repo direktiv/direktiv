@@ -7,7 +7,7 @@ const namespaceName = "simpleeventstest"
 
 describe('Test events states behaviour', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create a namespace`, async () => {
         var req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
