@@ -232,15 +232,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	db := os.Getenv(util.DBConn)
 
-	err = nil
-	for i := 0; i < 10; i++ {
-		srv.sugar.Info("Connecting to database...")
-		srv.locks, err = initLocks(util.DBConn)
-		if err == nil {
-			break
-		}
-		time.Sleep(time.Second)
-	}
+	srv.locks, err = initLocks(db)
 	if err != nil {
 		return err
 	}
