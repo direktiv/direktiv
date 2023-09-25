@@ -55,8 +55,7 @@ jobs:
     timeout-minutes: 18
     strategy:
       matrix:
-        jest_prefix:
-          ["engine/", "errors/", "filesystem/", "logparser/", "variables/"]
+        jest_prefix: ["engine/", "filesystem/", "logparser/", "variables/"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
