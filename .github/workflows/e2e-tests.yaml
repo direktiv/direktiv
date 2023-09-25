@@ -1,4 +1,4 @@
-name: Core & FS E2E Tests
+name: E2E Tests
 on:
   push:
     tags:
@@ -51,10 +51,21 @@ jobs:
           path: direktiv.tar
   test:
     needs: build
-    # container:
-    #   image: direktiv/direktiv:env.SRVTAG
     runs-on: ubuntu-latest
     timeout-minutes: 18
+    strategy:
+      matrix:
+        jest_prefix:
+          [
+            "engine/",
+            "errors/",
+            "events/",
+            "filesystem/",
+            "logparser/",
+            "namespaces/",
+            "mirror/",
+            "variables/",
+          ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -190,7 +201,7 @@ jobs:
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
-          JEST_PREFIX: engine/
+          JEST_PREFIX: ${{ matrix.jest_prefix }}
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
 
