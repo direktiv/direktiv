@@ -333,7 +333,7 @@ test("it is possible to test connection when create registries", async ({
     password: faker.internet.password(),
   };
 
-  const validUrl = "https://google.com";
+  const validUrl = "https://hub.docker.com/r/stefandirektiv/test";
   const invalidUrl = "https://hub.dokcer.com)";
 
   const testConnectionButton = page.getByTestId("btn-test-connection");
@@ -370,13 +370,15 @@ test("it is possible to test connection when create registries", async ({
     testConnectionButton,
     "this button should be enabled after checking"
   ).toBeEnabled();
-  // test against https://google.com fails
+
   await expect(
     testConnectionButton,
     "connection button title should be Connection successful"
-  ).toHaveText("Connection failed");
+  ).toHaveText("Connection successful");
 
   await page.getByTestId("new-registry-url").fill(invalidUrl);
+  await testConnectionButton.click();
+
   await expect(
     testConnectionButton,
     "connection button title should be Connection failed"
