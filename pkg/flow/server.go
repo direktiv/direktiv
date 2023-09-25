@@ -234,11 +234,11 @@ func (srv *server) start(ctx context.Context) error {
 
 	err = nil
 	for i := 0; i < 10; i++ {
+		srv.sugar.Infow("Connecting to database...")
 		srv.locks, err = initLocks(util.DBConn)
 		if err == nil {
 			break
 		}
-		srv.sugar.Infow("Connecting to database...")
 		time.Sleep(time.Second)
 	}
 	if err != nil {
@@ -258,6 +258,8 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	for i := 0; i < 10; i++ {
+		srv.sugar.Infow("Connecting to database...")
+
 		srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 			DSN:                  db,
 			PreferSimpleProtocol: false, // disables implicit prepared statement usage
@@ -266,7 +268,6 @@ func (srv *server) start(ctx context.Context) error {
 		if err == nil {
 			break
 		}
-		srv.sugar.Infow("Connecting to database...")
 		time.Sleep(time.Second)
 	}
 
