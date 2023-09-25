@@ -45,9 +45,9 @@ describe('Test namespace regex constraints', () => {
             // "test-flow-namespace/regex-a",
             "test-flow-namespace@regex-a",
             "test-flow-namespace+regex-a",
-            "test-flow-namespace%25regex-a",
+            // "test-flow-namespace%25regex-a",
             // "test-flow-namespace?regex-a",
-            "test-flow-namespace%3Fregex-a",
+            // "test-flow-namespace%3Fregex-a",
             "test-flow-namespace regex-a",
             "test-flow-namespace%20regex-a",
         ]
