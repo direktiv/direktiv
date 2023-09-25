@@ -66,4 +66,4 @@ forward-api:
 # requires forward-api to run in different console
 .PHONY: run-container
 run-container: 
-	docker run --network host  -e DIREKTIV_SERVER_BACKEND=http://127.0.0.1:7755 -p 2304:2304 localhost:5000/frontend
+	docker run --network host -e DIREKTIV_SERVER_APIKEY=helloworld -e DIREKTIV_SERVER_BACKEND=http://127.0.0.1:7755 -p 2304:2304 localhost:5000/frontend:dev
