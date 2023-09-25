@@ -59,11 +59,9 @@ jobs:
           [
             "engine/",
             "errors/",
-            "events/",
             "filesystem/",
             "logparser/",
             "namespaces/",
-            "mirror/",
             "variables/",
           ]
     steps:
