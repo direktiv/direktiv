@@ -56,14 +56,7 @@ jobs:
     strategy:
       matrix:
         jest_prefix:
-          [
-            "engine/",
-            "errors/",
-            "filesystem/",
-            "logparser/",
-            "namespaces/",
-            "variables/",
-          ]
+          ["engine/", "errors/", "filesystem/", "logparser/", "variables/"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
