@@ -17,7 +17,6 @@ const flagNamespace = `-n ${namespaceName}`
 
 describe('Test the direktiv-cli-tool', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
 
     it(`create namespace`, async () => {
         const createResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)

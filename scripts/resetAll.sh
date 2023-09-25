@@ -171,8 +171,8 @@ flow:
   tag: "latest"
 
 frontend:
-  image: "ui"
-  tag: "latest"
+  image: "frontend"
+  tag: "dev"
   logging:
     json: false
 

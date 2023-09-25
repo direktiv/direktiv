@@ -71,7 +71,7 @@ const basevent = (type, id, value) => `{
 
 describe('Test workflow events and', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create namespace`, async () => {
         var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)

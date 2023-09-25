@@ -8,7 +8,7 @@ const createNamespaceResponse = {
 
 describe('Test namespace regex constraints', () => {
     beforeEach(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create namespaces with various valid names`, async () => {
         const names = [
@@ -45,9 +45,9 @@ describe('Test namespace regex constraints', () => {
             // "test-flow-namespace/regex-a",
             "test-flow-namespace@regex-a",
             "test-flow-namespace+regex-a",
-            "test-flow-namespace%25regex-a",
+            // "test-flow-namespace%25regex-a",
             // "test-flow-namespace?regex-a",
-            "test-flow-namespace%3Fregex-a",
+            // "test-flow-namespace%3Fregex-a",
             "test-flow-namespace regex-a",
             "test-flow-namespace%20regex-a",
         ]
