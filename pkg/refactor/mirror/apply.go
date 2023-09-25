@@ -144,7 +144,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 
 		rdr := bytes.NewReader(data)
 
-		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, mt.String(), rdr)
+		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], rdr)
 		if err != nil {
 			return err
 		}
