@@ -166,9 +166,9 @@ const VariablesList = ({ path }: { path: string }) => {
       {deleteItem && path && (
         <Delete
           name={deleteItem.name}
-          onConfirm={() =>
-            deleteWorkflowVariable({ variable: deleteItem, path })
-          }
+          onConfirm={() => {
+            deleteWorkflowVariable({ variable: deleteItem, path });
+          }}
         />
       )}
 
