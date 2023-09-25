@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -110,15 +109,6 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	srv.initJQ()
 
 	return srv, nil
-}
-
-type gormLogger struct {
-	*zap.SugaredLogger
-}
-
-func (g gormLogger) Write(p []byte) (n int, err error) {
-	g.Debugw(string(p), "component", "GORM")
-	return len(p), nil
 }
 
 type mirrorProcessLogger struct {
@@ -249,20 +239,11 @@ func (srv *server) start(ctx context.Context) error {
 	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Debug("Initializing database.")
-	jsonV := "json"
-	gormLogLevel := logger.Warn
-	if os.Getenv(util.DirektivDebug) == "true" {
-		gormLogLevel = logger.Info
-	}
-	gormLogger := log.New(gormLogger{SugaredLogger: srv.sugar}, "\r\n", log.LstdFlags)
-	if os.Getenv(util.DirektivLogJSON) != jsonV {
-		gormLogger = log.New(os.Stdout, "\r\n", log.LstdFlags)
-	}
 	gormConf := &gorm.Config{
 		Logger: logger.New(
-			gormLogger,
+			nil,
 			logger.Config{
-				LogLevel:                  gormLogLevel,
+				LogLevel:                  logger.Silent,
 				IgnoreRecordNotFoundError: true,
 			},
 		),
