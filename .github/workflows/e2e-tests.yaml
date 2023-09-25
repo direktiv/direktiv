@@ -110,7 +110,7 @@ jobs:
             tag: "${{ env.SRVTAG }}"
 
           frontend:
-            image: "frontend"
+            image: "direktiv/frontend"
             tag: "latest"
             logging:
               json: false
