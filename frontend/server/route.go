@@ -39,7 +39,6 @@ func (s *Server) addUIRoutes() {
 	}
 
 	s.chi.Group(func(router chi.Router) {
-		router.Use(s.routeManager.IsAuthenticated)
 		serverFiles := func(wsf http.ResponseWriter, rsf *http.Request) {
 
 			deliver := func(deliverFile []byte) {
@@ -89,9 +88,14 @@ func (s *Server) addUIRoutes() {
 			http.Redirect(w, r, "/ui/", http.StatusPermanentRedirect)
 		})
 
-		router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
+		router.With(s.routeManager.IsAuthenticated).Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
 			serverFiles(w, r)
 		})
+
+		router.Get("/ui/assets/*", func(w http.ResponseWriter, r *http.Request) {
+			serverFiles(w, r)
+		})
+
 	})
 
 }
