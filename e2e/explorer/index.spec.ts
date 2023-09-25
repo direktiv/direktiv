@@ -446,7 +446,11 @@ test(`it is possible to deactivate and activate a workflow`, async ({
   ).toBeDisabled();
 
   await btnRun.click({ force: true }); //nothing happens on this click
-  await expect(btnRun, "run button is still inactive").toBeDisabled();
+  await page.waitForTimeout(1000);
+  await expect(
+    page.getByTestId("run-workflow-dialog"),
+    "it doesn't open the dialog"
+  ).toBeHidden();
 
   await btnToggle.click(); //activate again
   await actionWaitForSuccessToast(page);
