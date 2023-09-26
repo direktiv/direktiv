@@ -149,6 +149,7 @@ jobs:
           sleep 1
           kubectl get all
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
           echo "Listing all pods:"
           kubectl get all
 
@@ -160,7 +161,7 @@ jobs:
       - name: Get Internal IP
         id: getInternalIP
         run: |
-          internal_ip=$(kubectl get service direktiv-api -o jsonpath='{.spec.clusterIP}':1644)
+          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
           echo "internal_ip=$internal_ip" >> $GITHUB_ENV
 
       - name: Set Environment Variables
