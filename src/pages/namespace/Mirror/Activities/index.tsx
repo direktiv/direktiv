@@ -1,7 +1,9 @@
 import {
   NoPermissions,
+  NoResult,
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeaderCell,
   TableRow,
@@ -22,12 +24,13 @@ import { useTranslation } from "react-i18next";
 const pageSize = 10;
 
 const Activities = () => {
-  const { data, isAllowed, noPermissionMessage } = useMirrorInfo();
+  const { data, isAllowed, noPermissionMessage, isFetched } = useMirrorInfo();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const apiKey = useApiKey();
 
   const activities = data?.activities.results;
+  const noResults = isFetched && data?.activities.results.length === 0;
 
   if (!isAllowed)
     return (
@@ -91,6 +94,15 @@ const Activities = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
+                  {noResults && (
+                    <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                      <TableCell colSpan={4}>
+                        <NoResult icon={GitCompare}>
+                          {t("pages.mirror.activities.list.noResults")}
+                        </NoResult>
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {currentItems.map((activity) => (
                     <Row
                       namespace={data.namespace}
