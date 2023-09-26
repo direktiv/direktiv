@@ -160,8 +160,7 @@ jobs:
           sleep 1
           kubectl get all
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-          kubectl wait --for=condition=Ready pod -l
-          nothing to commit, working tree clean app.kubernetes.io/name=direktiv-frontend --timeout=120s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
           echo "Listing all pods:"
           kubectl get all
 
