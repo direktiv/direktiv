@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
@@ -77,10 +76,6 @@ func (c *testCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 
 func (c *testCallbacks) EventFilterStore() events.CloudEventsFilterStore {
 	return c.filterStore
-}
-
-func (c *testCallbacks) SetNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
-	return nil
 }
 
 var _ mirror.Callbacks = &testCallbacks{}
@@ -156,11 +151,6 @@ func TestDryRun(t *testing.T) {
 
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
-	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
-services:
-- name: alpha
-  image: requester
-`), 0o755)
 	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
 	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
 	_ = src.fs.MkdirAll("a/b", 0o755)
@@ -245,11 +235,6 @@ func TestInitSync(t *testing.T) {
 
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
-	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
-services:
-- name: alpha
-  image: requester
-`), 0o755)
 	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
 	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
 	_ = src.fs.MkdirAll("a/b", 0o755)

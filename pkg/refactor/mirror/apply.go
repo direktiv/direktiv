@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -93,11 +92,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	}
 
 	err = o.copyEventFilters(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to copy event filters: %w", err)
-	}
-
-	err = o.copyNamespaceServices(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to copy event filters: %w", err)
 	}
@@ -305,20 +299,6 @@ func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (o *DirektivApplyer) copyNamespaceServices(_ context.Context) error {
-	var services []*api.Service
-	for _, service := range o.parser.Services {
-		services = append(services, service)
-	}
-
-	err := o.callbacks.SetNamespaceServices(o.proc.NamespaceID, services)
-	if err != nil {
-		return err
 	}
 
 	return nil

@@ -24,23 +24,6 @@ type Filters struct {
 }
 
 const (
-	ServicesAPIV1 = "services/v1"
-)
-
-type Service struct {
-	Name  string `yaml:"name"`
-	Image string `yaml:"image"`
-	Scale int32  `yaml:"scale"`
-	Size  string `yaml:"size"`
-	Cmd   string `yaml:"cmd"`
-}
-
-type Services struct {
-	DirektivAPI string    `yaml:"direktiv_api"`
-	Services    []Service `yaml:"services"`
-}
-
-const (
 	WorkflowAPIV1 = "workflow/v1"
 )
 
@@ -74,16 +57,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		}
 
 		return filters, nil
-	case ServicesAPIV1:
-		services := new(Services)
-		err = yaml.Unmarshal(data, &services)
-		if err != nil {
-			return &Services{
-				DirektivAPI: s,
-			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
 
-		return services, nil
 	case WorkflowAPIV1:
 		wf := new(model.Workflow)
 		err = wf.Load(data)

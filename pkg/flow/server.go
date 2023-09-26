@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
@@ -175,7 +174,6 @@ type mirrorCallbacks struct {
 	fileAnnotationsStore core.FileAnnotationsStore
 	filterStore          eventsstore.CloudEventsFilterStore
 	wfconf               func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
-	svcconf              func(uuid.UUID, []*api.Service) error
 }
 
 func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
@@ -208,10 +206,6 @@ func (c *mirrorCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 
 func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore {
 	return c.filterStore
-}
-
-func (c *mirrorCallbacks) SetNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
-	return c.svcconf(nsID, services)
 }
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
