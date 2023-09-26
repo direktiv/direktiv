@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/api"
@@ -143,7 +144,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 
 		rdr := bytes.NewReader(data)
 
-		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, mt.String(), rdr)
+		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], rdr)
 		if err != nil {
 			return err
 		}
@@ -206,12 +207,13 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 	for k, v := range o.parser.DeprecatedNamespaceVars {
 		mt := mimetype.Detect(v)
+		mtString := strings.Split(mt.String(), ";")
 
 		_, err := o.callbacks.VarStore().Set(ctx,
 			&core.RuntimeVariable{
 				NamespaceID: o.proc.NamespaceID,
 				Name:        k,
-				MimeType:    mt.String(),
+				MimeType:    mtString[0],
 				Data:        v,
 			})
 		if err != nil {
@@ -227,13 +229,14 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 
 		for k, v := range m {
 			mt := mimetype.Detect(v)
+			mtString := strings.Split(mt.String(), ";")
 
 			_, err := o.callbacks.VarStore().Set(ctx,
 				&core.RuntimeVariable{
 					NamespaceID:  o.proc.NamespaceID,
 					WorkflowPath: file.Path,
 					Name:         k,
-					MimeType:     mt.String(),
+					MimeType:     mtString[0],
 					Data:         v,
 				})
 			if err != nil {

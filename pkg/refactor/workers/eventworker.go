@@ -66,7 +66,7 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 	}
 
 	if len(receivedEvents) == 0 {
-		w.logger.Debugf("No delayed events to process.")
+		// w.logger.Debugf("No delayed events to process.")
 
 		return
 	}

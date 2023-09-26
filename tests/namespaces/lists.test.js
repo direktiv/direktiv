@@ -6,7 +6,7 @@ const namespaceNames = ["the", "be", "to", "of", "and", "a", "in", "that", "have
 
 describe('Test namespace listing functionality', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-    afterAll(common.helpers.deleteAllNamespaces)
+
 
     it(`should create a number of different namespaces`, async () => {
         for (let i = 0; i < namespaceNames.length; i++) {
