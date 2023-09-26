@@ -68,7 +68,6 @@ jobs:
             "mirror/",
             "namespaces/",
           ]
-      # Maximum number of attempts for each job in the matrix
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
