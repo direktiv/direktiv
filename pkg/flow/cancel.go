@@ -4,12 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
-
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
@@ -59,15 +56,7 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 		switch child.Type {
 		case "isolate":
 			if child.ServiceName != "" {
-				ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-				defer cancel()
-				_, err := engine.functionsClient.CancelWorfklow(ctx, &igrpc.FunctionsCancelWorkflowRequest{
-					ServiceName: &child.ServiceName,
-					ActionID:    &child.Id,
-				})
-				if err != nil {
-					engine.sugar.Errorf("error cancelling action: %v", err)
-				}
+				// TODO: yassir handle workflow children services.
 			} else {
 				engine.sugar.Warn("missing child service name")
 			}

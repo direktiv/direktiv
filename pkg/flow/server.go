@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
@@ -70,10 +69,9 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow            *flow
-	internal        *internal
-	events          *events
-	functionsClient igrpc.FunctionsClient
+	flow     *flow
+	internal *internal
+	events   *events
 
 	metrics *metrics.Client
 	logger  logengine.BetterLogger
@@ -449,28 +447,8 @@ func (srv *server) start(ctx context.Context) error {
 			fileAnnotationsStore: noTx.DataStore().FileAnnotations(),
 			filterStore:          noTx.DataStore().EventFilter(),
 			wfconf:               cc,
-			svcconf:              srv.setNamespaceServices,
 		},
 	)
-
-	srv.sugar.Info("Initializing functions grpc client.")
-	functionsClientConn, err := util.GetEndpointTLS(srv.conf.FunctionsService + ":5555")
-	if err != nil {
-		srv.sugar.Error("initializing functions grpc client", "error", err)
-		return err
-	}
-	srv.functionsClient = igrpc.NewFunctionsClient(functionsClientConn)
-
-	if srv.conf.Eventing {
-		srv.sugar.Info("Initializing knative eventing receiver.")
-		rcv, err := newEventReceiver(srv.events, srv.flow)
-		if err != nil {
-			return err
-		}
-
-		// starting the event receiver
-		go rcv.Start()
-	}
 
 	srv.registerFunctions()
 

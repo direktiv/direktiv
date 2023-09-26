@@ -17,7 +17,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	grpc2 "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/dop251/goja"
@@ -29,10 +28,9 @@ import (
 )
 
 type flowHandler struct {
-	logger          *zap.SugaredLogger
-	client          grpc.FlowClient
-	functionsClient grpc2.FunctionsClient
-	prometheus      prometheus.Client
+	logger     *zap.SugaredLogger
+	client     grpc.FlowClient
+	prometheus prometheus.Client
 
 	apiV2Address string
 }
@@ -63,17 +61,10 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	funcAddr := fmt.Sprintf("%s:5555", conf.FunctionsService)
 	logger.Infof("connecting to functions %s", funcAddr)
 
-	funcConn, err := util.GetEndpointTLS(funcAddr)
-	if err != nil {
-		logger.Errorf("can not connect to direktiv function: %v", err)
-		return nil, err
-	}
-
 	h := &flowHandler{
-		logger:          logger,
-		client:          grpc.NewFlowClient(flowConn),
-		functionsClient: grpc2.NewFunctionsClient(funcConn),
-		apiV2Address:    fmt.Sprintf("%s:6667", conf.FlowService),
+		logger:       logger,
+		client:       grpc.NewFlowClient(flowConn),
+		apiV2Address: fmt.Sprintf("%s:6667", conf.FlowService),
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.PrometheusBackend)
@@ -86,7 +77,6 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	}
 
 	h.initRoutes(router)
-	h.initFunctionsRoutes(router.PathPrefix("/functions").Subrouter())
 
 	proxy := newSingleHostReverseProxy(func(req *http.Request) *http.Request {
 		req.Host = ""

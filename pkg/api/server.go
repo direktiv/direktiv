@@ -115,11 +115,6 @@ func (s *Server) version(w http.ResponseWriter, r *http.Request) {
 		m["flow"] = flowResp.GetBuild()
 	}
 
-	funcsResp, _ := s.flowHandler.functionsClient.Build(ctx, &emptypb.Empty{})
-	if flowResp != nil {
-		m["functions"] = funcsResp.GetBuild()
-	}
-
 	respondJSON(w, m, nil)
 }
 

@@ -11,8 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/functions"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
@@ -320,12 +318,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	flow.pubsub.CloseNamespace(ns)
 
 	// delete all knative services
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderNamespaceName] = req.Name
-	lfr := igrpc.FunctionsListFunctionsRequest{
-		Annotations: annotations,
-	}
-	_, err = flow.functionsClient.DeleteFunctions(ctx, &lfr)
+	// TODO: yassir, delete knative services here.
 
 	// delete filter cache
 	deleteCacheNamespaceSync(ns.Name)

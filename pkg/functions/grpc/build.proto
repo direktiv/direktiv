@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package direktiv_functions;
-
-option go_package = "github.com/direktiv/direktiv/pkg/functions/grpc";
-
-message FunctionsBuildResponse {
-	string build = 1;
-}
