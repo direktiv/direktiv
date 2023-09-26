@@ -515,14 +515,23 @@ func (server *server) setNamespaceServices(nsID uuid.UUID, services []*api.Servi
 		req := new(igrpc.FunctionsCreateFunctionRequest)
 		namespace := ns.ID.String()
 
+		var size int32
+
+		switch services[idx].Size {
+		case "large":
+			size = 2
+		case "medium":
+			size = 1
+		}
+
 		req.Info = &grpc.FunctionsBaseInfo{
 			Namespace:     &namespace,
 			NamespaceName: &ns.Name,
 			Name:          &services[idx].Name,
 			Image:         &services[idx].Image,
-			// Cmd:           &cr.Cmd,
-			// Size:          &cr.Size,
-			// MinScale:      &cr.MinScale,
+			Cmd:           &services[idx].Cmd,
+			Size:          &size,
+			MinScale:      &services[idx].Scale,
 			// Path:          &cr.WorkflowPath,
 			// Envs:          cr.Envs,
 		}

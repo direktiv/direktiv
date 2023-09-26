@@ -407,8 +407,16 @@ func (p *Parser) handleServices(path string, services *api.Services) error {
 		if _, exists := p.Services[service.Name]; exists {
 			return fmt.Errorf("duplicate definition detected for service '%s'", service.Name)
 		}
+
+		if service.Size != "small" &&
+			service.Size != "medium" &&
+			service.Size != "large" {
+			p.log.Warnf("unknown service size %s for service %s, defaults to small",
+				service.Size, service.Name)
+		}
+
 		p.Services[service.Name] = &services.Services[idx]
-		p.log.Infof("Servcice '%s' loaded.", service.Name)
+		p.log.Infof("Service '%s' loaded.", service.Name)
 	}
 
 	return nil
