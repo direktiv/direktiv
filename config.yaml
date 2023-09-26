@@ -1,0 +1,7 @@
+functions-service: direktiv-functions.default
+functions-timeout: 7200
+flow-service: direktiv-flow.default
+prometheus-backend: direktiv-prometheus-server.default
+opentelemetry-backend: ""
+eventing: true
+direktiv-db: ""

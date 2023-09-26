@@ -214,7 +214,7 @@ func (srv *server) start(ctx context.Context) error {
 	// enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"
 	enableDeveloperMode := os.Getenv("ENABLE_DEVELOPER_MODE") == "true"
 
-	srv.sugar.Debug("Initializing telemetry.")
+	srv.sugar.Info("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf, "direktiv/flow", "direktiv")
 	if err != nil {
 		return err
@@ -228,7 +228,7 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Debug("Initializing locks.")
+	srv.sugar.Info("Initializing locks.")
 
 	db := os.Getenv(util.DBConn)
 
@@ -238,7 +238,7 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.locks.Close)
 
-	srv.sugar.Debug("Initializing database.")
+	srv.sugar.Info("Initializing database.")
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			nil,
@@ -249,11 +249,19 @@ func (srv *server) start(ctx context.Context) error {
 		),
 	}
 
-	srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
-		DSN:                  db,
-		PreferSimpleProtocol: false, // disables implicit prepared statement usage
-		// Conn:                 edb.DB(),
-	}), gormConf)
+	for i := 0; i < 10; i++ {
+		srv.sugar.Info("Connecting to database...")
+
+		srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
+			DSN:                  db,
+			PreferSimpleProtocol: false, // disables implicit prepared statement usage
+			// Conn:                 edb.DB(),
+		}), gormConf)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second)
+	}
 
 	if err != nil {
 		return fmt.Errorf("creating gorm db driver, err: %w", err)
@@ -290,14 +298,14 @@ func (srv *server) start(ctx context.Context) error {
 		return fmt.Errorf("invalid env variable '%s' length", direktivSecretKey)
 	}
 
-	srv.sugar.Debug("Initializing pub-sub.")
+	srv.sugar.Info("Initializing pub-sub.")
 
 	srv.pubsub, err = pubsub.InitPubSub(srv.sugar, srv, db)
 	if err != nil {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-	srv.sugar.Debug("Initializing timers.")
+	srv.sugar.Info("Initializing timers.")
 
 	srv.timers, err = initTimers(srv.pubsub)
 	if err != nil {
@@ -305,11 +313,11 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	defer srv.cleanup(srv.timers.Close)
 
-	srv.sugar.Debug("Initializing metrics.")
+	srv.sugar.Info("Initializing metrics.")
 
 	srv.metrics = metrics.NewClient(srv.gormDB)
 
-	srv.sugar.Debug("Initializing engine.")
+	srv.sugar.Info("Initializing engine.")
 
 	srv.engine, err = initEngine(srv)
 	if err != nil {
@@ -325,21 +333,21 @@ func (srv *server) start(ctx context.Context) error {
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	srv.sugar.Debug("Initializing internal grpc server.")
+	srv.sugar.Info("Initializing internal grpc server.")
 
 	srv.internal, err = initInternalServer(cctx, srv)
 	if err != nil {
 		return err
 	}
 
-	srv.sugar.Debug("Initializing flow grpc server.")
+	srv.sugar.Info("Initializing flow grpc server.")
 
 	srv.flow, err = initFlowServer(cctx, srv)
 	if err != nil {
 		return err
 	}
 
-	srv.sugar.Debug("Initializing mirror manager.")
+	srv.sugar.Info("Initializing mirror manager.")
 	noTx := &sqlTx{
 		res: srv.gormDB,
 	}
@@ -384,14 +392,14 @@ func (srv *server) start(ctx context.Context) error {
 		logworker()
 	}()
 
-	srv.sugar.Debug("Initializing events.")
+	srv.sugar.Info("Initializing events.")
 	srv.events, err = initEvents(srv, noTx.DataStore().StagingEvents().Append)
 	if err != nil {
 		return err
 	}
 	defer srv.cleanup(srv.events.Close)
 
-	srv.sugar.Debug("Initializing EventWorkers.")
+	srv.sugar.Info("Initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
 	eventWorker := workers.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.sugar.Named("eventworker"), srv.events.handleEvent)
@@ -435,7 +443,7 @@ func (srv *server) start(ctx context.Context) error {
 		},
 	)
 
-	srv.sugar.Debug("Initializing functions grpc client.")
+	srv.sugar.Info("Initializing functions grpc client.")
 	functionsClientConn, err := util.GetEndpointTLS(srv.conf.FunctionsService + ":5555")
 	if err != nil {
 		srv.sugar.Error("initializing functions grpc client", "error", err)
@@ -444,7 +452,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.functionsClient = igrpc.NewFunctionsClient(functionsClientConn)
 
 	if srv.conf.Eventing {
-		srv.sugar.Debug("Initializing knative eventing receiver.")
+		srv.sugar.Info("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
 		if err != nil {
 			return err

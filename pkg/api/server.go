@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/util"
@@ -68,8 +69,12 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	//     "description": "version query was successful"
 	r.HandleFunc("/version", s.version).Name(RN_Version).Methods(http.MethodGet)
 
+	path := "/etc/direktiv/flow-config.yaml"
+	if os.Getenv("DIREKTIV_CONFIG") != "" {
+		path = os.Getenv("DIREKTIV_CONFIG")
+	}
 	// read config
-	conf, err := util.ReadConfig("/etc/direktiv/flow-config.yaml")
+	conf, err := util.ReadConfig(path)
 	if err != nil {
 		return nil, err
 	}
