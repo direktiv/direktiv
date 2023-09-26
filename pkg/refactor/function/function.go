@@ -1,3 +1,4 @@
+// nolint
 package function
 
 import (
