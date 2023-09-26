@@ -15,6 +15,7 @@ type FileType string
 const (
 	// FileTypeWorkflow is special file type as we handle workflow differently.
 	FileTypeWorkflow  FileType = "workflow"
+	FileTypeService   FileType = "service"
 	FileTypeFile      FileType = "file"
 	FileTypeDirectory FileType = "directory"
 )

@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/model"
 	"gopkg.in/yaml.v3"
@@ -71,4 +72,26 @@ func LoadResource(data []byte) (interface{}, error) {
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}
+}
+
+type Service struct {
+	DirektivAPI string `yaml:"direktiv_api"`
+	Name        string `yaml:"name"`
+	Image       string `yaml:"image"`
+	Scale       int32  `yaml:"scale"`
+	Size        string `yaml:"size"`
+	Cmd         string `yaml:"cmd"`
+}
+
+func ParseService(data []byte) *Service {
+	res := &Service{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil
+	}
+	if strings.HasPrefix(res.DirektivAPI, "service/") {
+		return nil
+	}
+
+	return res
 }

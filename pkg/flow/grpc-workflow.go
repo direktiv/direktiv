@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"io"
 	"path/filepath"
 	"time"
@@ -103,11 +104,58 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	}
 }
 
+func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", bytes.NewReader(req.GetSource()))
+	if err != nil {
+		return nil, err
+	}
+	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	if err != nil {
+		return nil, err
+	}
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	resp := &grpc.CreateWorkflowResponse{}
+	resp.Namespace = ns.Name
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
+	resp.Revision.Source = data
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created service '%s'.", file.Path)
+
+	return resp, nil
+}
+
 func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	if filepath.Ext(req.GetPath()) != ".yaml" && filepath.Ext(req.GetPath()) != ".yml" {
-		return nil, status.Error(codes.InvalidArgument, "workflow name should have either .yaml or .yaml extension")
+		return nil, status.Error(codes.InvalidArgument, "direktiv spec file name should have either .yaml or .yaml extension")
+	}
+
+	if api.ParseService(req.GetSource()) != nil {
+		return flow.createService(ctx, req)
 	}
 
 	tx, err := flow.beginSqlTx(ctx)
@@ -207,8 +255,8 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	if file.Typ != filestore.FileTypeWorkflow {
-		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
+	if file.Typ != filestore.FileTypeWorkflow && file.Typ != filestore.FileTypeService {
+		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service")
 	}
 	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
@@ -239,14 +287,16 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
-	}
+	if file.Typ == filestore.FileTypeWorkflow {
+		err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
+		if err != nil {
+			return nil, err
+		}
 
-	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
-	if err != nil {
-		return nil, err
+		err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err = tx.Commit(ctx); err != nil {
