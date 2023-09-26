@@ -58,7 +58,16 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        jest_prefix: ["engine/", "filesystem/", "logparser/", "variables/"]
+        jest_prefix:
+          [
+            "engine/",
+            "filesystem/",
+            "logparser/",
+            "variables/",
+            "errors/",
+            "mirror/",
+            "namespaces/",
+          ]
       # Maximum number of attempts for each job in the matrix
     steps:
       - name: Checkout code
