@@ -192,11 +192,11 @@ jobs:
       - name: List all pods and sleep 10
         run: |
           kubectl get pods 
-          kuebctl logs deployments/direktiv-flow | tail -n 200
+          kubectl logs deployments/direktiv-flow | tail -n 200
           sleep 20
-          kuebctl logs deployments/direktiv-frontend | tail -n 200
+          kubectl logs deployments/direktiv-frontend | tail -n 200
 
-      - name: Run engine tests
+      - name: Run E2E tests
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
         env:
