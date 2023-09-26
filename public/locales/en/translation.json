@@ -487,7 +487,8 @@
       },
       "activities": {
         "list": {
-          "title": "Activities"
+          "title": "Activities",
+          "noResults": "No activities found"
         },
         "detail": {
           "header": {
