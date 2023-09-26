@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/function2"
+	"github.com/direktiv/direktiv/pkg/refactor/function"
 	"github.com/go-chi/chi/v5"
 )
 
 type functionsController struct {
-	manager *function2.Manager
+	manager *function.Manager
 }
 
 func (e *functionsController) mountRouter(r chi.Router) {
@@ -19,7 +19,7 @@ func (e *functionsController) mountRouter(r chi.Router) {
 }
 
 func (e *functionsController) insert(w http.ResponseWriter, r *http.Request) {
-	req := &function2.FunctionConfig{}
+	req := &function.FunctionConfig{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, &Error{

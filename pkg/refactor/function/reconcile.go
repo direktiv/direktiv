@@ -1,4 +1,4 @@
-package function2
+package function
 
 type reconcileObject interface {
 	id() string

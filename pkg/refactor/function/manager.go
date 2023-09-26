@@ -1,5 +1,5 @@
 // nolint
-package function2
+package function
 
 import (
 	"fmt"

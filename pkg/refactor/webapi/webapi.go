@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/function2"
+	"github.com/direktiv/direktiv/pkg/refactor/function"
 	"github.com/go-chi/chi/v5"
 )
 
-func Start(funcManager *function2.Manager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(funcManager *function.Manager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	fcnt := &functionsController{
 		manager: funcManager,
 	}

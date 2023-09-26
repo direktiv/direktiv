@@ -7,12 +7,12 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/direktiv/direktiv/pkg/refactor/function2"
+	"github.com/direktiv/direktiv/pkg/refactor/function"
 	"github.com/direktiv/direktiv/pkg/refactor/webapi"
 )
 
 func NewMain() *sync.WaitGroup {
-	funcManager, err := function2.NewManagerFromK8s()
+	funcManager, err := function.NewManagerFromK8s()
 	if err != nil {
 		log.Fatalf("error creating functions client: %v\n", err)
 	}
