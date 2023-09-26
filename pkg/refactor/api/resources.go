@@ -30,6 +30,9 @@ const (
 type Service struct {
 	Name  string `yaml:"name"`
 	Image string `yaml:"image"`
+	Scale int32  `yaml:"scale"`
+	Size  string `yaml:"size"`
+	Cmd   string `yaml:"cmd"`
 }
 
 type Services struct {
