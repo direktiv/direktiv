@@ -28,7 +28,7 @@ func buildService(c *ClientConfig, cfg *FunctionConfig) (*servingv1.Service, err
 							Containers:         containers,
 							Volumes:            buildVolumes(c, cfg),
 							Affinity:           &corev1.Affinity{
-								//NodeAffinity: n,
+								// NodeAffinity: n,
 							},
 						},
 					},
@@ -88,7 +88,7 @@ func buildVolumes(c *ClientConfig, cfg *FunctionConfig) []corev1.Volume {
 		},
 	}
 
-	//volumes = append(volumes, functionsConfig.extraVolumes...)
+	// volumes = append(volumes, functionsConfig.extraVolumes...)
 
 	return volumes
 }

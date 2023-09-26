@@ -3,12 +3,13 @@ package webapi
 import (
 	"context"
 	"encoding/json"
-	"github.com/direktiv/direktiv/pkg/refactor/function2"
-	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/refactor/function2"
+	"github.com/go-chi/chi/v5"
 )
 
 func Start(funcManager *function2.Manager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {

@@ -3,6 +3,7 @@ package function2
 import (
 	"context"
 	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
@@ -50,7 +51,7 @@ func (c *knClient) createService(cfg *FunctionConfig) error {
 }
 
 func (c *knClient) updateService(id string, cfg *FunctionConfig) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me updateService\n")
 }
 
@@ -71,7 +72,7 @@ func (c *knClient) listServices() ([]FunctionStatus, error) {
 	}
 
 	result := []FunctionStatus{}
-	for i, _ := range list.Items {
+	for i := range list.Items {
 		result = append(result, &K8sFunctionStatus{&list.Items[i]})
 	}
 

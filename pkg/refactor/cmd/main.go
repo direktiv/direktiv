@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/function2"
-	"github.com/direktiv/direktiv/pkg/refactor/webapi"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/direktiv/direktiv/pkg/refactor/function2"
+	"github.com/direktiv/direktiv/pkg/refactor/webapi"
 )
 
 func NewMain() *sync.WaitGroup {

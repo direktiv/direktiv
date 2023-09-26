@@ -2,10 +2,11 @@ package function2
 
 import (
 	"fmt"
-	"k8s.io/client-go/rest"
-	"knative.dev/serving/pkg/client/clientset/versioned"
 	"sync"
 	"time"
+
+	"k8s.io/client-go/rest"
+	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
 type Manager struct {
@@ -89,7 +90,7 @@ func (m *Manager) runCycle() error {
 
 	result := reconcile(src, target)
 
-	//fmt.Printf("f2: recocile: %v\n", result)
+	// fmt.Printf("f2: recocile: %v\n", result)
 
 	for _, id := range result.deletes {
 		if err := m.client.deleteService(id); err != nil {

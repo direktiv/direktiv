@@ -2,9 +2,10 @@ package function2
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/mitchellh/hashstructure/v2"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
-	"strconv"
 )
 
 type FunctionConfig struct {
@@ -58,9 +59,11 @@ type K8sFunctionStatus struct {
 func (r *K8sFunctionStatus) data() any {
 	return r.Service
 }
+
 func (r *K8sFunctionStatus) id() string {
 	return r.Name
 }
+
 func (r *K8sFunctionStatus) hash() string {
 	return r.Annotations["direktiv.io/input_hash"]
 }

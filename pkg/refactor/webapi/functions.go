@@ -2,9 +2,10 @@ package webapi
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/direktiv/direktiv/pkg/refactor/function2"
 	"github.com/go-chi/chi/v5"
-	"net/http"
 )
 
 type functionsController struct {

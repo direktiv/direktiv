@@ -13,6 +13,7 @@ type mockedObject struct {
 func (m *mockedObject) id() string {
 	return m.idStr
 }
+
 func (m *mockedObject) hash() string {
 	return m.hashStr
 }

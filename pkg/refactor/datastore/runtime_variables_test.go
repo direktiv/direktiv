@@ -93,7 +93,6 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 
 		return
 	}
-
 }
 
 func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
