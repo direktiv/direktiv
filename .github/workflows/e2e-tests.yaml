@@ -52,10 +52,14 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
+
     timeout-minutes: 18
     strategy:
+      fail-fast: false
+      max-parallel: 2
       matrix:
         jest_prefix: ["engine/", "filesystem/", "logparser/", "variables/"]
+      # Maximum number of attempts for each job in the matrix
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -176,10 +180,11 @@ jobs:
           echo "Listing all pods:"
           kubectl get all
 
-      - name: List all pods
+      - name: List all pods and sleep 10
         run: |
           kubectl get pods 
           kubectl logs deployments/direktiv-flow | tail -n 200
+          sleep 10
 
       - name: Cache test dependencies
         uses: actions/cache@v3
