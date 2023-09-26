@@ -316,3 +316,14 @@ test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/
 server-godoc:
 	go install golang.org/x/tools/cmd/godoc@latest
 	godoc -http=:6060
+
+
+
+dev-down:
+	DIREKTIV_IMAGE=direktiv-dev docker-compose down --remove-orphans -v
+
+dev-up: dev-down
+	docker build -t direktiv-dev .
+	DIREKTIV_IMAGE=direktiv-dev  docker-compose up -d
+	DIREKTIV_IMAGE=direktiv-dev  docker-compose logs -f
+	make dev-down
