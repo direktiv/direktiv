@@ -26,8 +26,9 @@ test("it is possible to delete namespaces", async ({ page }) => {
 
   await expect(
     confirmButton,
-    "confirmation buttons should be disabled before typing the namespace name"
+    "confirmation buttons should be enabled before typing the namespace name"
   ).toBeEnabled();
+
   await confirmButton.click();
 
   await page.waitForURL("/");
@@ -35,6 +36,7 @@ test("it is possible to delete namespaces", async ({ page }) => {
     "http://localhost:3333/"
   );
   const regex = /^http:\/\/localhost:3333\/[a-zA-Z0-9]+\/explorer\/tree$/;
+
   await expect
     .poll(
       async () => page.url(),
