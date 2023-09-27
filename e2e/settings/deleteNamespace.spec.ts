@@ -1,6 +1,7 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { NamespaceListSchemaType } from "~/api/namespaces/schema";
 import { getNamespaces } from "~/api/namespaces/query/get";
 import { headers } from "e2e/utils/testutils";
 
@@ -32,7 +33,9 @@ test.afterEach(async () => {
   plusOneNamespace = "";
 });
 
-test("it is possible to delete a namespace", async ({ page }) => {
+test("it is possible to delete a namespace and it will immediately redirect to a different namespace if available", async ({
+  page,
+}) => {
   const namespace = await createNamespace();
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
@@ -86,4 +89,45 @@ test("it is possible to delete a namespace", async ({ page }) => {
       );
     }, "after the landingpage redirect, the user should be navigated to the explorer page of the the first namespace found in the api   response")
     .toBe(true);
+});
+
+test("it is possible to delete the last namespace and it will redirect to the landingpage", async ({
+  page,
+}) => {
+  const namespace = await createNamespace();
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("btn-delete-namespace").click();
+
+  const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
+  const confirmInput = page.getByTestId("delete-namespace-confirm-input");
+
+  confirmInput.type(namespace);
+  await confirmButton.click();
+
+  /**
+   * when the api is now called for the namespaces, we return
+   * an empty  list to act like there are no namespaces left
+   */
+  const mockedNamespace: NamespaceListSchemaType = {
+    results: [],
+  };
+  await page.route("**/api/namespaces", (route, reg) => {
+    if (reg.method() !== "GET") {
+      return route.continue();
+    }
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(mockedNamespace),
+    });
+  });
+
+  await page.waitForURL("/");
+  /**
+   * When other namespaces are available, the redirect would happen immediately
+   * we wait for a second and make sure we are still on the landingpage
+   */
+  await page.waitForTimeout(1000);
+  const frontpageUrl = new URL(page.url());
+  expect(frontpageUrl.pathname, "should stay on the landingpage").toBe("/");
 });
