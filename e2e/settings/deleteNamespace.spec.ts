@@ -22,6 +22,22 @@ test("it is possible to delete namespaces", async ({ page }) => {
   ).toBeDisabled();
   const confirmText = page.getByTestId("delete-namespace-confirm-input");
 
+  const namespacesBeforeDelete = await getNamespaces({
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+    },
+    headers,
+  });
+
+  const namespaceIsInResults = namespacesBeforeDelete.results.some(
+    (item) => item.name === namespace
+  );
+
+  expect(
+    namespaceIsInResults,
+    "the api includes the current namespace in the namespace list"
+  ).toBe(true);
+
   confirmText.type(namespace);
 
   await expect(
