@@ -164,7 +164,9 @@ const VariablesList: FC = () => {
       {deleteItem && (
         <Delete
           name={deleteItem.name}
-          onConfirm={() => deleteVarMutation({ variable: deleteItem })}
+          onConfirm={() => {
+            deleteVarMutation({ variable: deleteItem });
+          }}
         />
       )}
       {createItem && (

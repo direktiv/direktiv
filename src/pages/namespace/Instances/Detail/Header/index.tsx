@@ -98,7 +98,7 @@ const Header = () => {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button asChild variant="primary" className="max-md:w-full">
+          <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link to={link}>
               <FileSymlink />
               {t("pages.instances.detail.header.openWorkflow")}

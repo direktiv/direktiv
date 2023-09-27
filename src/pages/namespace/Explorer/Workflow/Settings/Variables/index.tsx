@@ -33,7 +33,12 @@ const VariablesList = ({ path }: { path: string }) => {
 
   const { data, isFetched } = useWorkflowVariables({ path });
 
-  const { mutate: deleteWorkflowVariable } = useDeleteWorkflowVariable();
+  const { mutate: deleteWorkflowVariable } = useDeleteWorkflowVariable({
+    onSuccess: () => {
+      setDialogOpen(false);
+    },
+  });
+
   const { mutate: downloadVar } = useDownloadVar({
     onSuccess: (response, name) => {
       triggerDownloadFromBlob({
@@ -161,9 +166,9 @@ const VariablesList = ({ path }: { path: string }) => {
       {deleteItem && path && (
         <Delete
           name={deleteItem.name}
-          onConfirm={() =>
-            deleteWorkflowVariable({ variable: deleteItem, path })
-          }
+          onConfirm={() => {
+            deleteWorkflowVariable({ variable: deleteItem, path });
+          }}
         />
       )}
 

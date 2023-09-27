@@ -58,7 +58,7 @@ jobs:
 
     env:
       NOMAD_TOKEN: ${{ secrets.NOMAD_TOKEN }}
-      NOMAD_ADDR: https://noamd.direktiv.dev:4646
+      NOMAD_ADDR: https://nomad.direktiv.dev:4646
       NOMAD_VAR_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
 
     steps:

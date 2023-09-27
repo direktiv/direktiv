@@ -34,37 +34,12 @@ const ScrollContainer = () => {
      * to have no flickering with pretty high scrolling speed.
      */
     overscan: 40,
-    getItemKey: (index) => logData?.results[index]?.t ?? index,
   });
 
   useEffect(() => {
     if (logData?.results.length && watch) {
-      /**
-       * monkey patch ahead 🙈
-       * calling rowVirtualizer.scrollToIndex(logData?.results.length);
-       * is supposed to scroll to the bottom of the list, but it doesn't
-       * work when the height of the line is dynamic. The calcuation that
-       * is used only takes the result of estimateSize call into account
-       * (we can test that by setting estimateSize very high)
-       *
-       * the only solution that workd for now is calling
-       * rowVirtualizer.scrollElement with a very high top value
-       * two times in a row, with a small delay for one a render
-       * cycle in between
-       */
-      rowVirtualizer.scrollElement?.scrollTo({
-        top: 999999999999999,
-      });
-
-      const timeOut = setTimeout(() => {
-        rowVirtualizer.scrollElement?.scrollTo({
-          top: 999999999999999,
-        });
-      }, 10);
-
-      return () => {
-        clearTimeout(timeOut);
-      };
+      rowVirtualizer.scrollToIndex(logData?.results.length - 1),
+        { align: "end" };
     }
   }, [logData?.results.length, rowVirtualizer, watch]);
 
