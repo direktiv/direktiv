@@ -97,6 +97,9 @@ type RootQuery interface {
 	// ListAllFiles lists all files and directories in the filestore, this method used to help testing filestore logic.
 	ListAllFiles(ctx context.Context) ([]*File, error)
 
+	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
+	ListDirektivFiles(ctx context.Context) ([]*File, error)
+
 	// CropFilesAndDirectories removes all files and directories that don't appear in excludePaths.
 	CropFilesAndDirectories(ctx context.Context, excludePaths []string) error
 

@@ -30,6 +30,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/workers"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -287,9 +288,6 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
-	if enableDeveloperMode {
-		fmt.Printf(">>>>>> dsn %s\n", db)
-	}
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -333,6 +331,14 @@ func (srv *server) start(ctx context.Context) error {
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	srv.sugar.Info("Initializing pubsub routine.")
+	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, os.Getenv(util.DBConn))
+	if err != nil {
+		return fmt.Errorf("creating pubsub, err: %w", err)
+	}
+
+	go pBus.Start(cctx.Done(), &wg)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 

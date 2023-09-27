@@ -99,6 +99,26 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 	return list, nil
 }
 
+func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, error) {
+	var list []*filestore.File
+
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return nil, err
+	}
+
+	res := q.db.WithContext(ctx).Raw(`
+						SELECT * 
+						FROM filesystem_files 
+						WHERE root_id = ? AND typ <> "directory" AND typ <> "file"
+						`, q.rootID).Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return list, nil
+}
+
 func (q *RootQuery) IsEmptyDirectory(ctx context.Context, path string) (bool, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
