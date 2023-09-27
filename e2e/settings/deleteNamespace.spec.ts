@@ -42,7 +42,7 @@ test("it is possible to delete a namespace", async ({ page }) => {
     confirmButton,
     "confirmation buttons should be disabled before typing the namespace name"
   ).toBeDisabled();
-  const confirmText = page.getByTestId("delete-namespace-confirm-input");
+  const confirmInput = page.getByTestId("delete-namespace-confirm-input");
 
   const namespacesBeforeDelete = await getNamespacesFromAPI();
 
@@ -53,7 +53,7 @@ test("it is possible to delete a namespace", async ({ page }) => {
     "the api includes the current namespace in the namespace list"
   ).toBe(true);
 
-  confirmText.type(namespace);
+  confirmInput.type(namespace);
 
   await expect(
     confirmButton,
