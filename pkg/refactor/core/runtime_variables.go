@@ -53,8 +53,8 @@ type RuntimeVariablesStore interface {
 	// ListByWorkflowPath gets all runtime variable entries from store that are linked to specific namespace & workflow path
 	ListByWorkflowPath(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*RuntimeVariable, error)
 
-	// ListByNamespaceID gets all runtime variable entries from store that are linked to specific namespace id
-	ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)
+	// ListNamespaceLevel gets all runtime variable entries from store that are at namespace level.
+	ListNamespaceLevel(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)
 
 	// Set tries to update runtime variable data and mimetype fields or insert a new one if no matching variable to
 	// update. Param variable should have one reference field set and name field set.
