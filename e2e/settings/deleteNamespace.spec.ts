@@ -4,12 +4,6 @@ import { createNamespace } from "../utils/namespace";
 import { getNamespaces } from "~/api/namespaces/query/get";
 import { headers } from "e2e/utils/testutils";
 
-type NamespaceResult = {
-  createdAt: string;
-  updatedAt: string;
-  name: string;
-  oid: string;
-};
 test("it is possible to delete namespaces", async ({ page }) => {
   const namespace = await createNamespace();
   await page.goto(`/${namespace}/settings`);
