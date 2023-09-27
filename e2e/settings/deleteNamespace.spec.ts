@@ -14,12 +14,14 @@ test("it is possible to delete namespaces", async ({ page }) => {
   const namespace = await createNamespace();
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
-  const confirmButton = page.getByTestId("namespace-delete-confirm");
+  const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
+
   await expect(
     confirmButton,
     "confirmation buttons should be disabled before typing the namespace name"
   ).toBeDisabled();
-  const confirmText = page.getByTestId("inp-delete-namespace-confirm");
+  const confirmText = page.getByTestId("delete-namespace-confirm-input");
+
   confirmText.type(namespace);
 
   await expect(
