@@ -288,7 +288,7 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 		return nil, err
 	}
 
-	list, err := tx.DataStore().RuntimeVariables().ListByNamespaceID(ctx, ns.ID)
+	list, err := tx.DataStore().RuntimeVariables().ListNamespaceLevel(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}

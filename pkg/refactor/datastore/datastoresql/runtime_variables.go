@@ -149,8 +149,8 @@ func (s *sqlRuntimeVariablesStore) ListByWorkflowPath(ctx context.Context, names
 	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path"}, []interface{}{namespaceID.String(), workflowPath})
 }
 
-func (s *sqlRuntimeVariablesStore) ListByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
-	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path"}, []interface{}{namespaceID.String(), nil})
+func (s *sqlRuntimeVariablesStore) ListNamespaceLevel(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
+	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path", "instance_id"}, []interface{}{namespaceID.String(), nil, nil})
 }
 
 func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
