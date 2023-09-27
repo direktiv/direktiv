@@ -16,9 +16,7 @@ const fetchNamespaces = async ({
 }: QueryFunctionContext<ReturnType<(typeof namespaceKeys)["all"]>>) =>
   getNamespaces({
     apiKey,
-    urlParams: {
-      baseUrl: undefined,
-    },
+    urlParams: {},
   });
 
 export const useListNamespaces = () => {
