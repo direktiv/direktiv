@@ -48,11 +48,10 @@ test("it is possible to delete namespaces", async ({ page }) => {
     },
     headers,
   });
-  const findResult = namespaces.results.find(
-    (item: NamespaceResult) => item.name === namespace
+
+  const deletedNamespaceIsInResults = namespaces.results.some(
+    (item) => item.name === namespace,
+    "the api does not include the current namespace in the namespace list after deletion"
   );
-  expect(
-    findResult,
-    "check result should be undefined as the namespace doesn't exist anymore"
-  ).toBe(undefined);
+  expect(deletedNamespaceIsInResults).toBe(false);
 });
