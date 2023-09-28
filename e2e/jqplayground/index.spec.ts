@@ -4,6 +4,8 @@ import {
   expectedSnippetOutput,
   getCommonElements,
   getErrorContainer,
+  scrolledToTheTop,
+  userScrolledADecentAmount,
 } from "./utils";
 
 let namespace = "";
@@ -279,4 +281,24 @@ test("It will run every snippet succefully", async ({ page }) => {
       )
       .toBe(expectedOutput);
   }
+});
+
+test("running a snippet will automatically scroll the page to the top", async ({
+  page,
+}) => {
+  const snippetToRun = "stringInterpolation" as const;
+  const snippetButton = page.getByTestId(`jq-run-snippet-${snippetToRun}-btn`);
+
+  await snippetButton.click();
+  expect(
+    await userScrolledADecentAmount(page),
+    `the user has scrolled a decent amount to reach the button`
+  ).toBe(true);
+
+  await expect
+    .poll(
+      async () => await scrolledToTheTop(page),
+      `the page automatically scrolled to the top after running the snippet`
+    )
+    .toBe(true);
 });

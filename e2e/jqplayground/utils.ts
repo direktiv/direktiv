@@ -31,6 +31,19 @@ export const getErrorContainer = (page: Page) => {
   return { errorContainer };
 };
 
+export const userScrolledADecentAmount = async (page: Page) =>
+  await page.evaluate(
+    /**
+     * the value 300 is just a threshhold to make sure the needed to scroll
+     * a decent amount to reach the button. Just testing it against 0 would
+     * no garantee that there is a fair amount of scrolling involved
+     */
+    () => window.scrollY > 300
+  );
+
+export const scrolledToTheTop = async (page: Page) =>
+  await page.evaluate(() => window.scrollY === 0);
+
 type SnippetKeys = (typeof exampleSnippets)[number]["key"];
 
 const objectToPrettifiedString = (object: unknown) =>
