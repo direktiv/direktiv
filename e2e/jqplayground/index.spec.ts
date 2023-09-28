@@ -8,8 +8,9 @@ import {
 
 let namespace = "";
 
-test.beforeEach(async () => {
+test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
+  await page.goto(`/${namespace}/jq`);
 });
 
 test.afterEach(async () => {
@@ -20,7 +21,6 @@ test.afterEach(async () => {
 test("It will display the input as output, when the user clicks the run button without making any changes", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { btnRun, inputTextArea, outputTextArea, queryInput } =
     getCommonElements(page);
 
@@ -52,7 +52,6 @@ test("It will display the input as output, when the user clicks the run button w
 test("It will display an error when the query is not a JQ command", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { btnRun, queryInput } = await getCommonElements(page);
   await queryInput.fill("some invalid jq command");
   await btnRun.click();
@@ -82,7 +81,6 @@ test("It will display an error when the input is not a valid JSON", async ({
   page,
   browserName,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { btnRun, inputTextContainer } = getCommonElements(page);
   await inputTextContainer.click();
   await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
@@ -115,7 +113,6 @@ test("It will display an error when the input is not a valid JSON", async ({
 test("It will clear output when loading the result from the server", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { btnRun, outputTextArea } = getCommonElements(page);
 
   expect(
@@ -146,7 +143,6 @@ test("It will clear output when loading the result from the server", async ({
 test("It will persist the query to be available after a page reload", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { queryInput } = await getCommonElements(page);
 
   expect(await queryInput.inputValue(), 'the query is "." by default').toBe(
@@ -174,8 +170,6 @@ test("It will persist the input to be available after a page reload", async ({
   page,
   browserName,
 }) => {
-  await page.goto(`/${namespace}/jq`);
-
   const { inputTextArea, inputTextContainer } = getCommonElements(page);
 
   expect(await inputTextArea.inputValue(), `the input is {} by default`).toBe(
@@ -206,7 +200,6 @@ test("the user can copy the input to the clipboard when there is one", async ({
   page,
   browserName,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { inputTextContainer, copyInputBtn } = getCommonElements(page);
 
   await inputTextContainer.click();
@@ -236,7 +229,6 @@ test("the user can copy the input to the clipboard when there is one", async ({
 test("the user can copy the output to the clipboard when there is one", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/jq`);
   const { outputTextArea, copyOutputBtn } = getCommonElements(page);
 
   expect(
@@ -272,7 +264,6 @@ test("the user can copy the output to the clipboard when there is one", async ({
 });
 
 test("It will run every snippet succefully", async ({ page }) => {
-  await page.goto(`/${namespace}/jq`);
   const { outputTextArea } = getCommonElements(page);
 
   for (const [snippetKey, expectedOutput] of Object.entries(
