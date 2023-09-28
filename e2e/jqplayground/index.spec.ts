@@ -50,7 +50,7 @@ test("it is possible to run simple query against a input json", async ({
   browserName,
 }) => {
   await page.goto(`/${namespace}/jq`);
-  const btnRun = page.getByTestId("jq-run");
+  const btnRun = page.getByTestId("jq-run-btn");
   await btnRun.click();
   const defaultOutput = "{}";
   const inputTextArea = page.getByTestId("jq-input-editor");
@@ -83,7 +83,7 @@ test("it is possible to run simple query against a input json", async ({
     )
     .toBe("");
 
-  const snippets = page.getByTestId(/jq-run-snippets-/);
+  const snippets = page.getByTestId(/jq-run-snippet-/);
   await snippets.first().click();
 
   await page.waitForTimeout(1000); // scroll has animation to go to top, so should wait for it
@@ -106,14 +106,14 @@ test("it is possible to run snippets", async ({ page }) => {
   test.setTimeout(50000);
   await page.goto(`/${namespace}/jq`, { waitUntil: "networkidle" });
   // await page.waitForLoadState('networkidle');
-  const btnRun = page.getByTestId("jq-run");
+  const btnRun = page.getByTestId("jq-run-btn");
   const outputTextArea = page
     .getByTestId("jq-output-editor")
     .getByRole("textbox");
 
   for (let i = 0; i < exampleSnippets.length; i++) {
     const item = exampleSnippets[i];
-    const snippet = page.getByTestId(`jq-run-snippets-${item?.key}`);
+    const snippet = page.getByTestId(`jq-run-snippet-${item?.key}-btn`);
     await snippet.click();
     await btnRun.click();
     await expect(

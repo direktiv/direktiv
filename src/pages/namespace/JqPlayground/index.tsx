@@ -120,7 +120,7 @@ const JqPlaygroundPage: FC = () => {
               onChange={(e) => changeQuery(e.target.value)}
             />
             <Button
-              data-testid="jq-run"
+              data-testid="jq-run-btn"
               className="grow sm:w-44"
               type="submit"
               variant="primary"
