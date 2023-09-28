@@ -141,4 +141,30 @@ test("It will clear output when loading the result from the server", async ({
     .toBe("{}");
 });
 
+test("It will persist the query to be available after a page reload", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/jq`);
+  const { queryInput } = await getCommonElements(page);
+
+  expect(await queryInput.inputValue(), 'the query is "." by default').toBe(
+    "."
+  );
+
+  const userQueryText = ".some .query .text";
+
+  await queryInput.fill(userQueryText);
+
+  expect(
+    await queryInput.inputValue(),
+    "the query has been changed by the user"
+  ).toBe(userQueryText);
+
+  await page.reload();
+
+  expect(
+    await queryInput.inputValue(),
+    `after a page reload, the query has been restored to the last value`
+  ).toBe(userQueryText);
+});
 
