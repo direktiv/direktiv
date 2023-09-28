@@ -71,7 +71,7 @@ const JqPlaygroundPage: FC = () => {
   };
 
   const updateInput = (newData: string | undefined) => {
-    if (!newData) return;
+    if (newData === undefined) return;
     setInput(newData);
     storeInputInLocalstorage(newData);
     setError("");
