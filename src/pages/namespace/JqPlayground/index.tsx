@@ -49,7 +49,7 @@ const JqPlaygroundPage: FC = () => {
     },
   });
 
-  const submitQuery = () => {
+  const submitQuery = ({ query, input }: { query: string; input: string }) => {
     /**
      * Always clear the output before submiting a new query to the backend.
      * Otherwise when the request takes longer or produces an error the input
@@ -61,7 +61,7 @@ const JqPlaygroundPage: FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    submitQuery();
+    submitQuery({ query, input });
   };
 
   const changeQuery = (newQuery: string) => {
@@ -81,7 +81,7 @@ const JqPlaygroundPage: FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateInput(prettifyJsonString(input));
     changeQuery(query);
-    submitQuery();
+    submitQuery({ query, input });
   };
 
   const formId = "jq-playground-form";
