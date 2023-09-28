@@ -202,6 +202,75 @@ test("It will persist the input to be available after a page reload", async ({
   ).toBe(userInputText);
 });
 
+test("the user can copy the input to the clipboard when there is one", async ({
+  page,
+  browserName,
+}) => {
+  await page.goto(`/${namespace}/jq`);
+  const { inputTextContainer, copyInputBtn } = getCommonElements(page);
+
+  await inputTextContainer.click();
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type("");
+  await expect(
+    copyInputBtn,
+    "an empty input will disable the copy button"
+  ).toBeDisabled();
+
+  const userInputText = `{"this": "will be copied into the clipboard"}`;
+  await inputTextContainer.click();
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(userInputText);
+  await copyInputBtn.click();
+  const clipboardText = await page.evaluate(() =>
+    navigator.clipboard.readText()
+  );
+
+  expect(clipboardText, "the input was copied into the clipboard").toBe(
+    userInputText
+  );
+});
+
+test("the user can copy the output to the clipboard when there is one", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/jq`);
+  const { outputTextArea, copyOutputBtn } = getCommonElements(page);
+
+  expect(
+    await outputTextArea.inputValue(),
+    `the initial ouput is an empty string`
+  ).toBe("");
+  await expect(
+    copyOutputBtn,
+    "an empty output will disable the copy button"
+  ).toBeDisabled();
+
+  const snippetToRun = "feedInput" as const;
+  const expectedOutput = expectedSnippetOutput[snippetToRun];
+
+  const snippetButton = page.getByTestId(`jq-run-snippet-${snippetToRun}-btn`);
+  await snippetButton.click();
+
+  await expect
+    .poll(
+      async () => await outputTextArea.inputValue(),
+      "running the snippet should change the output"
+    )
+    .toBe(expectedOutput);
+
+  await copyOutputBtn.click();
+  const clipboardText = await page.evaluate(() =>
+    navigator.clipboard.readText()
+  );
+
+  expect(clipboardText, "the output was copied into the clipboard").toBe(
+    expectedOutput
+  );
+});
+
 test("It will run every snippet succefully", async ({ page }) => {
   await page.goto(`/${namespace}/jq`);
   const { outputTextArea } = getCommonElements(page);
