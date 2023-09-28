@@ -52,7 +52,7 @@ test("It will display an error when the query is not a JQ command", async ({
 }) => {
   await page.goto(`/${namespace}/jq`);
   const { btnRun, queryInput } = await getCommonElements(page);
-  await queryInput.type("some invalid jq command");
+  await queryInput.fill("some invalid jq command");
   await btnRun.click();
 
   const { errorContainer } = getErrorContainer(page);
@@ -66,10 +66,10 @@ test("It will display an error when the query is not a JQ command", async ({
     await errorContainer.textContent(),
     "the error message should inform about an invalid json"
   ).toContain(
-    'error : error executing JQ command: failed to evaluate jq/js: error executing jq query some invalid jq command.: unexpected token "invalid"'
+    'error : error executing JQ command: failed to evaluate jq/js: error executing jq query some invalid jq command: unexpected token "invalid"'
   );
 
-  await queryInput.type("some invalid jq command");
+  await queryInput.fill("changed the query");
   await expect(
     errorContainer,
     "the error message will disappear when the user changes the query"
