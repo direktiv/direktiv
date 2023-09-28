@@ -168,3 +168,34 @@ test("It will persist the query to be available after a page reload", async ({
   ).toBe(userQueryText);
 });
 
+test("It will persist the input to be available after a page reload", async ({
+  page,
+  browserName,
+}) => {
+  await page.goto(`/${namespace}/jq`);
+
+  const { inputTextArea, inputTextContainer } = getCommonElements(page);
+
+  expect(await inputTextArea.inputValue(), `the input is {} by default`).toBe(
+    "{}"
+  );
+
+  const userInputText = `{"foo": 42,"bar": "less interesting data"}`;
+
+  await inputTextContainer.click();
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(userInputText);
+
+  expect(
+    await inputTextArea.inputValue(),
+    `the input was changed by the user`
+  ).toBe(userInputText);
+
+  await page.reload();
+
+  expect(
+    await inputTextArea.inputValue(),
+    `after a page reload, the input has been restored to the last value`
+  ).toBe(userInputText);
+});
