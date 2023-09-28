@@ -146,6 +146,7 @@ const JqPlaygroundPage: FC = () => {
                     size: "sm",
                     type: "button",
                     disabled: !input,
+                    "data-testid": "copy-input-btn",
                   }}
                 />
               </div>
@@ -171,8 +172,8 @@ const JqPlaygroundPage: FC = () => {
                     size: "sm",
                     type: "button",
                     disabled: !output,
+                    "data-testid": "copy-output-btn",
                   }}
-                  testid="copy-output"
                 />
               </div>
               <div data-testid="jq-output-editor" className="flex grow">
