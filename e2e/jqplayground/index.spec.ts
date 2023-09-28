@@ -1,8 +1,10 @@
-import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import { getCommonElements, getErrorContainer } from "./utils";
-
-import exampleSnippets from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
+import { expect, test } from "@playwright/test";
+import {
+  expectedSnippetOutput,
+  getCommonElements,
+  getErrorContainer,
+} from "./utils";
 
 let namespace = "";
 
@@ -198,4 +200,23 @@ test("It will persist the input to be available after a page reload", async ({
     await inputTextArea.inputValue(),
     `after a page reload, the input has been restored to the last value`
   ).toBe(userInputText);
+});
+
+test("It will run every snippet succefully", async ({ page }) => {
+  await page.goto(`/${namespace}/jq`);
+  const { outputTextArea } = getCommonElements(page);
+
+  for (const [snippetKey, expectedOutput] of Object.entries(
+    expectedSnippetOutput
+  )) {
+    const snippetButton = page.getByTestId(`jq-run-snippet-${snippetKey}-btn`);
+    await snippetButton.click();
+
+    await expect
+      .poll(
+        async () => await outputTextArea.inputValue(),
+        "running the snippet should match the expected output"
+      )
+      .toBe(expectedOutput);
+  }
 });

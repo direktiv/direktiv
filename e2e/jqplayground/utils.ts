@@ -1,4 +1,6 @@
 import { Page } from "@playwright/test";
+import exampleSnippets from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
+import { prettifyJsonString } from "~/util/helpers";
 
 export const getCommonElements = (page: Page) => {
   const queryInput = page.getByTestId("jq-query-input");
@@ -22,4 +24,42 @@ export const getCommonElements = (page: Page) => {
 export const getErrorContainer = (page: Page) => {
   const errorContainer = page.getByTestId("form-errors");
   return { errorContainer };
+};
+
+type SnippetKeys = (typeof exampleSnippets)[number]["key"];
+
+const objectToPrettifiedString = (object: unknown) =>
+  prettifyJsonString(JSON.stringify(object));
+
+export const expectedSnippetOutput: Record<SnippetKeys, string> = {
+  unchangedInput: objectToPrettifiedString({
+    foo: {
+      bar: {
+        baz: 123,
+      },
+    },
+  }),
+  valueAtKey: "42",
+  arrayOperation: objectToPrettifiedString({
+    good: false,
+    name: "XML",
+  }),
+  arrayObjectConstruction: objectToPrettifiedString([
+    {
+      title: "JQ Primer",
+      user: "stedolan",
+    },
+    {
+      title: "More JQ",
+      user: "stedolan",
+    },
+  ]),
+  lengthOfValue: objectToPrettifiedString([2, 6, 1, 0]),
+  keysInArray: objectToPrettifiedString(["Foo", "abc", "abcd"]),
+  feedInput: objectToPrettifiedString([42, "something else"]),
+  pipeOutput: objectToPrettifiedString(["JSON", "XML"]),
+  inputUnchanged: objectToPrettifiedString([2, 4, 7]),
+  invokeFilter: objectToPrettifiedString([2, 3, 4]),
+  conditionals: '"many"',
+  stringInterpolation: '"The input was 42, which is one less than 43"',
 };
