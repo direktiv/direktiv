@@ -51,11 +51,11 @@ export const useCurlCommand = ({
   url: string;
   body: string;
 }) => {
-  const { isKeyRequired } = useApiKeyHandling();
+  const { isApiKeyRequired } = useApiKeyHandling();
   const apiKeyFromLocalstorage = useApiKey();
 
   const apiKeyHeader =
-    isKeyRequired && apiKeyFromLocalstorage
+    isApiKeyRequired && apiKeyFromLocalstorage
       ? `\n -H 'direktiv-token: ${apiKeyFromLocalstorage}' \\`
       : "";
 

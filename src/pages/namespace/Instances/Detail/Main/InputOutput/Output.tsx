@@ -2,6 +2,7 @@ import Editor from "~/design/Editor";
 import { FC } from "react";
 import InfoText from "./OutputInfo";
 import Toolbar from "./Toolbar";
+import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
@@ -35,12 +36,13 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
   }
 
   const workflowOutput = atob(data?.data ?? "");
+  const workflowOutputPretty = prettifyJsonString(workflowOutput);
 
   return (
     <div className="flex grow flex-col gap-5 pb-12">
       <Toolbar copyText={workflowOutput} variant="output" />
       <Editor
-        value={workflowOutput}
+        value={workflowOutputPretty}
         language="json"
         theme={theme ?? undefined}
         options={{ readOnly: true }}

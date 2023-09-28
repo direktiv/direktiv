@@ -19,8 +19,7 @@ import Editor from "~/design/Editor";
 import Examples from "./Examples";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import { JqQueryErrorSchema } from "~/api/jq/schema";
-import { prettifyJsonString } from "./utils";
+import { prettifyJsonString } from "~/util/helpers";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -44,9 +43,8 @@ const JqPlaygroundPage: FC = () => {
     },
     onError: (error) => {
       setOutput("");
-      const errorParsed = JqQueryErrorSchema.safeParse(error);
-      if (errorParsed.success) {
-        setError(errorParsed.data.message);
+      if (error) {
+        setError(error);
       }
     },
   });

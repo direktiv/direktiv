@@ -43,6 +43,7 @@ export const logLevelToLogEntryVariant = (
 ): LogEntryVariant => {
   switch (level) {
     case "error":
+    case "warn":
       return "error";
     case "info":
       return "info";
@@ -67,4 +68,14 @@ export const triggerDownloadFromBlob = ({
   document.body.appendChild(aTag);
   aTag.click();
   window.URL.revokeObjectURL(url);
+};
+
+// takes a json input string and format it with 4 spaces indentation
+export const prettifyJsonString = (jsonString: string) => {
+  try {
+    const resultAsJson = JSON.parse(jsonString);
+    return JSON.stringify(resultAsJson, null, 4);
+  } catch (e) {
+    return "{}";
+  }
 };

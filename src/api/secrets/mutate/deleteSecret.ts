@@ -3,12 +3,13 @@ import {
   SecretListSchemaType,
   SecretSchemaType,
 } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "../../apiFactory";
 import { secretKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "../../../util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../../design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -53,7 +54,7 @@ export const useDeleteSecret = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn: ({ secret }: { secret: SecretSchemaType }) =>
       deleteSecret({
         apiKey: apiKey ?? undefined,

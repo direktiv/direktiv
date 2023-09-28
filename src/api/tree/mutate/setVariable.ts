@@ -3,13 +3,14 @@ import {
   WorkflowVariableCreatedSchemaType,
   WorkflowVariableFormSchemaType,
 } from "../schema/workflowVariable";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -60,11 +61,11 @@ export const useSetWorkflowVariable = ({
         name,
       },
       headers: {
-        "content-type": mimeType,
+        "Content-Type": mimeType,
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(

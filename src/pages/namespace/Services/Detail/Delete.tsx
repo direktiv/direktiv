@@ -30,6 +30,13 @@ const Delete = ({
     }
   );
 
+  const revisionParam = revision.revision || revision.rev;
+  if (!revisionParam) {
+    throw new Error(
+      "prop 'revision' or 'rev' must exist when deleting a revision"
+    );
+  }
+
   return (
     <>
       <DialogHeader>
@@ -51,7 +58,10 @@ const Delete = ({
         </DialogClose>
         <Button
           onClick={() => {
-            deleteServiceRevision({ service, revision: revision.revision });
+            deleteServiceRevision({
+              service,
+              revision: revisionParam,
+            });
           }}
           variant="destructive"
           loading={isLoading}

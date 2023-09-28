@@ -1,12 +1,4 @@
-import {
-  BookOpen,
-  LogOut,
-  Moon,
-  Settings2,
-  Slack,
-  Sun,
-  User,
-} from "lucide-react";
+import { BookOpen, Moon, Settings2, Slack, Sun, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +11,9 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
+import LogoutButton from "./LogoutButton";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
-import { useApiActions } from "~/util/store/apiKey";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
 
@@ -30,21 +22,16 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
-  const { isKeyRequired } = useApiKeyHandling();
+  const { showUsermenu } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
-  const { setApiKey: storeApiKey } = useApiActions();
-
-  const logout = () => {
-    storeApiKey(null);
-  };
 
   return (
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {isKeyRequired ? (
+          {showUsermenu ? (
             <Button
               variant="ghost"
               className="items-center px-1"
@@ -65,16 +52,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {isKeyRequired && (
+          {showUsermenu && (
             <>
               <DropdownMenuLabel>
                 {t("components.userMenu.loggedIn")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{t("components.userMenu.logout")}</span>
-              </DropdownMenuItem>
+              <LogoutButton />
               <DropdownMenuSeparator />
             </>
           )}

@@ -7,6 +7,7 @@ import {
 
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
+import { NoPermissions } from "~/design/Table";
 import ScrollContainer from "./Scrollcontainer";
 import { ScrollText } from "lucide-react";
 import { formatLogTime } from "~/util/helpers";
@@ -15,7 +16,8 @@ import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
   const { t } = useTranslation();
-  const { data } = useNamespacelogs();
+  const { data, isFetched, isAllowed, noPermissionMessage } =
+    useNamespacelogs();
 
   const copyValue =
     data?.results
@@ -23,6 +25,9 @@ const LogsPanel = () => {
       .join("\n") ?? "";
 
   const resultCount = data?.results.length ?? 0;
+
+  if (!isFetched) return null;
+  if (!isAllowed) return <NoPermissions>{noPermissionMessage}</NoPermissions>;
 
   return (
     <>

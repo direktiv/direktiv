@@ -1,6 +1,7 @@
 export const noop = {
   name: "noop",
-  data: `description: A simple 'no-op' state that returns 'Hello world!'
+  data: `direktiv_api: workflow/v1
+description: A simple 'no-op' state that returns 'Hello world!'
 states:
 - id: helloworld
   type: noop
@@ -11,7 +12,8 @@ states:
 
 export const action = {
   name: "action",
-  data: `description: A simple 'action' state that sends a get request
+  data: `direktiv_api: workflow/v1
+description: A simple 'action' state that sends a get request
 functions:
 - id: get
   image: direktiv/request:v4
@@ -29,7 +31,8 @@ states:
 
 export const consumeEvent = {
   name: "consumeEvent",
-  data: `functions:
+  data: `direktiv_api: workflow/v1
+functions:
 - id: greeter
   image: direktiv/greeting:v3
   type: knative-workflow
@@ -53,7 +56,8 @@ states:
 
 export const delay = {
   name: "delay",
-  data: `description: A simple 'delay' state that waits for 5 seconds
+  data: `direktiv_api: workflow/v1
+description: A simple 'delay' state that waits for 5 seconds
 states:
 - id: delay
   type: delay
@@ -63,7 +67,8 @@ states:
 
 export const error = {
   name: "error",
-  data: `description: A simple 'error' state workflow that checks an email attempts to validate it.
+  data: `direktiv_api: workflow/v1
+description: A simple 'error' state workflow that checks an email attempts to validate it.
 states:
 - id: data
   type: noop
@@ -96,7 +101,8 @@ states:
 
 export const foreach = {
   name: "foreach",
-  data: `description: A simple 'foreach' state that solves expressions
+  data: `direktiv_api: workflow/v1
+description: A simple 'foreach' state that solves expressions
 functions: 
 - id: solve
   image: direktiv/solve:v3
@@ -121,7 +127,8 @@ states:
 
 export const generateEvent = {
   name: "generateEvent",
-  data: `description: A simple 'generateEvent' state that sends data to a greeting listener.
+  data: `direktiv_api: workflow/v1
+description: A simple 'generateEvent' state that sends data to a greeting listener.
 states:
 - id: generate
   type: generateEvent
@@ -135,7 +142,8 @@ states:
 
 export const generateSolveEvent = {
   name: "generateSolveEvent",
-  data: `description: A simple 'generateEvent' state that sends an expression to a solve listener.
+  data: `direktiv_api: workflow/v1
+description: A simple 'generateEvent' state that sends an expression to a solve listener.
 states:
 - id: generate
   type: generateEvent
@@ -149,7 +157,8 @@ states:
 
 export const getAndSet = {
   name: "getAndSet",
-  data: `description: "Simple Counter getter and setter variable example"
+  data: `direktiv_api: workflow/v1
+description: "Simple Counter getter and setter variable example"
 states:
   - id: counter-get
     type: getter 
@@ -169,7 +178,8 @@ states:
 
 export const parallel = {
   name: "parallel",
-  data: `description: A simple 'parallel' state workflow that runs solve container to solve expressions.
+  data: `direktiv_api: workflow/v1
+description: A simple 'parallel' state workflow that runs solve container to solve expressions.
 functions: 
 - id: solve
   image: direktiv/solve:v3
@@ -198,7 +208,8 @@ states:
 
 export const validate = {
   name: "validate",
-  data: `description: A simple 'validate' state workflow that checks an email
+  data: `direktiv_api: workflow/v1
+description: A simple 'validate' state workflow that checks an email
 states:
 - id: data
   type: noop
@@ -231,7 +242,8 @@ states:
 
 export const switchState = {
   name: "switch",
-  data: `description: A simple 'switch' state that checks whether the age provided is older than 18.
+  data: `direktiv_api: workflow/v1
+description: A simple 'switch' state that checks whether the age provided is older than 18.
 states:
 - id: data
   type: noop
@@ -257,7 +269,8 @@ states:
 
 export const eventXor = {
   name: "eventXor",
-  data: `functions:
+  data: `direktiv_api: workflow/v1
+functions:
 - id: greeter
   image: direktiv/greeting:v3
   type: knative-workflow
@@ -295,7 +308,8 @@ states:
 
 export const eventAnd = {
   name: "eventAnd",
-  data: `functions:
+  data: `direktiv_api: workflow/v1
+functions:
 - id: greeter
   image: direktiv/greeting:v3
   type: knative-workflow

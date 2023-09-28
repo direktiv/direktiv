@@ -3,12 +3,13 @@ import {
   RegistryCreatedSchemaType,
   RegistryFormSchemaType,
 } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { registriesKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -43,7 +44,7 @@ export const useCreateRegistry = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (registry, variables) => {
       queryClient.invalidateQueries(

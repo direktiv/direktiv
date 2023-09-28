@@ -5,8 +5,8 @@ import { namespaceKeys } from "../";
 import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 
-const getNamespaces = apiFactory({
-  url: () => `/api/namespaces`,
+export const getNamespaces = apiFactory({
+  url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/namespaces`,
   method: "GET",
   schema: NamespaceListSchema,
 });
@@ -16,7 +16,7 @@ const fetchNamespaces = async ({
 }: QueryFunctionContext<ReturnType<(typeof namespaceKeys)["all"]>>) =>
   getNamespaces({
     apiKey,
-    urlParams: undefined,
+    urlParams: {},
   });
 
 export const useListNamespaces = () => {

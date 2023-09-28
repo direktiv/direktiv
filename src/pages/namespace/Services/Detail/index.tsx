@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -27,9 +28,11 @@ import { useTranslation } from "react-i18next";
 const ServiceDetailPage = () => {
   const { t } = useTranslation();
   const { service } = pages.services.useParams();
-  const { data, isSuccess } = useServiceDetails({
-    service: service ?? "",
-  });
+  const { data, isFetched, isAllowed, noPermissionMessage } = useServiceDetails(
+    {
+      service: service ?? "",
+    }
+  );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteRevision, setDeleteRevision] = useState<RevisionSchemaType>();
@@ -42,13 +45,12 @@ const ServiceDetailPage = () => {
     }
   }, [dialogOpen]);
 
-  if (!data) return null;
   if (!service) return null;
+  if (!isFetched) return null;
 
-  const showTable = (data.revisions.length ?? 0) > 0;
-  const noResults = isSuccess && data.revisions.length === 0;
-
-  const latestRevision = data.revisions?.[0];
+  const showTable = (data?.revisions.length ?? 0) > 0;
+  const noResults = isFetched && data?.revisions.length === 0;
+  const latestRevision = data?.revisions?.[0];
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -60,7 +62,12 @@ const ServiceDetailPage = () => {
             {t("pages.services.revision.list.title", { name: service })}
           </h3>
           <DialogTrigger asChild>
-            <Button onClick={() => setCreateRevision(true)} variant="outline">
+            <Button
+              onClick={() => setCreateRevision(true)}
+              variant="outline"
+              // you should not create a new revision when you can't see the table
+              disabled={!isAllowed}
+            >
               <PlusCircle />
               {t("pages.services.revision.list.create")}
             </Button>
@@ -89,23 +96,33 @@ const ServiceDetailPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {showTable &&
-                data?.revisions?.map((revision, index) => (
-                  <Row
-                    revision={revision}
-                    service={service}
-                    key={revision.name}
-                    setDeleteRevision={
-                      index !== 0 ? setDeleteRevision : undefined
-                    }
-                  />
-                ))}
-              {noResults && (
+              {isAllowed ? (
+                <>
+                  {showTable &&
+                    data?.revisions?.map((revision, index) => (
+                      <Row
+                        revision={revision}
+                        service={service}
+                        key={revision.name}
+                        setDeleteRevision={
+                          index !== 0 ? setDeleteRevision : undefined
+                        }
+                      />
+                    ))}
+                  {noResults && (
+                    <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                      <TableCell colSpan={6}>
+                        <NoResult icon={Diamond}>
+                          {t("pages.services.revision.list.empty.title")}
+                        </NoResult>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
+              ) : (
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>
-                    <NoResult icon={Diamond}>
-                      {t("pages.services.revision.list.empty.title")}
-                    </NoResult>
+                    <NoPermissions>{noPermissionMessage}</NoPermissions>
                   </TableCell>
                 </TableRow>
               )}

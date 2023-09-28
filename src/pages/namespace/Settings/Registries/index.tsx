@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { NoResult, Table, TableBody } from "~/design/Table";
+import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
@@ -27,7 +27,7 @@ const RegistriesList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched } = useRegistries();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useRegistries();
 
   const filteredItems = useMemo(
     () =>
@@ -91,26 +91,34 @@ const RegistriesList: FC = () => {
               </CreateItemButton>
             </div>
             <Card className="mb-4">
-              {currentItems.length ? (
-                <Table>
-                  <TableBody>
-                    {currentItems.map((item, i) => (
-                      <ItemRow
-                        key={i}
-                        item={item}
-                        onDelete={setDeleteRegistry}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <NoResult icon={Container}>
-                  {t(
-                    isSearch
-                      ? "pages.settings.registries.list.emptySearch"
-                      : "pages.settings.registries.list.empty"
+              {isAllowed ? (
+                <>
+                  {currentItems.length ? (
+                    <Table>
+                      <TableBody>
+                        {currentItems.map((item, i) => (
+                          <ItemRow
+                            key={i}
+                            item={item}
+                            onDelete={setDeleteRegistry}
+                          >
+                            {item.name}
+                          </ItemRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <NoResult icon={Container}>
+                      {t(
+                        isSearch
+                          ? "pages.settings.registries.list.emptySearch"
+                          : "pages.settings.registries.list.empty"
+                      )}
+                    </NoResult>
                   )}
-                </NoResult>
+                </>
+              ) : (
+                <NoPermissions>{noPermissionMessage}</NoPermissions>
               )}
             </Card>
             {totalPages > 1 && (

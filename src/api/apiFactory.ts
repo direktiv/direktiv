@@ -1,4 +1,5 @@
 import { FileSchema } from "./schema";
+import { createApiErrorFromResponse } from "./errorHandling";
 import { z } from "zod";
 
 const getAuthHeader = (apiKey: string) => ({
@@ -56,7 +57,7 @@ const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
     if (textResult !== "") parsedResponse = { body: textResult };
   }
   if (parsedResponse) {
-    return schema.parse({ ...parsedResponse });
+    return schema.parse(parsedResponse);
   }
   return schema.parse(null);
 };
@@ -131,11 +132,6 @@ export const apiFactory =
       }
     }
 
-    try {
-      const json = await res.json();
-      return Promise.reject(json);
-    } catch (error) {
-      process.env.NODE_ENV !== "test" && console.error(error);
-      return Promise.reject(res.status);
-    }
+    const apiError = await createApiErrorFromResponse(res);
+    return Promise.reject(apiError);
   };

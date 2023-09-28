@@ -3,13 +3,14 @@ import {
   NodeListSchemaType,
   NodeSchemaType,
 } from "../schema/node";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -56,7 +57,7 @@ export const useDeleteNode = ({
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn: ({ node }: { node: NodeSchemaType }) =>
       deleteNode({
         apiKey: apiKey ?? undefined,

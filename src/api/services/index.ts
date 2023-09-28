@@ -1,15 +1,24 @@
 export const serviceKeys = {
-  servicesList: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  servicesList: (
+    namespace: string,
+    { apiKey, workflow }: { apiKey?: string; workflow?: string }
+  ) =>
     [
       {
         scope: "service-list",
         apiKey,
         namespace,
+        workflow,
       },
     ] as const,
   serviceDetail: (
     namespace: string,
-    { apiKey, service }: { apiKey?: string; service: string }
+    {
+      apiKey,
+      service,
+      workflow,
+      version,
+    }: { apiKey?: string; service: string; workflow?: string; version?: string }
   ) =>
     [
       {
@@ -17,6 +26,8 @@ export const serviceKeys = {
         apiKey,
         namespace,
         service,
+        workflow,
+        version,
       },
     ] as const,
   serviceRevisionDetail: (
@@ -42,7 +53,15 @@ export const serviceKeys = {
       apiKey,
       service,
       revision,
-    }: { apiKey?: string; service: string; revision: string }
+      workflow,
+      version,
+    }: {
+      apiKey?: string;
+      service: string;
+      revision: string;
+      workflow?: string;
+      version?: string;
+    }
   ) =>
     [
       {
@@ -51,14 +70,25 @@ export const serviceKeys = {
         namespace,
         service,
         revision,
+        workflow,
+        version,
       },
     ] as const,
-  podLogs: ({ apiKey, name }: { apiKey?: string; name: string }) =>
+  podLogs: ({
+    apiKey,
+    name,
+    namespace,
+  }: {
+    apiKey?: string;
+    name: string;
+    namespace: string;
+  }) =>
     [
       {
         scope: "service-pods-logs",
         apiKey,
         name,
+        namespace,
       },
     ] as const,
 };

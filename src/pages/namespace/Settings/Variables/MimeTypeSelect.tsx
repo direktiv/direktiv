@@ -62,13 +62,13 @@ const MimeTypeSelect = ({
 }) => {
   const { t } = useTranslation();
 
-  const hasNonTextMimeType = !EditorMimeTypeSchema.safeParse(mimeType).success;
+  const hasEditableMimeType = EditorMimeTypeSchema.safeParse(mimeType).success;
 
   return (
     <Select
       onValueChange={onChange}
       defaultValue={mimeType}
-      value={hasNonTextMimeType ? undefined : mimeType}
+      value={!hasEditableMimeType ? undefined : mimeType}
     >
       <SelectTrigger
         id={id}
@@ -76,7 +76,7 @@ const MimeTypeSelect = ({
         variant="outline"
         block
         data-testid="variable-trg-mimetype"
-        disabled={hasNonTextMimeType}
+        disabled={!hasEditableMimeType}
       >
         <SelectValue
           placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}

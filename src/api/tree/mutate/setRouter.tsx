@@ -1,13 +1,14 @@
 import { Trans, useTranslation } from "react-i18next";
 import { forceLeadingSlash, sortByRef } from "../utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { RouterSchema } from "../schema/node";
 import type { RouterSchemaType } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 
 const setRouter = apiFactory({
@@ -30,7 +31,7 @@ export const useSetRouter = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn: ({
       path,
       routeA,

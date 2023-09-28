@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -24,10 +25,12 @@ const ListenersList = ({
   offset: number;
   setOffset: Dispatch<SetStateAction<number>>;
 }) => {
-  const { data, isFetched } = useEventListeners({
-    limit: itemsPerPage,
-    offset,
-  });
+  const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
+    {
+      limit: itemsPerPage,
+      offset,
+    }
+  );
 
   const { t } = useTranslation();
 
@@ -59,23 +62,33 @@ const ListenersList = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {noResults ? (
+            {isAllowed ? (
+              <>
+                {noResults ? (
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableCell colSpan={6}>
+                      <NoResult icon={Antenna}>
+                        {t("pages.events.listeners.empty.noResults")}
+                      </NoResult>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.results.map((listener, i) => (
+                    <Row
+                      listener={listener}
+                      key={i}
+                      namespace={data.namespace}
+                      data-testid={`listener-row-${i}`}
+                    />
+                  ))
+                )}
+              </>
+            ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
-                  <NoResult icon={Antenna}>
-                    {t("pages.events.listeners.empty.noResults")}
-                  </NoResult>
+                  <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>
-            ) : (
-              data?.results.map((listener, i) => (
-                <Row
-                  listener={listener}
-                  key={i}
-                  namespace={data.namespace}
-                  data-testid={`listener-row-${i}`}
-                />
-              ))
             )}
           </TableBody>
         </Table>

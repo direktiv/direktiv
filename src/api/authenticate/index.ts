@@ -1,3 +1,4 @@
+import { ApiErrorSchema } from "../errorHandling";
 import { getVersion } from "../version/query/get";
 
 export const authenticationKeys = {
@@ -16,8 +17,12 @@ export const checkApiKeyAgainstServer = (apiKey?: string) =>
      * other error should bubble up, like a 500 or schema validation error
      */
     .catch((err) => {
-      if (err !== 401 && err !== 403) {
-        throw err;
+      const parsedError = ApiErrorSchema.safeParse(err);
+      if (parsedError.success) {
+        const { status } = parsedError.data.response;
+        if (status === 401 || status === 403) {
+          return false;
+        }
       }
-      return false;
+      throw err;
     });

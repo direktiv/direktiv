@@ -39,7 +39,7 @@ const CreateService = ({
 }) => {
   const { t } = useTranslation();
 
-  const { data } = useServices();
+  const { data } = useServices({});
   const { mutate: createService, isLoading } = useCreateService({
     onSuccess: () => {
       close();
@@ -193,7 +193,7 @@ const CreateService = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.services.create.createBtn")}
+            {t("pages.services.create.cancelBtn")}
           </Button>
         </DialogClose>
         <Button

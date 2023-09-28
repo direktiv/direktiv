@@ -1,9 +1,10 @@
 import { VarDeletedSchema, VarSchemaType } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
@@ -39,7 +40,7 @@ export const useDeleteVar = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(

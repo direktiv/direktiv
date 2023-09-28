@@ -2,12 +2,17 @@ import { FC, PropsWithChildren, useEffect } from "react";
 import { useApiActions, useApiKey } from "~/util/store/apiKey";
 
 import { Authdialog } from "../Authdialog";
+import env from "~/config/env";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
+import { useRefreshSession } from "~/api/enterprise/session/query/ping";
 
 export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { isFetched, isCurrentKeyValid, isKeyRequired } = useApiKeyHandling();
+  const { isFetched, isCurrentKeyValid, isApiKeyRequired } =
+    useApiKeyHandling();
   const { setApiKey: storeApiKey } = useApiActions();
   const apiKeyFromLocalStorage = useApiKey();
+
+  useRefreshSession({ enabled: env.VITE_IS_ENTERPRISE });
 
   /**
    * clean up old api keys from local storage
@@ -17,10 +22,10 @@ export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
    */
   useEffect(() => {
     // when no key is required, make sure to delete a possibly existing key from local storage
-    if (isFetched && !isKeyRequired && apiKeyFromLocalStorage) {
+    if (isFetched && !isApiKeyRequired && apiKeyFromLocalStorage) {
       storeApiKey(null);
     }
-  }, [apiKeyFromLocalStorage, isKeyRequired, isFetched, storeApiKey]);
+  }, [apiKeyFromLocalStorage, isApiKeyRequired, isFetched, storeApiKey]);
 
   // return nothing until we know the status of the api key and server
   if (!isFetched) return null;

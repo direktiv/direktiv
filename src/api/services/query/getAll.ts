@@ -1,8 +1,4 @@
-import {
-  QueryFunctionContext,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
 import {
   ServiceStreamingSchema,
   ServiceStreamingSchemaType,
@@ -11,25 +7,41 @@ import {
 } from "../schema/services";
 
 import { apiFactory } from "~/api/apiFactory";
+import { forceLeadingSlash } from "~/api/tree/utils";
 import { memo } from "react";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
 export const getServices = apiFactory({
-  url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/functions/namespaces/${namespace}`,
+  url: ({
+    namespace,
+    baseUrl,
+    workflow,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    workflow?: string;
+  }) =>
+    workflow
+      ? `${
+          baseUrl ?? ""
+        }/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
+          workflow
+        )}?op=services`
+      : `${baseUrl ?? ""}/api/functions/namespaces/${namespace}`,
   method: "GET",
   schema: ServicesListSchema,
 });
 
 const fetchServices = async ({
-  queryKey: [{ apiKey, namespace }],
+  queryKey: [{ apiKey, namespace, workflow }],
 }: QueryFunctionContext<ReturnType<(typeof serviceKeys)["servicesList"]>>) =>
   getServices({
     apiKey,
-    urlParams: { namespace },
+    urlParams: { namespace, workflow },
   }).then((res) => ({
     // [DIR-784] this should be changed in the backend
     // reverse the order of functions (newer first)
@@ -73,7 +85,8 @@ const updateCache = (
 
 export const useServicesStream = ({
   enabled = true,
-}: { enabled?: boolean } = {}) => {
+  workflow,
+}: { enabled?: boolean; workflow?: string } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
@@ -83,7 +96,11 @@ export const useServicesStream = ({
   }
 
   return useStreaming({
-    url: `/api/functions/namespaces/${namespace}`,
+    url: workflow
+      ? `/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
+          workflow
+        )}?op=services`
+      : `/api/functions/namespaces/${namespace}`,
     apiKey: apiKey ?? undefined,
     enabled,
     schema: ServiceStreamingSchema,
@@ -91,6 +108,7 @@ export const useServicesStream = ({
       queryClient.setQueryData<ServicesListSchemaType>(
         serviceKeys.servicesList(namespace, {
           apiKey: apiKey ?? undefined,
+          workflow: workflow ?? undefined,
         }),
         (oldData) => updateCache(oldData, msg)
       );
@@ -100,18 +118,22 @@ export const useServicesStream = ({
 
 type ServicesStreamingSubscriberType = {
   enabled?: boolean;
+  workflow?: string;
 };
 
 export const ServicesStreamingSubscriber = memo(
-  ({ enabled }: ServicesStreamingSubscriberType) => {
-    useServicesStream({ enabled: enabled ?? true });
+  ({ enabled, workflow }: ServicesStreamingSubscriberType) => {
+    useServicesStream({
+      enabled: enabled ?? true,
+      workflow: workflow ?? undefined,
+    });
     return null;
   }
 );
 
 ServicesStreamingSubscriber.displayName = "ServicesStreamingSubscriber";
 
-export const useServices = () => {
+export const useServices = ({ workflow }: { workflow?: string }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -119,9 +141,10 @@ export const useServices = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: serviceKeys.servicesList(namespace, {
       apiKey: apiKey ?? undefined,
+      workflow: workflow ?? undefined,
     }),
     queryFn: fetchServices,
     enabled: !!namespace,

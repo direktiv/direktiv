@@ -16,16 +16,4 @@ export const JqQueryResult = z.object({
   results: z.array(z.string()),
 });
 
-/**
- * example
-  {
-      "code": 406,
-      "message": "invalid json data: invalid character '}' looking for beginning of object key string"
-  }
- */
-export const JqQueryErrorSchema = z.object({
-  code: z.number(),
-  message: z.string(),
-});
-
 export type JqQueryResultType = z.infer<typeof JqQueryResult>;

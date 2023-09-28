@@ -3,17 +3,6 @@ import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 import { twMergeClsx } from "~/util/helpers";
-import { z } from "zod";
-
-const isLinkComponent = (children: React.ReactNode) => {
-  const validatedChildren = z
-    .object({ type: z.object({ displayName: z.string() }) })
-    .safeParse(children);
-  return (
-    validatedChildren.success &&
-    validatedChildren.data.type.displayName === "Link"
-  );
-};
 
 // asChild only works with exactly one child, so when asChild is true, we can not have a loading property
 type AsChildOrLoading =
@@ -32,6 +21,7 @@ export type ButtonProps = {
   circle?: boolean;
   block?: boolean;
   icon?: boolean;
+  isAnchor?: boolean;
 } & AsChildOrLoading;
 
 const Button = React.forwardRef<
@@ -50,16 +40,13 @@ const Button = React.forwardRef<
       loading,
       icon,
       asChild,
+      isAnchor = false,
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
-    const isAnchor = React.Children.toArray(children).some(
-      (child) =>
-        React.isValidElement(child) &&
-        (child.type === "a" || isLinkComponent(child))
-    );
+
     // In case of asChild, if a child is not an anchor(e.g, label, span, etc) we are going to remove th click & hover effect
     const childIsNotAnAnchor = asChild && !isAnchor;
 

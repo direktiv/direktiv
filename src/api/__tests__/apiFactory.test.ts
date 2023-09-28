@@ -13,6 +13,7 @@ import {
 import { renderHook, waitFor } from "@testing-library/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
+import { ApiErrorSchema } from "../errorHandling";
 import { UseQueryWrapper } from "../../../test/utils";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
@@ -213,7 +214,15 @@ describe("processApiResponse", () => {
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
-      expect(errorMock.mock.calls?.[0]?.[0]).toMatchInlineSnapshot("401");
+
+      const res = errorMock.mock.calls?.[0]?.[0];
+      const parsedRes = ApiErrorSchema.safeParse(res);
+      if (parsedRes.success) {
+        expect(parsedRes.data.response.status).toBe(401);
+        expect(parsedRes.data.json).toBe(undefined);
+      } else {
+        throw new Error("api response does not match ApiErrorSchema");
+      }
     });
   });
 
@@ -306,7 +315,14 @@ describe("processApiResponse", () => {
       // ignore it for now, since typesafety is not important here
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot("404");
+      const res = errorMock.mock.calls[0][0];
+      const parsedRes = ApiErrorSchema.safeParse(res);
+      if (parsedRes.success) {
+        expect(parsedRes.data.response.status).toBe(404);
+        expect(parsedRes.data.json).toBe(undefined);
+      } else {
+        throw new Error("api response does not match ApiErrorSchema");
+      }
     });
   });
 
@@ -334,11 +350,16 @@ describe("processApiResponse", () => {
       // ignore it for now, since typesafety is not important here
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      expect(errorMock.mock.calls[0][0]).toMatchInlineSnapshot(`
-        {
-          "my": "error",
-        }
-      `);
+      const res = errorMock.mock.calls[0][0];
+      const parsedRes = ApiErrorSchema.safeParse(res);
+      if (parsedRes.success) {
+        expect(parsedRes.data.response.status).toBe(422);
+        expect(parsedRes.data.json).toStrictEqual({
+          my: "error",
+        });
+      } else {
+        throw new Error("api response does not match ApiErrorSchema");
+      }
     });
   });
 

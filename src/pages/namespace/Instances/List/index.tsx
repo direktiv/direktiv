@@ -1,5 +1,6 @@
 import { FiltersObj, useInstances } from "~/api/instances/query/get";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -23,7 +24,7 @@ const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
-  const { data, isFetched } = useInstances({
+  const { data, isFetched, isAllowed, noPermissionMessage } = useInstances({
     limit: instancesPerPage,
     offset,
     filters,
@@ -71,25 +72,35 @@ const InstancesListPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {noResults ? (
+            {isAllowed ? (
+              <>
+                {noResults ? (
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableCell colSpan={6}>
+                      <NoResult icon={Boxes}>
+                        {hasFilters
+                          ? t("pages.instances.list.empty.noFilterResults")
+                          : t("pages.instances.list.empty.noInstances")}
+                      </NoResult>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.instances.results.map((instance) => (
+                    <Row
+                      instance={instance}
+                      key={instance.id}
+                      namespace={data.namespace}
+                      data-testid={`instance-row-${instance.id}`}
+                    />
+                  ))
+                )}
+              </>
+            ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
-                  <NoResult icon={Boxes}>
-                    {hasFilters
-                      ? t("pages.instances.list.empty.noFilterResults")
-                      : t("pages.instances.list.empty.noInstances")}
-                  </NoResult>
+                  <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>
-            ) : (
-              data?.instances.results.map((instance) => (
-                <Row
-                  instance={instance}
-                  key={instance.id}
-                  namespace={data.namespace}
-                  data-testid={`instance-row-${instance.id}`}
-                />
-              ))
             )}
           </TableBody>
         </Table>

@@ -3,11 +3,12 @@ import {
   UpdateMirrorResponseSchema,
   UpdateMirrorResponseSchemaType,
 } from "../schema/mirror";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -43,7 +44,7 @@ export const useUpdateMirror = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(

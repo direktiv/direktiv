@@ -11,6 +11,7 @@
       "welcomeTo": "Welcome to",
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
+      "error": "There was an error fetching the namespaces",
       "links": {
         "docs": {
           "title": "Getting started",
@@ -180,6 +181,33 @@
                 "title": "Edit {{name}}"
               }
             }
+          },
+          "overview": {
+            "instances": {
+              "header": "Workflow instances",
+              "noResult": "No instances of this workflow have been executed recently."
+            },
+            "metrics": {
+              "header": "Success / failure rate",
+              "successful": "Successful: {{percentage}}%",
+              "failed": "Failed: {{percentage}}%",
+              "noResult": "No data available"
+            },
+            "trafficDistribution": {
+              "header": "Traffic Distribution",
+              "noResult": "Traffic shaping is not configured for this workflow."
+            },
+            "services": {
+              "header": "Workflow services",
+              "deleteMenuItem": "Redeploy",
+              "delete": {
+                "title": "Redeploy workflow service",
+                "message": "This will delete the pods running to support service <b>{{name}}</b>. They will be recreated the next time an action requiring this service is executed."
+              }
+            },
+            "serviceRevisions": {
+              "header": "Workflow service \"{{name}}\" revisions"
+            }
           }
         }
       },
@@ -188,7 +216,8 @@
           "activeRevision": "Active Revision",
           "revisions": "Revisions",
           "overview": "Overview",
-          "settings": "Settings"
+          "settings": "Settings",
+          "services": "Services"
         },
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
@@ -319,8 +348,7 @@
       },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
-        "updateTooltip": "refetch instances",
-        "successfullExecutions": {
+        "successfulExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recent successful executions."
         },
@@ -346,7 +374,6 @@
           "updatedAt": "last updated",
           "childInstances": {
             "label": "spawned",
-            "updateTooltip": "refetch child instances",
             "instanceCount": "{{count}} instances",
             "instanceCountMax": "+ {{count}} instances",
             "searchPlaceholder": "Search child instances...",
@@ -460,7 +487,8 @@
       },
       "activities": {
         "list": {
-          "title": "Activities"
+          "title": "Activities",
+          "noResults": "No activities found"
         },
         "detail": {
           "header": {
@@ -523,7 +551,7 @@
       },
       "revision": {
         "list": {
-          "title": "Services \"{{name}}\" revisions",
+          "title": "Service \"{{name}}\" revisions",
           "create": "Create a new revision",
           "relativeTime": "{{relativeTime}} ago",
           "tableHeader": {
@@ -606,6 +634,127 @@
         "cancelBtn": "Cancel"
       }
     },
+    "permissions": {
+      "tabs": {
+        "policy": "Policy",
+        "tokens": "Tokens",
+        "groups": "Groups"
+      },
+      "policy": {
+        "unsavedNote": "unsaved changes",
+        "theresOneIssue": "There is an issue",
+        "saveBtn": "Save",
+        "permissionsHintTitle": "Available permissions"
+      },
+      "permissionsInfo": {
+        "all": "all permissions",
+        "partial": "{{count}} permisions",
+        "partial_one": "{{count}} permision",
+        "partial_zero": "no permissions"
+      },
+      "durationHint": {
+        "title": "Token lifetime",
+        "description": "The token lifetime must be a valid ISO 8601 duration string.",
+        "examples": "Examples:",
+        "P1Y": "1 year",
+        "PT48H": "48 hours",
+        "P1Y2M15D": "1 year, 2 months, and 15 days"
+      },
+      "permissionsSelector": {
+        "permissions": "Permissions",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all"
+      },
+      "groups": {
+        "tableHeader": {
+          "name": "name",
+          "description": "description",
+          "permissions": "permissions"
+        },
+        "createBtn": "Create a new group",
+        "noGroups": "There are no groups yet.",
+        "contextMenu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "create": {
+          "title": "Create a group",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "group": {
+            "label": "Name",
+            "placeholder": "groupname",
+            "alreadyExist": "The name already exists"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          }
+        },
+        "edit": {
+          "title": "Update group",
+          "cancelBtn": "Cancel",
+          "editBtn": "Save",
+          "group": {
+            "label": "Name",
+            "placeholder": "groupname",
+            "alreadyExist": "The name already exists"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          }
+        },
+        "delete": {
+          "title": "Delete group",
+          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        }
+      },
+      "tokens": {
+        "tableHeader": {
+          "description": "description",
+          "permissions": "permissions",
+          "created": "created",
+          "expires": "expires"
+        },
+        "createBtn": "Create a new token",
+        "created": "{{relativeTime}} ago",
+        "expiresIn": "in {{relativeTime}}",
+        "expiredAgo": "{{relativeTime}} ago",
+        "noTokens": "There are no tokens yet.",
+        "contextMenu": {
+          "delete": "Delete"
+        },
+        "create": {
+          "title": "Create a token",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          },
+          "duration": {
+            "label": "Duration",
+            "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
+          },
+          "success": {
+            "title": "Token was Created",
+            "description": "Your token was created successfully. Please copy it and store it in a safe place as it will not be shown again.",
+            "copy": "Copy token",
+            "copied": "Copied!",
+            "close": "Close"
+          }
+        },
+        "delete": {
+          "title": "Delete token",
+          "msg": "Are you sure you want to delete this token? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        }
+      }
+    },
     "settings": {
       "generic": {
         "contextMenu": {
@@ -621,7 +770,9 @@
           "empty": "No secrets exist yet",
           "createBtn": "Create secret",
           "searchPlaceholder": "Filter secrets...",
-          "emptySearch": "No secret matches your search"
+          "emptySearch": "No secret matches your search",
+          "initializeBtn": "Initialize secret",
+          "notInitializedTooltip": "We created a placeholder for this secret because we detected a reference to it in one of your workflows. Please initialize the secret by uploading a file or entering a value."
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
@@ -630,7 +781,12 @@
           "description": "Add a secret",
           "name": "Name",
           "file": "Upload a file",
-          "fileError": "There was an error uploading the file"
+          "fileError": "There was an error uploading the file",
+          "unsupported": "This mime type is not supported"
+        },
+        "edit": {
+          "description": "Edit {{name}}",
+          "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
       "registries": {
@@ -786,9 +942,13 @@
       "services": "Services",
       "eventListeners": "Event Listeners",
       "monitoring": "Monitoring",
+      "mirror": "Mirror",
+      "permissions": "Permissions",
+      "permissionsPolicy": "Policy",
+      "permissionsTokens": "Tokens",
+      "permissionsGroups": "Groups",
       "settings": "Settings",
-      "jqPlayground": "jq Playground",
-      "mirror": "Mirror"
+      "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {
       "title": {
@@ -877,7 +1037,10 @@
   },
   "api": {
     "generic": {
-      "error": "An error occurred"
+      "error": "An error occurred",
+      "noPermissionTitle": "No permission",
+      "noPermissionMutationDescription": "You do not have permission to perform this action",
+      "noPermissionQueryDescription": "You do not have permission to view this data"
     },
     "authentication": {
       "mutate": {
@@ -1135,13 +1298,13 @@
     },
     "secrets": {
       "mutate": {
-        "createSecret": {
+        "updateSecret": {
           "success": {
-            "title": "Secret created",
-            "description": "Secret {{name}} was created."
+            "title": "Secret saved",
+            "description": "Secret {{name}} was saved."
           },
           "error": {
-            "description": "Could not create secret 😢"
+            "description": "Could not save secret 😢"
           }
         },
         "deleteSecret": {
@@ -1173,6 +1336,55 @@
           },
           "error": {
             "description": "The event could not be retriggered 😢"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "mutate": {
+        "createToken": {
+          "error": {
+            "description": "The token could not be created 😢"
+          }
+        },
+        "deleteToken": {
+          "success": {
+            "title": "Token deleted",
+            "description": "The token was deleted"
+          },
+          "error": {
+            "description": "The token could not be deleted 😢"
+          }
+        }
+      }
+    },
+    "groups": {
+      "mutate": {
+        "createGroup": {
+          "success": {
+            "title": "Group created",
+            "description": "The group {{name}} was created"
+          },
+          "error": {
+            "description": "The group could not be created 😢"
+          }
+        },
+        "editGroup": {
+          "success": {
+            "title": "Group updated",
+            "description": "The group {{name}} was updated"
+          },
+          "error": {
+            "description": "The group could not be updated 😢"
+          }
+        },
+        "deleteGroup": {
+          "success": {
+            "title": "Group deleted",
+            "description": "The group {{name}} was deleted"
+          },
+          "error": {
+            "description": "The group could not be deleted 😢"
           }
         }
       }

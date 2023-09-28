@@ -74,10 +74,11 @@ const RevisionConditionSchema = z
 const RevisionSchema = z.object({
   name: z.string(),
   image: z.string(),
-  created: z.number(),
+  created: z.number().or(z.string()),
   status: StatusSchema,
   conditions: z.array(RevisionConditionSchema).optional(),
-  revision: z.string(),
+  revision: z.string().optional(),
+  rev: z.string().optional(),
   minScale: z.number().optional(),
   size: SizeSchema.optional(),
 });
@@ -115,10 +116,12 @@ const RevisionSchemaWhenStreamed = RevisionSchema.omit({
     }
    */
 export const RevisionsListSchema = z.object({
-  name: z.string(),
-  config: z.object({
-    maxscale: z.number(),
-  }),
+  name: z.string().optional(),
+  config: z
+    .object({
+      maxscale: z.number(),
+    })
+    .optional(),
   revisions: z.array(RevisionSchema).optional(),
 });
 
