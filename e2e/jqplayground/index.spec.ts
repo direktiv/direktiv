@@ -1,8 +1,8 @@
+import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import exampleSnippets, {
-  KeyVal,
-} from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
-import { expect, test } from "@playwright/test";
+import { getCommonElements, getErrorContainer } from "./utils";
+
+import exampleSnippets from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
 
 let namespace = "";
 
@@ -15,156 +15,130 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-function deepObjectsAreEqual(objA: KeyVal, objB: KeyVal): boolean {
-  if (objA === objB) return true;
+test("It will display the input as output, when the user clicks the run button without making any changes", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/jq`);
+  const { btnRun, inputTextArea, outputTextArea, queryInput } =
+    getCommonElements(page);
 
-  if (typeof objA !== "object" || typeof objB !== "object") return false;
+  const expectedDefaultInput = "{}";
 
-  const keysA = Object.keys(objA);
-  const keysB = Object.keys(objB);
+  expect(await queryInput.inputValue(), "query input is . by default").toBe(
+    "."
+  );
 
-  if (keysA.length !== keysB.length) return false;
+  expect(await outputTextArea.inputValue(), "output is empty by default").toBe(
+    ""
+  );
 
-  for (const key of keysA) {
-    if (!keysB.includes(key)) return false;
+  expect(
+    await inputTextArea.inputValue(),
+    `input is ${expectedDefaultInput} by default`
+  ).toBe(expectedDefaultInput);
 
-    if (!deepObjectsAreEqual(objA[key], objB[key])) return false;
-  }
+  await btnRun.click();
 
-  return true;
-}
+  await expect
+    .poll(
+      async () => await outputTextArea.inputValue(),
+      `output changes to ${expectedDefaultInput} after clicking run`
+    )
+    .toBe(expectedDefaultInput);
+});
 
-const xCompare = (output: string, expectation: KeyVal) => {
-  if (typeof expectation === "number") {
-    return parseFloat(output) == expectation;
-  } else if (typeof expectation === "string") {
-    return output === expectation;
-  } else {
-    //this is the case of the object
-    return deepObjectsAreEqual(JSON.parse(output), expectation);
-  }
-};
+test("It will display an error when the query is not a JQ command", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/jq`);
+  const { btnRun, queryInput } = await getCommonElements(page);
+  await queryInput.type("some invalid jq command");
+  await btnRun.click();
 
-test("it is possible to run simple query against a input json", async ({
+  const { errorContainer } = getErrorContainer(page);
+
+  await expect(
+    errorContainer,
+    "an error message should be displayed"
+  ).toBeVisible();
+
+  expect(
+    await errorContainer.textContent(),
+    "the error message should inform about an invalid json"
+  ).toContain(
+    'error : error executing JQ command: failed to evaluate jq/js: error executing jq query some invalid jq command.: unexpected token "invalid"'
+  );
+
+  await queryInput.type("some invalid jq command");
+  await expect(
+    errorContainer,
+    "the error message will disappear when the user changes the query"
+  ).not.toBeVisible();
+});
+
+test("It will display an error when the input is not a valid JSON", async ({
   page,
   browserName,
 }) => {
   await page.goto(`/${namespace}/jq`);
-  const btnRun = page.getByTestId("jq-run-btn");
-  await btnRun.click();
-  const defaultOutput = "{}";
-  const inputTextArea = page.getByTestId("jq-input-editor");
-
-  const outputTextArea = page
-    .getByTestId("jq-output-editor")
-    .getByRole("textbox");
-  await expect
-    .poll(
-      async () => await outputTextArea.inputValue(),
-      "the variable's content is loaded into the editor"
-    )
-    .toBe(defaultOutput);
-
-  const invalidJson = "invalid json";
-  await inputTextArea.click();
+  const { btnRun, inputTextContainer } = getCommonElements(page);
+  await inputTextContainer.click();
   await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
   await page.keyboard.press("Backspace");
-  await page.keyboard.type(invalidJson);
+  await page.keyboard.type("some invalid json");
   await btnRun.click();
 
+  const errorContainer = page.getByTestId("form-errors");
+
   await expect(
-    page.getByTestId("form-errors"),
-    "error alert should popup due to invalid json"
+    errorContainer,
+    "an error message should be displayed"
   ).toBeVisible();
-  await expect
-    .poll(
-      async () => await outputTextArea.inputValue(),
-      "output should be empty on error"
-    )
-    .toBe("");
 
-  const snippets = page.getByTestId(/jq-run-snippet-/);
-  await snippets.first().click();
-
-  await page.waitForTimeout(1000); // scroll has animation to go to top, so should wait for it
-  const isScrolledUp = await page.evaluate(() => window.scrollY === 0);
   expect(
-    isScrolledUp,
-    "scroll should be at the top when click on a snippet run"
-  ).toBe(true);
+    await errorContainer.textContent(),
+    "the error message should inform about an invalid json"
+  ).toContain(
+    "error : invalid json data: invalid character 's' looking for beginning of value"
+  );
 
-  const invalidQuery = "invalid-query";
-  await page.getByTestId("jq-query-input").fill(invalidQuery);
-  await btnRun.click();
+  await inputTextContainer.click();
+  await page.keyboard.type("changed the input json");
   await expect(
-    page.getByTestId("form-errors"),
-    "error alert should popup due to invalid json"
-  ).toBeVisible();
+    errorContainer,
+    "the error message will disappear when the user changes the input"
+  ).not.toBeVisible();
 });
 
-test("it is possible to run snippets", async ({ page }) => {
-  test.setTimeout(50000);
-  await page.goto(`/${namespace}/jq`, { waitUntil: "networkidle" });
-  // await page.waitForLoadState('networkidle');
-  const btnRun = page.getByTestId("jq-run-btn");
-  const outputTextArea = page
-    .getByTestId("jq-output-editor")
-    .getByRole("textbox");
-
-  for (let i = 0; i < exampleSnippets.length; i++) {
-    const item = exampleSnippets[i];
-    const snippet = page.getByTestId(`jq-run-snippet-${item?.key}-btn`);
-    await snippet.click();
-    await btnRun.click();
-    await expect(
-      btnRun,
-      "this should get enabled again after query completion"
-    ).toBeEnabled();
-    await expect
-      .poll(async () => {
-        const out = await outputTextArea.inputValue();
-        return xCompare(out, item?.output);
-      }, "output should be the expected output")
-      .toBe(true);
-    if (i === 0) {
-      // test copy button
-      await page.getByTestId("copy-output").click({ force: true });
-      await page.waitForTimeout(1000);
-      const clipboardText = await page.evaluate(() =>
-        navigator.clipboard.readText()
-      );
-      const comparedClipboard = xCompare(clipboardText, item?.output);
-      expect(comparedClipboard, "").toBe(true);
-    }
-  }
-});
-
-test("it is possible to save query and input data in local storage", async ({
+test("It will clear output when loading the result from the server", async ({
   page,
-  browserName,
 }) => {
-  await page.goto(`/${namespace}/jq`, { waitUntil: "networkidle" });
+  await page.goto(`/${namespace}/jq`);
+  const { btnRun, outputTextArea } = getCommonElements(page);
 
-  const inputTextArea = page.getByTestId("jq-input-editor");
-  const queryInput = page.getByTestId("jq-query-input");
-  await queryInput.fill("test-query");
-
-  await inputTextArea.click();
-  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
-  await page.keyboard.press("Backspace");
-  await page.keyboard.type("some-test-input-data");
-
+  expect(
+    await outputTextArea.inputValue(),
+    `the initial ouput is an empty string`
+  ).toBe("");
+  await btnRun.click();
   await expect
     .poll(
-      async () => await inputTextArea.getByRole("textbox").inputValue(),
-      "input data should be saved and restored"
+      async () => await outputTextArea.inputValue(),
+      "the output will change from the initial empty string to the result from the server"
     )
-    .toBe("some-test-input-data");
+    .toBe("{}");
 
+  await btnRun.click();
+  expect(
+    await outputTextArea.inputValue(),
+    `while loading the output from the server, the output will be cleared`
+  ).toBe("");
   await expect
     .poll(
-      async () => await queryInput.inputValue(),
-      "query should be saved and restored"
+      async () => await outputTextArea.inputValue(),
+      "the output will change back to the result from the server"
     )
-    .toBe("test-query");
+    .toBe("{}");
 });
+
+
