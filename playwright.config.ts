@@ -33,7 +33,6 @@ export default defineConfig({
     // trace: "on-first-retry",
     /* temporary override: this is expensive, but useful for debugging tests */
     trace: "retain-on-failure",
-    permissions: ["clipboard-read", "clipboard-write"],
   },
 
   timeout: 30000, // defaults to 30000
@@ -42,12 +41,26 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        contextOptions: {
+          // chromium-specific permissions
+          permissions: ['clipboard-read', 'clipboard-write'],
+        },
+      },
     },
 
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+        launchOptions: {
+          firefoxUserPrefs: {
+            'dom.events.asyncClipboard.readText': true,
+            'dom.events.testing.asyncClipboard': true,
+          },
+        }
+      },
     },
 
     {
