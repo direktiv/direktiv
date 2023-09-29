@@ -1,10 +1,7 @@
-import {
-  EditorMimeTypeSchema,
-  mimeTypeToLanguageDict,
-} from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { actionWaitForSuccessToast } from "./utils";
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -137,10 +134,11 @@ test("it is possible to update variables", async ({ page }) => {
   const current_mimetype = await page
     .getByTestId(`variable-trg-mimetype`)
     .textContent();
+
   expect(
-    current_mimetype?.toLowerCase().replace(/\s/g, ""),
+    current_mimetype,
     "the mimetype selected before should be shown"
-  ).toBe(mimeTypeToLanguageDict[newVariable.mimeType].toLowerCase());
+  ).toContain(newVariable.mimeType);
   await expect(editor, "editor should have the updated value").toContainText(
     "add-new-value"
   );
