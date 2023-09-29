@@ -30,7 +30,6 @@ type FileStore interface {
 
 	CreateTempRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
-	// GetRoot gets a root.
 	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
 	// GetAllRoots list all roots.
