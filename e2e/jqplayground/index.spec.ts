@@ -12,7 +12,11 @@ let namespace = "";
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
-  await page.goto(`/${namespace}/jq`);
+  /**
+   * networkidle is required to avoid flaky tests. The monaco
+   * editor needs to be full loaded before we interact with it.
+   */
+  await page.goto(`/${namespace}/jq`, { waitUntil: "networkidle" });
 });
 
 test.afterEach(async () => {
