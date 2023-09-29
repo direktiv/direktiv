@@ -60,7 +60,7 @@ type FileStore interface {
 // we create a dedicated root for every namespace.
 type Root struct {
 	ID          uuid.UUID
-	NamespaceID uuid.UUID
+	NamespaceID uuid.UUID `gorm:"default:NULL"`
 }
 
 // RootQuery performs different queries associated to a root.
