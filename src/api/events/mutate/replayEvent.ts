@@ -2,7 +2,7 @@ import { EventCreatedSchema, EventCreatedSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMutation } from "@tanstack/react-query";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -45,7 +45,7 @@ export const useReplayEvent = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: () => {
       toast({

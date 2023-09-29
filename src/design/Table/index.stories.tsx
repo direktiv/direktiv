@@ -1,6 +1,7 @@
 import { Contact, File, MoreVertical } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
+  NoPermissions as NoPermissionsComponent,
   NoResult,
   Table,
   TableBody,
@@ -282,5 +283,21 @@ export const EmptyListWithHeader = () => (
 export const EmptyListWithoutHeader = () => (
   <Card>
     <NoResult icon={Contact}>no data found</NoResult>
+  </Card>
+);
+
+export const EmptyListWithButton = () => (
+  <Card>
+    <NoResult icon={Contact} button={<Button>Some Button</Button>}>
+      no data found
+    </NoResult>
+  </Card>
+);
+
+export const NoPermissions = () => (
+  <Card>
+    <NoPermissionsComponent>
+      You do not have permission to view this page.
+    </NoPermissionsComponent>
   </Card>
 );

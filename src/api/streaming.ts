@@ -100,7 +100,10 @@ export const useStreaming = <T>({
 
       const parsedResult = schema.safeParse(msgJson);
       if (parsedResult.success === false) {
-        console.error(`error parsing streaming result for ${url}`);
+        console.error(
+          `error parsing streaming result for ${url}`,
+          parsedResult.error
+        );
         return;
       }
 

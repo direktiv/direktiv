@@ -3,11 +3,10 @@ import { VarListSchema } from "../schema";
 import { apiFactory } from "../../apiFactory";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
-import { useQuery } from "@tanstack/react-query";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { varKeys } from "..";
 
 const getVars = apiFactory({
-  // TODO: Pagination and Filter params
   url: ({ namespace }: { namespace: string }) =>
     `/api/namespaces/${namespace}/vars`,
   method: "GET",
@@ -30,7 +29,7 @@ export const useVars = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: varKeys.varList(namespace, {
       apiKey: apiKey ?? undefined,
     }),

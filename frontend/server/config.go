@@ -18,8 +18,8 @@ type Log struct {
 
 type APIServer struct {
 	Listen      string `yaml:"listen"`
-	TLSCert     string `yaml:"tls-cert"`
-	TLSKey      string `yaml:"tls-key"`
+	TLSCert     string `yaml:"tlscert"`
+	TLSKey      string `yaml:"tlskey"`
 	Assets      string `yaml:"assets"`
 	Backend     string `yaml:"backend"`
 	BackendSkip bool   `yaml:"skipverify"`
@@ -48,7 +48,7 @@ func ReadConfigAndPrepare(configDir string, c interface{}) error {
 
 	viper.SetDefault("server.listen", "0.0.0.0:2304")
 	viper.SetDefault("server.assets", "/html")
-	viper.SetDefault("server.backend", "localhost:1604")
+	viper.SetDefault("server.backend", "http://localhost:1604")
 	viper.SetDefault("server.backendskip", true)
 	viper.SetDefault("server.apikey", "")
 	viper.SetDefault("server.tlscert", "")

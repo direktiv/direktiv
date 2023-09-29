@@ -1,34 +1,26 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import {
-  Folder,
-  FolderUp,
-  MoreVertical,
-  Play,
-  TextCursorInput,
-  Trash,
-} from "lucide-react";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+  NoPermissions,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "~/design/Table";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
+import FileRow from "./FileRow";
+import FileViewer from "./FileViewer";
+import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "~/api/tree/schema";
+import { NodeSchemaType } from "~/api/tree/schema/node";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
-import moment from "moment";
 import { pages } from "~/util/router/pages";
+import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -36,7 +28,10 @@ import { useTranslation } from "react-i18next";
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const { data, isSuccess } = useNodeContent({ path });
+  const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
+    useNodeContent({
+      path,
+    });
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -45,20 +40,31 @@ const ExplorerPage: FC = () => {
   // set the pointer to that node for the dialog
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
+  const [previewNode, setPreviewNode] = useState<NodeSchemaType>();
   const { t } = useTranslation();
 
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteNode(undefined);
       setRenameNode(undefined);
+      setPreviewNode(undefined);
     }
   }, [dialogOpen]);
 
   if (!namespace) return null;
+  if (!isFetched) return null;
+
+  if (!isAllowed)
+    return (
+      <Card className="m-5 flex grow flex-col p-4">
+        <NoPermissions>{noPermissionMessage}</NoPermissions>
+      </Card>
+    );
 
   const results = data?.children?.results ?? [];
   const showTable = !isRoot || results.length > 0;
   const noResults = isSuccess && results.length === 0;
+  const wideOverlay = !!previewNode;
 
   return (
     <>
@@ -87,95 +93,24 @@ const ExplorerPage: FC = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {results.map((file) => {
-                    const Icon =
-                      file.expandedType === "workflow" ? Play : Folder;
-                    const linkTarget = pages.explorer.createHref({
-                      namespace,
-                      path: file.path,
-                      subpage:
-                        file.expandedType === "workflow"
-                          ? "workflow"
-                          : undefined,
-                    });
-
-                    return (
-                      <TableRow
-                        key={file.name}
-                        data-testid={`explorer-item-${file.name}`}
-                      >
-                        <TableCell>
-                          <div className="flex space-x-3">
-                            <Icon className="h-5" />
-                            <Link
-                              data-testid={`explorer-item-link-${file.name}`}
-                              to={linkTarget}
-                              className="flex-1 hover:underline"
-                            >
-                              {file.name}
-                            </Link>
-                            <span className="text-gray-9 dark:text-gray-dark-9">
-                              {moment(file.updatedAt).fromNow()}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="w-0">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                data-testid="dropdown-trg-node-actions"
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => e.preventDefault()}
-                                icon
-                              >
-                                <MoreVertical />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-40">
-                              <DropdownMenuLabel>
-                                {t(
-                                  "pages.explorer.tree.list.contextMenu.title"
-                                )}
-                              </DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DialogTrigger
-                                className="w-full"
-                                data-testid="node-actions-delete"
-                                onClick={() => {
-                                  setDeleteNode(file);
-                                }}
-                              >
-                                <DropdownMenuItem>
-                                  <Trash className="mr-2 h-4 w-4" />
-                                  {t(
-                                    "pages.explorer.tree.list.contextMenu.delete"
-                                  )}
-                                </DropdownMenuItem>
-                              </DialogTrigger>
-                              <DialogTrigger
-                                className="w-full"
-                                data-testid="node-actions-rename"
-                                onClick={() => {
-                                  setRenameNode(file);
-                                }}
-                              >
-                                <DropdownMenuItem>
-                                  <TextCursorInput className="mr-2 h-4 w-4" />
-                                  {t(
-                                    "pages.explorer.tree.list.contextMenu.rename"
-                                  )}
-                                </DropdownMenuItem>
-                              </DialogTrigger>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {results.map((file) => (
+                    <FileRow
+                      key={file.name}
+                      namespace={namespace}
+                      node={file}
+                      onDeleteClicked={setDeleteNode}
+                      onRenameClicked={setRenameNode}
+                      onPreviewClicked={setPreviewNode}
+                    />
+                  ))}
                 </TableBody>
               </Table>
-              <DialogContent>
+              <DialogContent
+                className={twMergeClsx(
+                  wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
+                )}
+              >
+                {previewNode && <FileViewer node={previewNode} />}
                 {deleteNode && (
                   <Delete
                     node={deleteNode}
@@ -191,7 +126,7 @@ const ExplorerPage: FC = () => {
                       setDialogOpen(false);
                     }}
                     unallowedNames={
-                      data?.children?.results.map((x) => x.name) || []
+                      data?.children?.results.map((file) => file.name) || []
                     }
                   />
                 )}

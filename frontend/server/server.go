@@ -31,7 +31,6 @@ func NewServer(conf *Config, rm RouteManager) *Server {
 
 	r := chi.NewRouter()
 	r.Use(LoggerMiddleware(&log.Logger))
-	r.Use(rm.IsAuthenticated)
 
 	log.Info().Msgf("listening to %s", conf.Server.Listen)
 

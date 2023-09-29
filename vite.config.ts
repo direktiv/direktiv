@@ -49,6 +49,11 @@ export default ({ mode }) => {
         ? {
             "/api": {
               target: apiDomain,
+              secure: false,
+            },
+            "/oidc": {
+              target: apiDomain,
+              secure: false,
             },
           }
         : {},

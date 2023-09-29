@@ -3,12 +3,13 @@ import {
   BroadcastsResponseSchema,
   BroadcastsResponseSchemaType,
 } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { broadcastKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const updateBroadcasts = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
@@ -39,7 +40,7 @@ export const useUpdateBroadcasts = ({
       },
     });
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data) => {
       queryClient.setQueryData<BroadcastsResponseSchemaType>(

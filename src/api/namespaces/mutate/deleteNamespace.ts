@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { NamespaceDeletedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -24,7 +24,7 @@ export const useDeleteNamespace = ({
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn: ({ namespace }: { namespace: string }) =>
       deleteNamespace({
         apiKey: apiKey ?? undefined,

@@ -8,7 +8,7 @@ import {
   sortFoldersFirst,
 } from "../utils";
 
-import { NodeSchemaType } from "../schema";
+import { NodeSchemaType } from "../schema/node";
 
 const itemTemplate: NodeSchemaType = {
   createdAt: "2023-03-13T13:39:05.832664Z",
@@ -21,6 +21,7 @@ const itemTemplate: NodeSchemaType = {
   oid: "",
   readOnly: true,
   expandedType: "git",
+  mimeType: "text/plain; charset=utf-8",
 };
 
 describe("sortFoldersFirst", () => {

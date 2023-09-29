@@ -27,7 +27,18 @@ export const mimeTypeToLanguageDict = {
   "text/css": "css",
 } as const;
 
-export const MimeTypeSchema = z.enum([
+export const getLanguageFromMimeType = (mimeType: string) => {
+  const parsed = EditorMimeTypeSchema.safeParse(mimeType);
+  if (parsed.success) {
+    return mimeTypeToLanguageDict[parsed.data];
+  }
+  return undefined;
+};
+
+export const MimeTypeSchema = z.string();
+export type MimeTypeType = z.infer<typeof MimeTypeSchema>;
+
+export const EditorMimeTypeSchema = z.enum([
   "application/json",
   "application/yaml",
   "application/x-sh",
@@ -36,7 +47,7 @@ export const MimeTypeSchema = z.enum([
   "text/css",
 ]);
 
-export type MimeTypeType = z.infer<typeof MimeTypeSchema>;
+export type TextMimeTypeType = z.infer<typeof EditorMimeTypeSchema>;
 
 const MimeTypeSelect = ({
   id,
@@ -51,18 +62,27 @@ const MimeTypeSelect = ({
 }) => {
   const { t } = useTranslation();
 
+  const hasEditableMimeType = EditorMimeTypeSchema.safeParse(mimeType).success;
+
   return (
-    <Select value={mimeType} onValueChange={onChange}>
+    <Select
+      onValueChange={onChange}
+      defaultValue={mimeType}
+      value={!hasEditableMimeType ? undefined : mimeType}
+    >
       <SelectTrigger
         id={id}
         loading={loading}
         variant="outline"
         block
         data-testid="variable-trg-mimetype"
+        disabled={!hasEditableMimeType}
       >
         <SelectValue
           placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}
-        />
+        >
+          {mimeType}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {mimeTypes.map((type) => (

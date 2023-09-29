@@ -22,11 +22,13 @@ func NewRouteManagerAPI(config *Config) (*RouteManagerAPI, error) {
 }
 
 func (rm *RouteManagerAPI) AddExtraRoutes(r *chi.Mux) error {
-	r.Handle("/api/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiPath := chi.URLParam(r, "*")
-		fp := fmt.Sprintf("%s/api/%s", rm.host, apiPath)
-		ReverseProxy(r, w, fp)
-	}))
+
+	r.With(rm.IsAuthenticated).Handle("/api/*",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			apiPath := chi.URLParam(r, "*")
+			fp := fmt.Sprintf("%s/api/%s", rm.host, apiPath)
+			ReverseProxy(r, w, fp)
+		}))
 	return nil
 }
 

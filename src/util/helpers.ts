@@ -43,6 +43,7 @@ export const logLevelToLogEntryVariant = (
 ): LogEntryVariant => {
   switch (level) {
     case "error":
+    case "warn":
       return "error";
     case "info":
       return "info";
@@ -50,5 +51,31 @@ export const logLevelToLogEntryVariant = (
       return undefined;
     default:
       break;
+  }
+};
+
+export const triggerDownloadFromBlob = ({
+  filename,
+  blob,
+}: {
+  filename: string;
+  blob: Blob;
+}) => {
+  const url = window.URL.createObjectURL(blob);
+  const aTag = document.createElement("a");
+  aTag.href = url;
+  aTag.download = filename;
+  document.body.appendChild(aTag);
+  aTag.click();
+  window.URL.revokeObjectURL(url);
+};
+
+// takes a json input string and format it with 4 spaces indentation
+export const prettifyJsonString = (jsonString: string) => {
+  try {
+    const resultAsJson = JSON.parse(jsonString);
+    return JSON.stringify(resultAsJson, null, 4);
+  } catch (e) {
+    return "{}";
   }
 };

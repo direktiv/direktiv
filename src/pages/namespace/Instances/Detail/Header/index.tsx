@@ -1,4 +1,10 @@
-import { Box, FileSymlink } from "lucide-react";
+import { Box, FileSymlink, XCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
@@ -6,6 +12,7 @@ import ChildInstances from "./ChildInstances";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
+import { useCancelInstance } from "~/api/logs/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
 import { useTranslation } from "react-i18next";
@@ -14,6 +21,7 @@ import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 const Header = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
+  const { mutate: cancelInstance } = useCancelInstance();
 
   const { t } = useTranslation();
 
@@ -28,6 +36,12 @@ const Header = () => {
     namespace: data.namespace,
     subpage: "workflow",
   });
+
+  const onCancelInstanceClick = () => {
+    cancelInstance(instanceId);
+  };
+
+  const canBeCanceled = data.instance.status === "pending";
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -66,8 +80,25 @@ const Header = () => {
           })}
         </div>
         <ChildInstances />
-        <div className="grow justify-end md:flex">
-          <Button asChild variant="primary" className="max-md:w-full">
+        <div className="flex grow justify-end gap-5">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  disabled={!canBeCanceled}
+                  variant="destructive"
+                  onClick={onCancelInstanceClick}
+                  type="button"
+                >
+                  <XCircle />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("pages.instances.detail.header.cancelWorkflow")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link to={link}>
               <FileSymlink />
               {t("pages.instances.detail.header.openWorkflow")}
