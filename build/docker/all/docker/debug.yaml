@@ -11,7 +11,7 @@ flow:
   image: "direktiv/direktiv"
   dbimage: "direktiv/direktiv"
   tag: "dev"
-ui:
+frontend:
   image: "direktiv/frontend"
   tag: "dev"
 api:
