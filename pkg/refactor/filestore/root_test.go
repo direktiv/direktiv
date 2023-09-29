@@ -3,7 +3,6 @@ package filestore_test
 import (
 	"context"
 	"errors"
-	"io"
 	"strings"
 	"testing"
 
@@ -143,8 +142,7 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 	}
 
 	if typ != "directory" {
-		reader, _ := fs.ForFile(file).GetData(context.Background())
-		createdData, _ := io.ReadAll(reader)
+		createdData, _ := fs.ForFile(file).GetData(context.Background())
 		if string(createdData) != string(data) {
 			t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
 

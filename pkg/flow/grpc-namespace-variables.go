@@ -57,12 +57,7 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 		updatedAt = timestamppb.New(revision.UpdatedAt)
 		mime = file.MIMEType
 
-		dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-		if err != nil {
-			return err
-		}
-
-		data, err = io.ReadAll(dataReader)
+		data, err = tx.FileStore().ForRevision(revision).GetData(ctx)
 		if err != nil {
 			return err
 		}

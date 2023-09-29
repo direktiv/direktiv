@@ -2,7 +2,6 @@ package filestore
 
 import (
 	"context"
-	"io"
 	"strings"
 	"time"
 
@@ -84,7 +83,7 @@ type Revision struct {
 // RevisionQuery performs different queries associated to a file revision.
 type RevisionQuery interface {
 	// GetData gets data of a revision.
-	GetData(ctx context.Context) (io.ReadCloser, error)
+	GetData(ctx context.Context) ([]byte, error)
 
 	// SetCurrent sets a revision to be the current one.
 	SetCurrent(ctx context.Context) (*Revision, error)

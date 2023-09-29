@@ -2,7 +2,6 @@ package filestore
 
 import (
 	"context"
-	"io"
 	"path/filepath"
 	"time"
 
@@ -59,7 +58,7 @@ func (file *File) Dir() string {
 // FileQuery performs different queries associated to a file.
 type FileQuery interface {
 	// GetData returns reader for the file, this method is not applicable for directory file type.
-	GetData(ctx context.Context) (io.ReadCloser, error)
+	GetData(ctx context.Context) ([]byte, error)
 
 	// GetCurrentRevision returns current file revision, this method is not applicable for directory file type.
 	GetCurrentRevision(ctx context.Context) (*Revision, error)
@@ -68,7 +67,7 @@ type FileQuery interface {
 	GetAllRevisions(ctx context.Context) ([]*Revision, error)
 
 	// CreateRevision creates a new file revision, this method is not applicable for directory file type.
-	CreateRevision(ctx context.Context, tags RevisionTags, dataReader io.Reader) (*Revision, error)
+	CreateRevision(ctx context.Context, tags RevisionTags, data []byte) (*Revision, error)
 
 	// Delete deletes the file (or the directory).
 	Delete(ctx context.Context, force bool) error

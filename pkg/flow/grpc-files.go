@@ -3,8 +3,6 @@ package flow
 import (
 	"context"
 	"fmt"
-	"io"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -137,11 +135,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}

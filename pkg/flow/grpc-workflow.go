@@ -1,10 +1,8 @@
 package flow
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
 	"path/filepath"
 	"time"
 
@@ -58,11 +56,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -120,11 +114,7 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -174,12 +164,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +247,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
+	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -272,16 +257,10 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(newRevision).GetData(ctx)
+	data, err := tx.FileStore().ForRevision(newRevision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		return nil, err
-	}
-
 	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
@@ -347,11 +326,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err = tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -440,11 +415,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err = tx.FileStore().ForRevision(newRev).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(newRev).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}

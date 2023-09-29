@@ -1,10 +1,8 @@
 package filestoresql
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"path/filepath"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -194,7 +192,7 @@ func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 	return nil
 }
 
-func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
+func (q *FileQuery) GetData(ctx context.Context) ([]byte, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
@@ -208,10 +206,8 @@ func (q *FileQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	reader := bytes.NewReader(rev.Data)
-	readCloser := io.NopCloser(reader)
 
-	return readCloser, nil
+	return rev.Data, nil
 }
 
 func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision, error) {
@@ -232,14 +228,11 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 	return rev, nil
 }
 
-func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags, dataReader io.Reader) (*filestore.Revision, error) {
+func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags, data []byte) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		return nil, err
-	}
+
 	newChecksum := string(q.checksumFunc(data))
 
 	// set current revisions 'is_current' flag to false.

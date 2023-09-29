@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"time"
 
@@ -93,16 +92,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 				if file.Typ == filestore.FileTypeDirectory {
 					return nil, model.ErrVarNotFile
 				}
-				rc, err := tx.FileStore().ForFile(file).GetData(ctx)
-				if err != nil {
-					return nil, err
-				}
-				defer func() { _ = rc.Close() }()
-				data, err := io.ReadAll(rc)
-				if err != nil {
-					return nil, err
-				}
-				err = rc.Close()
+				data, err := tx.FileStore().ForFile(file).GetData(ctx)
 				if err != nil {
 					return nil, err
 				}
