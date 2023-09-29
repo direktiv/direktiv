@@ -1,7 +1,6 @@
 package mirror
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -136,9 +135,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 
 		mt := mimetype.Detect(data)
 
-		rdr := bytes.NewReader(data)
-
-		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], rdr)
+		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], data)
 		if err != nil {
 			return err
 		}
@@ -159,10 +156,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Workflows[path]
-
-		rdr := bytes.NewReader(data)
-
-		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/direktiv", rdr)
+		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/direktiv", data)
 		if err != nil {
 			return err
 		}

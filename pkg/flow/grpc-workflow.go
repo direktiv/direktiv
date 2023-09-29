@@ -116,7 +116,7 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", bytes.NewReader(req.GetSource()))
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", bytes.NewReader(req.GetSource()))
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}

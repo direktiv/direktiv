@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/google/uuid"
@@ -78,7 +77,7 @@ type RootQuery interface {
 	// param 'typ' indicates if file is of type directory or file.
 	// Param 'path' should not already exist and the parent directory of 'path' should exist.
 	// Param 'dataReader' should be nil when creating directories, and should be none nil when creating files.
-	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, dataReader io.Reader) (*File, *Revision, error)
+	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, data []byte) (*File, *Revision, error)
 
 	// ReadDirectory lists all files and directories in a path.
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)

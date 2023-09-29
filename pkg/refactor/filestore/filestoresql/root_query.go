@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"path/filepath"
 	"strings"
 
@@ -144,7 +143,7 @@ func computeAPIID(namespaceID uuid.UUID, path string) string {
 }
 
 //nolint:ireturn
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
@@ -197,16 +196,6 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	if typ == filestore.FileTypeDirectory {
 		return f, nil, nil
-	}
-
-	// second, now we need to create a revision entry for this new file.
-	var data []byte
-	if dataReader == nil {
-		return nil, nil, fmt.Errorf("parameter dataReader is nil with FileTypeFile")
-	}
-	data, err = io.ReadAll(dataReader)
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading dataReader, error: %w", err)
 	}
 
 	rev := &filestore.Revision{

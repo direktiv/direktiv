@@ -1,7 +1,6 @@
 package flow
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -38,7 +37,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 		mimeType = mt.String()
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, bytes.NewReader(data))
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +92,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, bytes.NewReader(data))
+	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
 	if err != nil {
 		return nil, err
 	}
