@@ -49,7 +49,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 
 	o.rootID = uuid.New()
 
-	root, err := callbacks.FileStore().CreateRoot(ctx, o.rootID, proc.NamespaceID)
+	root, err := callbacks.FileStore().CreateTempRoot(ctx, o.rootID)
 	if err != nil {
 		return fmt.Errorf("failed to create new filesystem root: %w", err)
 	}

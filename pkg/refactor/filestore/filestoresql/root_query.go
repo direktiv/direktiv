@@ -27,10 +27,7 @@ type RootQuery struct {
 	checksumFunc filestore.CalculateChecksumFunc
 	db           *gorm.DB
 	root         *filestore.Root
-
-	// alternative resolution method
-	nsID     uuid.UUID
-	rootName string
+	nsID         uuid.UUID
 }
 
 func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
@@ -291,9 +288,9 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 
 	if zeroUUID == q.rootID.String() {
 		n := &filestore.Root{}
-		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace_id", q.nsID).Where("name", q.rootName).First(n)
+		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace_id", q.nsID).First(n)
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("root not found, nsid: '%s', name: '%s', err: %w", q.nsID, q.rootName, filestore.ErrNotFound)
+			return fmt.Errorf("root not found, nsid: '%s', err: %w", q.nsID, filestore.ErrNotFound)
 		}
 		if res.Error != nil {
 			return res.Error

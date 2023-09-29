@@ -22,10 +22,9 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRootNamespaceAndName(nsID uuid.UUID, rootName string) filestore.RootQuery {
+func (s *sqlFileStore) ForRootNamespaceID(nsID uuid.UUID) filestore.RootQuery {
 	return &RootQuery{
 		nsID:         nsID,
-		rootName:     rootName,
 		db:           s.db,
 		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
@@ -58,6 +57,21 @@ func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.
 	n := &filestore.Root{
 		ID:          rootID,
 		NamespaceID: namespaceID,
+	}
+	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected != 1 {
+		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return n, nil
+}
+
+func (s *sqlFileStore) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*filestore.Root, error) {
+	n := &filestore.Root{
+		ID: rootID,
 	}
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
 	if res.Error != nil {

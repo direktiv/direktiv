@@ -174,7 +174,7 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}

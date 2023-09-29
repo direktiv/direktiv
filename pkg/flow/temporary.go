@@ -78,7 +78,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if selector.Scope == util.VarScopeFileSystem {
-			file, err := tx.FileStore().ForRootNamespaceAndName(im.instance.Instance.NamespaceID, defaultRootName).GetFile(ctx, selector.Key)
+			file, err := tx.FileStore().ForRootNamespaceID(im.instance.Instance.NamespaceID).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
 					Scope: selector.Scope,

@@ -29,7 +29,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 		if err != nil {
 			return err
 		}
-		file, err = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+		file, err = tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 		return err
 	})
 	if err != nil {
@@ -65,11 +65,11 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 			isMirrorNamespace = true
 		}
 
-		node, err = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+		node, err = tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 		if err != nil {
 			return err
 		}
-		files, err = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).ReadDirectory(ctx, req.GetPath())
+		files, err = tx.FileStore().ForRootNamespaceID(ns.ID).ReadDirectory(ctx, req.GetPath())
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	file, _, err = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, "", nil)
+	file, _, err = tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if errors.Is(err, filestore.ErrNotFound) && req.GetIdempotent() {
 		var resp emptypb.Empty
 
@@ -188,7 +188,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeDirectory {
-		isEmptyDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).IsEmptyDirectory(ctx, req.GetPath())
+		isEmptyDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).IsEmptyDirectory(ctx, req.GetPath())
 		if err != nil {
 			return nil, err
 		}
@@ -258,7 +258,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetOld())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetOld())
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func (flow *flow) CreateNodeAttributes(ctx context.Context, req *grpc.CreateNode
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +351,7 @@ func (flow *flow) DeleteNodeAttributes(ctx context.Context, req *grpc.DeleteNode
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
