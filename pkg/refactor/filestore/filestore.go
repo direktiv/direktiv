@@ -52,8 +52,8 @@ type FileStore interface {
 	// GetFileByID queries a file by id.
 	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
 
-	// GetRevision queries a revision by id.
-	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
+	// GetRevisionByID queries a revision by id.
+	GetRevisionByID(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
@@ -91,7 +91,7 @@ type RootQuery interface {
 	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
 	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
-	SetNamespaceID(ctx context.Context, namespaceId uuid.UUID) error
+	SetNamespaceID(ctx context.Context, namespaceID uuid.UUID) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

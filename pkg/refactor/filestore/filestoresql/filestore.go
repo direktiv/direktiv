@@ -162,7 +162,7 @@ func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestor
 }
 
 //nolint:ireturn
-func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
+func (s *sqlFileStore) GetRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
 	rev := &filestore.Revision{}
 	res := s.db.WithContext(ctx).Raw(`
