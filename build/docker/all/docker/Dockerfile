@@ -16,8 +16,6 @@ RUN cd /app && CGO_LDFLAGS="-static -w -s"  go build  -tags osusergo,netgo  -o /
 FROM ubuntu:22.04 as base
 
 ARG K3S_VERSION=v1.26.3%2Bk3s1
-# ARG K3S_VERSION=v1.25.8%2Bk3s1s
-# ARG K3S_VERSION=v1.24.12%2Bk3s1
 
 RUN apt-get update && apt-get install wget curl netcat git bash-completion -y
 

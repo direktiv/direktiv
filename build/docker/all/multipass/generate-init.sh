@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# call example: ./generate-init.sh direktiv/direktiv direktiv/direktiv-ui v0.7.5
+# call example: ./generate-init.sh direktiv/direktiv direktiv/frontend v0.8.0
 
 if [ $# -lt 3 ]
   then

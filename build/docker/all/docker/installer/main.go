@@ -361,7 +361,7 @@ func installKnative() {
 
 	var buf bytes.Buffer
 
-	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml")
+	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/operator/releases/download/knative-v1.11.6/operator.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
@@ -459,7 +459,7 @@ func installKnative() {
 	}
 
 	// contour
-	cmd = exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/net-contour/releases/download/knative-v1.9.3/contour.yaml")
+	cmd = exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/net-contour/releases/download/knative-v1.11.0/contour.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()

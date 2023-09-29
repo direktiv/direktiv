@@ -13,7 +13,7 @@ do
 done
 
 # knative
-kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.9.4/operator.yaml
+kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.6/operator.yaml
 kubectl create ns knative-serving
 
 if [ -n "${HTTPS_PROXY+1}" ]; then
@@ -193,14 +193,11 @@ debug: "true"
 eventing:
   enabled: true
 
-secrets:
-  image: "$1"
-  tag: "$3"
 flow:
   image: "$1"
   dbimage: "$1"
   tag: "$3"
-ui:
+fronend:
   image: "$2"
   tag: "$3"
 api:
@@ -243,7 +240,7 @@ $(if [ -n "${APIKEY+1}" ]; then
 fi)
 EOF
 
-git clone -b one-binary https://github.com/direktiv/direktiv-charts.git
+git clone https://github.com/direktiv/direktiv-charts.git
 
 cd `pwd`/direktiv-charts/charts/direktiv && \
     helm repo add direktiv https://chart.direktiv.io && \
@@ -267,7 +264,7 @@ EOF
 kubectl apply -f eventing.yaml
 
 # contour
-kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.9.3/contour.yaml
+kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.0/contour.yaml
 kubectl delete ns contour-external &
 
 # waiting for direktiv
