@@ -97,9 +97,6 @@ type RootQuery interface {
 	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
 	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
-	// CropFilesAndDirectories removes all files and directories that don't appear in excludePaths.
-	CropFilesAndDirectories(ctx context.Context, excludePaths []string) error
-
 	// Rename renames the root.
 	Rename(ctx context.Context, newName string) error
 }

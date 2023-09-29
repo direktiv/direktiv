@@ -34,54 +34,6 @@ type RootQuery struct {
 	rootName string
 }
 
-func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []string) error {
-	// check if root exists.
-	if err := q.checkRootExists(ctx); err != nil {
-		return err
-	}
-
-	var allPaths []string
-
-	res := q.db.WithContext(ctx).Raw(`
-						SELECT path 
-						FROM filesystem_files 
-						WHERE root_id = ?
-						`, q.rootID).Find(&allPaths)
-	if res.Error != nil {
-		return res.Error
-	}
-
-	pathsToRemove := []string{}
-	for _, pathInRoot := range allPaths {
-		remove := true
-		for _, excludePath := range excludePaths {
-			if strings.HasPrefix(excludePath, pathInRoot) {
-				remove = false
-
-				break
-			}
-			if excludePath == pathInRoot {
-				remove = false
-
-				break
-			}
-		}
-		if remove {
-			pathsToRemove = append(pathsToRemove, pathInRoot)
-		}
-	}
-
-	res = q.db.WithContext(ctx).Exec("DELETE FROM filesystem_files WHERE root_id = ? AND path IN ?", q.rootID, pathsToRemove)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != int64(len(pathsToRemove)) {
-		return fmt.Errorf("unexpected delete from filesystem_files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
-	}
-
-	return nil
-}
-
 func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
 	var list []*filestore.File
 
