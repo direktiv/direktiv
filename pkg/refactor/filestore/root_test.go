@@ -19,7 +19,7 @@ func TestRoot_CreateFileWithoutRootDirectory(t *testing.T) {
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.UUID{}, "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.UUID{})
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -39,7 +39,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.UUID{}, "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.UUID{})
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -67,7 +67,7 @@ func TestRootQuery_IsEmptyDirectory(t *testing.T) {
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New(), "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -201,7 +201,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New(), "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -265,7 +265,7 @@ func TestRoot_RenamePath(t *testing.T) {
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New(), "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New())
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}

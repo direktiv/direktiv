@@ -132,7 +132,7 @@ func TestDryRun(t *testing.T) {
 
 	nsID := uuid.New()
 	rootID := uuid.New()
-	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID, "test")
+	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID)
 	if err != nil {
 		t.Fatalf("unexpected GetRoot() error = %v", err)
 	}
@@ -181,16 +181,10 @@ states:
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 
-	roots, err := callbacks.FileStore().GetAllRootsForNamespace(ctx, nsID)
+	root, err := callbacks.FileStore().GetRootByNamespaceID(ctx, nsID)
 	if err != nil {
 		t.Fatalf("unexpected GetAllRootsForNamespace() error = %v", err)
 	}
-	if len(roots) != 1 {
-		t.Fatalf("unexpected GetAllRootsForNamespace() results: incorrect number  %d", len(roots))
-	}
-
-	root := roots[0]
-
 	assertRootFilesInPath(t, fs, root)
 }
 
@@ -217,7 +211,7 @@ func TestInitSync(t *testing.T) {
 
 	nsID := uuid.New()
 	rootID := uuid.New()
-	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID, "test")
+	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID)
 	if err != nil {
 		t.Fatalf("unexpected GetRoot() error = %v", err)
 	}
@@ -265,15 +259,10 @@ states:
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 
-	roots, err := callbacks.FileStore().GetAllRootsForNamespace(ctx, nsID)
+	root, err := callbacks.FileStore().GetRootByNamespaceID(ctx, nsID)
 	if err != nil {
 		t.Fatalf("unexpected GetAllRootsForNamespace() error = %v", err)
 	}
-	if len(roots) != 1 {
-		t.Fatalf("unexpected GetAllRootsForNamespace() results: incorrect number  %d", len(roots))
-	}
-
-	root := roots[0]
 
 	assertRootFilesInPath(t, fs, root,
 		"/",

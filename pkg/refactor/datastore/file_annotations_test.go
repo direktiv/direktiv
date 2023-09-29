@@ -63,7 +63,7 @@ func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
 
 	id := uuid.New()
 
-	_, err := fs.CreateRoot(context.Background(), id, uuid.New(), "test")
+	_, err := fs.CreateRoot(context.Background(), id, uuid.New())
 	if err != nil {
 		t.Fatalf("unexpected CreateRoot() error: %v", err)
 	}
