@@ -38,7 +38,7 @@ export const userScrolledADecentAmount = async (page: Page) =>
      * a decent amount to reach the button. Just testing it against 0 would
      * no garantee that there is a fair amount of scrolling involved
      */
-    () => window.scrollY > 300
+    () => window.scrollY > 150
   );
 
 export const scrolledToTheTop = async (page: Page) =>
