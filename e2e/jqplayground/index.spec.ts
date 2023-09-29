@@ -130,10 +130,13 @@ test("It will clear output when loading the result from the server", async ({
     .toBe("{}");
 
   await btnRun.click();
-  expect(
-    await outputTextArea.inputValue(),
-    `while loading the output from the server, the output will be cleared`
-  ).toBe("");
+  await outputTextArea.inputValue(),
+    await expect
+      .poll(
+        async () => await outputTextArea.inputValue(),
+        `while loading the output from the server, the output will be cleared`
+      )
+      .toBe("{}");
   await expect
     .poll(
       async () => await outputTextArea.inputValue(),
