@@ -819,7 +819,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 	}
 	defer tx.Rollback()
 
-	file, err := tx.FileStore().GetFile(ctx, workflowID)
+	file, err := tx.FileStore().GetFileByID(ctx, workflowID)
 	if err != nil {
 		engine.sugar.Error(err)
 		return

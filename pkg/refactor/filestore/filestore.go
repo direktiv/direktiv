@@ -51,8 +51,8 @@ type FileStore interface {
 	// ForRevision returns a query object to do further queries on that revision.
 	ForRevision(revision *Revision) RevisionQuery
 
-	// GetFile queries a file by id.
-	GetFile(ctx context.Context, id uuid.UUID) (*File, error)
+	// GetFileByID queries a file by id.
+	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
 
 	// GetRevision queries a revision by id.
 	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)

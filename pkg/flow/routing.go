@@ -371,7 +371,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer tx.Rollback()
 
-	file, err := tx.FileStore().GetFile(ctx, id)
+	file, err := tx.FileStore().GetFileByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) {
 			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")

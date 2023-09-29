@@ -130,7 +130,7 @@ func (s *sqlFileStore) GetAllRootsForNamespace(ctx context.Context, namespaceID 
 }
 
 //nolint:ireturn
-func (s *sqlFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
+func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
