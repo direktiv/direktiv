@@ -49,7 +49,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 
 	o.rootID = uuid.New()
 
-	root, err := callbacks.FileStore().CreateRoot(ctx, o.rootID, proc.NamespaceID, fmt.Sprintf("%s-sync", oldRoot.Name))
+	root, err := callbacks.FileStore().CreateRoot(ctx, o.rootID, proc.NamespaceID)
 	if err != nil {
 		return fmt.Errorf("failed to create new filesystem root: %w", err)
 	}
@@ -80,7 +80,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
 
-	err = callbacks.FileStore().ForRootID(root.ID).Rename(ctx, oldRoot.Name)
+	err = callbacks.FileStore().ForRootID(root.ID).SetNamespaceID(ctx, proc.NamespaceID)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}

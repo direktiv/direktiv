@@ -26,7 +26,7 @@ var (
 // FileStore manages different operations on files and roots.
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*Root, error)
+	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*Root, error)
 
 	// GetRoot gets a root.
 	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
@@ -34,8 +34,7 @@ type FileStore interface {
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	// GetAllRootsForNamespace list all roots for a namespace.
-	GetAllRootsForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*Root, error)
+	GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*Root, error)
 
 	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
@@ -61,7 +60,6 @@ type FileStore interface {
 type Root struct {
 	ID          uuid.UUID
 	NamespaceID uuid.UUID
-	Name        string
 }
 
 // RootQuery performs different queries associated to a root.
@@ -92,8 +90,7 @@ type RootQuery interface {
 	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
 	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
-	// Rename renames the root.
-	Rename(ctx context.Context, newName string) error
+	SetNamespaceID(ctx context.Context, namespaceId uuid.UUID) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

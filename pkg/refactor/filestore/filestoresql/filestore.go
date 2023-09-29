@@ -54,11 +54,10 @@ func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
 	}
 }
 
-func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*filestore.Root, error) {
+func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*filestore.Root, error) {
 	n := &filestore.Root{
 		ID:          rootID,
 		NamespaceID: namespaceID,
-		Name:        name,
 	}
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
 	if res.Error != nil {
@@ -110,7 +109,7 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 }
 
 //nolint:ireturn
-func (s *sqlFileStore) GetAllRootsForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*filestore.Root, error) {
+func (s *sqlFileStore) GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -121,12 +120,11 @@ func (s *sqlFileStore) GetAllRootsForNamespace(ctx context.Context, namespaceID 
 		return nil, res.Error
 	}
 
-	var ns []*filestore.Root
-	for i := range list {
-		ns = append(ns, &list[i])
+	if len(list) == 0 {
+		return nil, filestore.ErrNotFound
 	}
 
-	return ns, nil
+	return &list[0], nil
 }
 
 //nolint:ireturn

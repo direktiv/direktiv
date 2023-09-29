@@ -319,11 +319,11 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	return nil
 }
 
-func (q *RootQuery) Rename(ctx context.Context, newName string) error {
+func (q *RootQuery) SetNamespaceID(ctx context.Context, namespaceID uuid.UUID) error {
 	res := q.db.WithContext(ctx).Exec(`UPDATE filesystem_roots
-		SET name = ?
+		SET namespace_id = ?
 		WHERE id = ?`,
-		newName,
+		namespaceID,
 		q.rootID,
 	)
 	if res.Error != nil {

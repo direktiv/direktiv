@@ -242,9 +242,9 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID, defaultRootName)
+	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID)
 	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to create main file-system root: %v", err)
+		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
 		return nil, err
 	}
 	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)

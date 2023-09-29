@@ -62,7 +62,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID, defaultRootName)
+	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -161,21 +161,9 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	roots, err := tx.FileStore().GetAllRootsForNamespace(ctx, ns.ID)
+	root, err := tx.FileStore().GetRootByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, err
-	}
-
-	var root *filestore.Root
-	for idx := range roots {
-		if roots[idx].Name == defaultRootName {
-			root = roots[idx]
-			break
-		}
-	}
-
-	if root == nil {
-		return nil, errors.New("can't find roots")
 	}
 
 	if err = tx.Commit(ctx); err != nil {
@@ -236,21 +224,9 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	roots, err := tx.FileStore().GetAllRootsForNamespace(ctx, ns.ID)
+	root, err := tx.FileStore().GetRootByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, err
-	}
-
-	var root *filestore.Root
-	for idx := range roots {
-		if roots[idx].Name == defaultRootName {
-			root = roots[idx]
-			break
-		}
-	}
-
-	if root == nil {
-		return nil, errors.New("can't find")
 	}
 
 	proc, err := flow.mirrorManager.NewProcess(ctx, ns.ID, root.ID, mirror.ProcessTypeSync)
