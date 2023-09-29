@@ -1,11 +1,11 @@
-import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
+import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 import { setVariable } from "~/api/tree/mutate/setVariable";
 
 // Note: This makes sure only mimeTypes supported by the form are used,
 // but the generated content isn't really in that format.
-const { options } = MimeTypeSchema;
+const { options } = EditorMimeTypeSchema;
 
 export const createWorkflowVariables = async (
   namespace: string,

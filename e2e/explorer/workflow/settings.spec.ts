@@ -1,5 +1,5 @@
 import {
-  MimeTypeSchema,
+  EditorMimeTypeSchema,
   mimeTypeToLanguageDict,
 } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
@@ -12,7 +12,7 @@ import { createWorkflowVariables } from "e2e/utils/workflow";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
 
-const { options } = MimeTypeSchema;
+const { options } = EditorMimeTypeSchema;
 
 let namespace = "";
 let workflow = "";
