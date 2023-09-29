@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -313,44 +311,6 @@ func TestRoot_RenamePath(t *testing.T) {
 	)
 }
 
-func TestRoot_CalculateChecksumDirectory(t *testing.T) {
-	db, err := database.NewMockGorm()
-	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
-	}
-	fs := filestoresql.NewSQLFileStore(db)
-
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New(), "test")
-	if err != nil {
-		t.Fatalf("unepxected CreateRoot() error = %v", err)
-	}
-
-	filestore.DefaultCalculateChecksum = func(data []byte) []byte {
-		return []byte(fmt.Sprintf("---%s---", data))
-	}
-
-	// Test root directory:
-	{
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/file1.text", "text", []byte("content1"))
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/file2.text", "text", []byte("content2"))
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/dir1", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/empty_dir", "directory", nil)
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/dir1/file3.text", "text", []byte("content3"))
-		assertRootCorrectFileCreationWithContent(t, fs, root.ID, "/dir1/file4.text", "text", []byte("content4"))
-
-		assertChecksums(t, fs, root.ID,
-			"/", "",
-			"/file1.text", "---content1---",
-			"/file2.text", "---content2---",
-			"/dir1", "",
-			"/empty_dir", "",
-			"/dir1/file3.text", "---content3---",
-			"/dir1/file4.text", "---content4---",
-		)
-	}
-}
-
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, searchPath string, paths ...string) {
 	t.Helper()
 
@@ -372,27 +332,5 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUI
 
 			return
 		}
-	}
-}
-
-func assertChecksums(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, paths ...string) {
-	t.Helper()
-
-	checksumsMap, err := fs.ForRootID(rootID).CalculateChecksumsMap(context.Background())
-	if err != nil {
-		t.Errorf("unepxected CalculateChecksumsMap() error = %v", err)
-	}
-	if len(checksumsMap)*2 != len(paths) {
-		t.Errorf("unexpected CalculateChecksumsMap() length, got: %d, want: %d", len(checksumsMap), len(paths)/2)
-	}
-
-	wantChecksumsMap := make(map[string]string)
-
-	for i := 0; i < len(paths)-1; i += 2 {
-		wantChecksumsMap[paths[i]] = paths[i+1]
-	}
-
-	if !reflect.DeepEqual(checksumsMap, wantChecksumsMap) {
-		t.Errorf("unexpected CalculateChecksumsMap() result, got: %v, want: %v", checksumsMap, wantChecksumsMap)
 	}
 }

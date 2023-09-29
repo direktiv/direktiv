@@ -345,42 +345,6 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	return list, nil
 }
 
-//nolint:ireturn
-func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]string, error) {
-	// check if root exists.
-	if err := q.checkRootExists(ctx); err != nil {
-		return nil, err
-	}
-
-	type Result struct {
-		Path     string
-		Checksum string
-	}
-
-	var resultList []Result
-
-	res := q.db.WithContext(ctx).
-		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
-		Raw(`SELECT f.path, r.checksum 
-				 FROM filesystem_files AS f 
-				 LEFT JOIN filesystem_revisions r 
-					ON r.file_id = f.id AND r.is_current = true
-      	     	 WHERE f.root_id = ?
-					`, q.rootID).Scan(&resultList)
-
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	result := make(map[string]string)
-
-	for _, item := range resultList {
-		result[item.Path] = item.Checksum
-	}
-
-	return result, nil
-}
-
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	zeroUUID := (uuid.UUID{}).String()
 

@@ -86,9 +86,6 @@ type RootQuery interface {
 	// Delete the root itself.
 	Delete(ctx context.Context) error
 
-	// CalculateChecksumsMap returns a map with all file paths and their checksums.
-	CalculateChecksumsMap(ctx context.Context) (map[string]string, error)
-
 	// IsEmptyDirectory returns true if path exist and of type directory and empty,
 	// and false if path exist and of type directory and none empty.
 	// If directory doesn't exist, it returns ErrNotFound.
