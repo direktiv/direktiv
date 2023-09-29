@@ -8,29 +8,13 @@ import {
   userScrolledADecentAmount,
 } from "./utils";
 
+import { mockClipboardAPI } from "e2e/utils/testutils";
+
 let namespace = "";
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
-
-  await page.addInitScript(() => {
-    // createa a mock of the clipboard API
-    const mockClipboard = {
-      clipboardData: "",
-      writeText: async (text: string) => {
-        mockClipboard.clipboardData = text;
-      },
-      readText: async () => mockClipboard.clipboardData,
-    };
-
-    // override the native clipboard API
-    Object.defineProperty(navigator, "clipboard", {
-      value: mockClipboard,
-      writable: false,
-      enumerable: true,
-      configurable: true,
-    });
-  });
+  await mockClipboardAPI(page);
   /**
    * networkidle is required to avoid flaky tests. The monaco
    * editor needs to be full loaded before we interact with it.
