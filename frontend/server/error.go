@@ -12,10 +12,7 @@ type ErrResponse struct {
 }
 
 const (
-	ErrorServerInternal = "server.internal"
-	ErrorServerOIDC     = "server.oidc"
-
-	ErrorServerForbidden = "server.forbidden"
+	ErrorServerInternal = "server.internal.error"
 )
 
 func SendError(w http.ResponseWriter, err error, statusCode int,

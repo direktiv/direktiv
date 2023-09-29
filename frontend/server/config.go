@@ -18,8 +18,8 @@ type Log struct {
 
 type APIServer struct {
 	Listen      string `yaml:"listen"`
-	TLSCert     string `yaml:"tls-cert"`
-	TLSKey      string `yaml:"tls-key"`
+	TLSCert     string `yaml:"tlscert"`
+	TLSKey      string `yaml:"tlskey"`
 	Assets      string `yaml:"assets"`
 	Backend     string `yaml:"backend"`
 	BackendSkip bool   `yaml:"skipverify"`
@@ -35,9 +35,7 @@ const (
 	DebugLog = "debug"
 )
 
-func ReadConfigAndPrepare(configDir string) (*Config, error) {
-
-	var c Config
+func ReadConfigAndPrepare(configDir string, c interface{}) error {
 
 	viper.SetConfigName("direktiv")
 	viper.AddConfigPath(configDir)
@@ -50,7 +48,7 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 
 	viper.SetDefault("server.listen", "0.0.0.0:2304")
 	viper.SetDefault("server.assets", "/html")
-	viper.SetDefault("server.backend", "localhost:1604")
+	viper.SetDefault("server.backend", "http://localhost:1604")
 	viper.SetDefault("server.backendskip", true)
 	viper.SetDefault("server.apikey", "")
 	viper.SetDefault("server.tlscert", "")
@@ -60,7 +58,7 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 		log.Info().Msgf("starting direktiv with config file direktiv.yaml in %s", configDir)
 		err := viper.ReadInConfig()
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		log.Info().Msgf("starting direktiv without config file")
@@ -68,7 +66,7 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 
 	err := viper.Unmarshal(&c)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -83,12 +81,10 @@ func ReadConfigAndPrepare(configDir string) (*Config, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if viper.GetString("log.api") == DebugLog {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-
 		b, _ := json.MarshalIndent(c, "", "   ")
-
 		log.Debug().Msgf("%s", string(b))
 	}
 
-	return &c, nil
+	return nil
 
 }

@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { NoResult, Table, TableBody } from "~/design/Table";
+import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Braces } from "lucide-react";
@@ -13,7 +13,9 @@ import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
+import { triggerDownloadFromBlob } from "~/util/helpers";
 import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
+import { useDownloadVar } from "~/api/variables/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
 import { useVars } from "~/api/variables/query/useVariables";
 
@@ -28,7 +30,7 @@ const VariablesList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched } = useVars();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useVars();
 
   const filteredItems = useMemo(
     () =>
@@ -44,6 +46,15 @@ const VariablesList: FC = () => {
     },
   });
 
+  const { mutate: downloadVar } = useDownloadVar({
+    onSuccess: (response, name) => {
+      triggerDownloadFromBlob({
+        blob: response.blob,
+        filename: name,
+      });
+    },
+  });
+
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteItem(undefined);
@@ -53,6 +64,10 @@ const VariablesList: FC = () => {
   }, [dialogOpen]);
 
   if (!isFetched) return null;
+
+  const download = (name: string) => {
+    downloadVar(name);
+  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -92,27 +107,36 @@ const VariablesList: FC = () => {
               </CreateItemButton>
             </div>
             <Card className="mb-4">
-              {currentItems.length ? (
-                <Table>
-                  <TableBody>
-                    {currentItems.map((item, i) => (
-                      <ItemRow
-                        item={item}
-                        key={i}
-                        onDelete={setDeleteItem}
-                        onEdit={() => setEditItem(item)}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <NoResult>
-                  {t(
-                    isSearch
-                      ? "pages.settings.variables.list.emptySearch"
-                      : "pages.settings.variables.list.empty"
+              {isAllowed ? (
+                <>
+                  {currentItems.length ? (
+                    <Table>
+                      <TableBody>
+                        {currentItems.map((item, i) => (
+                          <ItemRow
+                            item={item}
+                            key={i}
+                            onDelete={setDeleteItem}
+                            onEdit={() => setEditItem(item)}
+                            onDownload={() => download(item.name)}
+                          >
+                            {item.name}
+                          </ItemRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <NoResult icon={Braces}>
+                      {t(
+                        isSearch
+                          ? "pages.settings.variables.list.emptySearch"
+                          : "pages.settings.variables.list.empty"
+                      )}
+                    </NoResult>
                   )}
-                </NoResult>
+                </>
+              ) : (
+                <NoPermissions>{noPermissionMessage}</NoPermissions>
               )}
             </Card>
             {totalPages > 1 && (
@@ -140,7 +164,9 @@ const VariablesList: FC = () => {
       {deleteItem && (
         <Delete
           name={deleteItem.name}
-          onConfirm={() => deleteVarMutation({ variable: deleteItem })}
+          onConfirm={() => {
+            deleteVarMutation({ variable: deleteItem });
+          }}
         />
       )}
       {createItem && (

@@ -1,12 +1,12 @@
 import { forceLeadingSlash, sortFoldersFirst } from "../utils";
 
-import { NodeListSchema } from "../schema";
+import { NodeListSchema } from "../schema/node";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
-import { useQuery } from "@tanstack/react-query";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 // a node can be a directory or a file, the returned content could either
 // be the list of files (if it's a direkctory) or the content of the file
@@ -53,7 +53,7 @@ export const useNodeContent = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: treeKeys.nodeContent(namespace, {
       apiKey: apiKey ?? undefined,
       path,

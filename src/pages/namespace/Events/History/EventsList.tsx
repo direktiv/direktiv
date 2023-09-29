@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "~/design/Dialog";
 import { Dispatch, SetStateAction, useState } from "react";
 import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
+  NoPermissions,
   NoResult,
   Table,
   TableBody,
@@ -36,7 +37,7 @@ const EventsList = ({
   const { t } = useTranslation();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
-  const { data, isFetched } = useEvents({
+  const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     limit: itemsPerPage,
     offset,
     filters,
@@ -87,26 +88,36 @@ const EventsList = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {noResults ? (
+              {isAllowed ? (
+                <>
+                  {noResults ? (
+                    <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                      <TableCell colSpan={6}>
+                        <NoResult icon={Radio}>
+                          {hasFilters
+                            ? t("pages.events.history.empty.noFilterResults")
+                            : t("pages.events.history.empty.noResults")}
+                        </NoResult>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    data?.events.results.map((event) => (
+                      <Row
+                        onClick={setEventDialog}
+                        event={event}
+                        key={event.id}
+                        namespace={data.namespace}
+                        data-testid={`event-row-${event.id}`}
+                      />
+                    ))
+                  )}
+                </>
+              ) : (
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>
-                    <NoResult icon={Radio}>
-                      {hasFilters
-                        ? t("pages.events.history.empty.noFilterResults")
-                        : t("pages.events.history.empty.noResults")}
-                    </NoResult>
+                    <NoPermissions>{noPermissionMessage}</NoPermissions>
                   </TableCell>
                 </TableRow>
-              ) : (
-                data?.events.results.map((event) => (
-                  <Row
-                    onClick={setEventDialog}
-                    event={event}
-                    key={event.id}
-                    namespace={data.namespace}
-                    data-testid={`event-row-${event.id}`}
-                  />
-                ))
               )}
             </TableBody>
           </Table>

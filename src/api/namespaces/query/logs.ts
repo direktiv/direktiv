@@ -1,9 +1,5 @@
 import { NamespaceLogListSchema, NamespaceLogListSchemaType } from "../schema";
-import {
-  QueryFunctionContext,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { memo } from "react";
@@ -11,6 +7,7 @@ import moment from "moment";
 import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
 const updateCache = (
@@ -112,7 +109,7 @@ export const useNamespacelogs = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  return useQueryWithPermissions({
     queryKey: namespaceKeys.logs(namespace, {
       apiKey: apiKey ?? undefined,
     }),

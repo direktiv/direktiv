@@ -1,12 +1,4 @@
-import {
-  CurlyBraces,
-  LogOut,
-  Moon,
-  Settings2,
-  Slack,
-  Sun,
-  Terminal,
-} from "lucide-react";
+import { BookOpen, Moon, Settings2, Slack, Sun, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,25 +11,27 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
+import LogoutButton from "./LogoutButton";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
+import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
 
-const hasAccount = true;
-const username = "admin";
 interface UserMenuProps {
   className?: string;
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
+  const { showUsermenu } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
+
   return (
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {hasAccount ? (
+          {showUsermenu ? (
             <Button
               variant="ghost"
               className="items-center px-1"
@@ -45,7 +39,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               icon
               data-testid="dropdown-trg-user-menu"
             >
-              <Avatar>{username?.slice(0, 2)}</Avatar>
+              <Avatar>
+                <User />
+              </Avatar>
               <RxChevronDown />
             </Button>
           ) : (
@@ -56,16 +52,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {hasAccount && (
+          {showUsermenu && (
             <>
               <DropdownMenuLabel>
-                {t("components.userMenu.loggedInAs", { name: username })}
+                {t("components.userMenu.loggedIn")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{t("components.userMenu.logout")}</span>
-              </DropdownMenuItem>
+              <LogoutButton />
               <DropdownMenuSeparator />
             </>
           )}
@@ -77,6 +70,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuItem
             data-testid="dropdown-item-switch-theme"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="cursor-pointer"
           >
             {theme === "dark" ? (
               <>
@@ -93,19 +87,24 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <DropdownMenuSeparator />
           <DropdownMenuLabel>{t("components.userMenu.help")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Terminal className="mr-2 h-4 w-4" />
-            {t("components.userMenu.showApiCommands")}
+          <DropdownMenuItem asChild>
+            <a
+              href="https://docs.direktiv.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer"
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              {t("components.userMenu.docs")}
+            </a>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CurlyBraces className="mr-2 h-4 w-4" />
-            {t("components.userMenu.openJQPlayground")}
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <a
               href="https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g"
               target="_blank"
               rel="noopener noreferrer"
+              className="cursor-pointer"
             >
               <Slack className="mr-2 h-4 w-4" />
               {t("components.userMenu.supportChannelOnSlack")}

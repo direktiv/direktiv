@@ -1,20 +1,21 @@
-import Badge from "~/design/Badge";
-import { Card } from "~/design/Card";
 import { FC } from "react";
+import Instances from "./Instances";
+import Metrics from "./Metrics";
+import Services from "./Services";
+import TrafficDistribution from "./TrafficDistribution";
 import { pages } from "~/util/router/pages";
-import { useNodeContent } from "~/api/tree/query/node";
 
 const ActiveWorkflowPage: FC = () => {
   const { path } = pages.explorer.useParams();
-  const { data } = useNodeContent({
-    path,
-  });
+
+  if (!path) return null;
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
-      <Card className="p-4">
-        <Badge>{data?.revision?.hash.slice(0, 8)}</Badge>
-      </Card>
+    <div className="grid gap-5 p-4 md:grid-cols-[2fr_1fr]">
+      <Instances workflow={path} />
+      <Metrics workflow={path} />
+      <TrafficDistribution workflow={path} />
+      <Services workflow={path} />
     </div>
   );
 };

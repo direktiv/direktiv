@@ -1,11 +1,12 @@
-import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema/node";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
+import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -18,7 +19,11 @@ const revertRevision = apiFactory({
   schema: WorkflowCreatedSchema,
 });
 
-export const useRevertRevision = () => {
+export const useRevertRevision = ({
+  onSuccess,
+}: {
+  onSuccess?: () => void;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -29,7 +34,7 @@ export const useRevertRevision = () => {
     throw new Error("namespace is undefined");
   }
 
-  return useMutation({
+  return useMutationWithPermissions({
     mutationFn: ({ path }: { path: string }) =>
       revertRevision({
         apiKey: apiKey ?? undefined,
@@ -39,6 +44,7 @@ export const useRevertRevision = () => {
         },
       }),
     onSuccess(data, variables) {
+      onSuccess?.();
       queryClient.setQueryData<NodeListSchemaType>(
         treeKeys.nodeContent(namespace, {
           apiKey: apiKey ?? undefined,

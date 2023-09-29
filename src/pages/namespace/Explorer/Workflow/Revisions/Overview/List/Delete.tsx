@@ -8,7 +8,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
 import { Trash } from "lucide-react";
-import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
+import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { useDeleteRevision } from "~/api/tree/mutate/deleteRevision";
 import { useDeleteTag } from "~/api/tree/mutate/deleteTag";
 

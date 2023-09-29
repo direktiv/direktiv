@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
 
 import Button from "~/design/Button";
@@ -16,8 +16,10 @@ import { EditorLayoutSwitcher } from "~/componentsNext/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { WorkspaceLayout } from "~/componentsNext/WorkspaceLayout";
+import { pages } from "~/util/router/pages";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useEditorLayout } from "~/util/store/editor";
+import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
 import { useTranslation } from "react-i18next";
@@ -31,25 +33,34 @@ const WorkflowEditor: FC<{
 }> = ({ data, path }) => {
   const currentLayout = useEditorLayout();
   const { t } = useTranslation();
+  const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
-  const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const workflowData = atob(data?.revision?.source ?? "");
+  const workflowDataFromServer = atob(data?.revision?.source ?? "");
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {
       error && setError(error);
     },
+    onSuccess: () => {
+      setHasUnsavedChanges(false);
+    },
   });
 
-  const [value, setValue] = useState(workflowData);
+  const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
   const { mutate: createRevision } = useCreateRevision();
-  const { mutate: revertRevision } = useRevertRevision();
+  const { mutate: revertRevision } = useRevertRevision({
+    onSuccess: () => {
+      setHasUnsavedChanges(false);
+    },
+  });
 
-  useEffect(() => {
-    setHasUnsavedChanged(workflowData !== value);
-  }, [value, workflowData]);
+  const onEditorContentUpdate = (newData: string) => {
+    setHasUnsavedChanges(workflowDataFromServer !== newData);
+    setEditorContent(newData ?? "");
+  };
 
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
@@ -61,6 +72,8 @@ const WorkflowEditor: FC<{
     }
   };
 
+  if (!namespace) return null;
+
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <h3 className="flex items-center gap-x-2 font-bold">
@@ -70,15 +83,18 @@ const WorkflowEditor: FC<{
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={
-          <Diagram workflowData={workflowData} layout={currentLayout} />
+          <Diagram
+            workflowData={workflowDataFromServer}
+            layout={currentLayout}
+          />
         }
         editorComponent={
           <CodeEditor
-            value={workflowData}
-            setValue={setValue}
+            value={workflowDataFromServer}
+            onValueChange={onEditorContentUpdate}
             createdAt={data.revision?.createdAt}
             error={error}
-            hasUnsavedChanged={hasUnsavedChanged}
+            hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
           />
         }
@@ -90,10 +106,17 @@ const WorkflowEditor: FC<{
           <ButtonBar>
             <Button
               variant="outline"
-              disabled={hasUnsavedChanged}
+              disabled={hasUnsavedChanges}
               onClick={() => {
                 createRevision({
                   path,
+                  createLink: (revision) =>
+                    pages.explorer.createHref({
+                      namespace,
+                      path,
+                      subpage: "workflow-revisions",
+                      revision,
+                    }),
                 });
               }}
               className="grow"
@@ -104,7 +127,7 @@ const WorkflowEditor: FC<{
             </Button>
             <DropdownMenuTrigger asChild>
               <Button
-                disabled={hasUnsavedChanged}
+                disabled={hasUnsavedChanges}
                 variant="outline"
                 data-testid="workflow-editor-btn-revision-drop"
               >
@@ -128,7 +151,11 @@ const WorkflowEditor: FC<{
         </DropdownMenu>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" data-testid="workflow-editor-btn-run">
+            <Button
+              variant="outline"
+              data-testid="workflow-editor-btn-run"
+              disabled={hasUnsavedChanges}
+            >
               <Play />
               {t("pages.explorer.workflow.editor.runBtn")}
             </Button>
@@ -141,7 +168,7 @@ const WorkflowEditor: FC<{
           variant="outline"
           disabled={isLoading}
           onClick={() => {
-            onSave(value);
+            onSave(editorContent);
           }}
           data-testid="workflow-editor-btn-save"
         >

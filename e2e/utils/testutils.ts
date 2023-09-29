@@ -1,4 +1,4 @@
-import { Locator } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 
 const token = process.env.VITE_E2E_API_TOKEN;
 export const headers: { "Direktiv-Token"?: string } = token
@@ -39,3 +39,29 @@ export const radixClick = async (
     await locator.click();
   }
 };
+
+/**
+ * this will mock the browsers clipboard API, since it might not be available in the test environment
+ * due to invalid permissions. It's recommended to use this function in the beforeAll or beforeEach hook
+ * of the test to inject the mock into the page very early. It will e.g. not work if it's called after
+ * page.goto() has been called.
+ */
+export const mockClipboardAPI = async (page: Page) =>
+  await page.addInitScript(() => {
+    // create a mock of the clipboard API
+    const mockClipboard = {
+      clipboardData: "",
+      writeText: async (text: string) => {
+        mockClipboard.clipboardData = text;
+      },
+      readText: async () => mockClipboard.clipboardData,
+    };
+
+    // override the native clipboard API
+    Object.defineProperty(navigator, "clipboard", {
+      value: mockClipboard,
+      writable: false,
+      enumerable: true,
+      configurable: true,
+    });
+  });

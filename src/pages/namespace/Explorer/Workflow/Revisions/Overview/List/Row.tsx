@@ -15,7 +15,7 @@ import CopyButton from "~/design/CopyButton";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { TrimmedRevisionSchemaType } from "~/api/tree/schema";
+import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
