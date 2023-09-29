@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -63,9 +62,6 @@ type Root struct {
 	ID          uuid.UUID
 	NamespaceID uuid.UUID
 	Name        string
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
 }
 
 // RootQuery performs different queries associated to a root.

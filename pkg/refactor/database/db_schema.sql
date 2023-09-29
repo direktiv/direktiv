@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "namespace_id" uuid,
     "name" text NOT NULL,
-    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "root_no_dup_check" UNIQUE ("namespace_id","name"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
