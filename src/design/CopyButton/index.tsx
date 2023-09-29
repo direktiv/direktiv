@@ -1,13 +1,13 @@
 import { Check, Copy, XCircle } from "lucide-react";
-import { ComponentProps, FC, useEffect, useState } from "react";
+import { ComponentPropsWithRef, FC, useEffect, useState } from "react";
 
 import Button from "../Button";
 
-type ButtonPropsType = ComponentProps<typeof Button>;
+type ButtonPropsType = ComponentPropsWithRef<typeof Button>;
 
 const CopyButton: FC<{
   value: string;
-  buttonProps?: ButtonPropsType;
+  buttonProps?: ButtonPropsType & { "data-testid"?: string };
   children?: (copied: boolean) => React.ReactNode;
 }> = ({ value, buttonProps: { onClick, ...buttonProps } = {}, children }) => {
   const [copied, setCopied] = useState(false);
@@ -42,7 +42,6 @@ const CopyButton: FC<{
     }
     return <Copy />;
   };
-
   return (
     <Button
       variant="ghost"

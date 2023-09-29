@@ -194,8 +194,15 @@ test("it will persist the preferred layout selection in local storage", async ({
 
 test("it will update the diagram when the workflow is saved", async ({
   page,
+  browserName,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  /**
+   * networkidle is required to avoid flaky tests. The monaco
+   * editor needs to be full loaded before we interact with it.
+   */
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`, {
+    waitUntil: "networkidle",
+  });
   const { editor, diagram, splitVertBtn } = await getCommonPageElements(page);
 
   await splitVertBtn.click();
@@ -224,14 +231,16 @@ test("it will update the diagram when the workflow is saved", async ({
 
   // comment out all states expect the first one to force the diagram to update
   await page.getByTestId("workflow-editor").click();
-  // cursor is at the end of line 8, use right arrow to go to the first column of line 9
-  await page.keyboard.press("ArrowRight");
-  await page.keyboard.press("ArrowDown"); // line 10, column 1
-  await page.keyboard.press("ArrowDown"); // line 11, column 1
-  await page.keyboard.press("ArrowDown"); // line 12, column 1
-  await page.keyboard.press("#");
-  await commentOutNextLine();
-  await commentOutNextLine();
+  // cursor is at the end of line 8, use right arrow to go to the first column of line 8
+  await page.keyboard.press("ArrowRight"); // line 9, column 1 after this command runs
+  if (browserName === "webkit") {
+    await page.keyboard.press("ArrowDown"); // webkit is one line off
+  }
+  await page.keyboard.press("ArrowDown"); // line 10, column 1 after this command runs
+  await page.keyboard.press("ArrowDown"); // line 11, column 1 after this command runs
+  await page.keyboard.press("ArrowDown"); // line 12, column 1 after this command runs
+  await page.keyboard.press("ArrowDown"); // line 13, column 1 after this command runs
+  await page.keyboard.press("#"); // adding # at the beginning of line "transition: greet" now
   await commentOutNextLine();
   await commentOutNextLine();
   await commentOutNextLine();

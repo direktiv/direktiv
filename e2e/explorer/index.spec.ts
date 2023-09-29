@@ -312,7 +312,7 @@ test("it is not possible to create a workflow when the name already exixts", asy
   await page.getByTestId("new-workflow-name").fill(alreadyExists);
   await page.getByTestId("new-workflow-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -333,7 +333,7 @@ test("it is not possible to create a workflow when the name already exists and t
   await page.getByTestId("new-workflow-name").fill(typedInName);
   await page.getByTestId("new-workflow-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -520,7 +520,7 @@ test(`it is not possible to rename a workflow when the name already exists`, asy
   await page.getByTestId("node-rename-input").fill(alreadyExists);
   await page.getByTestId("node-rename-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -546,7 +546,7 @@ test(`it is not possible to rename a workflow when the name already exists and e
     .fill(alreadyExistsWithoutExtension);
   await page.getByTestId("node-rename-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
