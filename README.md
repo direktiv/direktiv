@@ -2,9 +2,18 @@
 
 This repository contains the user interface for [direktiv](https://github.com/direktiv/direktiv).
 
-<p align="center" style="width: 50%; height:50%">
-  <img src="assets/images/ui.png" alt="direktiv ui">
-</p>
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/images/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/images/logo-light.png">
+    <img alt="direktiv logo" src="assets/images/logo-dark.png">
+</picture>
+</div>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/screenshot-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/screenshot-light.png">
+  <img alt="direktiv ui" src="assets/images/screenshot-dark.png">
+</picture>
 
 # Setup development environment
 
@@ -23,10 +32,22 @@ This repository contains the user interface for [direktiv](https://github.com/di
 - `yarn run storybook` opens the storybook and documentation
 - `yarn run test` runs the tests in watch mode
 - `yarn run check` runs all the checks that will run in CI:
-  - `yarm run check:lint` runs the linter
-  - `yarm run check:types` checks all types
-  - `yarm run check:test` runs the tests in ci mode
-  - `yarm run check:prettier` checks if all prettier formatting was applied (`yarn run prettier`)
+  - `yarn run check:lint` runs the linter
+  - `yarn run check:types` checks all types
+  - `yarn run check:test` runs the tests in ci mode
+  - `yarn run check:prettier` checks if all prettier formatting was applied (`yarn run prettier`)
+- `yarn run e2e:headless` runs all Playwright e2e tests in headless mode
+- `yarn run e2e:ui` runs all Playwright e2e tests in ui mode
+
+# Recommended Development Environment
+
+## Visual Studio Code Users
+
+If you're using [Visual Studio Code](https://code.visualstudio.com/) as your code editor, we highly recommend installing the extensions listed in the `.vscode/extensions.json` file. These extensions are designed to enhance your development experience by automatically resolving certain linting issues and formatting your code. When you open this project folder in VS Code for the first time, it should prompt you to install the recommended extensions.
+
+## Non-VS Code Users
+
+For those not using Visual Studio Code, we strongly recommend using [Prettier](https://prettier.io/) as your code formatter. Prettier will help you maintain a consistent code style, making it easier to collaborate with other developers. Prettier formatting checks will be enforced during the CI process.
 
 # Code of Conduct
 

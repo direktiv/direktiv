@@ -77,7 +77,12 @@ const Delete = ({ close }: DeleteProps) => {
               values={{ namespace }}
             />
           </label>
-          <Input id="confirm" value={confirmText} onChange={onInputChange} />
+          <Input
+            data-testid="delete-namespace-confirm-input"
+            id="confirm"
+            value={confirmText}
+            onChange={onInputChange}
+          />
         </div>
       </form>
 
@@ -86,7 +91,7 @@ const Delete = ({ close }: DeleteProps) => {
           <Button variant="ghost">{t("components.button.label.cancel")}</Button>
         </DialogClose>
         <Button
-          data-testid="namespace-delete-confirm"
+          data-testid="delete-namespace-confirm-btn"
           type="submit"
           form={formId}
           variant="destructive"

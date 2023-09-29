@@ -487,7 +487,8 @@
       },
       "activities": {
         "list": {
-          "title": "Activities"
+          "title": "Activities",
+          "noResults": "No activities found"
         },
         "detail": {
           "header": {
@@ -908,7 +909,7 @@
           "arrayObjectConstruction": "array/object construction",
           "lengthOfValue": "length of a value",
           "keysInArray": "keys in an array",
-          "feeedInput": "feed input into multiple filters",
+          "feedInput": "feed input into multiple filters",
           "pipeOutput": "pipe output of one filter to the next filter",
           "inputUnchanged": "input unchanged if foo returns true",
           "invokeFilter": "invoke filter foo for each input",

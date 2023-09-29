@@ -26,6 +26,7 @@ const DeleteNamespace: FC = () => {
           <div className="flex flex-col items-center justify-between gap-5 sm:flex-row">
             <div>{t("pages.settings.deleteNamespace.description")}</div>
             <Button
+              data-testid="btn-delete-namespace"
               variant="destructive"
               onClick={() => setDialogOpen(true)}
               className="w-full self-center sm:w-min sm:min-w-max"
