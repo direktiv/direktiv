@@ -48,7 +48,7 @@ export const radixClick = async (
  */
 export const mockClipboardAPI = async (page: Page) =>
   await page.addInitScript(() => {
-    // createa a mock of the clipboard API
+    // create a mock of the clipboard API
     const mockClipboard = {
       clipboardData: "",
       writeText: async (text: string) => {
