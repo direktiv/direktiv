@@ -24,7 +24,6 @@ type FactoryParams<TUrlParams, TSchema> = {
 };
 
 type ApiParams<TPayload, THeaders, TUrlParams> = {
-  baseUrl?: string;
   apiKey?: string;
   payload?: TPayload extends undefined ? undefined : TPayload;
   headers?: THeaders extends undefined ? undefined : THeaders;
