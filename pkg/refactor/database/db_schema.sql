@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "namespace_id" uuid UNIQUE,
     PRIMARY KEY ("id"),
-    CONSTRAINT "root_no_dup_check" UNIQUE ("namespace_id","name"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
