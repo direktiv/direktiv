@@ -93,7 +93,7 @@ type RootQuery interface {
 	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
 	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
-	SetNamespaceID(ctx context.Context, namespaceID uuid.UUID) error
+	SetNamespace(ctx context.Context, namespaceID uuid.UUID) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

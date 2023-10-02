@@ -80,7 +80,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
 
-	err = callbacks.FileStore().ForRootID(root.ID).SetNamespaceID(ctx, proc.NamespaceID)
+	err = callbacks.FileStore().ForRootID(root.ID).SetNamespace(ctx, proc.NamespaceID)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}

@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
 
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
-    "namespace_id" uuid UNIQUE,
+    "namespace" text UNIQUE,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "filesystem_files" (

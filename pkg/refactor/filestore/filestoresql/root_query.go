@@ -302,7 +302,7 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	return nil
 }
 
-func (q *RootQuery) SetNamespaceID(ctx context.Context, namespaceID uuid.UUID) error {
+func (q *RootQuery) SetNamespace(ctx context.Context, namespaceID uuid.UUID) error {
 	res := q.db.WithContext(ctx).Exec(`UPDATE filesystem_roots
 		SET namespace_id = ?
 		WHERE id = ?`,
