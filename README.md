@@ -17,11 +17,11 @@ This repository contains the user interface for [direktiv](https://github.com/di
 
 # Setup development environment
 
-- test 3
 - this repo requires a specific node version, to easily install the correct one, please install [nvm](https://github.com/nvm-sh/nvm)
 - in the root directory, run `nvm use` to automatically switch to the required version
   - which will be read from `.nvmrc` file
   - please note that you always must run `nvm use` in every terminal session
+  - At the first time you will also have to run `nvm install ##` with ## being the actual version number delivered to you via 'nvm use' or found in the `.nvmrc` file
 - run `yarn` to install all dependencies
 - create a `.env` file, copy the content from `.env.example` and change the variables to your needs
 - run `yarn start` to start the dev server
