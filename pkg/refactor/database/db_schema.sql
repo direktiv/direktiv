@@ -24,11 +24,9 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     "typ" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "api_id" text NOT NULL,
     "mime_type" text NOT NULL,
     PRIMARY KEY ("id"),
     CONSTRAINT "file_path_no_dup_check" UNIQUE ("root_id","path"),
-    CONSTRAINT "file_api_id_no_dup_check" UNIQUE ("root_id","api_id"),
     CONSTRAINT "fk_filesystem_roots_filesystem_files"
     FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );

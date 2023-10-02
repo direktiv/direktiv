@@ -38,7 +38,6 @@ type File struct {
 	// belongs too.
 	RootID uuid.UUID
 
-	APIID    string
 	MIMEType string
 
 	CreatedAt time.Time

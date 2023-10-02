@@ -2,8 +2,6 @@ package filestoresql
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -131,14 +129,6 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
-func computeAPIID(namespaceID uuid.UUID, path string) string {
-	hasher := sha256.New()
-	x := hasher.Sum([]byte(fmt.Sprintf("%s:%s", namespaceID.String(), path)))
-	s := base64.RawURLEncoding.EncodeToString(x)
-
-	return s
-}
-
 //nolint:ireturn
 func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
@@ -179,7 +169,6 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		Depth:    filestore.GetPathDepth(path),
 		Typ:      typ,
 		RootID:   q.rootID,
-		APIID:    computeAPIID(q.root.NamespaceID, path),
 		MIMEType: mimeType,
 	}
 
