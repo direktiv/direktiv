@@ -12,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 func checksum(data []byte) string {
@@ -205,8 +204,7 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	logger, _ := zap.NewDevelopment()
-	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
+	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	var tests []assertInstanceStoreCorrectInstanceDataCreationTest
 
@@ -400,8 +398,7 @@ func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	logger, _ := zap.NewDevelopment()
-	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
+	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	var tests []assertInstanceStoreCorrectGetNamespaceInstancesTest
 
@@ -510,8 +507,7 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	logger, _ := zap.NewDevelopment()
-	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
+	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	idatas, err := instances.GetHangingInstances(context.Background())
 	if err != nil {
@@ -642,8 +638,7 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	logger, _ := zap.NewDevelopment()
-	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
+	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	err = instances.DeleteOldInstances(context.Background(), time.Now())
 	if err != nil {
@@ -736,8 +731,7 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
-	logger, _ := zap.NewDevelopment()
-	instances := instancestoresql.NewSQLInstanceStore(db, logger.Sugar())
+	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	wfPath := "/test.yaml"
 	err = instances.AssertNoParallelCron(context.Background(), wfPath)
