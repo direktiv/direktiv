@@ -104,14 +104,14 @@ func (m *Manager) runCycle() []error {
 	for _, id := range result.creates {
 		v := searchSrc[id]
 		if err := m.client.createService(v); err != nil {
-			errs = append(errs, err)
+			v.Error = err
 		}
 	}
 
 	for _, id := range result.updates {
 		v := searchSrc[id]
 		if err := m.client.createService(v); err != nil {
-			errs = append(errs, err)
+			v.Error = err
 		}
 	}
 

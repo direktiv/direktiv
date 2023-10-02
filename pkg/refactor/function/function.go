@@ -20,6 +20,8 @@ type Config struct {
 	CMD   string
 	Size  string
 	Scale int
+
+	Error error
 }
 
 func (c *Config) id() string {
