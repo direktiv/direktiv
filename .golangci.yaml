@@ -3,7 +3,6 @@ run:
   go: 1.21.0
   issues-exit-code: 1
   tests: false
-  skip-dirs: ["ent/"]
   skip-files: [".pb.go"]
 
 linters-settings:
@@ -21,7 +20,6 @@ linters:
   disable:
     - depguard
     - tagalign
-    - gocritic # must fix, currently causes panic
     - exhaustruct
     - wsl
     - prealloc
