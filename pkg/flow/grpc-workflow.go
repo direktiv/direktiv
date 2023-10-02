@@ -120,10 +120,6 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 		return nil, err
 	}
 
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)

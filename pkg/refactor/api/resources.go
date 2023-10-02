@@ -89,10 +89,10 @@ func ParseService(data []byte) *Service {
 		return nil
 	}
 	if strings.HasPrefix(res.DirektivAPI, "service/") {
-		return nil
+		return res
 	}
 
-	return res
+	return nil
 }
 
 type WorkflowFunctionDefinition struct {

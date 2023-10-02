@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -249,7 +250,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Info("Initializing database.")
 	gormConf := &gorm.Config{
 		Logger: logger.New(
-			nil,
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
 				LogLevel:                  logger.Silent,
 				IgnoreRecordNotFoundError: true,
