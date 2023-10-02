@@ -23,15 +23,13 @@ linters:
     - wsl
     - lll
     - varnamelen
-    - paralleltest
     - wrapcheck
-    - nolintlint
+    - nolintlint # must fix before release.
     - ireturn
     - funlen
-    - musttag
     - gochecknoglobals
     - cyclop
-    - godox # must fix
+    - godox # must fix before release.
 
   presets:
     - bugs

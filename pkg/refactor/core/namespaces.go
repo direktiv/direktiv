@@ -26,6 +26,7 @@ type RootInfo struct {
 	RootID uuid.UUID
 }
 
+//nolint:musttag
 type RootsInfo struct {
 	Default RootInfo
 }

@@ -215,6 +215,7 @@ func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID,
 	return nil
 }
 
+//nolint:musttag
 type triggerInfo struct {
 	WorkflowID string
 	InstanceID string
