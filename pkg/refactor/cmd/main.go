@@ -37,6 +37,7 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 		pubsub.FunctionDelete,
 		pubsub.MirrorSync,
 	)
+	subscriberServicesChanges(db, funcManager, logger)
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit

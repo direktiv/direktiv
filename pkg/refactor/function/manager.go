@@ -45,7 +45,7 @@ func NewManagerFromK8s() (*Manager, error) {
 	}, nil
 }
 
-func (m *Manager) runCycle() error {
+func (m *Manager) runCycle() []error {
 	m.lock.Lock()
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
@@ -61,7 +61,7 @@ func (m *Manager) runCycle() error {
 
 	knList, err := m.client.listServices()
 	if err != nil {
-		return err
+		return []error{err}
 	}
 
 	//fmt.Printf("klist2:")
@@ -93,27 +93,29 @@ func (m *Manager) runCycle() error {
 
 	// fmt.Printf("f2: recocile: %v\n", result)
 
+	errs := []error{}
+
 	for _, id := range result.deletes {
 		if err := m.client.deleteService(id); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
 	for _, id := range result.creates {
 		v := searchSrc[id]
 		if err := m.client.createService(v); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
 	for _, id := range result.updates {
 		v := searchSrc[id]
 		if err := m.client.createService(v); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
-	return nil
+	return errs
 }
 
 func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
@@ -125,12 +127,10 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 				break loop
 			default:
 			}
-
 			time.Sleep(10 * time.Second)
-			err := m.runCycle()
-			if err != nil {
+			errs := m.runCycle()
+			for _, err := range errs {
 				fmt.Printf("f2 error: %s\n", err)
-				continue
 			}
 		}
 
