@@ -2,6 +2,7 @@
 package function
 
 import (
+	"fmt"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,10 +10,32 @@ import (
 )
 
 func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
+	//min := int(info.GetMinScale())
+	//if min > functionsConfig.MaxScale {
+	//	min = functionsConfig.MaxScale
+	//}
+
 	containers, err := buildContainers(c, cfg)
 	if err != nil {
 		return nil, err
 	}
+
+	//n := functionsConfig.knativeAffinity.DeepCopy()
+	//reqAffinity := n.RequiredDuringSchedulingIgnoredDuringExecution
+	//if reqAffinity != nil {
+	//	terms := &reqAffinity.NodeSelectorTerms
+	//	if len(*terms) > 0 {
+	//		expressions := &(*terms)[0].MatchExpressions
+	//		if len(*expressions) > 0 {
+	//			expression := &(*expressions)[0]
+	//			if expression.Key == "direktiv.io/namespace" {
+	//				expression.Operator = corev1.NodeSelectorOpIn
+	//				expression.Values = []string{*info.NamespaceName}
+	//			}
+	//		}
+	//	}
+	//}
+
 	svc := &servingv1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -46,11 +69,6 @@ func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
 	//	logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
 	//	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &functionsConfig.Runtime
 	//}
-	//cs, err := fetchServiceAPI()
-	//if err != nil {
-	//	logger.Errorf("error getting clientset for knative: %v", err)
-	//	return nil, err
-	//}
 
 	return svc, nil
 }
@@ -64,6 +82,8 @@ func buildServiceMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 	}
 
 	meta.Annotations["direktiv.io/input_hash"] = cfg.hash()
+	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
+	meta.Annotations["networking.knative.dev/ingress.class"] = c.IngressClass
 
 	return meta
 }
@@ -75,6 +95,9 @@ func buildPodMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 		Annotations: make(map[string]string),
 	}
 	metaSpec.Labels["direktiv-app"] = "direktiv"
+
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
+	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.MaxScale)
 
 	return metaSpec
 }
@@ -89,18 +112,24 @@ func buildVolumes(c *ClientConfig, cfg *Config) []corev1.Volume {
 		},
 	}
 
-	// volumes = append(volumes, functionsConfig.extraVolumes...)
+	// volumes = append(volumes, c.extraVolumes...)
 
 	return volumes
 }
 
 func buildContainers(c *ClientConfig, cfg *Config) ([]corev1.Container, error) {
 	// set resource limits.
+	rl, err := buildResourceLimits(c, cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	// user container
 	uc := corev1.Container{
-		Name:  containerUser,
-		Image: cfg.Image,
+		Name:      containerUser,
+		Image:     cfg.Image,
+		Env:       buildEnvVars(c, cfg),
+		Resources: rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "workdir",
@@ -117,5 +146,40 @@ func buildContainers(c *ClientConfig, cfg *Config) ([]corev1.Container, error) {
 		uc.Command = args
 	}
 
-	return []corev1.Container{uc}, nil
+	vMounts := []corev1.VolumeMount{
+		{
+			Name:      "workdir",
+			MountPath: "/mnt/shared",
+		},
+	}
+
+	// direktiv sidecar
+	ds := corev1.Container{
+		Name:         containerSidecar,
+		Image:        c.Sidecar,
+		Env:          buildEnvVars(c, cfg),
+		VolumeMounts: vMounts,
+		Ports: []corev1.ContainerPort{
+			{
+				ContainerPort: 8890,
+			},
+		},
+	}
+
+	return []corev1.Container{uc, ds}, nil
+}
+
+func buildResourceLimits(c *ClientConfig, cfg *Config) (corev1.ResourceRequirements, error) {
+	return corev1.ResourceRequirements{}, nil
+}
+
+func buildEnvVars(c *ClientConfig, cfg *Config) []corev1.EnvVar {
+	proxyEnvs := []corev1.EnvVar{}
+
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  "DIREKTIV_APP",
+		Value: "sidecar",
+	})
+
+	return proxyEnvs
 }
