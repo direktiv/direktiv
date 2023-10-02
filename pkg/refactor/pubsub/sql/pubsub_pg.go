@@ -100,8 +100,10 @@ func (p *PostgresBus) Publish(channel string, data string) error {
 	return nil
 }
 
-func (p *PostgresBus) Subscribe(channel string, handler func(data string)) {
-	p.subscribers.Store(fmt.Sprintf("%s_%s", channel, uuid.New().String()), handler)
+func (p *PostgresBus) Subscribe(handler func(data string), channels ...string) {
+	for _, channel := range channels {
+		p.subscribers.Store(fmt.Sprintf("%s_%s", channel, uuid.New().String()), handler)
+	}
 }
 
 func splitNotificationText(text string) (string, string, error) {

@@ -26,9 +26,17 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 	wg := &sync.WaitGroup{}
 	done := make(chan struct{})
 
-	pbus.Subscribe("filesystem_change", func(_ string) {
+	pbus.Subscribe(func(_ string) {
 		subscriberServicesChanges(db, funcManager, logger)
-	})
+	},
+		pubsub.WorkflowCreate,
+		pubsub.WorkflowUpdate,
+		pubsub.WorkflowDelete,
+		pubsub.FunctionCreate,
+		pubsub.FunctionUpdate,
+		pubsub.FunctionDelete,
+		pubsub.MirrorSync,
+	)
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit
