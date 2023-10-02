@@ -2,19 +2,19 @@ package cmd
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/api"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
-	"go.uber.org/zap"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
+	"github.com/direktiv/direktiv/pkg/refactor/api"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/function"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/webapi"
+	"go.uber.org/zap"
 )
 
 func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
@@ -66,6 +66,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 	nsList, err := dStore.Namespaces().GetAll(context.Background())
 	if err != nil {
 		logger.Error("listing namespaces", "error", err)
+
 		return
 	}
 
@@ -76,18 +77,21 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 		files, err := fStore.ForRootNamespaceID(ns.ID).ListDirektivFiles(context.Background())
 		if err != nil {
 			logger.Error("listing direktiv files", "error", err)
+
 			continue
 		}
 		for _, file := range files {
 			data, err := fStore.ForFile(file).GetData(context.Background())
 			if err != nil {
 				logger.Error("read file data", "error", err)
+
 				continue
 			}
 			if file.Typ == filestore.FileTypeService {
 				serviceDef := api.ParseService(data)
 				if serviceDef == nil {
 					logger.Error("parse service file", "error", err)
+
 					continue
 				}
 				funConfigList = append(funConfigList, &function.Config{
@@ -102,6 +106,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 				serviceDef, err := api.ParseWorkflowFunctionDefinition(data)
 				if err != nil {
 					logger.Error("parse workflow service def", "error", err)
+
 					continue
 				}
 				if serviceDef.Typ == "knative-workflow" {
