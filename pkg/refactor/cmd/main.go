@@ -60,7 +60,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 		return
 	}
 
-	funConfigList := []*function.FunctionDefination{}
+	funConfigList := []*function.Config{}
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
@@ -81,7 +81,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 					logger.Error("parse service file", "error", err)
 					continue
 				}
-				funConfigList = append(funConfigList, &function.FunctionDefination{
+				funConfigList = append(funConfigList, &function.Config{
 					Namespace:   ns.Name,
 					ServicePath: file.Path,
 					Image:       serviceDef.Image,
@@ -96,7 +96,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 					continue
 				}
 				if serviceDef.Typ == "knative-workflow" {
-					funConfigList = append(funConfigList, &function.FunctionDefination{
+					funConfigList = append(funConfigList, &function.Config{
 						Namespace:    ns.Name,
 						WorkflowPath: file.Path,
 						Image:        serviceDef.Image,

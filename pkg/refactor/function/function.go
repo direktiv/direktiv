@@ -9,7 +9,7 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-type FunctionDefination struct {
+type Config struct {
 	Namespace string
 	Name      string
 
@@ -22,7 +22,7 @@ type FunctionDefination struct {
 	Scale int
 }
 
-func (c *FunctionDefination) id() string {
+func (c *Config) id() string {
 	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
 	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
@@ -32,7 +32,7 @@ func (c *FunctionDefination) id() string {
 	return fmt.Sprintf("obj-%d-obj", v)
 }
 
-func (c *FunctionDefination) hash() string {
+func (c *Config) hash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
@@ -42,15 +42,15 @@ func (c *FunctionDefination) hash() string {
 	return strconv.Itoa(int(v))
 }
 
-type FunctionStatus interface {
+type Status interface {
 	data() any
 	id() string
 	hash() string
 }
 
-type Function struct {
-	Config *FunctionDefination
-	Status FunctionStatus
+type ConfigStatus struct {
+	Config *Config
+	Status Status
 }
 
 type K8sFunctionStatus struct {
@@ -69,4 +69,4 @@ func (r *K8sFunctionStatus) hash() string {
 	return r.Annotations["direktiv.io/input_hash"]
 }
 
-var _ FunctionStatus = &K8sFunctionStatus{}
+var _ Status = &K8sFunctionStatus{}

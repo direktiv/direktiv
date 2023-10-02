@@ -19,10 +19,10 @@ const (
 )
 
 type client interface {
-	createService(cfg *FunctionDefination) error
-	updateService(id string, cfg *FunctionDefination) error
+	createService(cfg *Config) error
+	updateService(id string, cfg *Config) error
 	deleteService(id string) error
-	listServices() ([]FunctionStatus, error)
+	listServices() ([]Status, error)
 }
 
 type ClientConfig struct {
@@ -36,7 +36,7 @@ type knClient struct {
 	client versioned.Interface
 }
 
-func (c *knClient) createService(cfg *FunctionDefination) error {
+func (c *knClient) createService(cfg *Config) error {
 	svcDef, err := buildService(c.config, cfg)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (c *knClient) createService(cfg *FunctionDefination) error {
 	return nil
 }
 
-func (c *knClient) updateService(id string, cfg *FunctionDefination) error {
+func (c *knClient) updateService(id string, cfg *Config) error {
 	// TODO implement me
 	panic("implement me updateService\n")
 }
@@ -65,14 +65,14 @@ func (c *knClient) deleteService(id string) error {
 	return err
 }
 
-func (c *knClient) listServices() ([]FunctionStatus, error) {
+func (c *knClient) listServices() ([]Status, error) {
 	list, err := c.client.ServingV1().Services(c.config.Namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		fmt.Printf("f2: err serving list: %v\n", err)
 		return nil, err
 	}
 
-	result := []FunctionStatus{}
+	result := []Status{}
 	for i := range list.Items {
 		result = append(result, &K8sFunctionStatus{&list.Items[i]})
 	}

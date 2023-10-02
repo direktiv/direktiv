@@ -8,7 +8,7 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-func buildService(c *ClientConfig, cfg *FunctionDefination) (*servingv1.Service, error) {
+func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, cfg)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func buildService(c *ClientConfig, cfg *FunctionDefination) (*servingv1.Service,
 	return svc, nil
 }
 
-func buildServiceMeta(c *ClientConfig, cfg *FunctionDefination) metav1.ObjectMeta {
+func buildServiceMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
 		Name:        cfg.id(),
 		Namespace:   c.Namespace,
@@ -68,7 +68,7 @@ func buildServiceMeta(c *ClientConfig, cfg *FunctionDefination) metav1.ObjectMet
 	return meta
 }
 
-func buildPodMeta(c *ClientConfig, cfg *FunctionDefination) metav1.ObjectMeta {
+func buildPodMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.Namespace,
 		Labels:      make(map[string]string),
@@ -79,7 +79,7 @@ func buildPodMeta(c *ClientConfig, cfg *FunctionDefination) metav1.ObjectMeta {
 	return metaSpec
 }
 
-func buildVolumes(c *ClientConfig, cfg *FunctionDefination) []corev1.Volume {
+func buildVolumes(c *ClientConfig, cfg *Config) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -94,7 +94,7 @@ func buildVolumes(c *ClientConfig, cfg *FunctionDefination) []corev1.Volume {
 	return volumes
 }
 
-func buildContainers(c *ClientConfig, cfg *FunctionDefination) ([]corev1.Container, error) {
+func buildContainers(c *ClientConfig, cfg *Config) ([]corev1.Container, error) {
 	// set resource limits.
 
 	// user container

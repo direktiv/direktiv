@@ -19,7 +19,7 @@ func (e *functionsController) mountRouter(r chi.Router) {
 }
 
 func (e *functionsController) insert(w http.ResponseWriter, r *http.Request) {
-	req := &function.FunctionDefination{}
+	req := &function.Config{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, &Error{
