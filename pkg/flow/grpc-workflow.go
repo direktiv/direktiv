@@ -161,6 +161,9 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	if len(req.GetSource()) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "empty workflow is not allowed")
+	}
 	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
