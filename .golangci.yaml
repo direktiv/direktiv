@@ -19,10 +19,8 @@ linters-settings:
 linters:
   disable:
     - depguard
-    - tagalign
     - exhaustruct
     - wsl
-    - prealloc
     - lll
     - varnamelen
     - paralleltest

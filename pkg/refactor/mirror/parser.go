@@ -480,7 +480,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 		}
 	}
 
-	var allWorkflows []string
+	allWorkflows := []string{}
 	for k := range p.Workflows {
 		allWorkflows = append(allWorkflows, k)
 	}

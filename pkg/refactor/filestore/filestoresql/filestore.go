@@ -112,7 +112,7 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 		return nil, res.Error
 	}
 
-	var ns []*filestore.Root
+	ns := []*filestore.Root{}
 	for i := range list {
 		ns = append(ns, &list[i])
 	}

@@ -25,7 +25,7 @@ func generateGetInstancesOrderings(opts *instancestore.ListOpts) (string, error)
 	}
 
 	keys := make(map[string]bool)
-	var orderStrings []string
+	orderStrings := []string{}
 	for _, order := range opts.Orders {
 		var s string
 		switch order.Field {
@@ -57,8 +57,8 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 		return []string{}, []interface{}{}, nil
 	}
 
-	var clauses []string
-	var vals []interface{}
+	clauses := []string{}
+	vals := []interface{}{}
 	for idx := range opts.Filters {
 		filter := opts.Filters[idx]
 		var clause string

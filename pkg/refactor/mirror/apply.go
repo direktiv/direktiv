@@ -147,7 +147,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 }
 
 func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
-	var paths []string
+	paths := []string{}
 	for k := range o.parser.Workflows {
 		paths = append(paths, k)
 	}
@@ -168,7 +168,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 }
 
 func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
-	var paths []string
+	paths := []string{}
 	for k := range o.parser.Workflows {
 		paths = append(paths, k)
 	}

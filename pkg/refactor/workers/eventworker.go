@@ -83,7 +83,7 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 	}
 
 	// Delete processed events by database IDs
-	var databaseIDs []uuid.UUID
+	databaseIDs := []uuid.UUID{}
 	for _, event := range receivedEvents {
 		databaseIDs = append(databaseIDs, event.DatabaseID)
 	}
