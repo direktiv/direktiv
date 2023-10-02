@@ -59,6 +59,7 @@ export const TestConnectionButton = ({
 
   return (
     <Button
+      data-testid="btn-test-connection"
       onClick={onTestConnectionClick}
       loading={isLoading}
       disabled={!isValid || isLoading}
