@@ -93,7 +93,7 @@ describe('Test basic directory operations', () => {
         expect(createWorkflowResponse.statusCode).toEqual(406)
         expect(createWorkflowResponse.body).toMatchObject({
             code: 406,
-            message: `workflow has no defined states`,
+            message: `empty workflow is not allowed`,
         })
     })
 
