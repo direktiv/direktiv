@@ -234,6 +234,7 @@ func setRemoteWorkflowVariable(wf string, varName string, varPath string) error 
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusUnauthorized {
@@ -311,6 +312,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 		if err != nil {
 			return 0, "", fmt.Errorf("failed to send request: %w", err)
 		}
+		defer resp.Body.Close()
 
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -365,6 +367,7 @@ func recurseMkdirParent(path string) error {
 		if err != nil {
 			return fmt.Errorf("failed to send request: %w", err)
 		}
+		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
 			if resp.StatusCode == http.StatusUnauthorized {
@@ -491,6 +494,7 @@ func executeWorkflow(url string) (executeResponse, error) {
 	if err != nil {
 		return instanceDetails, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusUnauthorized {
@@ -547,6 +551,7 @@ func getOutput(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusUnauthorized {

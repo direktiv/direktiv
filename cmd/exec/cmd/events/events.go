@@ -159,6 +159,7 @@ func executeEvent(cmd *cobra.Command, url string, args []string) (string, error)
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	// the root command checks if the namespace exists
 	// this not found has to be a wrong filter
@@ -249,6 +250,7 @@ func executeCreateCloudEventFilter(filterName string, data io.Reader, method str
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	// this can not happen on update
 	if resp.StatusCode == http.StatusConflict {
@@ -314,6 +316,7 @@ func executeListCloudEventFilter() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("failed to list filters (rejected by server)")
@@ -373,6 +376,7 @@ func executeDeleteCloudEventFilter(filterName string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
 		err = fmt.Errorf("filter " + filterName + " does not exist")
@@ -445,6 +449,7 @@ func executeGetCloudEventFilter(filterName string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
 		err = fmt.Errorf("filter " + filterName + " does not exist")

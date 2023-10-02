@@ -52,6 +52,7 @@ func pingNamespace() error {
 	if err != nil {
 		return fmt.Errorf("failed to ping namespace %s: %w", urlGetNode, err)
 	}
+	defer resp.Body.Close()
 
 	// it is either ok or forbidden which means the namespace exists
 	// but the user might not have access to the explorer
