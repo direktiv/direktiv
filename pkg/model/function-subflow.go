@@ -9,9 +9,9 @@ import (
 
 // SubflowFunctionDefinition is the object to define a Subflow Function in the workflow.
 type SubflowFunctionDefinition struct {
-	Type     FunctionType `yaml:"type" json:"type"`
-	ID       string       `yaml:"id" json:"id"`
-	Workflow string       `yaml:"workflow" json:"workflow"`
+	Type     FunctionType `json:"type"     yaml:"type"`
+	ID       string       `json:"id"       yaml:"id"`
+	Workflow string       `json:"workflow" yaml:"workflow"`
 }
 
 // GetID returns the id of the subflow function.

@@ -159,7 +159,6 @@ func (q *FileQuery) GetRevision(ctx context.Context, reference string) (*filesto
 	return rev, nil
 }
 
-//nolint:revive
 func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory

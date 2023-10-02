@@ -23,15 +23,15 @@ const (
 )
 
 type ProfileConfig struct {
-	Addr      string `yaml:"addr" mapstructure:"addr"`
-	Namespace string `yaml:"namespace" mapstructure:"namespace"`
-	Auth      string `yaml:"auth" mapstructure:"auth"`
-	MaxSize   int64  `yaml:"max-size" mapstructure:"max-size"`
+	Addr      string `mapstructure:"addr"      yaml:"addr"`
+	Namespace string `mapstructure:"namespace" yaml:"namespace"`
+	Auth      string `mapstructure:"auth"      yaml:"auth"`
+	MaxSize   int64  `mapstructure:"max-size"  yaml:"max-size"`
 }
 
 type Configuration struct {
-	project.Config `yaml:",inline" mapstructure:",squash"`
-	Profiles       map[string]ProfileConfig `yaml:"profiles,flow" mapstructure:"profiles"`
+	project.Config `mapstructure:",squash"  yaml:",inline"`
+	Profiles       map[string]ProfileConfig `mapstructure:"profiles" yaml:"profiles,flow"`
 }
 
 var (
@@ -193,7 +193,7 @@ func getInsecure() bool {
 }
 
 func GetTLSConfig() *tls.Config {
-	return &tls.Config{InsecureSkipVerify: getInsecure()} //nolint:gosec
+	return &tls.Config{InsecureSkipVerify: getInsecure()}
 }
 
 func GetAuth() string {

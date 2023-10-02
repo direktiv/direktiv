@@ -129,7 +129,6 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
-//nolint:ireturn
 func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
@@ -205,7 +204,6 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	return f, rev, nil
 }
 
-//nolint:ireturn
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
@@ -232,7 +230,6 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	return f, nil
 }
 
-//nolint:ireturn
 func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestore.File, error) {
 	var list []*filestore.File
 	path, err := filestore.SanitizePath(path)

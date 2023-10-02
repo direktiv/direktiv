@@ -9,11 +9,11 @@ import (
 
 // ReusableFunctionDefinition defines a reusable function and the fields it requires.
 type ReusableFunctionDefinition struct {
-	Type  FunctionType `yaml:"type" json:"type"`
-	ID    string       `yaml:"id" json:"id"`
-	Image string       `yaml:"image" json:"image"`
-	Size  Size         `yaml:"size,omitempty" json:"size,omitempty"`
-	Cmd   string       `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	Type  FunctionType `json:"type"           yaml:"type"`
+	ID    string       `json:"id"             yaml:"id"`
+	Image string       `json:"image"          yaml:"image"`
+	Size  Size         `json:"size,omitempty" yaml:"size,omitempty"`
+	Cmd   string       `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 }
 
 // GetID returns the ID of a reusable function.

@@ -12,17 +12,17 @@ const WorkflowIDRegex = "^[a-z][a-z0-9._-]{1,34}[a-z0-9]$"
 
 // Workflow global object defining the fields for a workflow.
 type Workflow struct {
-	DirektivAPI string `yaml:"direktiv_api" json:"direktiv_api,omitempty"`
+	DirektivAPI string `json:"direktiv_api,omitempty" yaml:"direktiv_api"`
 	// ID          string               `yaml:"id" json:"id"`
 	// Name        string               `yaml:"name,omitempty" json:"name,omitempty"`
-	URL         string `yaml:"url" json:"url"`
-	Description string `yaml:"description,omitempty" json:"description,omitempty"`
+	URL         string `json:"url"                   yaml:"url"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 	// Version     string               `yaml:"version,omitempty" json:"version,omitempty"`
 	// Exclusive   bool                 `yaml:"singular,omitempty" json:"singular,omitempty"`
-	Functions []FunctionDefinition `yaml:"functions,omitempty" json:"functions,omitempty"`
-	States    []State              `yaml:"states,omitempty" json:"states,omitempty"`
-	Timeouts  *TimeoutDefinition   `yaml:"timeouts,omitempty" json:"timeouts,omitempty"`
-	Start     StartDefinition      `yaml:"start,omitempty" json:"start,omitempty"`
+	Functions []FunctionDefinition `json:"functions,omitempty" yaml:"functions,omitempty"`
+	States    []State              `json:"states,omitempty"    yaml:"states,omitempty"`
+	Timeouts  *TimeoutDefinition   `json:"timeouts,omitempty"  yaml:"timeouts,omitempty"`
+	Start     StartDefinition      `json:"start,omitempty"     yaml:"start,omitempty"`
 }
 
 func (o *Workflow) unmarshal(m map[string]interface{}) error {

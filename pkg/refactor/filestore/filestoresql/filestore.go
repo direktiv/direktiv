@@ -84,7 +84,6 @@ func (s *sqlFileStore) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*f
 	return n, nil
 }
 
-//nolint:ireturn
 func (s *sqlFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
@@ -103,7 +102,6 @@ func (s *sqlFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Ro
 	return &list[0], nil
 }
 
-//nolint:ireturn
 func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
@@ -122,7 +120,6 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 	return ns, nil
 }
 
-//nolint:ireturn
 func (s *sqlFileStore) GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
@@ -141,7 +138,6 @@ func (s *sqlFileStore) GetRootByNamespaceID(ctx context.Context, namespaceID uui
 	return &list[0], nil
 }
 
-//nolint:ireturn
 func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
@@ -161,7 +157,6 @@ func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestor
 	return file, nil
 }
 
-//nolint:ireturn
 func (s *sqlFileStore) GetRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
 	rev := &filestore.Revision{}

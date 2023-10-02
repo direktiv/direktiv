@@ -36,7 +36,7 @@ type ActionDefinition struct {
 	Input    interface{}              `yaml:"input,omitempty"`
 	Secrets  []string                 `yaml:"secrets,omitempty"`
 	Retries  *RetryDefinition         `yaml:"retries,omitempty"`
-	Files    []FunctionFileDefinition `yaml:"files,omitempty" json:"files,omitempty"`
+	Files    []FunctionFileDefinition `json:"files,omitempty"    yaml:"files,omitempty"`
 }
 
 func (o *ActionDefinition) Validate() error {

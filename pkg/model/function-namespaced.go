@@ -9,9 +9,9 @@ import (
 
 // NamespacedFunctionDefinition defines a namespace service in the workflow.
 type NamespacedFunctionDefinition struct {
-	Type           FunctionType `yaml:"type" json:"type"`
-	ID             string       `yaml:"id" json:"id"`
-	KnativeService string       `yaml:"service" json:"service"`
+	Type           FunctionType `json:"type"    yaml:"type"`
+	ID             string       `json:"id"      yaml:"id"`
+	KnativeService string       `json:"service" yaml:"service"`
 }
 
 // GetID returns the id of a namespace function.

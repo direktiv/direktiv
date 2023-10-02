@@ -33,7 +33,7 @@ func NewManager(callbacks Callbacks) *Manager {
 func (d *Manager) gc() {
 	ctx := context.Background()
 
-	jitter := 1000                  //nolint:gomnd
+	jitter := 1000
 	interval := time.Second * 10    //nolint:gomnd
 	maxRunTime := 5 * time.Minute   //nolint:gomnd
 	maxRecordTime := time.Hour * 48 //nolint:gomnd

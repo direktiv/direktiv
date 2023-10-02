@@ -95,10 +95,10 @@ type FunctionDefinition interface {
 }
 
 type FunctionFileDefinition struct {
-	Key   string `yaml:"key" json:"key"`
-	As    string `yaml:"as,omitempty" json:"as,omitempty"`
-	Scope string `yaml:"scope,omitempty" json:"scope,omitempty"`
-	Type  string `yaml:"type,omitempty" json:"type,omitempty"`
+	Key   string `json:"key"             yaml:"key"`
+	As    string `json:"as,omitempty"    yaml:"as,omitempty"`
+	Scope string `json:"scope,omitempty" yaml:"scope,omitempty"`
+	Type  string `json:"type,omitempty"  yaml:"type,omitempty"`
 }
 
 var (

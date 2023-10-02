@@ -216,7 +216,6 @@ func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore 
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-//nolint:gocyclo
 func (srv *server) start(ctx context.Context) error {
 	var err error
 	// enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"

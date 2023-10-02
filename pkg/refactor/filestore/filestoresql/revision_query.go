@@ -15,7 +15,6 @@ type RevisionQuery struct {
 
 var _ filestore.RevisionQuery = &RevisionQuery{}
 
-//nolint:revive
 func (q *RevisionQuery) Delete(ctx context.Context) error {
 	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_revisions WHERE id = ?`, q.rev.ID)
 	if res.Error != nil {

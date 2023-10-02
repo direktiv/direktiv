@@ -406,7 +406,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners WHERE namespace_id = $1 `
-	q += " ORDER BY created_at DESC " //nolint:goconst
+	q += " ORDER BY created_at DESC "
 	if limit > 0 {
 		q += fmt.Sprintf("LIMIT %v", limit)
 	}

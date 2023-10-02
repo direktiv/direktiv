@@ -9,10 +9,10 @@ import (
 
 // RetryDefinition defines a retry object to be used in the workflow.
 type RetryDefinition struct {
-	MaxAttempts int      `yaml:"max_attempts" json:"max_attempts"`
-	Delay       string   `yaml:"delay,omitempty" json:"delay"`
-	Multiplier  float64  `yaml:"multiplier,omitempty" json:"multiplier"`
-	Codes       []string `yaml:"codes" json:"codes"`
+	MaxAttempts int      `json:"max_attempts" yaml:"max_attempts"`
+	Delay       string   `json:"delay"        yaml:"delay,omitempty"`
+	Multiplier  float64  `json:"multiplier"   yaml:"multiplier,omitempty"`
+	Codes       []string `json:"codes"        yaml:"codes"`
 }
 
 // Validate checks the arguments for the retry definition.
