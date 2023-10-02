@@ -21,7 +21,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -177,15 +176,15 @@ func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestor
 }
 
 func (engine *engine) getAmbiguousFile(ctx context.Context, tx *sqlTx, ns *database.Namespace, path string) (*filestore.File, error) {
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, path)
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, path)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
 			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
 				var err2 error
-				file, err2 = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, path+".yaml")
+				file, err2 = tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, path+".yaml")
 				if err2 != nil {
 					if errors.Is(err2, filestore.ErrNotFound) {
-						file, err2 = tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, path+".yml")
+						file, err2 = tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, path+".yml")
 						if err2 != nil {
 							if !errors.Is(err2, filestore.ErrNotFound) {
 								err = err2
@@ -371,7 +370,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer tx.Rollback()
 
-	file, err := tx.FileStore().GetFile(ctx, id)
+	file, err := tx.FileStore().GetFileByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) {
 			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
@@ -403,7 +402,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	err = instancestoresql.NewSQLInstanceStore(flow.gormDB, zap.NewNop().Sugar()).AssertNoParallelCron(ctx, file.Path)
+	err = instancestoresql.NewSQLInstanceStore(flow.gormDB).AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return

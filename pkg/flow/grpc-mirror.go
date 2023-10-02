@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -31,7 +32,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
 	if err == nil && req.GetIdempotent() {
-		rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+		rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +63,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID, defaultRootName)
+	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +102,13 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+	go func() {
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}()
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 
@@ -161,21 +168,9 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	roots, err := tx.FileStore().GetAllRootsForNamespace(ctx, ns.ID)
+	root, err := tx.FileStore().GetRootByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, err
-	}
-
-	var root *filestore.Root
-	for idx := range roots {
-		if roots[idx].Name == defaultRootName {
-			root = roots[idx]
-			break
-		}
-	}
-
-	if root == nil {
-		return nil, errors.New("can't find roots")
 	}
 
 	if err = tx.Commit(ctx); err != nil {
@@ -189,7 +184,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+	go func() {
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}()
 
 	var resp emptypb.Empty
 
@@ -236,21 +237,9 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	roots, err := tx.FileStore().GetAllRootsForNamespace(ctx, ns.ID)
+	root, err := tx.FileStore().GetRootByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, err
-	}
-
-	var root *filestore.Root
-	for idx := range roots {
-		if roots[idx].Name == defaultRootName {
-			root = roots[idx]
-			break
-		}
-	}
-
-	if root == nil {
-		return nil, errors.New("can't find")
 	}
 
 	proc, err := flow.mirrorManager.NewProcess(ctx, ns.ID, root.ID, mirror.ProcessTypeSync)
@@ -258,7 +247,13 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+	go func() {
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}()
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
 

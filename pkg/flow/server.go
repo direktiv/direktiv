@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -13,14 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/cluster"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
-	"github.com/direktiv/direktiv/pkg/refactor/api"
+	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -32,6 +31,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/refactor/workers"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -59,6 +60,10 @@ type server struct {
 
 	// db       *ent.Client
 	pubsub *pubsub.Pubsub
+
+	// the new pubsub bus
+	pBus pubsub2.Bus
+
 	locks  *locks
 	timers *timers
 	engine *engine
@@ -69,10 +74,9 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow            *flow
-	internal        *internal
-	events          *events
-	functionsClient igrpc.FunctionsClient
+	flow     *flow
+	internal *internal
+	events   *events
 
 	metrics *metrics.Client
 	logger  logengine.BetterLogger
@@ -109,6 +113,15 @@ func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
 	srv.initJQ()
 
 	return srv, nil
+}
+
+type gormLogger struct {
+	*zap.SugaredLogger
+}
+
+func (g gormLogger) Write(p []byte) (n int, err error) {
+	g.Debugw(string(p), "component", "GORM")
+	return len(p), nil
 }
 
 type mirrorProcessLogger struct {
@@ -167,7 +180,6 @@ type mirrorCallbacks struct {
 	fileAnnotationsStore core.FileAnnotationsStore
 	filterStore          eventsstore.CloudEventsFilterStore
 	wfconf               func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
-	svcconf              func(uuid.UUID, []*api.Service) error
 }
 
 func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
@@ -200,10 +212,6 @@ func (c *mirrorCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 
 func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore {
 	return c.filterStore
-}
-
-func (c *mirrorCallbacks) SetNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
-	return c.svcconf(nsID, services)
 }
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
@@ -241,7 +249,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Info("Initializing database.")
 	gormConf := &gorm.Config{
 		Logger: logger.New(
-			nil,
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
 				LogLevel:                  logger.Silent,
 				IgnoreRecordNotFoundError: true,
@@ -286,9 +294,6 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
-	if enableDeveloperMode {
-		fmt.Printf(">>>>>> dsn %s\n", db)
-	}
 
 	if os.Getenv(direktivSecretKey) == "" {
 		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
@@ -332,6 +337,14 @@ func (srv *server) start(ctx context.Context) error {
 
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	srv.sugar.Info("Initializing pubsub routine.")
+	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, os.Getenv(util.DBConn))
+	if err != nil {
+		return fmt.Errorf("creating pubsub, err: %w", err)
+	}
+	srv.pBus = pBus
+	go pBus.Start(cctx.Done(), &wg)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 
@@ -439,28 +452,8 @@ func (srv *server) start(ctx context.Context) error {
 			fileAnnotationsStore: noTx.DataStore().FileAnnotations(),
 			filterStore:          noTx.DataStore().EventFilter(),
 			wfconf:               cc,
-			svcconf:              srv.setNamespaceServices,
 		},
 	)
-
-	srv.sugar.Info("Initializing functions grpc client.")
-	functionsClientConn, err := util.GetEndpointTLS(srv.conf.FunctionsService + ":5555")
-	if err != nil {
-		srv.sugar.Error("initializing functions grpc client", "error", err)
-		return err
-	}
-	srv.functionsClient = igrpc.NewFunctionsClient(functionsClientConn)
-
-	if srv.conf.Eventing {
-		srv.sugar.Info("Initializing knative eventing receiver.")
-		rcv, err := newEventReceiver(srv.events, srv.flow)
-		if err != nil {
-			return err
-		}
-
-		// starting the event receiver
-		go rcv.Start()
-	}
 
 	srv.registerFunctions()
 
@@ -494,30 +487,19 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	var node *cluster.Node
-	// start pub sub
-	config := cluster.DefaultConfig()
-	var stopNode func()
-	node, err = cluster.NewNode(config, cluster.NewNodeFinderStatic(nil), srv.sugar.Named("cluster"))
-	if err != nil {
-		return err
-	}
-	if err != nil {
-		return err
-	}
-	defer stopNode()
+	// TODO: yassir, use the new db to refactor old code.
+	dbManager := database2.NewDB(srv.gormDB, os.Getenv(direktivSecretKey))
+
+	newMainWG := cmd.NewMain(dbManager, pBus, srv.sugar)
+
 	srv.sugar.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	// stop inidiviual components here
-	go func(n *cluster.Node) {
-		err = node.Stop()
-		if err != nil {
-			srv.sugar.Error("could not stop cluster node")
-		}
-	}(node)
+
 	wg.Wait()
+
+	newMainWG.Wait()
 
 	closelogworker()
 
@@ -724,8 +706,7 @@ func (tx *sqlTx) DataStore() datastore.Store {
 }
 
 func (tx *sqlTx) InstanceStore() instancestore.Store {
-	logger := zap.NewNop()
-	return instancestoresql.NewSQLInstanceStore(tx.res, logger.Sugar())
+	return instancestoresql.NewSQLInstanceStore(tx.res)
 }
 
 func (tx *sqlTx) Commit(ctx context.Context) error {

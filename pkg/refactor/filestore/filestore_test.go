@@ -13,7 +13,7 @@ import (
 func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id uuid.UUID) {
 	t.Helper()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), id, "test")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), id)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 
@@ -115,21 +115,18 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	// assert existence:
 	assertFileStoreHasRoot(t, fs, myRoot1, myRoot2, myRoot3)
 
-	roots, err := fs.GetAllRootsForNamespace(context.Background(), myRoot2)
+	root, err := fs.GetRootByNamespaceID(context.Background(), myRoot2)
 	if err != nil {
 		panic(err)
 	}
-	if len(roots) != 1 {
-		panic(len(roots))
-	}
 
 	// delete one:
-	assertFileStoreCorrectRootDeletion(t, fs, roots[0].ID)
+	assertFileStoreCorrectRootDeletion(t, fs, root.ID)
 
 	// assert correct list:
 	assertFileStoreHasRoot(t, fs, myRoot1, myRoot3)
 
-	roots, err = fs.GetAllRoots(context.Background())
+	roots, err := fs.GetAllRoots(context.Background())
 	if err != nil {
 		panic(err)
 	}

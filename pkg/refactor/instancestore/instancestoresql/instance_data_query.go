@@ -8,14 +8,12 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type instanceDataQuery struct {
 	instanceID uuid.UUID
 	db         *gorm.DB
-	logger     *zap.SugaredLogger
 }
 
 var _ instancestore.InstanceDataQuery = &instanceDataQuery{} // Ensures instanceDataQuery struct conforms to instancestore.InstanceDataQuery interface.
@@ -93,8 +91,6 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 
 	query += fmt.Sprintf(" WHERE %s = ?", fieldID)
 
-	q.logger.Debug(fmt.Sprintf("UpdateInstanceData executing SQL query: %s", query))
-
 	vals = append(vals, q.instanceID)
 
 	res := q.db.WithContext(ctx).Exec(query, vals...)
@@ -115,8 +111,6 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 
 func (q *instanceDataQuery) get(ctx context.Context, columns []string) (*instancestore.InstanceData, error) {
 	query := fmt.Sprintf(`SELECT %s FROM %s WHERE %s = ?`, strings.Join(columns, ", "), table, fieldID)
-
-	q.logger.Debug(fmt.Sprintf("get executing SQL query: %s", query))
 
 	idata := &instancestore.InstanceData{}
 	res := q.db.WithContext(ctx).Raw(query, q.instanceID).First(idata)

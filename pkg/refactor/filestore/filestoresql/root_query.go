@@ -2,11 +2,8 @@ package filestoresql
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"path/filepath"
 	"strings"
 
@@ -28,58 +25,7 @@ type RootQuery struct {
 	checksumFunc filestore.CalculateChecksumFunc
 	db           *gorm.DB
 	root         *filestore.Root
-
-	// alternative resolution method
-	nsID     uuid.UUID
-	rootName string
-}
-
-func (q *RootQuery) CropFilesAndDirectories(ctx context.Context, excludePaths []string) error {
-	// check if root exists.
-	if err := q.checkRootExists(ctx); err != nil {
-		return err
-	}
-
-	var allPaths []string
-
-	res := q.db.WithContext(ctx).Raw(`
-						SELECT path 
-						FROM filesystem_files 
-						WHERE root_id = ?
-						`, q.rootID).Find(&allPaths)
-	if res.Error != nil {
-		return res.Error
-	}
-
-	pathsToRemove := []string{}
-	for _, pathInRoot := range allPaths {
-		remove := true
-		for _, excludePath := range excludePaths {
-			if strings.HasPrefix(excludePath, pathInRoot) {
-				remove = false
-
-				break
-			}
-			if excludePath == pathInRoot {
-				remove = false
-
-				break
-			}
-		}
-		if remove {
-			pathsToRemove = append(pathsToRemove, pathInRoot)
-		}
-	}
-
-	res = q.db.WithContext(ctx).Exec("DELETE FROM filesystem_files WHERE root_id = ? AND path IN ?", q.rootID, pathsToRemove)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != int64(len(pathsToRemove)) {
-		return fmt.Errorf("unexpected delete from filesystem_files count, got: %d, want: %d", res.RowsAffected, len(pathsToRemove))
-	}
-
-	return nil
+	nsID         uuid.UUID
 }
 
 func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
@@ -92,6 +38,26 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 
 	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Order("path ASC").Find(&list)
 
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return list, nil
+}
+
+func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, error) {
+	var list []*filestore.File
+
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return nil, err
+	}
+
+	res := q.db.WithContext(ctx).Raw(`
+						SELECT * 
+						FROM filesystem_files 
+						WHERE root_id=? AND typ <> 'directory' AND typ <> 'file'
+						`, q.rootID).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -163,16 +129,8 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
-func computeAPIID(namespaceID uuid.UUID, path string) string {
-	hasher := sha256.New()
-	x := hasher.Sum([]byte(fmt.Sprintf("%s:%s", namespaceID.String(), path)))
-	s := base64.RawURLEncoding.EncodeToString(x)
-
-	return s
-}
-
 //nolint:ireturn
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, dataReader io.Reader) (*filestore.File, *filestore.Revision, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, *filestore.Revision, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
@@ -211,7 +169,6 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		Depth:    filestore.GetPathDepth(path),
 		Typ:      typ,
 		RootID:   q.rootID,
-		APIID:    computeAPIID(q.root.NamespaceID, path),
 		MIMEType: mimeType,
 	}
 
@@ -225,16 +182,6 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	if typ == filestore.FileTypeDirectory {
 		return f, nil, nil
-	}
-
-	// second, now we need to create a revision entry for this new file.
-	var data []byte
-	if dataReader == nil {
-		return nil, nil, fmt.Errorf("parameter dataReader is nil with FileTypeFile")
-	}
-	data, err = io.ReadAll(dataReader)
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading dataReader, error: %w", err)
 	}
 
 	rev := &filestore.Revision{
@@ -325,50 +272,14 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	return list, nil
 }
 
-//nolint:ireturn
-func (q *RootQuery) CalculateChecksumsMap(ctx context.Context) (map[string]string, error) {
-	// check if root exists.
-	if err := q.checkRootExists(ctx); err != nil {
-		return nil, err
-	}
-
-	type Result struct {
-		Path     string
-		Checksum string
-	}
-
-	var resultList []Result
-
-	res := q.db.WithContext(ctx).
-		// Don't include file 'data' in the query. File data can be retrieved with file.GetData().
-		Raw(`SELECT f.path, r.checksum 
-				 FROM filesystem_files AS f 
-				 LEFT JOIN filesystem_revisions r 
-					ON r.file_id = f.id AND r.is_current = true
-      	     	 WHERE f.root_id = ?
-					`, q.rootID).Scan(&resultList)
-
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	result := make(map[string]string)
-
-	for _, item := range resultList {
-		result[item.Path] = item.Checksum
-	}
-
-	return result, nil
-}
-
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	zeroUUID := (uuid.UUID{}).String()
 
 	if zeroUUID == q.rootID.String() {
 		n := &filestore.Root{}
-		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace_id", q.nsID).Where("name", q.rootName).First(n)
+		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace_id", q.nsID).First(n)
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("root not found, nsid: '%s', name: '%s', err: %w", q.nsID, q.rootName, filestore.ErrNotFound)
+			return fmt.Errorf("root not found, nsid: '%s', err: %w", q.nsID, filestore.ErrNotFound)
 		}
 		if res.Error != nil {
 			return res.Error
@@ -394,11 +305,11 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	return nil
 }
 
-func (q *RootQuery) Rename(ctx context.Context, newName string) error {
+func (q *RootQuery) SetNamespaceID(ctx context.Context, namespaceID uuid.UUID) error {
 	res := q.db.WithContext(ctx).Exec(`UPDATE filesystem_roots
-		SET name = ?
+		SET namespace_id = ?
 		WHERE id = ?`,
-		newName,
+		namespaceID,
 		q.rootID,
 	)
 	if res.Error != nil {

@@ -1,7 +1,6 @@
 package mirror
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -10,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -51,7 +49,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 
 	o.rootID = uuid.New()
 
-	root, err := callbacks.FileStore().CreateRoot(ctx, o.rootID, proc.NamespaceID, fmt.Sprintf("%s-sync", oldRoot.Name))
+	root, err := callbacks.FileStore().CreateTempRoot(ctx, o.rootID)
 	if err != nil {
 		return fmt.Errorf("failed to create new filesystem root: %w", err)
 	}
@@ -82,7 +80,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
 
-	err = callbacks.FileStore().ForRootID(root.ID).Rename(ctx, oldRoot.Name)
+	err = callbacks.FileStore().ForRootID(root.ID).SetNamespaceID(ctx, proc.NamespaceID)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
@@ -93,11 +91,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	}
 
 	err = o.copyEventFilters(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to copy event filters: %w", err)
-	}
-
-	err = o.copyNamespaceServices(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to copy event filters: %w", err)
 	}
@@ -142,9 +135,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 
 		mt := mimetype.Detect(data)
 
-		rdr := bytes.NewReader(data)
-
-		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], rdr)
+		_, _, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], data)
 		if err != nil {
 			return err
 		}
@@ -165,10 +156,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Workflows[path]
-
-		rdr := bytes.NewReader(data)
-
-		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/direktiv", rdr)
+		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/direktiv", data)
 		if err != nil {
 			return err
 		}
@@ -305,20 +293,6 @@ func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (o *DirektivApplyer) copyNamespaceServices(_ context.Context) error {
-	var services []*api.Service
-	for _, service := range o.parser.Services {
-		services = append(services, service)
-	}
-
-	err := o.callbacks.SetNamespaceServices(o.proc.NamespaceID, services)
-	if err != nil {
-		return err
 	}
 
 	return nil

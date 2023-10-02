@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,7 +60,7 @@ Example : init -P myserver --addr 192.168.122.232 -n ns
 		if err != nil {
 			root.Fail(cmd, "%s", err)
 		}
-		err = ioutil.WriteFile(cf, data, 0o664)
+		err = os.WriteFile(cf, data, 0o664)
 		if err != nil {
 			root.Fail(cmd, "%s", err)
 		}
@@ -121,7 +120,7 @@ If the profile exists it will be overwritten.
 		if err != nil {
 			root.Fail(cmd, "%s", err)
 		}
-		err = ioutil.WriteFile(cf, data, 0o664)
+		err = os.WriteFile(cf, data, 0o664)
 		if err != nil {
 			root.Fail(cmd, "%s", err)
 		}

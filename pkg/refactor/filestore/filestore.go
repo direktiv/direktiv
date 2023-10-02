@@ -5,8 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"io"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -26,24 +24,26 @@ var (
 )
 
 // FileStore manages different operations on files and roots.
+
+//nolint:interfacebloat
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*Root, error)
+	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*Root, error)
 
-	// GetRoot gets a root.
+	CreateTempRoot(ctx context.Context, id uuid.UUID) (*Root, error)
+
 	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	// GetAllRootsForNamespace list all roots for a namespace.
-	GetAllRootsForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*Root, error)
+	GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*Root, error)
 
 	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
 
-	// ForRootNamespaceAndName returns a query object to do further queries on root.
-	ForRootNamespaceAndName(namespaceID uuid.UUID, rootName string) RootQuery
+	// ForRootNamespaceID returns a query object to do further queries on root.
+	ForRootNamespaceID(namespaceID uuid.UUID) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
@@ -51,22 +51,18 @@ type FileStore interface {
 	// ForRevision returns a query object to do further queries on that revision.
 	ForRevision(revision *Revision) RevisionQuery
 
-	// GetFile queries a file by id.
-	GetFile(ctx context.Context, id uuid.UUID) (*File, error)
+	// GetFileByID queries a file by id.
+	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
 
-	// GetRevision queries a revision by id.
-	GetRevision(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
+	// GetRevisionByID queries a revision by id.
+	GetRevisionByID(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
 // we create a dedicated root for every namespace.
 type Root struct {
 	ID          uuid.UUID
-	NamespaceID uuid.UUID
-	Name        string
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	NamespaceID uuid.UUID `gorm:"default:NULL"`
 }
 
 // RootQuery performs different queries associated to a root.
@@ -78,16 +74,13 @@ type RootQuery interface {
 	// param 'typ' indicates if file is of type directory or file.
 	// Param 'path' should not already exist and the parent directory of 'path' should exist.
 	// Param 'dataReader' should be nil when creating directories, and should be none nil when creating files.
-	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, dataReader io.Reader) (*File, *Revision, error)
+	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, data []byte) (*File, *Revision, error)
 
 	// ReadDirectory lists all files and directories in a path.
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 
 	// Delete the root itself.
 	Delete(ctx context.Context) error
-
-	// CalculateChecksumsMap returns a map with all file paths and their checksums.
-	CalculateChecksumsMap(ctx context.Context) (map[string]string, error)
 
 	// IsEmptyDirectory returns true if path exist and of type directory and empty,
 	// and false if path exist and of type directory and none empty.
@@ -97,11 +90,10 @@ type RootQuery interface {
 	// ListAllFiles lists all files and directories in the filestore, this method used to help testing filestore logic.
 	ListAllFiles(ctx context.Context) ([]*File, error)
 
-	// CropFilesAndDirectories removes all files and directories that don't appear in excludePaths.
-	CropFilesAndDirectories(ctx context.Context, excludePaths []string) error
+	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
+	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
-	// Rename renames the root.
-	Rename(ctx context.Context, newName string) error
+	SetNamespaceID(ctx context.Context, namespaceID uuid.UUID) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

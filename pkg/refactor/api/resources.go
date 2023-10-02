@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/model"
 	"gopkg.in/yaml.v3"
@@ -21,23 +22,6 @@ type Filter struct {
 type Filters struct {
 	DirektivAPI string   `yaml:"direktiv_api"`
 	Filters     []Filter `yaml:"filters"`
-}
-
-const (
-	ServicesAPIV1 = "services/v1"
-)
-
-type Service struct {
-	Name  string `yaml:"name"`
-	Image string `yaml:"image"`
-	Scale int32  `yaml:"scale"`
-	Size  string `yaml:"size"`
-	Cmd   string `yaml:"cmd"`
-}
-
-type Services struct {
-	DirektivAPI string    `yaml:"direktiv_api"`
-	Services    []Service `yaml:"services"`
 }
 
 const (
@@ -74,16 +58,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		}
 
 		return filters, nil
-	case ServicesAPIV1:
-		services := new(Services)
-		err = yaml.Unmarshal(data, &services)
-		if err != nil {
-			return &Services{
-				DirektivAPI: s,
-			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
 
-		return services, nil
 	case WorkflowAPIV1:
 		wf := new(model.Workflow)
 		err = wf.Load(data)
@@ -97,4 +72,45 @@ func LoadResource(data []byte) (interface{}, error) {
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}
+}
+
+type Service struct {
+	DirektivAPI string `yaml:"direktiv_api"`
+	Image       string `yaml:"image"`
+	Cmd         string `yaml:"cmd"`
+	Size        string `yaml:"size"`
+	Scale       int    `yaml:"scale"`
+}
+
+func ParseService(data []byte) *Service {
+	res := &Service{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil
+	}
+	if strings.HasPrefix(res.DirektivAPI, "service/") {
+		return res
+	}
+
+	return nil
+}
+
+type WorkflowFunctionDefinition struct {
+	//nolint
+	Typ   string `yaml:"type"`
+	Name  string `yaml:"name"`
+	Image string `yaml:"image"`
+	Scale int    `yaml:"scale"`
+	Size  string `yaml:"size"`
+	Cmd   string `yaml:"cmd"`
+}
+
+func ParseWorkflowFunctionDefinition(data []byte) (*WorkflowFunctionDefinition, error) {
+	res := &WorkflowFunctionDefinition{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

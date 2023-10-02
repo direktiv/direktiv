@@ -23,7 +23,7 @@ func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequ
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}

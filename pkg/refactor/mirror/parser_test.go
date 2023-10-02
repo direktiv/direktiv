@@ -71,25 +71,6 @@ func assertFilters(t *testing.T, p *mirror.Parser, filters []string) {
 	}
 }
 
-func assertServices(t *testing.T, p *mirror.Parser, services []string) {
-	expect := fmt.Sprintf("%v", services)
-
-	var x []string
-
-	for k := range p.Services {
-		x = append(x, k)
-	}
-
-	sort.Strings(x)
-
-	actual := fmt.Sprintf("%v", x)
-
-	if expect != actual {
-		t.Errorf("assertServices failed: expected %s but got %s", expect, actual)
-		t.Fail()
-	}
-}
-
 func assertWorkflows(t *testing.T, p *mirror.Parser, paths []string) {
 	expect := fmt.Sprintf("%v", paths)
 
@@ -128,11 +109,6 @@ func TestParseSimple(t *testing.T) {
 	log := zap.NewNop().Sugar()
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
-	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
-services:
-- name: alpha
-  image: requester
-`), 0o755)
 	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
 	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
 	_ = src.fs.MkdirAll("a/b", 0o755)
@@ -167,10 +143,6 @@ states:
 		"y.json",
 	})
 
-	assertServices(t, p, []string{
-		"alpha",
-	})
-
 	assertWorkflows(t, p, []string{
 		"a/b/c.yaml",
 		"a/b/e.yaml",
@@ -186,11 +158,6 @@ a/f/`), 0o755)
 	_ = src.fs.WriteFile("filters.yaml", []byte(`direktiv_api: filters/v1
 filters:
 - name: alpha
-`), 0o755)
-	_ = src.fs.WriteFile("services.yaml", []byte(`direktiv_api: services/v1
-services:
-- name: alpha
-  image: requester
 `), 0o755)
 	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
 	_ = src.fs.WriteFile("y.json", []byte(`{}`), 0o755)
@@ -245,10 +212,6 @@ states:
 	})
 
 	assertFilters(t, p, []string{
-		"alpha",
-	})
-
-	assertServices(t, p, []string{
 		"alpha",
 	})
 

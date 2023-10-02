@@ -22,10 +22,9 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRootNamespaceAndName(nsID uuid.UUID, rootName string) filestore.RootQuery {
+func (s *sqlFileStore) ForRootNamespaceID(nsID uuid.UUID) filestore.RootQuery {
 	return &RootQuery{
 		nsID:         nsID,
-		rootName:     rootName,
 		db:           s.db,
 		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
@@ -54,11 +53,25 @@ func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
 	}
 }
 
-func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID, name string) (*filestore.Root, error) {
+func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*filestore.Root, error) {
 	n := &filestore.Root{
 		ID:          rootID,
 		NamespaceID: namespaceID,
-		Name:        name,
+	}
+	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected != 1 {
+		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return n, nil
+}
+
+func (s *sqlFileStore) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*filestore.Root, error) {
+	n := &filestore.Root{
+		ID: rootID,
 	}
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
 	if res.Error != nil {
@@ -110,7 +123,7 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 }
 
 //nolint:ireturn
-func (s *sqlFileStore) GetAllRootsForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*filestore.Root, error) {
+func (s *sqlFileStore) GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -121,16 +134,15 @@ func (s *sqlFileStore) GetAllRootsForNamespace(ctx context.Context, namespaceID 
 		return nil, res.Error
 	}
 
-	var ns []*filestore.Root
-	for i := range list {
-		ns = append(ns, &list[i])
+	if len(list) == 0 {
+		return nil, filestore.ErrNotFound
 	}
 
-	return ns, nil
+	return &list[0], nil
 }
 
 //nolint:ireturn
-func (s *sqlFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
+func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -150,7 +162,7 @@ func (s *sqlFileStore) GetFile(ctx context.Context, id uuid.UUID) (*filestore.Fi
 }
 
 //nolint:ireturn
-func (s *sqlFileStore) GetRevision(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
+func (s *sqlFileStore) GetRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
 	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
 	rev := &filestore.Revision{}
 	res := s.db.WithContext(ctx).Raw(`

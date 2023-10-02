@@ -25,7 +25,6 @@ type Parser struct {
 	tempDir string
 
 	Filters   map[string][]byte
-	Services  map[string]*api.Service
 	Workflows map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
@@ -46,7 +45,6 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 		tempDir: tempDir,
 
 		Filters:   make(map[string][]byte),
-		Services:  make(map[string]*api.Service),
 		Workflows: make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
@@ -270,15 +268,6 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *api.Services:
-		services, ok := resource.(*api.Services)
-		if !ok {
-			panic(nil)
-		}
-		err = p.handleServices(path, services)
-		if err != nil {
-			return err
-		}
 	case *model.Workflow:
 		err = p.handleWorkflow(path, data)
 		if err != nil {
@@ -395,28 +384,6 @@ func (p *Parser) handleFilters(path string, filters *api.Filters) error {
 
 		p.Filters[filter.Name] = data
 		p.log.Infof("Filter '%s' loaded.", filter.Name)
-	}
-
-	return nil
-}
-
-func (p *Parser) handleServices(path string, services *api.Services) error {
-	p.log.Infof("Direktiv resource file containing %d service definitions found at '%s'", len(services.Services), path)
-
-	for idx, service := range services.Services {
-		if _, exists := p.Services[service.Name]; exists {
-			return fmt.Errorf("duplicate definition detected for service '%s'", service.Name)
-		}
-
-		if service.Size != "small" &&
-			service.Size != "medium" &&
-			service.Size != "large" {
-			p.log.Warnf("unknown service size %s for service %s, defaults to small",
-				service.Size, service.Name)
-		}
-
-		p.Services[service.Name] = &services.Services[idx]
-		p.log.Infof("Service '%s' loaded.", service.Name)
 	}
 
 	return nil

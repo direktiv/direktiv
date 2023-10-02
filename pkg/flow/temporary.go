@@ -5,20 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
-	"github.com/direktiv/direktiv/pkg/functions"
-	"github.com/direktiv/direktiv/pkg/functions/grpc"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
@@ -84,7 +78,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if selector.Scope == util.VarScopeFileSystem {
-			file, err := tx.FileStore().ForRootNamespaceAndName(im.instance.Instance.NamespaceID, defaultRootName).GetFile(ctx, selector.Key)
+			file, err := tx.FileStore().ForRootNamespaceID(im.instance.Instance.NamespaceID).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
 					Scope: selector.Scope,
@@ -98,16 +92,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 				if file.Typ == filestore.FileTypeDirectory {
 					return nil, model.ErrVarNotFile
 				}
-				rc, err := tx.FileStore().ForFile(file).GetData(ctx)
-				if err != nil {
-					return nil, err
-				}
-				defer func() { _ = rc.Close() }()
-				data, err := io.ReadAll(rc)
-				if err != nil {
-					return nil, err
-				}
-				err = rc.Close()
+				data, err := tx.FileStore().ForFile(file).GetData(ctx)
 				if err != nil {
 					return nil, err
 				}
@@ -347,104 +332,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		return nil, derrors.NewInternalError(fmt.Errorf("unsupported function type: %v", args.Definition.GetType()))
 	}
 
-	uid := uuid.New()
-
-	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
-	if err != nil {
-		return nil, err
-	}
-
-	ci.ID = ar.ActionID
-	ci.ServiceName = ar.Container.Service
-	ci.Type = "isolate"
-
-	return &knativeHandle{
-		im:     im,
-		info:   ci,
-		engine: im.engine,
-		ar:     ar,
-	}, nil
-}
-
-func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
-	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
-) (*functionRequest, error) {
-	ar := new(functionRequest)
-	ar.ActionID = uid.String()
-	ar.Workflow.Timeout = timeout
-	ar.Workflow.Revision = im.instance.Instance.RevisionID.String()
-	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
-	ar.Workflow.Path = im.instance.Instance.WorkflowPath
-	ar.Iterator = iterator
-	if !async {
-		ar.Workflow.InstanceID = im.ID().String()
-		ar.Workflow.NamespaceID = im.instance.Instance.NamespaceID.String()
-		ar.Workflow.State = stateId
-		ar.Workflow.Step = im.Step()
-	}
-
-	fnt := fn.GetType()
-	ar.Container.Type = fnt
-	ar.Container.Data = inputData
-
-	wf := bytedata.ShortChecksum(im.instance.Instance.WorkflowPath)
-	revID := im.instance.Instance.RevisionID.String()
-	nsID := im.instance.Instance.NamespaceID.String()
-
-	switch fnt {
-	case model.ReusableContainerFunctionType:
-
-		con := fn.(*model.ReusableFunctionDefinition)
-
-		scale := int32(0)
-		size := int32(con.Size)
-
-		ar.Container.Image = con.Image
-		ar.Container.Cmd = con.Cmd
-		ar.Container.Size = con.Size
-		ar.Container.Scale = int(scale)
-		ar.Container.Files = files
-		ar.Container.ID = con.ID
-		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
-			Name:          &con.ID,
-			Workflow:      &wf,
-			Revision:      &revID,
-			Namespace:     &nsID,
-			NamespaceName: &ar.Workflow.NamespaceName,
-			Image:         &con.Image,
-			Cmd:           &con.Cmd,
-			MinScale:      &scale,
-			Size:          &size,
-		})
-	case model.NamespacedKnativeFunctionType:
-		con := fn.(*model.NamespacedFunctionDefinition)
-		ar.Container.Files = files
-		ar.Container.ID = con.ID
-		ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
-			Name:          &con.KnativeService,
-			Namespace:     &nsID,
-			NamespaceName: &ar.Workflow.NamespaceName,
-		})
-	default:
-		return nil, fmt.Errorf("unexpected function type: %v", fn)
-	}
-
-	// check for duplicate file names
-	m := make(map[string]*model.FunctionFileDefinition)
-	for i := range ar.Container.Files {
-		f := &ar.Container.Files[i]
-		k := f.As
-		if k == "" {
-			k = f.Key
-		}
-		if _, exists := m[k]; exists {
-			return nil, fmt.Errorf("multiple files with same name: %s", k)
-		}
-		m[k] = f
-	}
-
-	return ar, nil
+	return nil, derrors.NewInternalError(fmt.Errorf("knative function not yet implemented: %v", args.Definition.GetType()))
 }
 
 type subflowHandle struct {
@@ -459,88 +347,4 @@ func (child *subflowHandle) Run(ctx context.Context) {
 
 func (child *subflowHandle) Info() states.ChildInfo {
 	return child.info
-}
-
-type knativeHandle struct {
-	im     *instanceMemory
-	info   states.ChildInfo
-	engine *engine
-	ar     *functionRequest
-}
-
-func (child *knativeHandle) Run(ctx context.Context) {
-	go func(ctx context.Context, im *instanceMemory, ar *functionRequest) {
-		err := child.engine.doActionRequest(ctx, ar)
-		if err != nil {
-			return
-		}
-	}(ctx, child.im, child.ar)
-}
-
-func (child *knativeHandle) Info() states.ChildInfo {
-	return child.info
-}
-
-func (server *server) setNamespaceServices(nsID uuid.UUID, services []*api.Service) error {
-	ctx := context.Background()
-
-	tx, err := server.flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByID(ctx, nsID)
-	if err != nil {
-		return err
-	}
-
-	tx.Rollback()
-
-	// TODO: more error tolerance?
-
-	// NOTE: until the refactor reaches the functions logic I hope we can get away with the simplest solution. Purge all existing and replace, even if unchanged.
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderScope] = functions.PrefixNamespace
-	annotations[functions.ServiceHeaderNamespaceName] = ns.Name
-
-	_, err = server.functionsClient.DeleteFunctions(ctx, &igrpc.FunctionsListFunctionsRequest{
-		Annotations: annotations,
-	})
-	if err != nil {
-		return err
-	}
-
-	for idx := range services {
-		req := new(igrpc.FunctionsCreateFunctionRequest)
-		namespace := ns.ID.String()
-
-		var size int32
-
-		switch services[idx].Size {
-		case "large":
-			size = 2
-		case "medium":
-			size = 1
-		}
-
-		req.Info = &grpc.FunctionsBaseInfo{
-			Namespace:     &namespace,
-			NamespaceName: &ns.Name,
-			Name:          &services[idx].Name,
-			Image:         &services[idx].Image,
-			Cmd:           &services[idx].Cmd,
-			Size:          &size,
-			MinScale:      &services[idx].Scale,
-			// Path:          &cr.WorkflowPath,
-			// Envs:          cr.Envs,
-		}
-
-		_, err = server.functionsClient.CreateFunction(ctx, req)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

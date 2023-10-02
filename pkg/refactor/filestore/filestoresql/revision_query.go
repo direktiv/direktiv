@@ -1,10 +1,8 @@
 package filestoresql
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"gorm.io/gorm"
@@ -30,7 +28,7 @@ func (q *RevisionQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
-func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
+func (q *RevisionQuery) GetData(ctx context.Context) ([]byte, error) {
 	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -40,10 +38,8 @@ func (q *RevisionQuery) GetData(ctx context.Context) (io.ReadCloser, error) {
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	reader := bytes.NewReader(rev.Data)
-	readCloser := io.NopCloser(reader)
 
-	return readCloser, nil
+	return rev.Data, nil
 }
 
 func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) error {

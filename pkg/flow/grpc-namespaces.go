@@ -11,8 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/functions"
-	igrpc "github.com/direktiv/direktiv/pkg/functions/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
@@ -38,7 +36,7 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +128,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +162,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 
 	for idx := range list {
 		ns := list[idx]
-		rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+		rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 		if err != nil {
 			return nil, err
 		}
@@ -244,9 +242,9 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID, defaultRootName)
+	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.ID)
 	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to create main file-system root: %v", err)
+		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
 		return nil, err
 	}
 	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
@@ -255,7 +253,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +293,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	isEmpty, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).IsEmptyDirectory(ctx, "/")
+	isEmpty, err := tx.FileStore().ForRootNamespaceID(ns.ID).IsEmptyDirectory(ctx, "/")
 	if err != nil {
 		if !errors.Is(err, filestore.ErrNotFound) {
 			// NOTE: the alternative shouldn't be possible
@@ -320,12 +318,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	flow.pubsub.CloseNamespace(ns)
 
 	// delete all knative services
-	annotations := make(map[string]string)
-	annotations[functions.ServiceHeaderNamespaceName] = req.Name
-	lfr := igrpc.FunctionsListFunctionsRequest{
-		Annotations: annotations,
-	}
-	_, err = flow.functionsClient.DeleteFunctions(ctx, &lfr)
+	// TODO: yassir, delete knative services here.
 
 	// delete filter cache
 	deleteCacheNamespaceSync(ns.Name)
@@ -360,7 +353,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}

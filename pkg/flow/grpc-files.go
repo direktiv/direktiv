@@ -1,10 +1,8 @@
 package flow
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
@@ -38,7 +36,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 		mimeType = mt.String()
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, bytes.NewReader(data))
+	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +78,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		mimeType = mt.String()
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +91,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, bytes.NewReader(data))
+	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +126,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -138,11 +136,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}

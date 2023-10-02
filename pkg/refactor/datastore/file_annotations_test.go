@@ -3,7 +3,6 @@ package datastore_test
 import (
 	"context"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -64,7 +63,7 @@ func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
 
 	id := uuid.New()
 
-	_, err := fs.CreateRoot(context.Background(), id, uuid.New(), "test")
+	_, err := fs.CreateRoot(context.Background(), id, uuid.New())
 	if err != nil {
 		t.Fatalf("unexpected CreateRoot() error: %v", err)
 	}
@@ -73,7 +72,7 @@ func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
 		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}
 
-	file, _, err := fs.ForRootID(id).CreateFile(context.Background(), "/my_file.text", filestore.FileTypeFile, "application/octet-stream", strings.NewReader("my file"))
+	file, _, err := fs.ForRootID(id).CreateFile(context.Background(), "/my_file.text", filestore.FileTypeFile, "application/octet-stream", []byte("my file"))
 	if err != nil {
 		t.Fatalf("unexpected CreateFile() error: %v", err)
 	}

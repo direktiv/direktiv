@@ -11,6 +11,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.10.2
 	github.com/gabriel-vasile/mimetype v1.4.2
 	github.com/glebarez/sqlite v1.8.0
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-git/go-git/v5 v5.8.1
 	github.com/gobwas/glob v0.2.3
 	github.com/google/uuid v1.3.0

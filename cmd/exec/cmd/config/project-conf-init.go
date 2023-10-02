@@ -1,7 +1,7 @@
 package config
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
@@ -30,7 +30,7 @@ var confPInitCmd = &cobra.Command{
 			root.Fail(cmd, "%s", err)
 		}
 		path := filepath.Join(pf, project.ConfigFileName)
-		err = ioutil.WriteFile(path, data, 0o664)
+		err = os.WriteFile(path, data, 0o664)
 		if err != nil {
 			root.Fail(cmd, "%s", err)
 		}

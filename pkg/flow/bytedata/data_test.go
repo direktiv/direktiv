@@ -32,7 +32,6 @@ func TestConvertLogMsgForOutput(t *testing.T) {
 	}
 }
 
-
 func TestConvertMirrorProcessesToGrpcMirrorActivityInfoList(t *testing.T) {
 	// Test data
 	process1 := &mirror.Process{

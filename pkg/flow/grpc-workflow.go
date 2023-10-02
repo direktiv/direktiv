@@ -1,10 +1,8 @@
 package flow
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
 	"path/filepath"
 	"time"
 
@@ -13,8 +11,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -43,7 +43,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -57,11 +57,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,11 +99,55 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	}
 }
 
+func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
+	tx, err := flow.beginSqlTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", req.GetSource())
+	if err != nil {
+		return nil, err
+	}
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &grpc.CreateWorkflowResponse{}
+	resp.Namespace = ns.Name
+	resp.Node = bytedata.ConvertFileToGrpcNode(file)
+	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
+	resp.Revision.Source = data
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created service '%s'.", file.Path)
+
+	err = flow.pBus.Publish(pubsub.FunctionCreate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
+
+	return resp, nil
+}
+
 func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	if filepath.Ext(req.GetPath()) != ".yaml" && filepath.Ext(req.GetPath()) != ".yml" {
-		return nil, status.Error(codes.InvalidArgument, "workflow name should have either .yaml or .yaml extension")
+		return nil, status.Error(codes.InvalidArgument, "direktiv spec file name should have either .yaml or .yaml extension")
+	}
+
+	if api.ParseService(req.GetSource()) != nil {
+		return flow.createService(ctx, req)
 	}
 
 	tx, err := flow.beginSqlTx(ctx)
@@ -121,17 +161,12 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", bytes.NewReader(req.GetSource()))
+	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -178,6 +213,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	err = flow.pBus.Publish(pubsub.WorkflowCreate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
+
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
@@ -203,18 +243,18 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	if file.Typ != filestore.FileTypeWorkflow {
-		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
+	if file.Typ != filestore.FileTypeWorkflow && file.Typ != filestore.FileTypeService {
+		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service")
 	}
 	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
-	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", bytes.NewReader(req.GetSource()))
+	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -224,34 +264,38 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	dataReader, err := tx.FileStore().ForRevision(newRevision).GetData(ctx)
+	data, err := tx.FileStore().ForRevision(newRevision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		return nil, err
-	}
-
 	_, router, err := getRouter(ctx, tx, file)
 	if err != nil {
 		return nil, err
 	}
 
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
+	if file.Typ == filestore.FileTypeWorkflow {
+		err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
+		if err != nil {
+			return nil, err
+		}
+
+		err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
+		if err != nil {
+			return nil, err
+		}
+		err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
 
-	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
-	if err != nil {
-		return nil, err
+	if file.Typ == filestore.FileTypeService {
+		err = flow.pBus.Publish(pubsub.FunctionUpdate, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
 
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
 	var resp grpc.UpdateWorkflowResponse
 
 	resp.Namespace = ns.Name
@@ -278,7 +322,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -297,11 +341,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err = tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -318,6 +358,11 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
 	var resp grpc.SaveHeadResponse
@@ -346,7 +391,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -390,11 +435,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err = tx.FileStore().ForRevision(newRev).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := io.ReadAll(dataReader)
+	data, err := tx.FileStore().ForRevision(newRev).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -409,6 +450,11 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
 	var resp grpc.DiscardHeadResponse
@@ -435,7 +481,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +522,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceAndName(ns.ID, defaultRootName).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}

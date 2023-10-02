@@ -8,7 +8,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 func Test_NewSQLInstanceStore(t *testing.T) {
@@ -16,10 +15,9 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger := zap.NewExample().Sugar()
 	ns := uuid.New()
 
-	store := instancestoresql.NewSQLInstanceStore(db, logger)
+	store := instancestoresql.NewSQLInstanceStore(db)
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
 		NamespaceID:    ns,
