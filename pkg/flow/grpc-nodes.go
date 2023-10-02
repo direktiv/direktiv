@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"path/filepath"
 	"time"
 
@@ -224,6 +225,10 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
+		err = flow.pBus.Publish(pubsub.WorkflowDelete, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	} else {
 		// Broadcast Event
 		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
@@ -234,6 +239,13 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	if file.Typ == filestore.FileTypeService {
+		err = flow.pBus.Publish(pubsub.FunctionDelete, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
 		}
 	}
 

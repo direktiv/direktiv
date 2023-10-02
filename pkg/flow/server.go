@@ -30,7 +30,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
+
 	"github.com/direktiv/direktiv/pkg/refactor/workers"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
@@ -58,6 +60,10 @@ type server struct {
 
 	// db       *ent.Client
 	pubsub *pubsub.Pubsub
+
+	// the new pubsub bus
+	pBus pubsub2.Bus
+
 	locks  *locks
 	timers *timers
 	engine *engine
@@ -337,7 +343,7 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating pubsub, err: %w", err)
 	}
-
+	srv.pBus = pBus
 	go pBus.Start(cctx.Done(), &wg)
 
 	srv.sugar.Info("Initializing internal grpc server.")

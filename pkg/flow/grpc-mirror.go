@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -101,7 +102,13 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+	go func() {
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}()
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 
@@ -177,7 +184,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+	go func() {
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}()
 
 	var resp emptypb.Empty
 
@@ -234,7 +247,13 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	go flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+	go func() {
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{})
+		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}()
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
 

@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"path/filepath"
 	"time"
 
@@ -134,6 +135,11 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created service '%s'.", file.Path)
 
+	err = flow.pBus.Publish(pubsub.FunctionCreate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
+
 	return resp, nil
 }
 
@@ -211,6 +217,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
+	err = flow.pBus.Publish(pubsub.WorkflowCreate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
+
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
@@ -276,11 +287,19 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		if err != nil {
 			return nil, err
 		}
+		err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
 
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
+	if file.Typ == filestore.FileTypeService {
+		err = flow.pBus.Publish(pubsub.FunctionUpdate, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
+
 	var resp grpc.UpdateWorkflowResponse
 
 	resp.Namespace = ns.Name
@@ -343,6 +362,11 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
 	var resp grpc.SaveHeadResponse
@@ -430,6 +454,11 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
 	var resp grpc.DiscardHeadResponse
