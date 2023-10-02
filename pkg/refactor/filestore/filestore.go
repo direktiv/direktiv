@@ -24,6 +24,8 @@ var (
 )
 
 // FileStore manages different operations on files and roots.
+
+//nolint:interfacebloat
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
 	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*Root, error)

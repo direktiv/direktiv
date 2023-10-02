@@ -33,7 +33,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
-
 	"github.com/direktiv/direktiv/pkg/refactor/workers"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
