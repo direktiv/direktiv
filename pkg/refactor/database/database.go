@@ -102,6 +102,7 @@ func (tx *DB) BeginTx(ctx context.Context) (*DB, error) {
 	if res.Error != nil {
 		return nil, res.Error
 	}
+
 	return &DB{
 		db: res,
 	}, nil

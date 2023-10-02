@@ -96,6 +96,7 @@ func ParseService(data []byte) *Service {
 }
 
 type WorkflowFunctionDefinition struct {
+	//nolint
 	Typ   string `yaml:"type"`
 	Name  string `yaml:"name"`
 	Image string `yaml:"image"`
