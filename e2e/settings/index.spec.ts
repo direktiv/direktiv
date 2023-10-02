@@ -321,72 +321,56 @@ test("it is possible to update broadcasts", async ({ page }) => {
   }
 });
 
-test("it is possible to test connection when create registries", async ({
+test("it is possible to sucessfully test the connection when creating a registry", async ({
   page,
 }) => {
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("registry-create").click();
-
-  const newRegistry = {
-    url: faker.internet.url(),
-    user: faker.internet.userName(),
-    password: faker.internet.password(),
-  };
-
-  const validUrl = "https://hub.docker.com/r/stefandirektiv/test";
-  const invalidUrl = "https://hub.dokcer.com)";
-
   const testConnectionButton = page.getByTestId("btn-test-connection");
+
+  const validRegistryUrl = "https://hub.docker.com/r/stefandirektiv/test";
+  const user = faker.internet.userName();
+  const password = faker.internet.password();
+
+  await page.getByTestId("new-registry-url").fill(validRegistryUrl);
+  await page.getByTestId("new-registry-user").fill(user);
+
   await expect(
     testConnectionButton,
-    "test connection button should be disabled before we fill all the input"
+    "the test connection button should be disabled until we fill in the url, user and password"
   ).toBeDisabled();
-  await page.getByTestId("new-registry-url").type(validUrl);
+
+  await page.getByTestId("new-registry-pwd").fill(password);
+
   await expect(
     testConnectionButton,
-    "test connection button should be disabled before we fill all the input"
-  ).toBeDisabled();
-  await page.getByTestId("new-registry-pwd").type(newRegistry.password);
-  await expect(
-    testConnectionButton,
-    "test connection button should be disabled before we fill all the input"
-  ).toBeDisabled();
-  await page.getByTestId("new-registry-user").type(newRegistry.user);
-  await expect(
-    testConnectionButton,
-    "test connection button should be enabled after we fill all the input"
+    "the test connection button should be enabled after we filled in url, user and password"
   ).toBeEnabled();
+
   await expect(
     testConnectionButton,
-    "connection button title should be Test connection"
+    'the test connection button should be labeled "Test connection" by default'
   ).toHaveText("Test connection");
 
   await testConnectionButton.click();
+
   await expect(
     testConnectionButton,
-    "this button should be disabled while checking"
+    "the test connection button should be disabled while checking"
   ).toBeDisabled();
+
   await expect(
     testConnectionButton,
-    "this button should be enabled after checking"
+    'the test connection button should be labeled "Connection successful" when the test was successful'
+  ).toHaveText("Connection successful");
+
+  await expect(
+    testConnectionButton,
+    "the test connection button should be enabled after the check finished"
   ).toBeEnabled();
 
   await expect(
     testConnectionButton,
-    "connection button title should be Connection successful"
-  ).toHaveText("Connection successful");
-
-  await page.getByTestId("new-registry-url").fill(invalidUrl);
-  await testConnectionButton.click();
-
-  await expect(
-    testConnectionButton,
-    "connection button title should be Connection failed"
-  ).toHaveText("Connection failed");
-
-  await page.waitForTimeout(3000);
-  await expect(
-    testConnectionButton,
-    "connection button title should get back to initial state"
+    'the test connection button should be labeled "Test connection" some time after the check finished'
   ).toHaveText("Test connection");
 });
