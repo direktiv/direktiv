@@ -17,6 +17,7 @@ This repository contains the user interface for [direktiv](https://github.com/di
 
 # Setup development environment
 
+- test
 - this repo requires a specific node version, to easily install the correct one, please install [nvm](https://github.com/nvm-sh/nvm)
 - in the root directory, run `nvm use` to automatically switch to the required version
   - which will be read from `.nvmrc` file
