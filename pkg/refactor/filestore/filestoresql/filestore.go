@@ -22,9 +22,9 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRootNamespaceID(nsID uuid.UUID) filestore.RootQuery {
+func (s *sqlFileStore) ForRootNamespace(namespace string) filestore.RootQuery {
 	return &RootQuery{
-		nsID:         nsID,
+		namespace:    namespace,
 		db:           s.db,
 		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
@@ -120,13 +120,13 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 	return ns, nil
 }
 
-func (s *sqlFileStore) GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*filestore.Root, error) {
+func (s *sqlFileStore) GetRootByNamespace(ctx context.Context, namespace string) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_roots
-					WHERE namespace_id = ?
-					`, namespaceID).Find(&list)
+					WHERE namespace = ?
+					`, namespace).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
 	}

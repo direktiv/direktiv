@@ -32,7 +32,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
 	if err == nil && req.GetIdempotent() {
-		rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
+		rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +86,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	root, err := tx.FileStore().GetRootByNamespaceID(ctx, ns.ID)
+	root, err := tx.FileStore().GetRootByNamespace(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +237,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	root, err := tx.FileStore().GetRootByNamespaceID(ctx, ns.ID)
+	root, err := tx.FileStore().GetRootByNamespace(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}

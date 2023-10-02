@@ -37,13 +37,13 @@ type FileStore interface {
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	GetRootByNamespaceID(ctx context.Context, namespaceID uuid.UUID) (*Root, error)
+	GetRootByNamespace(ctx context.Context, namespace string) (*Root, error)
 
 	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
 
-	// ForRootNamespaceID returns a query object to do further queries on root.
-	ForRootNamespaceID(namespaceID uuid.UUID) RootQuery
+	// ForRootNamespace returns a query object to do further queries on root.
+	ForRootNamespace(namespace string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
@@ -93,7 +93,7 @@ type RootQuery interface {
 	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
 	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
-	SetNamespace(ctx context.Context, namespaceID uuid.UUID) error
+	SetNamespace(ctx context.Context, namespace string) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

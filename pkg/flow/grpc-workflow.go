@@ -43,7 +43,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", req.GetSource())
+	file, revision, err := tx.FileStore().ForRootNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if len(req.GetSource()) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty workflow is not allowed")
 	}
-	file, revision, err := tx.FileStore().ForRootNamespaceID(ns.ID).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
+	file, revision, err := tx.FileStore().ForRootNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +394,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -484,7 +484,7 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -525,7 +525,7 @@ func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWork
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}

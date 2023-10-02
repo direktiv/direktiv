@@ -134,7 +134,7 @@ func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *
 		return
 	}
 
-	f, err = tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, path)
+	f, err = tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, path)
 	if err != nil {
 		return
 	}
@@ -161,7 +161,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -301,7 +301,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	if err != nil {
 		return nil, err
 	}
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +419,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +472,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespaceID(ns.ID).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}

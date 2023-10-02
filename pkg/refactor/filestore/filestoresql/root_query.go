@@ -25,7 +25,7 @@ type RootQuery struct {
 	checksumFunc filestore.CalculateChecksumFunc
 	db           *gorm.DB
 	root         *filestore.Root
-	nsID         uuid.UUID
+	namespace    string
 }
 
 func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
@@ -274,9 +274,9 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 
 	if zeroUUID == q.rootID.String() {
 		n := &filestore.Root{}
-		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace_id", q.nsID).First(n)
+		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace", q.namespace).First(n)
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("root not found, nsid: '%s', err: %w", q.nsID, filestore.ErrNotFound)
+			return fmt.Errorf("root not found, ns: '%s', err: %w", q.namespace, filestore.ErrNotFound)
 		}
 		if res.Error != nil {
 			return res.Error
@@ -302,11 +302,11 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 	return nil
 }
 
-func (q *RootQuery) SetNamespace(ctx context.Context, namespaceID uuid.UUID) error {
+func (q *RootQuery) SetNamespace(ctx context.Context, namespace string) error {
 	res := q.db.WithContext(ctx).Exec(`UPDATE filesystem_roots
-		SET namespace_id = ?
+		SET namespace = ?
 		WHERE id = ?`,
-		namespaceID,
+		namespace,
 		q.rootID,
 	)
 	if res.Error != nil {
