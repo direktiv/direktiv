@@ -11,7 +11,7 @@ import (
 )
 
 type Manager struct {
-	list   []*FunctionConfig
+	list   []*FunctionDefination
 	client client
 
 	lock *sync.Mutex
@@ -38,7 +38,7 @@ func NewManagerFromK8s() (*Manager, error) {
 	}
 
 	return &Manager{
-		list:   make([]*FunctionConfig, 0, 0),
+		list:   make([]*FunctionDefination, 0, 0),
 		client: client,
 
 		lock: &sync.Mutex{},
@@ -52,7 +52,7 @@ func (m *Manager) runCycle() error {
 	for i, v := range m.list {
 		src[i] = v
 	}
-	searchSrc := map[string]*FunctionConfig{}
+	searchSrc := map[string]*FunctionDefination{}
 	for _, v := range m.list {
 		searchSrc[v.id()] = v
 	}
@@ -138,16 +138,16 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 }
 
-func (m *Manager) SetServices(list []*FunctionConfig) {
+func (m *Manager) SetServices(list []*FunctionDefination) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	m.list = make([]*FunctionConfig, len(list))
+	m.list = make([]*FunctionDefination, len(list))
 
 	copy(m.list, list)
 }
 
-func (m *Manager) SetOneService(service *FunctionConfig) {
+func (m *Manager) SetOneService(service *FunctionDefination) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -165,7 +165,7 @@ func (m *Manager) SetOneService(service *FunctionConfig) {
 func (m *Manager) GetList() ([]Function, error) {
 	m.lock.Lock()
 	// clone the list
-	cfgList := make([]*FunctionConfig, len(m.list))
+	cfgList := make([]*FunctionDefination, len(m.list))
 	for i, v := range m.list {
 		cfgList[i] = v
 	}

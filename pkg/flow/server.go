@@ -481,7 +481,10 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	newMainWG := cmd.NewMain()
+	// TODO: yassir, use the new db to refactor old code.
+	dbManager := database2.NewDB(srv.gormDB, os.Getenv(direktivSecretKey))
+
+	newMainWG := cmd.NewMain(dbManager, pBus, srv.sugar)
 
 	srv.sugar.Info("Flow server started.")
 
@@ -697,8 +700,7 @@ func (tx *sqlTx) DataStore() datastore.Store {
 }
 
 func (tx *sqlTx) InstanceStore() instancestore.Store {
-	logger := zap.NewNop()
-	return instancestoresql.NewSQLInstanceStore(tx.res, logger.Sugar())
+	return instancestoresql.NewSQLInstanceStore(tx.res)
 }
 
 func (tx *sqlTx) Commit(ctx context.Context) error {

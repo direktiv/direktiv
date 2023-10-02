@@ -1,7 +1,14 @@
 package database
 
 import (
+	"context"
 	_ "embed"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"log"
 	"os"
 	"strings"
@@ -56,4 +63,46 @@ func NewMockGorm() (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+type DB struct {
+	db        *gorm.DB
+	secretKey string
+}
+
+func NewDB(gormDB *gorm.DB, secretKey string) *DB {
+	return &DB{
+		db:        gormDB,
+		secretKey: secretKey,
+	}
+}
+
+func (tx *DB) FileStore() filestore.FileStore {
+	return filestoresql.NewSQLFileStore(tx.db)
+}
+
+func (tx *DB) DataStore() datastore.Store {
+	return datastoresql.NewSQLStore(tx.db, tx.secretKey)
+}
+
+func (tx *DB) InstanceStore() instancestore.Store {
+	return instancestoresql.NewSQLInstanceStore(tx.db)
+}
+
+func (tx *DB) Commit(ctx context.Context) error {
+	return tx.db.WithContext(ctx).Commit().Error
+}
+
+func (tx *DB) Rollback() error {
+	return tx.db.Rollback().Error
+}
+
+func (tx *DB) BeginTx(ctx context.Context) (*DB, error) {
+	res := tx.db.WithContext(ctx).Begin()
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &DB{
+		db: res,
+	}, nil
 }

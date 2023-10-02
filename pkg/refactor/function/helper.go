@@ -8,7 +8,7 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-func buildService(c *ClientConfig, cfg *FunctionConfig) (*servingv1.Service, error) {
+func buildService(c *ClientConfig, cfg *FunctionDefination) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, cfg)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func buildService(c *ClientConfig, cfg *FunctionConfig) (*servingv1.Service, err
 	return svc, nil
 }
 
-func buildServiceMeta(c *ClientConfig, cfg *FunctionConfig) metav1.ObjectMeta {
+func buildServiceMeta(c *ClientConfig, cfg *FunctionDefination) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
 		Name:        cfg.id(),
 		Namespace:   c.Namespace,
@@ -68,7 +68,7 @@ func buildServiceMeta(c *ClientConfig, cfg *FunctionConfig) metav1.ObjectMeta {
 	return meta
 }
 
-func buildPodMeta(c *ClientConfig, cfg *FunctionConfig) metav1.ObjectMeta {
+func buildPodMeta(c *ClientConfig, cfg *FunctionDefination) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.Namespace,
 		Labels:      make(map[string]string),
@@ -79,7 +79,7 @@ func buildPodMeta(c *ClientConfig, cfg *FunctionConfig) metav1.ObjectMeta {
 	return metaSpec
 }
 
-func buildVolumes(c *ClientConfig, cfg *FunctionConfig) []corev1.Volume {
+func buildVolumes(c *ClientConfig, cfg *FunctionDefination) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -94,13 +94,13 @@ func buildVolumes(c *ClientConfig, cfg *FunctionConfig) []corev1.Volume {
 	return volumes
 }
 
-func buildContainers(c *ClientConfig, cfg *FunctionConfig) ([]corev1.Container, error) {
+func buildContainers(c *ClientConfig, cfg *FunctionDefination) ([]corev1.Container, error) {
 	// set resource limits.
 
 	// user container
 	uc := corev1.Container{
 		Name:  containerUser,
-		Image: cfg.Config.Image,
+		Image: cfg.Image,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "workdir",
@@ -109,8 +109,8 @@ func buildContainers(c *ClientConfig, cfg *FunctionConfig) ([]corev1.Container, 
 		},
 	}
 
-	if len(cfg.Config.CMD) > 0 {
-		args, err := shellwords.Parse(cfg.Config.CMD)
+	if len(cfg.CMD) > 0 {
+		args, err := shellwords.Parse(cfg.CMD)
 		if err != nil {
 			return []corev1.Container{}, err
 		}

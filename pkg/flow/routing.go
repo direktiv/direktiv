@@ -21,7 +21,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -403,7 +402,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 	defer flow.engine.unlock(id.String(), conn)
 
-	err = instancestoresql.NewSQLInstanceStore(flow.gormDB, zap.NewNop().Sugar()).AssertNoParallelCron(ctx, file.Path)
+	err = instancestoresql.NewSQLInstanceStore(flow.gormDB).AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return

@@ -7,7 +7,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -58,24 +57,21 @@ var (
 )
 
 type sqlInstanceStore struct {
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	db *gorm.DB
 }
 
 func (s *sqlInstanceStore) ForInstanceID(id uuid.UUID) instancestore.InstanceDataQuery {
 	return &instanceDataQuery{
 		instanceID: id,
 		db:         s.db,
-		logger:     s.logger,
 	}
 }
 
 var _ instancestore.Store = &sqlInstanceStore{} // Ensures sqlInstanceStore struct conforms to instanceStore.Store interface.
 
-func NewSQLInstanceStore(db *gorm.DB, logger *zap.SugaredLogger) instancestore.Store {
+func NewSQLInstanceStore(db *gorm.DB) instancestore.Store {
 	return &sqlInstanceStore{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
@@ -196,7 +192,6 @@ func (s *sqlInstanceStore) GetHangingInstances(ctx context.Context) ([]instances
 
 func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.Time) error {
 	query := fmt.Sprintf(`DELETE FROM %s WHERE %s >= ? AND %s < ?`, table, fieldStatus, fieldEndedAt)
-	s.logger.Debug(fmt.Sprintf("DeleteOldInstances executing SQL query: %s", query))
 
 	res := s.db.WithContext(ctx).Exec(
 		query,
@@ -211,7 +206,6 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 
 func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfPath string) error {
 	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s > ?`, table, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
-	s.logger.Debug(fmt.Sprintf("AssertNoParallelCron executing SQL query: %s", query))
 
 	var k int64
 	res := s.db.WithContext(ctx).Raw(

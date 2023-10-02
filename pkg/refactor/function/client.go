@@ -19,8 +19,8 @@ const (
 )
 
 type client interface {
-	createService(cfg *FunctionConfig) error
-	updateService(id string, cfg *FunctionConfig) error
+	createService(cfg *FunctionDefination) error
+	updateService(id string, cfg *FunctionDefination) error
 	deleteService(id string) error
 	listServices() ([]FunctionStatus, error)
 }
@@ -36,7 +36,7 @@ type knClient struct {
 	client versioned.Interface
 }
 
-func (c *knClient) createService(cfg *FunctionConfig) error {
+func (c *knClient) createService(cfg *FunctionDefination) error {
 	svcDef, err := buildService(c.config, cfg)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (c *knClient) createService(cfg *FunctionConfig) error {
 	return nil
 }
 
-func (c *knClient) updateService(id string, cfg *FunctionConfig) error {
+func (c *knClient) updateService(id string, cfg *FunctionDefination) error {
 	// TODO implement me
 	panic("implement me updateService\n")
 }

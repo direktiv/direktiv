@@ -76,11 +76,10 @@ func LoadResource(data []byte) (interface{}, error) {
 
 type Service struct {
 	DirektivAPI string `yaml:"direktiv_api"`
-	Name        string `yaml:"name"`
 	Image       string `yaml:"image"`
-	Scale       int32  `yaml:"scale"`
-	Size        string `yaml:"size"`
 	Cmd         string `yaml:"cmd"`
+	Size        string `yaml:"size"`
+	Scale       int    `yaml:"scale"`
 }
 
 func ParseService(data []byte) *Service {
@@ -94,4 +93,23 @@ func ParseService(data []byte) *Service {
 	}
 
 	return res
+}
+
+type WorkflowFunctionDefinition struct {
+	Typ   string `yaml:"type"`
+	Name  string `yaml:"name"`
+	Image string `yaml:"image"`
+	Scale int    `yaml:"scale"`
+	Size  string `yaml:"size"`
+	Cmd   string `yaml:"cmd"`
+}
+
+func ParseWorkflowFunctionDefinition(data []byte) (*WorkflowFunctionDefinition, error) {
+	res := &WorkflowFunctionDefinition{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

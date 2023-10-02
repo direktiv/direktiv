@@ -9,23 +9,22 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-type FunctionConfig struct {
+type FunctionDefination struct {
 	Namespace string
-
-	Name string
+	Name      string
 
 	ServicePath  string
 	WorkflowPath string
 
-	Config struct {
-		CMD   string
-		Image string
-	}
+	Image string
+	CMD   string
+	Size  string
+	Scale int
 }
 
-func (c *FunctionConfig) id() string {
-	name := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
-	v, err := hashstructure.Hash(name, hashstructure.FormatV2, nil)
+func (c *FunctionDefination) id() string {
+	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
+	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
 		panic("unexpected hashstructure.Hash error: " + err.Error())
 	}
@@ -33,8 +32,9 @@ func (c *FunctionConfig) id() string {
 	return fmt.Sprintf("obj-%d-obj", v)
 }
 
-func (c *FunctionConfig) hash() string {
-	v, err := hashstructure.Hash(c.Config, hashstructure.FormatV2, nil)
+func (c *FunctionDefination) hash() string {
+	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
+	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
 		panic("unexpected hashstructure.Hash error: " + err.Error())
 	}
@@ -49,7 +49,7 @@ type FunctionStatus interface {
 }
 
 type Function struct {
-	Config *FunctionConfig
+	Config *FunctionDefination
 	Status FunctionStatus
 }
 
