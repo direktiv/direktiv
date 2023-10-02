@@ -28,7 +28,7 @@ var (
 //nolint:interfacebloat
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*Root, error)
+	CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*Root, error)
 
 	CreateTempRoot(ctx context.Context, id uuid.UUID) (*Root, error)
 
@@ -61,8 +61,8 @@ type FileStore interface {
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
 // we create a dedicated root for every namespace.
 type Root struct {
-	ID          uuid.UUID
-	NamespaceID uuid.UUID `gorm:"default:NULL"`
+	ID        uuid.UUID
+	Namespace string `gorm:"default:NULL"`
 }
 
 // RootQuery performs different queries associated to a root.

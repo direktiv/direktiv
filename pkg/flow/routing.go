@@ -387,7 +387,7 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	ns, err := tx.DataStore().Namespaces().GetByID(ctx, root.NamespaceID)
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
 		flow.sugar.Error(err)
 		return

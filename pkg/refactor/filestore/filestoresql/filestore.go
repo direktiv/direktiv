@@ -53,10 +53,10 @@ func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
 	}
 }
 
-func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID, namespaceID uuid.UUID) (*filestore.Root, error) {
+func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*filestore.Root, error) {
 	n := &filestore.Root{
-		ID:          rootID,
-		NamespaceID: namespaceID,
+		ID:        rootID,
+		Namespace: namespace,
 	}
 	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
 	if res.Error != nil {

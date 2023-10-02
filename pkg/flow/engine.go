@@ -831,7 +831,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		return
 	}
 
-	ns, err := tx.DataStore().Namespaces().GetByID(ctx, root.NamespaceID)
+	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
