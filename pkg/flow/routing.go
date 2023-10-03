@@ -176,15 +176,15 @@ func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestor
 }
 
 func (engine *engine) getAmbiguousFile(ctx context.Context, tx *sqlTx, ns *database.Namespace, path string) (*filestore.File, error) {
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, path)
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
 			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
 				var err2 error
-				file, err2 = tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, path+".yaml")
+				file, err2 = tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path+".yaml")
 				if err2 != nil {
 					if errors.Is(err2, filestore.ErrNotFound) {
-						file, err2 = tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, path+".yml")
+						file, err2 = tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path+".yml")
 						if err2 != nil {
 							if !errors.Is(err2, filestore.ErrNotFound) {
 								err = err2

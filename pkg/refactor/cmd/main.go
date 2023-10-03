@@ -74,7 +74,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
-		files, err := fStore.ForRootNamespace(ns.Name).ListDirektivFiles(context.Background())
+		files, err := fStore.ForNamespace(ns.Name).ListDirektivFiles(context.Background())
 		if err != nil {
 			logger.Error("listing direktiv files", "error", err)
 

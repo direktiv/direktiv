@@ -42,8 +42,8 @@ type FileStore interface {
 	// ForRootID returns a query object to do further queries on root.
 	ForRootID(rootID uuid.UUID) RootQuery
 
-	// ForRootNamespace returns a query object to do further queries on root.
-	ForRootNamespace(namespace string) RootQuery
+	// ForNamespace returns a query object to do further queries on root.
+	ForNamespace(namespace string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery

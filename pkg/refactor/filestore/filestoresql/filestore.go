@@ -22,7 +22,7 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRootNamespace(namespace string) filestore.RootQuery {
+func (s *sqlFileStore) ForNamespace(namespace string) filestore.RootQuery {
 	return &RootQuery{
 		namespace:    namespace,
 		db:           s.db,

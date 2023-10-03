@@ -36,7 +36,7 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 
 	for idx := range list {
 		ns := list[idx]
-		rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
+		rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
 		if err != nil {
 			return nil, err
 		}
@@ -253,7 +253,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	isEmpty, err := tx.FileStore().ForRootNamespace(ns.Name).IsEmptyDirectory(ctx, "/")
+	isEmpty, err := tx.FileStore().ForNamespace(ns.Name).IsEmptyDirectory(ctx, "/")
 	if err != nil {
 		if !errors.Is(err, filestore.ErrNotFound) {
 			// NOTE: the alternative shouldn't be possible
@@ -353,7 +353,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, "/")
+	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
 	if err != nil {
 		return nil, err
 	}

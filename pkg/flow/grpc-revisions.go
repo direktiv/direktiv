@@ -23,7 +23,7 @@ func (flow *flow) Revisions(ctx context.Context, req *grpc.RevisionsRequest) (*g
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}

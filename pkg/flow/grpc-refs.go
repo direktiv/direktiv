@@ -38,7 +38,7 @@ func (flow *flow) Tags(ctx context.Context, req *grpc.TagsRequest) (*grpc.TagsRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (flow *flow) Refs(ctx context.Context, req *grpc.RefsRequest) (*grpc.RefsRe
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +227,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
 	if err != nil {
 		return nil, err
 	}

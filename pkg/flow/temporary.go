@@ -82,7 +82,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			if err != nil {
 				return nil, err
 			}
-			file, err := tx.FileStore().ForRootNamespace(ns.Name).GetFile(ctx, selector.Key)
+			file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
 					Scope: selector.Scope,
