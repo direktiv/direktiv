@@ -135,7 +135,7 @@ func TestRoot_CorrectSetPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New())
+			root, err := fs.CreateRoot(context.Background(), uuid.New(), uuid.New().String())
 			if err != nil {
 				t.Fatalf("unepxected CreateRoot() error = %v", err)
 			}

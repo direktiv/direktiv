@@ -132,7 +132,7 @@ func TestDryRun(t *testing.T) {
 
 	nsID := uuid.New()
 	rootID := uuid.New()
-	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID)
+	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID.String())
 	if err != nil {
 		t.Fatalf("unexpected GetRoot() error = %v", err)
 	}
@@ -181,7 +181,7 @@ states:
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 
-	root, err := callbacks.FileStore().GetRootByNamespaceID(ctx, nsID)
+	root, err := callbacks.FileStore().GetRootByNamespace(ctx, nsID.String())
 	if err != nil {
 		t.Fatalf("unexpected GetAllRootsForNamespace() error = %v", err)
 	}
@@ -211,7 +211,7 @@ func TestInitSync(t *testing.T) {
 
 	nsID := uuid.New()
 	rootID := uuid.New()
-	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID)
+	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID.String())
 	if err != nil {
 		t.Fatalf("unexpected GetRoot() error = %v", err)
 	}
@@ -259,7 +259,7 @@ states:
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 
-	root, err := callbacks.FileStore().GetRootByNamespaceID(ctx, nsID)
+	root, err := callbacks.FileStore().GetRootByNamespace(ctx, nsID.String())
 	if err != nil {
 		t.Fatalf("unexpected GetAllRootsForNamespace() error = %v", err)
 	}

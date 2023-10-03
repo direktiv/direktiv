@@ -10,10 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id uuid.UUID) {
+func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, ns string) {
 	t.Helper()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), id)
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 
@@ -24,14 +24,14 @@ func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, id
 
 		return
 	}
-	if root.NamespaceID != id {
-		t.Errorf("unexpected root.NamespaceID, got: >%s<, want: >%s<", root.NamespaceID, id)
+	if root.Namespace != ns {
+		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.Namespace, ns)
 
 		return
 	}
 }
 
-func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, ids ...uuid.UUID) {
+func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, nsList ...string) {
 	t.Helper()
 
 	all, err := fs.GetAllRoots(context.Background())
@@ -40,15 +40,15 @@ func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, ids ...uuid.UU
 
 		return
 	}
-	if len(all) != len(ids) {
-		t.Errorf("unexpected GetAllRoots() length, got: %d, want: %d", len(all), len(ids))
+	if len(all) != len(nsList) {
+		t.Errorf("unexpected GetAllRoots() length, got: %d, want: %d", len(all), len(nsList))
 
 		return
 	}
 
-	for i := range ids {
-		if all[i].NamespaceID != ids[i] {
-			t.Errorf("unexpected all[%d].ID , got: >%s<, want: >%s<", i, all[i].NamespaceID, ids[i])
+	for i := range nsList {
+		if all[i].Namespace != nsList[i] {
+			t.Errorf("unexpected all[%d].ID , got: >%s<, want: >%s<", i, all[i].Namespace, nsList[i])
 
 			return
 		}
@@ -75,11 +75,11 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 
 	tests := []struct {
 		name string
-		id   uuid.UUID
+		id   string
 	}{
-		{"validCase", uuid.New()},
-		{"validCase", uuid.New()},
-		{"validCase", uuid.New()},
+		{"validCase", "ns1"},
+		{"validCase", "ns2"},
+		{"validCase", "ns3"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -95,27 +95,27 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	myRoot1 := uuid.New()
-	myRoot2 := uuid.New()
-	myRoot3 := uuid.New()
+	myNamespace1 := "ns1"
+	myNamespace2 := "ns2"
+	myNamespace3 := "ns3"
 
 	// assert correct empty list.
 	assertFileStoreHasRoot(t, fs)
 
 	// create two roots:
-	assertFileStoreCorrectRootCreation(t, fs, myRoot1)
-	assertFileStoreCorrectRootCreation(t, fs, myRoot2)
+	assertFileStoreCorrectRootCreation(t, fs, myNamespace1)
+	assertFileStoreCorrectRootCreation(t, fs, myNamespace2)
 
 	// assert existence.
-	assertFileStoreHasRoot(t, fs, myRoot1, myRoot2)
+	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2)
 
 	// add a third one:
-	assertFileStoreCorrectRootCreation(t, fs, myRoot3)
+	assertFileStoreCorrectRootCreation(t, fs, myNamespace3)
 
 	// assert existence:
-	assertFileStoreHasRoot(t, fs, myRoot1, myRoot2, myRoot3)
+	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2, myNamespace3)
 
-	root, err := fs.GetRootByNamespaceID(context.Background(), myRoot2)
+	root, err := fs.GetRootByNamespace(context.Background(), myNamespace2)
 	if err != nil {
 		panic(err)
 	}
@@ -124,7 +124,7 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	assertFileStoreCorrectRootDeletion(t, fs, root.ID)
 
 	// assert correct list:
-	assertFileStoreHasRoot(t, fs, myRoot1, myRoot3)
+	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace3)
 
 	roots, err := fs.GetAllRoots(context.Background())
 	if err != nil {
