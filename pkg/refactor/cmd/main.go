@@ -8,12 +8,12 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/function"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
-	"github.com/direktiv/direktiv/pkg/refactor/webapi"
 	"go.uber.org/zap"
 )
 
@@ -53,7 +53,7 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 
 	// Start api v2 server
 	wg.Add(1)
-	webapi.Start(funcManager, "0.0.0.0:6667", done, wg)
+	api.Start(funcManager, "0.0.0.0:6667", done, wg)
 
 	return wg
 }

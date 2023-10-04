@@ -1,5 +1,5 @@
 // nolint
-package webapi
+package api
 
 import (
 	"encoding/json"
