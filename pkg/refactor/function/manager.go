@@ -55,6 +55,8 @@ func NewManagerFromK8s() (*Manager, error) {
 
 func (m *Manager) runCycle() []error {
 	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
 	for i, v := range m.list {
@@ -64,8 +66,6 @@ func (m *Manager) runCycle() []error {
 	for _, v := range m.list {
 		searchSrc[v.getID()] = v
 	}
-
-	m.lock.Unlock()
 
 	knList, err := m.client.listServices()
 	if err != nil {
@@ -152,9 +152,7 @@ func (m *Manager) SetServices(list []*Config) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	m.list = make([]*Config, len(list))
-
-	copy(m.list, list)
+	m.list = list
 }
 
 func (m *Manager) SetOneService(service *Config) {
@@ -174,12 +172,13 @@ func (m *Manager) SetOneService(service *Config) {
 
 func (m *Manager) GetList() ([]ConfigStatus, error) {
 	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	// clone the list
 	cfgList := make([]*Config, len(m.list))
 	for i, v := range m.list {
 		cfgList[i] = v
 	}
-	m.lock.Unlock()
 
 	services, err := m.client.listServices()
 	if err != nil {
