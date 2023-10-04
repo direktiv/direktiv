@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
@@ -97,3 +98,34 @@ func (c *knClient) listServices() ([]Status, error) {
 }
 
 var _ client = &knClient{}
+
+type K8sFunctionStatus struct {
+	*servingv1.Service
+}
+
+func (r *K8sFunctionStatus) status() any {
+	type check struct {
+		Name string `json:"name"`
+		Ok   bool   `json:"ok"`
+	}
+	checks := []check{}
+
+	for _, c := range r.Status.Conditions {
+		checks = append(checks, check{
+			Name: string(c.Type),
+			Ok:   c.Status == "True",
+		})
+	}
+
+	return checks
+}
+
+func (r *K8sFunctionStatus) id() string {
+	return r.Name
+}
+
+func (r *K8sFunctionStatus) hash() string {
+	return r.Annotations["direktiv.io/input_hash"]
+}
+
+var _ Status = &K8sFunctionStatus{}
