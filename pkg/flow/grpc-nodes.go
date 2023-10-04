@@ -243,7 +243,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.FunctionDelete, file.Path)
+		err = flow.pBus.Publish(pubsub.ServiceDelete, file.Path)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

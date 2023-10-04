@@ -10,9 +10,9 @@ var (
 	WorkflowDelete = "workflow_delete"
 	WorkflowUpdate = "workflow_update"
 
-	FunctionCreate = "function_create"
-	FunctionDelete = "function_delete"
-	FunctionUpdate = "function_update"
+	ServiceCreate = "service_create"
+	ServiceDelete = "service_delete"
+	ServiceUpdate = "service_update"
 
 	MirrorSync = "mirror_sync"
 )

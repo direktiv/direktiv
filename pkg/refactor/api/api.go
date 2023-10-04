@@ -43,7 +43,7 @@ func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
 
-			r.Route("/namespaces/{namespace}/functions", func(r chi.Router) {
+			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)
 			})
 		})

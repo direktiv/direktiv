@@ -28,7 +28,7 @@ func ParseService(data []byte) (*Service, error) {
 	return res, nil
 }
 
-type WorkflowFunctionDefinition struct {
+type WorkflowServiceDefinition struct {
 	//nolint
 	Typ   string `yaml:"type"`
 	Name  string `yaml:"name"`
@@ -38,8 +38,8 @@ type WorkflowFunctionDefinition struct {
 	Cmd   string `yaml:"cmd"`
 }
 
-func ParseWorkflowFunctionDefinition(data []byte) (*WorkflowFunctionDefinition, error) {
-	res := &WorkflowFunctionDefinition{}
+func ParseWorkflowServiceDefinition(data []byte) (*WorkflowServiceDefinition, error) {
+	res := &WorkflowServiceDefinition{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
 		return nil, err

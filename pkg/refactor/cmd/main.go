@@ -23,36 +23,36 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 	wg := &sync.WaitGroup{}
 	done := make(chan struct{})
 
-	// Create functions manager
-	funcManager, err := service.NewManagerFromK8s()
+	// Create service manager
+	serviceManager, err := service.NewManagerFromK8s()
 	if err != nil {
-		log.Fatalf("error creating functions client: %v\n", err)
+		log.Fatalf("error creating service manager: %v\n", err)
 	}
-	// Start functions manager
+	// Start service manager
 	wg.Add(1)
-	funcManager.Start(done, wg)
+	serviceManager.Start(done, wg)
 
 	// Create App
 	app := &core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		ServiceManager: funcManager,
+		ServiceManager: serviceManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
-		renderServicesInFunctionsManager(db, funcManager, logger)
+		renderServiceManager(db, serviceManager, logger)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
 		pubsub.WorkflowDelete,
-		pubsub.FunctionCreate,
-		pubsub.FunctionUpdate,
-		pubsub.FunctionDelete,
+		pubsub.ServiceCreate,
+		pubsub.ServiceUpdate,
+		pubsub.ServiceDelete,
 		pubsub.MirrorSync,
 	)
 	// Call at least once before booting
-	renderServicesInFunctionsManager(db, funcManager, logger)
+	renderServiceManager(db, serviceManager, logger)
 
 	// Start api v2 server
 	wg.Add(1)
@@ -69,7 +69,7 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 	return wg
 }
 
-func renderServicesInFunctionsManager(db *database.DB, funcManager *service.Manager, logger *zap.SugaredLogger) {
+func renderServiceManager(db *database.DB, serviceManager *service.Manager, logger *zap.SugaredLogger) {
 	logger = logger.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
@@ -114,7 +114,7 @@ func renderServicesInFunctionsManager(db *database.DB, funcManager *service.Mana
 					Scale:       serviceDef.Scale,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
-				serviceDef, err := spec.ParseWorkflowFunctionDefinition(data)
+				serviceDef, err := spec.ParseWorkflowServiceDefinition(data)
 				if err != nil {
 					logger.Error("parse workflow service def", "error", err)
 
@@ -133,6 +133,5 @@ func renderServicesInFunctionsManager(db *database.DB, funcManager *service.Mana
 			}
 		}
 	}
-
-	funcManager.SetServices(funConfigList)
+	serviceManager.SetServices(funConfigList)
 }

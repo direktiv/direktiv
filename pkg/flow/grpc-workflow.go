@@ -131,7 +131,7 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created service '%s'.", file.Path)
 
-	err = flow.pBus.Publish(pubsub.FunctionCreate, file.Path)
+	err = flow.pBus.Publish(pubsub.ServiceCreate, file.Path)
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -297,7 +297,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.FunctionUpdate, file.Path)
+		err = flow.pBus.Publish(pubsub.ServiceUpdate, file.Path)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
