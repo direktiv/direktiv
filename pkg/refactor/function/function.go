@@ -32,7 +32,7 @@ type Config struct {
 	Error string `json:"error,omitempty"`
 }
 
-func (c *Config) getId() string {
+func (c *Config) getID() string {
 	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
 	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
@@ -54,7 +54,7 @@ func (c *Config) getValueHash() string {
 
 type Status interface {
 	getConditions() any
-	getId() string
+	getID() string
 	getValueHash() string
 }
 

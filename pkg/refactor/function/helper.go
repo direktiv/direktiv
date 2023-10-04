@@ -84,7 +84,7 @@ func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
 
 func buildServiceMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
-		Name:        cfg.getId(),
+		Name:        cfg.getID(),
 		Namespace:   c.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),

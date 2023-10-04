@@ -35,9 +35,11 @@ func (c *knativeClient) updateService(cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	input, _ := json.Marshal(&svcDef)
-
-	_, err = c.client.ServingV1().Services(c.config.Namespace).Patch(context.Background(), cfg.getId(), types.MergePatchType, input, metav1.PatchOptions{})
+	input, err := json.Marshal(&svcDef)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.ServingV1().Services(c.config.Namespace).Patch(context.Background(), cfg.getID(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
@@ -78,7 +80,7 @@ func (r *knativeStatus) getConditions() any {
 	return r.Status.Conditions
 }
 
-func (r *knativeStatus) getId() string {
+func (r *knativeStatus) getID() string {
 	return r.Name
 }
 

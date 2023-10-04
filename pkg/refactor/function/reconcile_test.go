@@ -10,7 +10,7 @@ type mockedObject struct {
 	hashStr string
 }
 
-func (m *mockedObject) getId() string {
+func (m *mockedObject) getID() string {
 	return m.idStr
 }
 
