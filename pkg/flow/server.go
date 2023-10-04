@@ -33,7 +33,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
-	"github.com/direktiv/direktiv/pkg/refactor/workers"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -414,7 +413,7 @@ func (srv *server) start(ctx context.Context) error {
 	srv.sugar.Info("Initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
-	eventWorker := workers.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.sugar.Named("eventworker"), srv.events.handleEvent)
+	eventWorker := eventsstore.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.sugar.Named("eventworker"), srv.events.handleEvent)
 
 	go eventWorker.Start(ctx)
 

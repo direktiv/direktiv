@@ -1,17 +1,16 @@
-package workers
+package events
 
 import (
 	"context"
 	"time"
 
 	ce "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type EventWorker struct {
-	store  events.StagingEventStore
+	store  StagingEventStore
 	ticker *time.Ticker
 	signal chan struct{}
 	// eventQueue  chan []*events.StagingEvent
@@ -19,7 +18,7 @@ type EventWorker struct {
 	logger      zap.SugaredLogger
 }
 
-func NewEventWorker(store events.StagingEventStore, interval time.Duration, logger *zap.SugaredLogger, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
+func NewEventWorker(store StagingEventStore, interval time.Duration, logger *zap.SugaredLogger, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
 	return &EventWorker{
 		store:  store,
 		ticker: time.NewTicker(interval),
