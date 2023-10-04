@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
@@ -248,8 +247,8 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return err
 	}
 
-	resource, err := api.LoadResource(data)
-	if errors.Is(err, api.ErrNotDirektivAPIResource) {
+	resource, err := model.LoadResource(data)
+	if errors.Is(err, model.ErrNotDirektivAPIResource) {
 		return nil
 	}
 	if err != nil {
@@ -259,8 +258,8 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 	}
 
 	switch typ := resource.(type) {
-	case *api.Filters:
-		filters, ok := resource.(*api.Filters)
+	case *model.Filters:
+		filters, ok := resource.(*model.Filters)
 		if !ok {
 			panic(nil)
 		}
@@ -358,7 +357,7 @@ func (p *Parser) handleWorkflow(path string, data []byte) error {
 	return nil
 }
 
-func (p *Parser) handleFilters(path string, filters *api.Filters) error {
+func (p *Parser) handleFilters(path string, filters *model.Filters) error {
 	p.log.Infof("Direktiv resource file containing %d filter definitions found at '%s'", len(filters.Filters), path)
 
 	for idx, filter := range filters.Filters {
