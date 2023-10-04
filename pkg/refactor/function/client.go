@@ -9,12 +9,12 @@ type client interface {
 }
 
 type ClientConfig struct {
-	ServiceAccount string `yaml:"service-account"`
+	ServiceAccount string `yaml:"service_account"`
 	Namespace      string `yaml:"namespace"`
-	IngressClass   string `yaml:"ingress-class"`
+	IngressClass   string `yaml:"ingress_class"`
 
 	Sidecar string `yaml:"sidecar"`
 
-	MaxScale int    `yaml:"max-scale"`
-	NetShape string `yaml:"net-shape"`
+	MaxScale int    `yaml:"max_scale"`
+	NetShape string `yaml:"net_shape"`
 }

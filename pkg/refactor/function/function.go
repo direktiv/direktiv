@@ -18,18 +18,18 @@ const (
 )
 
 type Config struct {
-	Namespace string
-	Name      string
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
 
-	ServicePath  string
-	WorkflowPath string
+	ServicePath  string `json:"service_path"`
+	WorkflowPath string `json:"workflow_path"`
 
-	Image string
-	CMD   string
-	Size  string
-	Scale int
+	Image string `json:"image"`
+	CMD   string `json:"cmd"`
+	Size  string `json:"size"`
+	Scale int    `json:"scale"`
 
-	Error error
+	Error error `json:"error"`
 }
 
 func (c *Config) getId() string {
