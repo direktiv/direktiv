@@ -40,7 +40,7 @@ func NewManagerFromK8s() (*Manager, error) {
 		return nil, fmt.Errorf("invalid client config, err: %s", err)
 	}
 
-	client := &knClient{
+	client := &knativeClient{
 		client: cset,
 		config: c,
 	}

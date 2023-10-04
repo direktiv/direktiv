@@ -8,6 +8,15 @@ import (
 	"github.com/mitchellh/hashstructure/v2"
 )
 
+const (
+	httpsProxy = "HTTPS_PROXY"
+	httpProxy  = "HTTP_PROXY"
+	noProxy    = "NO_PROXY"
+
+	containerUser    = "direktiv-container"
+	containerSidecar = "direktiv-sidecar"
+)
+
 type Config struct {
 	Namespace string
 	Name      string
