@@ -30,4 +30,13 @@ module.exports = {
   docs: {
     autodocs: true,
   },
+  // https://github.com/chromaui/chromatic-cli/issues/550#issuecomment-1326856720
+  viteFinal: (config) => ({
+    ...config,
+    build: {
+      ...config.build,
+      sourcemap: false,
+      target: ["es2020"],
+    },
+  }),
 };
