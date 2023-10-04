@@ -23,7 +23,7 @@ type Config struct {
 	Error error
 }
 
-func (c *Config) id() string {
+func (c *Config) getId() string {
 	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
 	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
@@ -33,7 +33,7 @@ func (c *Config) id() string {
 	return fmt.Sprintf("obj-%d-obj", v)
 }
 
-func (c *Config) hash() string {
+func (c *Config) getValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
 	if err != nil {
@@ -44,9 +44,9 @@ func (c *Config) hash() string {
 }
 
 type Status interface {
-	status() any
-	id() string
-	hash() string
+	checks() any
+	getId() string
+	getValueHash() string
 }
 
 type ConfigStatus struct {

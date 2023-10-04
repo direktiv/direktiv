@@ -91,7 +91,7 @@ func (c *knClient) listServices() ([]Status, error) {
 
 	result := []Status{}
 	for i := range list.Items {
-		result = append(result, &K8sFunctionStatus{&list.Items[i]})
+		result = append(result, &KnativeFunctionStatus{&list.Items[i]})
 	}
 
 	return result, nil
@@ -99,11 +99,11 @@ func (c *knClient) listServices() ([]Status, error) {
 
 var _ client = &knClient{}
 
-type K8sFunctionStatus struct {
+type KnativeFunctionStatus struct {
 	*servingv1.Service
 }
 
-func (r *K8sFunctionStatus) status() any {
+func (r *KnativeFunctionStatus) checks() any {
 	type check struct {
 		Name string `json:"name"`
 		Ok   bool   `json:"ok"`
@@ -120,12 +120,12 @@ func (r *K8sFunctionStatus) status() any {
 	return checks
 }
 
-func (r *K8sFunctionStatus) id() string {
+func (r *KnativeFunctionStatus) getId() string {
 	return r.Name
 }
 
-func (r *K8sFunctionStatus) hash() string {
+func (r *KnativeFunctionStatus) getValueHash() string {
 	return r.Annotations["direktiv.io/input_hash"]
 }
 
-var _ Status = &K8sFunctionStatus{}
+var _ Status = &KnativeFunctionStatus{}

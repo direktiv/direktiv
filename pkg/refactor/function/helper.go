@@ -84,13 +84,13 @@ func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
 
 func buildServiceMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
-		Name:        cfg.id(),
+		Name:        cfg.getId(),
 		Namespace:   c.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
 
-	meta.Annotations["direktiv.io/input_hash"] = cfg.hash()
+	meta.Annotations["direktiv.io/input_hash"] = cfg.getValueHash()
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 	meta.Annotations["networking.knative.dev/ingress.class"] = c.IngressClass
 

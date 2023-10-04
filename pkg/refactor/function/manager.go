@@ -62,7 +62,7 @@ func (m *Manager) runCycle() []error {
 	}
 	searchSrc := map[string]*Config{}
 	for _, v := range m.list {
-		searchSrc[v.id()] = v
+		searchSrc[v.getId()] = v
 	}
 
 	m.lock.Unlock()
@@ -74,7 +74,7 @@ func (m *Manager) runCycle() []error {
 
 	//fmt.Printf("klist2:")
 	//for _, v := range knList {
-	//	fmt.Printf(" {%v %v} ", v.id(), v.hash())
+	//	fmt.Printf(" {%v %v} ", v.getId(), v.getValueHash())
 	//}
 	//fmt.Printf("\n")
 
@@ -87,13 +87,13 @@ func (m *Manager) runCycle() []error {
 
 	//fmt.Printf("srcs:")
 	//for _, v := range src {
-	//	fmt.Printf(" {%v %v} ", v.id(), v.hash())
+	//	fmt.Printf(" {%v %v} ", v.getId(), v.getValueHash())
 	//}
 	//fmt.Printf("\n")
 	//
 	//fmt.Printf("tars:")
 	//for _, v := range target {
-	//	fmt.Printf(" {%v %v} ", v.id(), v.hash())
+	//	fmt.Printf(" {%v %v} ", v.getId(), v.getValueHash())
 	//}
 	//fmt.Printf("\n")
 
@@ -160,7 +160,7 @@ func (m *Manager) SetOneService(service *Config) {
 	defer m.lock.Unlock()
 
 	for i, v := range m.list {
-		if v.id() == service.id() {
+		if v.getId() == service.getId() {
 			m.list[i] = service
 
 			return
@@ -185,16 +185,16 @@ func (m *Manager) GetList() ([]ConfigStatus, error) {
 	}
 	searchServices := map[string]Status{}
 	for _, v := range services {
-		searchServices[v.id()] = v
+		searchServices[v.getId()] = v
 	}
 
 	result := []ConfigStatus{}
 
 	for _, v := range cfgList {
-		service, _ := searchServices[v.id()]
+		service, _ := searchServices[v.getId()]
 		result = append(result, ConfigStatus{
 			Config: v,
-			Checks: service.status(),
+			Checks: service.checks(),
 		})
 	}
 
