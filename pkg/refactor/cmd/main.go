@@ -37,7 +37,7 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		FunctionsManager: funcManager,
+		ServiceManager: funcManager,
 	}
 
 	pbus.Subscribe(func(_ string) {

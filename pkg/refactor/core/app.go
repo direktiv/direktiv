@@ -9,6 +9,6 @@ type Version struct {
 }
 
 type App struct {
-	Version          *Version
-	FunctionsManager *service.Manager
+	Version        *Version
+	ServiceManager *service.Manager
 }

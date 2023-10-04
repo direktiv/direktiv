@@ -16,7 +16,7 @@ import (
 
 func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
-		manager: app.FunctionsManager,
+		manager: app.ServiceManager,
 	}
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
