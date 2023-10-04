@@ -127,11 +127,11 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 				break loop
 			default:
 			}
-			time.Sleep(10 * time.Second)
 			errs := m.runCycle()
 			for _, err := range errs {
 				fmt.Printf("f2 error: %s\n", err)
 			}
+			time.Sleep(10 * time.Second)
 		}
 
 		wg.Done()

@@ -496,6 +496,11 @@ func (srv *server) start(ctx context.Context) error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
+	go func() {
+		<-sigs
+		panic("TODO: Alan, remove this panic and handle signal gracefully")
+	}()
+
 	wg.Wait()
 
 	newMainWG.Wait()
