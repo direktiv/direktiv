@@ -8,11 +8,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/function"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/direktiv/direktiv/pkg/refactor/webapi"
 	"go.uber.org/zap"
 )
@@ -88,7 +88,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 				continue
 			}
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := api.ParseService(data)
+				serviceDef, err := spec.ParseService(data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
@@ -103,7 +103,7 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 					Scale:       serviceDef.Scale,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
-				serviceDef, err := api.ParseWorkflowFunctionDefinition(data)
+				serviceDef, err := spec.ParseWorkflowFunctionDefinition(data)
 				if err != nil {
 					logger.Error("parse workflow service def", "error", err)
 
