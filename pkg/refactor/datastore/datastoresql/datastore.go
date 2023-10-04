@@ -31,12 +31,6 @@ func NewSQLStore(db *gorm.DB, mirrorConfigEncryptionKey string) datastore.Store 
 	}
 }
 
-func NewServicesStore(db *gorm.DB) core.ServicesStore {
-	return &sqlServicesStore{
-		db: db,
-	}
-}
-
 // Mirror returns mirror store.
 func (s *sqlStore) Mirror() mirror.Store {
 	return &sqlMirrorStore{
