@@ -292,6 +292,10 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		}
 	}
 
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
 	if file.Typ == filestore.FileTypeService {
 		err = flow.pBus.Publish(pubsub.FunctionUpdate, file.Path)
 		if err != nil {

@@ -111,15 +111,17 @@ func (m *Manager) runCycle() []error {
 
 	for _, id := range result.creates {
 		v := searchSrc[id]
+		v.Error = ""
 		if err := m.client.createService(v); err != nil {
-			v.Error = err
+			v.Error = err.Error()
 		}
 	}
 
 	for _, id := range result.updates {
 		v := searchSrc[id]
+		v.Error = ""
 		if err := m.client.updateService(v); err != nil {
-			v.Error = err
+			v.Error = err.Error()
 		}
 	}
 
@@ -192,10 +194,17 @@ func (m *Manager) GetList() ([]ConfigStatus, error) {
 
 	for _, v := range cfgList {
 		service, _ := searchServices[v.getId()]
-		result = append(result, ConfigStatus{
-			Config:     v,
-			Conditions: service.getConditions(),
-		})
+		if service != nil {
+			result = append(result, ConfigStatus{
+				Config:     v,
+				Conditions: service.getConditions(),
+			})
+		} else {
+			result = append(result, ConfigStatus{
+				Config:     v,
+				Conditions: nil,
+			})
+		}
 	}
 
 	return result, nil

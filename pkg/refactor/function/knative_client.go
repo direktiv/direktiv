@@ -2,9 +2,10 @@ package function
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
@@ -21,12 +22,11 @@ func (c *knativeClient) createService(cfg *Config) error {
 		return err
 	}
 
-	service, err := c.client.ServingV1().Services(c.config.Namespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
+	_, err = c.client.ServingV1().Services(c.config.Namespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
 	if err != nil {
-		fmt.Printf("f2: err serving create: %v\n", err)
 		return err
 	}
-	fmt.Printf("f2: serving create output: %v\n", service)
+
 	return nil
 }
 
@@ -35,29 +35,28 @@ func (c *knativeClient) updateService(cfg *Config) error {
 	if err != nil {
 		return err
 	}
+	input, _ := json.Marshal(&svcDef)
 
-	service, err := c.client.ServingV1().Services(c.config.Namespace).Update(context.Background(), svcDef, metav1.UpdateOptions{})
+	_, err = c.client.ServingV1().Services(c.config.Namespace).Patch(context.Background(), cfg.getId(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
-		fmt.Printf("f2: err serving update: %v\n", err)
 		return err
 	}
-	fmt.Printf("f2: serving update output: %v\n", service)
+
 	return nil
 }
 
 func (c *knativeClient) deleteService(id string) error {
 	err := c.client.ServingV1().Services(c.config.Namespace).Delete(context.Background(), id, metav1.DeleteOptions{})
 	if err != nil {
-		fmt.Printf("f2: err serving delete: %v\n", err)
 		return err
 	}
-	return err
+
+	return nil
 }
 
 func (c *knativeClient) listServices() ([]Status, error) {
 	list, err := c.client.ServingV1().Services(c.config.Namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		fmt.Printf("f2: err serving list: %v\n", err)
 		return nil, err
 	}
 
