@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -19,8 +20,16 @@ func (a *appMiddlewares) injectNamespace(next http.Handler) http.Handler {
 		namespace := chi.URLParam(r, "namespace")
 
 		ns, err := a.dStore.Namespaces().GetByName(r.Context(), namespace)
+		if errors.Is(err, datastore.ErrNotFound) {
+			writeError(w, &Error{
+				Code:    "resource_not_found",
+				Message: "requested resource(namespace) is not found",
+			})
+
+			return
+		}
 		if err != nil {
-			writeDataStoreError(w, err)
+			writeInternalError(w, err)
 
 			return
 		}
