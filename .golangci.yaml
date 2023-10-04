@@ -17,6 +17,7 @@ linters-settings:
         yaml: snake
 
 linters:
+  enable-all: true
   disable:
     - depguard
     - exhaustruct
@@ -31,20 +32,16 @@ linters:
     - cyclop
     - godox # must fix before release.
 
-  presets:
-    - bugs
-    - comment
-    - complexity
-    - error
-    - format
-    - import
-    - metalinter
-    - module
-    - performance
-    - sql
-    - style
-    - test
-    - unused
+    - exhaustivestruct
+    - structcheck
+    - ifshort
+    - maligned
+    - interfacer
+    - nosnakecase
+    - golint
+    - deadcode
+    - varcheck
+    - scopelint
 
 issues:
   exclude-rules:
