@@ -170,13 +170,23 @@ func (m *Manager) SetOneService(service *Config) {
 	m.list = append(m.list, service)
 }
 
-func (m *Manager) GetList() ([]ConfigStatus, error) {
+func (m *Manager) getList(filterNamespace string, filterWorkflowPath string, filterServicePath string) ([]*ConfigStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	// clone the list
 	cfgList := make([]*Config, len(m.list))
 	for i, v := range m.list {
+		if filterNamespace != "" && filterNamespace != v.Namespace {
+			continue
+		}
+		if filterWorkflowPath != "" && filterWorkflowPath != v.WorkflowPath {
+			continue
+		}
+		if filterServicePath != "" && filterServicePath != v.ServicePath {
+			continue
+		}
+
 		cfgList[i] = v
 	}
 
@@ -189,18 +199,18 @@ func (m *Manager) GetList() ([]ConfigStatus, error) {
 		searchServices[v.getID()] = v
 	}
 
-	result := []ConfigStatus{}
+	result := []*ConfigStatus{}
 
 	for _, v := range cfgList {
 		service, _ := searchServices[v.getID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.getValueHash() == v.getValueHash() {
-			result = append(result, ConfigStatus{
+			result = append(result, &ConfigStatus{
 				Config:     v,
 				Conditions: service.getConditions(),
 			})
 		} else {
-			result = append(result, ConfigStatus{
+			result = append(result, &ConfigStatus{
 				Config:     v,
 				Conditions: nil,
 			})
@@ -208,4 +218,12 @@ func (m *Manager) GetList() ([]ConfigStatus, error) {
 	}
 
 	return result, nil
+}
+
+func (m *Manager) GetList() ([]*ConfigStatus, error) {
+	return m.getList("", "", "")
+}
+
+func (m *Manager) GetListByNamespace(namespace string) ([]*ConfigStatus, error) {
+	return m.getList(namespace, "", "")
 }

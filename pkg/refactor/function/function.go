@@ -60,5 +60,5 @@ type Status interface {
 
 type ConfigStatus struct {
 	Config     *Config `json:"config"`
-	Conditions any     `json:"conditions"`
+	Conditions any     `json:"conditions,omitempty"`
 }
