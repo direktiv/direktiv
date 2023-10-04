@@ -7,8 +7,10 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/api"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/function"
@@ -18,16 +20,28 @@ import (
 )
 
 func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
+	wg := &sync.WaitGroup{}
+	done := make(chan struct{})
+
+	// Create functions manager
 	funcManager, err := function.NewManagerFromK8s()
 	if err != nil {
 		log.Fatalf("error creating functions client: %v\n", err)
 	}
+	// Start functions manager
+	wg.Add(1)
+	funcManager.Start(done, wg)
 
-	wg := &sync.WaitGroup{}
-	done := make(chan struct{})
+	// Create App
+	app := &core.App{
+		Version: &core.Version{
+			UnixTime: time.Now().Unix(),
+		},
+		FunctionsManager: funcManager,
+	}
 
 	pbus.Subscribe(func(_ string) {
-		subscriberServicesChanges(db, funcManager, logger)
+		renderServicesInFunctionsManager(db, funcManager, logger)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -37,7 +51,12 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 		pubsub.FunctionDelete,
 		pubsub.MirrorSync,
 	)
-	subscriberServicesChanges(db, funcManager, logger)
+	// Call at least once before booting
+	renderServicesInFunctionsManager(db, funcManager, logger)
+
+	// Start api v2 server
+	wg.Add(1)
+	api.Start(app, db, "0.0.0.0:6667", done, wg)
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit
@@ -47,18 +66,10 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 		close(done)
 	}()
 
-	// Start functions manager
-	wg.Add(1)
-	funcManager.Start(done, wg)
-
-	// Start api v2 server
-	wg.Add(1)
-	api.Start(funcManager, "0.0.0.0:6667", done, wg)
-
 	return wg
 }
 
-func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, logger *zap.SugaredLogger) {
+func renderServicesInFunctionsManager(db *database.DB, funcManager *function.Manager, logger *zap.SugaredLogger) {
 	logger = logger.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()

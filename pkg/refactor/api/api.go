@@ -9,19 +9,43 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/function"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/go-chi/chi/v5"
 )
 
-func Start(funcManager *function.Manager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
-	fcnt := &functionsController{
-		manager: funcManager,
+func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+	funcCtr := &functionsController{
+		manager: app.FunctionsManager,
 	}
-	r := chi.NewRouter()
+	mw := &appMiddlewares{dStore: db.DataStore()}
 
+	r := chi.NewRouter()
+	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		writeError(w, &Error{
+			Code:    "request_method_not_allowed",
+			Message: "request http method is not allowed for this path",
+		})
+		return
+	})
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		writeError(w, &Error{
+			Code:    "request_path_not_found",
+			Message: "request http path is not found",
+		})
+
+		return
+	})
+	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
+		writeJson(w, app.Version)
+	})
 	r.Route("/api/v2", func(r chi.Router) {
-		r.Route("/functions", func(r chi.Router) {
-			fcnt.mountRouter(r)
+		r.Group(func(r chi.Router) {
+			r.Use(mw.injectNamespace)
+
+			r.Route("/namespaces/{namespace}/functions", func(r chi.Router) {
+				funcCtr.mountRouter(r)
+			})
 		})
 	})
 
@@ -52,7 +76,7 @@ func Start(funcManager *function.Manager, addr string, done <-chan struct{}, wg 
 	}()
 }
 
-func writeData(w http.ResponseWriter, v any) {
+func writeJson(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
