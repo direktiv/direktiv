@@ -44,6 +44,7 @@ const ErrorPage = () => {
         <Button
           variant="primary"
           asChild
+          isAnchor
           className="col-span-2"
           data-testid="error-home-btn"
         >
