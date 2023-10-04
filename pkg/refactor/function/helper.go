@@ -10,6 +10,14 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
+func validateConfig(c *ClientConfig) (*ClientConfig, error) {
+	if c.MaxScale > 9 || c.MaxScale < 1 {
+		c.MaxScale = 5
+	}
+
+	return c, nil
+}
+
 func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
 	//min := int(info.GetMinScale())
 	//if min > functionsConfig.MaxScale {

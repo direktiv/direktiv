@@ -29,12 +29,19 @@ func NewManagerFromK8s() (*Manager, error) {
 		return nil, err
 	}
 
+	c := &ClientConfig{
+		ServiceAccount: "direktiv-functions-pod",
+		Namespace:      "direktiv-services-direktiv",
+	}
+
+	c, err = validateConfig(c)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client config, err: %s", err)
+	}
+
 	client := &knClient{
 		client: cset,
-		config: &ClientConfig{
-			ServiceAccount: "direktiv-functions-pod",
-			Namespace:      "direktiv-services-direktiv",
-		},
+		config: c,
 	}
 
 	return &Manager{
