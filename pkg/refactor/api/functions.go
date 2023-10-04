@@ -9,15 +9,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type functionsController struct {
+type serviceController struct {
 	manager *service.Manager
 }
 
-func (e *functionsController) mountRouter(r chi.Router) {
+func (e *serviceController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
 }
 
-func (e *functionsController) all(w http.ResponseWriter, r *http.Request) {
+func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 
 	list, err := e.manager.GetListByNamespace(ns.Name)
