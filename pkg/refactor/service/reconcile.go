@@ -1,4 +1,4 @@
-package function
+package service
 
 type reconcileObject interface {
 	getID() string

@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/function"
+	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/go-chi/chi/v5"
 )
 
 type functionsController struct {
-	manager *function.Manager
+	manager *service.Manager
 }
 
 func (e *functionsController) mountRouter(r chi.Router) {

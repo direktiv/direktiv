@@ -1,5 +1,5 @@
 // nolint
-package function
+package service
 
 import (
 	"fmt"
@@ -19,10 +19,6 @@ func validateConfig(c *ClientConfig) (*ClientConfig, error) {
 }
 
 func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
-	//min := int(info.GetMinScale())
-	//if min > functionsConfig.MaxScale {
-	//	min = functionsConfig.MaxScale
-	//}
 
 	containers, err := buildContainers(c, cfg)
 	if err != nil {

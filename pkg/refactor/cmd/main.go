@@ -13,8 +13,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/function"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"go.uber.org/zap"
 )
@@ -24,7 +24,7 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 	done := make(chan struct{})
 
 	// Create functions manager
-	funcManager, err := function.NewManagerFromK8s()
+	funcManager, err := service.NewManagerFromK8s()
 	if err != nil {
 		log.Fatalf("error creating functions client: %v\n", err)
 	}
@@ -69,7 +69,7 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 	return wg
 }
 
-func renderServicesInFunctionsManager(db *database.DB, funcManager *function.Manager, logger *zap.SugaredLogger) {
+func renderServicesInFunctionsManager(db *database.DB, funcManager *service.Manager, logger *zap.SugaredLogger) {
 	logger = logger.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
@@ -81,7 +81,7 @@ func renderServicesInFunctionsManager(db *database.DB, funcManager *function.Man
 		return
 	}
 
-	funConfigList := []*function.Config{}
+	funConfigList := []*service.Config{}
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
@@ -105,7 +105,7 @@ func renderServicesInFunctionsManager(db *database.DB, funcManager *function.Man
 
 					continue
 				}
-				funConfigList = append(funConfigList, &function.Config{
+				funConfigList = append(funConfigList, &service.Config{
 					Namespace:   ns.Name,
 					ServicePath: file.Path,
 					Image:       serviceDef.Image,
@@ -121,7 +121,7 @@ func renderServicesInFunctionsManager(db *database.DB, funcManager *function.Man
 					continue
 				}
 				if serviceDef.Typ == "knative-workflow" {
-					funConfigList = append(funConfigList, &function.Config{
+					funConfigList = append(funConfigList, &service.Config{
 						Namespace:    ns.Name,
 						WorkflowPath: file.Path,
 						Image:        serviceDef.Image,

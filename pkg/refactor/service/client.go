@@ -1,5 +1,5 @@
 // nolint
-package function
+package service
 
 type client interface {
 	createService(cfg *Config) error

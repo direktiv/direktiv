@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/function"
+	"github.com/direktiv/direktiv/pkg/refactor/service"
 )
 
 type Version struct {
@@ -10,5 +10,5 @@ type Version struct {
 
 type App struct {
 	Version          *Version
-	FunctionsManager *function.Manager
+	FunctionsManager *service.Manager
 }

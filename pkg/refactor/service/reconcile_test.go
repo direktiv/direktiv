@@ -1,4 +1,4 @@
-package function
+package service
 
 import (
 	"fmt"
