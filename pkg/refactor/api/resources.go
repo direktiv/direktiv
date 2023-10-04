@@ -82,17 +82,17 @@ type Service struct {
 	Scale       int    `yaml:"scale"`
 }
 
-func ParseService(data []byte) *Service {
+func ParseService(data []byte) (*Service, error) {
 	res := &Service{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	if strings.HasPrefix(res.DirektivAPI, "service/") {
-		return res
+	if !strings.HasPrefix(res.DirektivAPI, "service/v1") {
+		return nil, errors.New("invalid service api version")
 	}
 
-	return nil
+	return res, nil
 }
 
 type WorkflowFunctionDefinition struct {

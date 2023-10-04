@@ -88,8 +88,8 @@ func subscriberServicesChanges(db *database.DB, funcManager *function.Manager, l
 				continue
 			}
 			if file.Typ == filestore.FileTypeService {
-				serviceDef := api.ParseService(data)
-				if serviceDef == nil {
+				serviceDef, err := api.ParseService(data)
+				if err != nil {
 					logger.Error("parse service file", "error", err)
 
 					continue
