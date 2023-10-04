@@ -53,12 +53,12 @@ func (c *Config) getValueHash() string {
 }
 
 type Status interface {
-	checks() any
+	getConditions() any
 	getId() string
 	getValueHash() string
 }
 
 type ConfigStatus struct {
-	Config *Config `json:"config"`
-	Checks any     `json:"checks"`
+	Config     *Config `json:"config"`
+	Conditions any     `json:"conditions"`
 }

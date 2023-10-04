@@ -75,21 +75,8 @@ type knativeStatus struct {
 	*servingv1.Service
 }
 
-func (r *knativeStatus) checks() any {
-	type check struct {
-		Name string `json:"name"`
-		Ok   bool   `json:"ok"`
-	}
-	checks := []check{}
-
-	for _, c := range r.Status.Conditions {
-		checks = append(checks, check{
-			Name: string(c.Type),
-			Ok:   c.Status == "True",
-		})
-	}
-
-	return checks
+func (r *knativeStatus) getConditions() any {
+	return r.Status.Conditions
 }
 
 func (r *knativeStatus) getId() string {
