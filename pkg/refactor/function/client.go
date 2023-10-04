@@ -20,7 +20,7 @@ const (
 
 type client interface {
 	createService(cfg *Config) error
-	updateService(id string, cfg *Config) error
+	updateService(cfg *Config) error
 	deleteService(id string) error
 	listServices() ([]Status, error)
 }
@@ -57,9 +57,19 @@ func (c *knClient) createService(cfg *Config) error {
 	return nil
 }
 
-func (c *knClient) updateService(id string, cfg *Config) error {
-	// TODO implement me
-	panic("implement me updateService\n")
+func (c *knClient) updateService(cfg *Config) error {
+	svcDef, err := buildService(c.config, cfg)
+	if err != nil {
+		return err
+	}
+
+	service, err := c.client.ServingV1().Services(c.config.Namespace).Update(context.Background(), svcDef, metav1.UpdateOptions{})
+	if err != nil {
+		fmt.Printf("f2: err serving update: %v\n", err)
+		return err
+	}
+	fmt.Printf("f2: serving update output: %v\n", service)
+	return nil
 }
 
 func (c *knClient) deleteService(id string) error {

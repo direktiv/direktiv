@@ -32,6 +32,7 @@ func NewManagerFromK8s() (*Manager, error) {
 	c := &ClientConfig{
 		ServiceAccount: "direktiv-functions-pod",
 		Namespace:      "direktiv-services-direktiv",
+		IngressClass:   "contour.ingress.networking.knative.dev",
 	}
 
 	c, err = validateConfig(c)
@@ -178,22 +179,22 @@ func (m *Manager) GetList() ([]ConfigStatus, error) {
 	}
 	m.lock.Unlock()
 
-	statusList, err := m.client.listServices()
+	services, err := m.client.listServices()
 	if err != nil {
 		return nil, err
 	}
-	searchStatus := map[string]Status{}
-	for _, v := range statusList {
-		searchStatus[v.id()] = v
+	searchServices := map[string]Status{}
+	for _, v := range services {
+		searchServices[v.id()] = v
 	}
 
 	result := []ConfigStatus{}
 
 	for _, v := range cfgList {
-		status, _ := searchStatus[v.id()]
+		service, _ := searchServices[v.id()]
 		result = append(result, ConfigStatus{
 			Config: v,
-			Status: status,
+			Checks: service.status(),
 		})
 	}
 

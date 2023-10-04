@@ -104,3 +104,5 @@ direktivctl-windows
 direktivctl
 
 *node_modules
+
+draft.*

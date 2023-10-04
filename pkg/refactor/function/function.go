@@ -45,22 +45,35 @@ func (c *Config) hash() string {
 }
 
 type Status interface {
-	data() any
+	status() any
 	id() string
 	hash() string
 }
 
 type ConfigStatus struct {
-	Config *Config
-	Status Status
+	Config *Config `json:"config"`
+	Checks any     `json:"checks"`
 }
 
 type K8sFunctionStatus struct {
 	*servingv1.Service
 }
 
-func (r *K8sFunctionStatus) data() any {
-	return r.Service
+func (r *K8sFunctionStatus) status() any {
+	type check struct {
+		Name string `json:"name"`
+		Ok   bool   `json:"ok"`
+	}
+	checks := []check{}
+
+	for _, c := range r.Status.Conditions {
+		checks = append(checks, check{
+			Name: string(c.Type),
+			Ok:   c.Status == "True",
+		})
+	}
+
+	return checks
 }
 
 func (r *K8sFunctionStatus) id() string {

@@ -108,6 +108,9 @@ func buildPodMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.MaxScale)
 
+	metaSpec.Annotations["kubernetes.io/egress-bandwidth"] = "10M"
+	metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = "10M"
+
 	return metaSpec
 }
 
@@ -163,7 +166,7 @@ func buildContainers(c *ClientConfig, cfg *Config) ([]corev1.Container, error) {
 	}
 
 	// direktiv sidecar
-	ds := corev1.Container{
+	_ = corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.Sidecar,
 		Env:          buildEnvVars(c, cfg),
@@ -175,7 +178,7 @@ func buildContainers(c *ClientConfig, cfg *Config) ([]corev1.Container, error) {
 		},
 	}
 
-	return []corev1.Container{uc, ds}, nil
+	return []corev1.Container{uc}, nil
 }
 
 func buildResourceLimits(c *ClientConfig, cfg *Config) (corev1.ResourceRequirements, error) {
