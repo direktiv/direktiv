@@ -57,7 +57,7 @@ func writeData(w http.ResponseWriter, v any) {
 	w.WriteHeader(http.StatusOK)
 
 	payLoad := struct {
-		Data any
+		Data any `json:"data"`
 	}{
 		Data: v,
 	}

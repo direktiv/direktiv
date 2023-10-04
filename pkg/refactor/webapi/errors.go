@@ -34,7 +34,7 @@ func writeError(w http.ResponseWriter, err *Error) {
 	w.WriteHeader(httpStatus)
 
 	payLoad := struct {
-		Error *Error
+		Error *Error `json:"error"`
 	}{
 		Error: err,
 	}
