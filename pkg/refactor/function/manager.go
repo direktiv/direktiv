@@ -194,7 +194,8 @@ func (m *Manager) GetList() ([]ConfigStatus, error) {
 
 	for _, v := range cfgList {
 		service, _ := searchServices[v.getId()]
-		if service != nil {
+		// sometimes hashes might be different (not reconciled yet).
+		if service != nil && service.getValueHash() == v.getValueHash() {
 			result = append(result, ConfigStatus{
 				Config:     v,
 				Conditions: service.getConditions(),
