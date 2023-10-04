@@ -85,7 +85,7 @@ func (r *knativeStatus) getID() string {
 }
 
 func (r *knativeStatus) getValueHash() string {
-	return r.Annotations["direktiv.io/input_hash"]
+	return r.Annotations["direktiv.io/inputHash"]
 }
 
 var _ Status = &knativeStatus{}

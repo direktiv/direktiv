@@ -21,8 +21,8 @@ type Config struct {
 	Namespace string `json:"namespace"`
 	Name      string `json:"name,omitempty"`
 
-	ServicePath  string `json:"service_path,omitempty"`
-	WorkflowPath string `json:"workflow_path,omitempty"`
+	ServicePath  string `json:"servicePath,omitempty"`
+	WorkflowPath string `json:"workflowPath,omitempty"`
 
 	Image string `json:"image"`
 	CMD   string `json:"cmd"`

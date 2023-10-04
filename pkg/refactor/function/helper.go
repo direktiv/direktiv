@@ -90,7 +90,7 @@ func buildServiceMeta(c *ClientConfig, cfg *Config) metav1.ObjectMeta {
 		Annotations: make(map[string]string),
 	}
 
-	meta.Annotations["direktiv.io/input_hash"] = cfg.getValueHash()
+	meta.Annotations["direktiv.io/inputHash"] = cfg.getValueHash()
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 	meta.Annotations["networking.knative.dev/ingress.class"] = c.IngressClass
 
