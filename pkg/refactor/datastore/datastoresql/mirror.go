@@ -157,13 +157,13 @@ func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.P
 	return process, nil
 }
 
-func (s sqlMirrorStore) GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*mirror.Process, error) {
+func (s sqlMirrorStore) GetProcessesByNamespace(ctx context.Context, namespace string) ([]*mirror.Process, error) {
 	var process []*mirror.Process
 
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM mirror_processes
-					WHERE namespace_id=?`, namespaceID).
+					WHERE namespace=?`, namespace).
 		Find(&process)
 
 	if res.Error != nil {

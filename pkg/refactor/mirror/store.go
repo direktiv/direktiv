@@ -52,7 +52,6 @@ type Process struct {
 	ID          uuid.UUID
 	NamespaceID uuid.UUID
 	Namespace   string
-	RootID      uuid.UUID
 
 	Status string
 	Typ    string
@@ -85,8 +84,8 @@ type Store interface {
 	// GetProcess gets a process by id from the store.
 	GetProcess(ctx context.Context, id uuid.UUID) (*Process, error)
 
-	// GetProcessesByNamespaceID gets all processes that belong to a namespace from the store.
-	GetProcessesByNamespaceID(ctx context.Context, namespaceID uuid.UUID) ([]*Process, error)
+	// GetProcessesByNamespace gets all processes that belong to a namespace from the store.
+	GetProcessesByNamespace(ctx context.Context, namespace string) ([]*Process, error)
 
 	// GetUnfinishedProcesses gets all processes that haven't completed from the store.
 	GetUnfinishedProcesses(ctx context.Context) ([]*Process, error)

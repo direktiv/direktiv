@@ -72,9 +72,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
 
 CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "id" uuid,
-    "namespace_id" uuid NOT NULL,
     "namespace" text NOT NULL,
-    "root_id" uuid NOT NULL,
     "status" text NOT NULL,
     "typ" 	 text NOT NULL,
     "ended_at" timestamptz,
@@ -82,7 +80,7 @@ CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_mirror_processes"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "secrets" (

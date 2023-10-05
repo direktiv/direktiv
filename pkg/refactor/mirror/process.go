@@ -9,10 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func (d *Manager) NewProcess(ctx context.Context, ns *core.Namespace, rootID uuid.UUID, processType string) (*Process, error) {
+func (d *Manager) NewProcess(ctx context.Context, ns *core.Namespace, processType string) (*Process, error) {
 	// TODO: make this check 100% threadsafe in HA
 
-	procs, err := d.callbacks.Store().GetProcessesByNamespaceID(ctx, ns.ID)
+	procs, err := d.callbacks.Store().GetProcessesByNamespace(ctx, ns.Name)
 	if err != nil {
 		return nil, fmt.Errorf("querying existing a mirroring processes, err: %w", err)
 	}
@@ -27,7 +27,6 @@ func (d *Manager) NewProcess(ctx context.Context, ns *core.Namespace, rootID uui
 		ID:          uuid.New(),
 		NamespaceID: ns.ID,
 		Namespace:   ns.Name,
-		RootID:      rootID,
 		Typ:         processType,
 		Status:      ProcessStatusPending,
 	})

@@ -42,11 +42,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	o.parser = parser
 	o.notes = notes
 
-	oldRoot, err := callbacks.FileStore().GetRoot(ctx, proc.RootID)
-	if err != nil {
-		return fmt.Errorf("failed to get old filesystem root: %w", err)
-	}
-
 	o.rootID = uuid.New()
 
 	root, err := callbacks.FileStore().CreateTempRoot(ctx, o.rootID)
@@ -75,12 +70,12 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	}
 
 	// TODO: join the next two operations into a single atomic SQL operation?
-	err = callbacks.FileStore().ForRootID(oldRoot.ID).Delete(ctx)
+	err = callbacks.FileStore().ForNamespace(proc.Namespace).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
 
-	err = callbacks.FileStore().ForRootID(root.ID).SetNamespace(ctx, oldRoot.Namespace)
+	err = callbacks.FileStore().ForRootID(root.ID).SetNamespace(ctx, proc.Namespace)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}

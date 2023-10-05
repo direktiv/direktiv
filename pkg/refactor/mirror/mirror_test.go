@@ -175,7 +175,7 @@ states:
 
 	manager := mirror.NewManager(callbacks)
 
-	p, err := manager.NewProcess(ctx, ns, rootID, mirror.ProcessTypeDryRun)
+	p, err := manager.NewProcess(ctx, ns, mirror.ProcessTypeDryRun)
 	if err != nil {
 		t.Fatalf("unexpected NewProcess() error = %v", err)
 	}
@@ -255,7 +255,7 @@ states:
 
 	manager := mirror.NewManager(callbacks)
 
-	p, err := manager.NewProcess(ctx, ns, rootID, mirror.ProcessTypeInit)
+	p, err := manager.NewProcess(ctx, ns, mirror.ProcessTypeInit)
 	if err != nil {
 		t.Fatalf("unexpected NewProcess() error = %v", err)
 	}

@@ -88,7 +88,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	proc, err := flow.mirrorManager.NewProcess(ctx, ns, root.ID, mirror.ProcessTypeInit)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns, mirror.ProcessTypeInit)
 	if err != nil {
 		return nil, err
 	}
@@ -159,18 +159,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	root, err := tx.FileStore().GetRootByNamespace(ctx, ns.Name)
-	if err != nil {
-		return nil, err
-	}
-
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
-	proc, err := flow.mirrorManager.NewProcess(ctx, ns, root.ID, mirror.ProcessTypeSync)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns, mirror.ProcessTypeSync)
 	if err != nil {
 		return nil, err
 	}
@@ -228,12 +223,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	root, err := tx.FileStore().GetRootByNamespace(ctx, ns.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	proc, err := flow.mirrorManager.NewProcess(ctx, ns, root.ID, mirror.ProcessTypeSync)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns, mirror.ProcessTypeSync)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +261,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 	if err != nil {
 		return nil, err
 	}
-	mirProcesses, err := tx.DataStore().Mirror().GetProcessesByNamespaceID(ctx, ns.ID)
+	mirProcesses, err := tx.DataStore().Mirror().GetProcessesByNamespace(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
