@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
-    "namespace_id" uuid,
+    "namespace" text,
     "workflow_path" text,
     "instance_id" uuid,
 
@@ -139,10 +139,10 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY ("id"),
-    UNIQUE(namespace_id, workflow_path, instance_id, name),
+    UNIQUE(namespace, workflow_path, instance_id, name),
 
     CONSTRAINT "fk_namespaces_runtime_variables"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE,
 
     -- TODO: Find a way to clean up runtime vars for workflows when they get deleted.
     CONSTRAINT "fk_instances_v2_runtime_variables"

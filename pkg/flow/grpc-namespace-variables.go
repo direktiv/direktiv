@@ -207,7 +207,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.ID, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.Name, req.GetKey())
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
 			t := time.Now()
@@ -283,7 +283,7 @@ func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVar
 		return nil, err
 	}
 
-	list, err := tx.DataStore().RuntimeVariables().ListForNamespace(ctx, ns.ID)
+	list, err := tx.DataStore().RuntimeVariables().ListForNamespace(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -336,10 +336,10 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	}
 
 	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
-		NamespaceID: ns.ID,
-		Name:        req.GetKey(),
-		Data:        req.GetData(),
-		MimeType:    req.GetMimeType(),
+		Namespace: ns.Name,
+		Name:      req.GetKey(),
+		Data:      req.GetData(),
+		MimeType:  req.GetMimeType(),
 	})
 	if err != nil {
 		return nil, err
@@ -447,7 +447,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.ID, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.Name, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -494,7 +494,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.ID, req.GetOld())
+	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.Name, req.GetOld())
 	if err != nil {
 		return nil, err
 	}

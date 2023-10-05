@@ -166,7 +166,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.ID, file.Path, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetKey())
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
 			t := time.Now()
@@ -249,7 +249,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 		return nil, err
 	}
 
-	list, err := tx.DataStore().RuntimeVariables().ListForWorkflow(ctx, ns.ID, file.Path)
+	list, err := tx.DataStore().RuntimeVariables().ListForWorkflow(ctx, ns.Name, file.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +307,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
-		NamespaceID:  ns.ID,
+		Namespace:    ns.Name,
 		WorkflowPath: file.Path,
 		Name:         req.GetKey(),
 		Data:         req.GetData(),
@@ -424,7 +424,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.ID, file.Path, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +476,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	if err != nil {
 		return nil, err
 	}
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.ID, file.Path, req.GetOld())
+	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetOld())
 	if err != nil {
 		return nil, err
 	}

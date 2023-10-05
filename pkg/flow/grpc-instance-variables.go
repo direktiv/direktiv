@@ -269,11 +269,11 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	defer tx.Rollback()
 
 	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
-		NamespaceID: inst.Instance.NamespaceID,
-		InstanceID:  inst.Instance.ID,
-		Name:        req.GetKey(),
-		Data:        req.GetData(),
-		MimeType:    req.GetMimeType(),
+		Namespace:  inst.Instance.Namespace,
+		InstanceID: inst.Instance.ID,
+		Name:       req.GetKey(),
+		Data:       req.GetData(),
+		MimeType:   req.GetMimeType(),
 	})
 	if err != nil {
 		return nil, err

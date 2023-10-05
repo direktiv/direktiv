@@ -48,9 +48,9 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			case util.VarScopeInstance:
 				item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, selector.Key)
 			case util.VarScopeWorkflow:
-				item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, selector.Key)
+				item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, selector.Key)
 			case util.VarScopeNamespace:
-				item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.NamespaceID, selector.Key)
+				item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, selector.Key)
 			default:
 				return nil, derrors.NewInternalError(errors.New("invalid scope"))
 			}
@@ -191,9 +191,9 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		case util.VarScopeInstance:
 			item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, v.Key)
 		case util.VarScopeWorkflow:
-			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, v.Key)
+			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, v.Key)
 		case util.VarScopeNamespace:
-			item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.NamespaceID, v.Key)
+			item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}
@@ -221,10 +221,10 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			}
 		} else {
 			newVar := &core.RuntimeVariable{
-				Name:        v.Key,
-				MimeType:    v.MIMEType,
-				Data:        v.Data,
-				NamespaceID: im.instance.Instance.NamespaceID,
+				Name:      v.Key,
+				MimeType:  v.MIMEType,
+				Data:      v.Data,
+				Namespace: im.instance.Instance.Namespace,
 			}
 
 			switch v.Scope {

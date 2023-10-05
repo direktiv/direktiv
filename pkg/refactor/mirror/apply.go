@@ -195,10 +195,10 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 
 		_, err := o.callbacks.VarStore().Set(ctx,
 			&core.RuntimeVariable{
-				NamespaceID: o.NamespaceID,
-				Name:        k,
-				MimeType:    mtString[0],
-				Data:        v,
+				Namespace: o.proc.Namespace,
+				Name:      k,
+				MimeType:  mtString[0],
+				Data:      v,
 			})
 		if err != nil {
 			return fmt.Errorf("failed to save namespace variable '%s': %w", k, err)
@@ -217,7 +217,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 
 			_, err := o.callbacks.VarStore().Set(ctx,
 				&core.RuntimeVariable{
-					NamespaceID:  o.NamespaceID,
+					Namespace:    o.proc.Namespace,
 					WorkflowPath: file.Path,
 					Name:         k,
 					MimeType:     mtString[0],

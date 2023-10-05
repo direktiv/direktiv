@@ -13,7 +13,7 @@ import (
 type RuntimeVariable struct {
 	ID uuid.UUID
 
-	NamespaceID  uuid.UUID
+	Namespace    string
 	WorkflowPath string
 	InstanceID   uuid.UUID
 
@@ -37,11 +37,11 @@ type RuntimeVariablesStore interface {
 
 	// GetForNamespace gets a single runtime variable from store by namespace ID and name. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetForNamespace(ctx context.Context, namespaceID uuid.UUID, name string) (*RuntimeVariable, error)
+	GetForNamespace(ctx context.Context, namespace string, name string) (*RuntimeVariable, error)
 
 	// GetForWorkflow gets a single runtime variable from store by namespace ID, workflow path, and name. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetForWorkflow(ctx context.Context, namespaceID uuid.UUID, workflowPath, name string) (*RuntimeVariable, error)
+	GetForWorkflow(ctx context.Context, namespace string, workflowPath, name string) (*RuntimeVariable, error)
 
 	// GetForInstance gets a single runtime variable from store by instance ID and name. if no record found,
 	// it returns datastore.ErrNotFound error.
@@ -51,10 +51,10 @@ type RuntimeVariablesStore interface {
 	ListForInstance(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
 
 	// ListForWorkflow gets all runtime variable entries from store that are linked to specific namespace & workflow path
-	ListForWorkflow(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*RuntimeVariable, error)
+	ListForWorkflow(ctx context.Context, namespace string, workflowPath string) ([]*RuntimeVariable, error)
 
 	// ListForNamespace gets all runtime variable entries from store that are at namespace level.
-	ListForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)
+	ListForNamespace(ctx context.Context, namespace string) ([]*RuntimeVariable, error)
 
 	// Set tries to update runtime variable data and mimetype fields or insert a new one if no matching variable to
 	// update. Param variable should have one reference field set and name field set.
