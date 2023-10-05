@@ -67,7 +67,7 @@ info:
     | `400` | invalid user input (in path, in method, in body)  |
     | `404` | resource not found  |
     | `403` | access denied for something wrong with the token |
-    | `500` | Something went wrong with the server |
+    | `500` | something went wrong with the server |
 
 tags:
   - name: services
