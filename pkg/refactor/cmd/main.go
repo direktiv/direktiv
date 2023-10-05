@@ -107,7 +107,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 				}
 				funConfigList = append(funConfigList, &service.Config{
 					Namespace:   ns.Name,
-					ServicePath: file.Path,
+					ServicePath: &file.Path,
 					Image:       serviceDef.Image,
 					CMD:         serviceDef.Cmd,
 					Size:        serviceDef.Size,
@@ -123,7 +123,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 				if serviceDef.Typ == "knative-workflow" {
 					funConfigList = append(funConfigList, &service.Config{
 						Namespace:    ns.Name,
-						WorkflowPath: file.Path,
+						WorkflowPath: &file.Path,
 						Image:        serviceDef.Image,
 						CMD:          serviceDef.Cmd,
 						Size:         serviceDef.Size,

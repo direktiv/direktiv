@@ -111,17 +111,17 @@ func (m *Manager) runCycle() []error {
 
 	for _, id := range result.creates {
 		v := searchSrc[id]
-		v.Error = ""
+		v.Error = nil
 		if err := m.client.createService(v); err != nil {
-			v.Error = err.Error()
+			*v.Error = err.Error()
 		}
 	}
 
 	for _, id := range result.updates {
 		v := searchSrc[id]
-		v.Error = ""
+		v.Error = nil
 		if err := m.client.updateService(v); err != nil {
-			v.Error = err.Error()
+			*v.Error = err.Error()
 		}
 	}
 
@@ -180,10 +180,16 @@ func (m *Manager) getList(filterNamespace string, filterWorkflowPath string, fil
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
 		}
-		if filterWorkflowPath != "" && filterWorkflowPath != v.WorkflowPath {
+		if filterWorkflowPath != "" && v.WorkflowPath == nil {
 			continue
 		}
-		if filterServicePath != "" && filterServicePath != v.ServicePath {
+		if filterWorkflowPath != "" && filterWorkflowPath != *v.WorkflowPath {
+			continue
+		}
+		if filterServicePath != "" && v.ServicePath == nil {
+			continue
+		}
+		if filterServicePath != "" && filterServicePath != *v.ServicePath {
 			continue
 		}
 

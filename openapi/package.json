@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@redocly/cli": "^1.0.0-beta.126",
+    "swagger-cli": "^4.0.4"
+  },
+  "scripts": {
+    "build-tests": "rm -rf dist && babel tests -d dist",
+    "run-tests": "npx jest --runInBand --rootDir dist",
+    "all": "npm install && npm run build-tests && npm run run-tests"
+  }
+}

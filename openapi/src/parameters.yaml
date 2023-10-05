@@ -1,0 +1,6 @@
+namespace:
+  name: namespace
+  in: path
+  schema:
+    type: string
+  required: true
