@@ -50,7 +50,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			case util.VarScopeWorkflow:
 				item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, selector.Key)
 			case util.VarScopeNamespace:
-				item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, selector.Key)
+				item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.NamespaceID, selector.Key)
 			default:
 				return nil, derrors.NewInternalError(errors.New("invalid scope"))
 			}
@@ -197,7 +197,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		case util.VarScopeWorkflow:
 			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, v.Key)
 		case util.VarScopeNamespace:
-			item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, v.Key)
+			item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.NamespaceID, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
 		}

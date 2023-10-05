@@ -65,7 +65,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 
 	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns, file.Path, "myvar")
 	if err != nil {
-		t.Errorf("unexpected GetByNamespaceAndName() error: %v", err)
+		t.Errorf("unexpected GetForWorkflow() error: %v", err)
 
 		return
 	}
@@ -76,7 +76,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		return
 	}
 	if string(data) != string(expect) {
-		t.Errorf("unexpected GetByNamespaceAndName() result: %s", variable.Data)
+		t.Errorf("unexpected GetForWorkflow() result: %s", variable.Data)
 
 		return
 	}
@@ -142,9 +142,9 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 		return
 	}
 
-	variable, err = ds.RuntimeVariables().GetByNamespaceAndName(context.Background(), ns, "myvar")
+	variable, err = ds.RuntimeVariables().GetForNamespace(context.Background(), ns, "myvar")
 	if err != nil {
-		t.Errorf("unexpected GetByNamespaceAndName() error: %v", err)
+		t.Errorf("unexpected GetForNamespace() error: %v", err)
 
 		return
 	}
@@ -155,7 +155,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 		return
 	}
 	if string(data) != string(expect) {
-		t.Errorf("unexpected GetByNamespaceAndName() result: %s", variable.Data)
+		t.Errorf("unexpected GetForNamespace() result: %s", variable.Data)
 
 		return
 	}

@@ -35,9 +35,9 @@ type RuntimeVariablesStore interface {
 	// it returns datastore.ErrNotFound error.
 	GetByID(ctx context.Context, id uuid.UUID) (*RuntimeVariable, error)
 
-	// GetByNamespaceAndName gets a single runtime variable from store by namespace ID and name. if no record found,
+	// GetForNamespace gets a single runtime variable from store by namespace ID and name. if no record found,
 	// it returns datastore.ErrNotFound error.
-	GetByNamespaceAndName(ctx context.Context, namespaceID uuid.UUID, name string) (*RuntimeVariable, error)
+	GetForNamespace(ctx context.Context, namespaceID uuid.UUID, name string) (*RuntimeVariable, error)
 
 	// GetForWorkflow gets a single runtime variable from store by namespace ID, workflow path, and name. if no record found,
 	// it returns datastore.ErrNotFound error.

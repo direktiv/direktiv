@@ -17,7 +17,7 @@ type sqlRuntimeVariablesStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlRuntimeVariablesStore) GetByNamespaceAndName(ctx context.Context, namespaceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) GetForNamespace(ctx context.Context, namespaceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
 	variable := &core.RuntimeVariable{}
 
 	if name == "" || namespaceID.String() == (uuid.UUID{}).String() {
@@ -164,7 +164,7 @@ func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.Runti
 		return s.GetForInstance(ctx, variable.InstanceID, variable.Name)
 	}
 
-	return s.GetByNamespaceAndName(ctx, variable.NamespaceID, variable.Name)
+	return s.GetForNamespace(ctx, variable.NamespaceID, variable.Name)
 }
 
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
