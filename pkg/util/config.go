@@ -3,18 +3,12 @@ package util
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
 // Config contain direktiv configuration.
 type Config struct {
-	FunctionsService string `yaml:"functions-service"`
-
-	// FunctionsTimeout : Action timeout in milliseconds
-	FunctionsTimeout int64 `yaml:"functions-timeout"`
-
 	FlowService string `yaml:"flow-service"`
 
 	PrometheusBackend    string `yaml:"prometheus-backend"`
@@ -43,8 +37,4 @@ func ReadConfig(file string) (*Config, error) {
 
 func (cfg *Config) GetTelemetryBackendAddr() string {
 	return cfg.OpenTelemetryBackend
-}
-
-func (cfg *Config) GetFunctionsTimeout() time.Duration {
-	return time.Second * time.Duration(cfg.FunctionsTimeout)
 }

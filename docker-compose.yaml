@@ -18,7 +18,7 @@ services:
 
   flow:
     image: ${DIREKTIV_IMAGE}
-    command: ["/bin/direktiv", "server", "dddd"]
+    command: ["/bin/direktiv", "server", "something"]
     volumes:
       - ./config.yaml:/config.yaml
     environment:
@@ -26,10 +26,34 @@ services:
       - DIREKTIV_CONFIG=/config.yaml
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRETS_KEY=01234567890123456789012345678912
-      - PORT=8080
-
+      - PORT=6666
     ports:
-      # api port
-      - "8080:8080"
+      # flow port
+      - "6666:6666"
     depends_on:
       - postgres
+
+  api:
+    image: ${DIREKTIV_IMAGE}
+    command: ["/bin/direktiv", "server"]
+    volumes:
+      - ./config.yaml:/config.yaml
+    environment:
+      - DIREKTIV_APP=api
+      - DIREKTIV_CONFIG=/config.yaml
+      - PORT=1604
+    ports:
+      # api port
+      - "1604:1604"
+    depends_on:
+      - flow
+
+  ui:
+    image: localhost:5000/frontend
+    environment:
+      - DIREKTIV_SERVER_BACKEND=http://api:1604
+    ports:
+      # api port
+      - "2304:2304"
+    depends_on:
+      - api
