@@ -26,10 +26,11 @@ func (o *DryrunApplyer) apply(_ context.Context, _ Callbacks, _ *Process, _ *Par
 }
 
 type DirektivApplyer struct {
-	log       FormatLogger
-	callbacks Callbacks
-	proc      *Process
-	parser    *Parser
+	NamespaceID uuid.UUID
+	log         FormatLogger
+	callbacks   Callbacks
+	proc        *Process
+	parser      *Parser
 
 	rootID uuid.UUID
 	notes  map[string]string
@@ -176,7 +177,7 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 			return err
 		}
 
-		err = o.callbacks.ConfigureWorkflowFunc(ctx, o.proc.NamespaceID, file)
+		err = o.callbacks.ConfigureWorkflowFunc(ctx, o.NamespaceID, file)
 		if err != nil {
 			return err
 		}
@@ -194,7 +195,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 
 		_, err := o.callbacks.VarStore().Set(ctx,
 			&core.RuntimeVariable{
-				NamespaceID: o.proc.NamespaceID,
+				NamespaceID: o.NamespaceID,
 				Name:        k,
 				MimeType:    mtString[0],
 				Data:        v,
@@ -216,7 +217,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 
 			_, err := o.callbacks.VarStore().Set(ctx,
 				&core.RuntimeVariable{
-					NamespaceID:  o.proc.NamespaceID,
+					NamespaceID:  o.NamespaceID,
 					WorkflowPath: file.Path,
 					Name:         k,
 					MimeType:     mtString[0],
@@ -271,20 +272,20 @@ func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
 }
 
 func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
-	filters, err := o.callbacks.EventFilterStore().GetAll(ctx, o.proc.NamespaceID)
+	filters, err := o.callbacks.EventFilterStore().GetAll(ctx, o.NamespaceID)
 	if err != nil {
 		return err
 	}
 
 	for _, filter := range filters {
-		err = o.callbacks.EventFilterStore().Delete(ctx, o.proc.NamespaceID, filter.Name)
+		err = o.callbacks.EventFilterStore().Delete(ctx, o.NamespaceID, filter.Name)
 		if err != nil {
 			return err
 		}
 	}
 
 	for name, script := range o.parser.Filters {
-		err = o.callbacks.EventFilterStore().Create(ctx, o.proc.NamespaceID, name, string(script))
+		err = o.callbacks.EventFilterStore().Create(ctx, o.NamespaceID, name, string(script))
 		if err != nil {
 			return err
 		}

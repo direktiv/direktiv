@@ -260,7 +260,7 @@ states:
 		t.Fatalf("unexpected NewProcess() error = %v", err)
 	}
 
-	manager.Execute(ctx, p, func(ctx context.Context) (mirror.Source, error) { return src, nil }, &mirror.DirektivApplyer{})
+	manager.Execute(ctx, p, func(ctx context.Context) (mirror.Source, error) { return src, nil }, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 

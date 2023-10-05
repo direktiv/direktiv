@@ -18,9 +18,9 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
 	newProcess := &mirror.Process{
-		ID:          uuid.New(),
-		NamespaceID: uuid.New(),
-		Status:      "new",
+		ID:        uuid.New(),
+		Namespace: uuid.New().String(),
+		Status:    "new",
 	}
 
 	// test create.
@@ -62,9 +62,9 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	}
 
 	secondProcess := &mirror.Process{
-		ID:          uuid.New(),
-		NamespaceID: newProcess.NamespaceID,
-		Status:      "new",
+		ID:        uuid.New(),
+		Namespace: newProcess.Namespace,
+		Status:    "new",
 	}
 
 	// test get by config_id.
