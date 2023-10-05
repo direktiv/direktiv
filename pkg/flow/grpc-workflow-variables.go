@@ -166,7 +166,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, ns.ID, file.Path, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.ID, file.Path, req.GetKey())
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
 			t := time.Now()
@@ -424,7 +424,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
-	item, err := tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, ns.ID, file.Path, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.ID, file.Path, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +476,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	if err != nil {
 		return nil, err
 	}
-	item, err := tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, ns.ID, file.Path, req.GetOld())
+	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.ID, file.Path, req.GetOld())
 	if err != nil {
 		return nil, err
 	}

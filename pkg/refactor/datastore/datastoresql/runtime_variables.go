@@ -41,7 +41,7 @@ func (s *sqlRuntimeVariablesStore) GetByNamespaceAndName(ctx context.Context, na
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetByInstanceAndName(ctx context.Context, instanceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) GetForInstance(ctx context.Context, instanceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
 	variable := &core.RuntimeVariable{}
 
 	if name == "" || instanceID.String() == (uuid.UUID{}).String() {
@@ -65,7 +65,7 @@ func (s *sqlRuntimeVariablesStore) GetByInstanceAndName(ctx context.Context, ins
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetByWorkflowAndName(ctx context.Context, namespaceID uuid.UUID, path string, name string) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespaceID uuid.UUID, path string, name string) (*core.RuntimeVariable, error) {
 	variable := &core.RuntimeVariable{}
 
 	zeroUUID := (uuid.UUID{}).String()
@@ -155,13 +155,13 @@ func (s *sqlRuntimeVariablesStore) ListNamespaceLevel(ctx context.Context, names
 
 func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
 	if variable.WorkflowPath != "" {
-		return s.GetByWorkflowAndName(ctx, variable.NamespaceID, variable.WorkflowPath, variable.Name)
+		return s.GetForWorkflow(ctx, variable.NamespaceID, variable.WorkflowPath, variable.Name)
 	}
 
 	zeroUUID := (uuid.UUID{}).String()
 
 	if variable.InstanceID.String() != zeroUUID {
-		return s.GetByInstanceAndName(ctx, variable.InstanceID, variable.Name)
+		return s.GetForInstance(ctx, variable.InstanceID, variable.Name)
 	}
 
 	return s.GetByNamespaceAndName(ctx, variable.NamespaceID, variable.Name)

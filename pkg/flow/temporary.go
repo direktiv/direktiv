@@ -46,9 +46,9 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 			switch selector.Scope {
 			case util.VarScopeInstance:
-				item, err = tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, im.instance.Instance.ID, selector.Key)
+				item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, selector.Key)
 			case util.VarScopeWorkflow:
-				item, err = tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, selector.Key)
+				item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, selector.Key)
 			case util.VarScopeNamespace:
 				item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, selector.Key)
 			default:
@@ -193,9 +193,9 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 
 		switch v.Scope {
 		case util.VarScopeInstance:
-			item, err = tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, im.instance.Instance.ID, v.Key)
+			item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, v.Key)
 		case util.VarScopeWorkflow:
-			item, err = tx.DataStore().RuntimeVariables().GetByWorkflowAndName(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, v.Key)
+			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.NamespaceID, im.instance.Instance.WorkflowPath, v.Key)
 		case util.VarScopeNamespace:
 			item, err = tx.DataStore().RuntimeVariables().GetByNamespaceAndName(ctx, im.instance.Instance.NamespaceID, v.Key)
 		default:

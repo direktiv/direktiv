@@ -63,7 +63,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		return
 	}
 
-	variable, err = ds.RuntimeVariables().GetByWorkflowAndName(context.Background(), ns, file.Path, "myvar")
+	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns, file.Path, "myvar")
 	if err != nil {
 		t.Errorf("unexpected GetByNamespaceAndName() error: %v", err)
 

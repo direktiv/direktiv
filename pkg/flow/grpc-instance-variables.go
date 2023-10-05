@@ -137,7 +137,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	}
 	defer tx.Rollback()
 
-	item, err := tx.DataStore().RuntimeVariables().GetByInstanceAndName(ctx, inst.Instance.ID, req.GetKey())
+	item, err := tx.DataStore().RuntimeVariables().GetForInstance(ctx, inst.Instance.ID, req.GetKey())
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
 			t := time.Now()
