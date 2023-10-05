@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -14,15 +13,9 @@ type sqlSecretsStore struct {
 	db *gorm.DB
 }
 
-// nolint
-func (s sqlSecretsStore) CreateFolder(ctx context.Context, namespace uuid.UUID, name string) error {
-	// TODO: potential un-used feature that we can remove, check with Jens.
-	panic("implement me")
-}
-
 func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error {
-	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data = ? WHERE namespace_id = ? and name = ?`,
-		secret.Data, secret.NamespaceID, secret.Name)
+	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data=? WHERE namespace=? and name=?`,
+		secret.Data, secret.Namespace, secret.Name)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -33,15 +26,9 @@ func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error 
 	return nil
 }
 
-// nolint
-func (s sqlSecretsStore) DeleteFolder(ctx context.Context, id uuid.UUID, key string) error {
-	// TODO: potential un-used feature that we can remove, check with Jens.
-	panic("implement me")
-}
-
-func (s sqlSecretsStore) Delete(ctx context.Context, namespaceID uuid.UUID, name string) error {
-	res := s.db.WithContext(ctx).Exec(`DELETE FROM secrets WHERE namespace_id = ? and name = ?`,
-		namespaceID, name)
+func (s sqlSecretsStore) Delete(ctx context.Context, namespace string, name string) error {
+	res := s.db.WithContext(ctx).Exec(`DELETE FROM secrets WHERE namespace=? and name=?`,
+		namespace, name)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -52,16 +39,10 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespaceID uuid.UUID, name
 	return nil
 }
 
-// nolint
-func (s sqlSecretsStore) Search(ctx context.Context, namespace uuid.UUID, name string) ([]*core.Secret, error) {
-	// TODO: potential un-used feature that we can remove, check with Jens.
-	panic("implement me")
-}
-
-func (s sqlSecretsStore) Get(ctx context.Context, namespace uuid.UUID, name string) (*core.Secret, error) {
+func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string) (*core.Secret, error) {
 	secret := &core.Secret{}
 	res := s.db.WithContext(ctx).Raw(`
-			SELECT id, namespace_id, name, data FROM secrets WHERE "namespace_id" = ? AND name = ?`,
+			SELECT * FROM secrets WHERE namespace=? AND name=?`,
 		namespace, name).
 		First(secret)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -76,29 +57,29 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace uuid.UUID, name stri
 
 func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
 	var res *gorm.DB
-	x, err := s.Get(ctx, secret.NamespaceID, secret.Name)
+	x, err := s.Get(ctx, secret.Namespace, secret.Name)
 	//nolint:nestif
 	if errors.Is(err, core.ErrSecretNotFound) {
 		if secret.Data == nil {
 			res = s.db.WithContext(ctx).Exec(`
-				INSERT INTO secrets(id, namespace_id, name) VALUES(?, ?, ?);
-				`, secret.ID, secret.NamespaceID, secret.Name)
+				INSERT INTO secrets(namespace, name) VALUES(?, ?)
+				`, secret.Namespace, secret.Name)
 		} else {
 			res = s.db.WithContext(ctx).Exec(`
-				INSERT INTO secrets(id, namespace_id, name, data) VALUES(?, ?, ?, ?);
-				`, secret.ID, secret.NamespaceID, secret.Name, secret.Data)
+				INSERT INTO secrets(namespace, name, data) VALUES(?, ?, ?)
+				`, secret.Namespace, secret.Name, secret.Data)
 		}
 	} else if err != nil {
 		return err
 	} else {
 		if secret.Data == nil {
 			res = s.db.WithContext(ctx).Exec(`
-				UPDATE secrets SET data = NULL WHERE id = ?;
-				`, x.ID)
+				UPDATE secrets SET data=NULL WHERE namespace=? AND name=?
+				`, x.Namespace, x.Name)
 		} else {
 			res = s.db.WithContext(ctx).Exec(`
-				UPDATE secrets SET data = ? WHERE id = ?;
-				`, secret.Data, x.ID)
+				UPDATE secrets SET data=? WHERE namespace=? AND name=?
+				`, secret.Data, x.Namespace, x.Name)
 		}
 	}
 
@@ -109,12 +90,12 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
 	return nil
 }
 
-func (s sqlSecretsStore) GetAll(ctx context.Context, namespaceID uuid.UUID) ([]*core.Secret, error) {
+func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*core.Secret, error) {
 	var secrets []*core.Secret
 
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, namespace_id, name, data FROM secrets WHERE "namespace_id" = ?`,
-		namespaceID).
+							SELECT * FROM secrets WHERE namespace=?`,
+		namespace).
 		Find(&secrets)
 	if res.Error != nil {
 		return nil, res.Error

@@ -190,7 +190,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
+	err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
 	if err != nil {
 		return nil, err
 	}
@@ -282,7 +282,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 			return nil, err
 		}
 
-		err = flow.placeholdSecrets(ctx, tx, ns.ID, file)
+		err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
 		if err != nil {
 			return nil, err
 		}

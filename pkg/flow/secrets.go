@@ -6,10 +6,9 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/google/uuid"
 )
 
-func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File) error {
+func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, ns string, file *filestore.File) error {
 	rev, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
 		return err
@@ -23,13 +22,12 @@ func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, nsID uuid.UUI
 	secretRefs := wf.GetSecretReferences()
 
 	for _, secretRef := range secretRefs {
-		_, err = tx.DataStore().Secrets().Get(ctx, nsID, secretRef)
+		_, err = tx.DataStore().Secrets().Get(ctx, ns, secretRef)
 		if errors.Is(err, core.ErrSecretNotFound) {
 			err = tx.DataStore().Secrets().Set(ctx, &core.Secret{
-				ID:          uuid.New(),
-				NamespaceID: nsID,
-				Name:        secretRef,
-				Data:        nil,
+				Namespace: ns,
+				Name:      secretRef,
+				Data:      nil,
 			})
 			if err != nil {
 				continue

@@ -12,7 +12,7 @@ import (
 
 type Callbacks interface {
 	// ConfigureWorkflowFunc is a hookup function the gets called for every new or updated workflow file.
-	ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
+	ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 
 	ProcessLogger() ProcessLogger
 

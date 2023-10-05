@@ -167,7 +167,7 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 	}
 	defer tx.Rollback()
 
-	secretData, err := tx.DataStore().Secrets().Get(ctx, im.instance.Instance.NamespaceID, secret)
+	secretData, err := tx.DataStore().Secrets().Get(ctx, im.instance.Instance.Namespace, secret)
 	if err != nil {
 		return "", err
 	}

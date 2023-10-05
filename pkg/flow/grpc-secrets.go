@@ -7,7 +7,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -25,7 +24,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 		return nil, err
 	}
 
-	list, err := tx.DataStore().Secrets().GetAll(ctx, ns.ID)
+	list, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 		return nil, err
 	}
 
-	list, err := tx.DataStore().Secrets().Search(ctx, ns.ID, req.GetKey())
+	list, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -111,10 +110,9 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 	}
 
 	err = tx.DataStore().Secrets().Set(ctx, &core.Secret{
-		ID:          uuid.New(),
-		NamespaceID: ns.ID,
-		Name:        req.GetKey(),
-		Data:        req.GetData(),
+		Namespace: ns.Name,
+		Name:      req.GetKey(),
+		Data:      req.GetData(),
 	})
 	if err != nil {
 		return nil, err
@@ -136,38 +134,9 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 }
 
 func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecretsFolderRequest) (*grpc.CreateSecretsFolderResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.DataStore().Secrets().CreateFolder(ctx, ns.ID, req.GetKey())
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: Alex please look into this.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created secrets folder '%s'.", req.GetKey())
-	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
-
-	var resp grpc.CreateSecretsFolderResponse
-
-	resp.Namespace = ns.Name
-	resp.Key = req.GetKey()
-
-	return &resp, nil
+	// TODO: ask jens if this feature still required.
+	//nolint
+	return nil, nil
 }
 
 func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretRequest) (*emptypb.Empty, error) {
@@ -184,7 +153,7 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 		return nil, err
 	}
 
-	err = tx.DataStore().Secrets().Delete(ctx, ns.ID, req.GetKey())
+	err = tx.DataStore().Secrets().Delete(ctx, ns.Name, req.GetKey())
 	if err != nil {
 		return nil, err
 	}
@@ -203,35 +172,9 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 }
 
 func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.DataStore().Secrets().DeleteFolder(ctx, ns.ID, req.GetKey())
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: Alex please look into this.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace folder '%s'.", req.GetKey())
-	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
-
-	var resp emptypb.Empty
-
-	return &resp, nil
+	// TODO: ask jens if this feature still required.
+	//nolint
+	return nil, nil
 }
 
 func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretRequest) (*grpc.UpdateSecretResponse, error) {
@@ -249,9 +192,9 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	}
 
 	err = tx.DataStore().Secrets().Update(ctx, &core.Secret{
-		NamespaceID: ns.ID,
-		Name:        req.GetKey(),
-		Data:        req.GetData(),
+		Namespace: ns.Name,
+		Name:      req.GetKey(),
+		Data:      req.GetData(),
 	})
 	if err != nil {
 		return nil, err

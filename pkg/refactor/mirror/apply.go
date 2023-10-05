@@ -177,7 +177,7 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 			return err
 		}
 
-		err = o.callbacks.ConfigureWorkflowFunc(ctx, o.NamespaceID, file)
+		err = o.callbacks.ConfigureWorkflowFunc(ctx, o.NamespaceID, o.proc.Namespace, file)
 		if err != nil {
 			return err
 		}

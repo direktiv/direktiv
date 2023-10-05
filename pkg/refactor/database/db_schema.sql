@@ -84,15 +84,14 @@ CREATE TABLE IF NOT EXISTS "mirror_processes" (
 );
 
 CREATE TABLE IF NOT EXISTS "secrets" (
-    "id" uuid,
-    "namespace_id" uuid NOT NULL,
+    "namespace" text NOT NULL,
     "name" text NOT NULL,
     "data" 	 text,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("id"),
+    PRIMARY KEY ("namespace", "name"),
     CONSTRAINT "fk_namespaces_secrets"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "instances_v2" (

@@ -47,7 +47,7 @@ type testCallbacks struct {
 	buf                  *bytes.Buffer
 }
 
-func (c *testCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
+func (c *testCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	return nil
 }
 

@@ -178,11 +178,11 @@ type mirrorCallbacks struct {
 	varstore             core.RuntimeVariablesStore
 	fileAnnotationsStore core.FileAnnotationsStore
 	filterStore          eventsstore.CloudEventsFilterStore
-	wfconf               func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error
+	wfconf               func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 }
 
-func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
-	return c.wfconf(ctx, nsID, file)
+func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
+	return c.wfconf(ctx, nsID, nsName, file)
 }
 
 func (c *mirrorCallbacks) ProcessLogger() mirror.ProcessLogger {
@@ -417,7 +417,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	go eventWorker.Start(ctx)
 
-	cc := func(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
+	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 		_, router, err := getRouter(ctx, noTx, file)
 		if err != nil {
 			return err
@@ -428,7 +428,7 @@ func (srv *server) start(ctx context.Context) error {
 			return err
 		}
 
-		err = srv.flow.placeholdSecrets(ctx, noTx, nsID, file)
+		err = srv.flow.placeholdSecrets(ctx, noTx, nsName, file)
 		if err != nil {
 			srv.sugar.Debugf("Error setting up placeholder secrets: %v", err)
 			srv.flow.logger.Errorf(ctx, nsID, nil, "Error setting up placeholder secrets: %v", err)
