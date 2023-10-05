@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 servers:
   - url: 'https://direkitv.com'
 
@@ -52,13 +52,13 @@ info:
     | value | description |
     |-----------|-------|
     | `internal` | some internal server error  |
-    | `request_path_not_found` | some explanation  |
-    | `request_method_not_allowed` | some explanationd  |
-    | `request_body_not_json` | some explanation  |
-    | `resource_not_found` | path not found  |
-    | `resource_already_exists` |some explanation |
-    | `resource_id_invalid` | some explanation  |
-    | `request_data_invalid` | some explanation |
+    | `request_path_not_found` | request path is not recognized (not found)  |
+    | `request_method_not_allowed` | method is not allowed for the used path  |
+    | `request_body_not_json` | request body is not valid json  |
+    | `resource_not_found` | requested resource id (namespace for example) not found |
+    | `resource_already_exists` | trying to insert a resource with duplicated id |
+    | `resource_id_invalid` | requested resource id (namespace for example) is invalid |
+    | `request_data_invalid` | body is valid json but has validation errors |
 
 
     Http response codes for error responses could be one of the following: 

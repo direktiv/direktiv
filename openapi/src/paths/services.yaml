@@ -12,15 +12,59 @@
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  createdAt:
-                    type: string
-                  updatedAt:
-                    type: string
-                  name:
-                    type: string
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: a unique string that represent id of the service
+                      config:
+                        type: object
+                        description: input config data used to render the service, parsed from the corresponding service file
+                        properties:
+                          namespace:
+                            type: string
+                            description: the namespace of service belongs
+                          name:
+                            type: [string, null]
+                            description: for workflow services, this value will be set
+                          servicePath:
+                            type: [string, null]
+                            description: file path where this service is defined, is set with namespace service
+                          workflowPath:
+                            type: [string, null]
+                            description: file path where this service is defined, is set with workflow service
+                          image:
+                            type: string
+                            description: docker image of the service
+                          cmd:
+                            type: string
+                            description: docker command
+                          size:
+                            type: string
+                            description: can be 'larger', 'medium' or 'small'
+                          scale:
+                            type: integer
+                            description: number from 0 to 9
+                          error:
+                            type: [string, null]
+                            description: error string when service failed to be scheduled, otherwise null
+                      conditions:
+                        type: object
+                        description: list of checks indicating the health checks of the service, null value means service is not scheduled yet
+                        nullable: true
+                        properties:
+                          type:
+                            type: string
+                            description: name of the check
+                          status:
+                            type: string
+                            description: can be 'True', 'False' or 'Unknown'
+                          lastTransitionTime:
+                            type: string
+                            description: timestamp string
+
