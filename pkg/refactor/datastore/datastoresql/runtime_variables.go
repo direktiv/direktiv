@@ -149,7 +149,7 @@ func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespac
 	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path"}, []interface{}{namespaceID.String(), workflowPath})
 }
 
-func (s *sqlRuntimeVariablesStore) ListNamespaceLevel(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) ListForNamespace(ctx context.Context, namespaceID uuid.UUID) ([]*core.RuntimeVariable, error) {
 	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path", "instance_id"}, []interface{}{namespaceID.String(), nil, nil})
 }
 
