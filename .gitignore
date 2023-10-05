@@ -36,7 +36,6 @@ issuer.*
 /build/flow-dbinit
 /build/direkcli-linux
 /build/secrets
-/build/api
 /build/functions
 /build/alpine-*
 /build/isolates
@@ -94,7 +93,6 @@ scripts/dev.yaml
 
 scripts/api/api.md
 scripts/api/swagger.json
-scripts/dev.yaml
 .idea
 
 
@@ -106,3 +104,6 @@ direktivctl
 *node_modules
 
 draft.*
+
+openapi/node_modules
+openapi/output
