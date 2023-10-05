@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS "services" (
 CREATE TABLE IF NOT EXISTS "instances_v2" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
+    "namespace" text,
     "revision_id" uuid NOT NULL,
     "root_instance_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,

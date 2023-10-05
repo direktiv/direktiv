@@ -109,6 +109,7 @@ type ListOpts struct {
 type InstanceData struct {
 	ID             uuid.UUID
 	NamespaceID    uuid.UUID
+	Namespace      string
 	RevisionID     uuid.UUID
 	RootInstanceID uuid.UUID
 	CreatedAt      time.Time
@@ -143,6 +144,7 @@ type GetNamespaceInstancesResults struct {
 type CreateInstanceDataArgs struct {
 	ID             uuid.UUID
 	NamespaceID    uuid.UUID
+	Namespace      string
 	RevisionID     uuid.UUID
 	RootInstanceID uuid.UUID
 	Invoker        string

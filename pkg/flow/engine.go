@@ -185,6 +185,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,
 		NamespaceID:    args.Namespace.ID,
+		Namespace:      args.Namespace.Name,
 		RevisionID:     revision.ID,
 		RootInstanceID: root,
 		Invoker:        args.Invoker,
