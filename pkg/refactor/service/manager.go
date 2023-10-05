@@ -212,11 +212,13 @@ func (m *Manager) getList(filterNamespace string, filterWorkflowPath string, fil
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.getValueHash() == v.getValueHash() {
 			result = append(result, &ConfigStatus{
+				ID:         v.getID(),
 				Config:     v,
 				Conditions: service.getConditions(),
 			})
 		} else {
 			result = append(result, &ConfigStatus{
+				ID:         v.getID(),
 				Config:     v,
 				Conditions: nil,
 			})
