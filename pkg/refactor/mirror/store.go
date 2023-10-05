@@ -52,6 +52,7 @@ const (
 type Process struct {
 	ID          uuid.UUID
 	NamespaceID uuid.UUID
+	Namespace   string
 	RootID      uuid.UUID
 
 	Status string

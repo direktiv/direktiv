@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/google/uuid"
 )
 
-func (d *Manager) NewProcess(ctx context.Context, nsID, rootID uuid.UUID, processType string) (*Process, error) {
+func (d *Manager) NewProcess(ctx context.Context, ns *core.Namespace, rootID uuid.UUID, processType string) (*Process, error) {
 	// TODO: make this check 100% threadsafe in HA
 
-	procs, err := d.callbacks.Store().GetProcessesByNamespaceID(ctx, nsID)
+	procs, err := d.callbacks.Store().GetProcessesByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, fmt.Errorf("querying existing a mirroring processes, err: %w", err)
 	}
@@ -24,7 +25,8 @@ func (d *Manager) NewProcess(ctx context.Context, nsID, rootID uuid.UUID, proces
 
 	process, err := d.callbacks.Store().CreateProcess(ctx, &Process{
 		ID:          uuid.New(),
-		NamespaceID: nsID,
+		NamespaceID: ns.ID,
+		Namespace:   ns.Name,
 		RootID:      rootID,
 		Typ:         processType,
 		Status:      ProcessStatusPending,

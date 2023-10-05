@@ -130,9 +130,12 @@ func TestDryRun(t *testing.T) {
 		buf:                  new(bytes.Buffer),
 	}
 
-	nsID := uuid.New()
+	ns := &core.Namespace{
+		ID:   uuid.New(),
+		Name: uuid.New().String(),
+	}
 	rootID := uuid.New()
-	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID.String())
+	direktivRoot, err := fs.CreateRoot(ctx, rootID, ns.Name)
 	if err != nil {
 		t.Fatalf("unexpected GetRoot() error = %v", err)
 	}
@@ -172,7 +175,7 @@ states:
 
 	manager := mirror.NewManager(callbacks)
 
-	p, err := manager.NewProcess(ctx, nsID, rootID, mirror.ProcessTypeDryRun)
+	p, err := manager.NewProcess(ctx, ns, rootID, mirror.ProcessTypeDryRun)
 	if err != nil {
 		t.Fatalf("unexpected NewProcess() error = %v", err)
 	}
@@ -181,7 +184,7 @@ states:
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 
-	root, err := callbacks.FileStore().GetRootByNamespace(ctx, nsID.String())
+	root, err := callbacks.FileStore().GetRootByNamespace(ctx, ns.Name)
 	if err != nil {
 		t.Fatalf("unexpected GetAllRootsForNamespace() error = %v", err)
 	}
@@ -209,9 +212,12 @@ func TestInitSync(t *testing.T) {
 		buf:                  new(bytes.Buffer),
 	}
 
-	nsID := uuid.New()
+	ns := &core.Namespace{
+		ID:   uuid.New(),
+		Name: uuid.New().String(),
+	}
 	rootID := uuid.New()
-	direktivRoot, err := fs.CreateRoot(ctx, rootID, nsID.String())
+	direktivRoot, err := fs.CreateRoot(ctx, rootID, ns.Name)
 	if err != nil {
 		t.Fatalf("unexpected GetRoot() error = %v", err)
 	}
@@ -220,7 +226,7 @@ func TestInitSync(t *testing.T) {
 	}
 
 	_, err = store.CreateConfig(ctx, &mirror.Config{
-		NamespaceID: nsID,
+		NamespaceID: ns.ID,
 		RootName:    "test",
 	})
 	if err != nil {
@@ -250,7 +256,7 @@ states:
 
 	manager := mirror.NewManager(callbacks)
 
-	p, err := manager.NewProcess(ctx, nsID, rootID, mirror.ProcessTypeInit)
+	p, err := manager.NewProcess(ctx, ns, rootID, mirror.ProcessTypeInit)
 	if err != nil {
 		t.Fatalf("unexpected NewProcess() error = %v", err)
 	}
@@ -259,7 +265,7 @@ states:
 
 	assertProcessSuccess(ctx, callbacks, t, p.ID)
 
-	root, err := callbacks.FileStore().GetRootByNamespace(ctx, nsID.String())
+	root, err := callbacks.FileStore().GetRootByNamespace(ctx, ns.Name)
 	if err != nil {
 		t.Fatalf("unexpected GetAllRootsForNamespace() error = %v", err)
 	}

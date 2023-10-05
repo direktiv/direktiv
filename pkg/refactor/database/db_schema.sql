@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
 CREATE TABLE IF NOT EXISTS "mirror_processes" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
+    "namespace" text NOT NULL,
     "root_id" uuid NOT NULL,
     "status" text NOT NULL,
     "typ" 	 text NOT NULL,
@@ -114,7 +115,7 @@ CREATE TABLE IF NOT EXISTS "services" (
 CREATE TABLE IF NOT EXISTS "instances_v2" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
-    "namespace" text,
+    "namespace" text NOT NULL,
     "revision_id" uuid NOT NULL,
     "root_instance_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
