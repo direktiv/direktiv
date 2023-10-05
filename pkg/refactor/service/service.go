@@ -2,10 +2,8 @@
 package service
 
 import (
+	"crypto/sha256"
 	"fmt"
-	"strconv"
-
-	"github.com/mitchellh/hashstructure/v2"
 )
 
 const (
@@ -33,23 +31,17 @@ type Config struct {
 }
 
 func (c *Config) getID() string {
-	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
-	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
-	if err != nil {
-		panic("unexpected hashstructure.Hash error: " + err.Error())
-	}
+	str := fmt.Sprintf("%s-%v-%v-%v", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
+	sh := sha256.Sum256([]byte(str))
 
-	return fmt.Sprintf("obj-%d-obj", v)
+	return fmt.Sprintf("obj%xobj", sh[:10])
 }
 
 func (c *Config) getValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
-	v, err := hashstructure.Hash(str, hashstructure.FormatV2, nil)
-	if err != nil {
-		panic("unexpected hashstructure.Hash error: " + err.Error())
-	}
+	sh := sha256.Sum256([]byte(str))
 
-	return strconv.Itoa(int(v))
+	return fmt.Sprintf("%x", sh[:10])
 }
 
 type Status interface {
