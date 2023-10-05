@@ -81,15 +81,15 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		return
 	}
 
-	list, err := ds.RuntimeVariables().ListByWorkflowPath(context.Background(), ns, file.Path)
+	list, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns, file.Path)
 	if err != nil {
-		t.Errorf("unexpected ListByWorkflowPath() error: %v", err)
+		t.Errorf("unexpected ListForWorkflow() error: %v", err)
 
 		return
 	}
 
 	if len(list) != 1 {
-		t.Errorf("unexpected ListByWorkflowPath() result: %v", list)
+		t.Errorf("unexpected ListForWorkflow() result: %v", list)
 
 		return
 	}
@@ -215,15 +215,15 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	}
 
 	// Test ListByWorkflowID().
-	vars, err := ds.RuntimeVariables().ListByWorkflowPath(context.Background(), ns, file.Path)
+	vars, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns, file.Path)
 	if err != nil {
-		t.Errorf("unexpected ListByWorkflowID() error: %v", err)
+		t.Errorf("unexpected ListForWorkflow() error: %v", err)
 
 		return
 	}
 
 	if len(vars) != 4 {
-		t.Errorf("unexpected ListByWorkflowID() length, got:%d want:%d", len(vars), 3)
+		t.Errorf("unexpected ListForWorkflow() length, got:%d want:%d", len(vars), 3)
 
 		return
 	}

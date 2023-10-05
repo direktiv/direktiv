@@ -50,8 +50,8 @@ type RuntimeVariablesStore interface {
 	// ListForInstance gets all runtime variable entries from store that are linked to specific instance id
 	ListForInstance(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
 
-	// ListByWorkflowPath gets all runtime variable entries from store that are linked to specific namespace & workflow path
-	ListByWorkflowPath(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*RuntimeVariable, error)
+	// ListForWorkflow gets all runtime variable entries from store that are linked to specific namespace & workflow path
+	ListForWorkflow(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*RuntimeVariable, error)
 
 	// ListNamespaceLevel gets all runtime variable entries from store that are at namespace level.
 	ListNamespaceLevel(ctx context.Context, namespaceID uuid.UUID) ([]*RuntimeVariable, error)

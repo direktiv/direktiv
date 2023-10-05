@@ -145,7 +145,7 @@ func (s *sqlRuntimeVariablesStore) ListForInstance(ctx context.Context, instance
 	return s.listByFieldValue(ctx, []string{"instance_id"}, []interface{}{instanceID.String()})
 }
 
-func (s *sqlRuntimeVariablesStore) ListByWorkflowPath(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*core.RuntimeVariable, error) {
 	return s.listByFieldValue(ctx, []string{"namespace_id", "workflow_path"}, []interface{}{namespaceID.String(), workflowPath})
 }
 

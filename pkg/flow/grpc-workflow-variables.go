@@ -249,7 +249,7 @@ func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVaria
 		return nil, err
 	}
 
-	list, err := tx.DataStore().RuntimeVariables().ListByWorkflowPath(ctx, ns.ID, file.Path)
+	list, err := tx.DataStore().RuntimeVariables().ListForWorkflow(ctx, ns.ID, file.Path)
 	if err != nil {
 		return nil, err
 	}
