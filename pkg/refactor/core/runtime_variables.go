@@ -47,8 +47,8 @@ type RuntimeVariablesStore interface {
 	// it returns datastore.ErrNotFound error.
 	GetForInstance(ctx context.Context, instanceID uuid.UUID, name string) (*RuntimeVariable, error)
 
-	// ListByInstanceID gets all runtime variable entries from store that are linked to specific instance id
-	ListByInstanceID(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
+	// ListForInstance gets all runtime variable entries from store that are linked to specific instance id
+	ListForInstance(ctx context.Context, instanceID uuid.UUID) ([]*RuntimeVariable, error)
 
 	// ListByWorkflowPath gets all runtime variable entries from store that are linked to specific namespace & workflow path
 	ListByWorkflowPath(ctx context.Context, namespaceID uuid.UUID, workflowPath string) ([]*RuntimeVariable, error)

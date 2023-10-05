@@ -215,7 +215,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 	}
 	defer tx.Rollback()
 
-	list, err := tx.DataStore().RuntimeVariables().ListByInstanceID(ctx, instance.Instance.ID)
+	list, err := tx.DataStore().RuntimeVariables().ListForInstance(ctx, instance.Instance.ID)
 	if err != nil {
 		return nil, err
 	}
