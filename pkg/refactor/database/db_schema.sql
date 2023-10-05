@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
     "id" uuid,
     "name" text NOT NULL UNIQUE,
     "config" text NOT NULL,
-    "roots_info" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
@@ -56,8 +55,7 @@ CREATE TABLE IF NOT EXISTS "file_annotations" (
 );
 
 CREATE TABLE IF NOT EXISTS "mirror_configs" (
-    "namespace_id" uuid,
-    "root_name" text NOT NULL,
+    "namespace" text,
     "url" text NOT NULL,
     "git_ref" text NOT NULL,
     "git_commit_hash" text,
@@ -67,9 +65,9 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "insecure" boolean NOT NULL,
-    PRIMARY KEY ("namespace_id"),
+    PRIMARY KEY ("namespace"),
     CONSTRAINT "fk_namespaces_mirror_configs"
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "mirror_processes" (

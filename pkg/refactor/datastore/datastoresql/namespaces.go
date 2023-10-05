@@ -20,7 +20,7 @@ type sqlNamespacesStore struct {
 func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.Namespace, error) {
 	namespace := &core.Namespace{}
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, name, config, roots_info, created_at, updated_at 
+							SELECT id, name, config, created_at, updated_at 
 							FROM namespaces 
 							WHERE id=?`,
 		id).
@@ -38,7 +38,7 @@ func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.N
 func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*core.Namespace, error) {
 	namespace := &core.Namespace{}
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, name, config, roots_info, created_at, updated_at 
+							SELECT id, name, config, created_at, updated_at 
 							FROM namespaces 
 							WHERE name=?`,
 		name).
@@ -56,7 +56,7 @@ func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*core.
 func (s *sqlNamespacesStore) GetAll(ctx context.Context) ([]*core.Namespace, error) {
 	var namespaces []*core.Namespace
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, name, config, roots_info, created_at, updated_at
+							SELECT id, name, config, created_at, updated_at
 							FROM namespaces`).
 		Find(&namespaces)
 	if res.Error != nil {
@@ -70,9 +70,9 @@ func (s *sqlNamespacesStore) Update(ctx context.Context, namespace *core.Namespa
 	res := s.db.WithContext(ctx).Exec(`
 						UPDATE namespaces
 						SET
-							 name=?, config=?, roots_info=?
+							 name=?, config=?
 						WHERE id=?`,
-		namespace.Name, namespace.Config, namespace.RootsInfo, namespace.ID)
+		namespace.Name, namespace.Config, namespace.ID)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -110,8 +110,8 @@ func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *core.Namespa
 
 	newUUID := uuid.New()
 	res := s.db.WithContext(ctx).Exec(`
-							INSERT INTO namespaces(id, name, config, roots_info) VALUES(?, ?, ?, ?);
-							`, newUUID, namespace.Name, namespace.Config, namespace.RootsInfo)
+							INSERT INTO namespaces(id, name, config) VALUES(?, ?, ?);
+							`, newUUID, namespace.Name, namespace.Config)
 
 	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
 		return nil, core.ErrDuplicatedNamespaceName

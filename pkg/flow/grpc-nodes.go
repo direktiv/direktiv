@@ -57,7 +57,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 			return err
 		}
 
-		_, err = tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
+		_, err = tx.DataStore().Mirror().GetConfig(ctx, ns.Name)
 		if errors.Is(err, mirror.ErrNotFound) {
 			isMirrorNamespace = false
 		} else if err != nil {

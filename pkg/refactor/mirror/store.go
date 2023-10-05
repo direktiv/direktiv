@@ -11,8 +11,7 @@ import (
 // Config holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
 type Config struct {
-	NamespaceID uuid.UUID
-	RootName    string
+	Namespace string
 
 	URL                  string
 	GitRef               string
@@ -74,8 +73,8 @@ type Store interface {
 	// UpdateConfig updates a config in the store.
 	UpdateConfig(ctx context.Context, config *Config) (*Config, error)
 
-	// GetConfig gets config by namespaceID from the store.
-	GetConfig(ctx context.Context, namespaceID uuid.UUID) (*Config, error)
+	// GetConfig gets config by namespace from the store.
+	GetConfig(ctx context.Context, namespace string) (*Config, error)
 
 	// CreateProcess stores a new process in the store.
 	CreateProcess(ctx context.Context, process *Process) (*Process, error)

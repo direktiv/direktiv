@@ -62,7 +62,7 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config)
 		return nil, res.Error
 	}
 
-	return s.GetConfig(ctx, newConfig.NamespaceID)
+	return s.GetConfig(ctx, newConfig.Namespace)
 }
 
 func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
@@ -72,9 +72,8 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 	}
 
 	res := s.db.WithContext(ctx).Table("mirror_configs").
-		Where("namespace_id", config.NamespaceID).
+		Where("namespace", config.Namespace).
 		Updates(map[string]interface{}{
-			"root_name":              config.RootName,
 			"url":                    config.URL,
 			"git_ref":                config.GitRef,
 			"git_commit_hash":        config.GitCommitHash,
@@ -90,15 +89,15 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	return s.GetConfig(ctx, config.NamespaceID)
+	return s.GetConfig(ctx, config.Namespace)
 }
 
-func (s sqlMirrorStore) GetConfig(ctx context.Context, namespaceID uuid.UUID) (*mirror.Config, error) {
+func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*mirror.Config, error) {
 	config := &mirror.Config{}
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM mirror_configs
-					WHERE namespace_id=?`, namespaceID).
+					WHERE namespace=?`, namespace).
 		First(config)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {

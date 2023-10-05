@@ -47,23 +47,15 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	ri := core.RootsInfo{
-		Default: core.RootInfo{
-			Name:   defaultRootName,
-			RootID: uuid.New(),
-		},
-	}
-
 	ns, err = tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:      req.GetName(),
-		Config:    core.DefaultNamespaceConfig,
-		RootsInfo: ri.Marshal(),
+		Name:   req.GetName(),
+		Config: core.DefaultNamespaceConfig,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.Name)
+	root, err := tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +65,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	}
 
 	mirConfig, err := tx.DataStore().Mirror().CreateConfig(ctx, &mirror.Config{
-		NamespaceID:          ns.ID,
-		RootName:             defaultRootName,
+		Namespace:            ns.Name,
 		GitRef:               settings.Ref,
 		URL:                  settings.Url,
 		PublicKey:            settings.PublicKey,
@@ -138,7 +129,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
+	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +223,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
+	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -276,11 +267,11 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 		return nil, err
 	}
 
-	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.ID)
+	mirConfig, err := tx.DataStore().Mirror().GetConfig(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
-	mirProcesses, err := tx.DataStore().Mirror().GetProcessesByNamespaceID(ctx, mirConfig.NamespaceID)
+	mirProcesses, err := tx.DataStore().Mirror().GetProcessesByNamespaceID(ctx, ns.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -101,22 +101,22 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	// test create.
 
 	newConfig := &mirror.Config{
-		NamespaceID: uuid.New(),
-		URL:         "some_url",
+		Namespace: uuid.New().String(),
+		URL:       "some_url",
 	}
 	config, err := ds.Mirror().CreateConfig(context.Background(), newConfig)
 	if err != nil {
 		t.Fatalf("unexpected CreateConfig() error: %v", err)
 	}
-	if newConfig.NamespaceID != config.NamespaceID {
-		t.Errorf("unexpected CreateConfig().NamespaceID, want: %v, got %v", newConfig.NamespaceID, config.NamespaceID)
+	if newConfig.Namespace != config.Namespace {
+		t.Errorf("unexpected CreateConfig().Namespace, want: %v, got %v", newConfig.Namespace, config.Namespace)
 	}
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected CreateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
 	secondConfig := &mirror.Config{
-		NamespaceID: uuid.New(),
-		URL:         "some_url",
+		Namespace: uuid.New().String(),
+		URL:       "some_url",
 	}
 	_, err = ds.Mirror().CreateConfig(context.Background(), secondConfig)
 	if err != nil {
@@ -129,20 +129,20 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected UpdateConfig() error: %v", err)
 	}
-	if newConfig.NamespaceID != config.NamespaceID {
-		t.Errorf("unexpected UpdateConfig().NamespaceID, want: %v, got %v", newConfig.NamespaceID, config.NamespaceID)
+	if newConfig.Namespace != config.Namespace {
+		t.Errorf("unexpected UpdateConfig().Namespace, want: %v, got %v", newConfig.Namespace, config.Namespace)
 	}
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected UpdateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
 
 	// test get.
-	config, err = ds.Mirror().GetConfig(context.Background(), newConfig.NamespaceID)
+	config, err = ds.Mirror().GetConfig(context.Background(), newConfig.Namespace)
 	if err != nil {
 		t.Errorf("unexpected GetConfig() error: %v", err)
 	}
-	if newConfig.NamespaceID != config.NamespaceID {
-		t.Errorf("unexpected GetConfig().NamespaceID, want: %v, got %v", newConfig.NamespaceID, config.NamespaceID)
+	if newConfig.Namespace != config.Namespace {
+		t.Errorf("unexpected GetConfig().Namespace, want: %v, got %v", newConfig.Namespace, config.Namespace)
 	}
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected GetConfig().Status, want: %v, got %v", newConfig.URL, config.URL)

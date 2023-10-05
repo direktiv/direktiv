@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -202,19 +201,6 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 	}
 }
 
-const defaultRootName = "main"
-
-func standardRootsInfo() string {
-	data, err := json.Marshal(map[string]interface{}{
-		"default": defaultRootName,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	return string(data)
-}
-
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
@@ -225,24 +211,16 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	}
 	defer tx.Rollback()
 
-	ri := core.RootsInfo{
-		Default: core.RootInfo{
-			Name:   defaultRootName,
-			RootID: uuid.New(),
-		},
-	}
-
 	ns, err := tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:      req.GetName(),
-		Config:    core.DefaultNamespaceConfig,
-		RootsInfo: ri.Marshal(),
+		Name:   req.GetName(),
+		Config: core.DefaultNamespaceConfig,
 	})
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create namespace: %v", err)
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, ri.Default.RootID, ns.Name)
+	root, err := tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
 		return nil, err

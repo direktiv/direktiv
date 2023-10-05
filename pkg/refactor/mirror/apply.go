@@ -254,7 +254,7 @@ func (o *DirektivApplyer) createAnnotations(ctx context.Context) error {
 }
 
 func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
-	cfg, err := o.callbacks.Store().GetConfig(ctx, o.proc.NamespaceID)
+	cfg, err := o.callbacks.Store().GetConfig(ctx, o.proc.Namespace)
 	if err != nil {
 		return err
 	}

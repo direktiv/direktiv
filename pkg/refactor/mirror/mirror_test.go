@@ -226,8 +226,7 @@ func TestInitSync(t *testing.T) {
 	}
 
 	_, err = store.CreateConfig(ctx, &mirror.Config{
-		NamespaceID: ns.ID,
-		RootName:    "test",
+		Namespace: ns.Name,
 	})
 	if err != nil {
 		t.Fatalf("unexpected CreateConfig() error = %v", err)
