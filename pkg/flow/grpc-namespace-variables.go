@@ -44,11 +44,7 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 		return err
 	}
 
-	ns, err := tx.DataStore().Namespaces().GetByID(context.Background(), inst.Instance.NamespaceID)
-	if err != nil {
-		return err
-	}
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetKey())
+	file, err := tx.FileStore().ForNamespace(inst.Instance.Namespace).GetFile(ctx, req.GetKey())
 	if err == nil {
 		revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
