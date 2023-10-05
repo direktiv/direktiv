@@ -54,17 +54,17 @@ func (d *Manager) gc() {
 
 		for _, proc := range procs {
 			if time.Since(proc.CreatedAt) > maxRunTime {
-				d.callbacks.SysLogCrit(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.NamespaceID.String()))
+				d.callbacks.SysLogCrit(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.Namespace))
 				c, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:gomnd
 				err = d.Cancel(c, proc.ID)
 				cancel()
 				if err != nil {
-					d.callbacks.SysLogCrit(fmt.Sprintf("Error cancelling old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.NamespaceID.String(), err))
+					d.callbacks.SysLogCrit(fmt.Sprintf("Error cancelling old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
 				}
 
 				p, err := d.callbacks.Store().GetProcess(ctx, proc.ID)
 				if err != nil {
-					d.callbacks.SysLogCrit(fmt.Sprintf("Error requerying old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.NamespaceID.String(), err))
+					d.callbacks.SysLogCrit(fmt.Sprintf("Error requerying old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
 
 					continue
 				}

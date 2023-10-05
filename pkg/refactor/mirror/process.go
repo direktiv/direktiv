@@ -24,11 +24,10 @@ func (d *Manager) NewProcess(ctx context.Context, ns *core.Namespace, processTyp
 	}
 
 	process, err := d.callbacks.Store().CreateProcess(ctx, &Process{
-		ID:          uuid.New(),
-		NamespaceID: ns.ID,
-		Namespace:   ns.Name,
-		Typ:         processType,
-		Status:      ProcessStatusPending,
+		ID:        uuid.New(),
+		Namespace: ns.Name,
+		Typ:       processType,
+		Status:    ProcessStatusPending,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating a new mirroring process, err: %w", err)

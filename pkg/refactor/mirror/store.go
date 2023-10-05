@@ -49,9 +49,8 @@ const (
 // Process represents an instance of mirroring process that happened or is currently happened. For every mirroring
 // process gets executing, a Process instance should be created with mirror.Store.
 type Process struct {
-	ID          uuid.UUID
-	NamespaceID uuid.UUID
-	Namespace   string
+	ID        uuid.UUID
+	Namespace string
 
 	Status string
 	Typ    string
