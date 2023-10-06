@@ -1,18 +1,16 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Layers, PlusCircle, Trash } from "lucide-react";
+import { Layers, PlusCircle } from "lucide-react";
 import {
   ServicesStreamingSubscriber,
   useServices,
 } from "~/api/services/query/getAll";
-import { Trans, useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import CreateService from "./Create";
-import Delete from "./Delete";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "./Table";
+import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
   const { t } = useTranslation();
@@ -34,9 +32,6 @@ const ServicesListPage = () => {
     }
   }, [dialogOpen]);
 
-  const allAvailableNames =
-    serviceList?.functions.map((service) => service.info.name) ?? [];
-
   const createNewButton = (
     <DialogTrigger asChild>
       <Button onClick={() => setCreateService(true)} variant="outline">
@@ -49,7 +44,6 @@ const ServicesListPage = () => {
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <ServicesStreamingSubscriber />
-
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
@@ -60,7 +54,7 @@ const ServicesListPage = () => {
         </div>
         <Card>
           <ServicesTable
-            items={serviceList}
+            services={serviceList?.data ?? []}
             isSuccess={isSuccess}
             setDeleteService={setDeleteService}
             createNewButton={createNewButton}
@@ -69,7 +63,7 @@ const ServicesListPage = () => {
           />
         </Card>
         <DialogContent>
-          {deleteService && (
+          {/* {deleteService && (
             <Delete
               icon={Trash}
               service={deleteService.info.name}
@@ -90,7 +84,7 @@ const ServicesListPage = () => {
               close={() => setDialogOpen(false)}
               unallowedNames={allAvailableNames}
             />
-          )}
+          )} */}
         </DialogContent>
       </Dialog>
     </div>
