@@ -28,7 +28,7 @@ const ConditionSchema = z.object({
     "id": "objb50e89ac0959d41d7b08obj",
     "config": {
       "namespace": "mynamespace",
-      "name": null,
+      "name": null, // only present if this is a workflow service
       "servicePath": "/my-redis-service.yaml",
       "workflowPath": null,
       "image": "redis",
