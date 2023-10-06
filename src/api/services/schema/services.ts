@@ -13,13 +13,17 @@ export const serviceConditionNames = [
   {
     "type": "ConfigurationsReady",
     "status": "True",
-    "lastTransitionTime": "2023-10-06T07:19:38Z"
+    "lastTransitionTime": "2023-10-06T07:19:38Z",
+    "reason": "RevisionMissing",
+    "message": "Configuration \"obj3ba5d951fe4234094362obj\" does not have any ready Revision."
   }
  */
 const ConditionSchema = z.object({
   type: z.enum(serviceConditionNames),
   status: StatusSchema,
   lastTransitionTime: z.string(),
+  reason: z.string().optional(),
+  message: z.string().optional(),
 });
 
 /**
