@@ -21,6 +21,11 @@ import (
 
 func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
+
+	if os.Getenv("DIREKITV_DISABLE_SERVICES") == "true" {
+		return wg
+	}
+
 	done := make(chan struct{})
 
 	// Create service manager
