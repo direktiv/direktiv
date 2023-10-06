@@ -42,12 +42,7 @@ const fetchServices = async ({
   getServices({
     apiKey,
     urlParams: { namespace, workflow },
-  }).then((res) => ({
-    // [DIR-784] this should be changed in the backend
-    // reverse the order of functions (newer first)
-    ...res,
-    functions: [...(res.functions ?? []).reverse()],
-  }));
+  });
 
 const updateCache = (
   oldData: ServicesListSchemaType | undefined,
