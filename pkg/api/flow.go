@@ -58,9 +58,6 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 		return nil, err
 	}
 
-	funcAddr := fmt.Sprintf("%s:5555", conf.FunctionsService)
-	logger.Infof("connecting to functions %s", funcAddr)
-
 	h := &flowHandler{
 		logger:       logger,
 		client:       grpc.NewFlowClient(flowConn),
