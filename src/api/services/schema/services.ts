@@ -23,44 +23,7 @@ const ConditionSchema = z.object({
 });
 
 /**
- * example
-  {
-    "info": {
-      "name": "service",
-      "namespace": "c75454f2-3790-4f36-a1a2-22ca8a4f8020",
-      "workflow": "",
-      "image": "direktiv/request",
-      "cmd": "",
-      "size": 0,
-      "minScale": 0,
-      "namespaceName": "stefan",
-      "path": "",
-      "revision": "",
-      "envs": {}
-    },
-    "status": "True",
-    "conditions": [
-      {
-        "name": "ConfigurationsReady",
-        "status": "True",
-        "reason": "",
-        "message": ""
-      },
-      {
-        "name": "Ready",
-        "status": "True",
-        "reason": "",
-        "message": ""
-      },
-      {
-        "name": "RoutesReady",
-        "status": "True",
-        "reason": "",
-        "message": ""
-      }
-    ],
-    "serviceName": "namespace-14895841056527822151"
-  }
+  * example
   {
     "id": "objb50e89ac0959d41d7b08obj",
     "config": {
