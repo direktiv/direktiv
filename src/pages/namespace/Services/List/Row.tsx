@@ -51,7 +51,7 @@ const ServicesTableRow: FC<{
 
   if (!namespace) return null;
 
-  const sizeParsed = SizeSchema.safeParse(service.info.size);
+  const sizeParsed = SizeSchema.safeParse(service.config.size);
   const sizeLabel = sizeParsed.success
     ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
     : "";
@@ -60,31 +60,31 @@ const ServicesTableRow: FC<{
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          if (workflow) {
-            return navigate(
-              pages.explorer.createHref({
-                namespace,
-                path: workflow,
-                subpage: "workflow-services",
-                serviceName: service.info.name,
-                serviceVersion: service.info.revision,
-              })
-            );
-          }
-          return navigate(
-            pages.services.createHref({
-              namespace,
-              service: service.info.name,
-            })
-          );
+          // if (workflow) {
+          //   return navigate(
+          //     pages.explorer.createHref({
+          //       namespace,
+          //       path: workflow,
+          //       subpage: "workflow-services",
+          //       serviceName: service.config.name,
+          //       serviceVersion: service..revision,
+          //     })
+          //   );
+          // }
+          // return navigate(
+          //   pages.services.createHref({
+          //     namespace,
+          //     service: service.info.name,
+          //   })
+          // );
         }}
         className="cursor-pointer"
       >
         <TableCell>
           <div className="flex flex-col gap-3">
-            {service.info.name}
+            {service.config.name}
             <div className="flex gap-3">
-              {serviceConditionNames.map((condition) => {
+              {/* {serviceConditionNames.map((condition) => {
                 const res = service.conditions.find(
                   (c) => c.name === condition
                 );
@@ -99,15 +99,15 @@ const ServicesTableRow: FC<{
                     {condition}
                   </StatusBadge>
                 );
-              })}
+              })} */}
             </div>
           </div>
         </TableCell>
-        <TableCell>{service.info.image}</TableCell>
-        <TableCell>{service.info.minScale}</TableCell>
+        <TableCell>{service.config.image}</TableCell>
+        <TableCell>{service.config.scale}</TableCell>
         <TableCell>{sizeLabel}</TableCell>
         <TableCell className="whitespace-normal break-all">
-          {service.info.cmd}
+          {service.config.cmd}
         </TableCell>
         <TableCell>
           <DropdownMenu>
