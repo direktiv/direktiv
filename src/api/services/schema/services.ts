@@ -8,11 +8,18 @@ export const serviceConditionNames = [
   "RoutesReady",
 ] as const;
 
+/**
+ * example
+  {
+    "type": "ConfigurationsReady",
+    "status": "True",
+    "lastTransitionTime": "2023-10-06T07:19:38Z"
+  }
+ */
 const ConditionSchema = z.object({
-  name: z.enum(serviceConditionNames),
+  type: z.enum(serviceConditionNames),
   status: StatusSchema,
-  reason: z.string(),
-  message: z.string(),
+  lastTransitionTime: z.string(),
 });
 
 /**
@@ -54,40 +61,46 @@ const ConditionSchema = z.object({
     ],
     "serviceName": "namespace-14895841056527822151"
   }
+  {
+    "id": "objb50e89ac0959d41d7b08obj",
+    "config": {
+      "namespace": "mynamespace",
+      "name": null,
+      "servicePath": "/my-redis-service.yaml",
+      "workflowPath": null,
+      "image": "redis",
+      "cmd": "",
+      "size": "",
+      "scale": 0,
+      "error": null
+    },
+    "conditions": {...}
+  }
  */
 const ServiceSchema = z.object({
-  info: z.object({
-    name: z.string(),
+  id: z.string(),
+  config: z.object({
     namespace: z.string(),
-    workflow: z.string(),
-    image: z.string(), // direktiv/request"
+    name: z.string().nullable(),
+    servicePath: z.string().nullable(),
+    workflowPath: z.string().nullable(),
+    image: z.string(),
     cmd: z.string(),
-    size: SizeSchema,
-    minScale: z.number(),
-    namespaceName: z.string(),
-    path: z.string(),
-    revision: z.string(),
-    envs: z.object({}),
+    size: z.string(),
+    scale: z.number(),
+    error: z.string().nullable(),
   }),
-  status: StatusSchema,
   conditions: z.array(ConditionSchema),
-  serviceName: z.string(),
 });
 
 /**
  * example
   {
-    "config": {
-      "maxscale": 3
-    },
-    "functions": []
-  }
+    "data": [{...}, {...}, {...}]
+  } 
  */
 export const ServicesListSchema = z.object({
-  config: z.object({
-    maxscale: z.number(),
-  }),
-  functions: z.array(ServiceSchema),
+  data: z.array(ServiceSchema),
 });
 
 /**
