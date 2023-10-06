@@ -53,7 +53,7 @@ const ServiceSchema = z.object({
     scale: z.number(),
     error: z.string().nullable(),
   }),
-  conditions: z.array(ConditionSchema),
+  conditions: z.array(ConditionSchema).nullable(),
 });
 
 /**
