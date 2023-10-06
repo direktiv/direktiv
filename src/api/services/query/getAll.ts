@@ -23,7 +23,7 @@ export const getServices = apiFactory({
   }: {
     baseUrl?: string;
     namespace: string;
-    workflow?: string;
+    workflow?: string; // TODO: make optional workflow work
   }) =>
     workflow
       ? `${
@@ -31,7 +31,7 @@ export const getServices = apiFactory({
         }/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
           workflow
         )}?op=services`
-      : `${baseUrl ?? ""}/api/functions/namespaces/${namespace}`,
+      : `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/services`,
   method: "GET",
   schema: ServicesListSchema,
 });
