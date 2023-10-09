@@ -10,7 +10,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
 
 ENV NODE_ENV=production
-RUN npm ci
+RUN npm install
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
 RUN VITE_APP_VERSION=$FULL_VERSION npm run build
 
