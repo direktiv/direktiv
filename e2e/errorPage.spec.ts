@@ -66,6 +66,6 @@ test("the home button on the error page navigates the user to the home page", as
   const currentUrl = new URL(await page.url());
   expect(
     currentUrl.pathname,
-    "clicking the home button on the 404 page navigates the user back to where they came from"
+    "clicking the home button on the 404 page navigates to '/'"
   ).toBe("/");
 });
