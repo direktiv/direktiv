@@ -20,6 +20,7 @@ import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -53,6 +54,9 @@ const ExplorerHeader: FC = () => {
   }, [dialogOpen, selectedDialog]);
 
   if (!namespace) return null;
+
+  const wideOverlay = selectedDialog !== "new-dir";
+
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
       <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
@@ -140,7 +144,11 @@ const ExplorerHeader: FC = () => {
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <DialogContent>
+          <DialogContent
+            className={twMergeClsx(
+              wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
+            )}
+          >
             {selectedDialog === "new-dir" && (
               <NewDirectory
                 path={data?.node?.path}
