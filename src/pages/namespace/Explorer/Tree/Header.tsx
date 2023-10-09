@@ -14,6 +14,7 @@ import Button from "~/design/Button";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
+import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "~/util/router/utils";
@@ -45,7 +46,7 @@ const ExplorerHeader: FC = () => {
   const { segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<
-    "new-dir" | "new-workflow" | undefined
+    "new-dir" | "new-workflow" | "new-service" | undefined
   >();
 
   useEffect(() => {
@@ -126,7 +127,12 @@ const ExplorerHeader: FC = () => {
                     {t("pages.explorer.tree.header.newWorkflow")}
                   </DropdownMenuItem>
                 </DialogTrigger>
-                <DialogTrigger className="w-full" onClick={() => {}}>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-service");
+                  }}
+                >
                   <DropdownMenuItem>
                     <Layers className="mr-2 h-4 w-4" />{" "}
                     {t("pages.explorer.tree.header.newService")}
@@ -150,6 +156,15 @@ const ExplorerHeader: FC = () => {
                 path={data?.node?.path}
                 unallowedNames={(data?.children?.results ?? []).map(
                   (file) => file.name
+                )}
+                close={() => setDialogOpen(false)}
+              />
+            )}
+            {selectedDialog === "new-service" && (
+              <NewService
+                path={data?.node?.path}
+                unallowedNames={(data?.children?.results ?? []).map(
+                  (x) => x.name
                 )}
                 close={() => setDialogOpen(false)}
               />

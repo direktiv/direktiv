@@ -4,6 +4,7 @@ import { Folder, FolderOpen, Layers, Play } from "lucide-react";
 
 import Button from "~/design/Button";
 import NewDirectory from "./NewDirectory";
+import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
 import { NoResult as NoResultContainer } from "~/design/Table";
 import { pages } from "~/util/router/pages";
@@ -15,7 +16,7 @@ const EmptyDirectoryButton = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<
-    "new-dir" | "new-workflow" | undefined
+    "new-dir" | "new-workflow" | "new-service" | undefined
   >();
 
   useEffect(() => {
@@ -36,7 +37,12 @@ const EmptyDirectoryButton = () => {
             {t("pages.explorer.tree.list.empty.createWorkflow")}
           </Button>
         </DialogTrigger>
-        <DialogTrigger asChild onClick={() => {}}>
+        <DialogTrigger
+          asChild
+          onClick={() => {
+            setSelectedDialog("new-service");
+          }}
+        >
           <Button>
             <Layers />
             {t("pages.explorer.tree.list.empty.createService")}
@@ -59,6 +65,9 @@ const EmptyDirectoryButton = () => {
           )}
           {selectedDialog === "new-workflow" && (
             <NewWorkflow path={path} close={() => setDialogOpen(false)} />
+          )}
+          {selectedDialog === "new-service" && (
+            <NewService path={path} close={() => setDialogOpen(false)} />
           )}
         </DialogContent>
       </Dialog>
