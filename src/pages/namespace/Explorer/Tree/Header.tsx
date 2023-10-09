@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { FC, Fragment, useEffect, useState } from "react";
-import { Folder, FolderTree, Play, PlusCircle } from "lucide-react";
+import { Folder, FolderTree, Layers, Play, PlusCircle } from "lucide-react";
 
 import Button from "~/design/Button";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
@@ -124,6 +124,12 @@ const ExplorerHeader: FC = () => {
                   <DropdownMenuItem>
                     <Play className="mr-2 h-4 w-4" />{" "}
                     {t("pages.explorer.tree.header.newWorkflow")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogTrigger className="w-full" onClick={() => {}}>
+                  <DropdownMenuItem>
+                    <Layers className="mr-2 h-4 w-4" />{" "}
+                    {t("pages.explorer.tree.header.newService")}
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuGroup>

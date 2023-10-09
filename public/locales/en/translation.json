@@ -81,7 +81,8 @@
           "newBtn": "New",
           "createLabel": "Create",
           "newDirectory": "New Directory",
-          "newWorkflow": "New Workflow"
+          "newWorkflow": "New Workflow",
+          "newService": "New Service"
         },
         "newWorkflow": {
           "title": "Create a new workflow",
