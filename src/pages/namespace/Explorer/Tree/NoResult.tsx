@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { Folder, FolderOpen, Play } from "lucide-react";
+import { Folder, FolderOpen, Layers, Play } from "lucide-react";
 
 import Button from "~/design/Button";
 import NewDirectory from "./NewDirectory";
@@ -36,13 +36,19 @@ const EmptyDirectoryButton = () => {
             {t("pages.explorer.tree.list.empty.createWorkflow")}
           </Button>
         </DialogTrigger>
+        <DialogTrigger asChild onClick={() => {}}>
+          <Button>
+            <Layers />
+            {t("pages.explorer.tree.list.empty.createService")}
+          </Button>
+        </DialogTrigger>
         <DialogTrigger
           asChild
           onClick={() => {
             setSelectedDialog("new-dir");
           }}
         >
-          <Button variant="outline">
+          <Button>
             <Folder />
             {t("pages.explorer.tree.list.empty.createDirectory")}
           </Button>

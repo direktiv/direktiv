@@ -48,6 +48,7 @@
           "empty": {
             "title": "this directory is empty",
             "createWorkflow": "Create Workflow",
+            "createService": "Create Service",
             "createDirectory": "Create Directory"
           }
         },
