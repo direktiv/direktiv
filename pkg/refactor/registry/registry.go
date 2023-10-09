@@ -3,12 +3,12 @@ package registry
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 
-	hash "github.com/mitchellh/hashstructure/v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -17,39 +17,38 @@ import (
 )
 
 const (
-	secretsPrefix = "direktiv-secret"
+	annotationNamespace    = "direktiv.io/namespace"
+	annotationRegistryURL  = "direktiv.io/registry/url"
+	annotationRegistryUser = "direktiv.io/registry/user"
+)
 
-	annotationNamespace = "direktiv.io/namespace"
-	annotationURL       = "direktiv.io/url"
-	annotationURLHash   = "direktiv.io/urlhash"
-
-	// Registry Types.
-	annotationRegistryTypeKey            = "direktiv.io/registry-type"
-	annotationRegistryTypeNamespaceValue = "namespace"
-	annotationRegistryObfuscatedUser     = "direktiv.io/obf-user"
+var (
+	ErrNotFound = errors.New("ErrNotFound")
 )
 
 type Registry struct {
-	Name string
-	ID   string
-	User string
+	Namespace string `json:"namespace"`
+	ID        string `json:"id"`
+	Url       string `json:"url"`
+	User      string `json:"user"`
+	Password  string `json:"password,omitempty"`
 }
 
 type Manager interface {
 	ListRegistries(namespace string) ([]*Registry, error)
-	DeleteRegistry(namespace string, name string) error
-	StoreRegistry(namespace string, name string, data string) error
+	DeleteRegistry(namespace string, id string) error
+	StoreRegistry(registry *Registry) (*Registry, error)
 }
 
-type client struct {
-	c            *kubernetes.Clientset
+type kManager struct {
+	*kubernetes.Clientset
 	K8sNamespace string
 }
 
-func (c *client) ListRegistries(namespace string) ([]*Registry, error) {
+func (c *kManager) ListRegistries(namespace string) ([]*Registry, error) {
 	result := []*Registry{}
 
-	secrets, err := c.c.CoreV1().Secrets(c.K8sNamespace).
+	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).
 		List(context.Background(),
 			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
@@ -57,46 +56,71 @@ func (c *client) ListRegistries(namespace string) ([]*Registry, error) {
 	}
 
 	for _, s := range secrets.Items {
-		u := s.Annotations[annotationURL]
-		h := s.Annotations[annotationURLHash]
-		user := s.Annotations[annotationRegistryObfuscatedUser]
+		u := s.Annotations[annotationRegistryURL]
+		user := s.Annotations[annotationRegistryUser]
 		result = append(result, &Registry{
-			Name: u,
-			ID:   h,
-			User: user,
+			Namespace: namespace,
+			ID:        s.Name,
+			Url:       u,
+			User:      user,
 		})
 	}
 
 	return result, nil
 }
 
-func (c *client) DeleteRegistry(namespace string, name string) error {
-	fo := make(map[string]string)
-	fo[annotationNamespace] = namespace
-	h, _ := hash.Hash(name, hash.FormatV2, nil)
-	fo[annotationURLHash] = fmt.Sprintf("%d", h)
+func (c *kManager) DeleteRegistry(namespace string, id string) error {
+	lo := metav1.ListOptions{LabelSelector: labels.Set(map[string]string{
+		annotationNamespace: namespace,
+	}).String()}
 
-	lo := metav1.ListOptions{LabelSelector: labels.Set(fo).String()}
-	secrets, err := c.c.CoreV1().Secrets(c.K8sNamespace).List(context.Background(), lo)
+	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).List(context.Background(), lo)
 	if err != nil {
 		return fmt.Errorf("k8s list secrets: %s", err)
 	}
 
-	if len(secrets.Items) == 0 {
-		return fmt.Errorf("registry '%s' does not exist", name)
+	for _, s := range secrets.Items {
+		if s.Name == id {
+			return c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), secrets.Items[0].Name, metav1.DeleteOptions{})
+		}
 	}
 
-	return c.c.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), secrets.Items[0].Name, metav1.DeleteOptions{})
+	return ErrNotFound
 }
 
-func (c *client) StoreRegistry(namespace string, name string, data string) error {
-	// create secret data, needs to be attached to service account
-	userToken := strings.SplitN(data, ":", 2)
-	if len(userToken) != 2 {
-		return fmt.Errorf("invalid username/token format")
+func (c *kManager) StoreRegistry(registry *Registry) (*Registry, error) {
+	// delete the old registry is just a safety measure
+	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
+
+	str := fmt.Sprintf("%s-%s", registry.Namespace, registry.Url)
+	sh := sha256.Sum256([]byte(str))
+	id := fmt.Sprintf("secret-%x", sh[:10])
+
+	r := &Registry{
+		Namespace: registry.Namespace,
+		ID:        id,
+		Url:       registry.Url,
+		User:      obfuscateUser(registry.User),
+		Password:  registry.Password,
 	}
 
-	tmpl := `{
+	s, err := buildSecret(registry)
+	if err != nil {
+		return nil, err
+	}
+	_, err = c.Clientset.CoreV1().Secrets(c.K8sNamespace).Create(context.Background(),
+		s, metav1.CreateOptions{})
+
+	return r, err
+}
+
+func buildSecret(registry *Registry) (*v1.Secret, error) {
+	_, err := url.Parse(registry.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	auth := fmt.Sprintf(`{
 	"auths": {
 		"%s": {
 			"username": "%s",
@@ -104,57 +128,29 @@ func (c *client) StoreRegistry(namespace string, name string, data string) error
 			"auth": "%s"
 		}
 	}
-	}`
+	}`,
+		registry.Url,
+		registry.User,
+		registry.Password,
+		base64.StdEncoding.EncodeToString([]byte(registry.User+":"+registry.Password)))
 
-	auth := fmt.Sprintf(tmpl, name, userToken[0], userToken[1],
-		base64.StdEncoding.EncodeToString([]byte(data)))
-
-	// make sure it is URL format
-	u, err := url.Parse(name)
-	if err != nil {
-		return err
-	}
-
-	secretName := fmt.Sprintf("%s-%s-%s", secretsPrefix, namespace, u.Hostname())
-
-	// delete the old registry is just a safety measure
-	_ = c.DeleteRegistry(namespace, name)
-
-	sa := buildSecret(secretName, name, auth)
-
-	sa.Labels[annotationNamespace] = namespace
-	sa.Labels[annotationRegistryTypeKey] = annotationRegistryTypeNamespaceValue
-
-	sa.Annotations[annotationRegistryObfuscatedUser] = obfuscateUser(userToken[0])
-
-	_, err = c.c.CoreV1().Secrets(c.K8sNamespace).Create(context.Background(),
-		&sa, metav1.CreateOptions{})
-
-	return err
-}
-
-func buildSecret(name, url, authConfig string) v1.Secret {
-	sa := v1.Secret{
+	s := v1.Secret{
 		Data: make(map[string][]byte),
 	}
 
-	sa.Labels = make(map[string]string)
+	s.Labels = make(map[string]string)
 
-	h, err := hash.Hash(url, hash.FormatV2, nil)
-	if err != nil {
-		panic(err)
-	}
-	sa.Labels[annotationURLHash] = fmt.Sprintf("%d", h)
+	s.Labels[annotationNamespace] = registry.Namespace
 
-	sa.Annotations = make(map[string]string)
-	sa.Annotations[annotationURL] = url
-	sa.Annotations[annotationURLHash] = base64.StdEncoding.EncodeToString([]byte(url))
+	s.Annotations = make(map[string]string)
+	s.Annotations[annotationRegistryURL] = registry.Url
+	s.Annotations[annotationRegistryUser] = registry.User
 
-	sa.Name = name
-	sa.Data[".dockerconfigjson"] = []byte(authConfig)
-	sa.Type = "kubernetes.io/dockerconfigjson"
+	s.Name = registry.ID
+	s.Data[".dockerconfigjson"] = []byte(auth)
+	s.Type = "kubernetes.io/dockerconfigjson"
 
-	return sa
+	return &s, nil
 }
 
 func obfuscateUser(user string) string {
@@ -170,18 +166,23 @@ func obfuscateUser(user string) string {
 	return user
 }
 
-var _ Manager = &client{}
-
-func getClientSet() (*kubernetes.Clientset, error) {
+func NewManager() (*kManager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
+		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	cSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
+		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
-	return clientset, nil
+	return &kManager{
+		K8sNamespace: "direktiv-services-direktiv",
+		Clientset:    cSet,
+	}, nil
 }
+
+var _ Manager = &kManager{}

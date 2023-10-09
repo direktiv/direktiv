@@ -18,6 +18,10 @@ func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
+
+	regCtr := &registryController{
+		manager: app.RegistryManager,
+	}
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
@@ -45,6 +49,10 @@ func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg
 
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)
+			})
+
+			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
+				regCtr.mountRouter(r)
 			})
 		})
 	})
@@ -86,4 +94,9 @@ func writeJson(w http.ResponseWriter, v any) {
 		Data: v,
 	}
 	_ = json.NewEncoder(w).Encode(payLoad)
+}
+
+func writeOk(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }

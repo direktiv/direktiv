@@ -50,7 +50,7 @@ services:
       - flow
 
   ui:
-    image: localhost:5000/frontend
+    image: direktiv-ui-dev
     environment:
       - DIREKTIV_SERVER_BACKEND=http://api:1644
     ports:

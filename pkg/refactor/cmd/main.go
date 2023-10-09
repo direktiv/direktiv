@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/registry"
+
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -37,12 +39,19 @@ func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.
 	wg.Add(1)
 	serviceManager.Start(done, wg)
 
+	// Create registry manager
+	registryManager, err := registry.NewManager()
+	if err != nil {
+		log.Fatalf("error creating service manager: %v\n", err)
+	}
+
 	// Create App
 	app := &core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		ServiceManager: serviceManager,
+		ServiceManager:  serviceManager,
+		RegistryManager: registryManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
