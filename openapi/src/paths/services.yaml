@@ -54,17 +54,19 @@
                             type: [string, null]
                             description: error string when service failed to be scheduled, otherwise null
                       conditions:
-                        type: object
-                        description: list of checks indicating the health checks of the service, null value means service is not scheduled yet
-                        nullable: true
-                        properties:
-                          type:
-                            type: string
-                            description: name of the check
-                          status:
-                            type: string
-                            description: can be 'True', 'False' or 'Unknown'
-                          lastTransitionTime:
-                            type: string
-                            description: timestamp string
+                        type: array
+                        items:
+                          type: object
+                          description: list of checks indicating the health checks of the service, null value means service is not scheduled yet
+                          nullable: true
+                          properties:
+                            type:
+                              type: string
+                              description: name of the check
+                            status:
+                              type: string
+                              description: can be 'True', 'False' or 'Unknown'
+                            lastTransitionTime:
+                              type: string
+                              description: timestamp string
 
