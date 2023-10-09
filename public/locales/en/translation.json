@@ -94,6 +94,14 @@
           "cancelBtn": "Cancel",
           "createBtn": "Create"
         },
+        "newService": {
+          "title": "Create a new service",
+          "nameLabel": "Name",
+          "namePlaceholder": "service-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "workflow": {
           "revisions": {
             "overview": {
