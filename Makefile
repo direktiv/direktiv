@@ -319,10 +319,10 @@ server-godoc:
 
 
 
-dev-down:
+docker-compose-down:
 	DIREKTIV_IMAGE=direktiv-dev docker-compose down --remove-orphans -v
 
-dev-up: dev-down
+docker-compose-up: docker-compose-down
 	if [ ! -d direktiv-ui ]; then \
 		git clone -b develop https://github.com/direktiv/direktiv-ui.git; \
 		cd direktiv-ui && docker build -t direktiv-ui-dev .; \
