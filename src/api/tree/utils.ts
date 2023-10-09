@@ -44,7 +44,7 @@ export const sortByName = (a: { name: string }, b: { name: string }): number =>
 export const sortByRef = (a: { ref: string }, b: { ref: string }): number =>
   a.ref.localeCompare(b.ref);
 
-export const fileTypeToIcon = (type: NodeSchemaType["expandedType"]) => {
+export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
   switch (type) {
     case "directory":
       return Folder;
