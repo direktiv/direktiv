@@ -22,6 +22,6 @@ export const Default: Story = {
 
 export const NotificationHasMessage = () => (
   <div className="flex space-x-2">
-    <Notification hasMessage="true" />
+    <Notification hasMessage={true} />
   </div>
 );
