@@ -1,4 +1,4 @@
-FROM node:alpine as build
+FROM node:18-buster as build
 
 ARG FULL_VERSION
 
