@@ -9,13 +9,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/registry"
-
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"go.uber.org/zap"
