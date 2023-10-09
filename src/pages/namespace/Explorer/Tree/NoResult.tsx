@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { Folder, FolderOpen, Layers, Play } from "lucide-react";
 
 import Button from "~/design/Button";
+import { NewDialog } from "./types";
 import NewDirectory from "./NewDirectory";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
@@ -15,9 +16,7 @@ const EmptyDirectoryButton = () => {
   const { t } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDialog, setSelectedDialog] = useState<
-    "new-dir" | "new-workflow" | "new-service" | undefined
-  >();
+  const [selectedDialog, setSelectedDialog] = useState<NewDialog>();
 
   useEffect(() => {
     if (dialogOpen === false) setSelectedDialog(undefined);

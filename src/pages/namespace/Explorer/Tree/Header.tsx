@@ -13,6 +13,7 @@ import { Folder, FolderTree, Layers, Play, PlusCircle } from "lucide-react";
 import Button from "~/design/Button";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { Link } from "react-router-dom";
+import { NewDialog } from "./types";
 import NewDirectory from "./NewDirectory";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
@@ -45,9 +46,7 @@ const ExplorerHeader: FC = () => {
   const { data } = useNodeContent({ path });
   const { segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDialog, setSelectedDialog] = useState<
-    "new-dir" | "new-workflow" | "new-service" | undefined
-  >();
+  const [selectedDialog, setSelectedDialog] = useState<NewDialog>();
 
   useEffect(() => {
     if (dialogOpen === false) setSelectedDialog(undefined);
