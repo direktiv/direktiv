@@ -28,7 +28,7 @@ const useIsApiKeyRequired = () => {
  * following properties:
  *
  * isApiKeyRequired: indicates if the api needs an api key to work.
- * In enterprise mode this is always false, because the login in handled
+ * In enterprise mode this is always false, because the login is handled
  * by a different layer in front of the api/UI
  *
  * isCurrentKeyValid: indicates if this stored key from the user can be
@@ -41,7 +41,7 @@ const useIsApiKeyRequired = () => {
  * showUsermenu: indicates whether the usermenu should be shown. In the
  * enterprise version this is always true (and is independent from any
  * api key handling), in the open source version this is only true if
- * the api is required
+ * the api key is required
  */
 
 const useApiKeyHandling = () => {
