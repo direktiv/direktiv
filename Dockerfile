@@ -10,9 +10,9 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
 
 ENV NODE_ENV=production
-RUN yarn install --frozen-lockfile
+RUN npm ci
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
-RUN VITE_APP_VERSION=$FULL_VERSION yarn build
+RUN VITE_APP_VERSION=$FULL_VERSION npm run build
 
 # production environment
 FROM nginx:stable-alpine
