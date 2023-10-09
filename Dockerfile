@@ -1,4 +1,4 @@
-FROM node:18-buster as build
+FROM node:18 as build
 
 ARG FULL_VERSION
 
@@ -9,10 +9,9 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 COPY . .
 
-ENV NODE_ENV=production
-RUN npm install
+RUN yarn install
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
-RUN VITE_APP_VERSION=$FULL_VERSION npm run build
+RUN VITE_APP_VERSION=$FULL_VERSION yarn build
 
 # production environment
 FROM nginx:stable-alpine
