@@ -18,12 +18,11 @@ services:
 
   flow:
     image: ${DIREKTIV_IMAGE}
-    command: ["/bin/direktiv", "server", "something"]
+    command: ["/bin/direktiv", "server"]
     volumes:
       - ./config.yaml:/config.yaml
     environment:
       - DIREKTIV_APP=flow
-      - DIREKTIV_CONFIG=/config.yaml
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRETS_KEY=01234567890123456789012345678912
       - DIREKITV_DISABLE_SERVICES=true
@@ -42,7 +41,6 @@ services:
     environment:
       - DIREKTIV_APP=api
       - DIREKTIV_DEBUG=true
-      - DIREKTIV_CONFIG=/config.yaml
     ports:
       # api port
       - "1644:1644"
