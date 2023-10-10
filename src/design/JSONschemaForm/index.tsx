@@ -36,7 +36,7 @@ import validator from "@rjsf/validator-ajv8";
 
 const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   <div className="my-4">
-    <Select onValueChange={props.onChange}>
+    <Select onValueChange={props.onChange} value={props.value}>
       <SelectTrigger value={props.value} id={props.id}>
         <SelectValue
           placeholder={props.value ? props.value : `Select ${props.label}`}
