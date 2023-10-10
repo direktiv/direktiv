@@ -31,6 +31,7 @@ import Button from "../Button";
 import { Checkbox } from "../Checkbox";
 import Form from "@rjsf/core";
 import Input from "../Input";
+import { twMergeClsx } from "~/util/helpers";
 import validator from "@rjsf/validator-ajv8";
 
 const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
@@ -233,6 +234,7 @@ type JSONSchemaFormProps = Omit<
 
 export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
   schema,
+  className,
   ...props
 }) => (
   <Form
@@ -250,6 +252,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
     validator={validator}
     widgets={widgets}
     {...props}
+    className={twMergeClsx("p-1", className)}
   />
 );
 
