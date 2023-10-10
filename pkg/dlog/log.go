@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+const direktivDebug = "DIREKTIV_DEBUG"
+
 // ApplicationLogger returns logger for applications.
 func ApplicationLogger(component string) (*zap.SugaredLogger, error) {
 	appLogger, err := customLogger()
@@ -29,7 +31,7 @@ func FunctionsLogger() (*zap.SugaredLogger, error) {
 }
 
 func customLogger() (*zap.Logger, error) {
-	l, _ := strconv.ParseBool(os.Getenv(util.DirektivDebug))
+	l, _ := strconv.ParseBool(os.Getenv(direktivDebug))
 
 	inLvl := zapcore.InfoLevel
 	if l {
