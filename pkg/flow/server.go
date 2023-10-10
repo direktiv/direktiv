@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v9"
-
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -90,7 +89,7 @@ func Run(ctx context.Context, logger *zap.SugaredLogger) error {
 
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
-		return fmt.Errorf("parsing env variables: %s", err)
+		return fmt.Errorf("parsing env variables: %w", err)
 	}
 	srv.conf = config
 

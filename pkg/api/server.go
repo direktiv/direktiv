@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/gorilla/mux"
