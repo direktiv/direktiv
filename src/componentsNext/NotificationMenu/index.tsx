@@ -1,25 +1,27 @@
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
-import { FC } from "react";
 import Notification from "~/design/Notification";
+import { twMergeClsx } from "~/util/helpers";
+import { useState } from "react";
 
-/*
-// Vorher:
-const NotificationMenu: FC = () => (
-*/
+interface NotificationMenuProps {
+  className?: string;
+}
 
-// Nachher:
-const NotificationMenu = ({ className }: { className: string }) => (
-  <div className="self-end text-right">
-    <Popover>
-      <PopoverTrigger>
-        <Notification />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="p-4">
-        Place content for the popover here.
-      </PopoverContent>
-    </Popover>
-  </div>
-);
+const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
+  const [hasMessage, setHasMessages] = useState(false);
+  return (
+    <div className={twMergeClsx("self-end text-right", className)}>
+      <Popover>
+        <PopoverTrigger>
+          <Notification hasMessage={true} />
+        </PopoverTrigger>
+        <PopoverContent align="end" className="p-4">
+          Place content for the popover here.
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+};
 
 export default NotificationMenu;

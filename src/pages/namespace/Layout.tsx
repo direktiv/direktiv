@@ -67,6 +67,7 @@ const Layout = () => {
               <Breadcrumb />
             </MainTopLeft>
             <MainTopRight>
+              <NotificationMenu className="max-lg:hidden" />
               <UserMenu className="max-lg:hidden" />
             </MainTopRight>
           </MainTop>
