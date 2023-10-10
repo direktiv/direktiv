@@ -28,29 +28,19 @@ services:
       - DIREKITV_DISABLE_SERVICES=true
       - PORT=6666
     ports:
-      # flow port
+      # api v1 port
+      - "6665:6665"
+      # grpc port
       - "6666:6666"
+      # api v2 port
+      - "6667:6667"
     depends_on:
       - postgres
-
-  api:
-    image: ${DIREKTIV_IMAGE}
-    command: ["/bin/direktiv"]
-    volumes:
-      - ./config.yaml:/config.yaml
-    environment:
-      - DIREKTIV_APP=api
-      - DIREKTIV_DEBUG=true
-    ports:
-      # api port
-      - "1644:1644"
-    depends_on:
-      - flow
 
   ui:
     image: direktiv-ui-dev
     environment:
-      - DIREKTIV_SERVER_BACKEND=http://api:1644
+      - DIREKTIV_SERVER_BACKEND=http://api:6665
     ports:
       # api port
       - "2304:2304"
