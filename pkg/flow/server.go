@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/caarlos0/env"
+	"github.com/caarlos0/env/v9"
 
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
