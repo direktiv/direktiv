@@ -10,7 +10,6 @@ import (
 	"time"
 
 	api2 "github.com/direktiv/direktiv/pkg/api"
-
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
