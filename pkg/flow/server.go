@@ -234,7 +234,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Info("Initializing locks.")
 
-	db := os.Getenv(util.DBConn)
+	db := srv.conf.DB
 
 	srv.locks, err = initLocks(db)
 	if err != nil {
@@ -335,7 +335,7 @@ func (srv *server) start(ctx context.Context) error {
 	defer cancel()
 
 	srv.sugar.Info("Initializing pubsub routine.")
-	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, os.Getenv(util.DBConn))
+	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, srv.conf.DB)
 	if err != nil {
 		return fmt.Errorf("creating pubsub, err: %w", err)
 	}

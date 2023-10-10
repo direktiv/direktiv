@@ -13,6 +13,8 @@ type Config struct {
 	Prometheus     string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
 	OpenTelemetry  string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
 	EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
+
+	DB string `env:"DIREKTIV_DB,notEmpty"`
 }
 
 type Version struct {

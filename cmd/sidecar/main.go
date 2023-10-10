@@ -5,12 +5,18 @@ import (
 	"os"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/util"
+
+	"github.com/direktiv/direktiv/pkg/dlog"
 	"go.uber.org/zap"
 )
 
 var log *zap.SugaredLogger
+
+const (
+	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+	direktivOpentelemetry = "DIREKTIV_OTLP"
+)
 
 func RunApplication() {
 	var err error
@@ -30,7 +36,7 @@ func RunApplication() {
 	sl := new(SignalListener)
 	sl.Start()
 
-	openTelemetryBackend := os.Getenv(util.DirektivOpentelemetry)
+	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
 	telend, err := util.InitTelemetry(openTelemetryBackend, "direktiv/sidecar", "direktiv")
 	if err != nil {
