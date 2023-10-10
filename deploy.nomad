@@ -22,6 +22,11 @@ job "DEPLOYMENT_NAME" {
         ports = ["http"]
       }
 
+      env {
+        UI_PORT    = 1644
+        UI_BACKEND = var.UI_BACKEND
+      }
+
       service {
         name     = "direktiv-ui-DEPLOYMENT_NAME"
         port     = "http"
