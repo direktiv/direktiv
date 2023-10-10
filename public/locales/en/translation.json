@@ -893,12 +893,12 @@
     },
     "jqPlayground": {
       "title": "jq Playground",
-      "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
-      "openManualBtn": "Open jq Manual",
+      "description": "jq Playground is an environment where you can quickly test your jq commands against JSON input.",
+      "openManualBtn": "Open jq manual",
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
-      "submitBtn": "Run Query",
+      "submitBtn": "Run query",
       "examples": {
         "title": "Examples",
         "buttonLabel": "Run",
