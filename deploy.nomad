@@ -1,6 +1,9 @@
 variable "IMAGE" {
   type = string
 }
+variable "UI_BACKEND" {
+  type = string
+}
 
 
 job "DEPLOYMENT_NAME" {
