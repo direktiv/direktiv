@@ -63,11 +63,11 @@ states:
         type: string
         title: Last name
       select:
-        title: select a string
+        title: role
         type: string
         enum: 
-          - select 1
-          - select 2
+          - admin
+          - guest
       array:
         title: A list of strings
         type: array
@@ -100,9 +100,9 @@ states:
         type: string
         title: Last name
       select:
-        title: select a string
+        title: role
         type: string
         enum: 
-          - select 1
-          - select 2
+          - admin
+          - guest
       `;
