@@ -37,16 +37,8 @@ import validator from "@rjsf/validator-ajv8";
 const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   <div className="my-4">
     <Select onValueChange={props.onChange} value={`${props.value ?? ""}`}>
-      <SelectTrigger value={props.value} id={props.id}>
-        <SelectValue
-          placeholder={props.value ? props.value : `Select ${props.label}`}
-        >
-          {/* 
-          the blank space is weirdly important here, otherwise the first change
-          of this select will result in the select showing an empty text.
-           */}
-          {props.value}{" "}
-        </SelectValue>
+      <SelectTrigger id={props.id}>
+        <SelectValue>{props.value ?? `Select ${props.label}`}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
