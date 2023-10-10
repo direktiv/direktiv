@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	api2 "github.com/direktiv/direktiv/pkg/api"
+
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -22,6 +24,8 @@ import (
 
 func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
+
+	go api2.RunApplication()
 
 	if os.Getenv("DIREKITV_DISABLE_SERVICES") == "true" {
 		return wg
