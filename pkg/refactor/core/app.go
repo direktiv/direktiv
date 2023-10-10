@@ -14,6 +14,8 @@ type Config struct {
 	OpenTelemetry  string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
 	EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
 
+	SecretKey string `env:"DIREKTIV_SECRET_KEY" envDefault:"01234567890123456789012345678912"`
+
 	DB string `env:"DIREKTIV_DB,notEmpty"`
 }
 
