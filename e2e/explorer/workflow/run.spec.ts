@@ -226,6 +226,12 @@ test("it is possible to provide the input via generated form", async ({
   await expect(
     page.getByRole("combobox", { name: "Select a string" })
   ).toBeVisible();
+
+  await expect(
+    await page.getByRole("combobox", { name: "Select a string" }).innerText(),
+    "the select input shows a fallback text when it has no value"
+  ).toBe("Select select a string");
+
   await expect(page.getByTestId("json-schema-form-add-button")).toBeVisible();
   await expect(page.getByLabel("Age")).toBeVisible();
   await expect(page.getByLabel("File")).toBeVisible();
@@ -233,6 +239,10 @@ test("it is possible to provide the input via generated form", async ({
   // interact with the select input
   await page.getByRole("combobox", { name: "Select a string" }).click();
   await page.getByRole("option", { name: "Select 2" }).click();
+  await expect(
+    await page.getByRole("combobox", { name: "Select a string" }).innerText(),
+    "the select input now shows the selected value"
+  ).toBe("select 2");
 
   // interact with the file input
   await page
