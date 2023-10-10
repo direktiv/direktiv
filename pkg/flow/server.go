@@ -48,8 +48,7 @@ import (
 )
 
 const (
-	parcelSize        = 0x100000
-	direktivSecretKey = "DIREKTIV_SECRETS_KEY"
+	parcelSize = 0x100000
 )
 
 type server struct {
@@ -291,12 +290,8 @@ func (srv *server) start(ctx context.Context) error {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
 
-	if os.Getenv(direktivSecretKey) == "" {
-		return fmt.Errorf("empty env variable '%s'", direktivSecretKey)
-	}
-
-	if len(os.Getenv(direktivSecretKey))%16 != 0 {
-		return fmt.Errorf("invalid env variable '%s' length", direktivSecretKey)
+	if len(srv.conf.SecretKey)%16 != 0 {
+		return fmt.Errorf("invalid DIREKTIV_SECRET_KEY variable length")
 	}
 
 	srv.sugar.Info("Initializing pub-sub.")
@@ -358,7 +353,8 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.sugar.Info("Initializing mirror manager.")
 	noTx := &sqlTx{
-		res: srv.gormDB,
+		res:       srv.gormDB,
+		secretKey: srv.conf.SecretKey,
 	}
 	dbLogger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		noTx.DataStore().Logs().Append,
@@ -484,7 +480,7 @@ func (srv *server) start(ctx context.Context) error {
 	}()
 
 	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database2.NewDB(srv.gormDB, os.Getenv(direktivSecretKey))
+	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
 
 	newMainWG := cmd.NewMain(srv.conf, dbManager, pBus, srv.sugar)
 
@@ -695,7 +691,8 @@ func this() string {
 }
 
 type sqlTx struct {
-	res *gorm.DB
+	res       *gorm.DB
+	secretKey string
 }
 
 func (tx *sqlTx) FileStore() filestore.FileStore {
@@ -703,7 +700,7 @@ func (tx *sqlTx) FileStore() filestore.FileStore {
 }
 
 func (tx *sqlTx) DataStore() datastore.Store {
-	return datastoresql.NewSQLStore(tx.res, os.Getenv(direktivSecretKey))
+	return datastoresql.NewSQLStore(tx.res, tx.secretKey)
 }
 
 func (tx *sqlTx) InstanceStore() instancestore.Store {
@@ -729,7 +726,8 @@ func (srv *server) beginSqlTx(ctx context.Context) (*sqlTx, error) {
 		return nil, res.Error
 	}
 	return &sqlTx{
-		res: res,
+		res:       res,
+		secretKey: srv.conf.SecretKey,
 	}, nil
 }
 
