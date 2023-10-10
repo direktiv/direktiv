@@ -290,6 +290,7 @@ func (srv *server) start(ctx context.Context) error {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
 
+	// TODO: repeat the string if its length is not suitable.
 	if len(srv.conf.SecretKey)%16 != 0 {
 		return fmt.Errorf("invalid DIREKTIV_SECRET_KEY variable length")
 	}
