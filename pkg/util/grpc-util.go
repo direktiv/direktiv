@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/emicklei/go-restful/v3/log"
@@ -100,13 +99,4 @@ func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInter
 	}
 
 	return additionalServerOptions
-}
-
-// SanitizeAsField removes initial slash if one exists and returns the new value.
-func SanitizeAsField(as string) string {
-	if strings.HasPrefix(as, "/") {
-		newas := strings.TrimPrefix(as, "/")
-		return newas
-	}
-	return as
 }
