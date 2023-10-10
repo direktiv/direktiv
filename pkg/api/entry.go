@@ -3,16 +3,18 @@ package api
 import (
 	"log"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+
 	"github.com/direktiv/direktiv/pkg/dlog"
 )
 
-func RunApplication() {
+func RunApplication(config *core.Config) {
 	logger, err := dlog.ApplicationLogger("api")
 	if err != nil {
 		log.Fatalf("can not get logger: %v", err)
 	}
 
-	s, err := NewServer(logger)
+	s, err := NewServer(logger, config)
 	if err != nil {
 		logger.Errorf("can not create api server: %v", err)
 	}

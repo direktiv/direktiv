@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
@@ -48,8 +50,8 @@ func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *
 	}
 }
 
-func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Config) (*flowHandler, error) {
-	flowAddr := fmt.Sprintf("%s:6666", conf.FlowService)
+func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *core.Config) (*flowHandler, error) {
+	flowAddr := fmt.Sprintf("localhost:%d", conf.GrpcPort)
 	logger.Infof("connecting to flow %s", flowAddr)
 
 	flowConn, err := util.GetEndpointTLS(flowAddr)
@@ -61,10 +63,10 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *util.Co
 	h := &flowHandler{
 		logger:       logger,
 		client:       grpc.NewFlowClient(flowConn),
-		apiV2Address: fmt.Sprintf("%s:6667", conf.FlowService),
+		apiV2Address: fmt.Sprintf("localhost:%d", conf.ApiV2Port),
 	}
 
-	prometheusAddr := fmt.Sprintf("http://%s", conf.PrometheusBackend)
+	prometheusAddr := fmt.Sprintf("http://%s", conf.Prometheus)
 	logger.Infof("connecting to prometheus %s", prometheusAddr)
 	h.prometheus, err = prometheus.NewClient(prometheus.Config{
 		Address: prometheusAddr,
