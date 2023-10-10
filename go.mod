@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/bbuck/go-lexer v1.0.0
+	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.14.0
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/dop251/goja v0.0.0-20230402114112-623f9dda9079
@@ -60,9 +61,6 @@ require (
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
-	github.com/caarlos0/env v3.5.0+incompatible // indirect
-	github.com/caarlos0/env/v8 v8.0.0 // indirect
-	github.com/caarlos0/env/v9 v9.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
