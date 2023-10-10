@@ -3,7 +3,6 @@ package api
 import (
 	"log"
 
-	"github.com/direktiv/direktiv/pkg/api"
 	"github.com/direktiv/direktiv/pkg/dlog"
 )
 
@@ -13,7 +12,7 @@ func RunApplication() {
 		log.Fatalf("can not get logger: %v", err)
 	}
 
-	s, err := api.NewServer(logger)
+	s, err := NewServer(logger)
 	if err != nil {
 		logger.Errorf("can not create api server: %v", err)
 	}
