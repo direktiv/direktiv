@@ -8,12 +8,15 @@ import { Play, PlusCircle } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
 import { ScrollArea } from "~/design/ScrollArea";
 import prettyYAML from "json-to-pretty-yaml";
 import { useState } from "react";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import yamljs from "js-yaml";
 
 const serviceSchema: RJSFSchema = {
   properties: {
@@ -40,11 +43,6 @@ const serviceSchema: RJSFSchema = {
   type: "object",
 };
 
-// type FormInput = {
-//   name: string;
-//   fileContent: string;
-// };
-
 const NewService = ({
   path,
 }: {
@@ -57,8 +55,9 @@ const NewService = ({
   const isLoading = false;
 
   const [serviceConfig, setServiceConfig] = useState({});
-
   const formId = `new-service-${path}`;
+  const theme = useTheme();
+
   return (
     <>
       <DialogHeader>
@@ -68,26 +67,35 @@ const NewService = ({
         </DialogTitle>
       </DialogHeader>
 
-      <Card className="h-96 w-full p-4 sm:h-[500px]">
-        <code className="block">{JSON.stringify(serviceConfig)}</code>
-
-        <code className="block">{prettyYAML.stringify(serviceConfig)}</code>
+      <Card className="h-96 w-full p-4" noShadow background="weight-1">
         <ScrollArea className="h-full">
           <JSONSchemaForm
-            formData={{
-              image: "coo",
-            }}
+            formData={serviceConfig}
             onChange={(e) => {
-              console.log("🚀", JSON.stringify(e.formData));
-              console.log(prettyYAML.stringify(e.formData));
               setServiceConfig(e.formData);
-              // setServiceConfig(prettyYAML.stringify(e.formData));
             }}
             schema={serviceSchema}
           />
         </ScrollArea>
       </Card>
-
+      <Card className="h-96 w-full p-4" noShadow background="weight-1">
+        <Editor
+          value={prettyYAML.stringify(serviceConfig)}
+          onChange={(newData) => {
+            if (newData) {
+              const json = yamljs.load(newData);
+              if (typeof json === "object") {
+                // setServiceConfig(json);
+              }
+            }
+          }}
+          theme={theme ?? undefined}
+        />
+      </Card>
+      <Card className="w-full p-4" noShadow background="weight-1">
+        <code className="block">{JSON.stringify(serviceConfig)}</code>
+        <code className="block">{prettyYAML.stringify(serviceConfig)}</code>
+      </Card>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
