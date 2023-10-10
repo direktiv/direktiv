@@ -17,6 +17,7 @@ import Breadcrumb from "~/componentsNext/Breadcrumb";
 import Logo from "~/design/Logo";
 import { Menu } from "lucide-react";
 import Navigation from "~/componentsNext/Navigation";
+import NotificationMenu from "~/componentsNext/NotificationMenu";
 import UserMenu from "~/componentsNext/UserMenu";
 import { useEffect } from "react";
 import { useVersion } from "~/api/version/query/get";
@@ -53,6 +54,7 @@ const Layout = () => {
               className="h-8 w-auto justify-self-center sm:hidden"
             />
             <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
+            <NotificationMenu className="lg:hidden" />
             <UserMenu className="justify-self-end lg:hidden" />
           </SidebarTop>
           <SidebarMain>

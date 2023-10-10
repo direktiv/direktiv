@@ -17,7 +17,7 @@ export const Sidebar: FC<PropsWithChildren<{ version: string }>> = ({
 );
 
 export const SidebarTop: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid grid-cols-3 items-center border-b border-gray-5 px-6 py-5 dark:border-gray-dark-5 lg:block lg:space-x-0">
+  <div className="grid grid-cols-4 items-center border-b border-gray-5 px-6 py-5 dark:border-gray-dark-5 lg:block lg:space-x-0">
     {children}
   </div>
 );
