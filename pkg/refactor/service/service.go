@@ -16,11 +16,11 @@ const (
 )
 
 type Config struct {
-	Namespace string  `json:"namespace"`
-	Name      *string `json:"name"`
+	Typ       string `json:"type"`
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
 
-	ServicePath  *string `json:"servicePath"`
-	WorkflowPath *string `json:"workflowPath"`
+	FilePath string `json:"filePath"`
 
 	Image string `json:"image"`
 	CMD   string `json:"cmd"`
@@ -31,7 +31,7 @@ type Config struct {
 }
 
 func (c *Config) getID() string {
-	str := fmt.Sprintf("%s-%v-%v-%v", c.Namespace, c.Name, c.ServicePath, c.WorkflowPath)
+	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.Typ, c.FilePath)
 	sh := sha256.Sum256([]byte(str))
 
 	return fmt.Sprintf("obj%xobj", sh[:10])
