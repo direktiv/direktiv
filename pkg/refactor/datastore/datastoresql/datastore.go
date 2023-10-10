@@ -66,12 +66,6 @@ func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
 	}
 }
 
-func (s *sqlStore) Services() core.ServicesStore {
-	return &sqlServicesStore{
-		db: s.db,
-	}
-}
-
 func (s *sqlStore) EventFilter() events.CloudEventsFilterStore {
 	return &sqlNamespaceCloudEventFilter{db: s.db}
 }

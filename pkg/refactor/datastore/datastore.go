@@ -30,8 +30,6 @@ type Store interface {
 
 	RuntimeVariables() core.RuntimeVariablesStore
 
-	Services() core.ServicesStore
-
 	EventHistory() events.EventHistoryStore
 	EventListener() events.EventListenerStore
 	EventFilter() events.CloudEventsFilterStore
