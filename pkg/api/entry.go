@@ -3,9 +3,8 @@ package api
 import (
 	"log"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
 func RunApplication(config *core.Config) {

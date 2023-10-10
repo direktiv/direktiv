@@ -5,9 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/util"
-
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 

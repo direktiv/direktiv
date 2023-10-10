@@ -19,7 +19,6 @@ func validateConfig(c *ClientConfig) (*ClientConfig, error) {
 }
 
 func buildService(c *ClientConfig, cfg *Config) (*servingv1.Service, error) {
-
 	containers, err := buildContainers(c, cfg)
 	if err != nil {
 		return nil, err

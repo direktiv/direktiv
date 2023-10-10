@@ -22,9 +22,7 @@ const (
 	annotationRegistryUser = "direktiv.io/registry/user"
 )
 
-var (
-	ErrNotFound = errors.New("ErrNotFound")
-)
+var ErrNotFound = errors.New("ErrNotFound")
 
 type Registry struct {
 	Namespace string `json:"namespace"`
