@@ -121,15 +121,6 @@ func newServer(logger *zap.SugaredLogger) (*server, error) {
 	return srv, nil
 }
 
-type gormLogger struct {
-	*zap.SugaredLogger
-}
-
-func (g gormLogger) Write(p []byte) (n int, err error) {
-	g.Debugw(string(p), "component", "GORM")
-	return len(p), nil
-}
-
 type mirrorProcessLogger struct {
 	sugar  *zap.SugaredLogger
 	logger logengine.BetterLogger
