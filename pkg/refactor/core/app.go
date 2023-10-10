@@ -6,13 +6,13 @@ import (
 )
 
 type Config struct {
-	ApiV1Port int `env:"API_V1_PORT" envDefault:"6665"`
-	ApiV2Port int `env:"API_V2_PORT" envDefault:"6667"`
-	GrpcPort  int `env:"API_PORT" envDefault:"6666"`
+	ApiV1Port int `env:"DIREKTIV_API_V1_PORT" envDefault:"6665"`
+	ApiV2Port int `env:"DIREKTIV_API_V2_PORT" envDefault:"6667"`
+	GrpcPort  int `env:"DIREKTIV_GRPC_PORT" envDefault:"6666"`
 
-	Prometheus     string `env:"PROMETHEUS_BACKEND"`
-	OpenTelemetry  string `env:"OPEN_TELEMETRY_BACKEND"`
-	EnableEventing bool   `env:"ENABLE_EVENTING"`
+	Prometheus     string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
+	OpenTelemetry  string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
+	EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
 }
 
 type Version struct {
