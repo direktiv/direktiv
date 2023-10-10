@@ -133,7 +133,6 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 						Scale:     serviceDef.Scale,
 					})
 				}
-
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				serviceDef, err := spec.ParseWorkflowServiceDefinition(data)
 				if err != nil {
