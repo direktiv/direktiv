@@ -22,10 +22,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewMain(db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
+func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
 
-	go api2.RunApplication()
+	go api2.RunApplication(config)
 
 	if os.Getenv("DIREKITV_DISABLE_SERVICES") == "true" {
 		return wg

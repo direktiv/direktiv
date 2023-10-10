@@ -14,6 +14,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/caarlos0/env"
+
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -55,7 +57,7 @@ type server struct {
 
 	sugar    *zap.SugaredLogger
 	fnLogger *zap.SugaredLogger
-	conf     *util.Config
+	conf     *core.Config
 
 	// db       *ent.Client
 	pubsub *pubsub.Pubsub
@@ -81,11 +83,17 @@ type server struct {
 	logger  logengine.BetterLogger
 }
 
-func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) error {
-	srv, err := newServer(logger, conf)
+func Run(ctx context.Context, logger *zap.SugaredLogger) error {
+	srv, err := newServer(logger)
 	if err != nil {
 		return err
 	}
+
+	config := &core.Config{}
+	if err := env.Parse(config); err != nil {
+		return fmt.Errorf("parsing env variables: %s", err)
+	}
+	srv.conf = config
 
 	err = srv.start(ctx)
 	if err != nil {
@@ -95,14 +103,13 @@ func Run(ctx context.Context, logger *zap.SugaredLogger, conf *util.Config) erro
 	return nil
 }
 
-func newServer(logger *zap.SugaredLogger, conf *util.Config) (*server, error) {
+func newServer(logger *zap.SugaredLogger) (*server, error) {
 	var err error
 
 	srv := new(server)
 	srv.ID = uuid.New()
 
 	srv.sugar = logger
-	srv.conf = conf
 
 	srv.fnLogger, err = dlog.FunctionsLogger()
 	if err != nil {
@@ -221,7 +228,7 @@ func (srv *server) start(ctx context.Context) error {
 	enableDeveloperMode := os.Getenv("ENABLE_DEVELOPER_MODE") == "true"
 
 	srv.sugar.Info("Initializing telemetry.")
-	telend, err := util.InitTelemetry(srv.conf, "direktiv/flow", "direktiv")
+	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return err
 	}
@@ -488,7 +495,7 @@ func (srv *server) start(ctx context.Context) error {
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database2.NewDB(srv.gormDB, os.Getenv(direktivSecretKey))
 
-	newMainWG := cmd.NewMain(dbManager, pBus, srv.sugar)
+	newMainWG := cmd.NewMain(srv.conf, dbManager, pBus, srv.sugar)
 
 	srv.sugar.Info("Flow server started.")
 

@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
@@ -159,8 +158,8 @@ var rootCmd = &cobra.Command{
 }
 
 var serverCmd = &cobra.Command{
-	Use:  "server CONFIG_FILE",
-	Args: cobra.ExactArgs(1),
+	Use:  "server",
+	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: yassir: need to be cleaned.
 		defer func() {
@@ -175,17 +174,7 @@ var serverCmd = &cobra.Command{
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
 
-		path := args[0]
-		if os.Getenv("DIREKTIV_CONFIG") != "" {
-			path = os.Getenv("DIREKTIV_CONFIG")
-		}
-
-		conf, err := util.ReadConfig(path)
-		if err != nil {
-			exit(err)
-		}
-
-		err = flow.Run(ctx, logger, conf)
+		err := flow.Run(ctx, logger)
 		if err != nil {
 			exit(err)
 		}

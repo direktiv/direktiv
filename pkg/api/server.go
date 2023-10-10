@@ -2,8 +2,9 @@ package api
 
 import (
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -20,7 +21,7 @@ type Server struct {
 	router *mux.Router
 	srv    *http.Server
 
-	config *util.Config
+	config *core.Config
 
 	// handlers
 	flowHandler *flowHandler
@@ -43,13 +44,14 @@ func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewServer return new API server.
-func NewServer(l *zap.SugaredLogger) (*Server, error) {
+func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 	logger = l
 	logger.Infof("starting api server")
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	s := &Server{
+		config: config,
 		logger: l,
 		router: r,
 		srv: &http.Server{
@@ -69,23 +71,13 @@ func NewServer(l *zap.SugaredLogger) (*Server, error) {
 	//     "description": "version query was successful"
 	r.HandleFunc("/version", s.version).Name(RN_Version).Methods(http.MethodGet)
 
-	path := "/etc/direktiv/flow-config.yaml"
-	if os.Getenv("DIREKTIV_CONFIG") != "" {
-		path = os.Getenv("DIREKTIV_CONFIG")
-	}
-	// read config
-	conf, err := util.ReadConfig(path)
-	if err != nil {
-		return nil, err
-	}
-	s.config = conf
-
 	r.Use(func(h http.Handler) http.Handler {
 		return &mw{h: h}
 	})
 
 	logger.Debug("Initializing telemetry.")
-	s.telend, err = util.InitTelemetry(s.config, "direktiv/api", "direktiv")
+	var err error
+	s.telend, err = util.InitTelemetry(s.config.OpenTelemetry, "direktiv/api", "direktiv")
 	if err != nil {
 		return nil, err
 	}

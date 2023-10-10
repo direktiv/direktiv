@@ -72,7 +72,7 @@ func (tmc *grpcMetadataTMC) Set(k, v string) {
 
 var instrumentationName string
 
-func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
+func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 	instrumentationName = imName
 
 	var prop propagation.TextMapPropagator
@@ -80,7 +80,6 @@ func InitTelemetry(conf *Config, svcName, imName string) (func(), error) {
 	otel.SetTracerProvider(trace.NewNoopTracerProvider())
 	otel.SetTextMapPropagator(prop)
 
-	addr := conf.GetTelemetryBackendAddr()
 	if addr == "" {
 		return func() {}, nil
 	}
