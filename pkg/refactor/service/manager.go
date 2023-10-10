@@ -170,7 +170,7 @@ func (m *Manager) SetOneService(service *Config) {
 	m.list = append(m.list, service)
 }
 
-func (m *Manager) getList(filterNamespace string, filterWorkflowPath string, filterServicePath string) ([]*ConfigStatus, error) {
+func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*ConfigStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -180,16 +180,10 @@ func (m *Manager) getList(filterNamespace string, filterWorkflowPath string, fil
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
 		}
-		if filterWorkflowPath != "" && v.WorkflowPath == nil {
+		if filterPath != "" && v.FilePath != filterPath {
 			continue
 		}
-		if filterWorkflowPath != "" && filterWorkflowPath != *v.WorkflowPath {
-			continue
-		}
-		if filterServicePath != "" && v.ServicePath == nil {
-			continue
-		}
-		if filterServicePath != "" && filterServicePath != *v.ServicePath {
+		if filterTyp != "" && v.Typ != filterTyp {
 			continue
 		}
 

@@ -107,7 +107,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 
 			continue
 		}
-		for i, file := range files {
+		for _, file := range files {
 			data, err := fStore.ForFile(file).GetData(context.Background())
 			if err != nil {
 				logger.Error("read file data", "error", err)
@@ -115,20 +115,25 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 				continue
 			}
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := spec.ParseService(data)
+				servicesDef, err := spec.ParseServicesFile(data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
 					continue
 				}
-				funConfigList = append(funConfigList, &service.Config{
-					Namespace:   ns.Name,
-					ServicePath: &files[i].Path,
-					Image:       serviceDef.Image,
-					CMD:         serviceDef.Cmd,
-					Size:        serviceDef.Size,
-					Scale:       serviceDef.Scale,
-				})
+				for _, serviceDef := range servicesDef.Services {
+					funConfigList = append(funConfigList, &service.Config{
+						Typ:       "namespace-service",
+						Name:      serviceDef.Name,
+						Namespace: ns.Name,
+						FilePath:  file.Path,
+						Image:     serviceDef.Image,
+						CMD:       serviceDef.Cmd,
+						Size:      serviceDef.Size,
+						Scale:     serviceDef.Scale,
+					})
+				}
+
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				serviceDef, err := spec.ParseWorkflowServiceDefinition(data)
 				if err != nil {
@@ -138,12 +143,14 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 				}
 				if serviceDef.Typ == "knative-workflow" {
 					funConfigList = append(funConfigList, &service.Config{
-						Namespace:    ns.Name,
-						WorkflowPath: &files[i].Path,
-						Image:        serviceDef.Image,
-						CMD:          serviceDef.Cmd,
-						Size:         serviceDef.Size,
-						Scale:        serviceDef.Scale,
+						Typ:       "workflow-service",
+						Name:      serviceDef.Name,
+						Namespace: ns.Name,
+						FilePath:  file.Path,
+						Image:     serviceDef.Image,
+						CMD:       serviceDef.Cmd,
+						Size:      serviceDef.Size,
+						Scale:     serviceDef.Scale,
 					})
 				}
 			}
