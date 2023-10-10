@@ -23,10 +23,14 @@ services:
       - ./config.yaml:/config.yaml
     environment:
       - DIREKTIV_APP=flow
+
+      - DIREKTIV_API_V1_PORT=6665
+      - DIREKTIV_GRPC_PORT=6666
+      - DIREKTIV_API_V2_PORT=6667
+
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRET_KEY=01234567890123456789012345678912
       - DIREKITV_DISABLE_SERVICES=true
-      - PORT=6666
     ports:
       # api v1 port
       - "6665:6665"
@@ -40,9 +44,10 @@ services:
   ui:
     image: direktiv-ui-dev
     environment:
-      - DIREKTIV_SERVER_BACKEND=http://api:6665
+      - UI_BACKEND=flow:6665
+      - UI_PORT=8080
     ports:
       # api port
-      - "2304:2304"
+      - "8080:8080"
     depends_on:
-      - api
+      - flow
