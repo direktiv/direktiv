@@ -49,12 +49,9 @@ const InstanceTableRow: FC<{
         }}
         className="cursor-pointer"
       >
-        <TableCell>
+        <TableCell data-testid="instance-column-name">
           <Tooltip>
-            <TooltipTrigger
-              data-testid={`instance-row-workflow-${instance.id}`}
-              asChild
-            >
+            <TooltipTrigger asChild>
               <Link
                 onClick={(e) => {
                   e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
@@ -76,39 +73,34 @@ const InstanceTableRow: FC<{
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell>
+        <TableCell data-testid="instance-column-id">
           <TooltipCopyBadge value={instance.id} variant="outline">
             {instance.id.slice(0, 8)}
           </TooltipCopyBadge>
         </TableCell>
-        <TableCell>
+        <TableCell data-testid="instance-column-invoker">
           {isChildInstance ? (
-            <TooltipCopyBadge
-              value={childInstance}
-              variant="outline"
-              data-testid={`instance-row-invoker-${instance.id}`}
-            >
+            <TooltipCopyBadge value={childInstance} variant="outline">
               {invoker}
             </TooltipCopyBadge>
           ) : (
-            <Badge
-              data-testid={`instance-row-invoker-${instance.id}`}
-              variant="outline"
-            >
+            <Badge data-testid="invoker-type-badge" variant="outline">
               {invoker}
             </Badge>
           )}
         </TableCell>
-        <TableCell>
+        <TableCell data-testid="instance-column-state">
           <ConditionalWrapper
             condition={instance.status === "failed"}
             wrapper={(children) => (
               <HoverCard>
-                <HoverCardTrigger>{children}</HoverCardTrigger>
+                <HoverCardTrigger data-testid="tooltip-copy-trigger">
+                  {children}
+                </HoverCardTrigger>
                 <HoverCardContent
                   asChild
                   noBackground
-                  data-testid={`instance-row-state-error-tooltip-${instance.id}`}
+                  data-testid="tooltip-copy-content"
                 >
                   <Alert variant="error">
                     <span className="font-bold">{instance.errorCode}</span>
@@ -120,7 +112,6 @@ const InstanceTableRow: FC<{
             )}
           >
             <Badge
-              data-testid={`instance-row-state-${instance.id}`}
               variant={statusToBadgeVariant(instance.status)}
               icon={instance.status}
             >
@@ -128,34 +119,26 @@ const InstanceTableRow: FC<{
             </Badge>
           </ConditionalWrapper>
         </TableCell>
-        <TableCell>
+        <TableCell data-testid="instance-column-created-time">
           <Tooltip>
-            <TooltipTrigger
-              data-testid={`instance-row-relative-created-time-${instance.id}`}
-            >
+            <TooltipTrigger data-testid="tooltip-trigger">
               {t("pages.instances.list.tableRow.realtiveTime", {
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>
-            <TooltipContent
-              data-testid={`instance-row-absolute-created-time-${instance.id}`}
-            >
+            <TooltipContent data-testid="tooltip-content">
               {instance.createdAt}
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell>
+        <TableCell data-testid="instance-column-updated-time">
           <Tooltip>
-            <TooltipTrigger
-              data-testid={`instance-row-relative-updated-time-${instance.id}`}
-            >
+            <TooltipTrigger data-testid="tooltip-trigger">
               {t("pages.instances.list.tableRow.realtiveTime", {
                 relativeTime: updatedAt,
               })}
             </TooltipTrigger>
-            <TooltipContent
-              data-testid={`instance-row-absolute-updated-time-${instance.id}`}
-            >
+            <TooltipContent data-testid="tooltip-content">
               {instance.updatedAt}
             </TooltipContent>
           </Tooltip>

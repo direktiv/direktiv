@@ -10,11 +10,11 @@ type TooltipCopyBadge = ComponentProps<typeof Badge> & {
 
 const TooltipCopyBadge = ({ value, ...props }: TooltipCopyBadge) => (
   <Tooltip>
-    <TooltipTrigger data-testid={`tooltip-copy-badge-${value}`}>
+    <TooltipTrigger data-testid="tooltip-copy-trigger">
       <Badge {...props} />
     </TooltipTrigger>
     <TooltipContent
-      data-testid={`tooltip-copy-badge-content-${value}`}
+      data-testid="tooltip-copy-content"
       className="flex gap-2 align-middle"
     >
       {value}
