@@ -207,13 +207,13 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 		if service != nil && service.getValueHash() == v.getValueHash() {
 			result = append(result, &ConfigStatus{
 				ID:         v.getID(),
-				Config:     v,
+				Config:     *v,
 				Conditions: service.getConditions(),
 			})
 		} else {
 			result = append(result, &ConfigStatus{
 				ID:         v.getID(),
-				Config:     v,
+				Config:     *v,
 				Conditions: nil,
 			})
 		}
