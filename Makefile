@@ -323,10 +323,9 @@ docker-compose-down:
 	DIREKTIV_IMAGE=direktiv-dev docker-compose down --remove-orphans -v
 
 docker-compose-up: docker-compose-down
-	if [ ! -d direktiv-ui ]; then \
-		git clone -b develop https://github.com/direktiv/direktiv-ui.git; \
-		cd direktiv-ui && docker build -t direktiv-ui-dev .; \
-	fi
+	rm -rf direktiv-ui
+	git clone -b develop https://github.com/direktiv/direktiv-ui.git
+	cd direktiv-ui && docker build -t direktiv-ui-dev .
 
 	docker build -t direktiv-dev .
 	DIREKTIV_IMAGE=direktiv-dev  docker-compose up -d
