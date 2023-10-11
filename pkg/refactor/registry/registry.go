@@ -165,15 +165,14 @@ func obfuscateUser(user string) string {
 }
 
 func NewManager() (*kManager, error) {
+	return nil, nil
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
 	cSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 

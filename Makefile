@@ -320,7 +320,7 @@ server-godoc:
 
 
 docker-compose-down:
-	DIREKTIV_IMAGE=direktiv-dev docker-compose down --remove-orphans -v
+	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
 docker-compose-up: docker-compose-down
 	rm -rf direktiv-ui
@@ -328,6 +328,6 @@ docker-compose-up: docker-compose-down
 	cd direktiv-ui && docker build -t direktiv-ui-dev .
 
 	docker build -t direktiv-dev .
-	DIREKTIV_IMAGE=direktiv-dev  docker-compose up -d
-	DIREKTIV_IMAGE=direktiv-dev  docker-compose logs -f
+	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d
+	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 	make dev-down
