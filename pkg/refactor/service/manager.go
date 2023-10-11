@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	dClient "github.com/docker/docker/client"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
@@ -17,13 +18,21 @@ type Manager struct {
 	lock *sync.Mutex
 }
 
-func NewManagerFromK8s() (*Manager, error) {
+func NewManager(enableDocker bool) (*Manager, error) {
+	if enableDocker {
+		return newDockerManager()
+	}
+
+	return newKnativeManager()
+}
+
+func newKnativeManager() (*Manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
-	cset, err := versioned.NewForConfig(config)
+	cSet, err := versioned.NewForConfig(config)
 	if err != nil {
 		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
@@ -41,16 +50,32 @@ func NewManagerFromK8s() (*Manager, error) {
 	}
 
 	client := &knativeClient{
-		client: cset,
+		client: cSet,
 		config: c,
 	}
 
+	return newManagerFromClient(client), nil
+}
+
+func newDockerManager() (*Manager, error) {
+	cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
+	client := dockerClient{
+		cli: cli,
+	}
+	return newManagerFromClient(&client), nil
+}
+
+func newManagerFromClient(client client) *Manager {
 	return &Manager{
 		list:   make([]*Config, 0, 0),
 		client: client,
 
 		lock: &sync.Mutex{},
-	}, nil
+	}
 }
 
 func (m *Manager) runCycle() []error {
@@ -113,7 +138,8 @@ func (m *Manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		if err := m.client.createService(v); err != nil {
-			*v.Error = err.Error()
+			errStr := err.Error()
+			v.Error = &errStr
 		}
 	}
 

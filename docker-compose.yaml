@@ -21,6 +21,7 @@ services:
     command: ["/bin/direktiv", "server"]
     volumes:
       - ./config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DIREKTIV_APP=flow
 
@@ -30,7 +31,8 @@ services:
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRET_KEY=01234567890123456789012345678912
-      - DIREKITV_DISABLE_SERVICES=true
+      - DIREKITV_ENABLE_DOCKER=true
+
     ports:
       # api v1 port
       - "6665:6665"

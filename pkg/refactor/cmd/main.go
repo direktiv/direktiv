@@ -26,14 +26,10 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 
 	go api2.RunApplication(config)
 
-	if os.Getenv("DIREKITV_DISABLE_SERVICES") == "true" {
-		return wg
-	}
-
 	done := make(chan struct{})
 
 	// Create service manager
-	serviceManager, err := service.NewManagerFromK8s()
+	serviceManager, err := service.NewManager(os.Getenv("DIREKITV_ENABLE_DOCKER") == "true")
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
