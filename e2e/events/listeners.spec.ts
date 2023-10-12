@@ -12,7 +12,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it is possible to send a new event", async ({ page }) => {
+test("it renders event listeners", async ({ page }) => {
   await page.goto(`/${namespace}/events/listeners`);
 
   await expect(page, "it is possible to visit events/listeners ").toHaveURL(

@@ -173,7 +173,7 @@ test("it renders, filters, and paginates events", async ({ page }) => {
   await page.getByTestId("add-filter").click();
   await page.getByRole("option", { name: "received after" }).click();
   await page.getByLabel("Go to next month").click();
-  await page.getByText("28").click();
+  await page.getByText("28", { exact: true }).click();
 
   await expect(page.getByTestId("event-row")).toHaveCount(0);
 
@@ -221,4 +221,60 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     page.getByTestId("event-row"),
     "... and it renders the time string"
   ).toContainText("seconds ago");
+
+  /**
+   * View and resend the event
+   */
+  await page.getByTestId("event-row").click();
+
+  await expect(
+    page.getByRole("heading", { name: "View event" }),
+    "it renders the event view dialog"
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Cancel" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "View event" }),
+    "it closes the event view dialog when clicking cancel"
+  ).not.toBeVisible();
+
+  await page.getByTestId("event-row").click();
+
+  /*
+   * Comparing the full content of the monaco editor would be complex,
+   * so as a smoke test, this just checks for one part of the expected information.
+   */
+  await expect(
+    page.getByTestId("event-view-card").getByText(subject.data),
+    "in the event view dialog, it renders the event data"
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Retrigger" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "View event" }),
+    "it closes the event view dialog after retriggering the event"
+  ).not.toBeVisible();
+
+  await expect(
+    page.getByTestId("toast-success"),
+    "it renders a confirmation toast after resending the event"
+  ).toBeVisible();
+
+  await page.getByTestId("toast-close").click();
+
+  await expect(
+    page.getByTestId("toast-success"),
+    "it is possible to close the toast"
+  ).not.toBeVisible();
+
+  /*
+   * After resending the event, all the values will be the same,
+   * so there is no point in adding additional assertions.
+   */
+  await expect(
+    page.getByTestId("event-row"),
+    "after resending the event, it still renders only one event"
+  ).toHaveCount(1);
 });
