@@ -111,24 +111,22 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 				continue
 			}
 			if file.Typ == filestore.FileTypeService {
-				servicesDef, err := spec.ParseServicesFile(data)
+				serviceDef, err := spec.ParseServicesFile(data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
 					continue
 				}
-				for _, serviceDef := range servicesDef.Services {
-					funConfigList = append(funConfigList, &service.Config{
-						Typ:       "namespace-service",
-						Name:      serviceDef.Name,
-						Namespace: ns.Name,
-						FilePath:  file.Path,
-						Image:     serviceDef.Image,
-						CMD:       serviceDef.Cmd,
-						Size:      serviceDef.Size,
-						Scale:     serviceDef.Scale,
-					})
-				}
+				funConfigList = append(funConfigList, &service.Config{
+					Typ:       "namespace-service",
+					Name:      serviceDef.Name,
+					Namespace: ns.Name,
+					FilePath:  file.Path,
+					Image:     serviceDef.Image,
+					CMD:       serviceDef.Cmd,
+					Size:      serviceDef.Size,
+					Scale:     serviceDef.Scale,
+				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				serviceDef, err := spec.ParseWorkflowServiceDefinition(data)
 				if err != nil {
