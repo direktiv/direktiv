@@ -61,7 +61,9 @@ const NewService = ({
   const disableSubmit = false;
   const isLoading = false;
 
-  const [serviceConfig, setServiceConfig] = useState({});
+  const [serviceConfig, setServiceConfig] = useState({
+    direktiv_api: "service/v1",
+  });
   const formId = `new-service-${path}`;
   const theme = useTheme();
 
