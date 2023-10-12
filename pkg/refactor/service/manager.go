@@ -3,6 +3,7 @@ package service
 
 import (
 	"fmt"
+	"io"
 	"sync"
 	"time"
 
@@ -79,9 +80,6 @@ func newManagerFromClient(client client) *Manager {
 }
 
 func (m *Manager) runCycle() []error {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
 	for i, v := range m.list {
@@ -163,7 +161,9 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 				break loop
 			default:
 			}
+			m.lock.Lock()
 			errs := m.runCycle()
+			m.lock.Unlock()
 			for _, err := range errs {
 				fmt.Printf("f2 error: %s\n", err)
 			}
@@ -181,25 +181,7 @@ func (m *Manager) SetServices(list []*Config) {
 	m.list = list
 }
 
-func (m *Manager) SetOneService(service *Config) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	for i, v := range m.list {
-		if v.getID() == service.getID() {
-			m.list[i] = service
-
-			return
-		}
-	}
-
-	m.list = append(m.list, service)
-}
-
 func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*ConfigStatus, error) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
 	// clone the list
 	cfgList := make([]*Config, len(m.list))
 	for i, v := range m.list {
@@ -248,10 +230,27 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
-func (m *Manager) GetList() ([]*ConfigStatus, error) {
-	return m.getList("", "", "")
+func (m *Manager) GetListByNamespace(namespace string) ([]*ConfigStatus, error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	return m.getList(namespace, "", "")
 }
 
-func (m *Manager) GetListByNamespace(namespace string) ([]*ConfigStatus, error) {
-	return m.getList(namespace, "", "")
+func (m *Manager) StreamLogs(namespace string, serviceID string, podNumber int) (io.ReadCloser, error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	list, err := m.getList(namespace, "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, svc := range list {
+		if svc.ID == serviceID {
+			return m.client.streamServiceLogs(serviceID, 1)
+		}
+	}
+
+	return nil, ErrNotFound
 }

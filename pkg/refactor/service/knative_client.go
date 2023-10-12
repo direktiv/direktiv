@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"io"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -14,6 +15,11 @@ type knativeClient struct {
 	config *ClientConfig
 
 	client versioned.Interface
+}
+
+// nolint
+func (c *knativeClient) streamServiceLogs(id string, podNumber int) (io.ReadCloser, error) {
+	return nil, nil
 }
 
 func (c *knativeClient) createService(cfg *Config) error {
