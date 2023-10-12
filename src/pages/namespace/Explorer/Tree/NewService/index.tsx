@@ -46,7 +46,7 @@ const serviceSchema: RJSFSchema = {
       type: "string",
     },
   },
-  required: ["name"],
+  required: ["image"],
   type: "object",
 };
 
