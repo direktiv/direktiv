@@ -1,11 +1,14 @@
 // nolint
 package service
 
+import "io"
+
 type client interface {
 	createService(cfg *Config) error
 	updateService(cfg *Config) error
 	deleteService(id string) error
 	listServices() ([]Status, error)
+	streamServiceLogs(id string, podNumber int) (io.ReadCloser, error)
 }
 
 type ClientConfig struct {

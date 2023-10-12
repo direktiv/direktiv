@@ -52,10 +52,7 @@ func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		writeError(w, &Error{
-			Code:    "internal",
-			Message: "internal error: %s" + err.Error(),
-		})
+		writeInternalError(w, err)
 
 		return
 	}
@@ -69,10 +66,7 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 	reg := &registry.Registry{}
 
 	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
-		writeError(w, &Error{
-			Code:    "body_not_json",
-			Message: "couldn't parse request payload in json format",
-		})
+		writeNotJsonError(w)
 
 		return
 	}
@@ -80,10 +74,7 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 	reg.Namespace = ns.Name
 	newReg, err := e.manager.StoreRegistry(reg)
 	if err != nil {
-		writeError(w, &Error{
-			Code:    "internal",
-			Message: "internal error: %s" + err.Error(),
-		})
+		writeInternalError(w, err)
 
 		return
 	}

@@ -3,8 +3,11 @@ package service
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 )
+
+var ErrNotFound = errors.New("ErrNotFound")
 
 const (
 	httpsProxy = "HTTPS_PROXY"

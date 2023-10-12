@@ -60,15 +60,29 @@ func (c *dockerClient) updateService(cfg *Config) error {
 	return c.createService(cfg)
 }
 
+func (c *dockerClient) getContainerBy(id string) (*types.Container, error) {
+	containers, err := c.cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	for i, cntr := range containers {
+		if cntr.Labels["direktiv.io/id"] == id {
+			return &containers[i], nil
+		}
+	}
+
+	return nil, ErrNotFound
+}
+
 func (c *dockerClient) deleteService(id string) error {
-	// Remove the container.
-	if err := c.cli.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
-		Force: true, // Force removal even if the container is running.
-	}); err != nil {
+	cntr, err := c.getContainerBy(id)
+	if err != nil {
 		return err
 	}
 
-	return nil
+	return c.cli.ContainerRemove(context.Background(), cntr.ID, types.ContainerRemoveOptions{
+		Force: true, // Force removal even if the container is running.
+	})
 }
 
 func (c *dockerClient) listServices() ([]Status, error) {
@@ -86,6 +100,28 @@ func (c *dockerClient) listServices() ([]Status, error) {
 	}
 
 	return list, nil
+}
+
+func (c *dockerClient) streamServiceLogs(id string, _ int) (io.ReadCloser, error) {
+	cntr, err := c.getContainerBy(id)
+	if err != nil {
+		return nil, err
+	}
+
+	options := types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Follow:     true,
+		Timestamps: true,
+	}
+
+	// Get the log reader
+	logs, err := c.cli.ContainerLogs(context.Background(), cntr.ID, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return logs, nil
 }
 
 var _ client = &dockerClient{}
