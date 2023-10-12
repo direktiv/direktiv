@@ -57,6 +57,7 @@ const SendEvent = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
         <form
+          data-testid="send-event-form"
           id="send-event"
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col space-y-5"

@@ -1,6 +1,8 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { createEvents } from "e2e/utils/events";
+
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -57,4 +59,126 @@ test("it is possible to navigate to the events page and between the sub pages", 
     page.getByTestId("breadcrumb-event-history"),
     "it renders the 'Event History' breadcrumb"
   ).toBeVisible();
+});
+
+test("it is possible to send a new event", async ({ page }) => {
+  await page.goto(`/${namespace}/events/history`);
+
+  await expect(page, "it is possible to visit events/history ").toHaveURL(
+    `/${namespace}/events/history`
+  );
+
+  await expect(page.getByTestId("no-result")).toBeVisible();
+  await expect(page.getByTestId("event-row")).toHaveCount(0);
+
+  page.getByTestId("event-create").click();
+
+  await expect(page.getByTestId("send-event-form")).toBeVisible();
+
+  page.getByTestId("event-send-submit").click();
+
+  await expect(page.getByTestId("no-result")).not.toBeVisible();
+
+  await expect(page.getByTestId("event-row")).toHaveCount(1);
+});
+
+test("it renders, filters, and paginates events", async ({ page }) => {
+  const events = await createEvents(namespace);
+
+  await page.goto(`/${namespace}/events/history`);
+
+  await expect(page, "it is possible to visit events/history").toHaveURL(
+    `/${namespace}/events/history`
+  );
+
+  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible;
+
+  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible;
+  await expect(page.getByTestId("pagination-btn-page-3")).toBeVisible;
+  await expect(page.getByTestId("pagination-btn-page-4")).not.toBeVisible;
+
+  await expect(page.getByTestId("event-row")).toHaveCount(10);
+
+  await page.getByTestId("pagination-btn-page-2").click();
+  await expect(page.getByTestId("event-row")).toHaveCount(10);
+
+  await page.getByTestId("pagination-btn-page-3").click();
+  await expect(page.getByTestId("event-row")).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Filter" }).click();
+  await page.getByRole("option", { name: "type" }).click();
+
+  await page.getByPlaceholder("cloud.event.type").fill("foo.bar.alpha");
+  await page.getByPlaceholder("cloud.event.type").press("Enter");
+
+  await expect(
+    page.getByTestId("event-row"),
+    "when filtering by event type, it shows the correct number of events"
+  ).toHaveCount(5);
+
+  await page.getByRole("button", { name: "foo.bar.alpha" }).click();
+
+  await page.getByPlaceholder("cloud.event.type").fill("foo.bar.delta");
+  await page.getByPlaceholder("cloud.event.type").press("Enter");
+
+  await expect(
+    page.getByTestId("event-row"),
+    "when filtering by event type, it shows the correct number of events"
+  ).toHaveCount(7);
+
+  await expect(page.getByTestId("pagination-wrapper")).not.toBeVisible();
+
+  await page.getByTestId("add-filter").click();
+  await page.getByRole("option", { name: "search content" }).click();
+
+  await page
+    .getByPlaceholder("search cloudevent content")
+    .fill("http://example.two");
+
+  await page.getByPlaceholder("search cloudevent content").press("Enter");
+
+  await expect(
+    page.getByTestId("event-row"),
+    "when filtering by event type + content, it shows the correct number of events"
+  ).toHaveCount(4);
+
+  await page.getByTestId("clear-filter-TYPE").click();
+
+  await expect(
+    page.getByTestId("event-row"),
+    "after removing the type filter, it shows the correct number of events"
+  ).toHaveCount(9);
+
+  const subject = events[7] as { type: string; source: string; data: string };
+
+  await page.getByRole("button", { name: "http://example.two" }).click();
+
+  await page.getByPlaceholder("search cloudevent content").fill(subject.data);
+  await page.getByPlaceholder("search cloudevent content").press("Enter");
+
+  await expect(
+    page.getByTestId("event-row"),
+    "when filtering by content (unique), it renders exactly one event"
+  ).toHaveCount(1);
+
+  await expect(
+    page.getByTestId("event-row"),
+    "... and it renders the event's type"
+  ).toContainText(subject.type);
+  await expect(
+    page.getByTestId("event-row"),
+    "... and it renders the event's source"
+  ).toContainText(subject.source);
+  await expect(
+    page.getByTestId("event-row"),
+    "... and it renders the time string"
+  ).toContainText("seconds ago");
+
+  const renderedId = await page.locator('td[headers="event-id"]').textContent();
+  await expect(renderedId, "... and it renders the ID").toHaveLength(8);
+
+  await expect(
+    page.getByTestId("event-row"),
+    "... and it renders the time string"
+  ).toContainText("seconds ago");
 });
