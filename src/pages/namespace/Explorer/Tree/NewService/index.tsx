@@ -79,7 +79,9 @@ const NewService = ({
           <JSONSchemaForm
             formData={serviceConfig}
             onChange={(e) => {
-              setServiceConfig(e.formData);
+              if (e.formData) {
+                setServiceConfig(e.formData);
+              }
             }}
             schema={serviceSchema}
           />
