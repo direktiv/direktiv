@@ -1,8 +1,5 @@
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-
 import Notification from "~/design/Notification";
 import { apiFactory } from "~/api/apiFactory";
-import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -58,7 +55,7 @@ export const getNamespaceLinting = apiFactory({
   schema: LintSchema,
 });
 
-const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
+const NotificationMenu: React.FC<NotificationMenuProps> = () => {
   const namespace = useNamespace();
   const { data, isLoading } = useQuery({
     queryKey: ["lint", namespace],
@@ -70,19 +67,13 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
 
   const showIndicator = !!data?.issues.length;
 
-  return (
-    <div className={twMergeClsx("self-end text-right", className)}>
-      <Popover>
-        <PopoverTrigger>
-          <Notification hasMessage={showIndicator} />
-        </PopoverTrigger>
-        <PopoverContent align="end" className="p-4">
-          {isLoading && "loading"}
-          Place content for the popover here.
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
+  return <Notification showIndicator={showIndicator} isLoading={isLoading} />;
 };
 
 export default NotificationMenu;
+
+/*
+Cases:
+  return <Notification hasMessage={true} isLoading={false} />;
+
+*/

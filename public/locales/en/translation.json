@@ -1024,6 +1024,9 @@
     "formErrors": {
       "fieldInvalid": "this field is invalid"
     },
+    "notificationMenu": {
+      "isLoading": "loading..."
+    },
     "userMenu": {
       "loggedIn": "You are logged in",
       "logout": "Logout",

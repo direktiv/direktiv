@@ -12,7 +12,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: ({ ...args }) => <Notification {...args} />,
   argTypes: {
-    hasMessage: {
+    showIndicator: {
       description: "Notification Icon signals existence of Messages",
       control: "boolean",
       type: { name: "boolean", required: false },
@@ -22,6 +22,6 @@ export const Default: Story = {
 
 export const NotificationHasMessage = () => (
   <div className="flex space-x-2">
-    <Notification hasMessage={true} />
+    <Notification showIndicator={true} />
   </div>
 );
