@@ -9,13 +9,11 @@ import (
 
 type ServicesFile struct {
 	DirektivAPI string `yaml:"direktiv_api"`
-	Services    []struct {
-		Name  string `yaml:"name"`
-		Image string `yaml:"image"`
-		Cmd   string `yaml:"cmd"`
-		Size  string `yaml:"size"`
-		Scale int    `yaml:"scale"`
-	} `yaml:"services"`
+	Name        string `yaml:"name"`
+	Image       string `yaml:"image"`
+	Cmd         string `yaml:"cmd"`
+	Size        string `yaml:"size"`
+	Scale       int    `yaml:"scale"`
 }
 
 func ParseServicesFile(data []byte) (*ServicesFile, error) {
