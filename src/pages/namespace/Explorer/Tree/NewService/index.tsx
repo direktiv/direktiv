@@ -12,11 +12,18 @@ import Editor from "~/design/Editor";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
 import { ScrollArea } from "~/design/ScrollArea";
-import { stringify as jsonToYaml } from "json-to-pretty-yaml";
+import { stringify } from "json-to-pretty-yaml";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import yamljs from "js-yaml";
+
+const jsonToYaml = (json: Record<string, unknown>) => {
+  if (Object.keys(json).length === 0) {
+    return "";
+  }
+  return stringify(json);
+};
 
 const serviceSchema: RJSFSchema = {
   properties: {
