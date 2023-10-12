@@ -77,7 +77,23 @@ type knativeStatus struct {
 }
 
 func (r *knativeStatus) getConditions() any {
-	return r.Status.Conditions
+	type condition struct {
+		Type    string `json:"type"`
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+
+	list := []condition{}
+
+	for _, c := range r.Status.Conditions {
+		list = append(list, condition{
+			Type:    string(c.Type),
+			Status:  string(c.Status),
+			Message: c.Message,
+		})
+	}
+
+	return list
 }
 
 func (r *knativeStatus) getID() string {

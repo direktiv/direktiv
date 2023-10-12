@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -94,7 +95,26 @@ type dockerStatus struct {
 }
 
 func (r *dockerStatus) getConditions() any {
-	return r.Status
+	type condition struct {
+		Type    string `json:"type"`
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+
+	if strings.Contains(r.Status, "Up ") {
+		return []condition{
+			{Type: "UpAndReady", Status: "True", Message: r.Status},
+		}
+	}
+	if strings.Contains(r.Status, "Exited ") {
+		return []condition{
+			{Type: "UpAndReady", Status: "False", Message: r.Status},
+		}
+	}
+
+	return []condition{
+		{Type: "UpAndReady", Status: "Unknown", Message: r.Status},
+	}
 }
 
 func (r *dockerStatus) getID() string {

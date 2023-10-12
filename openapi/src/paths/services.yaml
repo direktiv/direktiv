@@ -62,7 +62,7 @@
                             status:
                               type: string
                               description: can be 'True', 'False' or 'Unknown'
-                            lastTransitionTime:
+                            message:
                               type: string
-                              description: timestamp string
+                              description: human readable message about the reason of this condition - can be empty
 
