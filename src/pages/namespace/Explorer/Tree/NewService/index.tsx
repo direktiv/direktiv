@@ -25,7 +25,7 @@ const jsonToYaml = (json: Record<string, unknown>) => {
   return stringify(json);
 };
 
-const serviceSchema: RJSFSchema = {
+const serviceFormSchema: RJSFSchema = {
   properties: {
     image: {
       title: "Image",
@@ -76,37 +76,29 @@ const NewService = ({
         </DialogTitle>
       </DialogHeader>
 
-      <Card className="h-96 w-full p-4" noShadow background="weight-1">
-        <ScrollArea className="h-full">
-          <JSONSchemaForm
-            formData={serviceConfig}
-            onChange={(e) => {
-              if (e.formData) {
-                setServiceConfig(e.formData);
-              }
-            }}
-            schema={serviceSchema}
+      <div className="flex gap-5">
+        <Card className="h-96 w-full p-4" noShadow background="weight-1">
+          Form
+          <ScrollArea className="h-full">
+            <JSONSchemaForm
+              formData={serviceConfig}
+              onChange={(e) => {
+                if (e.formData) {
+                  setServiceConfig(e.formData);
+                }
+              }}
+              schema={serviceFormSchema}
+            />
+          </ScrollArea>
+        </Card>
+        <Card className="h-96 w-full p-4" noShadow background="weight-1">
+          Preview
+          <Editor
+            value={jsonToYaml(serviceConfig)}
+            theme={theme ?? undefined}
           />
-        </ScrollArea>
-      </Card>
-      <Card className="h-96 w-full p-4" noShadow background="weight-1">
-        <Editor
-          value={jsonToYaml(serviceConfig)}
-          onChange={(newData) => {
-            if (newData) {
-              const json = yamljs.load(newData);
-              if (typeof json === "object") {
-                // setServiceConfig(json);
-              }
-            }
-          }}
-          theme={theme ?? undefined}
-        />
-      </Card>
-      <Card className="w-full p-4" noShadow background="weight-1">
-        <code className="block">{JSON.stringify(serviceConfig)}</code>
-        <code className="block">{jsonToYaml(serviceConfig)}</code>
-      </Card>
+        </Card>
+      </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
