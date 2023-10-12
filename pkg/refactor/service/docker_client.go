@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"io"
 
-	"github.com/docker/docker/api/types/container"
-
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	dClient "github.com/docker/docker/client"
 )
 
@@ -30,20 +30,20 @@ func (c *dockerClient) createService(cfg *Config) error {
 	// Pull the image (if it doesn't exist locally).
 	out, err := c.cli.ImagePull(context.Background(), config.Image, types.ImagePullOptions{})
 	if err != nil {
-		return err
+		return fmt.Errorf("image pull, err: %w", err)
 	}
 	defer out.Close()
-	io.Copy(io.Discard, out)
+	_, _ = io.Copy(io.Discard, out)
 
 	// Create a container.
 	resp, err := c.cli.ContainerCreate(context.Background(), config, hostConfig, nil, nil, cfg.getID())
 	if err != nil {
-		return err
+		return fmt.Errorf("create container, err: %w", err)
 	}
 
 	// Start the container.
 	if err := c.cli.ContainerStart(context.Background(), resp.ID, types.ContainerStartOptions{}); err != nil {
-		return err
+		return fmt.Errorf("start container, err: %w", err)
 	}
 
 	return nil
