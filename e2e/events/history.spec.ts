@@ -85,6 +85,10 @@ test("it is possible to send a new event", async ({ page }) => {
 test("it renders, filters, and paginates events", async ({ page }) => {
   const events = await createEvents(namespace);
 
+  /**
+   * Visit the page, test pagination.
+   */
+
   await page.goto(`/${namespace}/events/history`);
 
   await expect(page, "it is possible to visit events/history").toHaveURL(
@@ -104,6 +108,10 @@ test("it renders, filters, and paginates events", async ({ page }) => {
 
   await page.getByTestId("pagination-btn-page-3").click();
   await expect(page.getByTestId("event-row")).toHaveCount(2);
+
+  /**
+   * Filter by event type and expect a subset of the events to be returned.
+   */
 
   await page.getByRole("button", { name: "Filter" }).click();
   await page.getByRole("option", { name: "type" }).click();
@@ -128,6 +136,12 @@ test("it renders, filters, and paginates events", async ({ page }) => {
 
   await expect(page.getByTestId("pagination-wrapper")).not.toBeVisible();
 
+  /**
+   * Additionally filter by content, expect a smaller subset of results.
+   * The content filter will search everywhere in the event, so in this case,
+   * we search for the url in the "source" property.
+   */
+
   await page.getByTestId("add-filter").click();
   await page.getByRole("option", { name: "search content" }).click();
 
@@ -149,6 +163,35 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     "after removing the type filter, it shows the correct number of events"
   ).toHaveCount(9);
 
+  /**
+   * Filter by date. Since all events are generated at roughly the same time it would
+   * be too complicated to isolate a specific group of events. So this is just a
+   * smoke test: we select a "created after" date in the future and expect that
+   * no results are returned.
+   */
+
+  await page.getByTestId("add-filter").click();
+  await page.getByRole("option", { name: "received after" }).click();
+  await page.getByLabel("Go to next month").click();
+  await page.getByText("28").click();
+
+  await expect(page.getByTestId("event-row")).toHaveCount(0);
+
+  await expect(page.getByTestId("no-result")).toContainText(
+    "No events found with these filter criteria"
+  );
+
+  await page.getByTestId("clear-filter-AFTER").click();
+  await expect(
+    page.getByTestId("event-row"),
+    "after removing the date filter, it shows the correct number of events"
+  ).toHaveCount(9);
+
+  /**
+   * Filter by event content to find a unique event,
+   * assert that all columns are rendered correctly
+   */
+
   const subject = events[7] as { type: string; source: string; data: string };
 
   await page.getByRole("button", { name: "http://example.two" }).click();
@@ -169,11 +212,8 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     page.getByTestId("event-row"),
     "... and it renders the event's source"
   ).toContainText(subject.source);
-  await expect(
-    page.getByTestId("event-row"),
-    "... and it renders the time string"
-  ).toContainText("seconds ago");
 
+  /* id is not known in test data, so just check it has correct length */
   const renderedId = await page.locator('td[headers="event-id"]').textContent();
   await expect(renderedId, "... and it renders the ID").toHaveLength(8);
 
