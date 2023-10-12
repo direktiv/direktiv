@@ -96,6 +96,9 @@ const NewService = ({
           <Editor
             value={jsonToYaml(serviceConfig)}
             theme={theme ?? undefined}
+            options={{
+              readOnly: true,
+            }}
           />
         </Card>
       </div>
