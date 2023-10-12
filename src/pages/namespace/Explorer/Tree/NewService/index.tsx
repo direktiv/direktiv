@@ -12,7 +12,7 @@ import Editor from "~/design/Editor";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
 import { ScrollArea } from "~/design/ScrollArea";
-import prettyYAML from "json-to-pretty-yaml";
+import { stringify as jsonToYaml } from "json-to-pretty-yaml";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -80,7 +80,7 @@ const NewService = ({
       </Card>
       <Card className="h-96 w-full p-4" noShadow background="weight-1">
         <Editor
-          value={prettyYAML.stringify(serviceConfig)}
+          value={jsonToYaml(serviceConfig)}
           onChange={(newData) => {
             if (newData) {
               const json = yamljs.load(newData);
@@ -94,7 +94,7 @@ const NewService = ({
       </Card>
       <Card className="w-full p-4" noShadow background="weight-1">
         <code className="block">{JSON.stringify(serviceConfig)}</code>
-        <code className="block">{prettyYAML.stringify(serviceConfig)}</code>
+        <code className="block">{jsonToYaml(serviceConfig)}</code>
       </Card>
       <DialogFooter>
         <DialogClose asChild>
