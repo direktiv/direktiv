@@ -103,7 +103,7 @@ direktivctl
 
 *node_modules
 
-draft.*
+.draft
 
 openapi/node_modules
 openapi/output
