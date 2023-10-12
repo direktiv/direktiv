@@ -330,4 +330,3 @@ docker-compose-up: docker-compose-down
 	docker build -t direktiv-dev .
 	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
-	make dev-down
