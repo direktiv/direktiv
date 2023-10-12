@@ -7,6 +7,7 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.14.0
 	github.com/cloudevents/sdk-go/v2 v2.14.0
+	github.com/docker/docker v24.0.6+incompatible
 	github.com/dop251/goja v0.0.0-20230402114112-623f9dda9079
 	github.com/emicklei/go-restful/v3 v3.10.2
 	github.com/gabriel-vasile/mimetype v1.4.2
@@ -67,7 +68,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.9.0 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker v24.0.6+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
