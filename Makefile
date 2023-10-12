@@ -318,15 +318,19 @@ server-godoc:
 	godoc -http=:6060
 
 
-
-docker-compose-down:
+env-stop:
 	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
-docker-compose-up: docker-compose-down
+env-start: env-stop
 	rm -rf direktiv-ui
 	git clone -b develop https://github.com/direktiv/direktiv-ui.git
 	cd direktiv-ui && docker build -t direktiv-ui-dev .
 
 	docker build -t direktiv-dev .
 	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d
+	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
+
+env-start-headless: env-stop
+	docker build -t direktiv-dev .
+	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
