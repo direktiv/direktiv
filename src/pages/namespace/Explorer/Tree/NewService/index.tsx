@@ -140,20 +140,20 @@ const NewService = ({
         </div>
         <ButtonBar className="self-end">
           <Toggle
-            pressed={!splitView}
-            onClick={() => {
-              setSplitView(false);
-            }}
-          >
-            <Code />
-          </Toggle>
-          <Toggle
             pressed={splitView}
             onClick={() => {
               setSplitView(true);
             }}
           >
             <Columns />
+          </Toggle>
+          <Toggle
+            pressed={!splitView}
+            onClick={() => {
+              setSplitView(false);
+            }}
+          >
+            <Code />
           </Toggle>
         </ButtonBar>
       </Card>
