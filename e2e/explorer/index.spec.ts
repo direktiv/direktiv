@@ -628,14 +628,16 @@ test(`it is possible to rename a directory`, async ({ page }) => {
 test(`it is possible to deactivate and activate a workflow`, async ({
   page,
 }) => {
-  const workflow = "testworkflow";
-  test.setTimeout(50000);
-  await createWorkflow(namespace, `${workflow}.yaml`);
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}.yaml`, {
-    waitUntil: "networkidle",
-  });
-  const btnToggle = page.getByTestId("toggle-workflow-active-btn");
+  const workflowName = "testworkflow";
+  await createWorkflow(namespace, `${workflowName}.yaml`);
+  await page.goto(
+    `/${namespace}/explorer/workflow/active/${workflowName}.yaml`,
+    {
+      waitUntil: "networkidle",
+    }
+  );
 
+  const btnToggle = page.getByTestId("toggle-workflow-active-btn");
   const iconPowerOn = page.getByTestId("active-workflow-on-icon");
   const iconPowerOff = page.getByTestId("active-workflow-off-icon");
   const btnRun = page.getByTestId("workflow-header-btn-run");
@@ -646,7 +648,7 @@ test(`it is possible to deactivate and activate a workflow`, async ({
   ).toBeVisible();
   await expect(
     btnRun,
-    "initial state should be active, run button is active"
+    "initial state should be active, run button is enabled"
   ).toBeEnabled();
 
   await btnToggle.click();
