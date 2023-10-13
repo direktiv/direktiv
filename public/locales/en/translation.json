@@ -1025,7 +1025,19 @@
       "fieldInvalid": "this field is invalid"
     },
     "notificationMenu": {
-      "isLoading": "loading..."
+      "isLoading": {
+        "text": "loading..."
+      },
+      "noIssues": {
+        "text": "You do not have notifications."
+      },
+      "hasIssues": {
+          "secrets": {   
+            "title": "Notifications",
+            "text": "There are secrets that need to be initialized.",
+            "button": "Open settings"
+          }
+      }
     },
     "userMenu": {
       "loggedIn": "You are logged in",

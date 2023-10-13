@@ -2,10 +2,12 @@ import Notification from "~/design/Notification";
 import { apiFactory } from "~/api/apiFactory";
 import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 interface NotificationMenuProps {
   className?: string;
+  text?: string;
 }
 
 /**
@@ -37,6 +39,8 @@ example
 
  */
 
+// const getText
+
 const IssueSchema = z.object({
   type: z.enum(["secret"]),
   id: z.string(),
@@ -57,6 +61,9 @@ export const getNamespaceLinting = apiFactory({
 
 const NotificationMenu: React.FC<NotificationMenuProps> = () => {
   const namespace = useNamespace();
+  const { t } = useTranslation();
+  const text = t("components.notificationMenu.hasIssues.secrets.text");
+  //  const text = t("components.userMenu.loggedIn");
   const { data, isLoading } = useQuery({
     queryKey: ["lint", namespace],
     queryFn: () =>
@@ -67,13 +74,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = () => {
 
   const showIndicator = !!data?.issues.length;
 
-  return <Notification showIndicator={showIndicator} isLoading={isLoading} />;
+  return <Notification showIndicator={true} isLoading={false} text={text} />;
 };
 
 export default NotificationMenu;
-
-/*
-Cases:
-  return <Notification hasMessage={true} isLoading={false} />;
-
-*/
