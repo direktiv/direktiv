@@ -92,7 +92,9 @@ const NewService = ({
       <div
         className={twMergeClsx(
           "grid h-[600px] gap-5",
-          splitView ? "grid-cols-2" : "grid-cols-1"
+          splitView
+            ? "grid-rows-2 md:grid-cols-2 md:grid-rows-none"
+            : "grid-rows-1 md:grid-cols-1"
         )}
       >
         {splitView && (
