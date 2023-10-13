@@ -14,9 +14,12 @@ RUN yarn install
 RUN VITE_APP_VERSION=$FULL_VERSION yarn build
 
 # production environment
-FROM nginx:stable-alpine
+FROM nginx:bookworm
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY conf/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
