@@ -31,6 +31,10 @@ const serviceFormSchema: RJSFSchema = {
       title: "Image",
       type: "string",
     },
+    name: {
+      title: "Name",
+      type: "string",
+    },
     scale: {
       title: "Scale",
       type: "integer",
@@ -46,7 +50,7 @@ const serviceFormSchema: RJSFSchema = {
       type: "string",
     },
   },
-  required: ["image"],
+  required: ["image", "name"],
   type: "object",
 };
 
