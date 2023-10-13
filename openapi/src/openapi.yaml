@@ -72,13 +72,16 @@ info:
 tags:
   - name: services
     description: Endpoints for managing services
+  - name: registries
+    description: Endpoints for managing registries
 x-tagGroups:
   - name: Endpoints
     tags:
       - services
+      - registries
 components:
   parameters:
     $ref: "./parameters.yaml"
-
 paths:
-  $ref: "./paths/services.yaml"
+    $ref: "./paths/paths.yaml"
+

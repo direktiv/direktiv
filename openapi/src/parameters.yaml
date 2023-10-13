@@ -4,3 +4,24 @@ namespace:
   schema:
     type: string
   required: true
+
+serviceID:
+  name: serviceID
+  in: path
+  schema:
+    type: string
+  required: true
+
+podNumber:
+  name: podNumber
+  in: path
+  schema:
+    type: string
+  required: true
+
+registryID:
+  name: registryID
+  in: path
+  schema:
+    type: string
+  required: true
