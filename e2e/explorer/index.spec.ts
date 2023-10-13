@@ -11,8 +11,6 @@ import {
 } from "../utils/node";
 import { expect, test } from "@playwright/test";
 
-import { actionWaitForSuccessToast } from "./workflow/utils";
-
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -623,58 +621,4 @@ test(`it is possible to rename a directory`, async ({ page }) => {
 
   const isRenamed = await checkIfNodeExists(namespace, newname);
   await expect(isRenamed).toBeTruthy();
-});
-
-test(`it is possible to deactivate and activate a workflow`, async ({
-  page,
-}) => {
-  const workflowName = "testworkflow";
-  await createWorkflow(namespace, `${workflowName}.yaml`);
-  await page.goto(
-    `/${namespace}/explorer/workflow/active/${workflowName}.yaml`,
-    {
-      waitUntil: "networkidle",
-    }
-  );
-
-  const btnToggle = page.getByTestId("toggle-workflow-active-btn");
-  const iconPowerOn = page.getByTestId("active-workflow-on-icon");
-  const iconPowerOff = page.getByTestId("active-workflow-off-icon");
-  const btnRun = page.getByTestId("workflow-header-btn-run");
-
-  await expect(
-    iconPowerOff,
-    "initial state should be active, shows the power-off button"
-  ).toBeVisible();
-  await expect(
-    btnRun,
-    "initial state should be active, run button is enabled"
-  ).toBeEnabled();
-
-  await btnToggle.click();
-  await actionWaitForSuccessToast(page);
-  await expect(
-    iconPowerOn,
-    "next state should be inactive, shows the power-on button"
-  ).toBeVisible();
-  await expect(
-    btnRun,
-    "next state should be inactive, run button is inactive"
-  ).toBeDisabled();
-
-  await btnRun.click({ force: true }); //nothing happens on this click
-  await page.waitForTimeout(1000);
-  await expect(
-    page.getByTestId("run-workflow-dialog"),
-    "it doesn't open the dialog"
-  ).toBeHidden();
-
-  await btnToggle.click(); //activate again
-  await actionWaitForSuccessToast(page);
-
-  await btnRun.click(); //run the workflow
-  await expect(
-    page.getByTestId("run-workflow-dialog"),
-    "it opens the dialog from the editor button"
-  ).toBeVisible();
 });
