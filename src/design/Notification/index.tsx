@@ -1,20 +1,22 @@
-import { Bell, Loader2 } from "lucide-react";
+import { FC, PropsWithChildren } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
+import { Bell } from "lucide-react";
 import Button from "~/design/Button";
 import { twMergeClsx } from "~/util/helpers";
 
-const Notification = ({
-  className,
-  showIndicator,
-  isLoading,
-  text,
-}: {
+type NotificationPropsType = PropsWithChildren & {
   className?: string;
   showIndicator?: boolean;
   isLoading?: boolean;
-  text?: string;
-}): JSX.Element => (
+};
+
+const Notification: FC<NotificationPropsType> = ({
+  className,
+  showIndicator,
+  isLoading,
+  children,
+}) => (
   <div className={twMergeClsx("self-end text-right", className)}>
     <Popover>
       <Button variant="ghost" className="group items-center px-1" role="button">
@@ -28,19 +30,11 @@ const Notification = ({
         </PopoverTrigger>
       </Button>
       <PopoverContent align="end" className="p-4">
-        {isLoading && (
-          <div className=" flex">
-            <Loader2 className="h-5 animate-spin" />
-            {text}
-          </div>
-        )}
-
-        {showIndicator && !isLoading && (
-          <div className="">
-            <h5>{text}</h5>
-          </div>
-        )}
-        {!showIndicator && !isLoading && "Everything is fine."}
+        {children}
+        {/* <NotificationModal
+          isLoading={isLoading}
+          showIndicator={showIndicator}
+        ></NotificationModal> */}
       </PopoverContent>
     </Popover>
   </div>
