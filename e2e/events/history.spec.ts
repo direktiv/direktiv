@@ -68,14 +68,16 @@ test("it is possible to send a new event", async ({ page }) => {
     `/${namespace}/events/history`
   );
 
-  await expect(page.getByTestId("no-result")).toBeVisible();
+  await expect(
+    page.getByTestId("no-result").getByText("No events found")
+  ).toBeVisible();
   await expect(page.getByTestId("event-row")).toHaveCount(0);
 
-  page.getByTestId("event-create").click();
+  page.getByRole("button", { name: "Send new event" }).click();
 
   await expect(page.getByTestId("send-event-form")).toBeVisible();
 
-  page.getByTestId("event-send-submit").click();
+  page.getByRole("button", { name: "Send" }).click();
 
   await expect(page.getByTestId("no-result")).not.toBeVisible();
 
@@ -95,11 +97,10 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     `/${namespace}/events/history`
   );
 
-  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible;
-
-  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible;
-  await expect(page.getByTestId("pagination-btn-page-3")).toBeVisible;
-  await expect(page.getByTestId("pagination-btn-page-4")).not.toBeVisible;
+  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
+  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible();
+  await expect(page.getByTestId("pagination-btn-page-3")).toBeVisible();
+  await expect(page.getByTestId("pagination-btn-page-4")).not.toBeVisible();
 
   await expect(page.getByTestId("event-row")).toHaveCount(10);
 

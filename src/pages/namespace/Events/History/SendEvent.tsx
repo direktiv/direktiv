@@ -45,12 +45,7 @@ const SendEvent = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="whitespace-nowrap"
-          icon
-          variant="primary"
-          data-testid="event-create"
-        >
+        <Button className="whitespace-nowrap" icon variant="primary">
           <PlusCircle />
           {t("pages.events.history.send.dialogTrigger")}
         </Button>
@@ -90,11 +85,7 @@ const SendEvent = () => {
                 {t("components.button.label.cancel")}
               </Button>
             </DialogClose>
-            <Button
-              data-testid="event-send-submit"
-              type="submit"
-              variant="primary"
-            >
+            <Button type="submit" variant="primary">
               {t("pages.events.history.send.submit")}
             </Button>
           </DialogFooter>
