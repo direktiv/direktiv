@@ -89,72 +89,74 @@ const NewService = ({
           {t("pages.explorer.tree.newService.title")}
         </DialogTitle>
       </DialogHeader>
-      <div
-        className={twMergeClsx(
-          "grid h-[600px] gap-5",
-          splitView
-            ? "grid-rows-2 md:grid-cols-2 md:grid-rows-none"
-            : "grid-rows-1 md:grid-cols-1"
-        )}
-      >
-        {splitView && (
-          <Card className="" noShadow background="weight-1">
-            <ScrollArea className="h-full p-4">
-              <JSONSchemaForm
-                formData={serviceConfigJson}
-                onChange={(e) => {
-                  if (e.formData) {
-                    setServiceConfigJson(e.formData);
-                    setServiceConfigYaml(jsonToYaml(e.formData));
+      <Card className="flex flex-col gap-4 p-4" noShadow>
+        <div
+          className={twMergeClsx(
+            "grid h-[600px] gap-5",
+            splitView
+              ? "grid-rows-2 md:grid-cols-2 md:grid-rows-none"
+              : "grid-rows-1 md:grid-cols-1"
+          )}
+        >
+          {splitView && (
+            <Card background="weight-1">
+              <ScrollArea className="h-full p-4">
+                <JSONSchemaForm
+                  formData={serviceConfigJson}
+                  onChange={(e) => {
+                    if (e.formData) {
+                      setServiceConfigJson(e.formData);
+                      setServiceConfigYaml(jsonToYaml(e.formData));
+                    }
+                  }}
+                  schema={serviceFormSchema}
+                />
+              </ScrollArea>
+            </Card>
+          )}
+          <Card className="flex p-4" background="weight-1">
+            <Editor
+              value={serviceConfigYaml}
+              theme={theme ?? undefined}
+              onChange={(newData) => {
+                if (newData) {
+                  setServiceConfigYaml(newData);
+                  let json;
+                  try {
+                    json = yamljs.load(newData);
+                  } catch (e) {
+                    json = null;
                   }
-                }}
-                schema={serviceFormSchema}
-              />
-            </ScrollArea>
+                  if (typeof json === "object") {
+                    setServiceConfigJson(json);
+                  }
+                }
+              }}
+              options={{
+                readOnly: splitView,
+              }}
+            />
           </Card>
-        )}
-        <Card className="flex p-4" noShadow background="weight-1">
-          <Editor
-            value={serviceConfigYaml}
-            theme={theme ?? undefined}
-            onChange={(newData) => {
-              if (newData) {
-                setServiceConfigYaml(newData);
-                let json;
-                try {
-                  json = yamljs.load(newData);
-                } catch (e) {
-                  json = null;
-                }
-                if (typeof json === "object") {
-                  setServiceConfigJson(json);
-                }
-              }
+        </div>
+        <ButtonBar className="self-end">
+          <Toggle
+            pressed={!splitView}
+            onClick={() => {
+              setSplitView(false);
             }}
-            options={{
-              readOnly: splitView,
+          >
+            <Code />
+          </Toggle>
+          <Toggle
+            pressed={splitView}
+            onClick={() => {
+              setSplitView(true);
             }}
-          />
-        </Card>
-      </div>
-      <ButtonBar>
-        <Toggle
-          pressed={!splitView}
-          onClick={() => {
-            setSplitView(false);
-          }}
-        >
-          <Code />
-        </Toggle>
-        <Toggle
-          pressed={splitView}
-          onClick={() => {
-            setSplitView(true);
-          }}
-        >
-          <Columns />
-        </Toggle>
-      </ButtonBar>
+          >
+            <Columns />
+          </Toggle>
+        </ButtonBar>
+      </Card>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
