@@ -81,18 +81,6 @@ const NewService = ({
   const formId = `new-service-${path}`;
   const theme = useTheme();
 
-  /**
-   * TODO:
-   * [x] disable editor
-   * [x] style headlines (with icons?)
-   * - JSONSchemaForm onChange,
-   * - add a zod schema that will
-   *   - validate the formdata
-   *   - parse out empty strings
-   *   - handles missing fields (or dies the schema do this?)
-   * [x] add a toggle to use code only
-   */
-
   return (
     <>
       <DialogHeader>
