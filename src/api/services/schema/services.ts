@@ -2,28 +2,19 @@ import { SizeSchema, StatusSchema } from ".";
 
 import { z } from "zod";
 
-export const serviceConditionNames = [
-  "UpAndReady",
-  "ConfigurationsReady",
-  "Ready",
-  "RoutesReady",
-] as const;
+export const serviceConditionNames = ["UpAndReady"] as const;
 
 /**
  * example
   {
-    "type": "ConfigurationsReady",
+    "type": "UpAndReady",
     "status": "True",
-    "lastTransitionTime": "2023-10-06T07:19:38Z",
-    "reason": "RevisionMissing",
-    "message": "Configuration \"obj3ba5d951fe4234094362obj\" does not have any ready Revision."
+    "message": "Up 4 days"
   }
  */
 const ConditionSchema = z.object({
   type: z.enum(serviceConditionNames),
   status: StatusSchema,
-  lastTransitionTime: z.string().optional(),
-  reason: z.string().optional(),
   message: z.string().optional(),
 });
 
