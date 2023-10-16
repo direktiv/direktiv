@@ -82,6 +82,10 @@ type knativeStatus struct {
 	*servingv1.Service
 }
 
+func (r *knativeStatus) getCurrentScale() int {
+	return 1
+}
+
 func (r *knativeStatus) getConditions() any {
 	type condition struct {
 		Type    string `json:"type"`

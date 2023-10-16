@@ -51,10 +51,12 @@ type Status interface {
 	getConditions() any
 	getID() string
 	getValueHash() string
+	getCurrentScale() int
 }
 
 type ConfigStatus struct {
 	ID string `json:"id"`
 	Config
-	Conditions any `json:"conditions"`
+	Conditions   any `json:"conditions"`
+	CurrentScale int `json:"currentScale"`
 }

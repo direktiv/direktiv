@@ -214,9 +214,10 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.getValueHash() == v.getValueHash() {
 			result = append(result, &ConfigStatus{
-				ID:         v.getID(),
-				Config:     *v,
-				Conditions: service.getConditions(),
+				ID:           v.getID(),
+				Config:       *v,
+				Conditions:   service.getConditions(),
+				CurrentScale: service.getCurrentScale(),
 			})
 		} else {
 			result = append(result, &ConfigStatus{
