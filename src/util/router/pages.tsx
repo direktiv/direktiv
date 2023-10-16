@@ -27,8 +27,7 @@ import MonitoringPage from "~/pages/namespace/Monitoring";
 import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
-import ServiceDetailPage from "~/pages/namespace/Services/Detail";
-import ServiceRevisionPage from "~/pages/namespace/Services/Detail/Revision";
+import ServiceDetailPage from "~/pages/namespace/Services/Detail/Revision";
 import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -118,19 +117,13 @@ type InstancesPageSetup = Record<
 type ServicesPageSetup = Record<
   "services",
   PageBase & {
-    createHref: (params: {
-      namespace: string;
-      service?: string;
-      revision?: string;
-    }) => string;
+    createHref: (params: { namespace: string; service?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
       service: string | undefined;
-      revision: string | undefined;
       isServicePage: boolean;
       isServiceListPage: boolean;
       isServiceDetailPage: boolean;
-      isServiceRevisionPage: boolean;
     };
   }
 >;
@@ -534,33 +527,22 @@ export const pages: PageType & EnterprisePageType = {
     createHref: (params) =>
       `/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
-      }${params.revision ? `/${params.revision}` : ""}`,
+      }`,
     useParams: () => {
-      const { namespace, service, revision } = useParams();
+      const { namespace, service } = useParams();
 
-      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+      const [, , thirdLvl] = useMatches(); // first level is namespace level
 
       const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
-      const isServiceDetailPage = checkHandler(
-        fourthLvl,
-        "isServiceDetailPage"
-      );
-      const isServiceRevisionPage = checkHandler(
-        fourthLvl,
-        "isServiceRevisionPage"
-      );
-
-      const isServicePage =
-        isServiceListPage || isServiceDetailPage || isServiceRevisionPage;
+      const isServiceDetailPage = checkHandler(thirdLvl, "isServiceDetailPage");
+      const isServicePage = isServiceListPage || isServiceDetailPage;
 
       return {
         namespace: isServicePage ? namespace : undefined,
-        service: isServicePage || isServiceRevisionPage ? service : undefined,
-        revision: isServiceRevisionPage ? revision : undefined,
+        service: isServiceDetailPage ? service : undefined,
         isServicePage,
         isServiceListPage,
         isServiceDetailPage,
-        isServiceRevisionPage,
       };
     },
 
@@ -576,18 +558,8 @@ export const pages: PageType & EnterprisePageType = {
         },
         {
           path: ":service",
-          children: [
-            {
-              path: "",
-              element: <ServiceDetailPage />,
-              handle: { isServiceDetailPage: true },
-            },
-            {
-              path: ":revision",
-              element: <ServiceRevisionPage />,
-              handle: { isServiceRevisionPage: true },
-            },
-          ],
+          element: <ServiceDetailPage />,
+          handle: { isServiceDetailPage: true },
         },
       ],
     },
