@@ -18,7 +18,7 @@ const failingWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
-  // place some workflows in the namespace that we can use to create instances
+  /* create workflows we can use to create instances later*/
   await createWorkflow({
     payload: simpleWorkflowContent,
     urlParams: {
@@ -45,19 +45,17 @@ test.afterEach(async () => {
   namespace = "";
 });
 
+/* create 3 instances with status: failed, 2 with status: completed */
 const createStatusFilterInstances = async () => {
-  // create 3 failed instances
   await createInstance({ namespace, path: failingWorkflowName });
   await createInstance({ namespace, path: failingWorkflowName });
   await createInstance({ namespace, path: failingWorkflowName });
-
-  // create 2 complete instances
   await createInstance({ namespace, path: simpleWorkflowName });
   await createInstance({ namespace, path: simpleWorkflowName });
 };
 
+/* create 1 instance with trigger "api" and 2 with trigger "instance" */
 const createTriggerFilterInstances = async () => {
-  // create 1 trigger "api" instances and 2 instance with trigger "instance"
   const parentWorkflowName = faker.system.commonFileName("yaml");
 
   await createWorkflow({
@@ -131,13 +129,13 @@ test("it is possible to filter by date using created before", async ({
 
   await page.goto(`${namespace}/instances/`);
 
-  // there should be 2 items initially
+  /* there should be 2 items initially */
   await expect(
     page.getByTestId(/instance-row-workflow/),
     "there should be 2 instances"
   ).toHaveCount(2);
 
-  // filter createdAfter now should return 0 results
+  /* filter createdAfter now should return 0 results */
   await page.getByTestId("filter-add").click();
 
   await page.getByRole("option", { name: "created before" }).click();
@@ -150,14 +148,14 @@ test("it is possible to filter by date using created before", async ({
     "there should be 0 rows when we filter before today"
   ).toHaveCount(0);
 
-  // remove the date filter
+  /* remove the date filter */
   await page.getByTestId("filter-clear-BEFORE").click();
   await expect(
     page.getByTestId(/instance-row-workflow/),
     "there should be 2 rows after removing the filter"
   ).toHaveCount(2);
 
-  // filter by created after (with date in the future)
+  /* filter by created after (with date in the future) */
   await page.getByTestId("filter-add").click();
   await page.getByRole("option", { name: "created after" }).click();
   await page.getByLabel("Go to next month").click();
@@ -179,7 +177,7 @@ test("it is possible to filter by trigger", async ({ page }) => {
   await createTriggerFilterInstances();
   await page.goto(`${namespace}/instances/`);
 
-  // there should be 3 items initially
+  /* there should be 3 items initially */
   await expect(
     page.getByTestId(/instance-row-workflow/),
     "there should be 3 rows"
@@ -195,7 +193,7 @@ test("it is possible to filter by trigger", async ({ page }) => {
     "there should be 2 rows with filter trigger: instance"
   ).toHaveCount(2);
 
-  // change trigger filter to "api", expect 1 instance to be rendered
+  /* change trigger filter to "api", expect 1 instance to be rendered */
   await page
     .getByTestId("filter-component")
     .getByRole("button", { name: "instance" })
@@ -206,7 +204,7 @@ test("it is possible to filter by trigger", async ({ page }) => {
     "there should be 1 rows with filter trigger: api"
   ).toHaveCount(1);
 
-  // clear filter, expect 3 instances to be rendered
+  /* clear filter, expect 3 instances to be rendered */
   await page.getByTestId("filter-clear-TRIGGER").click();
   await expect(
     page.getByTestId(/instance-row-workflow/),
@@ -218,7 +216,7 @@ test("it is possible to filter by status", async ({ page }) => {
   await createStatusFilterInstances();
   await page.goto(`${namespace}/instances/`);
 
-  // there should be 5 items initially
+  /* there should be 5 items initially */
   await expect(
     page.getByTestId(/instance-row-workflow/),
     "there should be 5 rows"
@@ -226,7 +224,7 @@ test("it is possible to filter by status", async ({ page }) => {
 
   const btnPlus = page.getByTestId("filter-add");
 
-  // filter by status "complete", expect 2 results to be rendered
+  /* filter by status "complete", expect 2 results to be rendered */
   await btnPlus.click();
   await page.getByRole("option", { name: "status" }).click();
   await page.getByRole("option", { name: "complete" }).click();
@@ -236,7 +234,7 @@ test("it is possible to filter by status", async ({ page }) => {
     "there should be 2 rows with filter status: complete"
   ).toHaveCount(2);
 
-  // change filter to status "failed", expect 3 results to be rendered
+  /* change filter to status "failed", expect 3 results to be rendered */
   await page.getByRole("button", { name: "complete" }).click();
   await page.getByRole("option", { name: "failed" }).click();
 
@@ -245,7 +243,7 @@ test("it is possible to filter by status", async ({ page }) => {
     "there should be 3 rows with filter status: failed"
   ).toHaveCount(3);
 
-  // clear filter, expect 5 results to be rendered
+  /* clear filter, expect 5 results to be rendered */
   await page.getByTestId("filter-clear-STATUS").click();
 
   await expect(
@@ -287,7 +285,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
 
   await page.goto(`${namespace}/instances/`);
 
-  // there should be 4 items initially
+  /* there should be 4 items initially */
   await expect(
     page.getByTestId(/instance-row-workflow/),
     "there should be 4 rows"
@@ -299,13 +297,13 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
   await page.getByPlaceholder("filename.yaml").type("workflow");
   await page.getByPlaceholder("filename.yaml").press("Enter");
 
-  // filter by name "workflow", result should be 3
+  /* filter by name "workflow", result should be 3 */
   await expect(
     page.getByTestId(/instance-row-workflow/),
     "there should be 3 rows with filter name: workflow"
   ).toHaveCount(3);
 
-  // change the filter to name "test", result should be 1
+  /* change the filter to name "test", result should be 1 */
   await page.getByRole("button", { name: "workflow" }).click();
   await page.getByPlaceholder("filename.yaml").fill("test");
   await page.getByPlaceholder("filename.yaml").press("Enter");
@@ -315,7 +313,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
     "there should be 1 rows with filter name: test"
   ).toHaveCount(1);
 
-  // clear filter
+  /* clear filter */
   await page.getByTestId("filter-clear-AS").click();
   await expect(
     page.getByTestId(/instance-row-workflow/),
