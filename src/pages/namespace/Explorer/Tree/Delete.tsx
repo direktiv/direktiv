@@ -37,8 +37,9 @@ const Delete = ({
         <Trans
           i18nKey="pages.explorer.tree.delete.commonMsg"
           values={{ name: node.name }}
-        />{" "}
-        {t("pages.explorer.tree.delete.directoryMsg")}
+        />
+        {node.type === "directory" &&
+          ` ${t("pages.explorer.tree.delete.directoryMsg")}`}
       </div>
       <DialogFooter>
         <DialogClose asChild>
