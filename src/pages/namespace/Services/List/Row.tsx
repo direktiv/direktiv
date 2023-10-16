@@ -51,7 +51,7 @@ const ServicesTableRow: FC<{
 
   if (!namespace) return null;
 
-  const sizeParsed = SizeSchema.safeParse(service.config.size);
+  const sizeParsed = SizeSchema.safeParse(service.size);
   const sizeLabel = sizeParsed.success
     ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
     : "";
@@ -82,7 +82,7 @@ const ServicesTableRow: FC<{
       >
         <TableCell>
           <div className="flex flex-col gap-3">
-            {service.config.name}
+            {service.name}
             <div className="flex gap-3">
               {/* {serviceConditionNames.map((condition) => {
                 const res = service.conditions.find(
@@ -103,11 +103,11 @@ const ServicesTableRow: FC<{
             </div>
           </div>
         </TableCell>
-        <TableCell>{service.config.image}</TableCell>
-        <TableCell>{service.config.scale}</TableCell>
+        <TableCell>{service.image}</TableCell>
+        <TableCell>{service.scale}</TableCell>
         <TableCell>{sizeLabel}</TableCell>
         <TableCell className="whitespace-normal break-all">
-          {service.config.cmd}
+          {service.cmd}
         </TableCell>
         <TableCell>
           <DropdownMenu>
