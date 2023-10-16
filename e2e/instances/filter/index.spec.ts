@@ -324,5 +324,123 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
 });
 
 test("it is possible to apply multiple filters", async ({ page }) => {
-  "TBD";
+  /* set up test data */
+  createTriggerFilterInstances();
+
+  const workflowNames = [
+    "five-a.yaml",
+    "five-b.yaml",
+    "five-c.yaml",
+    "five-d.yaml",
+    "five-f.yaml",
+  ];
+
+  await Promise.all(
+    workflowNames.map((name) =>
+      createWorkflow({
+        payload: simpleWorkflowContent,
+        urlParams: {
+          baseUrl: process.env.VITE_DEV_API_DOMAIN,
+          namespace,
+          name,
+        },
+        headers,
+      })
+    )
+  );
+
+  await Promise.all(
+    workflowNames.map((path) => {
+      createInstance({ namespace, path });
+    })
+  );
+
+  const failingInstances = Array.from({ length: 3 }).map(() =>
+    createInstance({ namespace, path: failingWorkflowName })
+  );
+
+  await Promise.all(failingInstances);
+
+  /* visit page and test initial state */
+  await page.goto(`${namespace}/instances/`);
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "initially, it renders all instances"
+  ).toHaveCount(11);
+
+  /* add filter by "trigger": "api" */
+  await page.getByTestId("filter-add").click();
+  await page.getByRole("option", { name: "trigger" }).click();
+  await page.getByRole("option", { name: "api" }).click();
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(9);
+
+  /* add second filter, by "status": "failed" */
+  await page.getByTestId("filter-add").click();
+  await page.getByRole("option", { name: "status" }).click();
+  await page.getByRole("option", { name: "failed" }).click();
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(3);
+
+  /* change filter by "trigger" to "instance" */
+  await page.getByTestId("filter-add").click();
+  await page
+    .getByTestId("filter-component")
+    .getByRole("button", { name: "api" })
+    .click();
+  await page.getByRole("option", { name: "instance" }).click();
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(0);
+
+  /* change filter by "status" to "complete" */
+  await page.getByTestId("filter-add").click();
+  await page
+    .getByTestId("filter-component")
+    .getByRole("button", { name: "failed" })
+    .click();
+  await page.getByRole("option", { name: "complete" }).click();
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(2);
+
+  /* remove filter by "trigger" */
+  await page.getByTestId("filter-clear-TRIGGER").click();
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(8);
+
+  /* add second filter by "trigger": "api" (filter) */
+  await page.getByTestId("filter-add").click();
+  await page.getByRole("option", { name: "trigger" }).click();
+  await page.getByRole("option", { name: "api" }).click();
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(6);
+
+  /* add third filter by "name": "five" (filter) */
+  await page.getByTestId("filter-add").click();
+  await page.getByRole("option", { name: "name" }).click();
+  await page.getByPlaceholder("filename.yaml").fill("five");
+  await page.getByPlaceholder("filename.yaml").press("Enter");
+
+  await expect(
+    page.getByTestId(/instance-row-workflow/),
+    "it renders the expected number of results"
+  ).toHaveCount(5);
 });
