@@ -358,6 +358,15 @@ test(`it is possible to delete a worfklow`, async ({ page }) => {
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-delete").click();
+
+  await expect(
+    page.getByText(
+      `Are you sure you want to delete ${name}? This cannot be undone.`,
+      {
+        exact: true,
+      }
+    )
+  ).toBeVisible();
   await page.getByTestId("node-delete-confirm").click();
 
   await expect(
@@ -571,6 +580,16 @@ test(`it is possible to delete a directory`, async ({ page }) => {
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-delete").click();
+
+  await expect(
+    page.getByText(
+      `Are you sure you want to delete ${name}? This cannot be undone. All content of this directory will be deleted as well.`,
+      {
+        exact: true,
+      }
+    )
+  ).toBeVisible();
+
   await page.getByTestId("node-delete-confirm").click();
 
   await expect(
