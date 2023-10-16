@@ -83,8 +83,44 @@ const createTriggerFilterInstances = async () => {
   });
 };
 
-test("it renders and paginates instances", async ({ page }) => {
-  "TBD";
+test("it is possible to navigate to the instances list, it renders and paginates instances", async ({
+  page,
+}) => {
+  await Promise.all(
+    Array.from({ length: 17 }).map(() => {
+      createInstance({ namespace, path: simpleWorkflowName });
+    })
+  );
+
+  await page.goto(`${namespace}/`);
+
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Instances" })
+    .click();
+
+  await expect(
+    page.getByTestId(/instance-row-wrap/),
+    "it lists the expected number of instances on page 1"
+  ).toHaveCount(15);
+
+  await expect(page.getByLabel("Pagination")).toBeVisible();
+  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
+  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible();
+
+  await page.getByTestId("pagination-btn-right").click();
+
+  await expect(
+    page.getByTestId(/instance-row-wrap/),
+    "it lists the expected number of instances on page 2"
+  ).toHaveCount(2);
+
+  await page.getByTestId("pagination-btn-left").click();
+
+  await expect(
+    page.getByTestId(/instance-row-wrap/),
+    "it lists the expected number of instances on page 1"
+  ).toHaveCount(15);
 });
 
 test("it is possible to filter by date using created before", async ({
