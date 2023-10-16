@@ -17,7 +17,7 @@ const Notification: FC<NotificationPropsType> = ({
   isLoading,
   children,
 }) => (
-  <div className={twMergeClsx("self-end text-right", className)}>
+  <div className={twMergeClsx("", className)}>
     <Popover>
       <Button variant="ghost" className="group items-center px-1" role="button">
         <PopoverTrigger>
@@ -29,12 +29,11 @@ const Notification: FC<NotificationPropsType> = ({
           </div>
         </PopoverTrigger>
       </Button>
-      <PopoverContent align="end" className="p-4">
+      <PopoverContent
+        align="end"
+        className=" bg-gray-1 p-4 px-1.5 text-[10px] font-medium opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1"
+      >
         {children}
-        {/* <NotificationModal
-          isLoading={isLoading}
-          showIndicator={showIndicator}
-        ></NotificationModal> */}
       </PopoverContent>
     </Popover>
   </div>

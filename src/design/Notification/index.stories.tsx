@@ -13,7 +13,7 @@ export const Default: Story = {
   render: ({ ...args }) => <Notification {...args} />,
   argTypes: {
     showIndicator: {
-      description: "Notification Icon signals existence of Messages",
+      description: "Notification Icon that indicates the existence of Messages",
       control: "boolean",
       type: { name: "boolean", required: false },
     },
