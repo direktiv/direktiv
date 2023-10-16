@@ -98,11 +98,11 @@ const NewService = ({
   const [serviceConfigYaml, setServiceConfigYaml] =
     useState(defaultServiceYaml);
 
-  console.log("🚀", unallowedNames);
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(
@@ -189,7 +189,7 @@ const NewService = ({
                     onChange={(e) => {
                       if (e.formData) {
                         setServiceConfigJson(e.formData);
-                        setServiceConfigYaml(jsonToYaml(e.formData));
+                        setValue("fileContent", jsonToYaml(e.formData));
                       }
                     }}
                     schema={serviceFormSchema}
@@ -199,11 +199,11 @@ const NewService = ({
             )}
             <Card className="flex p-4" background="weight-1">
               <Editor
-                value={serviceConfigYaml}
+                value={getValues("fileContent")}
                 theme={theme ?? undefined}
                 onChange={(newData) => {
-                  if (newData) {
-                    setServiceConfigYaml(newData);
+                  if (newData && !splitView) {
+                    setValue("fileContent", jsonToYaml(newData));
                     let json;
                     try {
                       json = yamljs.load(newData);
