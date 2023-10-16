@@ -130,6 +130,14 @@ type dockerStatus struct {
 	*types.Container
 }
 
+func (r *dockerStatus) getCurrentScale() int {
+	if strings.Contains(r.Status, "Up ") {
+		return 1
+	}
+
+	return 0
+}
+
 func (r *dockerStatus) getConditions() any {
 	type condition struct {
 		Type    string `json:"type"`
