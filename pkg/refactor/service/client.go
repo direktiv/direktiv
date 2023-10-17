@@ -1,13 +1,17 @@
 // nolint
 package service
 
-import "io"
+import (
+	"io"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+)
 
 type client interface {
-	createService(cfg *ServiceConfig) error
-	updateService(cfg *ServiceConfig) error
+	createService(cfg *core.ServiceConfig) error
+	updateService(cfg *core.ServiceConfig) error
 	deleteService(id string) error
-	listServices() ([]Status, error)
+	listServices() ([]status, error)
 	streamServiceLogs(id string, podNumber int) (io.ReadCloser, error)
 }
 
@@ -20,4 +24,9 @@ type ClientConfig struct {
 
 	MaxScale int    `yaml:"maxScale"`
 	NetShape string `yaml:"netShape"`
+}
+
+type status interface {
+	reconcileObject
+	GetConditions() any
 }

@@ -10,11 +10,11 @@ type mockedObject struct {
 	hashStr string
 }
 
-func (m *mockedObject) getID() string {
+func (m *mockedObject) GetID() string {
 	return m.idStr
 }
 
-func (m *mockedObject) getValueHash() string {
+func (m *mockedObject) GetValueHash() string {
 	return m.hashStr
 }
 

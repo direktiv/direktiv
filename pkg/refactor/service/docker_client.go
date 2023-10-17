@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	dClient "github.com/docker/docker/client"
@@ -15,13 +16,13 @@ type dockerClient struct {
 	cli *dClient.Client
 }
 
-func (c *dockerClient) createService(cfg *ServiceConfig) error {
+func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 	config := &container.Config{
 		Image: cfg.Image,
 		Cmd:   []string{cfg.CMD},
 		Labels: map[string]string{
-			"direktiv.io/inputHash": cfg.getValueHash(),
-			"direktiv.io/id":        cfg.getID(),
+			"direktiv.io/inputHash": cfg.GetValueHash(),
+			"direktiv.io/id":        cfg.GetID(),
 		},
 	}
 	hostConfig := &container.HostConfig{
@@ -37,7 +38,7 @@ func (c *dockerClient) createService(cfg *ServiceConfig) error {
 	_, _ = io.Copy(io.Discard, out)
 
 	// Create a container.
-	resp, err := c.cli.ContainerCreate(context.Background(), config, hostConfig, nil, nil, cfg.getID())
+	resp, err := c.cli.ContainerCreate(context.Background(), config, hostConfig, nil, nil, cfg.GetID())
 	if err != nil {
 		return fmt.Errorf("create container, err: %w", err)
 	}
@@ -50,9 +51,9 @@ func (c *dockerClient) createService(cfg *ServiceConfig) error {
 	return nil
 }
 
-func (c *dockerClient) updateService(cfg *ServiceConfig) error {
+func (c *dockerClient) updateService(cfg *core.ServiceConfig) error {
 	// Remove the container.
-	err := c.deleteService(cfg.getID())
+	err := c.deleteService(cfg.GetID())
 	if err != nil {
 		return err
 	}
@@ -85,14 +86,14 @@ func (c *dockerClient) deleteService(id string) error {
 	})
 }
 
-func (c *dockerClient) listServices() ([]Status, error) {
+func (c *dockerClient) listServices() ([]status, error) {
 	// List containers.
 	containers, err := c.cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}
 
-	list := []Status{}
+	list := []status{}
 	for i, cnt := range containers {
 		if _, ok := cnt.Labels["direktiv.io/inputHash"]; ok {
 			list = append(list, &dockerStatus{Container: &containers[i]})
@@ -130,15 +131,7 @@ type dockerStatus struct {
 	*types.Container
 }
 
-func (r *dockerStatus) getCurrentScale() int {
-	if strings.Contains(r.Status, "Up ") {
-		return 1
-	}
-
-	return 0
-}
-
-func (r *dockerStatus) getConditions() any {
+func (r *dockerStatus) GetConditions() any {
 	type condition struct {
 		Type    string `json:"type"`
 		Status  string `json:"status"`
@@ -161,12 +154,12 @@ func (r *dockerStatus) getConditions() any {
 	}
 }
 
-func (r *dockerStatus) getID() string {
+func (r *dockerStatus) GetID() string {
 	return r.Labels["direktiv.io/id"]
 }
 
-func (r *dockerStatus) getValueHash() string {
+func (r *dockerStatus) GetValueHash() string {
 	return r.Labels["direktiv.io/inputHash"]
 }
 
-var _ Status = &dockerStatus{}
+var _ status = &dockerStatus{}
