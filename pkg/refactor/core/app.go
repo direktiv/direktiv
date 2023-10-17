@@ -1,9 +1,5 @@
 package core
 
-import (
-	"github.com/direktiv/direktiv/pkg/refactor/service"
-)
-
 // nolint:revive,stylecheck
 type Config struct {
 	ApiV1Port int `env:"DIREKTIV_API_V1_PORT" envDefault:"6665"`
@@ -25,6 +21,6 @@ type Version struct {
 
 type App struct {
 	Version         *Version
-	ServiceManager  *service.Manager
+	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 }

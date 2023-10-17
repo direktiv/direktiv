@@ -7,13 +7,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dClient "github.com/docker/docker/client"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
 type Manager struct {
-	list   []*ServiceConfig
+	list   []*core.ServiceConfig
 	client client
 
 	lock *sync.Mutex
@@ -72,7 +73,7 @@ func newDockerManager() (*Manager, error) {
 
 func newManagerFromClient(client client) *Manager {
 	return &Manager{
-		list:   make([]*ServiceConfig, 0, 0),
+		list:   make([]*core.ServiceConfig, 0, 0),
 		client: client,
 
 		lock: &sync.Mutex{},
@@ -85,9 +86,9 @@ func (m *Manager) runCycle() []error {
 	for i, v := range m.list {
 		src[i] = v
 	}
-	searchSrc := map[string]*ServiceConfig{}
+	searchSrc := map[string]*core.ServiceConfig{}
 	for _, v := range m.list {
-		searchSrc[v.getID()] = v
+		searchSrc[v.GetID()] = v
 	}
 
 	knList, err := m.client.listServices()
@@ -97,7 +98,7 @@ func (m *Manager) runCycle() []error {
 
 	//fmt.Printf("klist2:")
 	//for _, v := range knList {
-	//	fmt.Printf(" {%v %v} ", v.getID(), v.getValueHash())
+	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
 	//}
 	//fmt.Printf("\n")
 
@@ -110,13 +111,13 @@ func (m *Manager) runCycle() []error {
 
 	//fmt.Printf("srcs:")
 	//for _, v := range src {
-	//	fmt.Printf(" {%v %v} ", v.getID(), v.getValueHash())
+	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
 	//}
 	//fmt.Printf("\n")
 	//
 	//fmt.Printf("tars:")
 	//for _, v := range target {
-	//	fmt.Printf(" {%v %v} ", v.getID(), v.getValueHash())
+	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
 	//}
 	//fmt.Printf("\n")
 
@@ -174,16 +175,16 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 }
 
-func (m *Manager) SetServices(list []*ServiceConfig) {
+func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	m.list = list
 }
 
-func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*ConfigStatus, error) {
+func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
 	// clone the list
-	cfgList := make([]*ServiceConfig, len(m.list))
+	cfgList := make([]*core.ServiceConfig, len(m.list))
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -202,26 +203,25 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	if err != nil {
 		return nil, err
 	}
-	searchServices := map[string]Status{}
+	searchServices := map[string]status{}
 	for _, v := range services {
-		searchServices[v.getID()] = v
+		searchServices[v.GetID()] = v
 	}
 
-	result := []*ConfigStatus{}
+	result := []*core.ServiceStatus{}
 
 	for _, v := range cfgList {
-		service, _ := searchServices[v.getID()]
+		service, _ := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
-		if service != nil && service.getValueHash() == v.getValueHash() {
-			result = append(result, &ConfigStatus{
-				ID:            v.getID(),
+		if service != nil && service.GetValueHash() == v.GetValueHash() {
+			result = append(result, &core.ServiceStatus{
+				ID:            v.GetID(),
 				ServiceConfig: *v,
-				Conditions:    service.getConditions(),
-				CurrentScale:  service.getCurrentScale(),
+				Conditions:    service.GetConditions(),
 			})
 		} else {
-			result = append(result, &ConfigStatus{
-				ID:            v.getID(),
+			result = append(result, &core.ServiceStatus{
+				ID:            v.GetID(),
 				ServiceConfig: *v,
 				Conditions:    nil,
 			})
@@ -231,7 +231,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
-func (m *Manager) GetListByNamespace(namespace string) ([]*ConfigStatus, error) {
+func (m *Manager) GetListByNamespace(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 

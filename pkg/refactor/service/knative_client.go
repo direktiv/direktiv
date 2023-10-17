@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
@@ -22,7 +23,7 @@ func (c *knativeClient) streamServiceLogs(id string, podNumber int) (io.ReadClos
 	return nil, nil
 }
 
-func (c *knativeClient) createService(cfg *ServiceConfig) error {
+func (c *knativeClient) createService(cfg *core.ServiceConfig) error {
 	svcDef, err := buildService(c.config, cfg)
 	if err != nil {
 		return err
@@ -36,7 +37,7 @@ func (c *knativeClient) createService(cfg *ServiceConfig) error {
 	return nil
 }
 
-func (c *knativeClient) updateService(cfg *ServiceConfig) error {
+func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
 	svcDef, err := buildService(c.config, cfg)
 	if err != nil {
 		return err
@@ -45,7 +46,7 @@ func (c *knativeClient) updateService(cfg *ServiceConfig) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.client.ServingV1().Services(c.config.Namespace).Patch(context.Background(), cfg.getID(), types.MergePatchType, input, metav1.PatchOptions{})
+	_, err = c.client.ServingV1().Services(c.config.Namespace).Patch(context.Background(), cfg.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
@@ -62,13 +63,13 @@ func (c *knativeClient) deleteService(id string) error {
 	return nil
 }
 
-func (c *knativeClient) listServices() ([]Status, error) {
+func (c *knativeClient) listServices() ([]status, error) {
 	list, err := c.client.ServingV1().Services(c.config.Namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	result := []Status{}
+	result := []status{}
 	for i := range list.Items {
 		result = append(result, &knativeStatus{&list.Items[i]})
 	}
@@ -82,11 +83,7 @@ type knativeStatus struct {
 	*servingv1.Service
 }
 
-func (r *knativeStatus) getCurrentScale() int {
-	return 1
-}
-
-func (r *knativeStatus) getConditions() any {
+func (r *knativeStatus) GetConditions() any {
 	type condition struct {
 		Type    string `json:"type"`
 		Status  string `json:"status"`
@@ -106,12 +103,12 @@ func (r *knativeStatus) getConditions() any {
 	return list
 }
 
-func (r *knativeStatus) getID() string {
+func (r *knativeStatus) GetID() string {
 	return r.Name
 }
 
-func (r *knativeStatus) getValueHash() string {
+func (r *knativeStatus) GetValueHash() string {
 	return r.Annotations["direktiv.io/inputHash"]
 }
 
-var _ Status = &knativeStatus{}
+var _ status = &knativeStatus{}

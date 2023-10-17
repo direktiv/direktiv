@@ -15,7 +15,7 @@ import (
 )
 
 type serviceController struct {
-	manager *service.Manager
+	manager core.ServiceManager
 }
 
 func (e *serviceController) mountRouter(r chi.Router) {

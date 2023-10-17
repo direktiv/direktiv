@@ -1,8 +1,8 @@
 package service
 
 type reconcileObject interface {
-	getID() string
-	getValueHash() string
+	GetID() string
+	GetValueHash() string
 }
 
 type reconcileResult struct {
@@ -23,14 +23,14 @@ func reconcileDelete(src []reconcileObject, target []reconcileObject) []string {
 	result := []string{}
 	search := map[string]bool{}
 	for _, item := range src {
-		search[item.getID()] = true
+		search[item.GetID()] = true
 	}
 	for _, item := range target {
-		_, ok := search[item.getID()]
+		_, ok := search[item.GetID()]
 		if ok {
 			continue
 		}
-		result = append(result, item.getID())
+		result = append(result, item.GetID())
 	}
 
 	return result
@@ -41,14 +41,14 @@ func reconcileCreate(src []reconcileObject, target []reconcileObject) []string {
 
 	keys := map[string]bool{}
 	for _, item := range target {
-		keys[item.getID()] = true
+		keys[item.GetID()] = true
 	}
 	for _, item := range src {
-		_, ok := keys[item.getID()]
+		_, ok := keys[item.GetID()]
 		if ok {
 			continue
 		}
-		result = append(result, item.getID())
+		result = append(result, item.GetID())
 	}
 
 	return result
@@ -59,18 +59,18 @@ func reconcileUpdate(src []reconcileObject, target []reconcileObject) []string {
 
 	search := map[string]reconcileObject{}
 	for _, item := range src {
-		search[item.getID()] = item
+		search[item.GetID()] = item
 	}
 
 	for _, item := range target {
-		searchItem, ok := search[item.getID()]
+		searchItem, ok := search[item.GetID()]
 		if !ok {
 			continue
 		}
-		if searchItem.getValueHash() == item.getValueHash() {
+		if searchItem.GetValueHash() == item.GetValueHash() {
 			continue
 		}
-		result = append(result, item.getID())
+		result = append(result, item.GetID())
 	}
 
 	return result

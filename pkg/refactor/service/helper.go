@@ -4,6 +4,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,7 +19,7 @@ func validateConfig(c *ClientConfig) (*ClientConfig, error) {
 	return c, nil
 }
 
-func buildService(c *ClientConfig, cfg *ServiceConfig) (*servingv1.Service, error) {
+func buildService(c *ClientConfig, cfg *core.ServiceConfig) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, cfg)
 	if err != nil {
 		return nil, err
@@ -77,22 +78,22 @@ func buildService(c *ClientConfig, cfg *ServiceConfig) (*servingv1.Service, erro
 	return svc, nil
 }
 
-func buildServiceMeta(c *ClientConfig, cfg *ServiceConfig) metav1.ObjectMeta {
+func buildServiceMeta(c *ClientConfig, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
-		Name:        cfg.getID(),
+		Name:        cfg.GetID(),
 		Namespace:   c.Namespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
 
-	meta.Annotations["direktiv.io/inputHash"] = cfg.getValueHash()
+	meta.Annotations["direktiv.io/inputHash"] = cfg.GetValueHash()
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 	meta.Annotations["networking.knative.dev/ingress.class"] = c.IngressClass
 
 	return meta
 }
 
-func buildPodMeta(c *ClientConfig, cfg *ServiceConfig) metav1.ObjectMeta {
+func buildPodMeta(c *ClientConfig, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.Namespace,
 		Labels:      make(map[string]string),
@@ -109,7 +110,7 @@ func buildPodMeta(c *ClientConfig, cfg *ServiceConfig) metav1.ObjectMeta {
 	return metaSpec
 }
 
-func buildVolumes(c *ClientConfig, cfg *ServiceConfig) []corev1.Volume {
+func buildVolumes(c *ClientConfig, cfg *core.ServiceConfig) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -124,7 +125,7 @@ func buildVolumes(c *ClientConfig, cfg *ServiceConfig) []corev1.Volume {
 	return volumes
 }
 
-func buildContainers(c *ClientConfig, cfg *ServiceConfig) ([]corev1.Container, error) {
+func buildContainers(c *ClientConfig, cfg *core.ServiceConfig) ([]corev1.Container, error) {
 	// set resource limits.
 	rl, err := buildResourceLimits(c, cfg)
 	if err != nil {
@@ -176,11 +177,11 @@ func buildContainers(c *ClientConfig, cfg *ServiceConfig) ([]corev1.Container, e
 	return []corev1.Container{uc}, nil
 }
 
-func buildResourceLimits(c *ClientConfig, cfg *ServiceConfig) (corev1.ResourceRequirements, error) {
+func buildResourceLimits(c *ClientConfig, cfg *core.ServiceConfig) (corev1.ResourceRequirements, error) {
 	return corev1.ResourceRequirements{}, nil
 }
 
-func buildEnvVars(c *ClientConfig, cfg *ServiceConfig) []corev1.EnvVar {
+func buildEnvVars(c *ClientConfig, cfg *core.ServiceConfig) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
