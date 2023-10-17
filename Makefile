@@ -165,7 +165,7 @@ push: image
 .PHONY: docker-ui
 docker-ui: ## Manually clone and build the latest UI.
 	if [ ! -d direktiv-ui ]; then \
-		git clone -b feature/redesign https://github.com/direktiv/direktiv-ui.git; \
+		git clone -b develop https://github.com/direktiv/direktiv-ui.git; \
 		cd direktiv-ui && make react && make local; \
 	fi
 	
@@ -322,8 +322,6 @@ env-stop:
 	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
 env-start: env-stop
-	rm -rf direktiv-ui
-	git clone -b develop https://github.com/direktiv/direktiv-ui.git
 	cd direktiv-ui && docker build -t direktiv-ui-dev .
 
 	docker build -t direktiv-dev .
