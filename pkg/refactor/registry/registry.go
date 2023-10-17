@@ -47,7 +47,7 @@ func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
 		result = append(result, &core.Registry{
 			Namespace: namespace,
 			ID:        s.Name,
-			Url:       u,
+			URL:       u,
 			User:      user,
 		})
 	}
@@ -78,14 +78,14 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 	// delete the old registry is just a safety measure
 	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
 
-	str := fmt.Sprintf("%s-%s", registry.Namespace, registry.Url)
+	str := fmt.Sprintf("%s-%s", registry.Namespace, registry.URL)
 	sh := sha256.Sum256([]byte(str))
 	id := fmt.Sprintf("secret-%x", sh[:10])
 
 	r := &core.Registry{
 		Namespace: registry.Namespace,
 		ID:        id,
-		Url:       registry.Url,
+		URL:       registry.URL,
 		User:      obfuscateUser(registry.User),
 		Password:  registry.Password,
 	}
@@ -101,7 +101,7 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 }
 
 func buildSecret(registry *core.Registry) (*v1.Secret, error) {
-	_, err := url.Parse(registry.Url)
+	_, err := url.Parse(registry.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func buildSecret(registry *core.Registry) (*v1.Secret, error) {
 		}
 	}
 	}`,
-		registry.Url,
+		registry.URL,
 		registry.User,
 		registry.Password,
 		base64.StdEncoding.EncodeToString([]byte(registry.User+":"+registry.Password)))
@@ -129,7 +129,7 @@ func buildSecret(registry *core.Registry) (*v1.Secret, error) {
 	s.Labels[annotationNamespace] = registry.Namespace
 
 	s.Annotations = make(map[string]string)
-	s.Annotations[annotationRegistryURL] = registry.Url
+	s.Annotations[annotationRegistryURL] = registry.URL
 	s.Annotations[annotationRegistryUser] = registry.User
 
 	s.Name = registry.ID
