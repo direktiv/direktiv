@@ -33,7 +33,7 @@ func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJson(w, list)
+	writeJSON(w, list)
 }
 
 func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
