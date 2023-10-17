@@ -1,5 +1,3 @@
-import "../../AppLegacy.css";
-
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Card } from "../Card";
