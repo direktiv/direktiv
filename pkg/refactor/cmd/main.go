@@ -44,10 +44,11 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}
 
 	// Create App
-	app := &core.App{
+	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
+		Config:          config,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 	}
