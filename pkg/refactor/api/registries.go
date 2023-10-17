@@ -35,7 +35,7 @@ func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJson(w, list)
+	writeJSON(w, list)
 }
 
 func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
@@ -79,5 +79,5 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJson(w, newReg)
+	writeJSON(w, newReg)
 }
