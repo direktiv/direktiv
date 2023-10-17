@@ -6,10 +6,11 @@ import { createRoot } from "react-dom/client";
 
 const app = document.getElementById("root");
 
-const root = createRoot(app);
-
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+if (app) {
+  const root = createRoot(app);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}
