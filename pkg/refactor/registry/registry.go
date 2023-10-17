@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -24,27 +26,13 @@ const (
 
 var ErrNotFound = errors.New("ErrNotFound")
 
-type Registry struct {
-	Namespace string `json:"namespace"`
-	ID        string `json:"id"`
-	Url       string `json:"url"`
-	User      string `json:"user"`
-	Password  string `json:"password,omitempty"`
-}
-
-type Manager interface {
-	ListRegistries(namespace string) ([]*Registry, error)
-	DeleteRegistry(namespace string, id string) error
-	StoreRegistry(registry *Registry) (*Registry, error)
-}
-
 type kManager struct {
 	*kubernetes.Clientset
 	K8sNamespace string
 }
 
-func (c *kManager) ListRegistries(namespace string) ([]*Registry, error) {
-	result := []*Registry{}
+func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
+	result := []*core.Registry{}
 
 	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).
 		List(context.Background(),
@@ -56,7 +44,7 @@ func (c *kManager) ListRegistries(namespace string) ([]*Registry, error) {
 	for _, s := range secrets.Items {
 		u := s.Annotations[annotationRegistryURL]
 		user := s.Annotations[annotationRegistryUser]
-		result = append(result, &Registry{
+		result = append(result, &core.Registry{
 			Namespace: namespace,
 			ID:        s.Name,
 			Url:       u,
@@ -86,7 +74,7 @@ func (c *kManager) DeleteRegistry(namespace string, id string) error {
 	return ErrNotFound
 }
 
-func (c *kManager) StoreRegistry(registry *Registry) (*Registry, error) {
+func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error) {
 	// delete the old registry is just a safety measure
 	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
 
@@ -94,7 +82,7 @@ func (c *kManager) StoreRegistry(registry *Registry) (*Registry, error) {
 	sh := sha256.Sum256([]byte(str))
 	id := fmt.Sprintf("secret-%x", sh[:10])
 
-	r := &Registry{
+	r := &core.Registry{
 		Namespace: registry.Namespace,
 		ID:        id,
 		Url:       registry.Url,
@@ -112,7 +100,7 @@ func (c *kManager) StoreRegistry(registry *Registry) (*Registry, error) {
 	return r, err
 }
 
-func buildSecret(registry *Registry) (*v1.Secret, error) {
+func buildSecret(registry *core.Registry) (*v1.Secret, error) {
 	_, err := url.Parse(registry.Url)
 	if err != nil {
 		return nil, err
@@ -182,4 +170,4 @@ func NewManager() (*kManager, error) {
 	}, nil
 }
 
-var _ Manager = &kManager{}
+var _ core.RegistryManager = &kManager{}
