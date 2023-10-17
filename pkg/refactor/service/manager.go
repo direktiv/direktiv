@@ -20,15 +20,15 @@ type Manager struct {
 	lock *sync.Mutex
 }
 
-func NewManager(enableDocker bool) (*Manager, error) {
+func NewManager(c *core.Config, enableDocker bool) (*Manager, error) {
 	if enableDocker {
 		return newDockerManager()
 	}
 
-	return newKnativeManager()
+	return newKnativeManager(c)
 }
 
-func newKnativeManager() (*Manager, error) {
+func newKnativeManager(c *core.Config) (*Manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		fmt.Printf("error cluster config: %v\n", err)
@@ -40,16 +40,10 @@ func newKnativeManager() (*Manager, error) {
 		return nil, err
 	}
 
-	c := &ClientConfig{
-		ServiceAccount: "direktiv-functions-pod",
-		Namespace:      "direktiv-services-direktiv",
-		IngressClass:   "contour.ingress.networking.knative.dev",
-	}
-
-	c, err = validateConfig(c)
-	if err != nil {
-		return nil, fmt.Errorf("invalid client config, err: %s", err)
-	}
+	// TODO: remove dev code.
+	c.KnativeServiceAccount = "direktiv-functions-pod"
+	c.KnativeNamespace = "direktiv-services-direktiv"
+	c.KnativeIngressClass = "contour.ingress.networking.knative.dev"
 
 	client := &knativeClient{
 		client: cSet,

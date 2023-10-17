@@ -13,6 +13,13 @@ type Config struct {
 	SecretKey string `env:"DIREKTIV_SECRET_KEY" envDefault:"01234567890123456789012345678912"`
 
 	DB string `env:"DIREKTIV_DB,notEmpty"`
+
+	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
+	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
+	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
+	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
+	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"`
+	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
 }
 
 type Version struct {
