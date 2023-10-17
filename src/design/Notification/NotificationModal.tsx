@@ -1,7 +1,40 @@
 import { FC, PropsWithChildren } from "react";
 
+import Button from "~/design/Button";
+import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
+
+type ButtonWithChildren = PropsWithChildren & {
+  className?: string;
+};
+
+export const NotificationHasresultsButton: FC<ButtonWithChildren> = ({
+  children,
+  className,
+}) => {
+  const namespace = useNamespace();
+  const { icon: Icon } = pages.settings;
+  useTranslation();
+
+  if (!namespace) return null;
+
+  return (
+    <Button className="" variant="outline" isAnchor asChild>
+      <Link
+        className=""
+        to={pages.settings.createHref({
+          namespace,
+        })}
+      >
+        <Icon aria-hidden="true" />
+        {children}
+      </Link>
+    </Button>
+  );
+};
 
 export const NotificationNoresults: FC<PropsWithChildren> = ({ children }) => (
   <div className="px-2 py-1.5 text-sm font-medium text-gray-9 dark:text-gray-dark-9">
@@ -25,49 +58,11 @@ export const NotificationHasresultsText: FC<PropsWithChildren> = ({
   </div>
 );
 
-export const NotificationHasresultsButton: FC<PropsWithChildren> = ({
-  children,
-}) => (
-  <div className="relative flex cursor-pointer select-none items-end rounded-sm py-1.5 px-2 text-sm font-medium outline-none focus:bg-gray-3 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-gray-dark-3">
-    {children}
-  </div>
-);
-
 export const NotificationLoading: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex">
+  <div className="flex items-center">
     <Loader2 className="h-5 animate-spin" />
-    {children}
+    <div className="px-2 py-1.5 text-sm font-medium text-gray-9 dark:text-gray-dark-9">
+      {children}
+    </div>{" "}
   </div>
 );
-
-const NotificationModal = ({
-  showIndicator,
-  isLoading,
-}: {
-  className?: string;
-  showIndicator?: boolean;
-  isLoading?: boolean;
-}) => {
-  const { t } = useTranslation();
-
-  const textLoading = t("components.notificationMenu.isLoading.text");
-  const textHasIssues = t("components.notificationMenu.hasIssues.secrets.text");
-  const textNoIssues = t("components.notificationMenu.noIssues.text");
-
-  if (isLoading) {
-    return (
-      <div className="">
-        <Loader2 className="h-5 animate-spin" />
-        {textLoading}
-      </div>
-    );
-  }
-
-  if (showIndicator) {
-    return <div className="">{textHasIssues}</div>;
-  }
-
-  return <div className="">{textNoIssues}</div>;
-};
-
-export default NotificationModal;

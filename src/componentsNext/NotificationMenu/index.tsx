@@ -1,5 +1,6 @@
 import { FC, PropsWithChildren } from "react";
 import {
+  NotificationHasresultsButton,
   NotificationHasresultsText,
   NotificationHasresultsTitle,
   NotificationLoading,
@@ -19,28 +20,6 @@ import { useTranslation } from "react-i18next";
 interface NotificationMenuProps {
   className?: string;
 }
-
-export const SettingsButton: FC<PropsWithChildren> = ({ children }) => {
-  const namespace = useNamespace();
-  const { icon: Icon } = pages.settings;
-  useTranslation();
-
-  if (!namespace) return null;
-
-  return (
-    <Button className="" variant="outline" isAnchor asChild>
-      <Link
-        className=""
-        to={pages.settings.createHref({
-          namespace,
-        })}
-      >
-        <Icon aria-hidden="true" />
-        {children}
-      </Link>
-    </Button>
-  );
-};
 
 const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
   const { t } = useTranslation();
@@ -74,7 +53,9 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
               </NotificationHasresultsText>
             </div>
             <div className="flex justify-end">
-              <SettingsButton>{buttonHasIssues}</SettingsButton>
+              <NotificationHasresultsButton>
+                {buttonHasIssues}
+              </NotificationHasresultsButton>
             </div>
           </div>
         )}
