@@ -1,7 +1,6 @@
 package core
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 )
 
@@ -27,5 +26,5 @@ type Version struct {
 type App struct {
 	Version         *Version
 	ServiceManager  *service.Manager
-	RegistryManager registry.Manager
+	RegistryManager RegistryManager
 }

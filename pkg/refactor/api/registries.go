@@ -13,7 +13,7 @@ import (
 )
 
 type registryController struct {
-	manager registry.Manager
+	manager core.RegistryManager
 }
 
 func (e *registryController) mountRouter(r chi.Router) {
@@ -63,7 +63,7 @@ func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
 func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 
-	reg := &registry.Registry{}
+	reg := &core.Registry{}
 
 	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
 		writeNotJsonError(w)
