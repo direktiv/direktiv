@@ -294,7 +294,7 @@ unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit test
 	go test -cover -timeout 60s ${UNITTEST_PACKAGES}
 
 .PHONY: lint 
-lint: VERSION="v1.53"
+lint: VERSION="v1.54"
 lint: ## Runs very strict linting on the project.
 	-docker rm golangci-lint-${VERSION}-direktiv
 	-docker run \
