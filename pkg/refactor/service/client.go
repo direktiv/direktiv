@@ -15,17 +15,6 @@ type client interface {
 	streamServiceLogs(id string, podNumber int) (io.ReadCloser, error)
 }
 
-type ClientConfig struct {
-	ServiceAccount string `yaml:"serviceAccount"`
-	Namespace      string `yaml:"namespace"`
-	IngressClass   string `yaml:"ingressClass"`
-
-	Sidecar string `yaml:"sidecar"`
-
-	MaxScale int    `yaml:"maxScale"`
-	NetShape string `yaml:"netShape"`
-}
-
 type status interface {
 	reconcileObject
 	GetConditions() any

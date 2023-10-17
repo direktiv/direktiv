@@ -13,7 +13,7 @@ import (
 )
 
 type knativeClient struct {
-	config *ClientConfig
+	config *core.Config
 
 	client versioned.Interface
 }
@@ -29,7 +29,7 @@ func (c *knativeClient) createService(cfg *core.ServiceConfig) error {
 		return err
 	}
 
-	_, err = c.client.ServingV1().Services(c.config.Namespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
+	_, err = c.client.ServingV1().Services(c.config.KnativeNamespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.client.ServingV1().Services(c.config.Namespace).Patch(context.Background(), cfg.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
+	_, err = c.client.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), cfg.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
 }
 
 func (c *knativeClient) deleteService(id string) error {
-	err := c.client.ServingV1().Services(c.config.Namespace).Delete(context.Background(), id, metav1.DeleteOptions{})
+	err := c.client.ServingV1().Services(c.config.KnativeNamespace).Delete(context.Background(), id, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (c *knativeClient) deleteService(id string) error {
 }
 
 func (c *knativeClient) listServices() ([]status, error) {
-	list, err := c.client.ServingV1().Services(c.config.Namespace).List(context.Background(), metav1.ListOptions{})
+	list, err := c.client.ServingV1().Services(c.config.KnativeNamespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

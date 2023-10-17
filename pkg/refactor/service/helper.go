@@ -11,15 +11,7 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-func validateConfig(c *ClientConfig) (*ClientConfig, error) {
-	if c.MaxScale > 9 || c.MaxScale < 1 {
-		c.MaxScale = 5
-	}
-
-	return c, nil
-}
-
-func buildService(c *ClientConfig, cfg *core.ServiceConfig) (*servingv1.Service, error) {
+func buildService(c *core.Config, cfg *core.ServiceConfig) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, cfg)
 	if err != nil {
 		return nil, err
@@ -53,7 +45,7 @@ func buildService(c *ClientConfig, cfg *core.ServiceConfig) (*servingv1.Service,
 					ObjectMeta: buildPodMeta(c, cfg),
 					Spec: servingv1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
-							ServiceAccountName: c.ServiceAccount,
+							ServiceAccountName: c.KnativeServiceAccount,
 							Containers:         containers,
 							Volumes:            buildVolumes(c, cfg),
 							Affinity:           &corev1.Affinity{
@@ -78,31 +70,31 @@ func buildService(c *ClientConfig, cfg *core.ServiceConfig) (*servingv1.Service,
 	return svc, nil
 }
 
-func buildServiceMeta(c *ClientConfig, cfg *core.ServiceConfig) metav1.ObjectMeta {
+func buildServiceMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
 		Name:        cfg.GetID(),
-		Namespace:   c.Namespace,
+		Namespace:   c.KnativeNamespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
 
 	meta.Annotations["direktiv.io/inputHash"] = cfg.GetValueHash()
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
-	meta.Annotations["networking.knative.dev/ingress.class"] = c.IngressClass
+	meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
 
 	return meta
 }
 
-func buildPodMeta(c *ClientConfig, cfg *core.ServiceConfig) metav1.ObjectMeta {
+func buildPodMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
-		Namespace:   c.Namespace,
+		Namespace:   c.KnativeNamespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
 	metaSpec.Labels["direktiv-app"] = "direktiv"
 
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
-	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.MaxScale)
+	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.KnativeMaxScale)
 
 	metaSpec.Annotations["kubernetes.io/egress-bandwidth"] = "10M"
 	metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = "10M"
@@ -110,7 +102,7 @@ func buildPodMeta(c *ClientConfig, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	return metaSpec
 }
 
-func buildVolumes(c *ClientConfig, cfg *core.ServiceConfig) []corev1.Volume {
+func buildVolumes(c *core.Config, cfg *core.ServiceConfig) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -125,7 +117,7 @@ func buildVolumes(c *ClientConfig, cfg *core.ServiceConfig) []corev1.Volume {
 	return volumes
 }
 
-func buildContainers(c *ClientConfig, cfg *core.ServiceConfig) ([]corev1.Container, error) {
+func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Container, error) {
 	// set resource limits.
 	rl, err := buildResourceLimits(c, cfg)
 	if err != nil {
@@ -164,7 +156,7 @@ func buildContainers(c *ClientConfig, cfg *core.ServiceConfig) ([]corev1.Contain
 	// direktiv sidecar
 	_ = corev1.Container{
 		Name:         containerSidecar,
-		Image:        c.Sidecar,
+		Image:        c.KnativeSidecar,
 		Env:          buildEnvVars(c, cfg),
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
@@ -177,11 +169,11 @@ func buildContainers(c *ClientConfig, cfg *core.ServiceConfig) ([]corev1.Contain
 	return []corev1.Container{uc}, nil
 }
 
-func buildResourceLimits(c *ClientConfig, cfg *core.ServiceConfig) (corev1.ResourceRequirements, error) {
+func buildResourceLimits(c *core.Config, cfg *core.ServiceConfig) (corev1.ResourceRequirements, error) {
 	return corev1.ResourceRequirements{}, nil
 }
 
-func buildEnvVars(c *ClientConfig, cfg *core.ServiceConfig) []corev1.EnvVar {
+func buildEnvVars(c *core.Config, cfg *core.ServiceConfig) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
