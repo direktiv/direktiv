@@ -18,7 +18,7 @@ const (
 	containerSidecar = "direktiv-sidecar"
 )
 
-type Config struct {
+type ServiceConfig struct {
 	Typ       string `json:"type"`
 	Namespace string `json:"namespace"`
 	Name      string `json:"name"`
@@ -33,14 +33,14 @@ type Config struct {
 	Error *string `json:"error"`
 }
 
-func (c *Config) getID() string {
+func (c *ServiceConfig) getID() string {
 	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.Typ, c.FilePath)
 	sh := sha256.Sum256([]byte(str))
 
 	return fmt.Sprintf("obj%xobj", sh[:10])
 }
 
-func (c *Config) getValueHash() string {
+func (c *ServiceConfig) getValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	sh := sha256.Sum256([]byte(str))
 
@@ -56,7 +56,7 @@ type Status interface {
 
 type ConfigStatus struct {
 	ID string `json:"id"`
-	Config
+	ServiceConfig
 	Conditions   any `json:"conditions"`
 	CurrentScale int `json:"currentScale"`
 }

@@ -22,7 +22,7 @@ func (c *knativeClient) streamServiceLogs(id string, podNumber int) (io.ReadClos
 	return nil, nil
 }
 
-func (c *knativeClient) createService(cfg *Config) error {
+func (c *knativeClient) createService(cfg *ServiceConfig) error {
 	svcDef, err := buildService(c.config, cfg)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (c *knativeClient) createService(cfg *Config) error {
 	return nil
 }
 
-func (c *knativeClient) updateService(cfg *Config) error {
+func (c *knativeClient) updateService(cfg *ServiceConfig) error {
 	svcDef, err := buildService(c.config, cfg)
 	if err != nil {
 		return err
