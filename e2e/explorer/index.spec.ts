@@ -583,7 +583,7 @@ test(`it is possible to delete a directory`, async ({ page }) => {
 
   await expect(
     page.getByText(
-      `Are you sure you want to delete ${name}? This cannot be undone. All content of this directory will be deleted as well.`,
+      `Are you sure you want to delete ${name}? All content of this directory will be deleted as well.`,
       {
         exact: true,
       }

@@ -34,12 +34,17 @@ const Delete = ({
       </DialogHeader>
 
       <div className="my-3">
-        <Trans
-          i18nKey="pages.explorer.tree.delete.commonMsg"
-          values={{ name: node.name }}
-        />
-        {node.type === "directory" &&
-          ` ${t("pages.explorer.tree.delete.directoryMsg")}`}
+        {node.type === "directory" ? (
+          <Trans
+            i18nKey="pages.explorer.tree.delete.directoryMsg"
+            values={{ name: node.name }}
+          />
+        ) : (
+          <Trans
+            i18nKey="pages.explorer.tree.delete.fileMsg"
+            values={{ name: node.name }}
+          />
+        )}
       </div>
       <DialogFooter>
         <DialogClose asChild>
