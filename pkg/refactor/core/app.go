@@ -27,7 +27,9 @@ type Version struct {
 }
 
 type App struct {
-	Version         *Version
+	Version *Version
+	Config  *Config
+
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 }

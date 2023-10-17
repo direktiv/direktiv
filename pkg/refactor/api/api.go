@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
