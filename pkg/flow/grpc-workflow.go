@@ -146,7 +146,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, "direktiv spec file name should have either .yaml or .yaml extension")
 	}
 
-	if _, err := spec.ParseServicesFile(req.GetSource()); err == nil {
+	if _, err := spec.ParseServiceFile(req.GetSource()); err == nil {
 		return flow.createService(ctx, req)
 	}
 

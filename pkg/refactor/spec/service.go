@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ServicesFile struct {
+type ServiceFile struct {
 	DirektivAPI string `yaml:"direktiv_api"`
 	Name        string `yaml:"name"`
 	Image       string `yaml:"image"`
@@ -16,8 +16,8 @@ type ServicesFile struct {
 	Scale       int    `yaml:"scale"`
 }
 
-func ParseServicesFile(data []byte) (*ServicesFile, error) {
-	res := &ServicesFile{}
+func ParseServiceFile(data []byte) (*ServiceFile, error) {
+	res := &ServiceFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
 		return nil, err

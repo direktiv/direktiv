@@ -111,7 +111,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 				continue
 			}
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := spec.ParseServicesFile(data)
+				serviceDef, err := spec.ParseServiceFile(data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
