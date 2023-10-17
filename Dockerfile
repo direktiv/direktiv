@@ -1,4 +1,4 @@
-FROM node:18 as build
+FROM node:18.18.1 as build
 
 ARG FULL_VERSION
 
