@@ -93,7 +93,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 		return
 	}
 
-	funConfigList := []*service.Config{}
+	funConfigList := []*service.ServiceConfig{}
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
@@ -117,7 +117,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 
 					continue
 				}
-				funConfigList = append(funConfigList, &service.Config{
+				funConfigList = append(funConfigList, &service.ServiceConfig{
 					Typ:       "namespace-service",
 					Name:      serviceDef.Name,
 					Namespace: ns.Name,
@@ -135,7 +135,7 @@ func renderServiceManager(db *database.DB, serviceManager *service.Manager, logg
 					continue
 				}
 				if serviceDef.Typ == "knative-workflow" {
-					funConfigList = append(funConfigList, &service.Config{
+					funConfigList = append(funConfigList, &service.ServiceConfig{
 						Typ:       "workflow-service",
 						Name:      serviceDef.Name,
 						Namespace: ns.Name,

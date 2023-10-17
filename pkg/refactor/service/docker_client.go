@@ -15,7 +15,7 @@ type dockerClient struct {
 	cli *dClient.Client
 }
 
-func (c *dockerClient) createService(cfg *Config) error {
+func (c *dockerClient) createService(cfg *ServiceConfig) error {
 	config := &container.Config{
 		Image: cfg.Image,
 		Cmd:   []string{cfg.CMD},
@@ -50,7 +50,7 @@ func (c *dockerClient) createService(cfg *Config) error {
 	return nil
 }
 
-func (c *dockerClient) updateService(cfg *Config) error {
+func (c *dockerClient) updateService(cfg *ServiceConfig) error {
 	// Remove the container.
 	err := c.deleteService(cfg.getID())
 	if err != nil {

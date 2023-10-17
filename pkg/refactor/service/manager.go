@@ -13,7 +13,7 @@ import (
 )
 
 type Manager struct {
-	list   []*Config
+	list   []*ServiceConfig
 	client client
 
 	lock *sync.Mutex
@@ -72,7 +72,7 @@ func newDockerManager() (*Manager, error) {
 
 func newManagerFromClient(client client) *Manager {
 	return &Manager{
-		list:   make([]*Config, 0, 0),
+		list:   make([]*ServiceConfig, 0, 0),
 		client: client,
 
 		lock: &sync.Mutex{},
@@ -85,7 +85,7 @@ func (m *Manager) runCycle() []error {
 	for i, v := range m.list {
 		src[i] = v
 	}
-	searchSrc := map[string]*Config{}
+	searchSrc := map[string]*ServiceConfig{}
 	for _, v := range m.list {
 		searchSrc[v.getID()] = v
 	}
@@ -174,7 +174,7 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 }
 
-func (m *Manager) SetServices(list []*Config) {
+func (m *Manager) SetServices(list []*ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -183,7 +183,7 @@ func (m *Manager) SetServices(list []*Config) {
 
 func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*ConfigStatus, error) {
 	// clone the list
-	cfgList := make([]*Config, len(m.list))
+	cfgList := make([]*ServiceConfig, len(m.list))
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -214,16 +214,16 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.getValueHash() == v.getValueHash() {
 			result = append(result, &ConfigStatus{
-				ID:           v.getID(),
-				Config:       *v,
-				Conditions:   service.getConditions(),
-				CurrentScale: service.getCurrentScale(),
+				ID:            v.getID(),
+				ServiceConfig: *v,
+				Conditions:    service.getConditions(),
+				CurrentScale:  service.getCurrentScale(),
 			})
 		} else {
 			result = append(result, &ConfigStatus{
-				ID:         v.getID(),
-				Config:     *v,
-				Conditions: nil,
+				ID:            v.getID(),
+				ServiceConfig: *v,
+				Conditions:    nil,
 			})
 		}
 	}
