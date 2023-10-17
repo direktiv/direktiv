@@ -8,7 +8,6 @@ import { LucideIcon, Trash } from "lucide-react";
 
 import Button from "~/design/Button";
 import { ReactNode } from "react";
-import { useDeleteService } from "~/api/services/mutate/deleteService";
 import { useTranslation } from "react-i18next";
 
 const Delete = ({
@@ -29,13 +28,13 @@ const Delete = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: deleteService, isLoading } = useDeleteService({
-    workflow,
-    version,
-    onSuccess: () => {
-      close();
-    },
-  });
+  // const { mutate: deleteService, isLoading } = useDeleteService({
+  //   workflow,
+  //   version,
+  //   onSuccess: () => {
+  //     close();
+  //   },
+  // });
 
   return (
     <>
@@ -53,16 +52,16 @@ const Delete = ({
         </DialogClose>
         <Button
           onClick={() => {
-            deleteService({
-              service,
-              workflow,
-              version,
-            });
+            // deleteService({
+            //   service,
+            //   workflow,
+            //   version,
+            // });
           }}
           variant="destructive"
-          loading={isLoading}
+          // loading={isLoading}
         >
-          {!isLoading && <Trash />}
+          {/* {!isLoading && <Trash />} */}
           {t("pages.services.list.delete.deleteBtn")}
         </Button>
       </DialogFooter>
