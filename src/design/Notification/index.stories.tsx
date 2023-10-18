@@ -69,7 +69,7 @@ export const ButtonTestWithLinkto = () => (
   <div className="flex space-x-2">
     <Notification showIndicator={true}>
       <div className="flex justify-end">
-        <NotificationButton linkTo="/test/">Go fix it</NotificationButton>
+        <NotificationButton>Go fix it</NotificationButton>
       </div>
     </Notification>
   </div>
