@@ -93,6 +93,9 @@ type RootQuery interface {
 	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
 	ListDirektivFiles(ctx context.Context) ([]*File, error)
 
+	// ListGatewayFiles lists all direktiv (workflows and services) files in the filestore.
+	ListGatewayFiles(ctx context.Context) ([]*File, error)
+
 	SetNamespace(ctx context.Context, namespace string) error
 }
 

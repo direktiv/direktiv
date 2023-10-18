@@ -56,7 +56,27 @@ func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, e
 	res := q.db.WithContext(ctx).Raw(`
 						SELECT * 
 						FROM filesystem_files 
-						WHERE root_id=? AND typ <> 'directory' AND typ <> 'file'
+						WHERE root_id=? AND typ <> 'directory' AND typ <> 'file' AND path NOT LIKE '%%.pluginroute.yaml'
+						`, q.rootID).Find(&list)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return list, nil
+}
+
+func (q *RootQuery) ListGatewayFiles(ctx context.Context) ([]*filestore.File, error) {
+	var list []*filestore.File
+
+	// check if root exists.
+	if err := q.checkRootExists(ctx); err != nil {
+		return nil, err
+	}
+
+	res := q.db.WithContext(ctx).Raw(`
+						SELECT * 
+						FROM filesystem_files 
+						WHERE root_id=? AND typ <> 'directory' AND typ <> 'file' AND LIKE '%%.pluginroute.yaml'
 						`, q.rootID).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error

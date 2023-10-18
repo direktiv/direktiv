@@ -14,11 +14,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slog"
 )
 
 func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
@@ -42,7 +44,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
-
+	gatewayManager := gateway.NewManager(gateway.NewHandler())
 	// Create App
 	app := &core.App{
 		Version: &core.Version{
@@ -50,6 +52,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		},
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
+		GatewayManager:  &gatewayManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -63,8 +66,21 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		pubsub.ServiceDelete,
 		pubsub.MirrorSync,
 	)
+
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
+
+	pbus.Subscribe(func(_ string) {
+		renderGatewayManager(context.Background(), db, &gatewayManager)
+	},
+		pubsub.WorkflowCreate,
+		pubsub.WorkflowUpdate,
+		pubsub.WorkflowDelete,
+		pubsub.MirrorSync,
+	)
+
+	// Call at least once before booting
+	renderGatewayManager(context.Background(), db, &gatewayManager)
 
 	// Start api v2 server
 	wg.Add(1)
@@ -79,6 +95,39 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}()
 
 	return wg
+}
+
+func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *gateway.Manager) {
+	fStore, dStore := db.FileStore(), db.DataStore()
+	ns, err := dStore.Namespaces().GetByName(ctx, "gateway")
+	if err != nil {
+		slog.Error("listing namespaces", "error", err)
+
+		return
+	}
+
+	files, err := fStore.ForNamespace(ns.Name).ListGatewayFiles(ctx)
+	if err != nil {
+		slog.Error("listing direktiv files", "error", err)
+	}
+	pluginroutes := []*spec.PluginRouteFile{}
+	for _, file := range files {
+		data, err := fStore.ForFile(file).GetData(ctx)
+		if err != nil {
+			slog.Error("read file data", "error", err)
+
+			continue
+		}
+		pluginroute, err := spec.ParsePluginRouteFile(data)
+		if err != nil {
+			slog.Error("parse service file", "error", err)
+
+			continue
+		}
+		pluginroutes = append(pluginroutes, pluginroute)
+	}
+	gatewayManager.SetRoutes(pluginroutes)
+	return
 }
 
 func renderServiceManager(db *database.DB, serviceManager *service.Manager, logger *zap.SugaredLogger) {
