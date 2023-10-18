@@ -46,6 +46,7 @@ type ServiceStatus struct {
 type ServiceManager interface {
 	Start(done <-chan struct{}, wg *sync.WaitGroup)
 	SetServices(list []*ServiceConfig)
-	GetListByNamespace(namespace string) ([]*ServiceStatus, error)
+	GeAll(namespace string) ([]*ServiceStatus, error)
+	GeOne(namespace string, serviceID string) (*ServiceStatus, error)
 	StreamLogs(namespace string, serviceID string, podNumber int) (io.ReadCloser, error)
 }

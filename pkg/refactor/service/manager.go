@@ -44,6 +44,7 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 	c.KnativeServiceAccount = "direktiv-functions-pod"
 	c.KnativeNamespace = "direktiv-services-direktiv"
 	c.KnativeIngressClass = "contour.ingress.networking.knative.dev"
+	c.KnativeMaxScale = 5
 
 	client := &knativeClient{
 		client: cSet,
@@ -225,11 +226,29 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
-func (m *Manager) GetListByNamespace(namespace string) ([]*core.ServiceStatus, error) {
+func (m *Manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	return m.getList(namespace, "", "")
+}
+
+func (m *Manager) GeOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	list, err := m.getList(namespace, "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, svc := range list {
+		if svc.ID == serviceID {
+			return svc, nil
+		}
+	}
+
+	return nil, ErrNotFound
 }
 
 func (m *Manager) StreamLogs(namespace string, serviceID string, podNumber int) (io.ReadCloser, error) {
