@@ -41,6 +41,3 @@ func ParsePluginRouteFile(data []byte) (*PluginRouteFile, error) {
 
 	return res, nil
 }
-
-type PluginRouteServiceDefinition struct {
-}
