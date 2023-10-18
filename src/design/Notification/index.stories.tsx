@@ -18,7 +18,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ ...args }) => <Notification {...args} />,
+  render: ({ ...args }) => (
+    <Notification {...args}>content goes here...</Notification>
+  ),
   argTypes: {
     showIndicator: {
       description: "Small red dot that indicates the existence of messages",
