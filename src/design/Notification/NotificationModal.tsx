@@ -1,8 +1,7 @@
 import { ComponentProps, FC, PropsWithChildren } from "react";
-import { Loader2, Settings } from "lucide-react";
 
 import Button from "~/design/Button";
-import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 type ButtonWithChildren = Omit<ComponentProps<typeof Button>, "variant">;
 
