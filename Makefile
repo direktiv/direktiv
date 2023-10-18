@@ -322,15 +322,19 @@ env-stop:
 	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
 env-start: env-stop
-	rm -rf docker-ui
+	rm -rf direktiv-ui
 	git clone -b develop https://github.com/direktiv/direktiv-ui.git
 	cd direktiv-ui && docker build -t direktiv-ui-dev .
 
 	docker build -t direktiv-dev .
-	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d
+	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-tests=0
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
 env-start-headless: env-stop
 	docker build -t direktiv-dev .
-	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0
+	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0 --scale e2e-tests=0
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
+
+e2e-tests: env-stop
+	docker build -t direktiv-dev .
+	DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
