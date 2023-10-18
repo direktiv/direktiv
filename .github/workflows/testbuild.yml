@@ -13,7 +13,7 @@ jobs:
       - name: run linter, typecheck, prettier and make testbuild
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 18.18.1
       - run: npm install -g yarn
       - run: yarn install
       # build will automatically run prebuild
