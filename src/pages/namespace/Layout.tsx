@@ -54,8 +54,10 @@ const Layout = () => {
               className="h-8 w-auto justify-self-center sm:hidden"
             />
             <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
-            <NotificationMenu className="lg:hidden" />
-            <UserMenu className="justify-self-end lg:hidden" />
+            <div className="flex gap-3 justify-self-end lg:hidden">
+              <NotificationMenu />
+              <UserMenu />
+            </div>
           </SidebarTop>
           <SidebarMain>
             <Navigation />
