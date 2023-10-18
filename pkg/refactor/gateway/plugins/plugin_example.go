@@ -8,11 +8,11 @@ import (
 
 // example represents a generic example plugin.
 type example struct {
-	conf map[string]string
+	conf interface{}
 }
 
-// BuildPlugin initializes the example plugin with the provided configuration and callbacks.
-func (e *example) BuildPlugin(conf map[string]string) (Execute, error) {
+// buildPlugin initializes the example plugin with the provided configuration and callbacks.
+func (e *example) buildPlugin(conf interface{}) (Execute, error) {
 	e.conf = conf
 
 	return e.safeProcess, nil
@@ -22,12 +22,12 @@ func (e *example) BuildPlugin(conf map[string]string) (Execute, error) {
 // It slogs messages and, if a next plugin exists, forwards the request to it.
 func (e *example) safeProcess(_ http.ResponseWriter, _ *http.Request) Result {
 	slog.Debug("Executed")
-	slog.Debug(e.conf["message"])
+	// slog.Debug(e.conf["message"])
 
 	return Result{Status: http.StatusOK}
 }
 
 //nolint:gochecknoinits
 func init() {
-	register(FormPluginKey("v1", "example"), &example{})
+	register(formPluginKey("v1", "example"), &example{})
 }

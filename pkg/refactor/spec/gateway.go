@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type PluginRouteFile struct {
+type EndpointFile struct {
 	DirektivAPI string `yaml:"direktiv_api"`
 	Path        string `yaml:"path"`
 	Method      string `yaml:"method"`
@@ -19,23 +19,19 @@ type PluginRouteFile struct {
 	} `yaml:"targets"`
 	TimeoutSeconds int `yaml:"timeout_seconds"`
 	PluginsConfig  []struct {
-		Name                    string            `yaml:"name"`
-		Version                 string            `yaml:"version"`
-		Comment                 string            `yaml:"comment"`
-		Type                    string            `yaml:"type"`
-		Priority                int               `yaml:"priority"`
-		ExecutionTimeoutSeconds int               `yaml:"execution_timeout_seconds"`
-		RuntimeConfig           map[string]string `yaml:"runtime_config"`
+		Name          string      `yaml:"name"`
+		Version       string      `yaml:"version"`
+		RuntimeConfig interface{} `yaml:"runtime_config"`
 	} `yaml:"plugins_config"`
 }
 
-func ParsePluginRouteFile(data []byte) (*PluginRouteFile, error) {
-	res := &PluginRouteFile{}
+func ParsePluginRouteFile(data []byte) (*EndpointFile, error) {
+	res := &EndpointFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(res.DirektivAPI, "pluginroute/v1") {
+	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
 		return nil, errors.New("invalid service api version")
 	}
 

@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
@@ -44,7 +45,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
-	gatewayManager := gateway.NewManager(gateway.NewHandler())
+	gatewayManager := gateway.NewHandler()
 	// Create App
 	app := &core.App{
 		Version: &core.Version{
@@ -52,7 +53,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		},
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
-		GatewayManager:  &gatewayManager,
+		GatewayHandler:  gatewayManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -71,7 +72,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	renderServiceManager(db, serviceManager, logger)
 
 	pbus.Subscribe(func(_ string) {
-		renderGatewayManager(context.Background(), db, &gatewayManager)
+		renderGatewayManager(context.Background(), db, gatewayManager)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -80,7 +81,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	)
 
 	// Call at least once before booting
-	renderGatewayManager(context.Background(), db, &gatewayManager)
+	renderGatewayManager(context.Background(), db, gatewayManager)
 
 	// Start api v2 server
 	wg.Add(1)
@@ -97,7 +98,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	return wg
 }
 
-func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *gateway.Manager) {
+func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *gateway.Handler) {
 	fStore, dStore := db.FileStore(), db.DataStore()
 	ns, err := dStore.Namespaces().GetByName(ctx, "gateway")
 	if err != nil {
@@ -110,7 +111,7 @@ func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *
 	if err != nil {
 		slog.Error("listing direktiv files", "error", err)
 	}
-	pluginroutes := []*spec.PluginRouteFile{}
+	pluginroutes := make([]*gateway.RouteConfiguration, 0)
 	for _, file := range files {
 		data, err := fStore.ForFile(file).GetData(ctx)
 		if err != nil {
@@ -124,10 +125,24 @@ func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *
 
 			continue
 		}
-		pluginroutes = append(pluginroutes, pluginroute)
+
+		r := gateway.RouteConfiguration{
+			Path:           pluginroute.Path,
+			Method:         pluginroute.Method,
+			TimeoutSeconds: pluginroute.TimeoutSeconds,
+			Targets:        plugins.Targets{},
+			PluginsConfig:  make([]plugins.Configuration, 0),
+		}
+		for _, v := range pluginroute.PluginsConfig {
+			r.PluginsConfig = append(r.PluginsConfig, plugins.Configuration{
+				Name:          v.Name,
+				Version:       v.Version,
+				RuntimeConfig: v.RuntimeConfig,
+			})
+		}
+		pluginroutes = append(pluginroutes, &r)
 	}
 	gatewayManager.SetRoutes(pluginroutes)
-	return
 }
 
 func renderServiceManager(db *database.DB, serviceManager *service.Manager, logger *zap.SugaredLogger) {

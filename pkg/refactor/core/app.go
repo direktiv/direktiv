@@ -29,5 +29,5 @@ type App struct {
 	Version         *Version
 	ServiceManager  *service.Manager
 	RegistryManager registry.Manager
-	GatewayManager  *gateway.Manager
+	GatewayHandler  *gateway.Handler
 }

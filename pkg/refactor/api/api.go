@@ -43,6 +43,7 @@ func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJson(w, app.Version)
 	})
+	r.Handle("/api/v2/gateway", app.GatewayHandler)
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
