@@ -61,6 +61,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
+	github.com/alecthomas/jsonschema v0.0.0-20220216202328-9eeeec9d044b // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -94,6 +95,7 @@ require (
 	github.com/google/pprof v0.0.0-20230426061923-93006964c1fc // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

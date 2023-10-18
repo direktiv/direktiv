@@ -1,19 +1,22 @@
 package plugins
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/alecthomas/jsonschema"
 	"golang.org/x/exp/slog"
 )
 
-var registry = make(map[string]template)
+var registry = make(map[string]Template)
 
-// this is the contract to provide a template for plugin.
-// NOTE: all template's must be registred via a init() func using the func register(key string, c template).
-type template interface {
+// this is the contract to provide a Template for plugin.
+// NOTE: all Template's must be registred via a init() func using the func register(key string, c Template).
+type Template interface {
 	// buildPlugin must instantiate a Plugin and return a function for processing requests or error
 	buildPlugin(conf interface{}) (Execute, error)
+	GetConfigStruct() interface{}
 }
 
 // Execute is the final object of a plugin that will be used to process requests.
@@ -29,7 +32,7 @@ func (p Configuration) Build() (Execute, error) {
 }
 
 func formPluginKey(version, name string) string {
-	return version + "/" + name
+	return version + "A" + name
 }
 
 type Target struct {
@@ -53,7 +56,7 @@ type Configuration struct {
 }
 
 // GetComponent returns the Template specified by name from `Registry`.
-func getTemplate(key string) (template, error) {
+func getTemplate(key string) (Template, error) {
 	// check if exists
 	if _, ok := registry[key]; ok {
 		return registry[key], nil
@@ -64,9 +67,27 @@ func getTemplate(key string) (template, error) {
 
 // register is called by the `init` function of every `Template`
 // this is ment to be used to make a `Template` for a plugin known.
-func register(key string, c template) {
+func register(key string, c Template) {
 	if _, ok := registry[key]; ok {
 		slog.Error("has already been added to the registry", "plugins.Template", key)
 	}
 	registry[key] = c
+}
+
+func ServePluginSpecSchema(key string) (string, error) {
+	if t, b := registry[key]; b {
+		return getJSONSchemaFromStruct(t.GetConfigStruct())
+	}
+
+	return "", fmt.Errorf("not found")
+}
+
+func getJSONSchemaFromStruct(i interface{}) (string, error) {
+	schema := jsonschema.Reflect(i)
+	data, err := json.MarshalIndent(schema, "", "  ")
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }

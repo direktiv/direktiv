@@ -31,3 +31,11 @@ func (e *example) safeProcess(_ http.ResponseWriter, _ *http.Request) Result {
 func init() {
 	register(formPluginKey("v1", "example"), &example{})
 }
+
+type exampleSpec struct {
+	Conf map[string]string `json:"conf"`
+}
+
+func (e *example) GetConfigStruct() interface{} {
+	return exampleSpec{}
+}

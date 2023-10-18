@@ -9,8 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alecthomas/jsonschema"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -44,6 +46,8 @@ func Start(app *core.App, db *database.DB, addr string, done <-chan struct{}, wg
 		writeJson(w, app.Version)
 	})
 	r.Handle("/api/v2/gateway", app.GatewayHandler)
+	r.Get("/api/v2/spec/plugins/{key}", servePluginSpecSchema)
+
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
@@ -100,4 +104,20 @@ func writeJson(w http.ResponseWriter, v any) {
 func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+}
+
+func servePluginSpecSchema(w http.ResponseWriter, r *http.Request) {
+	k := chi.URLParam(r, "key")
+	log.Print("Hello")
+	t, err := plugins.ServePluginSpecSchema(k)
+	if err != nil {
+		writeError(w, &Error{Code: "501"})
+	}
+	writeJson(w, t)
+}
+
+func getJSONSchemaFromStruct(i interface{}) string {
+	schema := jsonschema.Reflect(i)
+	data, _ := json.MarshalIndent(schema, "", "  ")
+	return string(data)
 }
