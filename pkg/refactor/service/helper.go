@@ -95,6 +95,7 @@ func buildPodMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
 
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.KnativeMaxScale)
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
 
 	metaSpec.Annotations["kubernetes.io/egress-bandwidth"] = "10M"
 	metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = "10M"

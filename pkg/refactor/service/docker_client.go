@@ -103,7 +103,22 @@ func (c *dockerClient) listServices() ([]status, error) {
 	return list, nil
 }
 
-func (c *dockerClient) streamServiceLogs(id string, _ int) (io.ReadCloser, error) {
+func (c *dockerClient) listServicePods(id string) (any, error) {
+	_, err := c.getContainerBy(id)
+	if err != nil {
+		return nil, err
+	}
+
+	type pod struct {
+		ID string `json:"id"`
+	}
+
+	return []*pod{
+		{ID: id},
+	}, nil
+}
+
+func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, error) {
 	cntr, err := c.getContainerBy(id)
 	if err != nil {
 		return nil, err

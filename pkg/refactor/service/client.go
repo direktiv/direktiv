@@ -11,7 +11,8 @@ type client interface {
 	updateService(cfg *core.ServiceConfig) error
 	deleteService(id string) error
 	listServices() ([]status, error)
-	streamServiceLogs(id string, podNumber int) (io.ReadCloser, error)
+	streamServiceLogs(id string, podID string) (io.ReadCloser, error)
+	listServicePods(id string) (any, error)
 }
 
 type status interface {
