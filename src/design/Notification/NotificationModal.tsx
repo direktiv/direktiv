@@ -3,7 +3,10 @@ import { ComponentProps, FC, PropsWithChildren } from "react";
 import Button from "~/design/Button";
 import { Loader2 } from "lucide-react";
 
-type ButtonWithChildren = Omit<ComponentProps<typeof Button>, "variant">;
+type ButtonWithChildren = Omit<
+  ComponentProps<typeof Button>,
+  "variant" | "loading" // omit loading to avoid TS conflict with AsChildOrLoading
+>;
 
 export const NotificationButton: FC<ButtonWithChildren> = (props) => (
   <Button {...props} variant="outline" />
