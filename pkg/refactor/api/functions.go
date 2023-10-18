@@ -20,13 +20,14 @@ type serviceController struct {
 
 func (e *serviceController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
+	r.Get("/{serviceID}", e.one)
 	r.Get("/{serviceID}/logs/{podNumber}", e.logs)
 }
 
 func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 
-	list, err := e.manager.GetListByNamespace(ns.Name)
+	list, err := e.manager.GeAll(ns.Name)
 	if err != nil {
 		writeInternalError(w, err)
 
@@ -34,6 +35,28 @@ func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, list)
+}
+
+func (e *serviceController) one(w http.ResponseWriter, r *http.Request) {
+	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	serviceID := chi.URLParam(r, "serviceID")
+
+	svc, err := e.manager.GeOne(ns.Name, serviceID)
+	if errors.Is(err, service.ErrNotFound) {
+		writeError(w, &Error{
+			Code:    "resource_not_found",
+			Message: "resource(service) is not found",
+		})
+
+		return
+	}
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+
+	writeJSON(w, svc)
 }
 
 func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
