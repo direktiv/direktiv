@@ -26,6 +26,6 @@ export const NotificationLoading: FC<PropsWithChildren> = ({ children }) => (
     <Loader2 className="h-5 animate-spin" />
     <div className="px-2 py-1.5 text-sm font-medium text-gray-9 dark:text-gray-dark-9">
       {children}
-    </div>{" "}
+    </div>
   </div>
 );
