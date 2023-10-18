@@ -1,9 +1,8 @@
 import { FC, PropsWithChildren } from "react";
+import { Loader2, Settings } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
-import { pages } from "~/util/router/pages";
 
 type ButtonWithChildren = PropsWithChildren & {
   className?: string;
@@ -15,8 +14,6 @@ export const NotificationButton: FC<ButtonWithChildren> = ({
   className,
   linkTo,
 }) => {
-  const { icon: Icon } = pages.settings;
-
   // delete probably?
   if (!linkTo) {
     linkTo = "#";
@@ -26,7 +23,7 @@ export const NotificationButton: FC<ButtonWithChildren> = ({
   return (
     <Button variant="outline" isAnchor asChild>
       <Link to={linkTo}>
-        <Icon aria-hidden="true" />
+        <Settings aria-hidden="true" />
         {children}
       </Link>
     </Button>
