@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dClient "github.com/docker/docker/client"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
@@ -40,6 +41,12 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 		return nil, err
 	}
 
+	k8sSet, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		fmt.Printf("error cluster config: %v\n", err)
+		return nil, err
+	}
+
 	// TODO: remove dev code.
 	c.KnativeServiceAccount = "direktiv-functions-pod"
 	c.KnativeNamespace = "direktiv-services-direktiv"
@@ -49,6 +56,7 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 	client := &knativeClient{
 		client: cSet,
 		config: c,
+		k8sSet: k8sSet,
 	}
 
 	return newManagerFromClient(client), nil
@@ -233,7 +241,7 @@ func (m *Manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	return m.getList(namespace, "", "")
 }
 
-func (m *Manager) GeOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -244,14 +252,18 @@ func (m *Manager) GeOne(namespace string, serviceID string) (*core.ServiceStatus
 
 	for _, svc := range list {
 		if svc.ID == serviceID {
-			return svc, nil
+			pods, err := m.client.listServicePods(serviceID)
+			if err != nil {
+				return nil, err
+			}
+			return pods, nil
 		}
 	}
 
 	return nil, ErrNotFound
 }
 
-func (m *Manager) StreamLogs(namespace string, serviceID string, podNumber int) (io.ReadCloser, error) {
+func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -262,7 +274,7 @@ func (m *Manager) StreamLogs(namespace string, serviceID string, podNumber int) 
 
 	for _, svc := range list {
 		if svc.ID == serviceID {
-			return m.client.streamServiceLogs(serviceID, 1)
+			return m.client.streamServiceLogs(serviceID, podID)
 		}
 	}
 

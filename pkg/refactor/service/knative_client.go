@@ -6,8 +6,10 @@ import (
 	"io"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
@@ -15,12 +17,24 @@ import (
 type knativeClient struct {
 	config *core.Config
 
+	k8sSet *kubernetes.Clientset
+
 	client versioned.Interface
 }
 
 // nolint
-func (c *knativeClient) streamServiceLogs(id string, podNumber int) (io.ReadCloser, error) {
-	return nil, nil
+func (c *knativeClient) streamServiceLogs(id string, podID string) (io.ReadCloser, error) {
+	req := c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).GetLogs(podID, &v1.PodLogOptions{
+		Container: "direktiv-container",
+		Follow:    true,
+	})
+
+	logsStream, err := req.Stream(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return logsStream, nil
 }
 
 func (c *knativeClient) createService(cfg *core.ServiceConfig) error {
@@ -75,6 +89,30 @@ func (c *knativeClient) listServices() ([]status, error) {
 	}
 
 	return result, nil
+}
+
+func (c *knativeClient) listServicePods(id string) (any, error) {
+	lo := metav1.ListOptions{}
+	l, err := c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).List(context.Background(), lo)
+	if err != nil {
+		return nil, err
+	}
+
+	type pod struct {
+		ID string `json:"id"`
+	}
+
+	pods := []*pod{}
+	for i := range l.Items {
+		if l.Items[i].Labels["serving.knative.dev/service"] != id {
+			continue
+		}
+		pods = append(pods, &pod{
+			ID: l.Items[i].Name,
+		})
+	}
+
+	return pods, nil
 }
 
 var _ client = &knativeClient{}

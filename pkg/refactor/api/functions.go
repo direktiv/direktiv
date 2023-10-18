@@ -20,8 +20,8 @@ type serviceController struct {
 
 func (e *serviceController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
-	r.Get("/{serviceID}", e.one)
-	r.Get("/{serviceID}/logs/{podNumber}", e.logs)
+	r.Get("/{serviceID}/pods", e.pods)
+	r.Get("/{serviceID}/pods/{podID}/logs", e.logs)
 }
 
 func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
@@ -37,11 +37,11 @@ func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, list)
 }
 
-func (e *serviceController) one(w http.ResponseWriter, r *http.Request) {
+func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 	serviceID := chi.URLParam(r, "serviceID")
 
-	svc, err := e.manager.GeOne(ns.Name, serviceID)
+	svc, err := e.manager.GetPods(ns.Name, serviceID)
 	if errors.Is(err, service.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
@@ -62,8 +62,9 @@ func (e *serviceController) one(w http.ResponseWriter, r *http.Request) {
 func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 	serviceID := chi.URLParam(r, "serviceID")
+	podID := chi.URLParam(r, "podID")
 
-	readCloser, err := e.manager.StreamLogs(ns.Name, serviceID, 1)
+	readCloser, err := e.manager.StreamLogs(ns.Name, serviceID, podID)
 	if errors.Is(err, service.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
