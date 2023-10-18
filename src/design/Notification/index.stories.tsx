@@ -1,9 +1,8 @@
 import {
-  NotificationHasresultsButton,
-  NotificationHasresultsText,
-  NotificationHasresultsTitle,
+  NotificationButton,
   NotificationLoading,
-  NotificationNoresults,
+  NotificationText,
+  NotificationTitle,
 } from "./NotificationModal";
 // eslint-disable-next-line sort-imports
 import type { Meta, StoryObj } from "@storybook/react";
@@ -30,8 +29,8 @@ export const Default: Story = {
 };
 
 export const NotificationIsLoading = () => (
-  <div className="flex space-x-2">
-    <Notification isLoading={true} showIndicator={true}>
+  <div className="">
+    <Notification showIndicator={true}>
       <NotificationLoading>Loading...</NotificationLoading>
     </Notification>
   </div>
@@ -40,9 +39,7 @@ export const NotificationIsLoading = () => (
 export const NotificationHasMessage = () => (
   <div className="flex space-x-2">
     <Notification showIndicator={true}>
-      <NotificationHasresultsText>
-        You have 142 unread messages!
-      </NotificationHasresultsText>
+      <NotificationText>You have 142 unread messages!</NotificationText>
     </Notification>
   </div>
 );
@@ -50,7 +47,7 @@ export const NotificationHasMessage = () => (
 export const NotificationNoMessage = () => (
   <div className="flex space-x-2">
     <Notification showIndicator={false}>
-      <NotificationNoresults>Everything is fine.</NotificationNoresults>
+      <NotificationText>Everything is fine.</NotificationText>
     </Notification>
   </div>
 );
@@ -58,17 +55,31 @@ export const NotificationNoMessage = () => (
 export const NotificationHasMessageComplexExample = () => (
   <div className="flex space-x-2">
     <Notification showIndicator={true}>
-      <div className="">
-        <NotificationHasresultsTitle>Error Message</NotificationHasresultsTitle>
-        <DropdownMenuSeparator className=""></DropdownMenuSeparator>
-        <NotificationHasresultsText>
-          Description of the issue...
-        </NotificationHasresultsText>
+      <div>
+        <NotificationTitle>Error Message</NotificationTitle>
+        <DropdownMenuSeparator></DropdownMenuSeparator>
+        <NotificationText>Description of the issue...</NotificationText>
       </div>
+      <div className="flex justify-end">insert a button here</div>
+    </Notification>
+  </div>
+);
+
+export const ButtonTestWithLinkto = () => (
+  <div className="flex space-x-2">
+    <Notification showIndicator={true}>
       <div className="flex justify-end">
-        <NotificationHasresultsButton className="border border-gray-9">
-          Go fix it
-        </NotificationHasresultsButton>
+        <NotificationButton linkTo="/test/">Go fix it</NotificationButton>
+      </div>
+    </Notification>
+  </div>
+);
+
+export const ButtonTestEmpty = () => (
+  <div className="flex space-x-2">
+    <Notification showIndicator={true}>
+      <div className="flex justify-end">
+        <NotificationButton>Go fix it</NotificationButton>
       </div>
     </Notification>
   </div>

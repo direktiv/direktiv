@@ -8,13 +8,11 @@ import { twMergeClsx } from "~/util/helpers";
 type NotificationPropsType = PropsWithChildren & {
   className?: string;
   showIndicator?: boolean;
-  isLoading?: boolean;
 };
 
 const Notification: FC<NotificationPropsType> = ({
   className,
   showIndicator,
-  isLoading,
   children,
 }) => (
   <div className={twMergeClsx("", className)}>
@@ -23,7 +21,7 @@ const Notification: FC<NotificationPropsType> = ({
         <PopoverTrigger>
           <div className="relative h-6 w-6">
             <Bell className="relative" />
-            {!isLoading && showIndicator && (
+            {showIndicator && (
               <div className="absolute top-0 right-0 rounded-full border-2 border-white bg-danger-10 p-1 group-hover:border-gray-3 dark:border-black dark:bg-danger-dark-10 dark:group-hover:border-gray-dark-3"></div>
             )}
           </div>
