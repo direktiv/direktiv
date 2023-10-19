@@ -171,7 +171,7 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				fmt.Printf("f2 error: %s\n", err)
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(2 * time.Second)
 		}
 
 		wg.Done()
