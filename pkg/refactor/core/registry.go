@@ -12,4 +12,5 @@ type RegistryManager interface {
 	ListRegistries(namespace string) ([]*Registry, error)
 	DeleteRegistry(namespace string, id string) error
 	StoreRegistry(registry *Registry) (*Registry, error)
+	TestLogin(registry *Registry) error
 }

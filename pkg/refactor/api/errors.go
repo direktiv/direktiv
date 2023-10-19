@@ -71,7 +71,15 @@ func writeInternalError(w http.ResponseWriter, err error) {
 	slog.Error("error", "err", err)
 }
 
-func writeNotJsonError(w http.ResponseWriter) {
+func writeNotJsonError(w http.ResponseWriter, err error) {
+	if strings.Contains(err.Error(), "cannot unmarshal") {
+		writeError(w, &Error{
+			Code:    "request_body_bad_json_schema",
+			Message: "request payload has bad json schema",
+		})
+		return
+	}
+
 	writeError(w, &Error{
 		Code:    "request_body_not_json",
 		Message: "couldn't parse request payload in json format",

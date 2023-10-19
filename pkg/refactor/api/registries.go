@@ -18,6 +18,7 @@ func (e *registryController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
 	r.Delete("/{id}", e.delete)
 	r.Post("/", e.create)
+	r.Post("/test", e.test)
 }
 
 func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,7 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 	reg := &core.Registry{}
 
 	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
-		writeNotJsonError(w)
+		writeNotJsonError(w, err)
 
 		return
 	}
@@ -78,4 +79,23 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, newReg)
+}
+
+func (e *registryController) test(w http.ResponseWriter, r *http.Request) {
+	reg := &core.Registry{}
+
+	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
+		writeNotJsonError(w, err)
+
+		return
+	}
+
+	err := e.manager.TestLogin(reg)
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+
+	writeOk(w)
 }
