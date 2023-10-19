@@ -8,26 +8,23 @@ describe('Test services crud operations', () => {
 
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-    it(`should create a new service file`, async () => {
-        const res = await request(common.config.getDirektivHost())
-            .put(`/api/namespaces/${testNamespace}/tree/my-workflow.yaml?op=create-workflow`)
-            .set({
-                'Content-Type': 'text/plain',
-            })
-
-            .send(`
+    common.helpers.itShouldCreateServiceFile(it, expect, testNamespace,
+        "/s1.yaml", `
 direktiv_api: service/v1
 name: s1
 image: redis
 cmd: redis-server
-scale: 2
+scale: 1
 `)
 
-        expect(res.statusCode).toEqual(200)
-        expect(res.body).toMatchObject({
-            namespace: testNamespace,
-        })
-    })
+    common.helpers.itShouldCreateServiceFile(it, expect, testNamespace,
+        "/s2.yaml", `
+direktiv_api: service/v1
+name: s2
+image: redis
+cmd: redis-server
+scale: 2
+`)
 
 });
 
