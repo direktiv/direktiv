@@ -161,6 +161,7 @@ const Header: FC = () => {
                   </DialogContent>
                 </Dialog>
                 <Button
+                  data-testid="toggle-workflow-active-btn"
                   loading={!routerIsFetched}
                   icon
                   variant="outline"
@@ -168,7 +169,12 @@ const Header: FC = () => {
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      {routerIsFetched && (isLive ? <PowerOff /> : <Power />)}
+                      {routerIsFetched &&
+                        (isLive ? (
+                          <PowerOff data-testid="active-workflow-off-icon" />
+                        ) : (
+                          <Power data-testid="active-workflow-on-icon" />
+                        ))}
                     </TooltipTrigger>
                     <TooltipContent>
                       {isLive
