@@ -10,17 +10,7 @@ beforeAll(async () => {
 
 describe('Test namespaces crud operations', () => {
     it(`should create a new namespace`, async () => {
-        const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}`)
-        expect(res.statusCode).toEqual(200)
-        expect(res.body).toMatchObject({
-            namespace: {
-                name: testNamespace,
-                oid: expect.stringMatching(common.regex.uuidRegex),
-                // regex /^2.*Z$/ matches timestamps like 2023-03-01T14:19:52.383871512Z
-                createdAt: expect.stringMatching(/^2.*Z$/),
-                updatedAt: expect.stringMatching(/^2.*Z$/),
-            }
-        })
+        await common.helpers.expectCreateNamespace(expect, testNamespace);
     })
 
     it(`should create a new direktiv file`, async () => {
