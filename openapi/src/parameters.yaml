@@ -12,8 +12,8 @@ serviceID:
     type: string
   required: true
 
-podNumber:
-  name: podNumber
+podID:
+  name: podID
   in: path
   schema:
     type: string
