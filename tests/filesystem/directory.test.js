@@ -50,10 +50,7 @@ describe('Test basic directory operations', () => {
         })
     })
 
-    it(`should create a namespace`, async () => {
-        var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
-        expect(createNamespaceResponse.statusCode).toEqual(200)
-    })
+    common.helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
     it(`should fail to create a non-root directory because of a missing/invalid 'op' param`, async () => {
         var createDirectoryResponse1 = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}/tree/${subdirName}`)

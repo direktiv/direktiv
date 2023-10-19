@@ -7,11 +7,7 @@ const namespaceName = "root"
 describe('Test behaviour specific to the root node', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
 
-
-    it(`should create a namespace`, async () => {
-        var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
-        expect(createNamespaceResponse.statusCode).toEqual(200)
-    })
+    common.helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
     it(`should read the root directory`, async () => {
         var readRootDirResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/`)
