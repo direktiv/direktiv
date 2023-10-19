@@ -1,5 +1,9 @@
 package core
 
+import "errors"
+
+var ErrNotFound = errors.New("ErrNotFound")
+
 // nolint:revive,stylecheck
 type Config struct {
 	ApiV1Port int `env:"DIREKTIV_API_V1_PORT" envDefault:"6665"`

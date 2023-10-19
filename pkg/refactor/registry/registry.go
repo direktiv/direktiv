@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"net/url"
 
@@ -23,8 +22,6 @@ const (
 	annotationRegistryURL  = "direktiv.io/registry/url"
 	annotationRegistryUser = "direktiv.io/registry/user"
 )
-
-var ErrNotFound = errors.New("ErrNotFound")
 
 type kManager struct {
 	*kubernetes.Clientset
@@ -71,7 +68,7 @@ func (c *kManager) DeleteRegistry(namespace string, id string) error {
 		}
 	}
 
-	return ErrNotFound
+	return core.ErrNotFound
 }
 
 func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error) {

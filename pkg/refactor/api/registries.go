@@ -6,8 +6,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/registry"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/go-chi/chi/v5"
 )
@@ -43,7 +41,7 @@ func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	err := e.manager.DeleteRegistry(ns.Name, id)
-	if errors.Is(err, registry.ErrNotFound) {
+	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: "resource(registry) is not found",

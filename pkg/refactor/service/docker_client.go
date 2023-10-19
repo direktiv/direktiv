@@ -72,7 +72,7 @@ func (c *dockerClient) getContainerBy(id string) (*types.Container, error) {
 		}
 	}
 
-	return nil, ErrNotFound
+	return nil, core.ErrNotFound
 }
 
 func (c *dockerClient) deleteService(id string) error {
