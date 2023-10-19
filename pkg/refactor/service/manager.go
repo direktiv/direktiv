@@ -90,6 +90,7 @@ func (m *Manager) runCycle() []error {
 	for i, v := range m.list {
 		src[i] = v
 	}
+
 	searchSrc := map[string]*core.ServiceConfig{}
 	for _, v := range m.list {
 		searchSrc[v.GetID()] = v
@@ -140,6 +141,7 @@ func (m *Manager) runCycle() []error {
 	for _, id := range result.creates {
 		v := searchSrc[id]
 		v.Error = nil
+		// v is passed un-cloned.
 		if err := m.client.createService(v); err != nil {
 			errStr := err.Error()
 			v.Error = &errStr
@@ -149,6 +151,7 @@ func (m *Manager) runCycle() []error {
 	for _, id := range result.updates {
 		v := searchSrc[id]
 		v.Error = nil
+		// v is passed un-cloned.
 		if err := m.client.updateService(v); err != nil {
 			*v.Error = err.Error()
 		}
@@ -246,7 +249,9 @@ func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatu
 	}
 	for _, svc := range list {
 		if svc.ID == serviceID {
-			return svc, nil
+			cp := *svc
+
+			return &cp, nil
 		}
 	}
 
@@ -264,22 +269,18 @@ func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	list, err := m.getList(namespace, "", "")
+	// check if serviceID exists.
+	_, err := m.getOne(namespace, serviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, svc := range list {
-		if svc.ID == serviceID {
-			pods, err := m.client.listServicePods(serviceID)
-			if err != nil {
-				return nil, err
-			}
-			return pods, nil
-		}
+	pods, err := m.client.listServicePods(serviceID)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, core.ErrNotFound
+	return pods, nil
 }
 
 func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
