@@ -1,15 +1,14 @@
 .show-hide-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-
 .show-hide-icon:hover {
-    filter: brightness(150%);
+  filter: brightness(150%);
 }
 
 .show-hide-icon:active {
-    filter: brightness(80%);
+  filter: brightness(80%);
 }

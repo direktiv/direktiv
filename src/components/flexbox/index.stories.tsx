@@ -1,24 +1,29 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
-import '../../App.css';
-import "./style.css"
+import "../../AppLegacy.css";
+import "./style.css";
 
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
 
-import FlexBox from './index';
+import FlexBox from "./index";
 
-const itemStyle = { backgroundColor: "#2F8F9D", borderRadius: "6px", padding: "10px", textAlign: "center" } as React.CSSProperties
+const itemStyle = {
+  backgroundColor: "#2F8F9D",
+  borderRadius: "6px",
+  padding: "10px",
+  textAlign: "center",
+} as React.CSSProperties;
 
 export default {
-  title: 'Components/FlexBox',
+  title: "Components/FlexBox",
   component: FlexBox,
   argTypes: {
     center: {
-      options: ["y","x","xy", false],
-      control: { type: 'select' },
+      options: ["y", "x", "xy", false],
+      control: { type: "select" },
       defaultValue: false,
     },
     gap: {
-      options: ["md","sm", false],
-      control: { type: 'select' },
+      options: ["md", "sm", "lg", false],
+      control: { type: "select" },
       defaultValue: false,
     },
     hide: {
@@ -41,32 +46,32 @@ export default {
 
 const Template: ComponentStory<typeof FlexBox> = (args) => {
   return (
-    <FlexBox {...args} >
+    <FlexBox {...args}>
       <div style={itemStyle}> Item 1 </div>
       <div style={{ ...itemStyle, backgroundColor: "#3BACB6" }}> Item 2 </div>
       <div style={{ ...itemStyle, backgroundColor: "#82DBD8" }}> Item 3 </div>
       <div style={{ ...itemStyle, backgroundColor: "#B3E8E5" }}> Item 4 </div>
     </FlexBox>
-  )
+  );
 };
 
 export const Column = Template.bind({});
 Column.args = {
   col: true,
-  gap: true
+  gap: true,
 };
 
 export const Row = Template.bind({});
 Row.args = {
   row: true,
-  gap: true
+  gap: true,
 };
 
 export const Center = Template.bind({});
 Center.args = {
   col: true,
   center: true,
-  gap: true
+  gap: true,
 };
 
 export const NoGap = Template.bind({});

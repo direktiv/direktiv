@@ -1,10 +1,13 @@
 # Logs
-logs
+#logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+
+app.tar
+app/
 
 !src/components/logs
 
@@ -119,6 +122,7 @@ dist
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -136,4 +140,10 @@ reactjs-embed
 .yalc
 yalc.lock
 
-.vscode/
+storybook-static
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+.vscode/*
+!.vscode/extensions.json

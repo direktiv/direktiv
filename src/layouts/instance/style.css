@@ -1,22 +1,22 @@
 .instance-details-rev {
-    color: var(--theme-grey-light-blue);
-    font-size: 12px;
-    font-weight: 100;
+  color: var(--theme-grey-light-blue);
+  font-size: 12px;
+  font-weight: 100;
 }
 
 .instance-details-tuple {
-    color: var(--theme-dark-gray-text);
+  color: var(--theme-dark-gray-text);
 }
 
 .instance-details-tuple a {
-    color: var(--theme-brand-blue);
+  color: var(--theme-brand-blue);
 }
 
 .instance-details-tuple a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .instance-input-banner {
-    max-height: 20px;
-    margin: 0 0 5px 0;
+  max-height: 20px;
+  margin: 0 0 5px 0;
 }

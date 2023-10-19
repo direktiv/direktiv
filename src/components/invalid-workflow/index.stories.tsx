@@ -1,7 +1,8 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
-import '../../App.css';
+import "../../AppLegacy.css";
 
-import InvalidWorkflow from './index';
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
+
+import InvalidWorkflow from "./index";
 
 const exampleInvalidWorkflowError = `can not read a block mapping entry; a multiline key may not be an implicit key (5:5)
 
@@ -11,15 +12,15 @@ const exampleInvalidWorkflowError = `can not read a block mapping entry; a multi
 5 |    e: noop
 ---------^
 6 |   transform:
-7 |     result: Hello world!`
+7 |     result: Hello world!`;
 
 export default {
-  title: 'Components/InvalidWorkflow',
+  title: "Components/InvalidWorkflow",
   component: InvalidWorkflow,
 } as ComponentMeta<typeof InvalidWorkflow>;
 
 const Template: ComponentStory<typeof InvalidWorkflow> = (args) => {
-  return (<InvalidWorkflow {...args} />)
+  return <InvalidWorkflow {...args} />;
 };
 
 export const ErrorExample = Template.bind({});

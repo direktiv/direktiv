@@ -1,25 +1,29 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
-import '../../App.css';
-import './style.css';
+import "../../AppLegacy.css";
+import "./style.css";
 
-import FlexBox from '../flexbox';
-import Modal from './index';
-import { useState } from 'react';
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
+
+import FlexBox from "../flexbox";
+import Modal from "./index";
+import { useState } from "react";
 
 export default {
-  title: 'Components/Modal',
+  title: "Components/Modal",
   component: Modal,
 } as ComponentMeta<typeof Modal>;
 
 const TemplateState: ComponentStory<typeof Modal> = (args) => {
-  const [counter, setCounter] = useState(0)
+  const [counter, setCounter] = useState(0);
   return (
     <FlexBox col center style={{ height: "300px" }}>
-      <Modal {...args}
+      <Modal
+        {...args}
         title="Counter"
-        onClose={()=>{setCounter(0)}}
+        onClose={() => {
+          setCounter(0);
+        }}
         requiredFields={[
-          {tip: "counter must be at least 10", condition: counter >= 10},
+          { tip: "counter must be at least 10", condition: counter >= 10 },
         ]}
         actionButtons={[
           {
@@ -27,10 +31,10 @@ const TemplateState: ComponentStory<typeof Modal> = (args) => {
             buttonProps: {
               tooltip: "Increase counter by 1",
               variant: "contained",
-              color: "primary"
+              color: "primary",
             },
             onClick: () => {
-              setCounter(counter + 1)
+              setCounter(counter + 1);
             },
           },
           {
@@ -38,57 +42,60 @@ const TemplateState: ComponentStory<typeof Modal> = (args) => {
             buttonProps: {
               tooltip: "Multiply counter by 10",
               variant: "contained",
-              color: "primary"
+              color: "primary",
             },
             onClick: () => {
-              setCounter(counter*10)
+              setCounter(counter * 10);
             },
-            validate: true
+            validate: true,
           },
           {
             closesModal: true,
             label: "Cancel",
             buttonProps: {
-              tooltip: "Closes Modal"
-            }
-          }
-        ]}>
+              tooltip: "Closes Modal",
+            },
+          },
+        ]}
+      >
         <FlexBox col center>
           <span>Count: {counter}</span>
         </FlexBox>
       </Modal>
     </FlexBox>
-  )
+  );
 };
 
 const Template: ComponentStory<typeof Modal> = (args) => {
   return (
     <FlexBox col center style={{ height: "300px" }}>
-      <Modal {...args} >
+      <Modal {...args}>
         <FlexBox col center>
           <span>Body of Modal</span>
         </FlexBox>
       </Modal>
     </FlexBox>
-  )
+  );
 };
 
 export const Simple = Template.bind({});
 Simple.args = {
-  actionButtons: [{
-    closesModal: true,
-    label: "Cancel",
-    buttonProps: {
-      tooltip: "Closes Modal"
-    }
-  }],
+  actionButtons: [
+    {
+      closesModal: true,
+      label: "Cancel",
+      buttonProps: {
+        tooltip: "Closes Modal",
+      },
+    },
+  ],
   modalStyle: {
     margin: "16px auto",
     maxWidth: "380px",
-    maxHeight: "260px"
+    maxHeight: "260px",
   },
   withCloseButton: true,
-  label: "Open Modal"
+  label: "Open Modal",
 };
 
 export const Complex = TemplateState.bind({});
@@ -96,22 +103,20 @@ Complex.args = {
   modalStyle: {
     margin: "16px auto",
     maxWidth: "380px",
-    maxHeight: "260px"
+    maxHeight: "260px",
   },
   withCloseButton: true,
-  button:
-    <span>
-      Open Modal
-    </span>
+  button: <span>Open Modal</span>,
 };
 
 Complex.story = {
   parameters: {
-      docs: {
-          description: {
-            story: 'A more complex example of a Modal, that uses action buttons functions to increment a counter in the modals body. ' +
-            'Also showcases the use of the validate and required fields props to show how to validate values on action buttons.',
-          },
-        },
-  }
+    docs: {
+      description: {
+        story:
+          "A more complex example of a Modal, that uses action buttons functions to increment a counter in the modals body. " +
+          "Also showcases the use of the validate and required fields props to show how to validate values on action buttons.",
+      },
+    },
+  },
 };

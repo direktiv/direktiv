@@ -1,11 +1,12 @@
-import { Meta } from '@storybook/addon-docs';
-import "./stories.css"
+import { Meta } from "@storybook/addon-docs";
+import "./stories.css";
 
 <Meta title="Systems/Workflow Diagram Editor" />
 
 # Workflow Diagram Editor
 
 Currently, in the direktiv-ui there are two ways to develop workflow:
+
 1. A code editor used to write the workflow YAML
 2. A Visual abstraction drag-n-drop layer that lets users create a workflow from dragging and dropping nodes onto a Diagram.
 
@@ -20,14 +21,13 @@ Below is the flow of logic of the editor when a user is interacting with it:
 1. Import YAML to Diagram
 2. Adding nodes (Example: The noop node used to represent a noop state)
 3. Connections (Example: Connecting node to new noop node)
-5. Compiling diagram - Exporting back to YAML
+4. Compiling diagram - Exporting back to YAML
 
 <div className="subheading">Import YAML to Diagram</div>
 
-When the diagram editor is mounted it will need to convert the existing workflow YAML into nodes in a diagram. This functionality is done with the `importFromWorkflowData` function in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js). 
+When the diagram editor is mounted it will need to convert the existing workflow YAML into nodes in a diagram. This functionality is done with the `importFromWorkflowData` function in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js).
 
 When importing sometimes additional logic is required depending on the node type. This is done from the `importProcessTransformCallback` map in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js). Any additional logic can be added here and will be done automatically during import.
-
 
 <div className="subheading">Adding nodes</div>
 
@@ -36,6 +36,7 @@ Adding nodes can be done by dragging-n-dropping nodes from the drawer, or by rig
 Nodes contain data, that is required to generate a valid YAML counterpart when compiling. Users input this data with a HTML form, however, this form is generated from a JSON schema. This means all nodes require an accompanying JSON schema to handle their input data. These JSON schemas can be found in [jsonSchema.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/jsonSchema.js)
 
 Lets look at an example; Take the StateNoop Node below:
+
 ```js
 ...
     {
@@ -63,6 +64,7 @@ Lets look at an example; Take the StateNoop Node below:
 ```
 
 Nodes are linked to their JSON schema by their schemaKey property. The StateNoop Node has the schemaKey `stateSchemaNoop`:
+
 ```js
 ...
         data: {
@@ -191,16 +193,12 @@ export const SchemaMap = {
 ...
 ```
 
-
 <div className="subheading">Connections</div>
 
 Connections are handled by the diagram editor directly in callbacks on the [connectionCreated event](https://github.com/direktiv/direktiv-ui/blob/205d2c961efc1afd116ef111d01f2d0de68f950f/src/components/diagram-editor/index.js#L357-L396). Its fairly simple, since by default all nodes are able to connect to each other, this callback is used to control which nodes can connect to each other.
 
 <div className="subheading">Compiling diagram</div>
 
-When the diagram is complete, it can be compiled back to a YAML by using the [Compile button](https://github.com/direktiv/direktiv-ui/blob/205d2c961efc1afd116ef111d01f2d0de68f950f/src/components/diagram-editor/index.js#L598-L698) located on the toolbar. This is essentially the opposite of the import functionality from the import YAML step. 
+When the diagram is complete, it can be compiled back to a YAML by using the [Compile button](https://github.com/direktiv/direktiv-ui/blob/205d2c961efc1afd116ef111d01f2d0de68f950f/src/components/diagram-editor/index.js#L598-L698) located on the toolbar. This is essentially the opposite of the import functionality from the import YAML step.
 
-Similar to the `importProcessTransformCallback` map in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js), special logic can be done during this step for individual states by adding to the `connectionsCallbackMap` in [src/components/diagram-editor/util.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/util.js) 
-
-
-
+Similar to the `importProcessTransformCallback` map in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js), special logic can be done during this step for individual states by adding to the `connectionsCallbackMap` in [src/components/diagram-editor/util.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/util.js)

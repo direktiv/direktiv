@@ -1,66 +1,73 @@
 import { useEffect } from "react";
 
 export const Config = {
-    url: process.env.REACT_APP_API ? process.env.REACT_APP_API : "/api/" 
-}
+  url: "/api/",
+};
 
 function fallbackCopyTextToClipboard(text) {
-    var textArea = document.createElement("textarea");
-    textArea.value = text;
-    
-    // Avoid scrolling to bottom
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-  
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-  
-    try {
-      var successful = document.execCommand('copy');
-      var msg = successful ? 'successful' : 'unsuccessful';
-      if (msg) {
-        console.log(msg);
-      }
-    } catch (err) {
-      console.error('Fallback: Oops, unable to copy', err);
-    }
-  
-    document.body.removeChild(textArea);
-  }
-  export function copyTextToClipboard(text) {
-    if (!navigator.clipboard) {
-      fallbackCopyTextToClipboard(text);
-      return;
-    }
-    navigator.clipboard.writeText(text).then(function() {
-      console.log('Async: Copying to clipboard was successful!');
-    }, function(err) {
-      console.error('Async: Could not copy text: ', err);
-    });
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    document.execCommand("copy");
+  } catch (err) {
+    console.error("Fallback: Oops, unable to copy", err);
   }
 
-export function GenerateRandomKey(prefix) {
-    if (!prefix) {
-        prefix = "";
-    }
-
-    return prefix + Array(16).fill().map(()=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(Math.random()*62)).join("")
+  document.body.removeChild(textArea);
+}
+export function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text);
 }
 
-const PreviewableMimeTypes = ["application/json", "application/x-sh", "text/html", "application/yaml", "text/plain"]
-
-export function CanPreviewMimeType(mime) {
-
-  for (let index = 0; index < PreviewableMimeTypes.length; index++) {
-      const pmt = PreviewableMimeTypes[index];
-      if (mime.includes(pmt)) {
-          return true
-      }
+export function GenerateRandomKey(prefix) {
+  if (!prefix) {
+    prefix = "";
   }
 
-  return false
+  return (
+    prefix +
+    Array(16)
+      .fill()
+      .map(() =>
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".charAt(
+          Math.random() * 62
+        )
+      )
+      .join("")
+  );
+}
+
+const PreviewableMimeTypes = [
+  "application/json",
+  "application/x-sh",
+  "text/html",
+  "application/yaml",
+  "text/plain",
+];
+
+export function CanPreviewMimeType(mime) {
+  for (let index = 0; index < PreviewableMimeTypes.length; index++) {
+    const pmt = PreviewableMimeTypes[index];
+    if (mime.includes(pmt)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const MimeTypeExtensionsMap = {
@@ -72,17 +79,17 @@ const MimeTypeExtensionsMap = {
   "application/yaml": "yaml",
   "image/jpeg": "jpg",
   "image/gif": "gif",
-  "image/png": "png"
-}
+  "image/png": "png",
+};
 
 // best effort getting file extension from mimetype
 export function MimeTypeFileExtension(mime) {
   for (const [mimeType, extension] of Object.entries(MimeTypeExtensionsMap)) {
     if (mime.includes(mimeType)) {
-      return extension
+      return extension;
     }
   }
-  return null
+  return null;
 }
 
 // Fires callback when click event occurs outside of div with passed ref
@@ -90,14 +97,17 @@ export function useOutsideCallback(ref, callback, callbackDelay) {
   useEffect(() => {
     function handleClickOutside(event) {
       if (ref.current && !ref.current.contains(event.target)) {
-        if(callback) {
-          setTimeout(() => {
-            callback()
-        }, callbackDelay ? callbackDelay : 0)
+        if (callback) {
+          setTimeout(
+            () => {
+              callback();
+            },
+            callbackDelay ? callbackDelay : 0
+          );
         }
       }
     }
-    
+
     // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -106,3 +116,11 @@ export function useOutsideCallback(ref, callback, callbackDelay) {
     };
   }, [ref, callback, callbackDelay]);
 }
+
+export const createLogFilter = ({ workflow, stateId, loopIndex }) => {
+  const query = `${workflow}::${stateId}::${loopIndex}`;
+  if (query === "::::") {
+    return [];
+  }
+  return ["filter.field=QUERY", "filter.type=MATCH", `filter.val=${query}`];
+};
