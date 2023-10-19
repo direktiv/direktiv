@@ -40,7 +40,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	serviceManager.Start(done, wg)
 
 	// Create registry manager
-	registryManager, err := registry.NewManager()
+	registryManager, err := registry.NewManager(os.Getenv("DIREKITV_ENABLE_DOCKER") == "true")
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}

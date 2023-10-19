@@ -30,8 +30,6 @@ scale: 2
 
     let listRes;
     it(`should list all services`, async () => {
-        await sleep(100)
-
         listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
         expect(listRes.statusCode).toEqual(200)
