@@ -116,8 +116,10 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 }
 
 func (c *knativeClient) killService(id string) error {
-	//TODO implement me
-	panic("implement me")
+	return c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).Delete(
+		context.Background(),
+		id,
+		metav1.DeleteOptions{})
 }
 
 var _ client = &knativeClient{}

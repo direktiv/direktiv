@@ -141,8 +141,19 @@ func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, er
 }
 
 func (c *dockerClient) killService(id string) error {
-	//TODO implement me
-	panic("implement me")
+	cntr, err := c.getContainerBy(id)
+	if err != nil {
+		return err
+	}
+
+	options := types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		RemoveLinks:   true,
+		Force:         true,
+	}
+
+	// delete the container
+	return c.cli.ContainerRemove(context.Background(), cntr.ID, options)
 }
 
 var _ client = &dockerClient{}
