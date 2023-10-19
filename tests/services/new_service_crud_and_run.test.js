@@ -28,14 +28,14 @@ cmd: redis-server
 scale: 2
 `)
 
-
+    let listRes;
     it(`should list all services`, async () => {
         await sleep(100)
 
-        const res = await request(common.config.getDirektivHost())
+        listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
-        expect(res.statusCode).toEqual(200)
-        expect(res.body).toMatchObject({
+        expect(listRes.statusCode).toEqual(200)
+        expect(listRes.body).toMatchObject({
             data: [
                 {
                     "cmd": "redis-server",
@@ -63,6 +63,23 @@ scale: 2
                     "scale": 2,
                     "size": "",
                     "type": "namespace-service",
+                }
+            ]
+        })
+    })
+
+    retry(`should list all service pods`, 10,async () => {
+        await sleep(500)
+        const sID = listRes.body.data[0].id
+
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${testNamespace}/services/${sID}/pods`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            data: [
+                {
+                    id: sID
+
                 }
             ]
         })
@@ -114,7 +131,6 @@ scale: 2
         })
     })
 });
-
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
