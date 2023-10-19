@@ -9,9 +9,7 @@ beforeAll(async () => {
 });
 
 describe('Test namespaces crud operations', () => {
-    it(`should create a new namespace`, async () => {
-        await common.helpers.expectCreateNamespace(expect, testNamespace);
-    })
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should create a new direktiv file`, async () => {
 

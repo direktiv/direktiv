@@ -8,11 +8,8 @@ beforeAll(async () => {
     await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
 });
 
-describe('Test services crud operations', () =>
-{
-    it(`should create a new namespace`, async () => {
-        await common.helpers.expectCreateNamespace(expect, testNamespace);
-    })
+describe('Test services crud operations', () => {
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should create a new service file`, async () => {
         const res = await request(common.config.getDirektivHost())
