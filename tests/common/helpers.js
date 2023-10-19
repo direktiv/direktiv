@@ -34,7 +34,25 @@ async function itShouldCreateNamespace(it, expect, ns) {
     })
 }
 
+async function itShouldCreateServiceFile(it, expect, ns, path, content) {
+    it(`should create a new service file ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .put(`/api/namespaces/${ns}/tree${path}?op=create-workflow`)
+            .set({
+                'Content-Type': 'text/plain',
+            })
+
+            .send(content)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            namespace: ns,
+        })
+    })
+}
+
 export default {
     deleteAllNamespaces,
     itShouldCreateNamespace,
+    itShouldCreateServiceFile,
 }
