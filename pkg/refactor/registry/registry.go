@@ -9,7 +9,8 @@ import (
 	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-
+	dReg "github.com/docker/docker/api/types/registry"
+	dClient "github.com/docker/docker/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -95,6 +96,22 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 		s, metav1.CreateOptions{})
 
 	return r, err
+}
+
+func (c *kManager) TestLogin(registry *core.Registry) error {
+	cli, err := dClient.NewClientWithOpts(dClient.WithHost(registry.URL))
+	if err != nil {
+		return err
+	}
+
+	authConfig := dReg.AuthConfig{
+		Username:      registry.URL,
+		Password:      registry.Password,
+		ServerAddress: registry.URL,
+	}
+	_, err = cli.RegistryLogin(context.Background(), authConfig)
+
+	return err
 }
 
 func buildSecret(registry *core.Registry) (*v1.Secret, error) {
