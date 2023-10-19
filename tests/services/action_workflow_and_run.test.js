@@ -4,12 +4,9 @@ import common from "../common";
 const testNamespace = "test-services"
 const testWorkflow = "test-workflow.yaml"
 
-beforeAll(async () => {
-    // delete a 'test-namespace' if it's already exit.
-    await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
-});
-
 describe('Test workflow function invoke', () => {
+    beforeAll(common.helpers.deleteAllNamespaces)
+
     it(`TODO: enable this e2e tests.`, async () => {});
     return;
     it(`should create a new namespace`, async () => {
