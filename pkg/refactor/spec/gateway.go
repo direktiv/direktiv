@@ -8,13 +8,13 @@ import (
 )
 
 type EndpointFile struct {
-	DirektivAPI          string       `yaml:"direktiv_api"`
-	Path                 string       `yaml:"path"`
-	Method               string       `yaml:"method"`
-	TargetPlugin         PluginFile   `yaml:"target_plugin"`
-	TimeoutSeconds       int          `yaml:"timeout_seconds"`
-	AuthPluginsConfig    []PluginFile `yaml:"auth_plugins_config"`
-	RequestPluginsConfig []PluginFile `yaml:"request_plugins_config"`
+	DirektivAPI    string       `yaml:"direktiv_api"`
+	Path           string       `yaml:"path"`
+	Method         string       `yaml:"method"`
+	TargetPlugin   PluginFile   `yaml:"target_plugin"`
+	TimeoutSeconds int          `yaml:"timeout_seconds"`
+	AuthPlugins    []PluginFile `yaml:"auth_plugins"`
+	RequestPlugins []PluginFile `yaml:"request_plugins"`
 }
 
 type PluginFile struct {

@@ -137,14 +137,14 @@ func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *
 			Version:       pluginroute.TargetPlugin.Version,
 			RuntimeConfig: pluginroute.TargetPlugin.RuntimeConfig,
 		})
-		for _, v := range pluginroute.AuthPluginsConfig {
+		for _, v := range pluginroute.AuthPlugins {
 			r.PluginsConfig = append(r.PluginsConfig, plugins.Configuration{
 				Name:          v.Name,
 				Version:       v.Version,
 				RuntimeConfig: v.RuntimeConfig,
 			})
 		}
-		for _, v := range pluginroute.RequestPluginsConfig {
+		for _, v := range pluginroute.RequestPlugins {
 			r.PluginsConfig = append(r.PluginsConfig, plugins.Configuration{
 				Name:          v.Name,
 				Version:       v.Version,
