@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dReg "github.com/docker/docker/api/types/registry"
@@ -73,12 +74,12 @@ func (c *kManager) DeleteRegistry(namespace string, id string) error {
 }
 
 func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error) {
-	// delete the old registry is just a safety measure
-	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
-
 	str := fmt.Sprintf("%s-%s", registry.Namespace, registry.URL)
 	sh := sha256.Sum256([]byte(str))
 	id := fmt.Sprintf("secret-%x", sh[:10])
+
+	// delete the old registry is just a safety measure
+	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
 
 	r := &core.Registry{
 		Namespace: registry.Namespace,
@@ -98,7 +99,7 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 	return r, err
 }
 
-func (c *kManager) TestLogin(registry *core.Registry) error {
+func testLogin(registry *core.Registry) error {
 	cli, err := dClient.NewClientWithOpts(dClient.WithHost(registry.URL))
 	if err != nil {
 		return err
@@ -112,6 +113,10 @@ func (c *kManager) TestLogin(registry *core.Registry) error {
 	_, err = cli.RegistryLogin(context.Background(), authConfig)
 
 	return err
+}
+
+func (c *kManager) TestLogin(registry *core.Registry) error {
+	return testLogin(registry)
 }
 
 func buildSecret(registry *core.Registry) (*v1.Secret, error) {
@@ -166,8 +171,14 @@ func obfuscateUser(user string) string {
 	return user
 }
 
-func NewManager() (*kManager, error) {
-	return nil, nil
+func NewManager(mocked bool) (core.RegistryManager, error) {
+	if mocked {
+		return &mockedManager{
+			lock: &sync.Mutex{},
+			list: make(map[string][]*core.Registry),
+		}, nil
+	}
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
