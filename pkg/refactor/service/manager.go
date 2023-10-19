@@ -260,7 +260,7 @@ func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 		}
 	}
 
-	return nil, ErrNotFound
+	return nil, core.ErrNotFound
 }
 
 func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
@@ -278,7 +278,7 @@ func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (
 		}
 	}
 
-	return nil, ErrNotFound
+	return nil, core.ErrNotFound
 }
 
 func (m *Manager) Kill(namespace string, serviceID string) error {
@@ -296,5 +296,5 @@ func (m *Manager) Kill(namespace string, serviceID string) error {
 		}
 	}
 
-	return ErrNotFound
+	return core.ErrNotFound
 }
