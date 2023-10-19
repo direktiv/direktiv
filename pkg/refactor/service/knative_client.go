@@ -115,6 +115,11 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 	return pods, nil
 }
 
+func (c *knativeClient) killService(id string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 var _ client = &knativeClient{}
 
 type knativeStatus struct {
