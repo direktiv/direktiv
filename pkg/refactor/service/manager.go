@@ -195,7 +195,7 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 
 func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
 	// clone the list
-	cfgList := make([]*core.ServiceConfig, len(m.list))
+	cfgList := make([]*core.ServiceConfig, 0)
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -207,7 +207,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 			continue
 		}
 
-		cfgList[i] = v
+		cfgList = append(cfgList, m.list[i])
 	}
 
 	services, err := m.client.listServices()
