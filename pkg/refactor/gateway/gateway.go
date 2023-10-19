@@ -94,6 +94,10 @@ func (gw *Handler) replaceRoutes(routes []*RouteConfiguration) {
 		if err := r.build(); err != nil {
 			route.Err = err
 			route.Status = "failed"
+			slog.Error("Error building route:", err)
+
+			// Empty the objectPool if there's an error
+			gw.objectPool = &sync.Map{}
 
 			return
 		}
