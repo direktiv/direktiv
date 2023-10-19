@@ -234,6 +234,20 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
+func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+	list, err := m.getList(namespace, "", "")
+	if err != nil {
+		return nil, err
+	}
+	for _, svc := range list {
+		if svc.ID == serviceID {
+			return svc, nil
+		}
+	}
+
+	return nil, core.ErrNotFound
+}
+
 func (m *Manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -267,34 +281,24 @@ func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	list, err := m.getList(namespace, "", "")
+	// check if serviceID exists.
+	_, err := m.getOne(namespace, serviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, svc := range list {
-		if svc.ID == serviceID {
-			return m.client.streamServiceLogs(serviceID, podID)
-		}
-	}
-
-	return nil, core.ErrNotFound
+	return m.client.streamServiceLogs(serviceID, podID)
 }
 
 func (m *Manager) Kill(namespace string, serviceID string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	list, err := m.getList(namespace, "", "")
+	// check if serviceID exists.
+	_, err := m.getOne(namespace, serviceID)
 	if err != nil {
 		return err
 	}
 
-	for _, svc := range list {
-		if svc.ID == serviceID {
-			return m.client.killService(serviceID)
-		}
-	}
-
-	return core.ErrNotFound
+	return m.client.killService(serviceID)
 }
