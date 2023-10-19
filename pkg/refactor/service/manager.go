@@ -4,6 +4,7 @@ package service
 import (
 	"fmt"
 	"io"
+	"slices"
 	"sync"
 	"time"
 
@@ -182,7 +183,11 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	m.list = list
+	m.list = slices.Clone(list)
+	for i, _ := range m.list {
+		cp := *m.list[i]
+		m.list[i] = &cp
+	}
 }
 
 func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
