@@ -140,6 +140,11 @@ func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, er
 	return logs, nil
 }
 
+func (c *dockerClient) killService(id string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 var _ client = &dockerClient{}
 
 type dockerStatus struct {

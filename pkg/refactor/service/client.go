@@ -13,6 +13,7 @@ type client interface {
 	listServices() ([]status, error)
 	streamServiceLogs(id string, podID string) (io.ReadCloser, error)
 	listServicePods(id string) (any, error)
+	killService(id string) error
 }
 
 type status interface {

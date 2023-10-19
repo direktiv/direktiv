@@ -280,3 +280,21 @@ func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (
 
 	return nil, ErrNotFound
 }
+
+func (m *Manager) Kill(namespace string, serviceID string) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	list, err := m.getList(namespace, "", "")
+	if err != nil {
+		return err
+	}
+
+	for _, svc := range list {
+		if svc.ID == serviceID {
+			return m.client.killService(serviceID)
+		}
+	}
+
+	return ErrNotFound
+}
