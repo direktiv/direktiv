@@ -119,7 +119,7 @@ func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *
 
 			continue
 		}
-		pluginroute, err := spec.ParsePluginRouteFile(data)
+		pluginroute, err := spec.ParseEndpointFile(data)
 		if err != nil {
 			slog.Error("parse service file", "error", err)
 
@@ -130,10 +130,21 @@ func renderGatewayManager(ctx context.Context, db *database.DB, gatewayManager *
 			Path:           pluginroute.Path,
 			Method:         pluginroute.Method,
 			TimeoutSeconds: pluginroute.TimeoutSeconds,
-			Targets:        plugins.Targets{},
 			PluginsConfig:  make([]plugins.Configuration, 0),
 		}
-		for _, v := range pluginroute.PluginsConfig {
+		r.PluginsConfig = append(r.PluginsConfig, plugins.Configuration{
+			Name:          pluginroute.TargetPlugin.Name,
+			Version:       pluginroute.TargetPlugin.Version,
+			RuntimeConfig: pluginroute.TargetPlugin.RuntimeConfig,
+		})
+		for _, v := range pluginroute.AuthPluginsConfig {
+			r.PluginsConfig = append(r.PluginsConfig, plugins.Configuration{
+				Name:          v.Name,
+				Version:       v.Version,
+				RuntimeConfig: v.RuntimeConfig,
+			})
+		}
+		for _, v := range pluginroute.RequestPluginsConfig {
 			r.PluginsConfig = append(r.PluginsConfig, plugins.Configuration{
 				Name:          v.Name,
 				Version:       v.Version,

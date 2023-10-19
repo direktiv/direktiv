@@ -144,7 +144,6 @@ type Route struct {
 type RouteConfiguration struct {
 	Path           string
 	Method         string
-	Targets        plugins.Targets
 	TimeoutSeconds int
 	PluginsConfig  []plugins.Configuration
 	Err            error
