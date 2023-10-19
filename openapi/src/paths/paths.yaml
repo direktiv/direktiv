@@ -2,7 +2,7 @@
   get:
     tags:
       - services
-    summary: Get all namespace services
+    summary: Get all services
     # description:
     parameters:
       - $ref: '../parameters.yaml#/namespace'
@@ -66,16 +66,42 @@
                               type: string
                               description: human readable message about the reason of this condition - can be empty
 
-/api/v2/namespaces/{namespace}/services/{serviceID}/logs/{podNumber}:
+/api/v2/namespaces/{namespace}/services/{serviceID}/pods:
   get:
     tags:
       - services
-    summary: Stream pod logs of a service
+    summary: Get all pods for a given service
     # description:
     parameters:
       - $ref: '../parameters.yaml#/namespace'
       - $ref: '../parameters.yaml#/serviceID'
-      - $ref: '../parameters.yaml#/podNumber'
+    responses:
+      "200":
+        description: Pods list returned
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: a unique string that represent id of the pod
+
+/api/v2/namespaces/{namespace}/services/{serviceID}/pods/{podID}/logs:
+  get:
+    tags:
+      - services
+    summary: Stream logs for a given pod
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/serviceID'
+      - $ref: '../parameters.yaml#/podID'
     responses:
       "200":
         description: Stream of plain text log data
