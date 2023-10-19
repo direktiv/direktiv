@@ -42,6 +42,17 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 			Message: "request http path is not found",
 		})
 	})
+
+	r.Handle("/api/v2/gateway", app.GatewayManager)
+	r.Get("/api/v2/spec/plugins/{key}", func(w http.ResponseWriter, r *http.Request) {
+		k := chi.URLParam(r, "key")
+		t, ok := app.GetPluginSchema(k)
+		if !ok {
+			writeError(w, &Error{Code: "501"})
+		}
+		writeJSON(w, t)
+	})
+
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, app.Version)
 	})

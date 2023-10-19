@@ -14,6 +14,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
@@ -42,6 +44,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
+	gateway := gateway.NewHandler()
 
 	// Create App
 	app := core.App{
@@ -51,6 +54,8 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		Config:          config,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
+		GatewayManager:  gateway,
+		GetPluginSchema: plugins.GetSchema,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -67,6 +72,19 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
 
+	pbus.Subscribe(func(_ string) {
+		renderGatewayManager(db, gateway, logger)
+	},
+		pubsub.WorkflowCreate,
+		pubsub.WorkflowUpdate,
+		pubsub.WorkflowDelete,
+		pubsub.ServiceCreate,
+		pubsub.ServiceUpdate,
+		pubsub.ServiceDelete,
+		pubsub.MirrorSync,
+	)
+	renderGatewayManager(db, gateway, logger)
+
 	// Start api v2 server
 	wg.Add(1)
 	api.Start(app, db, "0.0.0.0:6667", done, wg)
@@ -80,6 +98,42 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}()
 
 	return wg
+}
+
+func renderGatewayManager(db *database.DB, gatewayManager *gateway.Handler, logger *zap.SugaredLogger) {
+	fStore, dStore := db.FileStore(), db.DataStore()
+	ctx := context.Background()
+	ns, err := dStore.Namespaces().GetByName(ctx, "gateway")
+	if err != nil {
+		logger.Error("listing namespaces", "error", err)
+
+		return
+	}
+
+	files, err := fStore.ForNamespace(ns.Name).ListDirektivFiles(ctx)
+	if err != nil {
+		logger.Error("listing direktiv files", "error", err)
+	}
+	pluginroutes := make([]*core.Endpoint, 0)
+	for _, file := range files {
+		data, err := fStore.ForFile(file).GetData(ctx)
+		if err != nil {
+			logger.Error("read file data", "error", err)
+
+			continue
+		}
+		_, err = spec.ParseEndpointFile(data)
+		if err != nil {
+			logger.Error("parse endpoint file", "error", err)
+
+			continue
+		}
+
+		pluginroutes = append(pluginroutes, &core.Endpoint{
+			// TODO
+		})
+	}
+	gatewayManager.SetEndpoints(pluginroutes)
 }
 
 func renderServiceManager(db *database.DB, serviceManager *service.Manager, logger *zap.SugaredLogger) {
