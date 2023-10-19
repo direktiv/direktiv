@@ -3,12 +3,9 @@ import request from 'supertest'
 
 const testNamespace = "test-git-namespace"
 
-beforeAll(async () => {
-    // delete a 'test-namespace' if it's already exit.
-    await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
-});
-
 describe('Test namespace git mirroring', () => {
+    beforeAll(common.helpers.deleteAllNamespaces)
+
     it(`should create a new git mirrored namespace`, async () => {
         const res = await request(common.config.getDirektivHost())
             .put(`/api/namespaces/${testNamespace}`)

@@ -3,12 +3,9 @@ import common from "../common";
 
 const testNamespace = "test-file-namespace"
 
-beforeAll(async () => {
-    // delete a 'test-namespace' if it's already exit.
-    await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
-});
-
 describe('Test namespaces crud operations', () => {
+    beforeAll(common.helpers.deleteAllNamespaces)
+
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should create a new direktiv file`, async () => {
