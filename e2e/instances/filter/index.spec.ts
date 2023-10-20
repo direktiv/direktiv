@@ -18,7 +18,7 @@ const failingWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
-  /* create workflows we can use to create instances later*/
+  /* create workflows we can use to create instances later */
   await createWorkflow({
     payload: simpleWorkflowContent,
     urlParams: {
@@ -103,9 +103,16 @@ test("it is possible to navigate to the instances list, it renders and paginates
   ).toHaveCount(15);
 
   await expect(page.getByLabel("Pagination")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible();
-
+  await expect(
+    page.getByLabel("Pagination").getByRole("button", {
+      name: "1",
+    })
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Pagination").getByRole("button", {
+      name: "2",
+    })
+  ).toBeVisible();
   await page.getByTestId("pagination-btn-right").click();
 
   await expect(
