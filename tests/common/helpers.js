@@ -51,8 +51,24 @@ async function itShouldCreateServiceFile(it, expect, ns, path, content) {
     })
 }
 
+async function itShouldDeleteFile(it, expect, ns, path) {
+    it(`should create a new service file ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .delete(`/api/namespaces/${ns}/tree${path}?op=delete-nod`)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            namespace: ns,
+        })
+    })
+}
+
+let itShouldCreateEndpointFile = itShouldCreateServiceFile
+
 export default {
     deleteAllNamespaces,
     itShouldCreateNamespace,
     itShouldCreateServiceFile,
+    itShouldCreateEndpointFile,
+    itShouldDeleteFile
 }
