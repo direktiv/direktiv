@@ -3,7 +3,7 @@ import retry from "jest-retries";
 import common from "../common";
 
 
-const testNamespace = "test-services"
+const testNamespace = "gateway_namespace"
 
 describe('Test gateway endpoints crud operations', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
@@ -26,6 +26,7 @@ method: GET
         const listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/gateway_endpoints`)
         expect(listRes.statusCode).toEqual(200)
+        expect(listRes.body.data.length).toEqual(2)
         expect(listRes.body).toMatchObject({
             data: [
                 {
@@ -44,6 +45,7 @@ method: GET
         const listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/gateway_endpoints`)
         expect(listRes.statusCode).toEqual(200)
+        expect(listRes.body.data.length).toEqual(1)
         expect(listRes.body).toMatchObject({
             data: [
                 {
