@@ -15,7 +15,10 @@ type handler struct {
 }
 
 func NewHandler() core.GatewayManager {
-	return &handler{}
+	return &handler{
+		lock:      &sync.Mutex{},
+		endpoints: make([]*core.Endpoint, 0),
+	}
 }
 
 func (gw *handler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
