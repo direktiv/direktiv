@@ -45,7 +45,7 @@ scale: 2
                     "name": "s1",
                     "namespace": "test-services",
                     "scale": 1,
-                    "size": "",
+                    "size": "medium",
                     "type": "namespace-service",
 
                 },
@@ -59,7 +59,7 @@ scale: 2
                     "name": "s2",
                     "namespace": "test-services",
                     "scale": 2,
-                    "size": "",
+                    "size": "medium",
                     "type": "namespace-service",
                 }
             ]
@@ -105,7 +105,7 @@ scale: 2
                     "name": "s1",
                     "namespace": "test-services",
                     "scale": 1,
-                    "size": "",
+                    "size": "medium",
                     "type": "namespace-service",
                 },
                 {
@@ -122,7 +122,7 @@ scale: 2
                     "name": "s2",
                     "namespace": "test-services",
                     "scale": 2,
-                    "size": "",
+                    "size": "medium",
                     "type": "namespace-service",
                 }
             ]

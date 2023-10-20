@@ -42,7 +42,7 @@
                         description: docker command
                       size:
                         type: string
-                        description: can be 'larger', 'medium' or 'small'
+                        description: can be 'large', 'medium' or 'small'
                       scale:
                         type: integer
                         description: number from 0 to 9
