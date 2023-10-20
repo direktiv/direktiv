@@ -585,25 +585,6 @@
             "deleteBtn": "Delete"
           }
         },
-        "create": {
-          "noChanges": "Please make some changes before creating a new revision",
-          "noDefaultValues": "There seems to be no previous revision, this service might be damaged.",
-          "title": "Create a new revision",
-          "imageLabel": "Image",
-          "imagePlaceholder": "image/name:tag",
-          "scaleLabel": "Scale",
-          "sizeLabel": "Size",
-          "sizePlaceholder": "Select size",
-          "sizeValues": {
-            "0": "Small",
-            "1": "Medium",
-            "2": "Large"
-          },
-          "cmdLabel": "Cmd",
-          "cmdPlaceholder": "Enter the cmd for a service",
-          "createBtn": "Create",
-          "cancelBtn": "Cancel"
-        },
         "detail": {
           "created": "Created",
           "realtiveTime": "{{relativeTime}} ago",
@@ -623,26 +604,6 @@
             }
           }
         }
-      },
-      "create": {
-        "title": "Create a new service",
-        "nameLabel": "Name",
-        "namePlaceholder": "service-name",
-        "nameAlreadyExists": "The name already exists",
-        "imageLabel": "Image",
-        "imagePlaceholder": "image/name:tag",
-        "scaleLabel": "Scale",
-        "sizeLabel": "Size",
-        "sizePlaceholder": "Select size",
-        "sizeValues": {
-          "0": "Small",
-          "1": "Medium",
-          "2": "Large"
-        },
-        "cmdLabel": "Cmd",
-        "cmdPlaceholder": "Enter the cmd for a service",
-        "createBtn": "Create",
-        "cancelBtn": "Cancel"
       }
     },
     "permissions": {
