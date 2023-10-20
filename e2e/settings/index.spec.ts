@@ -3,13 +3,13 @@ import { expect, test } from "@playwright/test";
 
 import { BroadcastsSchemaKeys } from "~/api/broadcasts/schema";
 import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
-import { actionWaitForSuccessToast } from "../explorer/workflow/utils";
 import { createBroadcasts } from "../utils/broadcasts";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
+import { waitForSuccessToast } from "../explorer/workflow/utils";
 
 const { options } = EditorMimeTypeSchema;
 
@@ -78,7 +78,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("new-secret-name").type(newSecret.name);
   await page.getByTestId("new-secret-editor").type(newSecret.value);
   await page.getByTestId("secret-create-submit").click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   const secretElements = page.getByTestId("item-name");
   await expect(secretElements, "number of secrets should be 4").toHaveCount(4);
@@ -87,7 +87,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("secret-delete-confirm").click();
 
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   await expect(secretElements, "number of secrets should be 3").toHaveCount(3);
 
   await expect(
@@ -121,7 +121,7 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await page.getByTestId("new-registry-user").type(newRegistry.user);
 
   await page.getByTestId("registry-create-submit").click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   const registryElements = page.getByTestId("item-name");
   await expect(
@@ -133,7 +133,7 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   await expect(
     registryElements,
     "number of registry elements rendered should be 3"
@@ -179,7 +179,7 @@ test("it is possible to create and delete variables", async ({
   await page.getByTestId("variable-trg-mimetype").click();
   await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
   await page.getByTestId("variable-create-submit").click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   // reload page after create variable
   await page.reload({
@@ -214,7 +214,7 @@ test("it is possible to create and delete variables", async ({
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   await expect(
     page.getByTestId("item-name"),
     "after deleting a variable, there are 3 variables left"
@@ -266,7 +266,7 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByTestId(`var-mimetype-${updatedType}`).click();
 
   await page.getByTestId("var-edit-submit").click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   await page.reload({
     waitUntil: "networkidle",
   });

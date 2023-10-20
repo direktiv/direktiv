@@ -2,12 +2,12 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
-import { actionWaitForSuccessToast } from "./utils";
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowVariables } from "e2e/utils/workflow";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
+import { waitForSuccessToast } from "./utils";
 
 const { options } = EditorMimeTypeSchema;
 
@@ -159,7 +159,7 @@ test("it is possible to delete variables", async ({ page }) => {
   const deleteConfirmBtn = page.getByTestId("registry-delete-confirm");
   await expect(deleteConfirmBtn, "delete modal should appear").toBeVisible();
   await deleteConfirmBtn.click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   await expect(rows, "there should be no variables").toHaveCount(0);
 });
