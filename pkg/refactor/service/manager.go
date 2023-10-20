@@ -189,6 +189,7 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	m.list = slices.Clone(list)
 	for i := range m.list {
 		cp := *m.list[i]
+		cp.SetDefaults()
 		m.list[i] = &cp
 	}
 }
