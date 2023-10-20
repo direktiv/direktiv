@@ -2,28 +2,20 @@ package core
 
 import (
 	"net/http"
+	"sync"
 )
 
+const MagicalGatewayNamespace = "gateway_namespace"
+
 type GatewayManager interface {
+	http.Handler
+
 	ListEndpoints() []*Endpoint
 	SetEndpoints(endpoints []*Endpoint)
-	ServeHTTP(w http.ResponseWriter, r *http.Request)
+
+	Start(done <-chan struct{}, wg *sync.WaitGroup)
 }
 
 type Endpoint struct {
-	DirektivAPI    string   `json:"direktiv_api"`
-	Path           string   `json:"path"`
-	Method         string   `json:"method"`
-	TargetPlugin   Plugin   `json:"target_plugin"`
-	TimeoutSeconds int      `json:"timeout_seconds"`
-	AuthPlugins    []Plugin `json:"auth_plugins"`
-	RequestPlugins []Plugin `json:"request_plugins"`
+	Method string `json:"method"`
 }
-
-type Plugin struct {
-	Name          string      `json:"name"`
-	Version       string      `json:"version"`
-	RuntimeConfig interface{} `json:"runtime_config"`
-}
-
-type GetPluginSchema func(key string) (string, bool)

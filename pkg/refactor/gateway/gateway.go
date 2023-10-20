@@ -1,42 +1,71 @@
 package gateway
 
 import (
-	"encoding/json"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
-type RouteConfiguration struct{}
+type handler struct {
+	lock *sync.Mutex
 
-type Handler struct{}
-
-func NewHandler() *Handler {
-	gw := &Handler{}
-
-	return gw
+	endpoints []*core.Endpoint
 }
 
-func (gw *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	prefix := "/api/v2/gateway"
-	if r.Method == "GET" && r.URL.Path == prefix {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+func NewHandler() core.GatewayManager {
+	return &handler{}
+}
 
-		payLoad := struct {
-			Data any `json:"data"`
-		}{
-			Data: "hi",
-		}
-		_ = json.NewEncoder(w).Encode(payLoad)
+func (gw *handler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
+	// nolint:errcheck
+	_, _ = w.Write([]byte("hello gateway"))
+}
 
-		return
+func (gw *handler) SetEndpoints(list []*core.Endpoint) {
+	gw.lock.Lock()
+	defer gw.lock.Unlock()
+
+	// clone list to the gateway status.
+	newList := []*core.Endpoint{}
+	for i := range list {
+		cp := *list[i]
+		newList = append(newList, &cp)
 	}
+	gw.endpoints = newList
 }
 
-func (gw *Handler) SetEndpoints(list []*core.Endpoint) {
+func (gw *handler) ListEndpoints() []*core.Endpoint {
+	newList := []*core.Endpoint{}
+	for i := range gw.endpoints {
+		cp := *gw.endpoints[i]
+		newList = append(newList, &cp)
+	}
+
+	return newList
 }
 
-func (gw *Handler) ListEndpoints() []*core.Endpoint {
-	return nil
+func (gw *handler) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+	go func() {
+	loop:
+		for {
+			select {
+			case <-done:
+				break loop
+			default:
+			}
+			gw.lock.Lock()
+			gw.runCycle()
+			gw.lock.Unlock()
+			time.Sleep(time.Second)
+		}
+
+		wg.Done()
+	}()
+}
+
+func (gw *handler) runCycle() {
+	// TODO: construct plugins from list.
+	time.Sleep(time.Millisecond)
 }

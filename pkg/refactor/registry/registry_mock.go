@@ -25,7 +25,7 @@ func (c *mockedManager) ListRegistries(namespace string) ([]*core.Registry, erro
 	}
 
 	l := slices.Clone(list)
-	for i, _ := range l {
+	for i := range l {
 		n := &core.Registry{}
 		*n = *l[i]
 		l[i] = n
@@ -44,7 +44,7 @@ func (c *mockedManager) DeleteRegistry(namespace string, id string) error {
 	}
 
 	cp := []*core.Registry{}
-	for i, _ := range list {
+	for i := range list {
 		if list[i].ID != id {
 			cp = append(cp, list[i])
 		}
