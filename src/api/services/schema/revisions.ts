@@ -1,5 +1,4 @@
-import { SizeSchema, StatusSchema } from ".";
-
+import { StatusSchema } from ".";
 import { z } from "zod";
 
 export const revisionConditionNames = [
@@ -80,13 +79,11 @@ const RevisionSchema = z.object({
   revision: z.string().optional(),
   rev: z.string().optional(),
   minScale: z.number().optional(),
-  size: SizeSchema.optional(),
 });
 
 export const RevisionFormSchema = z.object({
   cmd: z.string(),
   image: z.string().nonempty(),
-  size: SizeSchema,
   // scale also has a max value, but it is dynamic depending on the namespace
   minscale: z.number().int().gte(0),
 });
