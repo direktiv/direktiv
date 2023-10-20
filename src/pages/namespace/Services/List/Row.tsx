@@ -85,29 +85,22 @@ const ServicesTableRow: FC<{
               {service.error && (
                 <StatusBadge
                   status="False"
-                  title={t("pages.services.list.tableRow.errorLabel")}
                   className="w-fit"
                   message={service.error}
                 >
                   {t("pages.services.list.tableRow.errorLabel")}
                 </StatusBadge>
               )}
-              {/* {serviceConditionNames.map((condition) => {
-                const res = service.conditions.find(
-                  (c) => c.name === condition
-                );
-                return (
-                  <StatusBadge
-                    key={condition}
-                    status={res?.status ?? "Unknown"}
-                    title={res?.reason ?? undefined}
-                    message={res?.message ?? undefined}
-                    className="w-fit"
-                  >
-                    {condition}
-                  </StatusBadge>
-                );
-              })} */}
+              {(service.conditions ?? []).map((condition) => (
+                <StatusBadge
+                  key={condition.type}
+                  status={condition.status}
+                  message={condition.message}
+                  className="w-fit"
+                >
+                  {condition.type}
+                </StatusBadge>
+              ))}
             </div>
           </div>
         </TableCell>
