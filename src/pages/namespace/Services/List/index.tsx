@@ -33,15 +33,6 @@ const ServicesListPage = () => {
     }
   }, [dialogOpen]);
 
-  const createNewButton = (
-    <DialogTrigger asChild>
-      <Button onClick={() => setCreateService(true)} variant="outline">
-        <PlusCircle />
-        {t("pages.services.list.create")}
-      </Button>
-    </DialogTrigger>
-  );
-
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <ServicesStreamingSubscriber />
@@ -65,7 +56,6 @@ const ServicesListPage = () => {
             services={serviceList?.data ?? []}
             isSuccess={isSuccess}
             setDeleteService={setDeleteService}
-            createNewButton={createNewButton}
             isAllowed={isAllowed}
             noPermissionMessage={noPermissionMessage}
           />
