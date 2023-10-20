@@ -58,7 +58,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		Config:          config,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
-		GatewayManager:  gw,
+		EndpointManager:  gw,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -100,7 +100,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	return wg
 }
 
-func renderGatewayManager(db *database.DB, gwManager core.GatewayManager, logger *zap.SugaredLogger) {
+func renderGatewayManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
 	fStore, dStore := db.FileStore(), db.DataStore()
 	ctx := context.Background()
 

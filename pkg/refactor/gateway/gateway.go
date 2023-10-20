@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -11,13 +12,15 @@ import (
 type handler struct {
 	lock *sync.Mutex
 
-	endpoints []*core.Endpoint
+	endpoints    []*core.EndpointStatus
+	pluginPool   *sync.Map
+	lastChecksum string
 }
 
-func NewHandler() core.GatewayManager {
+func NewHandler() core.EndpointManager {
 	return &handler{
 		lock:      &sync.Mutex{},
-		endpoints: make([]*core.Endpoint, 0),
+		endpoints: make([]*core.EndpointStatus, 0),
 	}
 }
 
@@ -31,16 +34,18 @@ func (gw *handler) SetEndpoints(list []*core.Endpoint) {
 	defer gw.lock.Unlock()
 
 	// clone list to the gateway status.
-	newList := []*core.Endpoint{}
+	newList := []*core.EndpointStatus{}
 	for i := range list {
 		cp := *list[i]
-		newList = append(newList, &cp)
+		newList = append(newList, &core.EndpointStatus{
+			Endpoint: cp,
+		})
 	}
 	gw.endpoints = newList
 }
 
-func (gw *handler) ListEndpoints() []*core.Endpoint {
-	newList := []*core.Endpoint{}
+func (gw *handler) GetAll() []*core.EndpointStatus {
+	newList := []*core.EndpointStatus{}
 	for i := range gw.endpoints {
 		cp := *gw.endpoints[i]
 		newList = append(newList, &cp)
@@ -69,6 +74,58 @@ func (gw *handler) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 }
 
 func (gw *handler) runCycle() {
-	// TODO: construct plugins from list.
-	time.Sleep(time.Millisecond)
+	objectPool := &sync.Map{}
+	for _, endpoint := range gw.endpoints {
+		res := make([]func(http.ResponseWriter, *http.Request) (int, string), 0, len(endpoint.Plugins))
+
+		for _, v := range endpoint.Plugins {
+			plugin, ok := registry[v.ID]
+			if !ok {
+				endpoint.Status = "failed"
+				endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.ID)
+				// Empty plugin pool to prevent operating on outdated configuration.
+				gw.pluginPool = &sync.Map{}
+
+				return
+			}
+			servePluginFunc, err := plugin.build(v.Configuration)
+			if err != nil {
+				endpoint.Status = "failed"
+				endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.ID, err)
+				gw.pluginPool = &sync.Map{}
+
+				return
+			}
+			// add the plugin-build.
+			res = append(res, servePluginFunc)
+		}
+		objectPool.Store(endpoint.Namespace+":/:"+endpoint.Workflow, res)
+	}
+	gw.lock.Lock()
+	defer gw.lock.Unlock()
+	// swap the plugin pool with the new one.
+	gw.pluginPool = objectPool
+}
+
+var registry = make(map[string]Plugin)
+
+type Plugin interface {
+	build(config interface{}) (func(http.ResponseWriter, *http.Request) (int, string), error)
+}
+
+type examplePlugin struct{}
+
+func (examplePlugin) build(_ interface{}) (func(http.ResponseWriter, *http.Request) (int, string), error) {
+	servePlugin := func(w http.ResponseWriter, r *http.Request) (int, string) {
+		_, _ = w.Write([]byte("hello gateway"))
+
+		return http.StatusOK, ""
+	}
+
+	return servePlugin, nil
+}
+
+//nolint:gochecknoinits
+func init() {
+	registry["example_plugin"] = examplePlugin{}
 }

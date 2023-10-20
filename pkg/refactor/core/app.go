@@ -36,5 +36,5 @@ type App struct {
 
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
-	GatewayManager  GatewayManager
+	EndpointManager EndpointManager
 }

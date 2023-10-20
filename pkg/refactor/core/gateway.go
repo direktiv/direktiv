@@ -7,15 +7,27 @@ import (
 
 const MagicalGatewayNamespace = "gateway_namespace"
 
-type GatewayManager interface {
+type EndpointManager interface {
 	http.Handler
 
-	ListEndpoints() []*Endpoint
+	GetAll() []*EndpointStatus
 	SetEndpoints(endpoints []*Endpoint)
 
 	Start(done <-chan struct{}, wg *sync.WaitGroup)
 }
 
 type Endpoint struct {
-	Method string `json:"method"`
+	Method    string `json:"method"`
+	Workflow  string `json:"workflow"`
+	Namespace string `json:"namespace"`
+	Plugins   []struct {
+		ID            string      `json:"id"`
+		Configuration interface{} `json:"configuration"`
+	} `json:"plugins"`
+}
+
+type EndpointStatus struct {
+	Endpoint
+	Status string `json:"status"`
+	Error  string `json:"error"`
 }
