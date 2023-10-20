@@ -51,11 +51,6 @@ const ServicesTableRow: FC<{
 
   if (!namespace) return null;
 
-  const sizeParsed = SizeSchema.safeParse(service.size);
-  const sizeLabel = sizeParsed.success
-    ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
-    : "";
-
   return (
     <TooltipProvider>
       <TableRow
@@ -122,7 +117,7 @@ const ServicesTableRow: FC<{
         </TableCell>
         <TableCell>{service.image}</TableCell>
         <TableCell>{service.scale}</TableCell>
-        <TableCell>{sizeLabel}</TableCell>
+        <TableCell>{service.size}</TableCell>
         <TableCell className="whitespace-normal break-all">
           {service.cmd}
         </TableCell>
