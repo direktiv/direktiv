@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { createWorkflowVariables } from "e2e/utils/workflow";
+import { createWorkflowVariables } from "e2e/utils/variables";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
 import { waitForSuccessToast } from "./utils";
