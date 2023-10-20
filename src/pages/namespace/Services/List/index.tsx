@@ -25,6 +25,7 @@ const ServicesListPage = () => {
   } = useServices({});
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  // TODO: implement kill process
   const [deleteService, setDeleteService] = useState<ServiceSchemaType>();
 
   useEffect(() => {
