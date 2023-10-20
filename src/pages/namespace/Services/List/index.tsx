@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import RefreshButton from "~/design/RefreshButton";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "./Table";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,8 @@ const ServicesListPage = () => {
   const { t } = useTranslation();
   const {
     data: serviceList,
+    isFetching,
+    refetch,
     isSuccess,
     isAllowed,
     noPermissionMessage,
@@ -23,12 +26,10 @@ const ServicesListPage = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteService, setDeleteService] = useState<ServiceSchemaType>();
-  const [createService, setCreateService] = useState(false);
 
   useEffect(() => {
     if (dialogOpen === false) {
       setDeleteService(undefined);
-      setCreateService(false);
     }
   }, [dialogOpen]);
 
@@ -50,7 +51,14 @@ const ServicesListPage = () => {
             <Layers className="h-5" />
             {t("pages.services.list.title")}
           </h3>
-          {createNewButton}
+          <RefreshButton
+            icon
+            variant="outline"
+            disabled={isFetching}
+            onClick={() => {
+              refetch();
+            }}
+          />
         </div>
         <Card>
           <ServicesTable
