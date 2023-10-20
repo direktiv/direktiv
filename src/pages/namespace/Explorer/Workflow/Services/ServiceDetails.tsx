@@ -10,7 +10,6 @@ import {
 
 import { Card } from "~/design/Card";
 import { Diamond } from "lucide-react";
-import Row from "~/pages/namespace/Services/Detail/Row";
 import { useServiceDetails } from "~/api/services/query/getDetails";
 import { useTranslation } from "react-i18next";
 
@@ -68,7 +67,8 @@ const ServiceDetails = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {showTable &&
+              {/* TODO: show table */}
+              {/* {showTable &&
                 data?.revisions?.map((revision, index) => (
                   <Row
                     key={index}
@@ -77,7 +77,7 @@ const ServiceDetails = ({
                     workflow={workflow}
                     version={version}
                   />
-                ))}
+                ))} */}
               {noResults && (
                 <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                   <TableCell colSpan={6}>

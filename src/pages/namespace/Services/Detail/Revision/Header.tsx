@@ -8,7 +8,6 @@ import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
 import { Diamond } from "lucide-react";
-import { SizeSchema } from "~/api/services/schema";
 import { StatusBadge } from "../../components/StatusBadge";
 import moment from "moment";
 import { podStatusToBadgeVariant } from "../../components/utils";
@@ -34,10 +33,7 @@ const Header = ({
 
   if (!revisionData) return null;
 
-  const sizeParsed = SizeSchema.safeParse(revisionData.size);
-  const sizeLabel = sizeParsed.success
-    ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
-    : "";
+  const sizeLabel = revisionData.size;
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">

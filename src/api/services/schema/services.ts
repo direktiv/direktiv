@@ -1,5 +1,4 @@
-import { SizeSchema, StatusSchema } from ".";
-
+import { StatusSchema } from ".";
 import { z } from "zod";
 
 export const serviceConditionNames = ["UpAndReady"] as const;
@@ -42,7 +41,7 @@ const ServiceSchema = z.object({
   filePath: z.string(),
   image: z.string(),
   cmd: z.string(),
-  size: SizeSchema,
+  size: z.string(),
   scale: z.number(),
   error: z.string().nullable(),
   conditions: z.array(ConditionSchema).nullable(),
@@ -81,20 +80,10 @@ export const serviceNameSchema = z
       "Please use a name that only contains lowercase letters, and use - instead of whitespaces.",
   });
 
-export const ServiceFormSchema = z.object({
-  name: serviceNameSchema,
-  cmd: z.string(),
-  image: z.string().nonempty(),
-  size: SizeSchema,
-  // scale also has a max value, but it is dynamic depending on the namespace
-  minscale: z.number().int().gte(0),
-});
-
 export const ServiceDeletedSchema = z.null();
 
 export const ServiceCreatedSchema = z.null();
 
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
-export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
 export type ServiceStreamingSchemaType = z.infer<typeof ServiceStreamingSchema>;
