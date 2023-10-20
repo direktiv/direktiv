@@ -72,7 +72,7 @@ func (c *dockerClient) getContainerBy(id string) (*types.Container, error) {
 		}
 	}
 
-	return nil, ErrNotFound
+	return nil, core.ErrNotFound
 }
 
 func (c *dockerClient) deleteService(id string) error {
@@ -138,6 +138,22 @@ func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, er
 	}
 
 	return logs, nil
+}
+
+func (c *dockerClient) killService(id string) error {
+	cntr, err := c.getContainerBy(id)
+	if err != nil {
+		return err
+	}
+
+	options := types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		RemoveLinks:   true,
+		Force:         true,
+	}
+
+	// delete the container
+	return c.cli.ContainerRemove(context.Background(), cntr.ID, options)
 }
 
 var _ client = &dockerClient{}

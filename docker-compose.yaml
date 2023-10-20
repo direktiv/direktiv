@@ -61,6 +61,6 @@ services:
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - DIREKTIV_HOST=http://flow:6665
-    command: npm --prefix /tests run all
+    command: npm --prefix /tests run all -- /
     depends_on:
       - flow

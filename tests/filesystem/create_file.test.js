@@ -3,25 +3,10 @@ import common from "../common";
 
 const testNamespace = "test-file-namespace"
 
-beforeAll(async () => {
-    // delete a 'test-namespace' if it's already exit.
-    await request(common.config.getDirektivHost()).delete(`/api/namespaces/${testNamespace}?recursive=true`)
-});
-
 describe('Test namespaces crud operations', () => {
-    it(`should create a new namespace`, async () => {
-        const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}`)
-        expect(res.statusCode).toEqual(200)
-        expect(res.body).toMatchObject({
-            namespace: {
-                name: testNamespace,
-                oid: expect.stringMatching(common.regex.uuidRegex),
-                // regex /^2.*Z$/ matches timestamps like 2023-03-01T14:19:52.383871512Z
-                createdAt: expect.stringMatching(/^2.*Z$/),
-                updatedAt: expect.stringMatching(/^2.*Z$/),
-            }
-        })
-    })
+    beforeAll(common.helpers.deleteAllNamespaces)
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should create a new direktiv file`, async () => {
 

@@ -4,6 +4,7 @@ package service
 import (
 	"fmt"
 	"io"
+	"slices"
 	"sync"
 	"time"
 
@@ -89,6 +90,7 @@ func (m *Manager) runCycle() []error {
 	for i, v := range m.list {
 		src[i] = v
 	}
+
 	searchSrc := map[string]*core.ServiceConfig{}
 	for _, v := range m.list {
 		searchSrc[v.GetID()] = v
@@ -139,6 +141,7 @@ func (m *Manager) runCycle() []error {
 	for _, id := range result.creates {
 		v := searchSrc[id]
 		v.Error = nil
+		// v is passed un-cloned.
 		if err := m.client.createService(v); err != nil {
 			errStr := err.Error()
 			v.Error = &errStr
@@ -148,6 +151,7 @@ func (m *Manager) runCycle() []error {
 	for _, id := range result.updates {
 		v := searchSrc[id]
 		v.Error = nil
+		// v is passed un-cloned.
 		if err := m.client.updateService(v); err != nil {
 			*v.Error = err.Error()
 		}
@@ -171,7 +175,7 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				fmt.Printf("f2 error: %s\n", err)
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(2 * time.Second)
 		}
 
 		wg.Done()
@@ -182,12 +186,16 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	m.list = list
+	m.list = slices.Clone(list)
+	for i, _ := range m.list {
+		cp := *m.list[i]
+		m.list[i] = &cp
+	}
 }
 
 func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
 	// clone the list
-	cfgList := make([]*core.ServiceConfig, len(m.list))
+	cfgList := make([]*core.ServiceConfig, 0)
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -199,7 +207,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 			continue
 		}
 
-		cfgList[i] = v
+		cfgList = append(cfgList, m.list[i])
 	}
 
 	services, err := m.client.listServices()
@@ -234,6 +242,22 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
+func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+	list, err := m.getList(namespace, "", "")
+	if err != nil {
+		return nil, err
+	}
+	for _, svc := range list {
+		if svc.ID == serviceID {
+			cp := *svc
+
+			return &cp, nil
+		}
+	}
+
+	return nil, core.ErrNotFound
+}
+
 func (m *Manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -245,38 +269,42 @@ func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	list, err := m.getList(namespace, "", "")
+	// check if serviceID exists.
+	_, err := m.getOne(namespace, serviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, svc := range list {
-		if svc.ID == serviceID {
-			pods, err := m.client.listServicePods(serviceID)
-			if err != nil {
-				return nil, err
-			}
-			return pods, nil
-		}
+	pods, err := m.client.listServicePods(serviceID)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, ErrNotFound
+	return pods, nil
 }
 
 func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	list, err := m.getList(namespace, "", "")
+	// check if serviceID exists.
+	_, err := m.getOne(namespace, serviceID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, svc := range list {
-		if svc.ID == serviceID {
-			return m.client.streamServiceLogs(serviceID, podID)
-		}
+	return m.client.streamServiceLogs(serviceID, podID)
+}
+
+func (m *Manager) Kill(namespace string, serviceID string) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	// check if serviceID exists.
+	_, err := m.getOne(namespace, serviceID)
+	if err != nil {
+		return err
 	}
 
-	return nil, ErrNotFound
+	return m.client.killService(serviceID)
 }

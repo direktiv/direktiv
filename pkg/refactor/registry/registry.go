@@ -5,12 +5,13 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-
+	dReg "github.com/docker/docker/api/types/registry"
+	dClient "github.com/docker/docker/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -23,8 +24,6 @@ const (
 	annotationRegistryURL  = "direktiv.io/registry/url"
 	annotationRegistryUser = "direktiv.io/registry/user"
 )
-
-var ErrNotFound = errors.New("ErrNotFound")
 
 type kManager struct {
 	*kubernetes.Clientset
@@ -71,16 +70,16 @@ func (c *kManager) DeleteRegistry(namespace string, id string) error {
 		}
 	}
 
-	return ErrNotFound
+	return core.ErrNotFound
 }
 
 func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error) {
-	// delete the old registry is just a safety measure
-	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
-
 	str := fmt.Sprintf("%s-%s", registry.Namespace, registry.URL)
 	sh := sha256.Sum256([]byte(str))
 	id := fmt.Sprintf("secret-%x", sh[:10])
+
+	// delete the old registry is just a safety measure
+	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
 
 	r := &core.Registry{
 		Namespace: registry.Namespace,
@@ -98,6 +97,26 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 		s, metav1.CreateOptions{})
 
 	return r, err
+}
+
+func testLogin(registry *core.Registry) error {
+	cli, err := dClient.NewClientWithOpts(dClient.WithHost(registry.URL))
+	if err != nil {
+		return err
+	}
+
+	authConfig := dReg.AuthConfig{
+		Username:      registry.URL,
+		Password:      registry.Password,
+		ServerAddress: registry.URL,
+	}
+	_, err = cli.RegistryLogin(context.Background(), authConfig)
+
+	return err
+}
+
+func (c *kManager) TestLogin(registry *core.Registry) error {
+	return testLogin(registry)
 }
 
 func buildSecret(registry *core.Registry) (*v1.Secret, error) {
@@ -152,8 +171,14 @@ func obfuscateUser(user string) string {
 	return user
 }
 
-func NewManager() (*kManager, error) {
-	return nil, nil
+func NewManager(mocked bool) (core.RegistryManager, error) {
+	if mocked {
+		return &mockedManager{
+			lock: &sync.Mutex{},
+			list: make(map[string][]*core.Registry),
+		}, nil
+	}
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err

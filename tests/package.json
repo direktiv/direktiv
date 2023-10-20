@@ -5,6 +5,7 @@
     "babel-jest": "^29.4.3",
     "eventsource": "^2.0.2",
     "jest": "^29.4.3",
+    "jest-retries": "^1.0.1",
     "jest-watch-typeahead": "^2.2.2",
     "supertest": "^6.3.3"
   },

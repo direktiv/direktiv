@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -22,6 +21,7 @@ func (e *serviceController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
 	r.Get("/{serviceID}/pods", e.pods)
 	r.Get("/{serviceID}/pods/{podID}/logs", e.logs)
+	r.Post("/{serviceID}/actions/kill", e.kill)
 }
 
 func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
 	serviceID := chi.URLParam(r, "serviceID")
 
 	svc, err := e.manager.GetPods(ns.Name, serviceID)
-	if errors.Is(err, service.ErrNotFound) {
+	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: "resource(service) is not found",
@@ -59,13 +59,35 @@ func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, svc)
 }
 
+func (e *serviceController) kill(w http.ResponseWriter, r *http.Request) {
+	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	serviceID := chi.URLParam(r, "serviceID")
+
+	err := e.manager.Kill(ns.Name, serviceID)
+	if errors.Is(err, core.ErrNotFound) {
+		writeError(w, &Error{
+			Code:    "resource_not_found",
+			Message: "resource(service) is not found",
+		})
+
+		return
+	}
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+
+	writeOk(w)
+}
+
 func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 	serviceID := chi.URLParam(r, "serviceID")
 	podID := chi.URLParam(r, "podID")
 
 	readCloser, err := e.manager.StreamLogs(ns.Name, serviceID, podID)
-	if errors.Is(err, service.ErrNotFound) {
+	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: "resource(service) is not found",
@@ -87,7 +109,7 @@ func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 	buffer := make([]byte, 4*1024)
 	var n int
 	for {
-		// TODO: this would leak requests as to could block forever.
+		// TODO: this would leak because read() could block forever.
 		n, err = readCloser.Read(buffer)
 		if err == io.EOF {
 			break

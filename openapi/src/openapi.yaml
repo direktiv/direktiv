@@ -55,6 +55,7 @@ info:
     | `request_path_not_found` | request path is not recognized (not found)  |
     | `request_method_not_allowed` | method is not allowed for the used path  |
     | `request_body_not_json` | request body is not valid json  |
+    | `request_body_bad_json_schema` | request body has invalid json schema |
     | `resource_not_found` | requested resource id (namespace for example) not found |
     | `resource_already_exists` | trying to insert a resource with duplicated id |
     | `resource_id_invalid` | requested resource id (namespace for example) is invalid |
