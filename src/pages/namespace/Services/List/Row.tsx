@@ -86,6 +86,7 @@ const ServicesTableRow: FC<{
             <div>
               {service.name}{" "}
               <span className="whitespace-pre-wrap break-all text-gray-9 dark:text-gray-dark-9">
+                {/* TODO: link to the file */}
                 {service.filePath}
               </span>
             </div>
