@@ -91,6 +91,16 @@ const ServicesTableRow: FC<{
               </span>
             </div>
             <div className="flex gap-3">
+              {service.error && (
+                <StatusBadge
+                  status="False"
+                  title={t("pages.services.list.errorLabel")}
+                  className="w-fit"
+                  message={service.error}
+                >
+                  {t("pages.services.list.errorLabel")}
+                </StatusBadge>
+              )}
               {/* {serviceConditionNames.map((condition) => {
                 const res = service.conditions.find(
                   (c) => c.name === condition

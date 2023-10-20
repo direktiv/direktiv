@@ -539,6 +539,7 @@
       "list": {
         "title": "Services",
         "create": "Create a new service",
+        "errorLabel": "Error",
         "tableHeader": {
           "name": "name",
           "image": "image",
