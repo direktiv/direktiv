@@ -60,23 +60,24 @@ const ServicesTableRow: FC<{
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          // if (workflow) {
-          //   return navigate(
-          //     pages.explorer.createHref({
-          //       namespace,
-          //       path: workflow,
-          //       subpage: "workflow-services",
-          //       serviceName: service.config.name,
-          //       serviceVersion: service..revision,
-          //     })
-          //   );
-          // }
-          // return navigate(
-          //   pages.services.createHref({
-          //     namespace,
-          //     service: service.info.name,
-          //   })
-          // );
+          if (workflow) {
+            return navigate(
+              pages.explorer.createHref({
+                namespace,
+                path: workflow,
+                subpage: "workflow-services",
+                //  TODO: serviceName must be renamed to serviceID, revision must be removed from parameters
+                serviceName: service.id,
+                serviceRevision: "revision",
+              })
+            );
+          }
+          return navigate(
+            pages.services.createHref({
+              namespace,
+              service: service.id,
+            })
+          );
         }}
         className="cursor-pointer"
       >
