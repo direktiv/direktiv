@@ -19,7 +19,6 @@ const ServicesTable = ({
   services,
   isSuccess = false,
   setDeleteService,
-  createNewButton,
   deleteMenuItem,
   workflow,
   isAllowed,
@@ -28,7 +27,6 @@ const ServicesTable = ({
   services?: ServiceSchemaType[];
   isSuccess: boolean;
   setDeleteService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
-  createNewButton?: JSX.Element;
   deleteMenuItem?: JSX.Element;
   workflow?: string;
   isAllowed: boolean;
@@ -77,7 +75,7 @@ const ServicesTable = ({
             {noResults && (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
-                  <NoResult icon={Layers} button={createNewButton}>
+                  <NoResult icon={Layers}>
                     {t("pages.services.list.empty.title")}
                   </NoResult>
                 </TableCell>
