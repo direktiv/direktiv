@@ -42,7 +42,7 @@ const ServiceSchema = z.object({
   filePath: z.string(),
   image: z.string(),
   cmd: z.string(),
-  size: z.string(),
+  size: SizeSchema,
   scale: z.number(),
   error: z.string().nullable(),
   conditions: z.array(ConditionSchema).nullable(),
