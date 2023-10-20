@@ -538,7 +538,6 @@
     "services": {
       "list": {
         "title": "Services",
-        "create": "Create a new service",
         "errorLabel": "Error",
         "tableHeader": {
           "name": "name",
@@ -560,48 +559,22 @@
           "deleteBtn": "Delete"
         }
       },
-      "revision": {
-        "list": {
-          "title": "Service \"{{name}}\" revisions",
-          "create": "Create a new revision",
-          "relativeTime": "{{relativeTime}} ago",
-          "tableHeader": {
-            "name": "name",
-            "image": "image",
-            "scale": "scale",
-            "size": "size",
-            "createdAt": "created at"
-          },
-          "contextMenu": {
-            "delete": "Delete"
-          },
-          "empty": {
-            "title": "No revisions exist yet"
-          },
-          "delete": {
-            "title": "Delete revision",
-            "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
-            "cancelBtn": "Cancel",
-            "deleteBtn": "Delete"
-          }
-        },
-        "detail": {
-          "created": "Created",
-          "realtiveTime": "{{relativeTime}} ago",
-          "size": "Size",
-          "Generation": "Generation",
-          "scale": "Scale",
-          "replicas": "Replicas",
-          "logs": {
-            "noPods": "No running pods",
-            "title": "Logs for {{name}}",
-            "followLogs": "Follow logs",
-            "logsCount": "received {{count}} log entries",
-            "logsCount_one": "received {{count}} log entry",
-            "tab": "Pod {{number}} of {{total}}",
-            "tooltips": {
-              "copy": "Copy logs"
-            }
+      "detail": {
+        "created": "Created",
+        "realtiveTime": "{{relativeTime}} ago",
+        "size": "Size",
+        "Generation": "Generation",
+        "scale": "Scale",
+        "replicas": "Replicas",
+        "logs": {
+          "noPods": "No running pods",
+          "title": "Logs for {{name}}",
+          "followLogs": "Follow logs",
+          "logsCount": "received {{count}} log entries",
+          "logsCount_one": "received {{count}} log entry",
+          "tab": "Pod {{number}} of {{total}}",
+          "tooltips": {
+            "copy": "Copy logs"
           }
         }
       }
