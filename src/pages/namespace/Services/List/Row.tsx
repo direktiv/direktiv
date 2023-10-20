@@ -83,7 +83,12 @@ const ServicesTableRow: FC<{
       >
         <TableCell>
           <div className="flex flex-col gap-3">
-            {service.name}
+            <div>
+              {service.name}{" "}
+              <span className="whitespace-pre-wrap break-all text-gray-9 dark:text-gray-dark-9">
+                {service.filePath}
+              </span>
+            </div>
             <div className="flex gap-3">
               {/* {serviceConditionNames.map((condition) => {
                 const res = service.conditions.find(
