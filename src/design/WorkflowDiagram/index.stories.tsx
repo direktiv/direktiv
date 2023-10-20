@@ -217,7 +217,7 @@ export const UpdateWorkflow = () => {
 
   return (
     <Card className="flex h-96 flex-col gap-y-5 p-5" background="weight-1">
-      <ButtonBar className="">
+      <ButtonBar>
         <Button
           onClick={() => {
             setWorkflow(exampleWorkflow);
