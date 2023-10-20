@@ -94,11 +94,11 @@ const ServicesTableRow: FC<{
               {service.error && (
                 <StatusBadge
                   status="False"
-                  title={t("pages.services.list.errorLabel")}
+                  title={t("pages.services.list.tableRow.errorLabel")}
                   className="w-fit"
                   message={service.error}
                 >
-                  {t("pages.services.list.errorLabel")}
+                  {t("pages.services.list.tableRow.errorLabel")}
                 </StatusBadge>
               )}
               {/* {serviceConditionNames.map((condition) => {

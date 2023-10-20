@@ -538,13 +538,15 @@
     "services": {
       "list": {
         "title": "Services",
-        "errorLabel": "Error",
         "tableHeader": {
           "name": "name",
           "image": "image",
           "scale": "scale",
           "size": "size",
           "cmd": "cmd"
+        },
+        "tableRow": {
+          "errorLabel": "Error"
         },
         "contextMenu": {
           "delete": "Delete"
