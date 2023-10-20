@@ -35,7 +35,7 @@ async function itShouldCreateNamespace(it, expect, ns) {
 }
 
 async function itShouldCreateServiceFile(it, expect, ns, path, content) {
-    it(`should create a new service file ${path}`, async () => {
+    it(`should create a new file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
             .put(`/api/namespaces/${ns}/tree${path}?op=create-workflow`)
             .set({
@@ -51,8 +51,22 @@ async function itShouldCreateServiceFile(it, expect, ns, path, content) {
     })
 }
 
+async function itShouldDeleteFile(it, expect, ns, path) {
+    it(`should delete a file ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .delete(`/api/namespaces/${ns}/tree${path}?op=delete-node`)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({})
+    })
+}
+
+let itShouldCreateEndpointFile = itShouldCreateServiceFile
+
 export default {
     deleteAllNamespaces,
     itShouldCreateNamespace,
     itShouldCreateServiceFile,
+    itShouldCreateEndpointFile,
+    itShouldDeleteFile
 }

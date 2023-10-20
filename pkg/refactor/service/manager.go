@@ -187,7 +187,7 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	defer m.lock.Unlock()
 
 	m.list = slices.Clone(list)
-	for i, _ := range m.list {
+	for i := range m.list {
 		cp := *m.list[i]
 		m.list[i] = &cp
 	}
