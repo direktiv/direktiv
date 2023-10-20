@@ -1,15 +1,13 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowVariables } from "e2e/utils/variables";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
+import { setVariable } from "~/api/tree/mutate/setVariable";
 import { waitForSuccessToast } from "./utils";
-
-const { options } = EditorMimeTypeSchema;
 
 let namespace = "";
 let workflow = "";
@@ -38,116 +36,135 @@ test("it is possible to navigate to the workflow settings page and to see the pa
   page,
 }) => {
   await createWorkflowVariables(namespace, workflow, 15);
+
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const rows = page.getByTestId(/wf-settings-var-row-/);
-
-  // created 15 items and shows 10 items with the pagination
+  const rows = page.getByTestId("variable-row");
   await expect(
     rows,
-    "there should be 10 variables in the first page"
+    "there should be 10 variables on the first page"
   ).toHaveCount(10);
-  const btnNext = page.getByTestId("pagination-btn-right");
 
-  await expect(btnNext, "next button should be enabled").toBeEnabled();
-  await btnNext.click();
+  await expect(page.getByTestId("pagination-wrapper")).toBeVisible();
+  await expect(
+    page.getByTestId("pagination-wrapper").getByRole("button", { name: "1" })
+  ).toBeVisible();
+  await expect(
+    page.getByTestId("pagination-wrapper").getByRole("button", { name: "2" })
+  ).toBeVisible();
+
+  await page.getByTestId("pagination-btn-right").click();
   await expect(
     rows,
-    "there should be 5 variables in the last page"
+    "there should be 5 variables on the second page"
   ).toHaveCount(5);
+
+  await page.getByTestId("pagination-btn-left").click();
+  await expect(rows, "it is possible to go back to page 1").toHaveCount(10);
 });
 
 test("it is possible to create variables", async ({ page }) => {
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const rows = page.getByTestId(/wf-settings-var-row-/);
+  const newVariable = {
+    name: "workflow-variable",
+    value: "this variable will be created via the form",
+    mimeType: "plaintext",
+  };
 
   const createBtn = page.getByTestId("variable-create");
   await createBtn.click();
+
   await expect(
-    page.getByTestId("wf-form-create-variable"),
+    page.getByRole("heading", { name: "Add a workflow variable" }),
     "create variable form should be visible"
   ).toBeVisible();
 
-  const newVariable = {
-    name: faker.internet.domainWord(),
-    value: faker.random.words(20),
-    mimeType: options[Math.floor(Math.random() * options.length)] || options[0],
-  };
+  await page.getByLabel("Name").fill(faker.lorem.word());
 
-  await page.getByTestId("new-variable-name").fill(faker.lorem.word());
+  await page.locator(".view-lines").click();
+  await page.locator(".view-lines").type(newVariable.value);
 
-  const editor = page.locator(".view-lines");
-  await editor.click();
-  await editor.type(newVariable.value);
-
-  await page.getByTestId("variable-trg-mimetype").click();
-  await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
-  await page.getByTestId("variable-create-submit").click();
+  await page.getByLabel("Mimetype").click();
+  await page.getByLabel(newVariable.mimeType).click();
+  await page.getByRole("button", { name: "Create" }).click();
 
   const successToast = page.getByTestId("toast-success");
   await expect(successToast, "a success toast appears").toBeVisible();
-  await expect(rows, "there should be 1 variable in the list").toHaveCount(1);
+  await expect(
+    page.getByTestId("variable-row"),
+    "there should be 1 variable in the list"
+  ).toHaveCount(1);
 });
 
 test("it is possible to update variables", async ({ page }) => {
-  await createWorkflowVariables(namespace, workflow, 1);
+  const subject = await setVariable({
+    payload: "edit me",
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      path: workflow,
+      name: "editable-var",
+    },
+    headers: {
+      ...headers,
+      "content-type": "text/plain",
+    },
+  });
+
+  if (!subject) {
+    throw new Error("error setting up test data");
+  }
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const rows = page.getByTestId(/wf-settings-var-row-/);
 
-  const itemName = await page.getByTestId("item-name").textContent();
-  const menuTrigger = page.getByTestId(`dropdown-trg-item-${itemName}`);
-  await menuTrigger.click();
-
-  const editMenu = page.getByTestId("dropdown-actions-edit");
-  await editMenu.click();
+  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByRole("button", { name: "edit" }).click();
 
   await expect(
-    page.getByTestId("wf-form-edit-variable"),
-    "edit form should be opened"
+    page.getByRole("heading", { name: `Edit ${subject.key}` }),
+    "it opens the edit form"
   ).toBeVisible();
 
-  const newVariable = {
-    name: faker.internet.domainWord(),
-    value: faker.random.words(20),
-    mimeType: options[Math.floor(Math.random() * options.length)] || options[0],
-  };
+  await expect(page.getByLabel("Mimetype")).toContainText(subject.mimeType);
+  await page.getByLabel("Mimetype").click();
+  await page.getByLabel("JSON").click();
 
-  const editor = page.locator(".view-lines");
-  await editor.click();
-  await editor.type("add-new-value");
+  await expect(
+    page.locator(".view-lines"),
+    "the variable's content is rendered in the editor"
+  ).toContainText("edit me");
 
-  await page.getByTestId("variable-trg-mimetype").click();
-  await page.getByTestId(`var-mimetype-${newVariable.mimeType}`).click();
-  await page.getByTestId("var-edit-submit").click();
+  await page.locator(".view-lines").click();
+  for (let i = 0; i < 7; i++) {
+    await page.locator(".view-lines").press("Backspace");
+  }
+  await page.locator(".view-lines").type('{"foo": "bar"}');
+
+  await page.getByRole("button", { name: "Save" }).click();
 
   const successToast = page.getByTestId("toast-success");
   await expect(successToast, "a success toast appears").toBeVisible();
 
-  await expect(rows, "there should be 1 variable in the list").toHaveCount(1);
+  await page.reload();
 
-  await expect(successToast, "wait till the toast disappear").toBeHidden({
-    timeout: 10000,
-  });
-  //we open up the edit box again confirm that's what we previously updated
-  await menuTrigger.click();
-  await editMenu.click();
+  await expect(
+    page.getByTestId("variable-row"),
+    "there should be 1 variable in the list"
+  ).toHaveCount(1);
 
-  const current_mimetype = await page
-    .getByTestId(`variable-trg-mimetype`)
-    .textContent();
+  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByRole("button", { name: "edit" }).click();
 
-  expect(
-    current_mimetype,
-    "the mimetype selected before should be shown"
-  ).toContain(newVariable.mimeType);
-  await expect(editor, "editor should have the updated value").toContainText(
-    "add-new-value"
-  );
+  await expect(page.getByLabel("Mimetype")).toContainText("application/json");
+
+  await expect(
+    page.locator(".view-lines"),
+    "editor should have the updated value"
+  ).toContainText('{"foo": "bar"}');
 });
 
 test("it is possible to delete variables", async ({ page }) => {
   await createWorkflowVariables(namespace, workflow, 1);
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const rows = page.getByTestId(/wf-settings-var-row-/);
+  const rows = page.getByTestId("variable-row");
 
   const itemName = await page.getByTestId("item-name").textContent();
   const menuTrigger = page.getByTestId(`dropdown-trg-item-${itemName}`);

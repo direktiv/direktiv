@@ -103,7 +103,6 @@ const Create = ({ onSuccess, path }: CreateProps) => {
         id="create-variable"
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col space-y-5"
-        data-testid="wf-form-create-variable"
       >
         <DialogHeader>
           <DialogHeader>
@@ -124,7 +123,6 @@ const Create = ({ onSuccess, path }: CreateProps) => {
           </label>
           <Input
             id="name"
-            data-testid="new-variable-name"
             placeholder={t("pages.settings.variables.create.name.placeholder")}
             onChange={(event) => setName(event.target.value)}
           />
@@ -148,11 +146,7 @@ const Create = ({ onSuccess, path }: CreateProps) => {
           <Input id="file-upload" type="file" onChange={onFilepickerChange} />
         </fieldset>
 
-        <Card
-          className="grow p-4 pl-0"
-          background="weight-1"
-          data-testid="variable-create-card"
-        >
+        <Card className="grow p-4 pl-0" background="weight-1">
           <div className="flex h-[400px]">
             {typeof body === "string" ? (
               <Editor
@@ -182,9 +176,7 @@ const Create = ({ onSuccess, path }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button data-testid="variable-create-submit" type="submit">
-            {t("components.button.label.create")}
-          </Button>
+          <Button type="submit">{t("components.button.label.create")}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

@@ -75,7 +75,7 @@ const MimeTypeSelect = ({
         loading={loading}
         variant="outline"
         block
-        data-testid="variable-trg-mimetype"
+        // data-testid="variable-trg-mimetype"
         disabled={!hasEditableMimeType}
       >
         <SelectValue
@@ -89,7 +89,7 @@ const MimeTypeSelect = ({
           <SelectItem
             key={type.value}
             value={type.value}
-            data-testid={`var-mimetype-${type.value}`}
+            // data-testid={`var-mimetype-${type.value}`}
           >
             {type.label}
           </SelectItem>

@@ -41,9 +41,11 @@ export const createWorkflowVariables = async (
   workflow: string,
   amount = 5
 ) => {
+  // please keep "content" very short so it is easy to test in the
+  // editor (where every line needs a separate test selector)
   const variables = Array.from({ length: amount }, () => ({
     name: faker.internet.domainWord(),
-    content: faker.lorem.sentence(),
+    content: faker.git.shortSha(),
     mimeType: options[Math.floor(Math.random() * options.length)],
   }));
 
