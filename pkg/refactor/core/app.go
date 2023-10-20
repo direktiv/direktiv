@@ -37,5 +37,4 @@ type App struct {
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
-	GetPluginSchema GetPluginSchema
 }

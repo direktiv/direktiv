@@ -14,5 +14,9 @@ var (
 	ServiceDelete = "service_delete"
 	ServiceUpdate = "service_update"
 
+	EndpointCreate = "endpoint_create"
+	EndpointDelete = "endpoint_delete"
+	EndpointUpdate = "endpoint_update"
+
 	MirrorSync = "mirror_sync"
 )

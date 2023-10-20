@@ -1,26 +1,15 @@
 package spec
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
 type EndpointFile struct {
-	DirektivAPI    string       `yaml:"direktiv_api"`
-	Path           string       `yaml:"path"`
-	Method         string       `yaml:"method"`
-	TargetPlugin   PluginFile   `yaml:"target_plugin"`
-	TimeoutSeconds int          `yaml:"timeout_seconds"`
-	AuthPlugins    []PluginFile `yaml:"auth_plugins"`
-	RequestPlugins []PluginFile `yaml:"request_plugins"`
-}
-
-type PluginFile struct {
-	Name          string      `yaml:"name"`
-	Version       string      `yaml:"version"`
-	RuntimeConfig interface{} `yaml:"runtime_config"`
+	DirektivAPI string `yaml:"direktiv_api"`
+	Method      string `yaml:"method"`
 }
 
 func ParseEndpointFile(data []byte) (*EndpointFile, error) {
@@ -30,7 +19,7 @@ func ParseEndpointFile(data []byte) (*EndpointFile, error) {
 		return nil, err
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
-		return nil, errors.New("invalid service api version")
+		return nil, fmt.Errorf("invalid endpoint api version")
 	}
 
 	return res, nil
