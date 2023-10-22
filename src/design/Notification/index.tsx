@@ -33,7 +33,7 @@ const Notification: FC<NotificationPropsType> = ({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className=" bg-gray-1 p-4 px-1.5 text-[10px] font-medium opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1"
+        className="bg-gray-1 text-[10px] font-medium opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1"
       >
         {children}
       </PopoverContent>

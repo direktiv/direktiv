@@ -8,9 +8,15 @@ import { z } from "zod";
     "issue":  "secret 'ACCESS_KEY' has not been initialized",
     "level":  "critical"
   }
+  {
+    "type":  "namespace",
+    "id":  "ACCESS_KEY",
+    "issue":  "secret 'ACCESS_KEY' has not been initialized",
+    "level":  "critical"
+  }
  */
 const IssueSchema = z.object({
-  type: z.enum(["secret"]),
+  type: z.enum(["secret", "namespace"]),
   id: z.string(),
   issue: z.string(),
   level: z.string(),

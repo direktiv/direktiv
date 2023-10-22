@@ -1,9 +1,13 @@
+import { Bell, Play, Settings } from "lucide-react";
+
 import {
   NotificationButton,
   NotificationLoading,
+  NotificationMessage,
   NotificationText,
   NotificationTitle,
 } from "./NotificationModal";
+
 // eslint-disable-next-line sort-imports
 import type { Meta, StoryObj } from "@storybook/react";
 import { DropdownMenuSeparator } from "../Dropdown";
@@ -31,7 +35,7 @@ export const Default: Story = {
 };
 
 export const NotificationIsLoading = () => (
-  <div className="">
+  <div className="flex space-x-2">
     <Notification showIndicator={true}>
       <NotificationLoading>Loading...</NotificationLoading>
     </Notification>
@@ -62,14 +66,6 @@ export const NotificationHasMessageComplexExample = () => (
         <DropdownMenuSeparator></DropdownMenuSeparator>
         <NotificationText>Description of the issue...</NotificationText>
       </div>
-      <div className="flex justify-end">insert a button here</div>
-    </Notification>
-  </div>
-);
-
-export const ButtonTestWithLinkto = () => (
-  <div className="flex space-x-2">
-    <Notification showIndicator={true}>
       <div className="flex justify-end">
         <NotificationButton>Go fix it</NotificationButton>
       </div>
@@ -77,11 +73,36 @@ export const ButtonTestWithLinkto = () => (
   </div>
 );
 
-export const ButtonTestEmpty = () => (
+export const NotificationMessageComponent = () => (
   <div className="flex space-x-2">
     <Notification showIndicator={true}>
-      <div className="flex justify-end">
-        <NotificationButton>Go fix it</NotificationButton>
+      <div>
+        <NotificationMessage
+          icon={Play}
+          title="Issue: Unset Variable"
+          text="There are errors in the variable Settings"
+        ></NotificationMessage>
+      </div>
+    </Notification>
+  </div>
+);
+
+export const NotificationMessageComponentMulti = () => (
+  <div className="flex space-x-2">
+    <Notification showIndicator={true}>
+      <div>
+        <NotificationMessage
+          icon={Bell}
+          title="Issue: Unset Variable"
+          text="There are errors in the variable Settings"
+        ></NotificationMessage>
+      </div>
+      <div>
+        <NotificationMessage
+          icon={Settings}
+          title="Issue: Workflow error"
+          text="One Workflow failed to complete"
+        ></NotificationMessage>
       </div>
     </Notification>
   </div>

@@ -1026,17 +1026,18 @@
     },
     "notificationMenu": {
       "isLoading": {
-        "text": "loading..."
+        "text": "Loading..."
       },
       "noIssues": {
-        "text": "You do not have notifications."
+        "text": "You do not have any notifications."
       },
       "hasIssues": {
-          "secrets": {   
-            "title": "Notifications",
-            "text": "There are secrets that need to be initialized.",
-            "button": "Open settings"
-          }
+        "secrets": {
+          "title": "Notifications",
+          "description": "You have {{count}} uninitialized secrets!",
+          "description_one": "You have {{count}} uninitialized secret!",
+          "link": "Go to settings"
+        }
       }
     },
     "userMenu": {
