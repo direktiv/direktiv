@@ -294,15 +294,14 @@ unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit test
 	go test -cover -timeout 60s ${UNITTEST_PACKAGES}
 
 .PHONY: lint 
-lint: VERSION="v1.53"
+lint: VERSION="v1.54"
 lint: ## Runs very strict linting on the project.
-	-docker rm golangci-lint-${VERSION}-direktiv
-	-docker run \
+	docker run \
+	--rm \
 	--name golangci-lint-${VERSION}-direktiv \
 	-v `pwd`:/app \
 	-w /app \
 	golangci/golangci-lint:${VERSION} golangci-lint run
-	-docker commit golangci-lint-${VERSION}-direktiv golangci/golangci-lint:${VERSION}
 
 .PHONY: test
 test: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
