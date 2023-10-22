@@ -155,7 +155,7 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 	}
 
 	// direktiv sidecar
-	_ = corev1.Container{
+	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
 		Env:          buildEnvVars(c, cfg),
@@ -167,7 +167,7 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 		},
 	}
 
-	return []corev1.Container{uc}, nil
+	return []corev1.Container{uc, sc}, nil
 }
 
 func buildResourceLimits(c *core.Config, cfg *core.ServiceConfig) (corev1.ResourceRequirements, error) {

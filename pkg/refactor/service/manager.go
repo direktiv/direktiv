@@ -53,6 +53,7 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 	c.KnativeNamespace = "direktiv-services-direktiv"
 	c.KnativeIngressClass = "contour.ingress.networking.knative.dev"
 	c.KnativeMaxScale = 5
+	c.KnativeSidecar = "localhost:5000/direktiv"
 
 	client := &knativeClient{
 		client: cSet,
