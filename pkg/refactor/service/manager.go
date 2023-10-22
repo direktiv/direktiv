@@ -1,4 +1,3 @@
-// nolint
 package service
 
 import (
@@ -33,18 +32,15 @@ func NewManager(c *core.Config, enableDocker bool) (*Manager, error) {
 func newKnativeManager(c *core.Config) (*Manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 	cSet, err := versioned.NewForConfig(config)
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
 	k8sSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
@@ -73,12 +69,13 @@ func newDockerManager() (*Manager, error) {
 	client := dockerClient{
 		cli: cli,
 	}
+
 	return newManagerFromClient(&client), nil
 }
 
 func newManagerFromClient(client client) *Manager {
 	return &Manager{
-		list:   make([]*core.ServiceConfig, 0, 0),
+		list:   make([]*core.ServiceConfig, 0),
 		client: client,
 
 		lock: &sync.Mutex{},
@@ -102,30 +99,14 @@ func (m *Manager) runCycle() []error {
 		return []error{err}
 	}
 
-	//fmt.Printf("klist2:")
-	//for _, v := range knList {
-	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
-	//}
-	//fmt.Printf("\n")
-
 	target := make([]reconcileObject, len(knList))
 	for i, v := range knList {
 		target[i] = v
 	}
 
-	fmt.Printf("f2: lens: %v %v\n", len(src), len(target))
-
-	//fmt.Printf("srcs:")
-	//for _, v := range src {
-	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
-	//}
-	//fmt.Printf("\n")
-	//
-	//fmt.Printf("tars:")
-	//for _, v := range target {
-	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
-	//}
-	//fmt.Printf("\n")
+	// TODO: remove debug print.
+	// nolint
+	fmt.Printf("services reconcile: src length: %v, target length: %v\n", len(src), len(target))
 
 	result := reconcile(src, target)
 
@@ -174,8 +155,11 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			errs := m.runCycle()
 			m.lock.Unlock()
 			for _, err := range errs {
-				fmt.Printf("f2 error: %s\n", err)
+				// TODO: remove debug print.
+				// nolint
+				fmt.Printf("services reconcile error: %s\n", err)
 			}
+			// nolint
 			time.Sleep(2 * time.Second)
 		}
 
@@ -224,7 +208,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	result := []*core.ServiceStatus{}
 
 	for _, v := range cfgList {
-		service, _ := searchServices[v.GetID()]
+		service := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
 			result = append(result, &core.ServiceStatus{
@@ -244,6 +228,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
+// nolint:unparam
 func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
 	list, err := m.getList(namespace, "", "")
 	if err != nil {
