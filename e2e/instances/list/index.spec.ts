@@ -4,8 +4,9 @@ import {
   parentWorkflow as parentWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
   workflowThatFails as workflowThatFailsContent,
-} from "./utils";
+} from "../utils/workflows";
 
+import { createInstance } from "../utils";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
@@ -16,8 +17,8 @@ import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 type Instance = Awaited<ReturnType<typeof runWorkflow>>;
 
 let namespace = "";
-const simpleWorkflow = faker.system.commonFileName("yaml");
-const workflowThatFails = faker.system.commonFileName("yaml");
+const simpleWorkflowName = faker.system.commonFileName("yaml");
+const failingWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -27,7 +28,7 @@ test.beforeEach(async () => {
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: simpleWorkflow,
+      name: simpleWorkflowName,
     },
     headers,
   });
@@ -37,7 +38,7 @@ test.beforeEach(async () => {
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: workflowThatFails,
+      name: failingWorkflowName,
     },
     headers,
   });
@@ -47,26 +48,6 @@ test.afterEach(async () => {
   await deleteNamespace(namespace);
   namespace = "";
 });
-
-const createBasicInstance = async () =>
-  await runWorkflow({
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      path: simpleWorkflow,
-    },
-    headers,
-  });
-
-const createFailedInstance = async () =>
-  await runWorkflow({
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      path: workflowThatFails,
-    },
-    headers,
-  });
 
 test("it displays a note, when there are no instances yet.", async ({
   page,
@@ -85,7 +66,10 @@ test("it displays a note, when there are no instances yet.", async ({
 test("it renders the instance item correctly for failed and success status", async ({
   page,
 }) => {
-  const instances = [await createFailedInstance(), await createBasicInstance()];
+  const instances = [
+    await createInstance({ namespace, path: simpleWorkflowName }),
+    await createInstance({ namespace, path: failingWorkflowName }),
+  ];
 
   const checkInstanceRender = async (instance: Instance) => {
     const instancesList = await getInstances({
@@ -246,7 +230,7 @@ test("it provides a proper pagination", async ({ page }) => {
 
   await createWorkflow({
     payload: parentWorkflowContent({
-      childName: simpleWorkflow,
+      childName: simpleWorkflowName,
       children: totalCount - 1,
     }),
     urlParams: {
@@ -337,7 +321,7 @@ test("It will display child instances as well", async ({ page }) => {
 
   await createWorkflow({
     payload: parentWorkflowContent({
-      childName: simpleWorkflow,
+      childName: simpleWorkflowName,
       children: 1,
     }),
     urlParams: {
