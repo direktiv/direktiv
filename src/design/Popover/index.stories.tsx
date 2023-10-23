@@ -59,7 +59,9 @@ export const AlignPopoverContent = () => (
       </PopoverContent>
     </Popover>
     <Popover>
-      <PopoverTrigger>Align Center</PopoverTrigger>
+      <PopoverTrigger asChild>
+        <Button>Align Center</Button>
+      </PopoverTrigger>
       <PopoverContent align="center" className="p-4">
         Place content for the popover here.
       </PopoverContent>
