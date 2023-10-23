@@ -95,7 +95,7 @@ test("it renders the instance item correctly for failed and success status", asy
     if (!workflowName) throw new Error("workflowName is not defined");
 
     const instanceItemRow = page.getByTestId(
-      `instance-row-wrap-${instance.instance}`
+      `instance-row-${instance.instance}`
     );
 
     await expect(
@@ -306,9 +306,7 @@ test("it provides a proper pagination", async ({ page }) => {
   const firstInstance = instancesListPage3.instances.results[0];
   if (!firstInstance) throw new Error("there should be at least one instance");
 
-  const instanceItemRow = page.getByTestId(
-    `instance-row-wrap-${firstInstance.id}`
-  );
+  const instanceItemRow = page.getByTestId(`instance-row-${firstInstance.id}`);
 
   await expect(
     instanceItemRow.getByTestId("instance-column-id"),
@@ -361,7 +359,7 @@ test("It will display child instances as well", async ({ page }) => {
     throw new Error("there should be at least one child instance");
 
   const instanceItemRow = page.getByTestId(
-    `instance-row-wrap-${childInstanceDetail.id}`
+    `instance-row-${childInstanceDetail.id}`
   );
 
   await expect(

@@ -37,7 +37,7 @@ const InstanceTableRow: FC<{
   return (
     <TooltipProvider>
       <TableRow
-        data-testid={`instance-row-wrap-${instance.id}`}
+        data-testid={`instance-row-${instance.id}`}
         key={instance.id}
         onClick={() => {
           navigate(
