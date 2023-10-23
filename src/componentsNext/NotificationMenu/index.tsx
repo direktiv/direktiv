@@ -82,7 +82,9 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
           </div>
         )}
         {!showIndicator && !isLoading && (
-          <NotificationText>{textNoIssues}</NotificationText>
+          <div className="flex items-center py-1.5 px-2">
+            <NotificationText>{textNoIssues}</NotificationText>
+          </div>
         )}
       </Notification>
     </div>
