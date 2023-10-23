@@ -32,15 +32,14 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it is possible to navigate to the workflow settings page and to see the pagination working", async ({
+test("it is possible to navigate to the workflow settings page and use pagination", async ({
   page,
 }) => {
   await createWorkflowVariables(namespace, workflow, 15);
 
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const rows = page.getByTestId("variable-row");
   await expect(
-    rows,
+    page.getByTestId("variable-row"),
     "there should be 10 variables on the first page"
   ).toHaveCount(10);
 
@@ -54,37 +53,40 @@ test("it is possible to navigate to the workflow settings page and to see the pa
 
   await page.getByTestId("pagination-btn-right").click();
   await expect(
-    rows,
+    page.getByTestId("variable-row"),
     "there should be 5 variables on the second page"
   ).toHaveCount(5);
 
   await page.getByTestId("pagination-btn-left").click();
-  await expect(rows, "it is possible to go back to page 1").toHaveCount(10);
+  await expect(
+    page.getByTestId("variable-row"),
+    "it is possible to go back to page 1"
+  ).toHaveCount(10);
 });
 
-test("it is possible to create variables", async ({ page }) => {
+test("it is possible to create a variable", async ({ page }) => {
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const newVariable = {
+
+  const subject = {
     name: "workflow-variable",
     value: "this variable will be created via the form",
     mimeType: "plaintext",
   };
 
-  const createBtn = page.getByTestId("variable-create");
-  await createBtn.click();
+  await page.getByTestId("variable-create").click();
 
   await expect(
     page.getByRole("heading", { name: "Add a workflow variable" }),
     "create variable form should be visible"
   ).toBeVisible();
 
-  await page.getByLabel("Name").fill(faker.lorem.word());
+  await page.getByLabel("Name").fill(subject.name);
 
   await page.locator(".view-lines").click();
-  await page.locator(".view-lines").type(newVariable.value);
+  await page.locator(".view-lines").type(subject.value);
 
   await page.getByLabel("Mimetype").click();
-  await page.getByLabel(newVariable.mimeType).click();
+  await page.getByLabel(subject.mimeType).click();
   await page.getByRole("button", { name: "Create" }).click();
 
   const successToast = page.getByTestId("toast-success");
@@ -93,9 +95,15 @@ test("it is possible to create variables", async ({ page }) => {
     page.getByTestId("variable-row"),
     "there should be 1 variable in the list"
   ).toHaveCount(1);
+
+  await expect(
+    page.getByTestId("variable-row"),
+    "there should be 1 variable in the list"
+  ).toContainText(subject.name);
 });
 
 test("it is possible to update variables", async ({ page }) => {
+  /* set up test data */
   const subject = await setVariable({
     payload: "edit me",
     urlParams: {
@@ -113,6 +121,8 @@ test("it is possible to update variables", async ({ page }) => {
   if (!subject) {
     throw new Error("error setting up test data");
   }
+
+  /* visit page and edit variable */
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
 
   await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
@@ -138,11 +148,10 @@ test("it is possible to update variables", async ({ page }) => {
   }
   await page.locator(".view-lines").type('{"foo": "bar"}');
 
+  /* save changes and assert they have been persisted */
   await page.getByRole("button", { name: "Save" }).click();
 
-  const successToast = page.getByTestId("toast-success");
-  await expect(successToast, "a success toast appears").toBeVisible();
-
+  await waitForSuccessToast(page);
   await page.reload();
 
   await expect(
@@ -154,7 +163,6 @@ test("it is possible to update variables", async ({ page }) => {
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect(page.getByLabel("Mimetype")).toContainText("application/json");
-
   await expect(
     page.locator(".view-lines"),
     "editor should have the updated value"
@@ -162,21 +170,29 @@ test("it is possible to update variables", async ({ page }) => {
 });
 
 test("it is possible to delete variables", async ({ page }) => {
-  await createWorkflowVariables(namespace, workflow, 1);
+  /* set up test data */
+  const variables = await createWorkflowVariables(namespace, workflow, 4);
+  const subject = variables[2];
+
+  if (!subject) {
+    throw new Error("error setting up test data");
+  }
+
+  /* visit page and delete variable */
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
-  const rows = page.getByTestId("variable-row");
 
-  const itemName = await page.getByTestId("item-name").textContent();
-  const menuTrigger = page.getByTestId(`dropdown-trg-item-${itemName}`);
-  await menuTrigger.click();
+  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByRole("button", { name: "delete" }).click();
 
-  const deleteMenu = page.getByTestId("dropdown-actions-delete");
-  await deleteMenu.click();
-
-  const deleteConfirmBtn = page.getByTestId("registry-delete-confirm");
-  await expect(deleteConfirmBtn, "delete modal should appear").toBeVisible();
-  await deleteConfirmBtn.click();
+  await expect(
+    page.getByLabel("Confirmation required").getByText(subject.key),
+    "it renders the confirmation dialog"
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Delete" }).click();
   await waitForSuccessToast(page);
 
-  await expect(rows, "there should be no variables").toHaveCount(0);
+  await expect(
+    page.getByTestId("variable-row"),
+    "the variable is no longer rendered in the list"
+  ).toHaveCount(variables.length - 1);
 });
