@@ -15,6 +15,7 @@ import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { useStreaming } from "~/api/streaming";
 
+// TODO: remove this file
 export const getServiceDetails = apiFactory({
   url: ({
     baseUrl,
