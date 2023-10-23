@@ -6,10 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dClient "github.com/docker/docker/client"
+	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
