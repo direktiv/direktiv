@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -119,6 +120,10 @@ func (c *knativeClient) killService(id string) error {
 		context.Background(),
 		id,
 		metav1.DeleteOptions{})
+}
+
+func (c *knativeClient) getServiceURL(id string) string {
+	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, c.config.KnativeNamespace)
 }
 
 var _ client = &knativeClient{}

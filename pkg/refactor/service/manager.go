@@ -176,7 +176,7 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 	}
 }
 
-func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
+func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
 	// clone the list
 	cfgList := make([]*core.ServiceConfig, 0)
 	for i, v := range m.list {
@@ -187,6 +187,9 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 			continue
 		}
 		if filterTyp != "" && v.Typ != filterTyp {
+			continue
+		}
+		if filterName != "" && v.Name != filterName {
 			continue
 		}
 
@@ -227,7 +230,7 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 
 // nolint:unparam
 func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
-	list, err := m.getList(namespace, "", "")
+	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +249,7 @@ func (m *manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	return m.getList(namespace, "", "")
+	return m.getList(namespace, "", "", "")
 }
 
 func (m *manager) GetPods(namespace string, serviceID string) (any, error) {
@@ -291,4 +294,20 @@ func (m *manager) Kill(namespace string, serviceID string) error {
 	}
 
 	return m.client.killService(serviceID)
+}
+
+func (m *manager) GetServiceURL(namespace string, file string, name string) (string, error) {
+	list, err := m.getList(namespace, "", file, name)
+	if err != nil {
+		return "", err
+	}
+	if len(list) == 0 {
+		return "", core.ErrNotFound
+	}
+	if len(list) > 1 {
+		panic("unexpected manager.getList() length")
+	}
+	item := list[0]
+
+	return m.client.getServiceURL(item.GetID()), nil
 }
