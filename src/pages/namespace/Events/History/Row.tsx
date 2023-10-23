@@ -25,18 +25,15 @@ const Row = ({
 
   return (
     <TooltipProvider>
-      <TableRow
-        data-testid={`event-row-${event.id}`}
-        onClick={() => onClick(event)}
-      >
-        <TableCell>{event.type}</TableCell>
-        <TableCell>
+      <TableRow data-testid="event-row" onClick={() => onClick(event)}>
+        <TableCell headers="event-type">{event.type}</TableCell>
+        <TableCell headers="event-id">
           <TooltipCopyBadge value={event.id} variant="outline">
             {event.id.slice(0, 8)}
           </TooltipCopyBadge>
         </TableCell>
-        <TableCell>{event.source}</TableCell>
-        <TableCell>
+        <TableCell headers="event-source">{event.source}</TableCell>
+        <TableCell headers="event-received-at">
           <Tooltip>
             <TooltipTrigger data-testid="receivedAt-tooltip-trigger">
               {t("pages.events.history.tableRow.realtiveTime", {
