@@ -14,7 +14,7 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-type Manager struct {
+type manager struct {
 	list   []*core.ServiceConfig
 	client client
 
@@ -22,7 +22,7 @@ type Manager struct {
 	lock   *sync.Mutex
 }
 
-func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (*Manager, error) {
+func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (core.ServiceManager, error) {
 	logger = logger.With("module", "service manager")
 	if enableDocker {
 		return newDockerManager(logger)
@@ -31,7 +31,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (*
 	return newKnativeManager(c, logger)
 }
 
-func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*Manager, error) {
+func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*Manager, err
 	return newManagerFromClient(client, logger), nil
 }
 
-func newDockerManager(logger *zap.SugaredLogger) (*Manager, error) {
+func newDockerManager(logger *zap.SugaredLogger) (*manager, error) {
 	cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -75,8 +75,8 @@ func newDockerManager(logger *zap.SugaredLogger) (*Manager, error) {
 	return newManagerFromClient(&client, logger), nil
 }
 
-func newManagerFromClient(client client, logger *zap.SugaredLogger) *Manager {
-	return &Manager{
+func newManagerFromClient(client client, logger *zap.SugaredLogger) *manager {
+	return &manager{
 		list:   make([]*core.ServiceConfig, 0),
 		client: client,
 
@@ -85,7 +85,7 @@ func newManagerFromClient(client client, logger *zap.SugaredLogger) *Manager {
 	}
 }
 
-func (m *Manager) runCycle() []error {
+func (m *manager) runCycle() []error {
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
 	for i, v := range m.list {
@@ -140,7 +140,7 @@ func (m *Manager) runCycle() []error {
 	return errs
 }
 
-func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	const cycleTime = 2 * time.Second
 
 	go func() {
@@ -164,7 +164,7 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 }
 
-func (m *Manager) SetServices(list []*core.ServiceConfig) {
+func (m *manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -176,7 +176,7 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	}
 }
 
-func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
+func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
 	// clone the list
 	cfgList := make([]*core.ServiceConfig, 0)
 	for i, v := range m.list {
@@ -226,7 +226,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 }
 
 // nolint:unparam
-func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
 	list, err := m.getList(namespace, "", "")
 	if err != nil {
 		return nil, err
@@ -242,14 +242,14 @@ func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatu
 	return nil, core.ErrNotFound
 }
 
-func (m *Manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
+func (m *manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	return m.getList(namespace, "", "")
 }
 
-func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
+func (m *manager) GetPods(namespace string, serviceID string) (any, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -267,7 +267,7 @@ func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 	return pods, nil
 }
 
-func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
+func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -280,7 +280,7 @@ func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (
 	return m.client.streamServiceLogs(serviceID, podID)
 }
 
-func (m *Manager) Kill(namespace string, serviceID string) error {
+func (m *manager) Kill(namespace string, serviceID string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 

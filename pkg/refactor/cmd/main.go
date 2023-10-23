@@ -140,7 +140,7 @@ func renderGatewayManager(db *database.DB, gwManager core.GatewayManager, logger
 	gwManager.SetEndpoints(endpoints)
 }
 
-func renderServiceManager(db *database.DB, serviceManager *service.Manager, logger *zap.SugaredLogger) {
+func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, logger *zap.SugaredLogger) {
 	logger = logger.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
