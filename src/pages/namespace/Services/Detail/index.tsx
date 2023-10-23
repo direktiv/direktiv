@@ -2,24 +2,14 @@ import { Card } from "~/design/Card";
 import Header from "./Header";
 import { NoPermissions } from "~/design/Table";
 import { Pods } from "./Pods";
-import { ServiceRevisionStreamingSubscriber } from "~/api/services/query/revision/getAll";
 import { pages } from "~/util/router/pages";
 import { usePods } from "~/api/services/query/getPods";
 
 const ServiceRevisionPage = () => {
   const { service } = pages.services.useParams();
-
-  const {
-    isFetched,
-    isAllowed,
-    noPermissionMessage,
-    data: podList,
-  } = usePods(
-    service ?? "" // TODO: fix empty string
-  );
+  const { isFetched, isAllowed, noPermissionMessage } = usePods(service ?? "");
 
   if (!service) return null;
-
   if (!isFetched) return null;
   if (!isAllowed)
     return (
@@ -33,7 +23,7 @@ const ServiceRevisionPage = () => {
       <div className="flex-none">
         <Header service={service} />
       </div>
-      {/* <Pods revision={revision} service={service} /> */}
+      <Pods service={service} />
     </div>
   );
 };
