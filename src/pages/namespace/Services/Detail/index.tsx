@@ -30,10 +30,6 @@ const ServiceRevisionPage = () => {
 
   return (
     <div className="flex grow flex-col">
-      {/* <ServiceRevisionStreamingSubscriber
-        revision={revision}
-        service={service}
-      /> */}
       <div className="flex-none">
         <Header service={service} />
       </div>
