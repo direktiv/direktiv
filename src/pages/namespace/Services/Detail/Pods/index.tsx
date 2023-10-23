@@ -3,10 +3,6 @@ import {
   PodLogsSubscriber,
   usePodLogs,
 } from "~/api/services/query/revision/pods/getLogs";
-import {
-  PodsSubscriber,
-  usePods,
-} from "~/api/services/query/revision/pods/getAll";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
   Tooltip,
@@ -20,51 +16,43 @@ import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { NoResult } from "~/design/Table";
 import { PodsListSchemaType } from "~/api/services/schema/pods";
+import { PodsSubscriber } from "~/api/services/query/revision/pods/getAll";
 import ScrollContainer from "./ScrollContainer";
 import { podStatusToBadgeVariant } from "../../components/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { usePods } from "~/api/services/query/getPods";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const Pods = ({
   service,
-  revision,
-  workflow,
-  version,
   className,
 }: {
   service: string;
-  revision: string;
-  workflow?: string;
-  version?: string;
   className?: string;
 }) => {
-  const { data: podsList, isSuccess } = usePods({
-    revision,
-    service,
-    workflow,
-    version,
-  });
+  const { data: podsList, isSuccess } = usePods(service);
   if (!isSuccess) return null;
 
   return (
     <>
-      <PodsSubscriber
+      {/* TODO: reimplement PodsSubscriber */}
+      {/* <PodsSubscriber
         revision={revision}
         service={service}
         workflow={workflow}
         version={version}
-      />
-      <PodsWithData pods={podsList.pods} className={className} />
+      /> */}
+      <PodsWithData pods={podsList.data} className={className} />
     </>
   );
 };
 
-export const PodsWithData = ({
+const PodsWithData = ({
   pods,
   className,
 }: {
-  pods: PodsListSchemaType["pods"];
+  pods: string[];
   className?: string;
 }) => {
   const { t } = useTranslation();
