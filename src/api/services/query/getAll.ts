@@ -122,6 +122,27 @@ export const ServicesStreamingSubscriber = memo(
 
 ServicesStreamingSubscriber.displayName = "ServicesStreamingSubscriber";
 
+// TODO: rename this file
+
+export const useService = (serviceId: string) => {
+  const apiKey = useApiKey();
+  const namespace = useNamespace();
+
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
+
+  return useQueryWithPermissions({
+    queryKey: serviceKeys.servicesList(namespace, {
+      apiKey: apiKey ?? undefined,
+    }),
+    select: (services) =>
+      services?.data.find((service) => service.id === serviceId),
+    queryFn: fetchServices,
+    enabled: !!namespace,
+  });
+};
+
 export const useServices = ({ workflow }: { workflow?: string }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
