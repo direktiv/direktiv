@@ -1,11 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"io"
 	"slices"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dClient "github.com/docker/docker/client"
@@ -18,18 +19,20 @@ type Manager struct {
 	list   []*core.ServiceConfig
 	client client
 
-	lock *sync.Mutex
+	logger *zap.SugaredLogger
+	lock   *sync.Mutex
 }
 
-func NewManager(c *core.Config, enableDocker bool) (*Manager, error) {
+func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (*Manager, error) {
+	logger = logger.With("module", "service manager")
 	if enableDocker {
-		return newDockerManager()
+		return newDockerManager(logger)
 	}
 
-	return newKnativeManager(c)
+	return newKnativeManager(c, logger)
 }
 
-func newKnativeManager(c *core.Config) (*Manager, error) {
+func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*Manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -57,10 +60,10 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 		k8sSet: k8sSet,
 	}
 
-	return newManagerFromClient(client), nil
+	return newManagerFromClient(client, logger), nil
 }
 
-func newDockerManager() (*Manager, error) {
+func newDockerManager(logger *zap.SugaredLogger) (*Manager, error) {
 	cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -70,15 +73,16 @@ func newDockerManager() (*Manager, error) {
 		cli: cli,
 	}
 
-	return newManagerFromClient(&client), nil
+	return newManagerFromClient(&client, logger), nil
 }
 
-func newManagerFromClient(client client) *Manager {
+func newManagerFromClient(client client, logger *zap.SugaredLogger) *Manager {
 	return &Manager{
 		list:   make([]*core.ServiceConfig, 0),
 		client: client,
 
-		lock: &sync.Mutex{},
+		logger: logger,
+		lock:   &sync.Mutex{},
 	}
 }
 
@@ -104,16 +108,11 @@ func (m *Manager) runCycle() []error {
 		target[i] = v
 	}
 
-	// TODO: remove debug print.
-	// nolint
-	fmt.Printf("services reconcile: src length: %v, target length: %v\n", len(src), len(target))
+	m.logger.Debugw("reconcile length", "src", len(src), "target", len(target))
 
 	result := reconcile(src, target)
 
-	// fmt.Printf("f2: recocile: %v\n", result)
-
 	errs := []error{}
-
 	for _, id := range result.deletes {
 		if err := m.client.deleteService(id); err != nil {
 			errs = append(errs, err)
@@ -143,6 +142,8 @@ func (m *Manager) runCycle() []error {
 }
 
 func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+	const cycleTime = 2 * time.Second
+
 	go func() {
 	loop:
 		for {
@@ -155,12 +156,9 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			errs := m.runCycle()
 			m.lock.Unlock()
 			for _, err := range errs {
-				// TODO: remove debug print.
-				// nolint
-				fmt.Printf("services reconcile error: %s\n", err)
+				m.logger.Errorw("run cycle", "error", err)
 			}
-			// nolint
-			time.Sleep(2 * time.Second)
+			time.Sleep(cycleTime)
 		}
 
 		wg.Done()

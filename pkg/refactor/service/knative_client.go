@@ -22,8 +22,7 @@ type knativeClient struct {
 	client versioned.Interface
 }
 
-// nolint
-func (c *knativeClient) streamServiceLogs(id string, podID string) (io.ReadCloser, error) {
+func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser, error) {
 	req := c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).GetLogs(podID, &v1.PodLogOptions{
 		Container: "direktiv-container",
 		Follow:    true,
