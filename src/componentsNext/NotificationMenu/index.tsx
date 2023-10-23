@@ -1,3 +1,4 @@
+import Notification, { NotificationClose } from "~/design/Notification";
 import {
   NotificationLoading,
   NotificationMessage,
@@ -5,7 +6,6 @@ import {
 } from "~/design/Notification/NotificationModal";
 
 import { Link } from "react-router-dom";
-import Notification from "~/design/Notification";
 import { Settings } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
@@ -67,15 +67,17 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                 }
 
                 return (
-                  <Link to={notificationConfig.href} key={notificationType}>
-                    <NotificationMessage
-                      title={notificationConfig.title}
-                      text={notificationConfig.description(
-                        matchingNotification.length
-                      )}
-                      icon={notificationConfig.icon}
-                    />
-                  </Link>
+                  <NotificationClose key={notificationType} asChild>
+                    <Link to={notificationConfig.href}>
+                      <NotificationMessage
+                        title={notificationConfig.title}
+                        text={notificationConfig.description(
+                          matchingNotification.length
+                        )}
+                        icon={notificationConfig.icon}
+                      />
+                    </Link>
+                  </NotificationClose>
                 );
               }
             )}

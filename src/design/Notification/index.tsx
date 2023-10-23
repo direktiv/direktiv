@@ -1,5 +1,10 @@
 import { FC, PropsWithChildren } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/design/Popover";
 
 import { Bell } from "lucide-react";
 import Button from "~/design/Button";
@@ -9,6 +14,8 @@ type NotificationPropsType = PropsWithChildren & {
   className?: string;
   showIndicator?: boolean;
 };
+
+export const NotificationClose = PopoverClose;
 
 const Notification: FC<NotificationPropsType> = ({
   className,
