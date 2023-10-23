@@ -66,11 +66,13 @@ test("it renders event listeners", async ({ page }) => {
     'type "start workflow" is rendered for every event listener'
   ).toHaveCount(4);
 
-  await workflowNames.map((name, index) =>
-    expect(
-      page.getByRole("cell", { name }),
-      `each workflow name is rendered in the list (${index} of ${workflowNames.length})`
-    ).toBeVisible()
+  await Promise.all(
+    workflowNames.map((name, index) =>
+      expect(
+        page.getByRole("cell", { name }),
+        `each workflow name is rendered in the list (${index} of ${workflowNames.length})`
+      ).toBeVisible()
+    )
   );
 
   await expect(
