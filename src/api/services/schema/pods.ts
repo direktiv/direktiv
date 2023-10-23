@@ -26,13 +26,16 @@ export const PodSchema = z.object({
 });
 
 /**
-   * example
-    {
-      "pods": []
-    }
-   */
+  {
+    "data": [
+      {
+        "id": "string"
+      }
+    ]
+  }
+ */
 export const PodsListSchema = z.object({
-  pods: z.array(PodSchema),
+  data: z.array(z.object({ id: z.string() })),
 });
 
 export const PodsStreamingSchema = z.object({
