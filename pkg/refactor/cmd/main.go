@@ -44,11 +44,8 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
 
-	// Create gateway manager
+	// Create endpoint manager
 	gw := gateway.NewHandler()
-	// Start service manager
-	wg.Add(1)
-	gw.Start(done, wg)
 
 	// Create App
 	app := core.App{
@@ -76,14 +73,14 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	renderServiceManager(db, serviceManager, logger)
 
 	pbus.Subscribe(func(_ string) {
-		renderGatewayManager(db, gw, logger)
+		renderEndpointManager(db, gw, logger)
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,
 		pubsub.MirrorSync,
 	)
-	renderGatewayManager(db, gw, logger)
+	renderEndpointManager(db, gw, logger)
 
 	// Start api v2 server
 	wg.Add(1)
@@ -100,7 +97,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	return wg
 }
 
-func renderGatewayManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
+func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
 	fStore, dStore := db.FileStore(), db.DataStore()
 	ctx := context.Background()
 

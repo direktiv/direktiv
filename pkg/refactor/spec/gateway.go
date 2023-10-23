@@ -8,14 +8,14 @@ import (
 )
 
 type EndpointFile struct {
-	DirektivAPI string    `yaml:"direktiv_api"`
-	Method      string    `yaml:"method"`
-	Workflow    string    `yaml:"workflow"`
-	Namespace   string    `yaml:"namespace"`
-	Plugins     []Plugins `yaml:"plugins"`
+	DirektivAPI string         `yaml:"direktiv_api"`
+	Method      string         `yaml:"method"`
+	Workflow    string         `yaml:"workflow"`
+	Namespace   string         `yaml:"namespace"`
+	Plugins     []PluginConfig `yaml:"plugins"`
 }
 
-type Plugins struct {
+type PluginConfig struct {
 	ID            string      `yaml:"id"`
 	Configuration interface{} `yaml:"configuration"`
 }

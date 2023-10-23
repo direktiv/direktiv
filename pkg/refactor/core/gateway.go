@@ -2,7 +2,6 @@ package core
 
 import (
 	"net/http"
-	"sync"
 )
 
 const MagicalGatewayNamespace = "gateway_namespace"
@@ -11,9 +10,7 @@ type EndpointManager interface {
 	http.Handler
 
 	GetAll() []*EndpointStatus
-	SetEndpoints(endpoints []*Endpoint)
-
-	Start(done <-chan struct{}, wg *sync.WaitGroup)
+	SetEndpoints(endpoints []*Endpoint) []*EndpointStatus
 }
 
 type Endpoint struct {
