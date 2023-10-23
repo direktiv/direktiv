@@ -27,7 +27,7 @@ import MonitoringPage from "~/pages/namespace/Monitoring";
 import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
-import ServiceDetailPage from "~/pages/namespace/Services/Detail/Revision";
+import ServiceDetailPage from "~/pages/namespace/Services/Detail";
 import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";

@@ -1,5 +1,5 @@
-import Header from "~/pages/namespace/Services/Detail/Revision/Header";
-import { Pods } from "~/pages/namespace/Services/Detail/Revision/Pods";
+import Header from "~/pages/namespace/Services/Detail/Header";
+import { Pods } from "~/pages/namespace/Services/Detail/Pods";
 import { ServiceRevisionStreamingSubscriber } from "~/api/services/query/revision/getAll";
 import { pages } from "~/util/router/pages";
 import { useSearchParams } from "react-router-dom";
