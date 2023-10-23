@@ -8,8 +8,16 @@ import (
 )
 
 type EndpointFile struct {
-	DirektivAPI string `yaml:"direktiv_api"`
-	Method      string `yaml:"method"`
+	DirektivAPI string    `yaml:"direktiv_api"`
+	Method      string    `yaml:"method"`
+	Workflow    string    `yaml:"workflow"`
+	Namespace   string    `yaml:"namespace"`
+	Plugins     []Plugins `yaml:"plugins"`
+}
+
+type Plugins struct {
+	ID            string      `yaml:"id"`
+	Configuration interface{} `yaml:"configuration"`
 }
 
 func ParseEndpointFile(data []byte) (*EndpointFile, error) {

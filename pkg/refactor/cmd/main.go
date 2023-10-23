@@ -58,7 +58,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		Config:          config,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
-		EndpointManager:  gw,
+		EndpointManager: gw,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -132,8 +132,19 @@ func renderGatewayManager(db *database.DB, gwManager core.EndpointManager, logge
 
 			continue
 		}
+		plConfig := make([]core.Plugins, 0, len(item.Plugins))
+		for _, v := range item.Plugins {
+			plConfig = append(plConfig, core.Plugins{
+				ID:            v.ID,
+				Configuration: v.Configuration,
+			})
+		}
 		endpoints = append(endpoints, &core.Endpoint{
-			Method: item.Method,
+			Method:    item.Method,
+			Workflow:  item.Workflow,
+			Namespace: item.Namespace,
+			Plugins:   plConfig,
+			FilePath:  file.Path,
 		})
 	}
 

@@ -17,13 +17,15 @@ type EndpointManager interface {
 }
 
 type Endpoint struct {
-	Method    string `json:"method"`
-	Workflow  string `json:"workflow"`
-	Namespace string `json:"namespace"`
-	Plugins   []struct {
-		ID            string      `json:"id"`
-		Configuration interface{} `json:"configuration"`
-	} `json:"plugins"`
+	Method    string    `json:"method"`
+	FilePath  string    `json:"file_path"`
+	Workflow  string    `json:"workflow"`
+	Namespace string    `json:"namespace"`
+	Plugins   []Plugins `json:"plugins"`
+}
+type Plugins struct {
+	ID            string      `json:"id"`
+	Configuration interface{} `json:"configuration"`
 }
 
 type EndpointStatus struct {
