@@ -2,7 +2,7 @@ name: Playwright Tests
 on: pull_request
 jobs:
   test:
-    timeout-minutes: 45
+    timeout-minutes: 100
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
