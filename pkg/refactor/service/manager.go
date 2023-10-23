@@ -31,7 +31,22 @@ type manager struct {
 func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (core.ServiceManager, error) {
 	logger = logger.With("module", "service manager")
 	if enableDocker {
-		return newDockerManager(logger)
+		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
+		if err != nil {
+			return nil, err
+		}
+
+		client := dockerClient{
+			cli: cli,
+		}
+
+		return &manager{
+			list:          make([]*core.ServiceConfig, 0),
+			runtimeClient: &client,
+
+			logger: logger,
+			lock:   &sync.Mutex{},
+		}, nil
 	}
 
 	return newKnativeManager(c, logger)
@@ -65,30 +80,13 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 		k8sCli:     k8sCli,
 	}
 
-	return newManagerFromClient(client, logger), nil
-}
-
-func newDockerManager(logger *zap.SugaredLogger) (*manager, error) {
-	cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-
-	client := dockerClient{
-		cli: cli,
-	}
-
-	return newManagerFromClient(&client, logger), nil
-}
-
-func newManagerFromClient(client runtimeClient, logger *zap.SugaredLogger) *manager {
 	return &manager{
 		list:          make([]*core.ServiceConfig, 0),
 		runtimeClient: client,
 
 		logger: logger,
 		lock:   &sync.Mutex{},
-	}
+	}, nil
 }
 
 func (m *manager) runCycle() []error {
