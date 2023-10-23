@@ -18,13 +18,12 @@ import (
 type knativeClient struct {
 	config *core.Config
 
-	k8sSet *kubernetes.Clientset
-
-	client versioned.Interface
+	k8sCli     *kubernetes.Clientset
+	knativeCli versioned.Interface
 }
 
 func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser, error) {
-	req := c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).GetLogs(podID, &v1.PodLogOptions{
+	req := c.k8sCli.CoreV1().Pods(c.config.KnativeNamespace).GetLogs(podID, &v1.PodLogOptions{
 		Container: "direktiv-container",
 		Follow:    true,
 	})
@@ -43,7 +42,7 @@ func (c *knativeClient) createService(cfg *core.ServiceConfig) error {
 		return err
 	}
 
-	_, err = c.client.ServingV1().Services(c.config.KnativeNamespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
+	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -60,7 +59,7 @@ func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.client.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), cfg.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
+	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), cfg.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
@@ -69,7 +68,7 @@ func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
 }
 
 func (c *knativeClient) deleteService(id string) error {
-	err := c.client.ServingV1().Services(c.config.KnativeNamespace).Delete(context.Background(), id, metav1.DeleteOptions{})
+	err := c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Delete(context.Background(), id, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
@@ -78,7 +77,7 @@ func (c *knativeClient) deleteService(id string) error {
 }
 
 func (c *knativeClient) listServices() ([]status, error) {
-	list, err := c.client.ServingV1().Services(c.config.KnativeNamespace).List(context.Background(), metav1.ListOptions{})
+	list, err := c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +92,7 @@ func (c *knativeClient) listServices() ([]status, error) {
 
 func (c *knativeClient) listServicePods(id string) (any, error) {
 	lo := metav1.ListOptions{}
-	l, err := c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).List(context.Background(), lo)
+	l, err := c.k8sCli.CoreV1().Pods(c.config.KnativeNamespace).List(context.Background(), lo)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +115,7 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 }
 
 func (c *knativeClient) killService(id string) error {
-	return c.k8sSet.CoreV1().Pods(c.config.KnativeNamespace).Delete(
+	return c.k8sCli.CoreV1().Pods(c.config.KnativeNamespace).Delete(
 		context.Background(),
 		id,
 		metav1.DeleteOptions{})
@@ -126,7 +125,7 @@ func (c *knativeClient) getServiceURL(id string) string {
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, c.config.KnativeNamespace)
 }
 
-var _ client = &knativeClient{}
+var _ runtimeClient = &knativeClient{}
 
 type knativeStatus struct {
 	*servingv1.Service

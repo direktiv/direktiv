@@ -6,7 +6,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
-type client interface {
+// Services need a runtime that creates and schedule them, we use direktiv uses knative as a service runtime.
+// runtimeClient interface implements imperative commands to manipulates services in the underlying runtime driver
+// which is typically knative. Docker runtime driver is also implemented for demo purposes.
+type runtimeClient interface {
 	createService(cfg *core.ServiceConfig) error
 	updateService(cfg *core.ServiceConfig) error
 	deleteService(id string) error

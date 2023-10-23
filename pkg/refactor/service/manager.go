@@ -14,9 +14,15 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
+// manager struct implements core.ServiceManager by wrapping runtimeClient. manager implementation manages
+// services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
+// to reconcile the services in list param versus what is running in the runtime.
 type manager struct {
-	list   []*core.ServiceConfig
-	client client
+	// this list maintains all the service configurations that need to be running.
+	list []*core.ServiceConfig
+
+	// the underlying service runtime used to create/schedule the services.
+	runtimeClient runtimeClient
 
 	logger *zap.SugaredLogger
 	lock   *sync.Mutex
@@ -36,12 +42,12 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 	if err != nil {
 		return nil, err
 	}
-	cSet, err := versioned.NewForConfig(config)
+	knativeCli, err := versioned.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
 
-	k8sSet, err := kubernetes.NewForConfig(config)
+	k8sCli, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +60,9 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 	c.KnativeSidecar = "localhost:5000/direktiv"
 
 	client := &knativeClient{
-		client: cSet,
-		config: c,
-		k8sSet: k8sSet,
+		config:     c,
+		knativeCli: knativeCli,
+		k8sCli:     k8sCli,
 	}
 
 	return newManagerFromClient(client, logger), nil
@@ -75,10 +81,10 @@ func newDockerManager(logger *zap.SugaredLogger) (*manager, error) {
 	return newManagerFromClient(&client, logger), nil
 }
 
-func newManagerFromClient(client client, logger *zap.SugaredLogger) *manager {
+func newManagerFromClient(client runtimeClient, logger *zap.SugaredLogger) *manager {
 	return &manager{
-		list:   make([]*core.ServiceConfig, 0),
-		client: client,
+		list:          make([]*core.ServiceConfig, 0),
+		runtimeClient: client,
 
 		logger: logger,
 		lock:   &sync.Mutex{},
@@ -97,7 +103,7 @@ func (m *manager) runCycle() []error {
 		searchSrc[v.GetID()] = v
 	}
 
-	knList, err := m.client.listServices()
+	knList, err := m.runtimeClient.listServices()
 	if err != nil {
 		return []error{err}
 	}
@@ -113,7 +119,7 @@ func (m *manager) runCycle() []error {
 
 	errs := []error{}
 	for _, id := range result.deletes {
-		if err := m.client.deleteService(id); err != nil {
+		if err := m.runtimeClient.deleteService(id); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -122,7 +128,7 @@ func (m *manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
-		if err := m.client.createService(v); err != nil {
+		if err := m.runtimeClient.createService(v); err != nil {
 			errStr := err.Error()
 			v.Error = &errStr
 		}
@@ -132,7 +138,7 @@ func (m *manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
-		if err := m.client.updateService(v); err != nil {
+		if err := m.runtimeClient.updateService(v); err != nil {
 			*v.Error = err.Error()
 		}
 	}
@@ -196,7 +202,7 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 		cfgList = append(cfgList, m.list[i])
 	}
 
-	services, err := m.client.listServices()
+	services, err := m.runtimeClient.listServices()
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +268,7 @@ func (m *manager) GetPods(namespace string, serviceID string) (any, error) {
 		return nil, err
 	}
 
-	pods, err := m.client.listServicePods(serviceID)
+	pods, err := m.runtimeClient.listServicePods(serviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +286,7 @@ func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (
 		return nil, err
 	}
 
-	return m.client.streamServiceLogs(serviceID, podID)
+	return m.runtimeClient.streamServiceLogs(serviceID, podID)
 }
 
 func (m *manager) Kill(namespace string, serviceID string) error {
@@ -293,7 +299,7 @@ func (m *manager) Kill(namespace string, serviceID string) error {
 		return err
 	}
 
-	return m.client.killService(serviceID)
+	return m.runtimeClient.killService(serviceID)
 }
 
 func (m *manager) GetServiceURL(namespace string, file string, name string) (string, error) {
@@ -309,5 +315,5 @@ func (m *manager) GetServiceURL(namespace string, file string, name string) (str
 	}
 	item := list[0]
 
-	return m.client.getServiceURL(item.GetID()), nil
+	return m.runtimeClient.getServiceURL(item.GetID()), nil
 }

@@ -160,7 +160,7 @@ func (c *dockerClient) getServiceURL(id string) string {
 	return fmt.Sprintf("http://%s", id)
 }
 
-var _ client = &dockerClient{}
+var _ runtimeClient = &dockerClient{}
 
 type dockerStatus struct {
 	*types.Container
