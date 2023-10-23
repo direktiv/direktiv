@@ -1,122 +1,60 @@
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "~/design/HoverCard";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
-
-import Badge from "~/design/Badge";
-import { ConditionalWrapper } from "~/util/helpers";
 import { Diamond } from "lucide-react";
 import { StatusBadge } from "../components/StatusBadge";
-import moment from "moment";
-import { podStatusToBadgeVariant } from "../components/utils";
-import { usePods } from "~/api/services/query/revision/pods/getAll";
-import { useServiceRevision } from "~/api/services/query/revision/getAll";
+import { useService } from "~/api/services/query/getAll";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
 
-const Header = ({
-  service,
-  revision,
-}: {
-  service: string;
-  revision: string;
-}) => {
-  const { data: revisionData } = useServiceRevision({ service, revision });
-  const { data: podsData } = usePods({ service, revision });
+const Header = ({ service }: { service: string }) => {
+  const { data: serviceData } = useService(service);
   const { t } = useTranslation();
 
-  const created = useUpdatedAt(
-    moment.unix(parseInt(revisionData?.created ?? "0"))
-  );
-
-  if (!revisionData) return null;
-
-  const sizeLabel = revisionData.size;
+  if (!serviceData) return null;
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
       <div className="flex flex-col gap-3 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-bold text-primary-500">
-          <Diamond className="h-5" /> {service} / {revision}
+          <Diamond className="h-5" />
+          {serviceData.name}
         </h3>
-        <div>{revisionData.image}</div>
+        {/* TODO: may link to path */}
+        <div>{serviceData.filePath}</div>
       </div>
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-between">
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.services.revision.detail.created")}
+            {t("pages.services.list.tableHeader.image")}
           </div>
-          {t("pages.services.revision.detail.realtiveTime", {
-            relativeTime: created,
-          })}
+          {serviceData.image}
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.services.revision.detail.size")}
+            {t("pages.services.list.tableHeader.scale")}
           </div>
-          {sizeLabel}
+          {serviceData.scale}
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.services.revision.detail.Generation")}
+            {t("pages.services.list.tableHeader.size")}
           </div>
-          {revisionData.generation}
+          {serviceData.size}
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.services.revision.detail.scale")}
+            {t("pages.services.list.tableHeader.cmd")}
           </div>
-          <ConditionalWrapper
-            condition={!!podsData?.pods?.length}
-            wrapper={(children) => (
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <span className="cursor-pointer underline">{children}</span>
-                </HoverCardTrigger>
-                <HoverCardContent className="p-0">
-                  <Table>
-                    <TableBody>
-                      {podsData?.pods.map((pod) => (
-                        <TableRow key={pod.name}>
-                          <TableCell>{pod.name.split("-").at(-1)}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={podStatusToBadgeVariant(pod.status)}
-                            >
-                              {pod.status}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </HoverCardContent>
-              </HoverCard>
-            )}
-          >
-            <span>{revisionData.minScale}</span>
-          </ConditionalWrapper>
-        </div>
-        <div className="text-sm">
-          <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.services.revision.detail.replicas")}
-          </div>
-          {revisionData.actualReplicas}/{revisionData.desiredReplicas}
+          {serviceData.cmd}
         </div>
       </div>
       <div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          {revisionData.conditions.map((condition) => (
+          {(serviceData.conditions ?? []).map((condition) => (
             <StatusBadge
-              key={condition.name}
+              key={condition.type}
               status={condition.status}
-              title={condition.reason}
               message={condition.message}
               className="self-start"
             >
-              {condition.name}
+              {condition.type}
             </StatusBadge>
           ))}
         </div>
