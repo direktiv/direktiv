@@ -4,58 +4,63 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo } from "react";
 import { serviceKeys } from "../../..";
 import { useApiKey } from "~/util/store/apiKey";
+import { useHttpStreaming } from "~/api/httpStreaming";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
 export const usePodLogsStream = (
   {
-    name,
     namespace,
+    service,
+    pod,
   }: {
-    name: string;
     namespace: string;
+    service: string;
+    pod: string;
   },
   { enabled = true }: { enabled?: boolean } = {}
 ) => {
   const apiKey = useApiKey();
   const queryClient = useQueryClient();
 
-  return useStreaming({
-    url: `/api/functions/namespaces/${namespace}/logs/pod/${name}`,
+  useHttpStreaming({
+    url: `/api/v2/namespaces/${namespace}/services/${service}/pods/${pod}/logs`,
     apiKey: apiKey ?? undefined,
-    enabled,
-    schema: PodLogsSchema,
-    onMessage: (msg) => {
-      queryClient.setQueryData<PodLogsSchemaType>(
+    onMessage: (data) => {
+      queryClient.setQueryData<string>(
         serviceKeys.podLogs({
           namespace,
-          name,
           apiKey: apiKey ?? undefined,
+          pod,
+          service,
         }),
         // the sreaming endpoint just returns the new cache value
-        () => msg
+        () => data // TODO: append to existing cache value
       );
+    },
+    onError: (error) => {
+      console.log("🚀 error", error);
     },
   });
 };
 
 type PodLogsSubscriberType = {
-  name: string;
+  service: string;
+  pod: string;
   enabled?: boolean;
 };
 
 export const PodLogsSubscriber = memo(
-  ({ name, enabled }: PodLogsSubscriberType) => {
+  ({ service, pod, enabled }: PodLogsSubscriberType) => {
     const namespace = useNamespace();
-
     if (!namespace) {
       throw new Error("namespace is undefined");
     }
-
     usePodLogsStream(
       {
-        name,
         namespace,
+        service,
+        pod,
       },
       { enabled: enabled ?? true }
     );
@@ -65,7 +70,13 @@ export const PodLogsSubscriber = memo(
 
 PodLogsSubscriber.displayName = "PodLogsSubscriber";
 
-export const usePodLogs = ({ name }: { name: string }) => {
+export const usePodLogs = ({
+  service,
+  pod,
+}: {
+  service: string;
+  pod: string;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -75,9 +86,10 @@ export const usePodLogs = ({ name }: { name: string }) => {
 
   return useQuery<PodLogsSchemaType>({
     queryKey: serviceKeys.podLogs({
-      apiKey: apiKey ?? undefined,
-      name,
       namespace,
+      apiKey: apiKey ?? undefined,
+      service,
+      pod,
     }),
     /**
      * This hook is only used to subscribe to the correct cache key. Data for this key
