@@ -1,5 +1,6 @@
 package service
 
+// reconcileObject interface helps reconcile logic to identify objects and differences in lists.
 type reconcileObject interface {
 	GetID() string
 	GetValueHash() string

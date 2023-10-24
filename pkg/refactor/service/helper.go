@@ -1,4 +1,3 @@
-// nolint
 package service
 
 import (
@@ -17,6 +16,7 @@ func buildService(c *core.Config, cfg *core.ServiceConfig) (*servingv1.Service, 
 		return nil, err
 	}
 
+	// nolint
 	//n := functionsConfig.knativeAffinity.DeepCopy()
 	//reqAffinity := n.RequiredDuringSchedulingIgnoredDuringExecution
 	//if reqAffinity != nil {
@@ -58,6 +58,7 @@ func buildService(c *core.Config, cfg *core.ServiceConfig) (*servingv1.Service, 
 		},
 	}
 
+	// nolint
 	// Set Registry Secrets
 	//secrets := createPullSecrets(info.GetNamespaceName())
 	//svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = secrets
@@ -103,6 +104,7 @@ func buildPodMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	return metaSpec
 }
 
+// nolint
 func buildVolumes(c *core.Config, cfg *core.ServiceConfig) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
@@ -155,25 +157,27 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 	}
 
 	// direktiv sidecar
-	_ = corev1.Container{
+	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
 		Env:          buildEnvVars(c, cfg),
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
-				ContainerPort: 8890,
+				ContainerPort: containerSidecarPort,
 			},
 		},
 	}
 
-	return []corev1.Container{uc}, nil
+	return []corev1.Container{uc, sc}, nil
 }
 
+// nolint
 func buildResourceLimits(c *core.Config, cfg *core.ServiceConfig) (corev1.ResourceRequirements, error) {
 	return corev1.ResourceRequirements{}, nil
 }
 
+// nolint
 func buildEnvVars(c *core.Config, cfg *core.ServiceConfig) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 

@@ -29,6 +29,8 @@ services:
       - DIREKTIV_GRPC_PORT=6666
       - DIREKTIV_API_V2_PORT=6667
 
+      - DIREKTIV_DEBUG=true
+
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRET_KEY=01234567890123456789012345678912
       - DIREKITV_ENABLE_DOCKER=true

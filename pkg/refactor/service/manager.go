@@ -1,8 +1,6 @@
-// nolint
 package service
 
 import (
-	"fmt"
 	"io"
 	"slices"
 	"sync"
@@ -10,41 +8,62 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dClient "github.com/docker/docker/client"
+	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-type Manager struct {
-	list   []*core.ServiceConfig
-	client client
+// manager struct implements core.ServiceManager by wrapping runtimeClient. manager implementation manages
+// services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
+// to reconcile the services in list param versus what is running in the runtime.
+type manager struct {
+	// this list maintains all the service configurations that need to be running.
+	list []*core.ServiceConfig
 
-	lock *sync.Mutex
+	// the underlying service runtime used to create/schedule the services.
+	runtimeClient runtimeClient
+
+	logger *zap.SugaredLogger
+	lock   *sync.Mutex
 }
 
-func NewManager(c *core.Config, enableDocker bool) (*Manager, error) {
+func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (core.ServiceManager, error) {
+	logger = logger.With("module", "service manager")
 	if enableDocker {
-		return newDockerManager()
+		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
+		if err != nil {
+			return nil, err
+		}
+
+		client := dockerClient{
+			cli: cli,
+		}
+
+		return &manager{
+			list:          make([]*core.ServiceConfig, 0),
+			runtimeClient: &client,
+
+			logger: logger,
+			lock:   &sync.Mutex{},
+		}, nil
 	}
 
-	return newKnativeManager(c)
+	return newKnativeManager(c, logger)
 }
 
-func newKnativeManager(c *core.Config) (*Manager, error) {
+func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
-	cSet, err := versioned.NewForConfig(config)
+	knativeCli, err := versioned.NewForConfig(config)
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
-	k8sSet, err := kubernetes.NewForConfig(config)
+	k8sCli, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		fmt.Printf("error cluster config: %v\n", err)
 		return nil, err
 	}
 
@@ -53,38 +72,24 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 	c.KnativeNamespace = "direktiv-services-direktiv"
 	c.KnativeIngressClass = "contour.ingress.networking.knative.dev"
 	c.KnativeMaxScale = 5
+	c.KnativeSidecar = "localhost:5000/direktiv"
 
 	client := &knativeClient{
-		client: cSet,
-		config: c,
-		k8sSet: k8sSet,
+		config:     c,
+		knativeCli: knativeCli,
+		k8sCli:     k8sCli,
 	}
 
-	return newManagerFromClient(client), nil
+	return &manager{
+		list:          make([]*core.ServiceConfig, 0),
+		runtimeClient: client,
+
+		logger: logger,
+		lock:   &sync.Mutex{},
+	}, nil
 }
 
-func newDockerManager() (*Manager, error) {
-	cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-
-	client := dockerClient{
-		cli: cli,
-	}
-	return newManagerFromClient(&client), nil
-}
-
-func newManagerFromClient(client client) *Manager {
-	return &Manager{
-		list:   make([]*core.ServiceConfig, 0, 0),
-		client: client,
-
-		lock: &sync.Mutex{},
-	}
-}
-
-func (m *Manager) runCycle() []error {
+func (m *manager) runCycle() []error {
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
 	for i, v := range m.list {
@@ -96,44 +101,23 @@ func (m *Manager) runCycle() []error {
 		searchSrc[v.GetID()] = v
 	}
 
-	knList, err := m.client.listServices()
+	knList, err := m.runtimeClient.listServices()
 	if err != nil {
 		return []error{err}
 	}
-
-	//fmt.Printf("klist2:")
-	//for _, v := range knList {
-	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
-	//}
-	//fmt.Printf("\n")
 
 	target := make([]reconcileObject, len(knList))
 	for i, v := range knList {
 		target[i] = v
 	}
 
-	fmt.Printf("f2: lens: %v %v\n", len(src), len(target))
-
-	//fmt.Printf("srcs:")
-	//for _, v := range src {
-	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
-	//}
-	//fmt.Printf("\n")
-	//
-	//fmt.Printf("tars:")
-	//for _, v := range target {
-	//	fmt.Printf(" {%v %v} ", v.GetID(), v.GetValueHash())
-	//}
-	//fmt.Printf("\n")
+	m.logger.Debugw("reconcile length", "src", len(src), "target", len(target))
 
 	result := reconcile(src, target)
 
-	// fmt.Printf("f2: recocile: %v\n", result)
-
 	errs := []error{}
-
 	for _, id := range result.deletes {
-		if err := m.client.deleteService(id); err != nil {
+		if err := m.runtimeClient.deleteService(id); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -142,7 +126,7 @@ func (m *Manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
-		if err := m.client.createService(v); err != nil {
+		if err := m.runtimeClient.createService(v); err != nil {
 			errStr := err.Error()
 			v.Error = &errStr
 		}
@@ -152,7 +136,7 @@ func (m *Manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
-		if err := m.client.updateService(v); err != nil {
+		if err := m.runtimeClient.updateService(v); err != nil {
 			*v.Error = err.Error()
 		}
 	}
@@ -160,7 +144,9 @@ func (m *Manager) runCycle() []error {
 	return errs
 }
 
-func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+	const cycleTime = 2 * time.Second
+
 	go func() {
 	loop:
 		for {
@@ -173,16 +159,16 @@ func (m *Manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			errs := m.runCycle()
 			m.lock.Unlock()
 			for _, err := range errs {
-				fmt.Printf("f2 error: %s\n", err)
+				m.logger.Errorw("run cycle", "error", err)
 			}
-			time.Sleep(2 * time.Second)
+			time.Sleep(cycleTime)
 		}
 
 		wg.Done()
 	}()
 }
 
-func (m *Manager) SetServices(list []*core.ServiceConfig) {
+func (m *manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -194,7 +180,7 @@ func (m *Manager) SetServices(list []*core.ServiceConfig) {
 	}
 }
 
-func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string) ([]*core.ServiceStatus, error) {
+func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
 	// clone the list
 	cfgList := make([]*core.ServiceConfig, 0)
 	for i, v := range m.list {
@@ -207,11 +193,14 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 		if filterTyp != "" && v.Typ != filterTyp {
 			continue
 		}
+		if filterName != "" && v.Name != filterName {
+			continue
+		}
 
 		cfgList = append(cfgList, m.list[i])
 	}
 
-	services, err := m.client.listServices()
+	services, err := m.runtimeClient.listServices()
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +212,7 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	result := []*core.ServiceStatus{}
 
 	for _, v := range cfgList {
-		service, _ := searchServices[v.GetID()]
+		service := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
 			result = append(result, &core.ServiceStatus{
@@ -243,8 +232,9 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return result, nil
 }
 
-func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
-	list, err := m.getList(namespace, "", "")
+// nolint:unparam
+func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -259,14 +249,14 @@ func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceStatu
 	return nil, core.ErrNotFound
 }
 
-func (m *Manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
+func (m *manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	return m.getList(namespace, "", "")
+	return m.getList(namespace, "", "", "")
 }
 
-func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
+func (m *manager) GetPods(namespace string, serviceID string) (any, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -276,7 +266,7 @@ func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 		return nil, err
 	}
 
-	pods, err := m.client.listServicePods(serviceID)
+	pods, err := m.runtimeClient.listServicePods(serviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +274,7 @@ func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 	return pods, nil
 }
 
-func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
+func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -294,10 +284,10 @@ func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (
 		return nil, err
 	}
 
-	return m.client.streamServiceLogs(serviceID, podID)
+	return m.runtimeClient.streamServiceLogs(serviceID, podID)
 }
 
-func (m *Manager) Kill(namespace string, serviceID string) error {
+func (m *manager) Kill(namespace string, serviceID string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -307,5 +297,21 @@ func (m *Manager) Kill(namespace string, serviceID string) error {
 		return err
 	}
 
-	return m.client.killService(serviceID)
+	return m.runtimeClient.killService(serviceID)
+}
+
+func (m *manager) GetServiceURL(namespace string, file string, name string) (string, error) {
+	list, err := m.getList(namespace, "", file, name)
+	if err != nil {
+		return "", err
+	}
+	if len(list) == 0 {
+		return "", core.ErrNotFound
+	}
+	if len(list) > 1 {
+		panic("unexpected manager.getList() length")
+	}
+	item := list[0]
+
+	return m.runtimeClient.getServiceURL(item.GetID()), nil
 }
