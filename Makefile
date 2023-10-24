@@ -236,15 +236,15 @@ tail-functions: ## Tail logs for currently active 'functions' container.
 
 .PHONY: reboot-api
 reboot-api: ## delete currently active api pod
-	kubectl delete pod -l app.kubernetes.io/instance=direktiv-api
+	kubectl -n direktiv delete pod -l app.kubernetes.io/instance=direktiv-api
 
 .PHONY: reboot-flow
 reboot-flow: ## delete currently active flow pod
-	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
+	kubectl -n direktiv delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 
 .PHONY: reboot-functions
 reboot-functions: ## delete currently active functions pod
-	kubectl delete pod -l app.kubernetes.io/instance=direktiv-functions
+	kubectl -n direktiv delete pod -l app.kubernetes.io/instance=direktiv-functions
 
 .PHONY: wait-functions
 wait-functions: ## Wait for 'functions' pod to be ready.
