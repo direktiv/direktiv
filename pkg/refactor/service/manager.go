@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"io"
 	"slices"
 	"sync"
@@ -118,7 +119,7 @@ func (m *manager) runCycle() []error {
 	errs := []error{}
 	for _, id := range result.deletes {
 		if err := m.runtimeClient.deleteService(id); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("delete service id: %s %w", id, err))
 		}
 	}
 

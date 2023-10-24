@@ -67,7 +67,7 @@ func (c *dockerClient) updateService(cfg *core.ServiceConfig) error {
 }
 
 func (c *dockerClient) getContainerBy(id string) (*types.Container, error) {
-	containers, err := c.cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	containers, err := c.cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
 		return nil, err
 	}
