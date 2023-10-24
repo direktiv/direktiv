@@ -52,14 +52,21 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:          config,
-		ServiceManager:  serviceManager,
-		RegistryManager: registryManager,
-		EndpointManager: gw,
+		Config:              config,
+		ServiceManager:      serviceManager,
+		RegistryManager:     registryManager,
+		EndpointManager:     gw,
+		GetAllPluginSchemas: gateway.GetAllSchemas,
 	}
 
+	serviceDebounceRequestChan := make(chan func())
+
+	go debounce(1*time.Millisecond, serviceDebounceRequestChan)
+
 	pbus.Subscribe(func(_ string) {
-		renderServiceManager(db, serviceManager, logger)
+		serviceDebounceRequestChan <- func() {
+			renderServiceManager(db, serviceManager, logger)
+		}
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -72,8 +79,14 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
 
+	endpointDebounceRequestChan := make(chan func())
+
+	go debounce(1*time.Millisecond, endpointDebounceRequestChan)
+
 	pbus.Subscribe(func(_ string) {
-		renderEndpointManager(db, gw, logger)
+		endpointDebounceRequestChan <- func() {
+			renderEndpointManager(db, gw, logger)
+		}
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -95,6 +108,27 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}()
 
 	return wg
+}
+
+func debounce(interval time.Duration, input chan func()) {
+	timer := time.NewTimer(interval)
+	timer.Stop()
+
+	var f func()
+	var debouncing bool
+
+	for {
+		select {
+		case f = <-input:
+			if !debouncing {
+				debouncing = true
+				f()
+				timer.Reset(interval)
+			}
+		case <-timer.C:
+			debouncing = false
+		}
+	}
 }
 
 func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
@@ -132,7 +166,7 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 		plConfig := make([]core.Plugins, 0, len(item.Plugins))
 		for _, v := range item.Plugins {
 			plConfig = append(plConfig, core.Plugins{
-				ID:            v.ID,
+				Type:          v.Type,
 				Configuration: v.Configuration,
 			})
 		}

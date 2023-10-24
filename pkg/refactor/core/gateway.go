@@ -21,7 +21,7 @@ type Endpoint struct {
 	Plugins   []Plugins `json:"plugins"`
 }
 type Plugins struct {
-	ID            string      `json:"id"`
+	Type          string      `json:"type"`
 	Configuration interface{} `json:"configuration"`
 }
 

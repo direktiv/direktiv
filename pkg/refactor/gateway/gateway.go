@@ -2,30 +2,60 @@ package gateway
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/invopop/jsonschema"
 )
 
 var registry = make(map[string]Plugin)
 
 type Plugin interface {
 	build(config interface{}) (serve, error)
+	getSchema() interface{}
 }
 
 type serve func(w http.ResponseWriter, r *http.Request) bool
 
-type examplePlugin struct{}
+type examplePlugin struct {
+	conf examplePluginSchemaDefinition
+}
 
-func (examplePlugin) build(_ interface{}) (serve, error) {
+type examplePluginSchemaDefinition struct {
+	SomeEchoValue string `json:"some_echo_value" jsonschema:"required"`
+}
+
+func (e examplePlugin) build(c interface{}) (serve, error) {
+	var conf examplePluginSchemaDefinition
+	var bytes []byte
+
+	switch v := c.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return nil, fmt.Errorf("expected config to be a byte slice or a string")
+	}
+
+	err := json.Unmarshal(bytes, &conf)
+	if err != nil {
+		return nil, err
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) bool {
-		_, _ = w.Write([]byte("hello gateway"))
+		_, _ = w.Write([]byte(conf.SomeEchoValue))
 
 		return true
 	}, nil
+}
+
+func (e examplePlugin) getSchema() interface{} {
+	return &e.conf
 }
 
 //nolint:gochecknoinits
@@ -56,8 +86,6 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fList, ok := gw.pluginPool[key]
 	if !ok {
-		_, _ = w.Write([]byte("Not found!"))
-
 		return
 	}
 
@@ -105,10 +133,10 @@ func buildPluginChain(endpoint *core.EndpointStatus) []serve {
 	res := make([]serve, 0, len(endpoint.Plugins))
 
 	for _, v := range endpoint.Plugins {
-		plugin, ok := registry[v.ID]
+		plugin, ok := registry[v.Type]
 		if !ok {
 			endpoint.Status = "failed"
-			endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.ID)
+			endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.Type)
 
 			continue
 		}
@@ -116,7 +144,7 @@ func buildPluginChain(endpoint *core.EndpointStatus) []serve {
 		servePluginFunc, err := plugin.build(v.Configuration)
 		if err != nil {
 			endpoint.Status = "failed"
-			endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.ID, err)
+			endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.Type, err)
 
 			continue
 		}
@@ -138,4 +166,26 @@ func (gw *handler) GetAll() []*core.EndpointStatus {
 	}
 
 	return newList
+}
+
+func GetAllSchemas() (map[string]interface{}, error) {
+	res := make(map[string]interface{})
+
+	for k, p := range registry {
+		schemaStruct := p.getSchema()
+		schema := jsonschema.Reflect(schemaStruct)
+
+		var schemaObj map[string]interface{}
+		b, err := schema.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(b, &schemaObj); err != nil {
+			return nil, err
+		}
+
+		res[k] = schemaObj
+	}
+
+	return res, nil
 }

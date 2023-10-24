@@ -34,7 +34,8 @@ type App struct {
 	Version *Version
 	Config  *Config
 
-	ServiceManager  ServiceManager
-	RegistryManager RegistryManager
-	EndpointManager EndpointManager
+	ServiceManager      ServiceManager
+	RegistryManager     RegistryManager
+	EndpointManager     EndpointManager
+	GetAllPluginSchemas func() (map[string]interface{}, error)
 }

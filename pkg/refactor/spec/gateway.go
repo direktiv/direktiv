@@ -16,7 +16,7 @@ type EndpointFile struct {
 }
 
 type PluginConfig struct {
-	ID            string      `yaml:"id"`
+	Type          string      `yaml:"type"`
 	Configuration interface{} `yaml:"configuration"`
 }
 

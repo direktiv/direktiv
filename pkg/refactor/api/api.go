@@ -43,6 +43,16 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
+	r.Get("/api/v2/resources/plugins/schemas", func(w http.ResponseWriter, r *http.Request) {
+		data, err := app.GetAllPluginSchemas()
+		if err != nil {
+			writeInternalError(w, err)
+
+			return
+		}
+		writeJSON(w, data)
+	})
+
 	r.Handle("/api/v2/gw/*", app.EndpointManager)
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
