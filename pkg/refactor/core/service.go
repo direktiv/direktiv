@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 )
 
@@ -27,7 +28,20 @@ func (c *ServiceConfig) GetID() string {
 	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.Typ, c.FilePath)
 	sh := sha256.Sum256([]byte(str))
 
-	return fmt.Sprintf("obj%xobj", sh[:10])
+	// NOTES:
+	// 		Only the hash really matters. The prefix is just for human readability.
+	//		Restrictions are usually related to DNS subdomain naming.
+	//		Has a maximum length of 63. But I can't remember if knative wants to use some of it, so I'm using less of the available limit to be safe.
+	//		We only use namespace and filepath because that should be enough to go on and it's easier to sanitize.
+	prefix := fmt.Sprintf("%s-%s", c.Namespace, c.FilePath)
+	prefix = strings.ReplaceAll(prefix, "_", "-")
+	prefix = strings.ReplaceAll(prefix, ".", "-")
+	prefix = strings.ToLower(prefix)
+	if len(prefix) > 32 {
+		prefix = prefix[:32]
+	}
+
+	return fmt.Sprintf("%s-%x", prefix, sh[:10])
 }
 
 func (c *ServiceConfig) GetValueHash() string {
