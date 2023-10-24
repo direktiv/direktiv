@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -23,6 +24,7 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 		Labels: map[string]string{
 			"direktiv.io/inputHash": cfg.GetValueHash(),
 			"direktiv.io/id":        cfg.GetID(),
+			"directiv.io/scale":     strconv.Itoa(cfg.Scale),
 		},
 	}
 	hostConfig := &container.HostConfig{
@@ -103,19 +105,32 @@ func (c *dockerClient) listServices() ([]status, error) {
 	return list, nil
 }
 
+// listServicePods returns fake pos objects that refer to the same service container.
 func (c *dockerClient) listServicePods(id string) (any, error) {
-	_, err := c.getContainerBy(id)
+	ctr, err := c.getContainerBy(id)
 	if err != nil {
 		return nil, err
+	}
+
+	// the number of pods to return should match the same service scale number.
+	scaleLabel := ctr.Labels["directiv.io/scale"]
+	scale, _ := strconv.Atoi(scaleLabel)
+	if scale == 0 {
+		scale = 1
 	}
 
 	type pod struct {
 		ID string `json:"id"`
 	}
 
-	return []*pod{
-		{ID: id},
-	}, nil
+	result := []*pod{}
+	for i := 1; i <= scale; i++ {
+		result = append(result, &pod{
+			ID: fmt.Sprintf("%s_%d", id, i),
+		})
+	}
+
+	return result, nil
 }
 
 func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, error) {

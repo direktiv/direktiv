@@ -68,17 +68,25 @@ scale: 2
 
     retry(`should list all service pods`, 10,async () => {
         await sleep(500)
-        const sID = listRes.body.data[0].id
 
-        const res = await request(common.config.getDirektivHost())
+        let sID = listRes.body.data[0].id
+        let res = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services/${sID}/pods`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             data: [
-                {
-                    id: sID
+                {id: sID + "_1"}
+            ]
+        })
 
-                }
+        sID = listRes.body.data[1].id
+        res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${testNamespace}/services/${sID}/pods`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            data: [
+                {id: sID + "_1"},
+                {id: sID + "_2"},
             ]
         })
     })
