@@ -106,7 +106,8 @@ func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
 
-	buffer := make([]byte, 4*1024)
+	// TODO: increase this length.
+	buffer := make([]byte, 100)
 	var n int
 	for {
 		// TODO: this would leak because read() could block forever.
@@ -120,7 +121,7 @@ func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		_, err := fmt.Fprintf(w, "%X\r\n%s\r\n", n, buffer[:n])
+		_, err := fmt.Fprintf(w, "%s", buffer[:n])
 		if err != nil {
 			slog.Error("TODO: add log here")
 			break
