@@ -2,12 +2,12 @@ import {
   Notification,
   NotificationClose,
   NotificationLoading,
+  NotificationMenuSeparator,
   NotificationMessage,
   NotificationTitle,
 } from "~/design/Notification/";
 
 import { Check } from "lucide-react";
-import { DropdownMenuSeparator } from "~/design/Dropdown";
 import { Link } from "react-router-dom";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
@@ -40,7 +40,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
         {isLoading && (
           <div>
             <NotificationTitle>{title}</NotificationTitle>
-            <DropdownMenuSeparator />
+            <NotificationMenuSeparator />
             <NotificationLoading>{textLoading}</NotificationLoading>
           </div>
         )}
@@ -60,7 +60,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                   <div key={notificationType}>
                     <div>
                       <NotificationTitle>{title}</NotificationTitle>
-                      <DropdownMenuSeparator />
+                      <NotificationMenuSeparator />
                     </div>
                     <NotificationClose
                       className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
@@ -75,7 +75,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                         />
                       </Link>
                     </NotificationClose>
-                    <DropdownMenuSeparator className="last:hidden" />
+                    <NotificationMenuSeparator className="last:hidden" />
                   </div>
                 );
               }
@@ -85,7 +85,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
         {!showIndicator && !isLoading && (
           <div>
             <NotificationTitle>{title}</NotificationTitle>
-            <DropdownMenuSeparator />
+            <NotificationMenuSeparator />
             <NotificationMessage
               text={textNoIssues}
               icon={Check}

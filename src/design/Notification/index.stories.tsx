@@ -3,10 +3,10 @@ import { BanIcon, Check, LucideActivity, Settings } from "lucide-react";
 import {
   Notification,
   NotificationLoading,
+  NotificationMenuSeparator,
   NotificationMessage,
   NotificationTitle,
 } from "./";
-import { DropdownMenuSeparator } from "../Dropdown";
 
 // eslint-disable-next-line sort-imports
 import type { Meta, StoryObj } from "@storybook/react";
@@ -35,7 +35,7 @@ export const Default: Story = {
 export const NotificationIsLoading = () => (
   <Notification showIndicator={true}>
     <NotificationTitle>Notifications</NotificationTitle>
-    <DropdownMenuSeparator />
+    <NotificationMenuSeparator />
     <NotificationLoading>Loading...</NotificationLoading>
   </Notification>
 );
@@ -43,7 +43,7 @@ export const NotificationIsLoading = () => (
 export const NotificationNoMessage = () => (
   <Notification showIndicator={false}>
     <NotificationTitle>Notifications</NotificationTitle>
-    <DropdownMenuSeparator />
+    <NotificationMenuSeparator />
     <NotificationMessage icon={Check} text="Everything is fine." />
   </Notification>
 );
@@ -51,21 +51,21 @@ export const NotificationNoMessage = () => (
 export const NotificationHasMessage = () => (
   <Notification showIndicator={true}>
     <NotificationTitle>Notifications</NotificationTitle>
-    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMenuSeparator />
     <NotificationMessage
       icon={Settings}
       text="Settings for the current workflow are incomplete."
     />
-    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMenuSeparator className="last:hidden" />
     <NotificationMessage
       icon={BanIcon}
       text="An error occurred in one of your workflows."
     />
-    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMenuSeparator className="last:hidden" />
     <NotificationMessage
       icon={LucideActivity}
       text="Please check the Monitoring Logs."
     />
-    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMenuSeparator className="last:hidden" />
   </Notification>
 );
