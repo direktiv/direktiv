@@ -8,7 +8,7 @@ type HttpStreamingOptions = {
   enabled?: boolean;
 };
 
-const decoder = new TextDecoder();
+const decoder = new TextDecoder("iso-8859-2");
 
 export const useHttpStreaming = ({
   url,
@@ -47,7 +47,9 @@ export const useHttpStreaming = ({
         }
 
         try {
-          const chunk = decoder.decode(value);
+          const chunk = decoder.decode(value, {
+            stream: true,
+          });
           onMessage?.(chunk);
         } catch (error) {
           onError?.(error);
