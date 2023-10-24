@@ -51,7 +51,6 @@ export const useHttpStreaming = ({
             } catch (error) {
               onError?.(error);
               finished = true;
-              break;
             }
           }
         },
