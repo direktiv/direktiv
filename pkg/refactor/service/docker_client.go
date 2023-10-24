@@ -143,7 +143,7 @@ func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, er
 		ShowStdout: true,
 		ShowStderr: true,
 		Follow:     true,
-		Timestamps: true,
+		Timestamps: false,
 	}
 
 	// Get the log reader
