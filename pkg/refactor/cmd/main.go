@@ -29,26 +29,23 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 
 	done := make(chan struct{})
 
+	isDockerEnabled := os.Getenv("DIREKITV_ENABLE_DOCKER") == "true"
+
 	// Create service manager
-	serviceManager, err := service.NewManager(config, logger, os.Getenv("DIREKITV_ENABLE_DOCKER") == "true")
+	serviceManager, err := service.NewManager(config, logger, isDockerEnabled)
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
 
 	// Setup GetServiceURL function
-	service.GetServiceURL = func(namespace string, typ string, file string, name string) string {
-		if os.Getenv("DIREKITV_ENABLE_DOCKER") == "true" {
-			return service.GetDockerServiceURL(namespace, typ, file, name)
-		}
-		return service.GetKnativeServiceURL(config.KnativeNamespace, namespace, typ, file, name)
-	}
+	service.SetupGetServiceURLFunc(config, isDockerEnabled)
 
 	// Start service manager
 	wg.Add(1)
 	serviceManager.Start(done, wg)
 
 	// Create registry manager
-	registryManager, err := registry.NewManager(os.Getenv("DIREKITV_ENABLE_DOCKER") == "true")
+	registryManager, err := registry.NewManager(isDockerEnabled)
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
