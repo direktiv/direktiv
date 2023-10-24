@@ -3,6 +3,7 @@ import {
   PodLogsSubscriber,
   usePodLogs,
 } from "~/api/services/query/revision/pods/getLogs";
+import { PodSchemaType, PodsListSchemaType } from "~/api/services/schema/pods";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
   Tooltip,
@@ -10,18 +11,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import { useEffect, useState } from "react";
 
 import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { NoResult } from "~/design/Table";
-import { PodsListSchemaType } from "~/api/services/schema/pods";
 import { PodsSubscriber } from "~/api/services/query/revision/pods/getAll";
 import ScrollContainer from "./ScrollContainer";
 import { podStatusToBadgeVariant } from "../../components/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { useNamespace } from "~/util/store/namespace";
 import { usePods } from "~/api/services/query/getPods";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const Pods = ({
@@ -33,7 +34,6 @@ export const Pods = ({
 }) => {
   const { data: podsList, isSuccess } = usePods(service);
   if (!isSuccess) return null;
-
   return (
     <>
       {/* TODO: reimplement PodsSubscriber */}
@@ -43,28 +43,95 @@ export const Pods = ({
         workflow={workflow}
         version={version}
       /> */}
-      <PodsWithData pods={podsList.data} className={className} />
+      <PodsWithData
+        pods={podsList.data}
+        service={service}
+        className={className}
+      />
     </>
   );
 };
 
+const useStream = ({
+  namespace,
+  serviceID,
+  podID,
+}: {
+  namespace: string;
+  serviceID: string;
+  podID: string;
+}) => {
+  useEffect(() => {
+    fetch(
+      `/api/v2/namespaces/${namespace}/services/${serviceID}/pods/${podID}/logs`
+    )
+      .then(async (response) => {
+        if (!response.ok) return;
+        if (!response.body) return;
+        const reader = response.body.getReader();
+        if (!reader) return;
+
+        return new ReadableStream({
+          async start(controller) {
+            console.log("🚀 start called");
+            const { done, value } = await reader.read();
+            console.log("🚀", new TextDecoder().decode(value));
+            // if (!done) {
+            //   const errorText = new TextDecoder().decode(value);
+            //   controller.error(new Error(`Response error: ${errorText}`));
+            // }
+          },
+
+          async pull(controller) {
+            console.log("🚀 pull called");
+          },
+        });
+      })
+      .then((stream) =>
+        // Respond with our stream
+        {
+          console.log("🚀", { stream });
+          /* Respond with our stream*/
+
+          // Respond with our stream
+          return new Response(stream).text();
+        }
+      )
+      .then((result) => {
+        // Do things with result
+        console.log("done", result);
+      })
+      .catch((err) => {
+        console.log("🚀", { err });
+      });
+  }, [namespace, podID, serviceID]);
+};
+
 const PodsWithData = ({
   pods,
+  service,
   className,
 }: {
-  pods: string[];
+  service: string;
+  pods: PodSchemaType[];
   className?: string;
 }) => {
   const { t } = useTranslation();
-  const [selectedTab, setSelectedTab] = useState(pods[0]?.name ?? "");
+  const namespace = useNamespace();
+  const [selectedTab, setSelectedTab] = useState(pods?.[0]?.id ?? "");
   const { data: logData } = usePodLogs({
     name: selectedTab,
   });
+
+  if (!namespace) return null;
+
+  useStream({ namespace, serviceID: service, podID: selectedTab });
 
   const pod = pods.find((pod) => pod.name === selectedTab);
 
   const logs = logData?.data.split("\n") ?? [];
 
+  return <div>nothing</div>;
   if (!pod)
     return (
       <Card className="m-5 flex grow">
