@@ -27,7 +27,7 @@ export const usePodLogsStream = (
     url: `/api/v2/namespaces/${namespace}/services/${service}/pods/${pod}/logs`,
     apiKey: apiKey ?? undefined,
     onMessage: (data) => {
-      queryClient.setQueryData<string>(
+      queryClient.setQueryData<PodLogsSchemaType>(
         serviceKeys.podLogs({
           namespace,
           apiKey: apiKey ?? undefined,

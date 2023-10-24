@@ -46,9 +46,7 @@ export const PodsStreamingSchema = z.object({
     "data": "2023/08/18 07:02:13 Serving hello world at http://[::]:8080\n"
   }
  */
-export const PodLogsSchema = z.object({
-  data: z.string(),
-});
+export const PodLogsSchema = z.string();
 
 export type PodStatusSchemaType = z.infer<typeof PodStatusSchema>;
 export type PodSchemaType = z.infer<typeof PodSchema>;
