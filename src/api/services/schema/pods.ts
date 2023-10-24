@@ -19,10 +19,7 @@ export const PodStatusSchema = z.enum([
  */
 
 export const PodSchema = z.object({
-  name: z.string(),
-  status: PodStatusSchema,
-  serviceName: z.string(),
-  serviceRevision: z.string(),
+  id: z.string(),
 });
 
 /**
@@ -35,7 +32,7 @@ export const PodSchema = z.object({
   }
  */
 export const PodsListSchema = z.object({
-  data: z.array(z.object({ id: z.string() })),
+  data: z.array(PodSchema),
 });
 
 export const PodsStreamingSchema = z.object({
