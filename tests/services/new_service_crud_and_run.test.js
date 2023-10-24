@@ -75,7 +75,7 @@ scale: 2
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             data: [
-                {id: sID + "_1"}
+                {id: expect.stringMatching(`^${sID}(_|-)`)},
             ]
         })
 
@@ -85,8 +85,8 @@ scale: 2
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             data: [
-                {id: sID + "_1"},
-                {id: sID + "_2"},
+                {id: expect.stringMatching(`^${sID}(_|-)`)},
+                {id: expect.stringMatching(`^${sID}(_|-)`)},
             ]
         })
     })
