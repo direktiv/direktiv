@@ -34,6 +34,15 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
+
+	// Setup GetServiceURL function
+	service.GetServiceURL = func(namespace string, typ string, file string, name string) string {
+		if os.Getenv("DIREKITV_ENABLE_DOCKER") == "true" {
+			return service.GetDockerServiceURL(namespace, typ, file, name)
+		}
+		return service.GetKnativeServiceURL(config.KnativeNamespace, namespace, typ, file, name)
+	}
+
 	// Start service manager
 	wg.Add(1)
 	serviceManager.Start(done, wg)
