@@ -32,12 +32,15 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 	}
 
 	// Pull the image (if it doesn't exist locally).
-	out, err := c.cli.ImagePull(context.Background(), config.Image, types.ImagePullOptions{})
-	if err != nil {
-		return fmt.Errorf("image pull, err: %w", err)
+	// TODO: fix this 'local' convention.
+	if !strings.HasPrefix(config.Image, "local") {
+		out, err := c.cli.ImagePull(context.Background(), config.Image, types.ImagePullOptions{})
+		if err != nil {
+			return fmt.Errorf("image pull, err: %w", err)
+		}
+		defer out.Close()
+		_, _ = io.Copy(io.Discard, out)
 	}
-	defer out.Close()
-	_, _ = io.Copy(io.Discard, out)
 
 	// Create a container.
 	resp, err := c.cli.ContainerCreate(context.Background(), config, hostConfig, nil, nil, cfg.GetID())
