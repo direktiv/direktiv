@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
@@ -21,6 +21,7 @@ import { PodsSubscriber } from "~/api/services/query/revision/pods/getAll";
 import ScrollContainer from "./ScrollContainer";
 import { podStatusToBadgeVariant } from "../../components/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { useHttpStreaming } from "~/api/httpStreaming";
 import { useNamespace } from "~/util/store/namespace";
 import { usePods } from "~/api/services/query/getPods";
 import { useTranslation } from "react-i18next";
@@ -35,76 +36,12 @@ export const Pods = ({
   const { data: podsList, isSuccess } = usePods(service);
   if (!isSuccess) return null;
   return (
-    <>
-      {/* TODO: reimplement PodsSubscriber */}
-      {/* <PodsSubscriber
-        revision={revision}
-        service={service}
-        workflow={workflow}
-        version={version}
-      /> */}
-      <PodsWithData
-        pods={podsList.data}
-        service={service}
-        className={className}
-      />
-    </>
+    <PodsWithData
+      pods={podsList.data}
+      service={service}
+      className={className}
+    />
   );
-};
-
-const useStream = ({
-  namespace,
-  serviceID,
-  podID,
-}: {
-  namespace: string;
-  serviceID: string;
-  podID: string;
-}) => {
-  useEffect(() => {
-    fetch(
-      `/api/v2/namespaces/${namespace}/services/${serviceID}/pods/${podID}/logs`
-    )
-      .then(async (response) => {
-        if (!response.ok) return;
-        if (!response.body) return;
-        const reader = response.body.getReader();
-        if (!reader) return;
-
-        return new ReadableStream({
-          async start(controller) {
-            console.log("🚀 start called");
-            const { done, value } = await reader.read();
-            console.log("🚀", new TextDecoder().decode(value));
-            // if (!done) {
-            //   const errorText = new TextDecoder().decode(value);
-            //   controller.error(new Error(`Response error: ${errorText}`));
-            // }
-          },
-
-          async pull(controller) {
-            console.log("🚀 pull called");
-          },
-        });
-      })
-      .then((stream) =>
-        // Respond with our stream
-        {
-          console.log("🚀", { stream });
-          /* Respond with our stream*/
-
-          // Respond with our stream
-          return new Response(stream).text();
-        }
-      )
-      .then((result) => {
-        // Do things with result
-        console.log("done", result);
-      })
-      .catch((err) => {
-        console.log("🚀", { err });
-      });
-  }, [namespace, podID, serviceID]);
 };
 
 const PodsWithData = ({
@@ -117,21 +54,15 @@ const PodsWithData = ({
   className?: string;
 }) => {
   const { t } = useTranslation();
-  const namespace = useNamespace();
-  const [selectedTab, setSelectedTab] = useState(pods?.[0]?.id ?? "");
+  const [selectedPod, setSelectedPod] = useState(pods?.[0]?.id ?? "");
   const { data: logData } = usePodLogs({
-    name: selectedTab,
+    pod: selectedPod,
+    service,
   });
 
-  if (!namespace) return null;
+  const logs = logData?.split("\n") ?? [];
+  const pod = pods.find((pod) => pod.id === selectedPod);
 
-  useStream({ namespace, serviceID: service, podID: selectedTab });
-
-  const pod = pods.find((pod) => pod.name === selectedTab);
-
-  const logs = logData?.data.split("\n") ?? [];
-
-  return <div>nothing</div>;
   if (!pod)
     return (
       <Card className="m-5 flex grow">
@@ -143,20 +74,20 @@ const PodsWithData = ({
 
   return (
     <div className="grid grow p-5">
-      <PodLogsSubscriber name={selectedTab} />
+      <PodLogsSubscriber service={service} pod={selectedPod} />
       <Card className="grid grid-rows-[auto_1fr_auto] p-5">
         <div className="mb-5 flex flex-col gap-5 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 font-medium">
             <ScrollText className="h-5" />
             {t("pages.services.revision.detail.logs.title", {
-              name: pod.name.split("-").at(-1),
+              name: pod.id,
             })}
-            <Badge
-              variant={podStatusToBadgeVariant(pod.status)}
+            {/* <Badge
+              variant={podStatusToBadgeVariant(pod.)}
               className="font-normal"
             >
               {pod.status}
-            </Badge>
+            </Badge> */}
           </h3>
           <TooltipProvider>
             <Tooltip>
@@ -197,14 +128,14 @@ const PodsWithData = ({
           </div>
         </div>
         <Tabs
-          value={selectedTab}
+          value={selectedPod}
           onValueChange={(value) => {
-            setSelectedTab(value);
+            setSelectedPod(value);
           }}
         >
           <TabsList variant="boxed">
             {pods.map((pod, index, src) => (
-              <TabsTrigger key={pod.name} variant="boxed" value={pod.name}>
+              <TabsTrigger key={pod.id} variant="boxed" value={pod.id}>
                 {t("pages.services.revision.detail.logs.tab", {
                   number: index + 1,
                   total: src.length,
