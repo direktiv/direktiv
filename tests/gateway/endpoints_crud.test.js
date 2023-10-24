@@ -21,7 +21,8 @@ workflow: action.yaml
 namespace: ns
 plugins: 
     - type: example_plugin
-      configuration: ""
+      configuration:
+          some_echo_value: test_value
 `
   );
 
@@ -37,7 +38,8 @@ workflow: action.yaml
 namespace: ns
 plugins: 
     - type: example_plugin
-      configuration: ""
+      configuration:
+          some_echo_value: test_value
 `
   );
 
@@ -53,10 +55,10 @@ plugins:
           method: "POST",
           workflow: "action.yaml",
           namespace: "ns",
+          status: "healthy",
           plugins: [
             {
-              configuration: "",
-              type: "example_plugin",
+              configuration: {},
             },
           ],
         },
@@ -64,10 +66,10 @@ plugins:
           method: "GET",
           workflow: "action.yaml",
           namespace: "ns",
+          status: "healthy",
           plugins: [
             {
-              configuration: "",
-              type: "example_plugin",
+              configuration: {},
             },
           ],
         },
@@ -110,7 +112,8 @@ workflow: action.yaml
 namespace: ns
 plugins: 
     - type: example_plugin
-      configuration: ""
+      configuration:
+          some_echo_value: test_value
   `
   );
   it(`should execute endpoint plugins`, async () => {

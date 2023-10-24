@@ -15,7 +15,7 @@ import (
 var registry = make(map[string]Plugin)
 
 type Plugin interface {
-	build(config interface{}) (serve, error)
+	build(config map[string]interface{}) (serve, error)
 	getSchema() interface{}
 }
 
@@ -29,20 +29,17 @@ type examplePluginSchemaDefinition struct {
 	SomeEchoValue string `json:"some_echo_value" jsonschema:"required"`
 }
 
-func (e examplePlugin) build(c interface{}) (serve, error) {
+func (e examplePlugin) build(c map[string]interface{}) (serve, error) {
 	var conf examplePluginSchemaDefinition
-	var bytes []byte
 
-	switch v := c.(type) {
-	case []byte:
-		bytes = v
-	case string:
-		bytes = []byte(v)
-	default:
-		return nil, fmt.Errorf("expected config to be a byte slice or a string")
+	// Convert the map to JSON bytes
+	jsonBytes, err := json.Marshal(c)
+	if err != nil {
+		return nil, err
 	}
 
-	err := json.Unmarshal(bytes, &conf)
+	// Unmarshal the JSON bytes into the desired struct
+	err = json.Unmarshal(jsonBytes, &conf)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +83,8 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fList, ok := gw.pluginPool[key]
 	if !ok {
+		http.NotFound(w, r)
+
 		return
 	}
 
@@ -116,7 +115,7 @@ func (gw *handler) SetEndpoints(list []*core.Endpoint) []*core.EndpointStatus {
 		if ok && value.checksum == checksum {
 			newPool[key] = value
 		}
-		newList[i].Status = "applied"
+		newList[i].Status = "healthy"
 		newPool[key] = endpointEntry{
 			plugins:        buildPluginChain(newList[i]),
 			EndpointStatus: newList[i],

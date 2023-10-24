@@ -16,8 +16,8 @@ type EndpointFile struct {
 }
 
 type PluginConfig struct {
-	Type          string      `yaml:"type"`
-	Configuration interface{} `yaml:"configuration"`
+	Type          string                 `yaml:"type"`
+	Configuration map[string]interface{} `yaml:"configuration"`
 }
 
 func ParseEndpointFile(data []byte) (*EndpointFile, error) {
