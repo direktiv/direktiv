@@ -1,13 +1,15 @@
+import { BanIcon, Check, LucideActivity, Settings } from "lucide-react";
+
 import {
+  Notification,
   NotificationLoading,
   NotificationMessage,
-  NotificationText,
-} from "./NotificationModal";
-import { Boxes } from "lucide-react";
+  NotificationTitle,
+} from "./";
+import { DropdownMenuSeparator } from "../Dropdown";
 
 // eslint-disable-next-line sort-imports
 import type { Meta, StoryObj } from "@storybook/react";
-import Notification from ".";
 
 const meta = {
   title: "Components/Notification",
@@ -31,31 +33,39 @@ export const Default: Story = {
 };
 
 export const NotificationIsLoading = () => (
-  <div className="flex space-x-2">
-    <Notification showIndicator={true}>
-      <NotificationLoading>Loading...</NotificationLoading>
-    </Notification>
-  </div>
+  <Notification showIndicator={true}>
+    <NotificationTitle>Notifications</NotificationTitle>
+    <DropdownMenuSeparator />
+    <NotificationLoading>Loading...</NotificationLoading>
+  </Notification>
 );
 
 export const NotificationNoMessage = () => (
-  <div className="flex space-x-2">
-    <Notification showIndicator={false}>
-      <NotificationText>Everything is fine.</NotificationText>
-    </Notification>
-  </div>
+  <Notification showIndicator={false}>
+    <NotificationTitle>Notifications</NotificationTitle>
+    <DropdownMenuSeparator />
+    <NotificationMessage icon={Check} text="Everything is fine." />
+  </Notification>
 );
 
 export const NotificationHasMessage = () => (
-  <div className="flex space-x-2">
-    <Notification showIndicator={true}>
-      <div>
-        <NotificationMessage
-          icon={Boxes}
-          title="Critical Issue"
-          text="An error occurred in one of your workflows."
-        ></NotificationMessage>
-      </div>
-    </Notification>
-  </div>
+  <Notification showIndicator={true}>
+    <NotificationTitle>Notifications</NotificationTitle>
+    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMessage
+      icon={Settings}
+      text="Settings for the current workflow are incomplete."
+    />
+    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMessage
+      icon={BanIcon}
+      text="An error occurred in one of your workflows."
+    />
+    <DropdownMenuSeparator className="last:hidden" />
+    <NotificationMessage
+      icon={LucideActivity}
+      text="Please check the Monitoring Logs."
+    />
+    <DropdownMenuSeparator className="last:hidden" />
+  </Notification>
 );

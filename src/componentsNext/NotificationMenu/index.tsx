@@ -1,40 +1,23 @@
-import Notification, { NotificationClose } from "~/design/Notification";
 import {
+  Notification,
+  NotificationClose,
   NotificationLoading,
   NotificationMessage,
-  NotificationText,
-} from "~/design/Notification/NotificationModal";
+  NotificationTitle,
+} from "~/design/Notification/";
 
+import { Check } from "lucide-react";
+import { DropdownMenuSeparator } from "~/design/Dropdown";
 import { Link } from "react-router-dom";
-import { Settings } from "lucide-react";
-import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotificationConfig } from "./config";
 import { useTranslation } from "react-i18next";
 
 interface NotificationMenuProps {
   className?: string;
 }
-
-const useNotificationConfig = () => {
-  const { t } = useTranslation();
-  const namespace = useNamespace();
-  if (!namespace) return null;
-  return {
-    secret: {
-      icon: Settings,
-      title: t("components.notificationMenu.hasIssues.secrets.title"),
-      description: (count: number) =>
-        t("components.notificationMenu.hasIssues.secrets.description", {
-          count,
-        }),
-      href: pages.settings.createHref({
-        namespace,
-      }),
-    },
-  } as const;
-};
 
 const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
   const { t } = useTranslation();
@@ -42,8 +25,9 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
   const notificationConfig = useNotificationConfig();
   const showIndicator = !!data?.issues.length;
 
-  const textLoading = t("components.notificationMenu.isLoading.text");
-  const textNoIssues = t("components.notificationMenu.noIssues.text");
+  const textLoading = t("components.notificationMenu.isLoading.description");
+  const textNoIssues = t("components.notificationMenu.noIssues.description");
+  const title = t("components.notificationMenu.title");
 
   const namespace = useNamespace();
   if (!namespace) return null;
@@ -53,7 +37,13 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
   return (
     <div className={twMergeClsx("self-end text-right", className)}>
       <Notification showIndicator={showIndicator}>
-        {isLoading && <NotificationLoading>{textLoading}</NotificationLoading>}
+        {isLoading && (
+          <div>
+            <NotificationTitle>{title}</NotificationTitle>
+            <DropdownMenuSeparator />
+            <NotificationLoading>{textLoading}</NotificationLoading>
+          </div>
+        )}
         {showIndicator && !isLoading && (
           <div>
             {possibleNotifications.map(
@@ -67,25 +57,39 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                 }
 
                 return (
-                  <NotificationClose key={notificationType} asChild>
-                    <Link to={notificationConfig.href}>
-                      <NotificationMessage
-                        title={notificationConfig.title}
-                        text={notificationConfig.description(
-                          matchingNotification.length
-                        )}
-                        icon={notificationConfig.icon}
-                      />
-                    </Link>
-                  </NotificationClose>
+                  <div key={notificationType}>
+                    <div>
+                      <NotificationTitle>{title}</NotificationTitle>
+                      <DropdownMenuSeparator />
+                    </div>
+                    <NotificationClose
+                      className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
+                      asChild
+                    >
+                      <Link to={notificationConfig.href}>
+                        <NotificationMessage
+                          text={notificationConfig.description(
+                            matchingNotification.length
+                          )}
+                          icon={notificationConfig.icon}
+                        />
+                      </Link>
+                    </NotificationClose>
+                    <DropdownMenuSeparator className="last:hidden" />
+                  </div>
                 );
               }
             )}
           </div>
         )}
         {!showIndicator && !isLoading && (
-          <div className="flex items-center py-1.5 px-2">
-            <NotificationText>{textNoIssues}</NotificationText>
+          <div>
+            <NotificationTitle>{title}</NotificationTitle>
+            <DropdownMenuSeparator />
+            <NotificationMessage
+              text={textNoIssues}
+              icon={Check}
+            ></NotificationMessage>
           </div>
         )}
       </Notification>

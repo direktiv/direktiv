@@ -1,3 +1,4 @@
+import { Bell, Loader2, LucideIcon } from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 import {
   Popover,
@@ -6,16 +7,60 @@ import {
   PopoverTrigger,
 } from "~/design/Popover";
 
-import { Bell } from "lucide-react";
 import Button from "~/design/Button";
 import { twMergeClsx } from "~/util/helpers";
+
+const NotificationClose = PopoverClose;
+
+const NotificationTitle: FC<PropsWithChildren> = ({ children }) => (
+  <div className="px-2 py-1.5 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
+    {children}
+  </div>
+);
+
+const NotificationText: FC<PropsWithChildren> = ({ children }) => (
+  <div className="px-2 py-1.5 text-sm font-medium text-gray-11 dark:text-gray-dark-11">
+    {children}
+  </div>
+);
+
+const NotificationLoading: FC<PropsWithChildren> = ({ children }) => (
+  <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
+    <div className="flex items-center py-1.5 px-2">
+      <div className="w-max">
+        <Loader2 className="animate-spin text-gray-11 dark:text-gray-dark-11" />
+      </div>
+      <NotificationText>{children}</NotificationText>
+    </div>
+  </div>
+);
+
+function NotificationMessage({
+  text,
+  icon: Icon,
+}: {
+  text: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
+      <div className="flex items-center py-1.5 px-2">
+        <div className="w-max">
+          <Icon
+            className="text-gray-11 dark:text-gray-dark-11"
+            aria-hidden="true"
+          />
+        </div>
+        <NotificationText>{text}</NotificationText>
+      </div>
+    </div>
+  );
+}
 
 type NotificationPropsType = PropsWithChildren & {
   className?: string;
   showIndicator?: boolean;
 };
-
-export const NotificationClose = PopoverClose;
 
 const Notification: FC<NotificationPropsType> = ({
   className,
@@ -27,26 +72,29 @@ const Notification: FC<NotificationPropsType> = ({
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="group items-center"
+          className="group items-center px-1"
           role="button"
-          icon
         >
-          <div className="relative">
-            <Bell />
+          <div className="relative h-6 w-6">
+            <Bell className="relative" />
             {showIndicator && (
               <div className="absolute top-0 right-0 rounded-full border-2 border-white bg-danger-10 p-1 transition-colors group-hover:border-gray-3 dark:border-black dark:bg-danger-dark-10 dark:group-hover:border-gray-dark-3"></div>
             )}
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className="bg-gray-1 text-[10px] font-medium opacity-100 dark:border-gray-dark-4 dark:bg-gray-dark-1"
-      >
+      <PopoverContent className="bg-gray-1 dark:bg-gray-dark-1" align="end">
         {children}
       </PopoverContent>
     </Popover>
   </div>
 );
 
-export default Notification;
+export {
+  Notification,
+  NotificationClose,
+  NotificationLoading,
+  NotificationMessage,
+  NotificationTitle,
+  NotificationText,
+};

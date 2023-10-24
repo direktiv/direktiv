@@ -1025,18 +1025,17 @@
       "fieldInvalid": "this field is invalid"
     },
     "notificationMenu": {
+      "title": "Notifications",
       "isLoading": {
-        "text": "Loading..."
+        "description": "Loading..."
       },
       "noIssues": {
-        "text": "You do not have any notifications."
+        "description": "You do not have any notifications."
       },
       "hasIssues": {
         "secrets": {
-          "title": "Notifications",
-          "description": "You have {{count}} uninitialized secrets!",
-          "description_one": "You have {{count}} uninitialized secret!",
-          "link": "Go to settings"
+          "description": "You have {{count}} uninitialized secrets.",
+          "description_one": "You have {{count}} uninitialized secret!"
         }
       }
     },
