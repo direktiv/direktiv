@@ -8,6 +8,8 @@ type HttpStreamingOptions = {
   enabled?: boolean;
 };
 
+const decoder = new TextDecoder();
+
 export const useHttpStreaming = ({
   url,
   apiKey,
@@ -15,7 +17,7 @@ export const useHttpStreaming = ({
   onError,
   enabled = true,
 }: HttpStreamingOptions) => {
-  const startSteaming = useCallback(
+  const startStreaming = useCallback(
     async (abortController: AbortController) => {
       const response = await fetch(url, {
         signal: abortController.signal,
@@ -26,7 +28,7 @@ export const useHttpStreaming = ({
               },
             }
           : {}),
-        // this only throws if the request is aborted, don't treat it as an error
+        // this only throws if the request is aborted before the first response is received
       }).catch(() => null);
 
       if (!response || !response.ok || !response.body) {
@@ -35,26 +37,23 @@ export const useHttpStreaming = ({
 
       const reader = response.body.getReader();
 
-      return new ReadableStream({
-        async start() {
-          let finished = false;
-          while (!finished) {
-            const { done, value } = await reader.read();
-            if (done) {
-              finished = true;
-              break;
-            }
+      let finished = false;
 
-            try {
-              const chunk = new TextDecoder().decode(value);
-              onMessage?.(chunk);
-            } catch (error) {
-              onError?.(error);
-              finished = true;
-            }
-          }
-        },
-      });
+      while (!finished) {
+        const { done, value } = await reader.read();
+        if (done) {
+          finished = true;
+          break;
+        }
+
+        try {
+          const chunk = decoder.decode(value);
+          onMessage?.(chunk);
+        } catch (error) {
+          onError?.(error);
+          finished = true;
+        }
+      }
     },
     [apiKey, onError, onMessage, url]
   );
@@ -62,12 +61,10 @@ export const useHttpStreaming = ({
   useEffect(() => {
     const abortController = new AbortController();
     if (enabled) {
-      startSteaming(abortController).catch((e) => {
-        onError?.(e);
-      });
+      startStreaming(abortController).catch(() => null);
     }
     return () => {
       abortController.abort();
     };
-  }, [enabled, onError, startSteaming]);
+  }, [enabled, onError, startStreaming]);
 };
