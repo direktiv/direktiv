@@ -171,10 +171,6 @@ func (c *dockerClient) killService(id string) error {
 	return c.cli.ContainerRemove(context.Background(), cntr.ID, options)
 }
 
-func (c *dockerClient) getServiceURL(id string) string {
-	return fmt.Sprintf("http://%s", id)
-}
-
 var _ runtimeClient = &dockerClient{}
 
 type dockerStatus struct {

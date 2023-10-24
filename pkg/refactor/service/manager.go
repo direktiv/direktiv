@@ -299,19 +299,3 @@ func (m *manager) Kill(namespace string, serviceID string) error {
 
 	return m.runtimeClient.killService(serviceID)
 }
-
-func (m *manager) GetServiceURL(namespace string, file string, name string) (string, error) {
-	list, err := m.getList(namespace, "", file, name)
-	if err != nil {
-		return "", err
-	}
-	if len(list) == 0 {
-		return "", core.ErrNotFound
-	}
-	if len(list) > 1 {
-		panic("unexpected manager.getList() length")
-	}
-	item := list[0]
-
-	return m.runtimeClient.getServiceURL(item.GetID()), nil
-}
