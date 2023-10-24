@@ -26,9 +26,10 @@ export const useHttpStreaming = ({
               },
             }
           : {}),
-      });
+        // this only throws if the request is aborted, don't treat it as an error
+      }).catch(() => null);
 
-      if (!response.ok || !response.body) {
+      if (!response || !response.ok || !response.body) {
         return;
       }
 
