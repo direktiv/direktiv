@@ -73,16 +73,16 @@ const EventsList = ({
           <Table className="border-t border-gray-5 dark:border-gray-dark-5">
             <TableHead>
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableHeaderCell>
+                <TableHeaderCell id="event-type">
                   {t("pages.events.history.tableHeader.type")}
                 </TableHeaderCell>
-                <TableHeaderCell>
+                <TableHeaderCell id="event-id">
                   {t("pages.events.history.tableHeader.id")}
                 </TableHeaderCell>
-                <TableHeaderCell>
+                <TableHeaderCell id="event-source">
                   {t("pages.events.history.tableHeader.source")}
                 </TableHeaderCell>
-                <TableHeaderCell>
+                <TableHeaderCell id="event-received-at">
                   {t("pages.events.history.tableHeader.receivedAt")}
                 </TableHeaderCell>
               </TableRow>
@@ -107,7 +107,6 @@ const EventsList = ({
                         event={event}
                         key={event.id}
                         namespace={data.namespace}
-                        data-testid={`event-row-${event.id}`}
                       />
                     ))
                   )}
