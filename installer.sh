@@ -397,7 +397,8 @@ add_direktiv_helm_repo() {
 generate_direktiv_config() {
     echo "Generating Direktiv configuration: ${DIREKTIV_CONFIG}"
 
-    image="direktiv/direktiv"
+    backend_image="direktiv/direktiv"
+    frontend_image="direktiv/frontend"
 
     if test -f "${DIREKTIV_CONFIG}"
     then
@@ -407,7 +408,8 @@ generate_direktiv_config() {
 
         if [ "$DEV" == "true" ]; then 
         DIREKTIV_VERSION="latest"
-        image="direktiv"
+        backend_image="direktiv"
+        frontend_image="frontend"
 
         cat <<EOF > $DIREKTIV_CONFIG
 logging: console
@@ -419,22 +421,13 @@ EOF
 
         cat <<EOF >> $DIREKTIV_CONFIG
 flow:
-  image: "${image}"
+  image: "${backend_image}"
   tag: "${DIREKTIV_VERSION}"
-  dbimage: "${image}"
+  dbimage: "${backend_image}"
 
-ui:
-  image: "${image}"
+frontend:
+  image: "${frontend_image}"
   tag: "${DIREKTIV_VERSION}"
-
-api:
-  image: "${image}"
-  tag: "${DIREKTIV_VERSION}"
-
-functions:
-  image: "${image}"
-  tag: "${DIREKTIV_VERSION}"
-  sidecar: "${image}"
 
 EOF
     fi
