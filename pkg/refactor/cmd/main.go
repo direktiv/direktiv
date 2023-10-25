@@ -59,14 +59,8 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		GetAllPluginSchemas: gateway.GetAllSchemas,
 	}
 
-	serviceDebounceRequestChan := make(chan func())
-
-	go debounce(1*time.Millisecond, serviceDebounceRequestChan)
-
 	pbus.Subscribe(func(_ string) {
-		serviceDebounceRequestChan <- func() {
-			renderServiceManager(db, serviceManager, logger)
-		}
+		renderServiceManager(db, serviceManager, logger)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -79,14 +73,8 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
 
-	endpointDebounceRequestChan := make(chan func())
-
-	go debounce(1*time.Millisecond, endpointDebounceRequestChan)
-
 	pbus.Subscribe(func(_ string) {
-		endpointDebounceRequestChan <- func() {
-			renderEndpointManager(db, gw, logger)
-		}
+		renderEndpointManager(db, gw, logger)
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -108,27 +96,6 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}()
 
 	return wg
-}
-
-func debounce(interval time.Duration, input chan func()) {
-	timer := time.NewTimer(interval)
-	timer.Stop()
-
-	var f func()
-	var debouncing bool
-
-	for {
-		select {
-		case f = <-input:
-			if !debouncing {
-				debouncing = true
-				f()
-				timer.Reset(interval)
-			}
-		case <-timer.C:
-			debouncing = false
-		}
-	}
 }
 
 func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
