@@ -183,7 +183,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					continue
 				}
 				funConfigList = append(funConfigList, &core.ServiceConfig{
-					Typ:       "namespace-service",
+					Typ:       core.ServiceTypeNamespace,
 					Name:      serviceDef.Name,
 					Namespace: ns.Name,
 					FilePath:  file.Path,
@@ -201,7 +201,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 				}
 				if serviceDef.Typ == "knative-workflow" {
 					funConfigList = append(funConfigList, &core.ServiceConfig{
-						Typ:       "workflow-service",
+						Typ:       core.ServiceTypeWorkflow,
 						Name:      serviceDef.Name,
 						Namespace: ns.Name,
 						FilePath:  file.Path,

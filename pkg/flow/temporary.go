@@ -22,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -392,50 +393,22 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	// wf := bytedata.ShortChecksum(im.instance.Instance.WorkflowPath)
-	// revID := im.instance.Instance.RevisionID.String()
-	// nsID := im.instance.Instance.NamespaceID.String()
-
 	switch fnt {
 	case model.ReusableContainerFunctionType:
-
 		con := fn.(*model.ReusableFunctionDefinition)
-
 		scale := int32(0)
-		// size := int32(con.Size)
-
 		ar.Container.Image = con.Image
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
 		ar.Container.Scale = int(scale)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		/*
-			TODO: alan x
-			ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
-				Name:          &con.ID,
-				Workflow:      &wf,
-				Revision:      &revID,
-				Namespace:     &nsID,
-				NamespaceName: &ar.Workflow.NamespaceName,
-				Image:         &con.Image,
-				Cmd:           &con.Cmd,
-				MinScale:      &scale,
-				Size:          &size,
-			})
-		*/
+		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeWorkflow, ar.Workflow.Path, con.ID)
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		/*
-			TODO: alan x
-			ar.Container.Service, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
-				Name:          &con.KnativeService,
-				Namespace:     &nsID,
-				NamespaceName: &ar.Workflow.NamespaceName,
-			})
-		*/
+		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, "", con.ID)
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -511,43 +484,16 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	tr := engine.createTransport()
 
-	// configured namespace for workflows
-	ns := engine.server.conf.KnativeNamespace
-
-	// set service name if namespace
-	// otherwise generate baes on action request
-	svn := ar.Container.Service
-
-	// var wf string
-	// if ar.Workflow.Path != "" {
-	// 	wf = bytedata.ShortChecksum(ar.Workflow.Path)
-	// }
+	path := ""
+	styp := core.ServiceTypeNamespace
 
 	if ar.Container.Type == model.ReusableContainerFunctionType {
-		// scale := int32(ar.Container.Scale)
-		// size := int32(ar.Container.Size)
-		/*
-			TODO: alan x
-			svn, _, _ = functions.GenerateServiceName(&igrpc.FunctionsBaseInfo{
-				Name:          &ar.Container.ID,
-				Namespace:     &ar.Workflow.NamespaceID,
-				Workflow:      &wf,
-				Revision:      &ar.Workflow.Revision,
-				NamespaceName: &ar.Workflow.NamespaceName,
-				Cmd:           &ar.Container.Cmd,
-				Image:         &ar.Container.Image,
-				MinScale:      &scale,
-				Size:          &size,
-				Envs:          make(map[string]string),
-			})
-		*/
-		if err != nil {
-			engine.sugar.Errorf("can not create service name: %v", err)
-			engine.reportError(ar, err)
-		}
+		path = ar.Workflow.Path
+		styp = core.ServiceTypeWorkflow
 	}
 
-	addr := fmt.Sprintf("http://%s.%s", svn, ns)
+	addr := service.GetServiceURL(ar.Workflow.NamespaceName, styp, path, ar.Container.ID)
+
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
 	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
 
