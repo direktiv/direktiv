@@ -34,7 +34,10 @@ func (c *ServiceConfig) GetID() string {
 	if c.Typ == ServiceTypeNamespace {
 		str = fmt.Sprintf("%s:%s", c.Namespace, c.Name)
 	} else {
-		str = fmt.Sprintf("%s/%s:%s", c.Namespace, strings.Trim(c.FilePath, "/"), c.Name)
+		path := strings.Trim(c.FilePath, "/")
+		path = strings.TrimSuffix(path, ".yaml")
+		path = strings.TrimSuffix(path, ".yml")
+		str = fmt.Sprintf("%s/%s:%s", c.Namespace, path, c.Name)
 	}
 
 	sh := sha256.Sum256([]byte(str))
