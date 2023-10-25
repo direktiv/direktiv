@@ -47,7 +47,8 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
         {showIndicator && !isLoading && (
           <div>
             {possibleNotifications.map(
-              ([notificationType, notificationConfig]) => {
+              ([notificationType, notificationConfig], index, srcArr) => {
+                const isLast = index === srcArr.length - 1;
                 const matchingNotification = data.issues.filter(
                   (issue) => notificationType === issue.type
                 );
@@ -75,7 +76,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                         />
                       </Link>
                     </NotificationClose>
-                    <NotificationMenuSeparator className="last:hidden" />
+                    {!isLast && <NotificationMenuSeparator />}
                   </div>
                 );
               }
