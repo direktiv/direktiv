@@ -1,5 +1,7 @@
 #!/usr/bin/env -S bash --posix
 
+# TODO: curl -fsSL get.docker.com -o get-docker.sh && sh get-docker.sh
+
 # TODO: ensure skips still notice version mismatches
 DEV=${DEV:-false}
 VERBOSE=${VERBOSE:-false}
@@ -472,9 +474,30 @@ install_direktiv() {
 
     if [ "$DEV" == "true" ]; then 
         chart="scripts/direktiv-charts/charts/direktiv/"
-        if [ ! -d "./direktiv-charts" ]; then
-            git clone https://github.com/direktiv/direktiv-charts.git ./direktiv-charts;
-            git -C ./direktiv-charts checkout develop;
+        if [ ! -d "./scripts/direktiv-charts" ]; then
+            git clone https://github.com/direktiv/direktiv-charts.git ./scripts/direktiv-charts;
+            git -C ./scripts/direktiv-charts checkout single-container; # TODO: this branch is temporary
+        fi
+
+        # TODO: when did this become important, and why?
+        output=`helm repo add nginx https://kubernetes.github.io/ingress-nginx 2>&1 | tee /dev/fd/3`
+        if [ $? -ne 0 ] 
+        then 
+            assert_success 1 "Failed to add nginx helm repo" "$output"
+        fi
+
+        # TODO: when did this become important, and why?
+        output=`helm repo add prometheus https://prometheus-community.github.io/helm-charts 2>&1 | tee /dev/fd/3`
+        if [ $? -ne 0 ] 
+        then 
+            assert_success 1 "Failed to add prometheus helm repo" "$output"
+        fi
+
+        # TODO: when did this become important, and why?
+        output=`helm dependency build $chart 2>&1 | tee /dev/fd/3`
+        if [ $? -ne 0 ] 
+        then 
+            assert_success 1 "Failed to build helm dependencies" "$output"
         fi
     fi
 
