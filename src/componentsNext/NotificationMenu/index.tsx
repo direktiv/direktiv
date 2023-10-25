@@ -39,12 +39,8 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
       <Notification showIndicator={showIndicator}>
         <NotificationTitle>{title}</NotificationTitle>
         <NotificationMenuSeparator />
-        {isLoading && (
-          <div>
-            <NotificationLoading>{textLoading}</NotificationLoading>
-          </div>
-        )}
-        {showIndicator && !isLoading && (
+        {isLoading && <NotificationLoading>{textLoading}</NotificationLoading>}
+        {showIndicator && (
           <div>
             {possibleNotifications.map(
               ([notificationType, notificationConfig], index, srcArr) => {
@@ -52,11 +48,9 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                 const matchingNotification = data.issues.filter(
                   (issue) => notificationType === issue.type
                 );
-
                 if (matchingNotification.length <= 0) {
                   return null;
                 }
-
                 return (
                   <div key={notificationType}>
                     <NotificationClose
@@ -79,13 +73,11 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
             )}
           </div>
         )}
-        {!showIndicator && !isLoading && (
-          <div>
-            <NotificationMessage
-              text={textNoIssues}
-              icon={Check}
-            ></NotificationMessage>
-          </div>
+        {!showIndicator && (
+          <NotificationMessage
+            text={textNoIssues}
+            icon={Check}
+          ></NotificationMessage>
         )}
       </Notification>
     </div>
