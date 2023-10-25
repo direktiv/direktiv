@@ -1,6 +1,9 @@
 package core
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 var ErrNotFound = errors.New("ErrNotFound")
 
@@ -24,6 +27,12 @@ type Config struct {
 	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
 	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"`
 	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
+
+	FunctionsTimeout int `env:"DIREKTIV_FUNCTIONS_TIMEOUT"` // `yaml:"functions-timeout"`
+}
+
+func (conf *Config) GetFunctionsTimeout() time.Duration {
+	return time.Second * time.Duration(conf.FunctionsTimeout)
 }
 
 type Version struct {

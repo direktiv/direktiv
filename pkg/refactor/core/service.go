@@ -33,7 +33,8 @@ func (c *ServiceConfig) GetID() string {
 	//		Restrictions are usually related to DNS subdomain naming.
 	//		Has a maximum length of 63. But I can't remember if knative wants to use some of it, so I'm using less of the available limit to be safe.
 	//		We only use namespace and filepath because that should be enough to go on and it's easier to sanitize.
-	prefix := fmt.Sprintf("%s-%s", c.Namespace, c.FilePath)
+	prefix := fmt.Sprintf("%s-%s", c.Namespace, strings.Trim(c.FilePath, "/"))
+	prefix = strings.ReplaceAll(prefix, "/", "-")
 	prefix = strings.ReplaceAll(prefix, "_", "-")
 	prefix = strings.ReplaceAll(prefix, ".", "-")
 	prefix = strings.ToLower(prefix)
