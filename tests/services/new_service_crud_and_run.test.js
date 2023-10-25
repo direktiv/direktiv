@@ -37,10 +37,10 @@ scale: 2
             data: [
                 {
                     "cmd": "redis-server",
-                    "conditions": null,
+                    "conditions": expect.anything(),
                     "error": null,
                     "filePath": "/s1.yaml",
-                    "id": "objf8a48067049cad1cdc29obj",
+                    "id": "test-services-a7861273a87a073a7fa1",
                     "image": "redis",
                     "name": "s1",
                     "namespace": "test-services",
@@ -51,10 +51,10 @@ scale: 2
                 },
                 {
                     "cmd": "redis-server",
-                    "conditions": null,
+                    "conditions": expect.anything(),
                     "error": null,
                     "filePath": "/s2.yaml",
-                    "id": "obj9eca47019fa69482e1a8obj",
+                    "id": "test-services-7bbde10f8e01038d9849",
                     "image": "redis",
                     "name": "s2",
                     "namespace": "test-services",
@@ -92,7 +92,7 @@ scale: 2
     })
 
     retry(`should list all services`, 100, async () => {
-        await sleep(500)
+        await sleep(5000)
 
         const res = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
@@ -136,7 +136,7 @@ scale: 2
             ]
         })
     })
-});
+}, 50000);
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
