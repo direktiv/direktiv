@@ -244,8 +244,6 @@ upgrade-%: push-% ## Pushes new image deletes, reboots and tail new pod
 .PHONY: upgrade
 upgrade: push ## Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-flow
-	@$(MAKE) reboot-api
-	@$(MAKE) reboot-functions
 
 .PHONY: dependencies
 dependencies: ## installs tools 
