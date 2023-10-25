@@ -7,9 +7,6 @@ const namespaceName = "functionsfiles"
 describe('Test function files behaviour', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
-
     it(`should create a namespace`, async () => {
         var req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
         expect(req.statusCode).toEqual(200)
@@ -23,19 +20,14 @@ describe('Test function files behaviour', () => {
         })
     })
 
-    it(`should create a bash service`, async () => {
-        var req = await request(common.config.getDirektivHost())
-            .post(`/api/functions/namespaces/${namespaceName}`)
-            .send({
-                cmd: "",
-                image: "direktiv/bash:dev",
-                minScale: 1,
-                name: "bash",
-                size: 1
-            })
-        expect(req.statusCode).toEqual(200)
-        expect(req.body).toEqual({})
-    })
+    common.helpers.itShouldCreateServiceFile(it, expect, namespaceName,
+      "/bash.yaml", `
+direktiv_api: service/v1
+name: bash
+image: direktiv/bash:dev
+cmd: ""
+scale: 1
+`)
 
     it(`should create a workflow called /a.yaml`, async () => {
 
