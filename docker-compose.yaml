@@ -38,7 +38,6 @@ services:
       - DIREKTIV_KNATIVE_NAMESPACE=direktiv-services-direktiv
       - DIREKTIV_FUNCTIONS_TIMEOUT=7200
       - DIREKTIV_LOG_JSON=console
-      - DIREKTIV_DEBUG=true
 
     ports:
       # api v1 port
