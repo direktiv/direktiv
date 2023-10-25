@@ -52,19 +52,25 @@ export const NotificationHasMessage = () => (
   <Notification showIndicator={true}>
     <NotificationTitle>Notifications</NotificationTitle>
     <NotificationMenuSeparator />
-    <NotificationMessage
-      icon={Settings}
-      text="Settings for the current workflow are incomplete."
-    />
+    <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+      <NotificationMessage
+        icon={Settings}
+        text="Settings for the current workflow are incomplete."
+      />
+    </div>
     <NotificationMenuSeparator />
-    <NotificationMessage
-      icon={BanIcon}
-      text="An error occurred in one of your workflows."
-    />
+    <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+      <NotificationMessage
+        icon={BanIcon}
+        text="An error occurred in one of your workflows."
+      />
+    </div>
     <NotificationMenuSeparator />
-    <NotificationMessage
-      icon={LucideActivity}
-      text="Please check the Monitoring Logs."
-    />
+    <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+      <NotificationMessage
+        icon={LucideActivity}
+        text="Please check the Monitoring Logs."
+      />
+    </div>
   </Notification>
 );
