@@ -37,10 +37,10 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
   return (
     <div className={twMergeClsx("self-end text-right", className)}>
       <Notification showIndicator={showIndicator}>
+        <NotificationTitle>{title}</NotificationTitle>
+        <NotificationMenuSeparator />
         {isLoading && (
           <div>
-            <NotificationTitle>{title}</NotificationTitle>
-            <NotificationMenuSeparator />
             <NotificationLoading>{textLoading}</NotificationLoading>
           </div>
         )}
@@ -59,10 +59,6 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
 
                 return (
                   <div key={notificationType}>
-                    <div>
-                      <NotificationTitle>{title}</NotificationTitle>
-                      <NotificationMenuSeparator />
-                    </div>
                     <NotificationClose
                       className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
                       asChild
@@ -85,8 +81,6 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
         )}
         {!showIndicator && !isLoading && (
           <div>
-            <NotificationTitle>{title}</NotificationTitle>
-            <NotificationMenuSeparator />
             <NotificationMessage
               text={textNoIssues}
               icon={Check}

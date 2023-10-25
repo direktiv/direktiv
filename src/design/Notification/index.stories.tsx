@@ -56,16 +56,15 @@ export const NotificationHasMessage = () => (
       icon={Settings}
       text="Settings for the current workflow are incomplete."
     />
-    <NotificationMenuSeparator className="last:hidden" />
+    <NotificationMenuSeparator />
     <NotificationMessage
       icon={BanIcon}
       text="An error occurred in one of your workflows."
     />
-    <NotificationMenuSeparator className="last:hidden" />
+    <NotificationMenuSeparator />
     <NotificationMessage
       icon={LucideActivity}
       text="Please check the Monitoring Logs."
     />
-    <NotificationMenuSeparator className="last:hidden" />
   </Notification>
 );
