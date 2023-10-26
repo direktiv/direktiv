@@ -122,8 +122,7 @@ export const ServicesStreamingSubscriber = memo(
 
 ServicesStreamingSubscriber.displayName = "ServicesStreamingSubscriber";
 
-// TODO: rename this file
-
+// TODO: rename this file or split it up
 export const useService = (serviceId: string) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
