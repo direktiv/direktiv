@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -121,6 +122,9 @@ func buildVolumes(c *core.Config, cfg *core.ServiceConfig) []corev1.Volume {
 }
 
 func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Container, error) {
+	// TODO: yassir, we appear to have lost envs
+	envs := make(map[string]string)
+
 	// set resource limits.
 	rl, err := buildResourceLimits(c, cfg)
 	if err != nil {
@@ -131,7 +135,7 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 	uc := corev1.Container{
 		Name:      containerUser,
 		Image:     cfg.Image,
-		Env:       buildEnvVars(c, cfg),
+		Env:       buildEnvVars(false, c, cfg, envs),
 		Resources: rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -160,7 +164,7 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
-		Env:          buildEnvVars(c, cfg),
+		Env:          buildEnvVars(true, c, cfg, envs),
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
@@ -178,8 +182,64 @@ func buildResourceLimits(c *core.Config, cfg *core.ServiceConfig) (corev1.Resour
 }
 
 // nolint
-func buildEnvVars(c *core.Config, cfg *core.ServiceConfig) []corev1.EnvVar {
+func buildEnvVars(withGrpc bool, c *core.Config, cfg *core.ServiceConfig, envs map[string]string) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
+
+	// TODO: yassir
+	// if len(functionsConfig.Proxy.HTTP) > 0 {
+	// 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+	// 		Name:  httpProxy,
+	// 		Value: functionsConfig.Proxy.HTTP,
+	// 	})
+	// }
+
+	// TODO: yassir
+	// if len(functionsConfig.Proxy.HTTPS) > 0 {
+	// 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+	// 		Name:  httpsProxy,
+	// 		Value: functionsConfig.Proxy.HTTPS,
+	// 	})
+	// }
+
+	// TODO: yassir
+	// if len(functionsConfig.Proxy.No) > 0 {
+	// 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+	// 		Name:  noProxy,
+	// 		Value: functionsConfig.Proxy.No,
+	// 	})
+	// }
+
+	// add debug if there is an env
+	if c.LogDebug {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivDebug,
+			Value: "true",
+		})
+	}
+
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  util.DirektivOpentelemetry,
+		Value: c.OpenTelemetry,
+	})
+
+	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+		Name:  util.DirektivLogJSON,
+		Value: c.LogFormat,
+	})
+
+	if withGrpc {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivFlowEndpoint,
+			Value: "direktiv-flow.direktiv", // TODO: alan
+		})
+	}
+
+	for k, v := range envs {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  k,
+			Value: v,
+		})
+	}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		Name:  "DIREKTIV_APP",

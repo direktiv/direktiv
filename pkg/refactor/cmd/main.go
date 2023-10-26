@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	api2 "github.com/direktiv/direktiv/pkg/api"
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -183,7 +185,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					continue
 				}
 				funConfigList = append(funConfigList, &core.ServiceConfig{
-					Typ:       "namespace-service",
+					Typ:       core.ServiceTypeNamespace,
 					Name:      serviceDef.Name,
 					Namespace: ns.Name,
 					FilePath:  file.Path,
@@ -193,26 +195,50 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					Scale:     serviceDef.Scale,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
-				serviceDef, err := spec.ParseWorkflowServiceDefinition(data)
+				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file, data)
 				if err != nil {
-					logger.Error("parse workflow service def", "error", err)
+					logger.Error("parse workflow def", "error", err)
 
 					continue
 				}
-				if serviceDef.Typ == "knative-workflow" {
-					funConfigList = append(funConfigList, &core.ServiceConfig{
-						Typ:       "workflow-service",
-						Name:      serviceDef.Name,
-						Namespace: ns.Name,
-						FilePath:  file.Path,
-						Image:     serviceDef.Image,
-						CMD:       serviceDef.Cmd,
-						Size:      serviceDef.Size,
-						Scale:     serviceDef.Scale,
-					})
-				}
+
+				funConfigList = append(funConfigList, sub...)
 			}
 		}
 	}
 	serviceManager.SetServices(funConfigList)
+}
+
+func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore.File, data []byte) ([]*core.ServiceConfig, error) {
+	var wf model.Workflow
+
+	err := wf.Load(data)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*core.ServiceConfig, 0)
+
+	for _, fn := range wf.Functions {
+		if fn.GetType() != model.ReusableContainerFunctionType {
+			return nil, nil
+		}
+
+		serviceDef, ok := fn.(*model.ReusableFunctionDefinition)
+		if !ok {
+			return nil, errors.New("parse workflow def cast incorrectly")
+		}
+
+		list = append(list, &core.ServiceConfig{
+			Typ:       core.ServiceTypeWorkflow,
+			Name:      serviceDef.ID,
+			Namespace: ns.Name,
+			FilePath:  f.Path,
+			Image:     serviceDef.Image,
+			CMD:       serviceDef.Cmd,
+			Size:      serviceDef.Size.String(),
+		})
+	}
+
+	return list, nil
 }

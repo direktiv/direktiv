@@ -20,7 +20,7 @@ func TestGetServiceURL_Docker(t *testing.T) {
 			typ:       "t1",
 			filePath:  "/file1",
 			name:      "bar",
-			wantURL:   "http://obj24ba02a62b25da2515a0obj",
+			wantURL:   "http://foo-file1-9f7ad8e6e8ce1aae8aeb",
 		},
 	}
 	for _, tt := range tests {
@@ -50,7 +50,7 @@ func TestGetServiceURL_Knative(t *testing.T) {
 			typ:              "t1",
 			filePath:         "/file1",
 			name:             "bar",
-			wantURL:          "http://obj24ba02a62b25da2515a0obj.kns.svc.cluster.local",
+			wantURL:          "http://foo-file1-9f7ad8e6e8ce1aae8aeb.kns.svc.cluster.local",
 		},
 	}
 	for _, tt := range tests {

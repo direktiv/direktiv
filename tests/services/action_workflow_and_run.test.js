@@ -7,8 +7,6 @@ const testWorkflow = "test-workflow.yaml"
 describe('Test workflow function invoke', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
     it(`should create a new namespace`, async () => {
         const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}`)
         expect(res.statusCode).toEqual(200)

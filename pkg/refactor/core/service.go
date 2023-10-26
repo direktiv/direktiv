@@ -4,7 +4,13 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
+)
+
+const (
+	ServiceTypeNamespace = "namespace-service"
+	ServiceTypeWorkflow  = "workflow-service"
 )
 
 // nolint:tagliatelle
@@ -24,10 +30,35 @@ type ServiceConfig struct {
 }
 
 func (c *ServiceConfig) GetID() string {
-	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.Typ, c.FilePath)
+	var str, prefix string
+	if c.Typ == ServiceTypeNamespace {
+		str = fmt.Sprintf("%s:%s", c.Namespace, c.Name)
+	} else {
+		path := strings.Trim(c.FilePath, "/")
+		path = strings.TrimSuffix(path, ".yaml")
+		path = strings.TrimSuffix(path, ".yml")
+		str = fmt.Sprintf("%s/%s:%s", c.Namespace, path, c.Name)
+	}
+
 	sh := sha256.Sum256([]byte(str))
 
-	return fmt.Sprintf("obj%xobj", sh[:10])
+	// NOTES:
+	// 		Only the hash really matters. The prefix is just for human readability.
+	//		Restrictions are usually related to DNS subdomain naming.
+	prefix = str
+	prefix = strings.SplitN(prefix, ":", 2)[0] //nolint:gomnd // NOTE: excluding the name because we're currently not strict about naming services and it will be a pain to sanitize.
+	prefix = strings.ReplaceAll(prefix, "/", "-")
+	prefix = strings.ReplaceAll(prefix, "_", "-")
+	prefix = strings.ReplaceAll(prefix, ".", "-")
+	prefix = strings.ToLower(prefix)
+
+	// Has a maximum length of 63. But I can't remember if knative wants to use some of it, so I'm using less of the available limit to be safe.
+	maxLen := 50 //nolint:gomnd
+	if len(prefix) > maxLen {
+		prefix = prefix[:maxLen]
+	}
+
+	return fmt.Sprintf("%s-%x", prefix, sh[:10])
 }
 
 func (c *ServiceConfig) GetValueHash() string {

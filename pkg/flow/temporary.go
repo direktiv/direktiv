@@ -1,15 +1,19 @@
 package flow
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -17,6 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
@@ -332,7 +337,23 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		return nil, derrors.NewInternalError(fmt.Errorf("unsupported function type: %v", args.Definition.GetType()))
 	}
 
-	return nil, derrors.NewInternalError(fmt.Errorf("knative function not yet implemented: %v", args.Definition.GetType()))
+	uid := uuid.New()
+
+	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
+	if err != nil {
+		return nil, err
+	}
+
+	ci.ID = ar.ActionID
+	ci.ServiceName = ar.Container.Service
+	ci.Type = "isolate"
+
+	return &knativeHandle{
+		im:     im,
+		info:   ci,
+		engine: im.engine,
+		ar:     ar,
+	}, nil
 }
 
 type subflowHandle struct {
@@ -347,4 +368,231 @@ func (child *subflowHandle) Run(ctx context.Context) {
 
 func (child *subflowHandle) Info() states.ChildInfo {
 	return child.info
+}
+
+func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
+	fn model.FunctionDefinition, inputData []byte,
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
+) (*functionRequest, error) {
+	ar := new(functionRequest)
+	ar.ActionID = uid.String()
+	ar.Workflow.Timeout = timeout
+	ar.Workflow.Revision = im.instance.Instance.RevisionID.String()
+	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
+	ar.Workflow.Path = im.instance.Instance.WorkflowPath
+	ar.Iterator = iterator
+	if !async {
+		ar.Workflow.InstanceID = im.ID().String()
+		ar.Workflow.NamespaceID = im.instance.Instance.NamespaceID.String()
+		ar.Workflow.State = stateId
+		ar.Workflow.Step = im.Step()
+	}
+
+	fnt := fn.GetType()
+	ar.Container.Type = fnt
+	ar.Container.Data = inputData
+
+	switch fnt {
+	case model.ReusableContainerFunctionType:
+		con := fn.(*model.ReusableFunctionDefinition)
+		scale := int32(0)
+		ar.Container.Image = con.Image
+		ar.Container.Cmd = con.Cmd
+		ar.Container.Size = con.Size
+		ar.Container.Scale = int(scale)
+		ar.Container.Files = files
+		ar.Container.ID = con.ID
+		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeWorkflow, ar.Workflow.Path, con.ID)
+	case model.NamespacedKnativeFunctionType:
+		con := fn.(*model.NamespacedFunctionDefinition)
+		ar.Container.Files = files
+		ar.Container.ID = con.ID
+		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, "", con.ID)
+	default:
+		return nil, fmt.Errorf("unexpected function type: %v", fn)
+	}
+
+	// check for duplicate file names
+	m := make(map[string]*model.FunctionFileDefinition)
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		k := f.As
+		if k == "" {
+			k = f.Key
+		}
+		if _, exists := m[k]; exists {
+			return nil, fmt.Errorf("multiple files with same name: %s", k)
+		}
+		m[k] = f
+	}
+
+	return ar, nil
+}
+
+type knativeHandle struct {
+	im     *instanceMemory
+	info   states.ChildInfo
+	engine *engine
+	ar     *functionRequest
+}
+
+func (child *knativeHandle) Run(ctx context.Context) {
+	go func(ctx context.Context, im *instanceMemory, ar *functionRequest) {
+		err := child.engine.doActionRequest(ctx, ar)
+		if err != nil {
+			return
+		}
+	}(ctx, child.im, child.ar)
+}
+
+func (child *knativeHandle) Info() states.ChildInfo {
+	return child.info
+}
+
+func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) error {
+	if ar.Workflow.Timeout == 0 {
+		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
+	}
+
+	// Log warning if timeout exceeds max allowed timeout
+	if actionTimeout := time.Duration(ar.Workflow.Timeout) * time.Second; actionTimeout > engine.server.conf.GetFunctionsTimeout() {
+		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
+			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
+		})
+		if err != nil {
+			engine.sugar.Errorf("Failed to log: %v.", err)
+		}
+	}
+
+	switch ar.Container.Type {
+	case model.DefaultFunctionType:
+		fallthrough
+	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.ReusableContainerFunctionType:
+		go engine.doKnativeHTTPRequest(ctx, ar)
+	}
+
+	return nil
+}
+
+func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
+	ar *functionRequest,
+) {
+	var err error
+
+	tr := engine.createTransport()
+
+	path := ""
+	styp := core.ServiceTypeNamespace
+
+	if ar.Container.Type == model.ReusableContainerFunctionType {
+		path = ar.Workflow.Path
+		styp = core.ServiceTypeWorkflow
+	}
+
+	addr := service.GetServiceURL(ar.Workflow.NamespaceName, styp, path, ar.Container.ID)
+
+	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
+	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
+
+	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
+	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
+
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
+		bytes.NewReader(ar.Container.Data))
+	if err != nil {
+		engine.reportError(ar, err)
+		return
+	}
+
+	// add headers
+	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
+	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.NamespaceName)
+	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
+		int64(ar.Workflow.Step)))
+	req.Header.Add(DirektivIteratorHeader, fmt.Sprintf("%d",
+		int64(ar.Iterator)))
+	for i := range ar.Container.Files {
+		f := &ar.Container.Files[i]
+		data, err := json.Marshal(f)
+		if err != nil {
+			panic(err)
+		}
+		str := base64.StdEncoding.EncodeToString(data)
+		req.Header.Add(DirektivFileHeader, str)
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
+
+	var resp *http.Response
+
+	// potentially dns error for a brand new service
+	// we just loop and see if we can recreate the service
+	// one minute wait max
+	cleanup := util.TraceHTTPRequest(ctx, req)
+	defer cleanup()
+
+	for i := 0; i < 9; i++ { // NOTE: careful not to raise 'i' too high. It exponentially increases the timeout. With '9' as the upper limit it should wait approx 4 minutes.
+		engine.sugar.Debugf("functions request (%d): %v", i, addr)
+		resp, err = client.Do(req)
+		if err != nil {
+			if ctxErr := rctx.Err(); ctxErr != nil {
+				engine.sugar.Debugf("context error in knative call")
+				return
+			}
+			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
+
+			// NOTE: we used to do something smarter here if it was a DNS error.
+			// dnsErr := new(net.DNSError)
+			// if errors.As(err, &dnsErr) {
+			// 	continue
+			// }
+
+			time.Sleep(time.Millisecond * 500 * (1 << i))
+		} else {
+			defer resp.Body.Close()
+			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID)
+			break
+		}
+	}
+
+	if err != nil {
+		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
+		engine.reportError(ar, err)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		engine.reportError(ar, fmt.Errorf("action error status: %d",
+			resp.StatusCode))
+	}
+
+	engine.sugar.Debugf("function request done")
+}
+
+func (engine *engine) reportError(ar *functionRequest, err error) {
+	ec := ""
+	em := err.Error()
+	step := int32(ar.Workflow.Step)
+	r := &grpc.ReportActionResultsRequest{
+		InstanceId:   ar.Workflow.InstanceID,
+		Step:         step,
+		ActionId:     ar.ActionID,
+		ErrorCode:    ec,
+		ErrorMessage: em,
+		Iterator:     int32(ar.Iterator),
+	}
+
+	_, err = engine.internal.ReportActionResults(context.Background(), r)
+	if err != nil {
+		engine.sugar.Errorf("can not respond to flow: %v", err)
+	}
 }
