@@ -556,7 +556,7 @@
         },
         "rebuild": {
           "title": "Rebuild service",
-          "msg": "Are you sure you want to rebuild <b>{{name}}</b>? This will kill the running process, repull the image and start the service again",
+          "msg": "Are you sure you want to rebuild <b>{{name}}</b>? This will kill the running service, repull the image and start the service again.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Rebuild"
         }
