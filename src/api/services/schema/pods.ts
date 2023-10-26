@@ -42,9 +42,7 @@ export const PodsStreamingSchema = z.object({
 
 /**
  * example
-  {
-    "data": "2023/08/18 07:02:13 Serving hello world at http://[::]:8080\n"
-  }
+  "2023/08/18 07:02:13 Serving hello world at http://[::]:8080\n"
  */
 export const PodLogsSchema = z.string();
 
