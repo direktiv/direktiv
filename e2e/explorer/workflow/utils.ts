@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 
-export const actionWaitForSuccessToast = async (page: Page) => {
+export const waitForSuccessToast = async (page: Page) => {
   const successToast = page.getByTestId("toast-success");
   await expect(successToast, "a success toast appears").toBeVisible();
   await page.getByTestId("toast-close").click();
