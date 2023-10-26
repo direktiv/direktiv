@@ -47,6 +47,15 @@ const Header = ({ service }: { service: string }) => {
       </div>
       <div>
         <div className="flex flex-col gap-3 sm:flex-row">
+          {serviceData.error && (
+            <StatusBadge
+              status="False"
+              className="w-fit"
+              message={serviceData.error}
+            >
+              {t("pages.services.list.tableRow.errorLabel")}
+            </StatusBadge>
+          )}
           {(serviceData.conditions ?? []).map((condition) => (
             <StatusBadge
               key={condition.type}
