@@ -19,16 +19,12 @@ const ServicesTable = ({
   services,
   isSuccess = false,
   setRebuildService,
-  deleteMenuItem,
-  workflow,
   isAllowed,
   noPermissionMessage,
 }: {
   services?: ServiceSchemaType[];
   isSuccess: boolean;
   setRebuildService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
-  deleteMenuItem?: JSX.Element;
-  workflow?: string;
   isAllowed: boolean;
   noPermissionMessage?: string;
 }) => {
@@ -68,8 +64,6 @@ const ServicesTable = ({
                   service={service}
                   key={service.id}
                   setRebuildService={setRebuildService}
-                  deleteMenuItem={deleteMenuItem}
-                  workflow={workflow}
                 />
               ))}
             {noResults && (

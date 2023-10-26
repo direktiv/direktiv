@@ -18,29 +18,10 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const DefaultDeleteMenuItem = () => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <DropdownMenuItem>
-        <Trash className="mr-2 h-4 w-4" />
-        {t("pages.services.list.contextMenu.delete")}
-      </DropdownMenuItem>
-    </>
-  );
-};
-
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
   setRebuildService: (service: ServiceSchemaType) => void;
-  deleteMenuItem?: JSX.Element;
-  workflow?: string;
-}> = ({
-  service,
-  setRebuildService,
-  deleteMenuItem = <DefaultDeleteMenuItem />,
-  workflow,
-}) => {
+}> = ({ service, setRebuildService }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -51,11 +32,11 @@ const ServicesTableRow: FC<{
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          if (workflow) {
+          if (service.type === "workflow-service") {
             return navigate(
               pages.explorer.createHref({
                 namespace,
-                path: workflow,
+                path: service.filePath,
                 subpage: "workflow-services",
                 //  TODO: serviceName must be renamed to serviceID, revision must be removed from parameters
                 serviceName: service.id,
@@ -130,7 +111,10 @@ const ServicesTableRow: FC<{
                   setRebuildService(service);
                 }}
               >
-                <DropdownMenuItem>{deleteMenuItem}</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Trash className="mr-2 h-4 w-4" />
+                  {t("pages.services.list.contextMenu.rebuild")}
+                </DropdownMenuItem>
               </DialogTrigger>
             </DropdownMenuContent>
           </DropdownMenu>

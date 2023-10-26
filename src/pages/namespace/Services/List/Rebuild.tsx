@@ -4,31 +4,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { LucideIcon, Trash } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { RotateCcw } from "lucide-react";
+import { ServiceSchemaType } from "~/api/services/schema/services";
+import { useState } from "react";
 
 const Rebuild = ({
   service,
-  workflow,
-  version,
-  icon: Icon,
-  header,
-  message,
   close,
 }: {
-  service: string;
-  workflow?: string;
-  version?: string;
-  icon: LucideIcon;
-  header: string;
-  message: ReactNode;
+  service: ServiceSchemaType;
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  // const { mutate: deleteService, isLoading } = useDeleteService({
+
+  // TODO: implement
+  // const { mutate: rebuildService, isLoading } = useRebuildService({
   //   workflow,
   //   version,
   //   onSuccess: () => {
@@ -36,33 +29,44 @@ const Rebuild = ({
   //   },
   // });
 
+  // TODO: remove this loading mock
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <Icon /> {header}
+          <RotateCcw /> {t("pages.services.list.rebuild.title")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-3">{message}</div>
+      <div className="my-3">
+        <Trans
+          i18nKey="pages.services.list.rebuild.msg"
+          values={{ name: service.name }}
+        />
+      </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.services.list.delete.cancelBtn")}
+            {t("pages.services.list.rebuild.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
           onClick={() => {
-            // deleteService({
-            //   service,
-            //   workflow,
-            //   version,
+            setIsLoading(true);
+            setTimeout(() => {
+              setIsLoading(false);
+              close();
+            }, 1000);
+            // rebuildService({
+            //   service.id,
             // });
           }}
           variant="destructive"
-          // loading={isLoading}
+          loading={isLoading}
         >
-          {/* {!isLoading && <Trash />} */}
-          {t("pages.services.list.delete.deleteBtn")}
+          {!isLoading && <RotateCcw />}
+          {t("pages.services.list.rebuild.deleteBtn")}
         </Button>
       </DialogFooter>
     </>

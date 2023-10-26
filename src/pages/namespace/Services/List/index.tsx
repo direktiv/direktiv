@@ -1,13 +1,13 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Layers, PlusCircle } from "lucide-react";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import {
   ServicesStreamingSubscriber,
   useServices,
 } from "~/api/services/query/getAll";
 import { useEffect, useState } from "react";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { Layers } from "lucide-react";
+import Rebuild from "./Rebuild";
 import RefreshButton from "~/design/RefreshButton";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "./Table";
@@ -25,8 +25,6 @@ const ServicesListPage = () => {
   } = useServices({});
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  // TODO: implement kill process
-  // rebuild, this will kill, pull the new image, and start the service again
   const [rebuildService, setRebuildService] = useState<ServiceSchemaType>();
 
   useEffect(() => {
@@ -63,28 +61,14 @@ const ServicesListPage = () => {
           />
         </Card>
         <DialogContent>
-          {/* {deleteService && (
-            <Delete
-              icon={Trash}
-              service={deleteService.info.name}
-              header={t("pages.services.list.delete.title")}
-              message={
-                <Trans
-                  i18nKey="pages.services.list.delete.msg"
-                  values={{ name: deleteService.info.name }}
-                />
-              }
+          {rebuildService && (
+            <Rebuild
+              service={rebuildService}
               close={() => {
                 setDialogOpen(false);
               }}
             />
           )}
-          {createService && (
-            <CreateService
-              close={() => setDialogOpen(false)}
-              unallowedNames={allAvailableNames}
-            />
-          )} */}
         </DialogContent>
       </Dialog>
     </div>
