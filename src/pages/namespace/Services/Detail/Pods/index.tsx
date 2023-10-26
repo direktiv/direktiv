@@ -26,7 +26,7 @@ export const Pods = ({
   className,
 }: {
   service: string;
-  className?: string;
+  className?: string; // TODO: can this className be removed?
 }) => {
   const { data: podsList, isSuccess } = usePods(service);
   if (!isSuccess) return null;
