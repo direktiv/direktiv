@@ -1,9 +1,11 @@
 import { useCallback, useEffect } from "react";
 
+import { z } from "zod";
+
 type HttpStreamingOptions = {
   url: string;
   apiKey?: string;
-  onMessage?: (message: string, isFirstMessage: boolean) => void;
+  onMessage?: (message: unknown, isFirstMessage: boolean) => void;
   onError?: (e: unknown) => void;
   enabled?: boolean;
 };
@@ -79,3 +81,37 @@ export const useHttpStreaming = ({
     };
   }, [enabled, onError, startStreaming]);
 };
+
+/**
+ * react hook that acts as a proxy for useHttpStreaming
+ * and implements schema validation on top of it
+ */
+export const useStreaming = <T>({
+  url,
+  apiKey,
+  enabled,
+  schema,
+  onMessage,
+}: {
+  url: string;
+  apiKey?: string;
+  enabled: boolean;
+  schema: z.ZodSchema<T>;
+  onMessage: (msg: T) => void;
+}) =>
+  useHttpStreaming({
+    url,
+    apiKey,
+    enabled,
+    onMessage: (msg) => {
+      const parsedResult = schema.safeParse(msg);
+      if (parsedResult.success === false) {
+        console.error(
+          `error parsing streaming result for ${url}`,
+          parsedResult.error
+        );
+        return;
+      }
+      onMessage(parsedResult.data);
+    },
+  });
