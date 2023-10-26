@@ -205,7 +205,7 @@ const SecretsList: FC = () => {
           item={editItem}
           onSuccess={() => {
             /**
-             * When the user has uninitialized secrets, this will be shown behind
+             * When the user has uninitialized secrets, this will be reflected in
              * the notification bell. Updating a secret may have initialized it and
              * we need to update the notification bell.
              */
