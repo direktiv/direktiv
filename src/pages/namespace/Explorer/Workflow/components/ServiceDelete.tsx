@@ -1,7 +1,7 @@
 import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 
-import Delete from "~/pages/namespace/Services/List/Delete";
+import Rebuild from "~/pages/namespace/Services/List/Rebuild";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 
 export const DeleteMenuItem = () => {
@@ -25,7 +25,7 @@ export const ServiceDelete = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Delete
+    <Rebuild
       icon={RotateCcw}
       header={t("pages.explorer.tree.workflow.overview.services.delete.title")}
       message={

@@ -10,7 +10,7 @@ import Button from "~/design/Button";
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-const Delete = ({
+const Rebuild = ({
   service,
   workflow,
   version,
@@ -69,4 +69,4 @@ const Delete = ({
   );
 };
 
-export default Delete;
+export default Rebuild;
