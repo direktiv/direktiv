@@ -97,14 +97,14 @@ export const useStreaming = <T>({
   apiKey?: string;
   enabled: boolean;
   schema: z.ZodSchema<T>;
-  onMessage: (msg: T) => void;
+  onMessage: (message: T, isFirstMessage: boolean) => void;
 }) =>
   useHttpStreaming({
     url,
     apiKey,
     enabled,
-    onMessage: (msg) => {
-      const parsedResult = schema.safeParse(msg);
+    onMessage: (message, isFirstMessage) => {
+      const parsedResult = schema.safeParse(message);
       if (parsedResult.success === false) {
         console.error(
           `error parsing streaming result for ${url}`,
@@ -112,6 +112,6 @@ export const useStreaming = <T>({
         );
         return;
       }
-      onMessage(parsedResult.data);
+      onMessage(parsedResult.data, isFirstMessage);
     },
   });
