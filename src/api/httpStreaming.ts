@@ -10,6 +10,10 @@ type HttpStreamingOptions = {
 
 const decoder = new TextDecoder("iso-8859-2");
 
+/**
+ * a react hook that handles a connection to an http endpoint and streams
+ * the response. All messages are forwarded to the onMessage callback.
+ */
 export const useHttpStreaming = ({
   url,
   apiKey,
