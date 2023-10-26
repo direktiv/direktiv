@@ -104,11 +104,11 @@ const ServicesTableRow: FC<{
             </div>
           </div>
         </TableCell>
-        <TableCell>{service.image}</TableCell>
+        <TableCell>{service.image ? service.image : service.image}</TableCell>
         <TableCell>{service.scale}</TableCell>
-        <TableCell>{service.size}</TableCell>
+        <TableCell>{service.size ? service.size : "-"}</TableCell>
         <TableCell className="whitespace-normal break-all">
-          {service.cmd}
+          {service.cmd ? service.cmd : "-"}
         </TableCell>
         <TableCell>
           <DropdownMenu>

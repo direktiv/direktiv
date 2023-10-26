@@ -24,7 +24,7 @@ const Header = ({ service }: { service: string }) => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.services.list.tableHeader.image")}
           </div>
-          {serviceData.image}
+          {serviceData.image ? serviceData.image : "-"}
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
@@ -36,13 +36,13 @@ const Header = ({ service }: { service: string }) => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.services.list.tableHeader.size")}
           </div>
-          {serviceData.size}
+          {serviceData.size ? serviceData.size : "-"}
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.services.list.tableHeader.cmd")}
           </div>
-          {serviceData.cmd}
+          {serviceData.cmd ? serviceData.cmd : "-"}
         </div>
       </div>
       <div>
