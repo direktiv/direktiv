@@ -28,11 +28,13 @@ export const Pods = ({
   service: string;
   className?: string; // TODO: can this className be removed?
 }) => {
-  const { data: podsList, isSuccess } = usePods(service);
-  if (!isSuccess) return null;
+  const { data: podsList, isLoading } = usePods(service);
+
+  if (isLoading) return null;
+
   return (
     <PodsWithData
-      pods={podsList.data}
+      pods={podsList?.data ?? []}
       service={service}
       className={className}
     />
