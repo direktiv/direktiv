@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -541,7 +540,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
 
-	for i := 0; i < 180; i++ {
+	for i := 0; i < 9; i++ { // NOTE: careful not to raise 'i' too high. It exponentially increases the timeout. With '9' as the upper limit it should wait approx 4 minutes.
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -550,17 +549,14 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				return
 			}
 			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
-			dnsErr := new(net.DNSError)
-			if errors.As(err, &dnsErr) {
-				// recreate if the service does not exist
-				// TODO: what should we do here instead?
 
-				// recreate if the service if it exists in the database but not knative
-				// TODO: what should we do here instead?
-				continue
-			}
+			// NOTE: we used to do something smarter here if it was a DNS error.
+			// dnsErr := new(net.DNSError)
+			// if errors.As(err, &dnsErr) {
+			// 	continue
+			// }
 
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(time.Millisecond * 500 * (1 << i))
 		} else {
 			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID)
 			break
