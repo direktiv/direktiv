@@ -31,7 +31,7 @@ const ItemRow = <ItemType,>({
   const { t } = useTranslation();
 
   return (
-    <TableRow>
+    <TableRow data-testid="variable-row">
       <TableCell data-testid="item-name">{children}</TableCell>
       <TableCell className="w-0">
         <DropdownMenu>

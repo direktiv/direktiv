@@ -1,10 +1,10 @@
-import {
-  actionWaitForSuccessToast,
-  jsonSchemaFormWorkflow,
-  jsonSchemaWithRequiredEnum,
-} from "./utils";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
+import {
+  jsonSchemaFormWorkflow,
+  jsonSchemaWithRequiredEnum,
+  waitForSuccessToast,
+} from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -435,7 +435,7 @@ test(`it is possible to deactivate and activate a workflow`, async ({
   ).toBeEnabled();
 
   await btnToggle.click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   await expect(
     iconPowerOn,
     "next state should be inactive, shows the power-on button"
@@ -453,7 +453,7 @@ test(`it is possible to deactivate and activate a workflow`, async ({
   ).toBeHidden();
 
   await btnToggle.click(); //activate again
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   await btnRun.click(); //run the workflow
   await expect(
