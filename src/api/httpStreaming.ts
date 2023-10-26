@@ -12,6 +12,36 @@ type HttpStreamingOptions = {
 
 const decoder = new TextDecoder("iso-8859-2");
 
+const processStream = async ({
+  reader,
+  onMessage,
+  onError,
+}: {
+  reader: ReadableStreamDefaultReader;
+  onMessage: HttpStreamingOptions["onMessage"];
+  onError: HttpStreamingOptions["onError"];
+}) => {
+  let finished = false;
+  let isFirstMessage = true;
+  while (!finished) {
+    const { done, value } = await reader.read();
+    if (done) {
+      finished = true;
+      break;
+    }
+    try {
+      const chunk = decoder.decode(value, {
+        stream: true,
+      });
+      onMessage?.(chunk, isFirstMessage);
+      isFirstMessage = false;
+    } catch (error) {
+      onError?.(error);
+      finished = true;
+    }
+  }
+};
+
 /**
  * a react hook that handles a connection to an http endpoint and streams
  * the response. All messages are forwarded to the onMessage callback.
@@ -45,28 +75,7 @@ export const useHttpStreaming = ({
         return;
       }
 
-      const reader = response.body.getReader();
-
-      let finished = false;
-      let isFirstMessage = true;
-
-      while (!finished) {
-        const { done, value } = await reader.read();
-        if (done) {
-          finished = true;
-          break;
-        }
-        try {
-          const chunk = decoder.decode(value, {
-            stream: true,
-          });
-          onMessage?.(chunk, isFirstMessage);
-          isFirstMessage = false;
-        } catch (error) {
-          onError?.(error);
-          finished = true;
-        }
-      }
+      processStream({ reader: response.body.getReader(), onMessage, onError });
     },
     [apiKey, onError, onMessage, url]
   );
