@@ -3,7 +3,7 @@ import { useCallback, useEffect } from "react";
 type HttpStreamingOptions = {
   url: string;
   apiKey?: string;
-  onMessage?: (message: string) => void;
+  onMessage?: (message: string, isFirstMessage: boolean) => void;
   onError?: (e: unknown) => void;
   enabled?: boolean;
 };
@@ -38,6 +38,7 @@ export const useHttpStreaming = ({
       const reader = response.body.getReader();
 
       let finished = false;
+      let isFirstMessage = true;
 
       while (!finished) {
         const { done, value } = await reader.read();
@@ -45,12 +46,12 @@ export const useHttpStreaming = ({
           finished = true;
           break;
         }
-
         try {
           const chunk = decoder.decode(value, {
             stream: true,
           });
-          onMessage?.(chunk);
+          onMessage?.(chunk, isFirstMessage);
+          isFirstMessage = false;
         } catch (error) {
           onError?.(error);
           finished = true;
