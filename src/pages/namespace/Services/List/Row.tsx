@@ -32,12 +32,12 @@ const DefaultDeleteMenuItem = () => {
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
-  setDeleteService: (service: ServiceSchemaType) => void;
+  setRebuildService: (service: ServiceSchemaType) => void;
   deleteMenuItem?: JSX.Element;
   workflow?: string;
 }> = ({
   service,
-  setDeleteService,
+  setRebuildService,
   deleteMenuItem = <DefaultDeleteMenuItem />,
   workflow,
 }) => {
@@ -127,7 +127,7 @@ const ServicesTableRow: FC<{
                 className="w-full"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDeleteService(service);
+                  setRebuildService(service);
                 }}
               >
                 <DropdownMenuItem>{deleteMenuItem}</DropdownMenuItem>

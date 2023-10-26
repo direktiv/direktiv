@@ -26,11 +26,12 @@ const ServicesListPage = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   // TODO: implement kill process
-  const [deleteService, setDeleteService] = useState<ServiceSchemaType>();
+  // rebuild, this will kill, pull the new image, and start the service again
+  const [rebuildService, setRebuildService] = useState<ServiceSchemaType>();
 
   useEffect(() => {
     if (dialogOpen === false) {
-      setDeleteService(undefined);
+      setRebuildService(undefined);
     }
   }, [dialogOpen]);
 
@@ -56,7 +57,7 @@ const ServicesListPage = () => {
           <ServicesTable
             services={serviceList?.data ?? []}
             isSuccess={isSuccess}
-            setDeleteService={setDeleteService}
+            setRebuildService={setRebuildService}
             isAllowed={isAllowed}
             noPermissionMessage={noPermissionMessage}
           />

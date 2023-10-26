@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 const ServicesTable = ({
   services,
   isSuccess = false,
-  setDeleteService,
+  setRebuildService,
   deleteMenuItem,
   workflow,
   isAllowed,
@@ -26,7 +26,7 @@ const ServicesTable = ({
 }: {
   services?: ServiceSchemaType[];
   isSuccess: boolean;
-  setDeleteService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
+  setRebuildService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
   deleteMenuItem?: JSX.Element;
   workflow?: string;
   isAllowed: boolean;
@@ -67,7 +67,7 @@ const ServicesTable = ({
                 <Row
                   service={service}
                   key={service.id}
-                  setDeleteService={setDeleteService}
+                  setRebuildService={setRebuildService}
                   deleteMenuItem={deleteMenuItem}
                   workflow={workflow}
                 />
