@@ -549,7 +549,7 @@
           "errorLabel": "Error"
         },
         "contextMenu": {
-          "delete": "Delete"
+          "rebuild": "Rebuild"
         },
         "empty": {
           "title": "No services exist yet"
