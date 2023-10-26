@@ -554,11 +554,11 @@
         "empty": {
           "title": "No services exist yet"
         },
-        "delete": {
-          "title": "Delete service",
-          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+        "rebuild": {
+          "title": "Rebuild service",
+          "msg": "Are you sure you want to rebuild <b>{{name}}</b>? This will kill the running process, repull the image and start the service again",
           "cancelBtn": "Cancel",
-          "deleteBtn": "Delete"
+          "deleteBtn": "Rebuild"
         }
       },
       "detail": {
