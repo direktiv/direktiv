@@ -45,15 +45,17 @@ func (c *ServiceConfig) GetID() string {
 	// NOTES:
 	// 		Only the hash really matters. The prefix is just for human readability.
 	//		Restrictions are usually related to DNS subdomain naming.
-	//		Has a maximum length of 63. But I can't remember if knative wants to use some of it, so I'm using less of the available limit to be safe.
 	prefix = str
-	prefix = strings.SplitN(prefix, ":", 2)[0] // NOTE: excluding the name because we're currently not strict about naming services and it will be a pain to sanitize.
+	prefix = strings.SplitN(prefix, ":", 2)[0] //nolint:gomnd // NOTE: excluding the name because we're currently not strict about naming services and it will be a pain to sanitize.
 	prefix = strings.ReplaceAll(prefix, "/", "-")
 	prefix = strings.ReplaceAll(prefix, "_", "-")
 	prefix = strings.ReplaceAll(prefix, ".", "-")
 	prefix = strings.ToLower(prefix)
-	if len(prefix) > 50 {
-		prefix = prefix[:50]
+
+	// Has a maximum length of 63. But I can't remember if knative wants to use some of it, so I'm using less of the available limit to be safe.
+	maxLen := 50 //nolint:gomnd
+	if len(prefix) > maxLen {
+		prefix = prefix[:maxLen]
 	}
 
 	return fmt.Sprintf("%s-%x", prefix, sh[:10])
