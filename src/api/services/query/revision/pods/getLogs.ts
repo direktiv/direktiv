@@ -26,7 +26,7 @@ export const usePodLogsStream = (
   useHttpStreaming({
     url: `/api/v2/namespaces/${namespace}/services/${service}/pods/${pod}/logs`,
     apiKey: apiKey ?? undefined,
-    onMessage: (data) => {
+    onMessage: (data, isFirstMessage) => {
       queryClient.setQueryData<PodLogsSchemaType>(
         serviceKeys.podLogs({
           namespace,
@@ -34,8 +34,12 @@ export const usePodLogsStream = (
           pod,
           service,
         }),
-        // the sreaming endpoint just returns the new cache value
-        () => data // TODO: append to existing cache value
+        (old) => {
+          if (isFirstMessage) {
+            return data;
+          }
+          return `${old ?? ""}${data}`;
+        }
       );
     },
     onError: (error) => {
