@@ -4,9 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo } from "react";
 import { serviceKeys } from "../../..";
 import { useApiKey } from "~/util/store/apiKey";
-import { useHttpStreaming } from "~/api/httpStreaming";
 import { useNamespace } from "~/util/store/namespace";
-import { useStreaming } from "~/api/streaming";
+import { useStreaming } from "~/api/httpStreaming";
 
 export const usePodLogsStream = (
   {
@@ -23,9 +22,11 @@ export const usePodLogsStream = (
   const apiKey = useApiKey();
   const queryClient = useQueryClient();
 
-  useHttpStreaming({
+  useStreaming({
     url: `/api/v2/namespaces/${namespace}/services/${service}/pods/${pod}/logs`,
     apiKey: apiKey ?? undefined,
+    schema: PodLogsSchema,
+    enabled,
     onMessage: (data, isFirstMessage) => {
       queryClient.setQueryData<PodLogsSchemaType>(
         serviceKeys.podLogs({
@@ -41,9 +42,6 @@ export const usePodLogsStream = (
           return `${old ?? ""}${data}`;
         }
       );
-    },
-    onError: (error) => {
-      console.log("🚀 error", error);
     },
   });
 };
