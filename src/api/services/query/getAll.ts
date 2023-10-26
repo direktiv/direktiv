@@ -1,5 +1,6 @@
+import { ServicesListSchema, ServicesListSchemaType } from "../schema/services";
+
 import { QueryFunctionContext } from "@tanstack/react-query";
-import { ServicesListSchema } from "../schema/services";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { memo } from "react";
@@ -142,7 +143,14 @@ export const useService = (serviceId: string) => {
   });
 };
 
-export const useServices = ({ workflow }: { workflow?: string }) => {
+// TODO: don't export this hook
+export const useServices = ({
+  workflow,
+  filter,
+}: {
+  workflow?: string;
+  filter: (apiResponse: ServicesListSchemaType) => ServicesListSchemaType;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -157,5 +165,26 @@ export const useServices = ({ workflow }: { workflow?: string }) => {
     }),
     queryFn: fetchServices,
     enabled: !!namespace,
+    select: (data) => filter(data),
   });
 };
+
+export const useWorkflowServices = (workflow: string) =>
+  useServices({
+    workflow,
+    filter: (apiResponse) => ({
+      data: apiResponse.data.filter(
+        (service) =>
+          service.type === "workflow-service" && service.filePath === workflow
+      ),
+    }),
+  });
+
+export const useNamespaceServices = () =>
+  useServices({
+    filter: (apiResponse) => ({
+      data: apiResponse.data.filter(
+        (service) => service.type === "namespace-service"
+      ),
+    }),
+  });

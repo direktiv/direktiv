@@ -1,7 +1,7 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import {
   ServicesStreamingSubscriber,
-  useServices,
+  useNamespaceServices,
 } from "~/api/services/query/getAll";
 import { useEffect, useState } from "react";
 
@@ -22,7 +22,7 @@ const ServicesListPage = () => {
     isSuccess,
     isAllowed,
     noPermissionMessage,
-  } = useServices({});
+  } = useNamespaceServices();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rebuildService, setRebuildService] = useState<ServiceSchemaType>();
