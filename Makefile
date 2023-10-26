@@ -303,5 +303,5 @@ env-start-headless: env-stop
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
 e2e-tests: env-stop
-	DOCKER_BUILDKIT=1 docker build -t direktiv-dev .
-	DOCKER_BUILDKIT=1 DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
+	docker build -t direktiv-dev .
+	DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
