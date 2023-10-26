@@ -103,7 +103,7 @@ const ScrollContainer = ({ logs }: { logs: string[] }) => {
           }}
         >
           <ArrowDown />
-          {t("pages.services.revision.detail.logs.followLogs")}
+          {t("pages.services.detail.logs.followLogs")}
           <ArrowDown />
         </Button>
       </div>

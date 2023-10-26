@@ -3,7 +3,6 @@ import {
   PodLogsSubscriber,
   usePodLogs,
 } from "~/api/services/query/revision/pods/getLogs";
-import { PodSchemaType, PodsListSchemaType } from "~/api/services/schema/pods";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
   Tooltip,
@@ -11,19 +10,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useEffect, useRef, useState } from "react";
 
-import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { NoResult } from "~/design/Table";
-import { PodsSubscriber } from "~/api/services/query/revision/pods/getAll";
+import { PodSchemaType } from "~/api/services/schema/pods";
 import ScrollContainer from "./ScrollContainer";
-import { podStatusToBadgeVariant } from "../../components/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useHttpStreaming } from "~/api/httpStreaming";
-import { useNamespace } from "~/util/store/namespace";
 import { usePods } from "~/api/services/query/getPods";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const Pods = ({
@@ -66,9 +61,7 @@ const PodsWithData = ({
   if (!pod)
     return (
       <Card className="m-5 flex grow">
-        <NoResult icon={Box}>
-          {t("pages.services.revision.detail.logs.noPods")}
-        </NoResult>
+        <NoResult icon={Box}>{t("pages.services.detail.logs.noPods")}</NoResult>
       </Card>
     );
 
@@ -79,30 +72,24 @@ const PodsWithData = ({
         <div className="mb-5 flex flex-col gap-5 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 font-medium">
             <ScrollText className="h-5" />
-            {t("pages.services.revision.detail.logs.title", {
+            {t("pages.services.detail.logs.title", {
               name: pod.id,
             })}
-            {/* <Badge
-              variant={podStatusToBadgeVariant(pod.)}
-              className="font-normal"
-            >
-              {pod.status}
-            </Badge> */}
           </h3>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <CopyButton
-                  value={logData?.data ?? ""}
+                  value={logData ?? ""}
                   buttonProps={{
                     variant: "outline",
                     size: "sm",
-                    disabled: !logData?.data,
+                    disabled: !logData,
                   }}
                 />
               </TooltipTrigger>
               <TooltipContent>
-                {t("pages.services.revision.detail.logs.tooltips.copy")}
+                {t("pages.services.detail.logs.tooltips.copy")}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -122,7 +109,7 @@ const PodsWithData = ({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
               <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
             </span>
-            {t("pages.services.revision.detail.logs.logsCount", {
+            {t("pages.services.detail.logs.logsCount", {
               count: logs.length,
             })}
           </div>
@@ -136,7 +123,7 @@ const PodsWithData = ({
           <TabsList variant="boxed">
             {pods.map((pod, index, src) => (
               <TabsTrigger key={pod.id} variant="boxed" value={pod.id}>
-                {t("pages.services.revision.detail.logs.tab", {
+                {t("pages.services.detail.logs.tab", {
                   number: index + 1,
                   total: src.length,
                 })}
