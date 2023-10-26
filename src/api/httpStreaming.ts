@@ -28,7 +28,11 @@ export const useHttpStreaming = ({
               },
             }
           : {}),
-        // this only throws if the request is aborted before the first response is received
+        /**
+         * this throws an error if the request is aborted before the first
+         * response is received. We don't want to forward this error to
+         * the user
+         */
       }).catch(() => null);
 
       if (!response || !response.ok || !response.body) {
