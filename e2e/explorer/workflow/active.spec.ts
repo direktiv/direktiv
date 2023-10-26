@@ -2,7 +2,7 @@ import { Page, expect, test } from "@playwright/test";
 import {
   actionMakeRevision,
   actionRevertRevision,
-  actionWaitForSuccessToast,
+  waitForSuccessToast,
 } from "./utils";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
@@ -154,7 +154,7 @@ test("it is possible to revert the revision", async ({ page }) => {
   await testMakeRevision(page);
   await testSaveWorkflow(page);
   await actionRevertRevision(page);
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   // check the description is reverted
   await expect(
