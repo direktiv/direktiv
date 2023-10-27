@@ -35,11 +35,13 @@ type LocalServer struct {
 }
 
 func (srv *LocalServer) initFlow() error {
-	conn, err := util.GetEndpointTLS(fmt.Sprintf("%s:7777",
-		os.Getenv(direktivFlowEndpoint)))
+	serverArr := fmt.Sprintf("%s:7777", os.Getenv(direktivFlowEndpoint))
+	fmt.Printf("flow server: %s\n", serverArr)
+	conn, err := util.GetEndpointTLS(serverArr)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("connected to flow\n")
 
 	srv.flow = grpc.NewInternalClient(conn)
 

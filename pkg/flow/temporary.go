@@ -556,7 +556,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			// 	continue
 			// }
 
-			time.Sleep(time.Millisecond * 500 * (1 << i))
+			time.Sleep(time.Millisecond * 500)
 		} else {
 			defer resp.Body.Close()
 			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID)

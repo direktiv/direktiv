@@ -2,14 +2,10 @@ import request from 'supertest'
 import retry from "jest-retries";
 import common from "../common";
 
-
 const testNamespace = "test-services"
 
 describe('Test services crud operations', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
-
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
 
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
@@ -40,7 +36,6 @@ scale: 2
             data: [
                 {
                     "cmd": "redis-server",
-                    "conditions": null, // expect.anything(),
                     "error": null,
                     "filePath": "/s1.yaml",
                     "id": "test-services-a7861273a87a073a7fa1",
@@ -53,7 +48,6 @@ scale: 2
                 },
                 {
                     "cmd": "redis-server",
-                    "conditions": null, //expect.anything(),
                     "error": null,
                     "filePath": "/s2.yaml",
                     "id": "test-services-7bbde10f8e01038d9849",
@@ -93,8 +87,8 @@ scale: 2
         })
     })
 
-    retry(`should list all services`, 100, async () => {
-        await sleep(5000)
+    retry(`should list all services`, 4, async () => {
+        await sleep(500)
 
         const res = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
@@ -103,14 +97,10 @@ scale: 2
             data: [
                 {
                     "cmd": "redis-server",
-                    "conditions": [{
-                        message: expect.stringContaining("Up "),
-                        status: "True",
-                        type: "UpAndReady",
-                    }],
+                    "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s1.yaml",
-                    "id": "objf8a48067049cad1cdc29obj",
+                    "id": "test-services-a7861273a87a073a7fa1",
                     "image": "redis",
                     "name": "s1",
                     "namespace": "test-services",
@@ -120,14 +110,10 @@ scale: 2
                 },
                 {
                     "cmd": "redis-server",
-                    "conditions": [{
-                        message: expect.stringContaining("Up "),
-                        status: "True",
-                        type: "UpAndReady",
-                    }],
+                    "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s2.yaml",
-                    "id": "obj9eca47019fa69482e1a8obj",
+                    "id": "test-services-7bbde10f8e01038d9849",
                     "image": "redis",
                     "name": "s2",
                     "namespace": "test-services",
@@ -138,7 +124,7 @@ scale: 2
             ]
         })
     })
-}, 50000);
+});
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

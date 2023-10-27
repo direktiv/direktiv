@@ -114,7 +114,7 @@ func renderGatewayManager(db *database.DB, gwManager core.GatewayManager, logger
 
 	ns, err := dStore.Namespaces().GetByName(ctx, core.MagicalGatewayNamespace)
 	if err != nil {
-		logger.Error("fetching namespace", "error", err)
+		logger.Errorw("fetching namespace", "error", err)
 
 		return
 	}

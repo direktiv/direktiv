@@ -34,16 +34,20 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 	if enableDocker {
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("creating docker client: %s", err)
 		}
 
-		client := dockerClient{
+		client := &dockerClient{
 			cli: cli,
+		}
+		err = client.cleanAll()
+		if err != nil {
+			return nil, fmt.Errorf("cleaning docker client: %s", err)
 		}
 
 		return &manager{
 			list:          make([]*core.ServiceConfig, 0),
-			runtimeClient: &client,
+			runtimeClient: client,
 
 			logger: logger,
 			lock:   &sync.Mutex{},
@@ -138,7 +142,8 @@ func (m *manager) runCycle() []error {
 		v.Error = nil
 		// v is passed un-cloned.
 		if err := m.runtimeClient.updateService(v); err != nil {
-			*v.Error = err.Error()
+			errStr := err.Error()
+			v.Error = &errStr
 		}
 	}
 

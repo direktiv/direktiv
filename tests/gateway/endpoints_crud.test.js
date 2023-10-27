@@ -8,9 +8,6 @@ const testNamespace = "gateway_namespace"
 describe('Test gateway endpoints crud operations', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
-
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     common.helpers.itShouldCreateEndpointFile(it, expect, testNamespace,
@@ -30,16 +27,14 @@ method: GET
             .get(`/api/v2/namespaces/${testNamespace}/gateway_endpoints`)
         expect(listRes.statusCode).toEqual(200)
         expect(listRes.body.data.length).toEqual(2)
-        expect(listRes.body).toMatchObject({
-            data: [
+        expect(listRes.body.data).toEqual(expect.arrayContaining([
                 {
                     method: "POST",
                 },
                 {
                     method: "GET",
                 }
-            ]
-        })
+            ]))
     })
 
     common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/g1.yaml")
