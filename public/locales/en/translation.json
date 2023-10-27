@@ -1035,7 +1035,7 @@
       "hasIssues": {
         "secrets": {
           "description": "You have {{count}} uninitialized secrets.",
-          "description_one": "You have {{count}} uninitialized secret!"
+          "description_one": "You have {{count}} uninitialized secret."
         }
       }
     },
