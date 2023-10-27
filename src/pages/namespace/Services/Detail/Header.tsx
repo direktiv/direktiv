@@ -1,10 +1,11 @@
 import { Diamond } from "lucide-react";
+import RefreshButton from "~/design/RefreshButton";
 import { StatusBadge } from "../components/StatusBadge";
 import { useService } from "~/api/services/query/getAll";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ service }: { service: string }) => {
-  const { data: serviceData } = useService(service);
+  const { data: serviceData, refetch, isFetching } = useService(service);
   const { t } = useTranslation();
 
   if (!serviceData) return null;
@@ -46,7 +47,7 @@ const Header = ({ service }: { service: string }) => {
         </div>
       </div>
       <div>
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
           {serviceData.error && (
             <StatusBadge
               status="False"
@@ -66,6 +67,15 @@ const Header = ({ service }: { service: string }) => {
               {condition.type}
             </StatusBadge>
           ))}
+          <RefreshButton
+            icon
+            size="sm"
+            variant="ghost"
+            disabled={isFetching}
+            onClick={() => {
+              refetch();
+            }}
+          />
         </div>
       </div>
     </div>
