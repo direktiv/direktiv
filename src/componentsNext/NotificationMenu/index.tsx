@@ -45,7 +45,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
               const matchingNotifications = data.issues.filter(
                 (issue) => notificationType === issue.type
               );
-              if (matchingNotification.length <= 0) {
+              if (matchingNotifications.length <= 0) {
                 return null;
               }
               return (
@@ -57,7 +57,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
                     <Link to={notificationConfig.href}>
                       <NotificationMessage
                         text={notificationConfig.description(
-                          matchingNotification.length
+                          matchingNotifications.length
                         )}
                         icon={notificationConfig.icon}
                       />
