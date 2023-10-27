@@ -28,6 +28,7 @@ import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
 import ServiceDetailPage from "~/pages/namespace/Services/Detail";
+import ServiceEditorPage from "~/pages/namespace/Explorer/Service";
 import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -60,7 +61,8 @@ type ExplorerSubpages =
   | "workflow-revisions"
   | "workflow-overview"
   | "workflow-settings"
-  | "workflow-services";
+  | "workflow-services"
+  | "service";
 
 type ExplorerSubpagesParams =
   | {
@@ -96,6 +98,7 @@ type ExplorerPageSetup = Record<
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
+      isServicePage: boolean;
     };
   }
 >;
@@ -297,6 +300,7 @@ export const pages: PageType & EnterprisePageType = {
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
+        service: "service",
       };
 
       let searchParamsObj;
@@ -349,7 +353,8 @@ export const pages: PageType & EnterprisePageType = {
       // we injected in the route objects
       const isTreePage = checkHandler(thirdLvl, "isTreePage");
       const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
-      const isExplorerPage = isTreePage || isWorkflowPage;
+      const isServicePage = checkHandler(thirdLvl, "isServicePage");
+      const isExplorerPage = isTreePage || isWorkflowPage || isServicePage;
       const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
@@ -368,6 +373,7 @@ export const pages: PageType & EnterprisePageType = {
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
+        isServicePage,
       };
     },
     route: {
@@ -410,6 +416,11 @@ export const pages: PageType & EnterprisePageType = {
               handle: { isServicesPage: true },
             },
           ],
+        },
+        {
+          path: "service/*",
+          element: <ServiceEditorPage />,
+          handle: { isServicePage: true },
         },
       ],
     },
