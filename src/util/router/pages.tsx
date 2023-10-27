@@ -66,12 +66,20 @@ type ExplorerSubpages =
 
 type ExplorerSubpagesParams =
   | {
-      subpage?: Exclude<ExplorerSubpages, "workflow-revisions">;
+      subpage?: Exclude<
+        ExplorerSubpages,
+        "workflow-revisions" | "workflow-services"
+      >;
     }
-  // only workflow-revisions has a optional revision param
+  // workflow-revisions has an optional revision param
   | {
       subpage: "workflow-revisions";
       revision?: string;
+    }
+  // workflow-services must has an optional serviceId param
+  | {
+      subpage: "workflow-services";
+      serviceId?: string;
     };
 
 type ExplorerPageSetup = Record<
@@ -81,9 +89,6 @@ type ExplorerPageSetup = Record<
       params: {
         namespace: string;
         path?: string; // if no subpage is provided, it opens the tree view
-        serviceRevision?: string; // only needed on services sub page
-        serviceVersion?: string; // only needed on services sub page
-        serviceName?: string; // only needed on services sub page
       } & ExplorerSubpagesParams
     ) => string;
     useParams: () => {
@@ -99,6 +104,7 @@ type ExplorerPageSetup = Record<
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
       isServicePage: boolean;
+      serviceId: string | undefined;
     };
   }
 >;
@@ -309,27 +315,9 @@ export const pages: PageType & EnterprisePageType = {
         searchParamsObj = { revision: params.revision };
       }
 
-      if (
-        params.subpage === "workflow-services" &&
-        params.serviceName &&
-        params.serviceVersion
-      ) {
+      if (params.subpage === "workflow-services" && params.serviceId) {
         searchParamsObj = {
-          name: params.serviceName,
-          version: params.serviceVersion,
-        };
-      }
-
-      if (
-        params.subpage === "workflow-services" &&
-        params.serviceName &&
-        params.serviceVersion &&
-        params.serviceRevision
-      ) {
-        searchParamsObj = {
-          name: params.serviceName,
-          version: params.serviceVersion,
-          revision: params.serviceRevision,
+          serviceId: params.serviceId,
         };
       }
 
@@ -374,6 +362,7 @@ export const pages: PageType & EnterprisePageType = {
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
         isServicePage,
+        serviceId: searchParams.get("serviceId") ?? undefined,
       };
     },
     route: {
