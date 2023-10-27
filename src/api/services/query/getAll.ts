@@ -1,8 +1,8 @@
 import { ServicesListSchema, ServicesListSchemaType } from "../schema/services";
+import { forceLeadingSlash, removeTrailingSlash } from "~/api/tree/utils";
 
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/tree/utils";
 import { memo } from "react";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -10,32 +10,18 @@ import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 export const getServices = apiFactory({
-  url: ({
-    namespace,
-    baseUrl,
-    workflow,
-  }: {
-    baseUrl?: string;
-    namespace: string;
-    workflow?: string; // TODO: make optional workflow work
-  }) =>
-    workflow
-      ? `${
-          baseUrl ?? ""
-        }/api/functions/namespaces/${namespace}/tree${forceLeadingSlash(
-          workflow
-        )}?op=services`
-      : `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/services`,
+  url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/services`,
   method: "GET",
   schema: ServicesListSchema,
 });
 
 const fetchServices = async ({
-  queryKey: [{ apiKey, namespace, workflow }],
+  queryKey: [{ apiKey, namespace }],
 }: QueryFunctionContext<ReturnType<(typeof serviceKeys)["servicesList"]>>) =>
   getServices({
     apiKey,
-    urlParams: { namespace, workflow },
+    urlParams: { namespace },
   });
 
 // const updateCache = (
@@ -145,10 +131,8 @@ export const useService = (serviceId: string) => {
 
 // TODO: don't export this hook
 export const useServices = ({
-  workflow,
   filter,
 }: {
-  workflow?: string;
   filter: (apiResponse: ServicesListSchemaType) => ServicesListSchemaType;
 }) => {
   const apiKey = useApiKey();
@@ -161,7 +145,6 @@ export const useServices = ({
   return useQueryWithPermissions({
     queryKey: serviceKeys.servicesList(namespace, {
       apiKey: apiKey ?? undefined,
-      workflow: workflow ?? undefined,
     }),
     queryFn: fetchServices,
     enabled: !!namespace,
@@ -171,7 +154,6 @@ export const useServices = ({
 
 export const useWorkflowServices = (workflow: string) =>
   useServices({
-    workflow,
     filter: (apiResponse) => ({
       data: apiResponse.data.filter(
         (service) =>
