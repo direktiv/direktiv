@@ -23,7 +23,7 @@ const RevisionDetails = () => {
         version={serviceVersion}
       />
       <div className="flex-none">
-        <Header service={service} revision={serviceRevision} />
+        <Header serviceId={service} revision={serviceRevision} />
       </div>
       <Pods
         workflow={workflow}

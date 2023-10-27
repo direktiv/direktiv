@@ -4,6 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
+import { Link, useNavigate } from "react-router-dom";
 import { MoreVertical, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
@@ -13,9 +14,9 @@ import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
+import { linkToServiceSource } from "../components/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const ServicesTableRow: FC<{
@@ -58,8 +59,13 @@ const ServicesTableRow: FC<{
             <div>
               {service.name}{" "}
               <span className="whitespace-pre-wrap break-all text-gray-9 dark:text-gray-dark-9">
-                {/* TODO: link to the file */}
-                {service.filePath}
+                <Link
+                  to={linkToServiceSource(service)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:underline"
+                >
+                  {service.filePath}
+                </Link>
               </span>
             </div>
             <div className="flex gap-3">

@@ -21,7 +21,7 @@ const ServiceRevisionPage = () => {
   return (
     <div className="flex grow flex-col">
       <div className="flex-none">
-        <Header service={service} />
+        <Header serviceId={service} />
       </div>
       <Pods service={service} />
     </div>
