@@ -10,28 +10,26 @@ export const getPods = apiFactory({
   url: ({
     baseUrl,
     namespace,
-    serviceId,
+    service,
   }: {
     baseUrl?: string;
     namespace: string;
-    serviceId: string;
+    service: string;
   }) =>
-    `${
-      baseUrl ?? ""
-    }/api/v2/namespaces/${namespace}/services/${serviceId}/pods`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/services/${service}/pods`,
   method: "GET",
   schema: PodsListSchema,
 });
 
 const fetchPods = async ({
-  queryKey: [{ apiKey, namespace, serviceId }],
+  queryKey: [{ apiKey, namespace, service }],
 }: QueryFunctionContext<ReturnType<(typeof serviceKeys)["servicePods"]>>) =>
   getPods({
     apiKey,
-    urlParams: { namespace, serviceId },
+    urlParams: { namespace, service },
   });
 
-export const usePods = (serviceId: string) => {
+export const usePods = (service: string) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -42,7 +40,7 @@ export const usePods = (serviceId: string) => {
   return useQueryWithPermissions({
     queryKey: serviceKeys.servicePods(namespace, {
       apiKey: apiKey ?? undefined,
-      serviceId,
+      service,
     }),
     queryFn: fetchPods,
     enabled: !!namespace,

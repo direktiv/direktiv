@@ -50,10 +50,10 @@ const useServices = <T>({
   });
 };
 
-export const useService = (serviceId: string) =>
+export const useService = (service: string) =>
   useServices({
     filter: (apiResponse) =>
-      apiResponse.data.find((service) => service.id === serviceId),
+      apiResponse.data.find((serviceObj) => serviceObj.id === service),
   });
 
 export const useWorkflowServices = (workflow: string) =>

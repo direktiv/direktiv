@@ -32,8 +32,8 @@ export const usePodLogsStream = (
         serviceKeys.podLogs({
           namespace,
           apiKey: apiKey ?? undefined,
-          podId: pod,
-          serviceId: service,
+          pod,
+          service,
         }),
         (old) => {
           if (isFirstMessage) {
@@ -90,8 +90,8 @@ export const usePodLogs = ({
     queryKey: serviceKeys.podLogs({
       namespace,
       apiKey: apiKey ?? undefined,
-      serviceId: service,
-      podId: pod,
+      service,
+      pod,
     }),
     /**
      * This hook is only used to subscribe to the correct cache key. Data for this key

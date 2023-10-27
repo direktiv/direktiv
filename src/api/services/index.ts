@@ -11,10 +11,10 @@ export const serviceKeys = {
     namespace: string,
     {
       apiKey,
-      serviceId,
+      service,
     }: {
       apiKey?: string;
-      serviceId: string;
+      service: string;
     }
   ) =>
     [
@@ -22,27 +22,27 @@ export const serviceKeys = {
         scope: "service-pods",
         apiKey,
         namespace,
-        serviceId,
+        service,
       },
     ] as const,
   podLogs: ({
     apiKey,
     namespace,
-    serviceId,
-    podId,
+    service,
+    pod,
   }: {
     apiKey?: string;
     namespace: string;
-    serviceId: string;
-    podId: string;
+    service: string;
+    pod: string;
   }) =>
     [
       {
         scope: "service-pod-logs",
         apiKey,
         namespace,
-        serviceId,
-        podId,
+        service,
+        pod,
       },
     ] as const,
 };
