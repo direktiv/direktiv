@@ -39,9 +39,7 @@ const ServicesTableRow: FC<{
                 namespace,
                 path: service.filePath,
                 subpage: "workflow-services",
-                //  TODO: serviceName must be renamed to serviceID, revision must be removed from parameters
-                serviceName: service.id,
-                serviceRevision: "revision",
+                serviceId: service.id,
               })
             );
           }
