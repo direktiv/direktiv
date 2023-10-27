@@ -1,45 +1,9 @@
-import Header from "~/pages/namespace/Services/Detail/Header";
 import { Pods } from "~/pages/namespace/Services/Detail/Pods";
-import { ServiceRevisionStreamingSubscriber } from "~/api/services/query/revision/getAll";
-import { pages } from "~/util/router/pages";
-import { useSearchParams } from "react-router-dom";
 
-const ServiceDetails = ({
-  workflow,
-  serviceId,
-}: {
-  workflow: string;
-  serviceId: string;
-}) => {
-  // const [searchParams] = useSearchParams();
-  // const { path: workflow } = pages.explorer.useParams();
-
-  // const service = searchParams.get("name");
-  // const serviceVersion = searchParams.get("version");
-  // const serviceRevision = searchParams.get("revision");
-
-  // if (!workflow || !service || !serviceVersion || !serviceRevision) return null;
-
-  return (
-    <div className="flex grow flex-col">
-      {/* <ServiceRevisionStreamingSubscriber
-        workflow={workflow}
-        service={service}
-        revision={serviceRevision}
-        version={serviceVersion}
-      />
-      <div className="flex-none">
-        <Header serviceId={service} revision={serviceRevision} />
-      </div>
-      <Pods
-        workflow={workflow}
-        serviceId={service}
-        revision={serviceRevision}
-        version={serviceVersion}
-        className="md:h-[calc(100vh-38rem)] lg:h-[calc(100vh-33rem)]"
-      /> */}
-    </div>
-  );
-};
+const ServiceDetails = ({ serviceId }: { serviceId: string }) => (
+  <div className="flex grow flex-col">
+    <Pods serviceId={serviceId} />
+  </div>
+);
 
 export default ServiceDetails;

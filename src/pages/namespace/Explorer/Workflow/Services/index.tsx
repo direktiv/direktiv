@@ -9,7 +9,7 @@ const WorkflowServicesPage: FC = () => {
   if (!path) return null;
 
   if (serviceId) {
-    return <ServiceDetails workflow={path} serviceId={serviceId} />;
+    return <ServiceDetails serviceId={serviceId} />;
   }
 
   return <ServicesList workflow={path} />;
