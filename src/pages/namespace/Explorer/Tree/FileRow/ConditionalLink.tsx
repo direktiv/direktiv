@@ -11,13 +11,24 @@ type ConditionalLinkProps = PropsWithChildren & {
   onPreviewClicked: (file: NodeSchemaType) => void;
 };
 
+const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
+  switch (type) {
+    case "workflow":
+      return "workflow";
+    case "service":
+      return "service";
+    default:
+      return undefined;
+  }
+};
+
 export const ConditionalLink: FC<ConditionalLinkProps> = ({
   node,
   namespace,
   onPreviewClicked,
   children,
 }) => {
-  const isFile = node.expandedType === "file";
+  const isFile = node.type === "file";
 
   if (isFile)
     return (
@@ -36,7 +47,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   const linkTarget = pages.explorer.createHref({
     namespace,
     path: node.path,
-    subpage: node.expandedType === "workflow" ? "workflow" : undefined,
+    subpage: fileTypeToExplorerSubpage(node.type),
   });
 
   return (
