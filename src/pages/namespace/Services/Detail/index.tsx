@@ -6,10 +6,12 @@ import { pages } from "~/util/router/pages";
 import { usePods } from "~/api/services/query/getPods";
 
 const ServiceRevisionPage = () => {
-  const { service } = pages.services.useParams();
-  const { isFetched, isAllowed, noPermissionMessage } = usePods(service ?? "");
+  const { service: serviceId } = pages.services.useParams();
+  const { isFetched, isAllowed, noPermissionMessage } = usePods(
+    serviceId ?? ""
+  );
 
-  if (!service) return null;
+  if (!serviceId) return null;
   if (!isFetched) return null;
   if (!isAllowed)
     return (
@@ -21,9 +23,9 @@ const ServiceRevisionPage = () => {
   return (
     <div className="flex grow flex-col">
       <div className="flex-none">
-        <Header serviceId={service} />
+        <Header serviceId={serviceId} />
       </div>
-      <Pods service={service} />
+      <Pods serviceId={serviceId} />
     </div>
   );
 };

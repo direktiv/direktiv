@@ -22,20 +22,20 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const Pods = ({
-  service,
+  serviceId,
   className,
 }: {
-  service: string;
+  serviceId: string;
   className?: string; // TODO: can this className be removed?
 }) => {
-  const { data: podsList, isLoading } = usePods(service);
+  const { data: podsList, isLoading } = usePods(serviceId);
 
   if (isLoading) return null;
 
   return (
     <PodsWithData
       pods={podsList?.data ?? []}
-      service={service}
+      serviceId={serviceId}
       className={className}
     />
   );
@@ -43,10 +43,10 @@ export const Pods = ({
 
 const PodsWithData = ({
   pods,
-  service,
+  serviceId,
   className,
 }: {
-  service: string;
+  serviceId: string;
   pods: PodSchemaType[];
   className?: string;
 }) => {
@@ -54,7 +54,7 @@ const PodsWithData = ({
   const [selectedPod, setSelectedPod] = useState(pods?.[0]?.id ?? "");
   const { data: logData } = usePodLogs({
     pod: selectedPod,
-    service,
+    service: serviceId,
   });
 
   const logs = logData?.split("\n") ?? [];
@@ -69,7 +69,7 @@ const PodsWithData = ({
 
   return (
     <div className="grid grow p-5">
-      <PodLogsSubscriber service={service} pod={selectedPod} />
+      <PodLogsSubscriber service={serviceId} pod={selectedPod} />
       <Card className="grid grid-rows-[auto_1fr_auto] p-5">
         <div className="mb-5 flex flex-col gap-5 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 font-medium">

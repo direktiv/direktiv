@@ -27,7 +27,7 @@ const RevisionDetails = () => {
       </div>
       <Pods
         workflow={workflow}
-        service={service}
+        serviceId={service}
         revision={serviceRevision}
         version={serviceVersion}
         className="md:h-[calc(100vh-38rem)] lg:h-[calc(100vh-33rem)]"
