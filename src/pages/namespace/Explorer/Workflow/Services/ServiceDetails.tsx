@@ -4,19 +4,25 @@ import { ServiceRevisionStreamingSubscriber } from "~/api/services/query/revisio
 import { pages } from "~/util/router/pages";
 import { useSearchParams } from "react-router-dom";
 
-const RevisionDetails = () => {
-  const [searchParams] = useSearchParams();
-  const { path: workflow } = pages.explorer.useParams();
+const ServiceDetails = ({
+  workflow,
+  serviceId,
+}: {
+  workflow: string;
+  serviceId: string;
+}) => {
+  // const [searchParams] = useSearchParams();
+  // const { path: workflow } = pages.explorer.useParams();
 
-  const service = searchParams.get("name");
-  const serviceVersion = searchParams.get("version");
-  const serviceRevision = searchParams.get("revision");
+  // const service = searchParams.get("name");
+  // const serviceVersion = searchParams.get("version");
+  // const serviceRevision = searchParams.get("revision");
 
-  if (!workflow || !service || !serviceVersion || !serviceRevision) return null;
+  // if (!workflow || !service || !serviceVersion || !serviceRevision) return null;
 
   return (
     <div className="flex grow flex-col">
-      <ServiceRevisionStreamingSubscriber
+      {/* <ServiceRevisionStreamingSubscriber
         workflow={workflow}
         service={service}
         revision={serviceRevision}
@@ -31,9 +37,9 @@ const RevisionDetails = () => {
         revision={serviceRevision}
         version={serviceVersion}
         className="md:h-[calc(100vh-38rem)] lg:h-[calc(100vh-33rem)]"
-      />
+      /> */}
     </div>
   );
 };
 
-export default RevisionDetails;
+export default ServiceDetails;
