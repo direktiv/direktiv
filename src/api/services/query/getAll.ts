@@ -157,7 +157,8 @@ export const useWorkflowServices = (workflow: string) =>
     filter: (apiResponse) => ({
       data: apiResponse.data.filter(
         (service) =>
-          service.type === "workflow-service" && service.filePath === workflow
+          service.type === "workflow-service" &&
+          service.filePath === forceLeadingSlash(workflow)
       ),
     }),
   });
