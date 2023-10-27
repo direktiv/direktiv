@@ -42,7 +42,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
           possibleNotifications.map(
             ([notificationType, notificationConfig], index, srcArr) => {
               const isLastListItem = index === srcArr.length - 1;
-              const matchingNotification = data.issues.filter(
+              const matchingNotifications = data.issues.filter(
                 (issue) => notificationType === issue.type
               );
               if (matchingNotification.length <= 0) {
