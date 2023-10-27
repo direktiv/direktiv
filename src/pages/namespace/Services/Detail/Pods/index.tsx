@@ -26,7 +26,7 @@ export const Pods = ({
   className,
 }: {
   serviceId: string;
-  className?: string; // TODO: can this className be removed?
+  className?: string;
 }) => {
   const { data: podsList, isLoading } = usePods(serviceId);
 
