@@ -20,6 +20,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateRevision } from "~/api/tree/mutate/createRevision";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
+import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRevertRevision } from "~/api/tree/mutate/revertRevision";
 import { useTranslation } from "react-i18next";
@@ -36,6 +37,7 @@ const WorkflowEditor: FC<{
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const { refetch: updateNotificationBell } = useNamespaceLinting();
 
   const workflowDataFromServer = atob(data?.revision?.source ?? "");
 
@@ -44,6 +46,11 @@ const WorkflowEditor: FC<{
       error && setError(error);
     },
     onSuccess: () => {
+      /**
+       * updating a workflow might introduce an uninitialized secret. We need
+       * to update the notification bell, to see potential new messages.
+       */
+      updateNotificationBell();
       setHasUnsavedChanges(false);
     },
   });
