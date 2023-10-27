@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
 import { StatusBadge } from "../components/StatusBadge";
 import { linkToServiceSource } from "../components/utils";
-import { useService } from "~/api/services/query/getAll";
+import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {

@@ -8,7 +8,7 @@ import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "~/pages/namespace/Services/List/Table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWorkflowServices } from "~/api/services/query/getAll";
+import { useWorkflowServices } from "~/api/services/query/services";
 
 const Services = ({ workflow }: { workflow: string }) => {
   const { t } = useTranslation();

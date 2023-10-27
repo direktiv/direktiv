@@ -1,8 +1,11 @@
+import {
+  ServiceSchemaType,
+  StatusSchemaType,
+} from "~/api/services/schema/services";
+
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
-import { ServiceSchemaType } from "~/api/services/schema/services";
-import { StatusSchemaType } from "~/api/services/schema";
 import { pages } from "~/util/router/pages";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];

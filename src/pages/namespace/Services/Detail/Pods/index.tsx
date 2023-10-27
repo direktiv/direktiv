@@ -1,8 +1,5 @@
 import { Box, ScrollText } from "lucide-react";
-import {
-  PodLogsSubscriber,
-  usePodLogs,
-} from "~/api/services/query/revision/pods/getLogs";
+import { PodLogsSubscriber, usePodLogs } from "~/api/services/query/podLogs";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
   Tooltip,
@@ -17,7 +14,7 @@ import { NoResult } from "~/design/Table";
 import { PodSchemaType } from "~/api/services/schema/pods";
 import ScrollContainer from "./ScrollContainer";
 import { twMergeClsx } from "~/util/helpers";
-import { usePods } from "~/api/services/query/getPods";
+import { usePods } from "~/api/services/query/pods";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

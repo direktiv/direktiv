@@ -1,8 +1,8 @@
-import { PodLogsSchema, PodLogsSchemaType } from "../../../schema/pods";
+import { PodLogsSchema, PodLogsSchemaType } from "../schema/pods";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { memo } from "react";
-import { serviceKeys } from "../../..";
+import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/httpStreaming";
@@ -32,8 +32,8 @@ export const usePodLogsStream = (
         serviceKeys.podLogs({
           namespace,
           apiKey: apiKey ?? undefined,
-          pod,
-          service,
+          podId: pod,
+          serviceId: service,
         }),
         (old) => {
           if (isFirstMessage) {
@@ -90,8 +90,8 @@ export const usePodLogs = ({
     queryKey: serviceKeys.podLogs({
       namespace,
       apiKey: apiKey ?? undefined,
-      service,
-      pod,
+      serviceId: service,
+      podId: pod,
     }),
     /**
      * This hook is only used to subscribe to the correct cache key. Data for this key

@@ -13,7 +13,7 @@ import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
 import { ConditionalWrapper } from "~/util/helpers";
-import { StatusSchemaType } from "~/api/services/schema";
+import { StatusSchemaType } from "~/api/services/schema/services";
 
 type BadgeProps = ComponentProps<typeof Badge>;
 

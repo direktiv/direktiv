@@ -7,7 +7,7 @@ import Rebuild from "./Rebuild";
 import RefreshButton from "~/design/RefreshButton";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "./Table";
-import { useNamespaceServices } from "~/api/services/query/getAll";
+import { useNamespaceServices } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {

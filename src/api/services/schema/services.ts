@@ -1,7 +1,8 @@
-import { StatusSchema } from ".";
 import { z } from "zod";
 
-export const serviceConditionNames = ["UpAndReady"] as const;
+export const StatusSchema = z.enum(["True", "False", "Unknown"]);
+
+export type StatusSchemaType = z.infer<typeof StatusSchema>;
 
 /**
  * example
@@ -12,7 +13,7 @@ export const serviceConditionNames = ["UpAndReady"] as const;
   }
  */
 const ConditionSchema = z.object({
-  type: z.enum(serviceConditionNames),
+  type: z.string(),
   status: StatusSchema,
   message: z.string().optional(),
 });
@@ -57,33 +58,5 @@ export const ServicesListSchema = z.object({
   data: z.array(ServiceSchema),
 });
 
-/**
- * example
-  {
-    "event": "ADDED",
-    "function": {
-      ...
-    },
-    "traffic": []
-  } 
- */
-export const ServiceStreamingSchema = z.object({
-  event: z.enum(["ADDED", "MODIFIED", "DELETED"]),
-  function: ServiceSchema,
-});
-
-export const serviceNameSchema = z
-  .string()
-  .nonempty()
-  .regex(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?$/, {
-    message:
-      "Please use a name that only contains lowercase letters, and use - instead of whitespaces.",
-  });
-
-export const ServiceDeletedSchema = z.null();
-
-export const ServiceCreatedSchema = z.null();
-
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;
-export type ServiceStreamingSchemaType = z.infer<typeof ServiceStreamingSchema>;

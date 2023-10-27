@@ -3,7 +3,7 @@ import Header from "./Header";
 import { NoPermissions } from "~/design/Table";
 import { Pods } from "./Pods";
 import { pages } from "~/util/router/pages";
-import { usePods } from "~/api/services/query/getPods";
+import { usePods } from "~/api/services/query/pods";
 
 const ServiceRevisionPage = () => {
   const { service: serviceId } = pages.services.useParams();
