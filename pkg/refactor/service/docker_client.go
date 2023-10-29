@@ -100,6 +100,7 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 			Labels: map[string]string{
 				"direktiv.io/container-type": "main",
 				"direktiv.io/inputHash":      cfg.GetValueHash(),
+				"directiv.io/scale":          strconv.Itoa(cfg.Scale),
 			},
 			Env: []string{
 				"DIREKTIV_APP=sidecar",

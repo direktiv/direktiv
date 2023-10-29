@@ -28,7 +28,8 @@ scale: 2
 `)
 
     let listRes;
-    it(`should list all services`, async () => {
+    retry(`should list all services`, 10, async () => {
+        await sleep(500)
         listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
         expect(listRes.statusCode).toEqual(200)
@@ -62,7 +63,7 @@ scale: 2
         })
     })
 
-    retry(`should list all service pods`, 10,async () => {
+    retry(`should list all service pods`, 10, async () => {
         await sleep(500)
 
         let sID = listRes.body.data[0].id
@@ -87,7 +88,7 @@ scale: 2
         })
     })
 
-    retry(`should list all services`, 4, async () => {
+    retry(`should list all services`, 10, async () => {
         await sleep(500)
 
         const res = await request(common.config.getDirektivHost())

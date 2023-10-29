@@ -72,7 +72,7 @@ func (p *PostgresBus) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 					h, _ := f.(func(data string))
 
 					if strings.HasPrefix(k, channel) {
-						h(data)
+						go h(data)
 					}
 
 					return true
