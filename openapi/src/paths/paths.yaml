@@ -119,7 +119,6 @@
       "200":
         description: Service rebuilds successfully
 
-
 /api/v2/namespaces/{namespace}/registries:
   get:
     tags:
@@ -195,7 +194,6 @@
                 user:
                   type: string
                   description: anonymize username of the registry
-
 
 /api/v2/namespaces/{namespace}/registries/{registryID}:
   delete:
