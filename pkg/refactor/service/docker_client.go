@@ -288,7 +288,7 @@ func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, er
 	return logs, nil
 }
 
-func (c *dockerClient) killService(id string) error {
+func (c *dockerClient) rebuildService(id string) error {
 	return c.deleteService(id)
 }
 

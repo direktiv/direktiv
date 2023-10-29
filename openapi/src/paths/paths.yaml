@@ -106,6 +106,19 @@
       "200":
         description: Stream of plain text log data
 
+/api/v2/namespaces/{namespace}/services/{serviceID}/actions/rebuild:
+  post:
+    tags:
+      - services
+    summary:  Rebuilds service
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/serviceID'
+    responses:
+      "200":
+        description: Service rebuilds successfully
+
 
 /api/v2/namespaces/{namespace}/registries:
   get:

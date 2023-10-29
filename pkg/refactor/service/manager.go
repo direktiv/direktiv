@@ -293,7 +293,7 @@ func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (
 	return m.runtimeClient.streamServiceLogs(serviceID, podID)
 }
 
-func (m *manager) Kill(namespace string, serviceID string) error {
+func (m *manager) Rebuild(namespace string, serviceID string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -303,5 +303,5 @@ func (m *manager) Kill(namespace string, serviceID string) error {
 		return err
 	}
 
-	return m.runtimeClient.killService(serviceID)
+	return m.runtimeClient.rebuildService(serviceID)
 }

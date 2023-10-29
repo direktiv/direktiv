@@ -21,7 +21,7 @@ func (e *serviceController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
 	r.Get("/{serviceID}/pods", e.pods)
 	r.Get("/{serviceID}/pods/{podID}/logs", e.logs)
-	r.Post("/{serviceID}/actions/kill", e.kill)
+	r.Post("/{serviceID}/actions/rebuild", e.rebuild)
 }
 
 func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
@@ -59,11 +59,11 @@ func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, svc)
 }
 
-func (e *serviceController) kill(w http.ResponseWriter, r *http.Request) {
+func (e *serviceController) rebuild(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
 	serviceID := chi.URLParam(r, "serviceID")
 
-	err := e.manager.Kill(ns.Name, serviceID)
+	err := e.manager.Rebuild(ns.Name, serviceID)
 	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",

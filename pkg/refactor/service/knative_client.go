@@ -113,7 +113,7 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 	return pods, nil
 }
 
-func (c *knativeClient) killService(id string) error {
+func (c *knativeClient) rebuildService(id string) error {
 	return c.k8sCli.CoreV1().Pods(c.config.KnativeNamespace).Delete(
 		context.Background(),
 		id,

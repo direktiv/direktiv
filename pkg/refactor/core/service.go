@@ -86,5 +86,5 @@ type ServiceManager interface {
 	GeAll(namespace string) ([]*ServiceStatus, error)
 	GetPods(namespace string, serviceID string) (any, error)
 	StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error)
-	Kill(namespace string, serviceID string) error
+	Rebuild(namespace string, serviceID string) error
 }
