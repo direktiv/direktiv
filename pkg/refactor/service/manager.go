@@ -42,7 +42,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 		}
 		err = client.cleanAll()
 		if err != nil {
-			return nil, fmt.Errorf("cleaning docker client: %s", err)
+			return nil, fmt.Errorf("cleaning docker client: %w", err)
 		}
 
 		return &manager{
