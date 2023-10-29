@@ -28,7 +28,7 @@ func (c *dockerClient) cleanAll() error {
 	if err != nil {
 		return err
 	}
-	var ids []string = nil
+	var ids []string
 	for _, cnt := range containers {
 		if cnt.Labels["direktiv.io/container-type"] == "main" {
 			ids = append(ids, cnt.ID)
@@ -196,11 +196,11 @@ func (c *dockerClient) deleteService(id string) error {
 	err2 := c.deleteContainer(id + "-user")
 
 	if err1 != nil {
-		return fmt.Errorf("delete container: %s", err1)
+		return fmt.Errorf("delete container: %w", err1)
 	}
 
 	if err2 != nil {
-		return fmt.Errorf("delete user container: %s", err2)
+		return fmt.Errorf("delete user container: %w", err2)
 	}
 
 	return nil

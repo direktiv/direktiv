@@ -34,7 +34,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 	if enableDocker {
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
-			return nil, fmt.Errorf("creating docker client: %s", err)
+			return nil, fmt.Errorf("creating docker client: %w", err)
 		}
 
 		client := &dockerClient{
