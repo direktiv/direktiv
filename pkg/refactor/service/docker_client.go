@@ -267,7 +267,7 @@ func (c *dockerClient) listServicePods(id string) (any, error) {
 }
 
 func (c *dockerClient) streamServiceLogs(id string, _ string) (io.ReadCloser, error) {
-	cntr, err := c.getContainerBy(id)
+	cntr, err := c.getContainerBy(id + "-user")
 	if err != nil {
 		return nil, err
 	}
