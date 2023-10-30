@@ -58,5 +58,7 @@ export const ServicesListSchema = z.object({
   data: z.array(ServiceSchema),
 });
 
+export const ServiceRebuildSchema = z.null();
+
 export type ServiceSchemaType = z.infer<typeof ServiceSchema>;
 export type ServicesListSchemaType = z.infer<typeof ServicesListSchema>;

@@ -1164,40 +1164,13 @@
     },
     "services": {
       "mutate": {
-        "createService": {
+        "rebuildService": {
           "success": {
-            "title": "Service created",
-            "description": "Service {{name}} was created."
+            "title": "Service rebuild",
+            "description": "Service was rebuild."
           },
           "error": {
-            "description": "Could not create service 😢"
-          }
-        },
-        "createServiceRevision": {
-          "success": {
-            "title": "Service revision created",
-            "description": "Service revision was created."
-          },
-          "error": {
-            "description": "Could not create service revision 😢"
-          }
-        },
-        "deleteService": {
-          "success": {
-            "title": "Service deleted",
-            "description": "Service {{name}} was deleted."
-          },
-          "error": {
-            "description": "Could not delete service 😢"
-          }
-        },
-        "deleteServiceRevision": {
-          "success": {
-            "title": "Service revision deleted",
-            "description": "Service revision {name}} was deleted."
-          },
-          "error": {
-            "description": "Could not delete service revision 😢"
+            "description": "Could not rebuild service 😢"
           }
         }
       }
