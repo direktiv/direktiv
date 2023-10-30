@@ -68,12 +68,6 @@ func (c *ServiceConfig) GetValueHash() string {
 	return fmt.Sprintf("%x", sh[:10])
 }
 
-func (c *ServiceConfig) SetDefaults() {
-	if c.Size == "" {
-		c.Size = "medium"
-	}
-}
-
 type ServiceStatus struct {
 	ServiceConfig
 	ID         string `json:"id"`

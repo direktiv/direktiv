@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
@@ -138,7 +139,7 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 		Name:      containerUser,
 		Image:     cfg.Image,
 		Env:       buildEnvVars(false, c, cfg, envs),
-		Resources: rl,
+		Resources: *rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "workdir",
@@ -179,8 +180,67 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 }
 
 // nolint
-func buildResourceLimits(c *core.Config, cfg *core.ServiceConfig) (corev1.ResourceRequirements, error) {
-	return corev1.ResourceRequirements{}, nil
+func buildResourceLimits(cf *core.Config, cfg *core.ServiceConfig) (*corev1.ResourceRequirements, error) {
+	var (
+		m int
+		c string
+		d int
+	)
+
+	switch cfg.Size {
+	case "small":
+		m = cf.KnativeSizeMemorySmall
+		c = cf.KnativeSizeCPUSmall
+		d = cf.KnativeSizeDiskSmall
+	case "medium":
+		m = cf.KnativeSizeMemoryMedium
+		c = cf.KnativeSizeCPUMedium
+		d = cf.KnativeSizeDiskMedium
+	case "large":
+		m = cf.KnativeSizeMemoryLarge
+		c = cf.KnativeSizeCPULarge
+		d = cf.KnativeSizeDiskLarge
+	default:
+		return nil, fmt.Errorf("service size: '%s' is invalid, expected value: ['small', 'medium', 'large']", cfg.Size)
+	}
+
+	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", d))
+	if err != nil {
+		return nil, err
+	}
+
+	rl := corev1.ResourceList{
+		"ephemeral-storage": ephemeralHigh,
+	}
+
+	if m != 0 {
+		qmem, err := resource.ParseQuantity(fmt.Sprintf("%dM", m))
+		if err != nil {
+			return nil, err
+		}
+		rl["memory"] = qmem
+	}
+
+	if c != "" {
+		qcpu, err := resource.ParseQuantity(c)
+		if err != nil {
+			return nil, err
+		}
+		rl["cpu"] = qcpu
+	}
+
+	baseCPU, _ := resource.ParseQuantity("0.1")
+	baseMem, _ := resource.ParseQuantity("64M")
+	baseDisk, _ := resource.ParseQuantity("64M")
+
+	return &corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{
+			"cpu":               baseCPU,
+			"memory":            baseMem,
+			"ephemeral-storage": baseDisk,
+		},
+		Limits: rl,
+	}, nil
 }
 
 // nolint

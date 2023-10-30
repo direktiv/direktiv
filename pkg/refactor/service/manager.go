@@ -19,6 +19,7 @@ import (
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
 // to reconcile the services in list param versus what is running in the runtime.
 type manager struct {
+	cfg *core.Config
 	// this list maintains all the service configurations that need to be running.
 	list []*core.ServiceConfig
 
@@ -46,6 +47,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 		}
 
 		return &manager{
+			cfg:           c,
 			list:          make([]*core.ServiceConfig, 0),
 			runtimeClient: client,
 
@@ -174,7 +176,7 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 	m.list = slices.Clone(list)
 	for i := range m.list {
 		cp := *m.list[i]
-		cp.SetDefaults()
+		m.setServiceDefaults(&cp)
 		m.list[i] = &cp
 	}
 }
@@ -297,4 +299,19 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 	}
 
 	return m.runtimeClient.rebuildService(serviceID)
+}
+
+func (m *manager) setServiceDefaults(cfg *core.ServiceConfig) {
+	// empty size string defaults to medium
+	if cfg.Size == "" {
+		m.logger.Warnw("empty service size, defaulting to medium", "service_file", cfg.FilePath)
+		cfg.Size = "medium"
+	}
+	if cfg.Scale > m.cfg.KnativeMaxScale {
+		m.logger.Warnw("service_scale is bigger than allowed max_scale, defaulting to max_scale",
+			"service_scale", cfg.Scale,
+			"max_scale", m.cfg.KnativeMaxScale,
+			"service_file", cfg.FilePath)
+		cfg.Scale = m.cfg.KnativeMaxScale
+	}
 }
