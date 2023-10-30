@@ -3,23 +3,13 @@ import { FC, PropsWithChildren } from "react";
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
 import { NodeSchemaType } from "~/api/tree/schema/node";
+import { fileTypeToExplorerSubpage } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
   node: NodeSchemaType;
   namespace: string;
   onPreviewClicked: (file: NodeSchemaType) => void;
-};
-
-const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
-  switch (type) {
-    case "workflow":
-      return "workflow";
-    case "service":
-      return "service";
-    default:
-      return undefined;
-  }
 };
 
 export const ConditionalLink: FC<ConditionalLinkProps> = ({

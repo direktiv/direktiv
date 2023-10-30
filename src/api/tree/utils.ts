@@ -56,3 +56,14 @@ export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
       return File;
   }
 };
+
+export const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
+  switch (type) {
+    case "workflow":
+      return "workflow";
+    case "service":
+      return "service";
+    default:
+      return undefined;
+  }
+};
