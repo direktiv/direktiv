@@ -14,11 +14,7 @@ import { useGroupNotifications } from "./config";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useTranslation } from "react-i18next";
 
-type NotificationMenuProps = {
-  className?: string;
-};
-
-const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
+const NotificationMenu = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
   const { data, isLoading } = useNamespaceLinting();
   const showIndicator = !!data?.issues.length;

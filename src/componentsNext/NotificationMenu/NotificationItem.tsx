@@ -1,10 +1,13 @@
+import { NotificationClose, NotificationMessage } from "~/design/Notification/";
+
 import { FC } from "react";
+import { Link } from "react-router-dom";
 import { LucideIcon } from "lucide-react";
 
 export type NotificationItemType = {
-  icon: LucideIcon;
-  description: string;
   href: string;
+  description: string;
+  icon: LucideIcon;
 };
 
 export const NotificationItem: FC<NotificationItemType> = ({
@@ -12,9 +15,12 @@ export const NotificationItem: FC<NotificationItemType> = ({
   description,
   icon: Icon,
 }) => (
-  <div>
-    <div>{href}</div>
-    <div>{description}</div>
-    <Icon />
-  </div>
+  <NotificationClose
+    className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
+    asChild
+  >
+    <Link to={href}>
+      <NotificationMessage text={description} icon={Icon} />
+    </Link>
+  </NotificationClose>
 );

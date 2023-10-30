@@ -55,27 +55,25 @@ const NotificationLoading: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
-function NotificationMessage({
+const NotificationMessage = ({
   text,
   icon: Icon,
 }: {
   text: string;
   icon: LucideIcon;
-}) {
-  return (
-    <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
-      <div className="flex items-center px-2">
-        <div className="w-max">
-          <Icon
-            className="h-4 w-4 text-gray-11 dark:text-gray-dark-11"
-            aria-hidden="true"
-          />
-        </div>
-        <NotificationText>{text}</NotificationText>
+}) => (
+  <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
+    <div className="flex items-center px-2">
+      <div className="w-max">
+        <Icon
+          className="h-4 w-4 text-gray-11 dark:text-gray-dark-11"
+          aria-hidden="true"
+        />
       </div>
+      <NotificationText>{text}</NotificationText>
     </div>
-  );
-}
+  </div>
+);
 
 type NotificationPropsType = PropsWithChildren & {
   className?: string;

@@ -36,11 +36,11 @@ export const useGroupNotifications = (data: LintSchemaType | undefined) => {
         return null;
       }
 
-      const { icon, description, href } = notificationConfig;
+      const { href, description, icon } = notificationConfig;
       return {
-        icon,
-        description: description(matchingNotifications.length),
         href,
+        description: description(matchingNotifications.length),
+        icon,
       };
     })
     .filter((item) => item !== null) as NotificationItemType[];
