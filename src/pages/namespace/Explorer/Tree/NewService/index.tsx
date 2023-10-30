@@ -133,7 +133,7 @@ const NewService = ({
           pages.explorer.createHref({
             namespace,
             path: data.node.path,
-            subpage: "workflow",
+            subpage: "service",
           })
         );
       close();
