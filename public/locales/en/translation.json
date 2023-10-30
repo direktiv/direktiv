@@ -197,12 +197,6 @@
               "header": "Workflow instances",
               "noResult": "No instances of this workflow have been executed recently."
             },
-            "metrics": {
-              "header": "Success / failure rate",
-              "successful": "Successful: {{percentage}}%",
-              "failed": "Failed: {{percentage}}%",
-              "noResult": "No data available"
-            },
             "trafficDistribution": {
               "header": "Traffic Distribution",
               "noResult": "Traffic shaping is not configured for this workflow."
