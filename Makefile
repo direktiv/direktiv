@@ -286,6 +286,7 @@ server-godoc:
 
 
 env-stop:
+	docker rm -f $$(docker ps -q -f "label=direktiv.io/object-type=container")
 	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
 env-start: env-stop
