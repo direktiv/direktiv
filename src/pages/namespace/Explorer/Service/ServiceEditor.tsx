@@ -3,6 +3,7 @@ import { FC, useState } from "react";
 import Button from "~/design/Button";
 import { CodeEditor } from "../Workflow/Active/CodeEditor";
 import { Save } from "lucide-react";
+import ServiceHelp from "./ServiceHelp";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -61,6 +62,7 @@ const ServiceEditor: FC<{
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        <ServiceHelp />
         <Button
           variant="outline"
           disabled={isLoading}
