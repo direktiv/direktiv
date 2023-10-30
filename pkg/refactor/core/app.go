@@ -28,7 +28,7 @@ type Config struct {
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
 	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
-	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE" envDefault:"5"`
+	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"       envDefault:"5"`
 	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
 
 	FunctionsTimeout int    `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
@@ -53,7 +53,7 @@ func (conf *Config) checkInvalidEmptyFields() error {
 	var invalidEmptyFields []string
 
 	// knative setting only required when docker mode is disabled.
-	if conf.EnableDocker == false {
+	if !conf.EnableDocker {
 		if conf.KnativeServiceAccount == "" {
 			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
 		}
