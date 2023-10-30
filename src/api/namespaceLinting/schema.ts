@@ -36,3 +36,5 @@ const LintingIssueSchema = z.object({
 export const LintSchema = z.object({
   issues: z.array(LintingIssueSchema),
 });
+
+export type LintSchemaType = z.infer<typeof LintSchema>;
