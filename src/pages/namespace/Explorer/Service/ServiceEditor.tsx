@@ -1,8 +1,8 @@
 import { FC, useState } from "react";
-import { Save, Tag } from "lucide-react";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "../Workflow/Active/CodeEditor";
+import { Save } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -19,9 +19,9 @@ const ServiceEditor: FC<{
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const workflowDataFromServer = atob(data?.revision?.source ?? "");
+  const serviceDataFromServer = atob(data?.revision?.source ?? "");
 
-  const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
+  const { mutate: updateService, isLoading } = useUpdateWorkflow({
     onError: (error) => {
       error && setError(error);
     },
@@ -30,17 +30,17 @@ const ServiceEditor: FC<{
     },
   });
 
-  const [editorContent, setEditorContent] = useState(workflowDataFromServer);
+  const [editorContent, setEditorContent] = useState(serviceDataFromServer);
 
   const onEditorContentUpdate = (newData: string) => {
-    setHasUnsavedChanges(workflowDataFromServer !== newData);
+    setHasUnsavedChanges(serviceDataFromServer !== newData);
     setEditorContent(newData ?? "");
   };
 
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
       setError(undefined);
-      updateWorkflow({
+      updateService({
         path,
         fileContent: toSave,
       });
@@ -51,12 +51,8 @@ const ServiceEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold">
-        <Tag className="h-5" />
-        {t("pages.explorer.workflow.headline")}
-      </h3>
       <CodeEditor
-        value={workflowDataFromServer}
+        value={serviceDataFromServer}
         onValueChange={onEditorContentUpdate}
         createdAt={data.revision?.createdAt}
         error={error}
@@ -71,10 +67,9 @@ const ServiceEditor: FC<{
           onClick={() => {
             onSave(editorContent);
           }}
-          data-testid="workflow-editor-btn-save"
         >
           <Save />
-          {t("pages.explorer.workflow.editor.saveBtn")}
+          {t("pages.explorer.service.editor.saveBtn")}
         </Button>
       </div>
     </div>

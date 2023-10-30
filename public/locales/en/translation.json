@@ -255,6 +255,12 @@
             "splitHorizontally": "Split Horizontally"
           }
         }
+      },
+      "service": {
+        "goToServices": "Go to services",
+        "editor": {
+          "saveBtn": "Save"
+        }
       }
     },
     "events": {
