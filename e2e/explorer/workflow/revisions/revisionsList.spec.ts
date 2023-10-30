@@ -1,5 +1,5 @@
 import { Page, expect, test } from "@playwright/test";
-import { actionDeleteRevision, actionWaitForSuccessToast } from "../utils";
+import { actionDeleteRevision, waitForSuccessToast } from "../utils";
 import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 
 import { createWorkflow } from "../../../utils/node";
@@ -39,7 +39,7 @@ const actionCreateRevisionAndTag = async (page: Page) => {
   const newTag = faker.random.alphaNumeric(9);
   await inputName.type(newTag);
   await page.getByTestId("dialog-create-tag-btn-submit").click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   return [firstRev.revision.name, newTag] as const;
 };
 
@@ -128,7 +128,7 @@ test("it is possible to revert to the previous the workflow in the revisions lis
     "when the dialog appears, revert button should be enabled after loading"
   ).toBeEnabled();
   await btnRevert.click();
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
   await page.goto(`${namespace}/explorer/workflow/active/${name}`);
 
   const textArea = page.getByRole("textbox");
@@ -172,7 +172,7 @@ test("it is possible to delete the revision", async ({ page }) => {
   const submitButton = page.getByTestId("dialog-delete-revision-btn-submit");
   await submitButton.click();
 
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   // after delete success, confirm that the revision item isn't visible anymore
   const revisionItem = page.getByTestId(
@@ -208,7 +208,7 @@ test("it is possible to create and delete tags", async ({ page }) => {
   ).toBeVisible();
 
   await actionDeleteRevision(page, tag);
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   await expect(
     tagItem,
@@ -225,7 +225,7 @@ test("it is possible to delete the tag by deleting the base revision", async ({
 
   // delete the revision
   await actionDeleteRevision(page, revision);
-  await actionWaitForSuccessToast(page);
+  await waitForSuccessToast(page);
 
   // both the revision and the tag should disappear from the list
   const revisionItem = page.getByTestId(

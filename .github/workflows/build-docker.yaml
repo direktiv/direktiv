@@ -24,13 +24,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update Nginx configuration
-        run: |
-          sed -i "s|proxy_pass.*|proxy_pass $PROXY_API_URL;|" conf/nginx.conf
-        env:
-          PROXY_API_URL: ${{ secrets.API_IP }}
-          PROXY_API_KEY: ${{ secrets.API_KEY }}
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v4
@@ -60,6 +53,7 @@ jobs:
       NOMAD_TOKEN: ${{ secrets.NOMAD_TOKEN }}
       NOMAD_ADDR: https://nomad.direktiv.dev:4646
       NOMAD_VAR_IMAGE: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+      NOMAD_VAR_UI_BACKEND: ${{ secrets.API_IP }}
 
     steps:
       - uses: actions/checkout@v2
