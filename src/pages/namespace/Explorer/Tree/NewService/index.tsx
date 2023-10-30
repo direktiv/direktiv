@@ -204,7 +204,7 @@ const NewService = ({
                 theme={theme ?? undefined}
                 onChange={(newData) => {
                   if (newData && !splitView) {
-                    setValue("fileContent", jsonToYaml(newData));
+                    setValue("fileContent", newData);
                     let json;
                     try {
                       json = yamljs.load(newData);
