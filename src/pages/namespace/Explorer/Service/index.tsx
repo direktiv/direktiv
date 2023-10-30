@@ -2,7 +2,7 @@ import { Card } from "~/design/Card";
 import { FC } from "react";
 import { Layers } from "lucide-react";
 import { NoPermissions } from "~/design/Table";
-import { Outlet } from "react-router-dom";
+import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -17,12 +17,13 @@ const Header: FC = () => {
   const {
     isAllowed,
     noPermissionMessage,
+    data: serviceData,
     isFetched: isPermissionCheckFetched,
   } = useNodeContent({ path });
 
   if (!namespace) return null;
   if (!path) return null;
-
+  if (!serviceData) return null;
   if (!isPermissionCheckFetched) return null;
 
   if (isAllowed === false)
@@ -43,11 +44,9 @@ const Header: FC = () => {
             <Layers className="h-5" />
             {filename?.relative}
           </h3>
-          <div className="flex gap-x-3"></div>
         </div>
       </div>
-
-      <Outlet />
+      <ServiceEditor data={serviceData} path={path} />
     </>
   );
 };
