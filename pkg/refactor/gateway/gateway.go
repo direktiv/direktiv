@@ -76,7 +76,7 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(&targetURL)
 	proxy.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: gw.tlsSkip}, // Skip TLS certificate verification
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: gw.tlsSkip}, //nolint:gosec
 	}
 
 	proxy.Director = func(req *http.Request) {
