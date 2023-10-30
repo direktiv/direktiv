@@ -28,20 +28,20 @@ type Config struct {
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
 	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
-	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"  envDefault:"5"`
-	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
+	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"       envDefault:"5"`
+	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"       envDefault:"10M"`
 
-	KnativeSizeMemorySmall  int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL"      envDefault:"512"`
-	KnativeSizeMemoryMedium int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM"     envDefault:"1024"`
-	KnativeSizeMemoryLarge  int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_LARGE"      envDefault:"2048"`
+	KnativeSizeMemorySmall  int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL"  envDefault:"512"`
+	KnativeSizeMemoryMedium int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM" envDefault:"1024"`
+	KnativeSizeMemoryLarge  int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_LARGE"  envDefault:"2048"`
 
-	KnativeSizeCPUSmall  string `env:"DIREKTIV_KNATIVE_SIZE_CPU_SMALL"    envDefault:"250m"`
-	KnativeSizeCPUMedium string `env:"DIREKTIV_KNATIVE_SIZE_CPU_MEDIUM"   envDefault:"500m"`
-	KnativeSizeCPULarge  string `env:"DIREKTIV_KNATIVE_SIZE_CPU_LARGE"    envDefault:"1"`
+	KnativeSizeCPUSmall  string `env:"DIREKTIV_KNATIVE_SIZE_CPU_SMALL"  envDefault:"250m"`
+	KnativeSizeCPUMedium string `env:"DIREKTIV_KNATIVE_SIZE_CPU_MEDIUM" envDefault:"500m"`
+	KnativeSizeCPULarge  string `env:"DIREKTIV_KNATIVE_SIZE_CPU_LARGE"  envDefault:"1"`
 
-	KnativeSizeDiskSmall  int `env:"DIREKTIV_KNATIVE_SIZE_DISK_SMALL"   envDefault:"256"`
-	KnativeSizeDiskMedium int `env:"DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM"  envDefault:"1024"`
-	KnativeSizeDiskLarge  int `env:"DIREKTIV_KNATIVE_SIZE_DISK_LARGE"   envDefault:"4096"`
+	KnativeSizeDiskSmall  int `env:"DIREKTIV_KNATIVE_SIZE_DISK_SMALL"  envDefault:"256"`
+	KnativeSizeDiskMedium int `env:"DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM" envDefault:"1024"`
+	KnativeSizeDiskLarge  int `env:"DIREKTIV_KNATIVE_SIZE_DISK_LARGE"  envDefault:"4096"`
 
 	FunctionsTimeout int    `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 	LogFormat        string `env:"DIREKTIV_LOG_JSON"`
