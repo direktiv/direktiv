@@ -32,6 +32,7 @@ const Instances = ({ workflow }: { workflow: string }) => {
 
   return (
     <InstanceCard
+      className="md:row-span-2"
       headline={t("pages.explorer.tree.workflow.overview.instances.header")}
       icon={Boxes}
       refetchButton={instancesRefetchButton}
