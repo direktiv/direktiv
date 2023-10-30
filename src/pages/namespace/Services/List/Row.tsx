@@ -96,32 +96,35 @@ const ServicesTableRow: FC<{
           {service.cmd ? service.cmd : "-"}
         </TableCell>
         <TableCell>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.preventDefault()}
-                icon
-              >
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DialogTrigger
-                className="w-full"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setRebuildService(service);
-                }}
-              >
-                <DropdownMenuItem>
-                  <Trash className="mr-2 h-4 w-4" />
-                  {t("pages.services.list.contextMenu.rebuild")}
-                </DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* when the server  */}
+          {!service.error ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.preventDefault()}
+                  icon
+                >
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40">
+                <DialogTrigger
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRebuildService(service);
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Trash className="mr-2 h-4 w-4" />
+                    {t("pages.services.list.contextMenu.rebuild")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
         </TableCell>
       </TableRow>
     </TooltipProvider>
