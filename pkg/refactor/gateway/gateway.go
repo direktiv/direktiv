@@ -2,9 +2,12 @@ package gateway
 
 import (
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -12,57 +15,20 @@ import (
 	"github.com/invopop/jsonschema"
 )
 
-var registry = make(map[string]Plugin)
+var registry = make(map[string]plugin)
 
-type Plugin interface {
+type plugin interface {
 	build(config map[string]interface{}) (serve, error)
 	getSchema() interface{}
 }
 
 type serve func(w http.ResponseWriter, r *http.Request) bool
 
-type examplePlugin struct {
-	conf examplePluginSchemaDefinition
-}
-
-type examplePluginSchemaDefinition struct {
-	SomeEchoValue string `json:"some_echo_value" jsonschema:"required"`
-}
-
-func (e examplePlugin) build(c map[string]interface{}) (serve, error) {
-	var conf examplePluginSchemaDefinition
-
-	// Convert the map to JSON bytes
-	jsonBytes, err := json.Marshal(c)
-	if err != nil {
-		return nil, err
-	}
-
-	// Unmarshal the JSON bytes into the desired struct
-	err = json.Unmarshal(jsonBytes, &conf)
-	if err != nil {
-		return nil, err
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) bool {
-		_, _ = w.Write([]byte(conf.SomeEchoValue))
-
-		return true
-	}, nil
-}
-
-func (e examplePlugin) getSchema() interface{} {
-	return &e.conf
-}
-
-//nolint:gochecknoinits
-func init() {
-	registry["example_plugin"] = examplePlugin{}
-}
-
 type handler struct {
 	pluginPool map[string]endpointEntry
 	mu         sync.Mutex
+	host       string
+	tlsSkip    bool
 }
 
 type endpointEntry struct {
@@ -72,8 +38,8 @@ type endpointEntry struct {
 	plugins  []serve
 }
 
-func NewHandler() core.EndpointManager {
-	return &handler{}
+func NewHandler(host string, tlsSkip bool) core.EndpointManager {
+	return &handler{host: host, tlsSkip: tlsSkip}
 }
 
 func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -81,19 +47,46 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path, _ := strings.CutPrefix(r.URL.Path, prefix)
 	key := r.Method + ":/:" + path
 
-	fList, ok := gw.pluginPool[key]
+	endpoint, ok := gw.pluginPool[key]
 	if !ok {
 		http.NotFound(w, r)
 
 		return
 	}
-
-	for _, f := range fList.plugins {
+	for _, f := range endpoint.plugins {
 		cont := f(w, r)
 		if !cont {
 			return
 		}
 	}
+
+	baseURL := "api/namespaces"
+	queryParams := url.Values{}
+	queryParams.Add("op", "execute")
+	queryParams.Add("ref", "latest")
+
+	pathWithoutQuery := fmt.Sprintf("/%s/%s/tree/%s", baseURL, endpoint.Namespace, endpoint.Workflow)
+
+	targetURL := url.URL{
+		Host:     gw.host,
+		Path:     pathWithoutQuery,
+		RawQuery: queryParams.Encode(),
+		Scheme:   "http",
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(&targetURL)
+	proxy.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: gw.tlsSkip}, // Skip TLS certificate verification
+	}
+
+	proxy.Director = func(req *http.Request) {
+		req.URL.Scheme = targetURL.Scheme
+		req.URL.Host = targetURL.Host
+		req.URL.Path = targetURL.Path
+		req.Host = targetURL.Host
+	}
+
+	proxy.ServeHTTP(w, r)
 }
 
 func (gw *handler) SetEndpoints(list []*core.Endpoint) []*core.EndpointStatus {

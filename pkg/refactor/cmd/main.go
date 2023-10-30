@@ -45,7 +45,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}
 
 	// Create endpoint manager
-	gw := gateway.NewHandler()
+	endpointManager := gateway.NewHandler("192.168.122.30:8080", true)
 
 	// Create App
 	app := core.App{
@@ -55,7 +55,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		Config:              config,
 		ServiceManager:      serviceManager,
 		RegistryManager:     registryManager,
-		EndpointManager:     gw,
+		EndpointManager:     endpointManager,
 		GetAllPluginSchemas: gateway.GetAllSchemas,
 	}
 
@@ -74,14 +74,14 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	renderServiceManager(db, serviceManager, logger)
 
 	pbus.Subscribe(func(_ string) {
-		renderEndpointManager(db, gw, logger)
+		renderEndpointManager(db, endpointManager, logger)
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,
 		pubsub.MirrorSync,
 	)
-	renderEndpointManager(db, gw, logger)
+	renderEndpointManager(db, endpointManager, logger)
 
 	// Start api v2 server
 	wg.Add(1)
