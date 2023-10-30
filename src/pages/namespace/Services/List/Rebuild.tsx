@@ -9,7 +9,7 @@ import { Trans, useTranslation } from "react-i18next";
 import Button from "~/design/Button";
 import { RotateCcw } from "lucide-react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
-import { useState } from "react";
+import { useRebuildService } from "~/api/services/mutate/rebuild";
 
 const Rebuild = ({
   service,
@@ -19,18 +19,11 @@ const Rebuild = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-
-  // TODO: implement
-  // const { mutate: rebuildService, isLoading } = useRebuildService({
-  //   workflow,
-  //   version,
-  //   onSuccess: () => {
-  //     close();
-  //   },
-  // });
-
-  // TODO: remove this loading mock
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate: rebuildService, isLoading } = useRebuildService({
+    onSuccess: () => {
+      close();
+    },
+  });
 
   return (
     <>
@@ -53,14 +46,7 @@ const Rebuild = ({
         </DialogClose>
         <Button
           onClick={() => {
-            setIsLoading(true);
-            setTimeout(() => {
-              setIsLoading(false);
-              close();
-            }, 1000);
-            // rebuildService({
-            //   service.id,
-            // });
+            rebuildService(service.id);
           }}
           variant="destructive"
           loading={isLoading}
