@@ -352,7 +352,7 @@ export const pages: PageType & EnterprisePageType = {
       return {
         path: isExplorerPage ? path : undefined,
         namespace: isExplorerPage ? namespace : undefined,
-        isExplorerPage: isTreePage || isWorkflowPage,
+        isExplorerPage: isTreePage || isWorkflowPage || isServicePage,
         revision: searchParams.get("revision") ?? undefined,
         isTreePage,
         isWorkflowPage,
