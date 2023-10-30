@@ -6,6 +6,12 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
+import {
+  addServiceHeader,
+  defaultServiceYaml,
+  serviceFormSchema,
+  serviceHeader,
+} from "./config";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -14,7 +20,6 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
-import { RJSFSchema } from "@rjsf/utils";
 import { ScrollArea } from "~/design/ScrollArea";
 import ServiceHelp from "../../Service/ServiceHelp";
 import { Toggle } from "~/design/Toggle";
@@ -33,49 +38,7 @@ import yamljs from "js-yaml";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const jsonToYaml = (json: Record<string, unknown>) => {
-  if (Object.keys(json).length === 0) {
-    return "";
-  }
-  return stringify(json);
-};
-
-const serviceFormSchema: RJSFSchema = {
-  properties: {
-    image: {
-      title: "Image",
-      type: "string",
-    },
-    name: {
-      title: "Name",
-      type: "string",
-    },
-    scale: {
-      title: "Scale",
-      type: "integer",
-      enum: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-    },
-    size: {
-      title: "size",
-      type: "integer",
-      enum: ["large", "medium", "small"],
-    },
-    cmd: {
-      title: "Cmd",
-      type: "string",
-    },
-  },
-  required: ["image", "name"],
-  type: "object",
-};
-
-const defaultServiceJson = {
-  direktiv_api: "service/v1",
-};
-
-const defaultServiceYaml = jsonToYaml(defaultServiceJson);
-
-type FormInput = {
+export type FormInput = {
   name: string;
   fileContent: string;
 };
@@ -94,10 +57,7 @@ const NewService = ({
   const theme = useTheme();
 
   const [splitView, setSplitView] = useState(true);
-  const [serviceConfigJson, setServiceConfigJson] =
-    useState(defaultServiceJson);
-  const [serviceConfigYaml, setServiceConfigYaml] =
-    useState(defaultServiceYaml);
+  const [serviceConfigJson, setServiceConfigJson] = useState(serviceHeader);
 
   const {
     register,
@@ -189,8 +149,9 @@ const NewService = ({
                     formData={serviceConfigJson}
                     onChange={(e) => {
                       if (e.formData) {
-                        setServiceConfigJson(e.formData);
-                        setValue("fileContent", jsonToYaml(e.formData));
+                        const formDataWithHeader = addServiceHeader(e.formData);
+                        setServiceConfigJson(formDataWithHeader);
+                        setValue("fileContent", stringify(formDataWithHeader));
                       }
                     }}
                     schema={serviceFormSchema}
@@ -211,8 +172,9 @@ const NewService = ({
                     } catch (e) {
                       json = null;
                     }
-                    if (typeof json === "object") {
-                      setServiceConfigJson(json);
+                    if (json && typeof json === "object") {
+                      const formDataWithHeader = addServiceHeader(json);
+                      setServiceConfigJson(formDataWithHeader);
                     }
                   }
                 }}
