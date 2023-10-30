@@ -91,6 +91,10 @@ func Run(ctx context.Context, logger *zap.SugaredLogger) error {
 	if err := env.Parse(config); err != nil {
 		return fmt.Errorf("parsing env variables: %w", err)
 	}
+	if config.IsValid() != nil {
+		return fmt.Errorf("parsing env variables: %w", config.IsValid())
+	}
+
 	srv.conf = config
 
 	err = srv.start(ctx)

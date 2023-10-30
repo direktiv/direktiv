@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -21,11 +22,13 @@ type Config struct {
 
 	DB string `env:"DIREKTIV_DB,notEmpty"`
 
+	EnableDocker bool `env:"DIREKITV_ENABLE_DOCKER"`
+
 	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
 	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
-	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"   envDefault:"5"`
+	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE" envDefault:"5"`
 	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
 
 	FunctionsTimeout int    `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
@@ -35,6 +38,41 @@ type Config struct {
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {
 	return time.Second * time.Duration(conf.FunctionsTimeout)
+}
+
+func (conf *Config) IsValid() error {
+	err := conf.checkInvalidEmptyFields()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (conf *Config) checkInvalidEmptyFields() error {
+	var invalidEmptyFields []string
+
+	// knative setting only required when docker mode is disabled.
+	if conf.EnableDocker == false {
+		if conf.KnativeServiceAccount == "" {
+			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
+		}
+		if conf.KnativeNamespace == "" {
+			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_NAMESPACE")
+		}
+		if conf.KnativeIngressClass == "" {
+			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_INGRESS_CLASS")
+		}
+		if conf.KnativeSidecar == "" {
+			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SIDECAR")
+		}
+	}
+
+	if len(invalidEmptyFields) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("following fields are required but got emty strings: %v", invalidEmptyFields)
 }
 
 type Version struct {
