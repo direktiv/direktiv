@@ -1,3 +1,4 @@
+import { Check, LucideIcon, SquareAsterisk } from "lucide-react";
 import {
   Notification,
   NotificationClose,
@@ -7,12 +8,29 @@ import {
   NotificationTitle,
 } from "~/design/Notification/";
 
-import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNotificationConfig } from "./config";
 import { useTranslation } from "react-i18next";
+
+function NotificationItem({
+  href,
+  description,
+  icon: Icon,
+}: {
+  href: string;
+  description: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <div>
+      <div>{href}</div>
+      <div>{description}</div>
+      <Icon />
+    </div>
+  );
+}
 
 interface NotificationMenuProps {
   className?: string;
@@ -24,7 +42,23 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
   const notificationConfig = useNotificationConfig();
   const showIndicator = !!data?.issues.length;
 
-  const possibleNotifications = Object.entries(notificationConfig ?? {});
+  const notificationTypes = Object.entries(notificationConfig ?? {});
+
+  const notificationItems = notificationTypes.map(
+    ([notificationType, notificationConfig], index, srcArr) => {
+      const matchingNotifications = data?.issues.filter(
+        (issue) => notificationType === issue.type
+      );
+      if (
+        matchingNotifications == undefined ||
+        matchingNotifications.length <= 0
+      ) {
+        return null;
+      }
+
+      let { icon, description, count, href } = srcArr[index];
+    }
+  );
 
   return (
     <div className={twMergeClsx("self-end text-right", className)}>
@@ -38,36 +72,20 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
             {t("components.notificationMenu.isLoading.description")}
           </NotificationLoading>
         )}
-        {showIndicator ? (
-          possibleNotifications.map(
-            ([notificationType, notificationConfig], index, srcArr) => {
-              const isLastListItem = index === srcArr.length - 1;
-              const matchingNotifications = data.issues.filter(
-                (issue) => notificationType === issue.type
-              );
-              if (matchingNotifications.length <= 0) {
-                return null;
-              }
-              return (
-                <div key={notificationType}>
-                  <NotificationClose
-                    className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
-                    asChild
-                  >
-                    <Link to={notificationConfig.href}>
-                      <NotificationMessage
-                        text={notificationConfig.description(
-                          matchingNotifications.length
-                        )}
-                        icon={notificationConfig.icon}
-                      />
-                    </Link>
-                  </NotificationClose>
-                  {!isLastListItem && <NotificationMenuSeparator />}
-                </div>
-              );
-            }
-          )
+        {showIndicator && notificationItems != null ? (
+          notificationItems.map((item, index) => {
+            const isLastListItem = index === notificationItems.length - 1;
+            return (
+              <div key="">
+                <NotificationItem
+                  icon={item.icon}
+                  href={item.href}
+                  description={item.description}
+                />
+                {!isLastListItem && <NotificationMenuSeparator />}
+              </div>
+            );
+          })
         ) : (
           <NotificationMessage
             text={t("components.notificationMenu.noIssues.description")}
