@@ -136,6 +136,9 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 			AutoRemove:  false,
 		},
 	}
+	if cfg.CMD != "" {
+		uContainerConfig.Config.Cmd = []string{cfg.CMD}
+	}
 
 	// Create a containers.
 	resp, err := c.cli.ContainerCreate(context.Background(),
