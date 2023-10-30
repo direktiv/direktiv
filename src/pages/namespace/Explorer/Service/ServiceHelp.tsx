@@ -25,7 +25,7 @@ const ServiceHelp = () => {
           <BadgeHelp />
         </Button>
       </PopoverTrigger>
-      <PopoverContent asChild>
+      <PopoverContent asChild align="end" side="top">
         <div className="w-max p-5">
           <h3 className="mb-5 flex items-center gap-x-2 font-bold">
             <BadgeCheck className="h-5" />

@@ -16,6 +16,7 @@ import Input from "~/design/Input";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { RJSFSchema } from "@rjsf/utils";
 import { ScrollArea } from "~/design/ScrollArea";
+import ServiceHelp from "../../Service/ServiceHelp";
 import { Toggle } from "~/design/Toggle";
 import { addYamlFileExtension } from "../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
@@ -221,24 +222,27 @@ const NewService = ({
               />
             </Card>
           </div>
-          <ButtonBar className="self-end">
-            <Toggle
-              pressed={splitView}
-              onClick={() => {
-                setSplitView(true);
-              }}
-            >
-              <Columns />
-            </Toggle>
-            <Toggle
-              pressed={!splitView}
-              onClick={() => {
-                setSplitView(false);
-              }}
-            >
-              <Code />
-            </Toggle>
-          </ButtonBar>
+          <div className="flex justify-end gap-4">
+            <ButtonBar>
+              <Toggle
+                pressed={splitView}
+                onClick={() => {
+                  setSplitView(true);
+                }}
+              >
+                <Columns />
+              </Toggle>
+              <Toggle
+                pressed={!splitView}
+                onClick={() => {
+                  setSplitView(false);
+                }}
+              >
+                <Code />
+              </Toggle>
+            </ButtonBar>
+            <ServiceHelp />
+          </div>
         </div>
       </div>
       <DialogFooter>
