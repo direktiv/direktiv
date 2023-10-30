@@ -28,22 +28,15 @@ func (c *dockerClient) cleanAll() error {
 	if err != nil {
 		return err
 	}
-	var ids []string
 	for _, cnt := range containers {
-		if cnt.Labels["direktiv.io/container-type"] == "main" {
-			ids = append(ids, cnt.ID)
-		}
-		if cnt.Labels["direktiv.io/container-type"] == "user" {
-			ids = append(ids, cnt.ID)
-		}
-	}
-	for _, id := range ids {
-		err := c.cli.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
-			RemoveVolumes: true,
-			Force:         true,
-		})
-		if err != nil {
-			return err
+		if cnt.Labels["direktiv.io/object-type"] == "container" {
+			err := c.cli.ContainerRemove(context.Background(), cnt.ID, types.ContainerRemoveOptions{
+				RemoveVolumes: true,
+				Force:         true,
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -98,6 +91,7 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 		Config: &container.Config{
 			Image: "direktiv-dev",
 			Labels: map[string]string{
+				"direktiv.io/object-type":    "container",
 				"direktiv.io/container-type": "main",
 				"direktiv.io/inputHash":      cfg.GetValueHash(),
 				"directiv.io/scale":          strconv.Itoa(cfg.Scale),
@@ -127,6 +121,7 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 		Config: &container.Config{
 			Image: cfg.Image,
 			Labels: map[string]string{
+				"direktiv.io/object-type":    "container",
 				"direktiv.io/container-type": "user",
 			},
 		},
