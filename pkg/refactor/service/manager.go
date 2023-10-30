@@ -72,13 +72,6 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 		return nil, err
 	}
 
-	// TODO: remove dev code.
-	c.KnativeServiceAccount = "direktiv-functions-pod"
-	c.KnativeNamespace = "direktiv-services-direktiv"
-	c.KnativeIngressClass = "contour.ingress.networking.knative.dev"
-	c.KnativeMaxScale = 5
-	c.KnativeSidecar = "localhost:5000/direktiv"
-
 	client := &knativeClient{
 		config:     c,
 		knativeCli: knativeCli,

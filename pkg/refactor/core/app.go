@@ -25,7 +25,7 @@ type Config struct {
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
 	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
-	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"`
+	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"   envDefault:"5"`
 	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
 
 	FunctionsTimeout int    `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
