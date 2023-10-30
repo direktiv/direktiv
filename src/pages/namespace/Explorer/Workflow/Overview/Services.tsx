@@ -34,7 +34,7 @@ const Services = ({ workflow }: { workflow: string }) => {
           </h3>
           <RefreshButton
             icon
-            variant="outline"
+            variant="ghost"
             size="sm"
             disabled={isFetching}
             onClick={() => {
