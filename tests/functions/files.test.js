@@ -40,7 +40,7 @@ scale: 1
 functions:
 - id: bash
   type: knative-namespace
-  service: bash
+  service: /bash.yaml
 
 states:
 - id: set-c
