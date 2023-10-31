@@ -184,7 +184,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 				}
 				funConfigList = append(funConfigList, &core.ServiceConfig{
 					Typ:       core.ServiceTypeNamespace,
-					Name:      serviceDef.Name,
+					Name:      "",
 					Namespace: ns.Name,
 					FilePath:  file.Path,
 					Image:     serviceDef.Image,

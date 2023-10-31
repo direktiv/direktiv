@@ -9,7 +9,6 @@ import (
 
 type ServiceFile struct {
 	DirektivAPI string `yaml:"direktiv_api"`
-	Name        string `yaml:"name"`
 	Image       string `yaml:"image"`
 	Cmd         string `yaml:"cmd"`
 	Size        string `yaml:"size"`

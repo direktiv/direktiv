@@ -407,7 +407,8 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, "", con.ID)
+		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, con.Path, "")
+
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -483,15 +484,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	tr := engine.createTransport()
 
-	path := ""
-	styp := core.ServiceTypeNamespace
-
-	if ar.Container.Type == model.ReusableContainerFunctionType {
-		path = ar.Workflow.Path
-		styp = core.ServiceTypeWorkflow
-	}
-
-	addr := service.GetServiceURL(ar.Workflow.NamespaceName, styp, path, ar.Container.ID)
+	addr := ar.Container.Service
 
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
 	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)

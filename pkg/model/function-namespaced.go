@@ -3,15 +3,16 @@ package model
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
 // NamespacedFunctionDefinition defines a namespace service in the workflow.
 type NamespacedFunctionDefinition struct {
-	Type           FunctionType `json:"type"    yaml:"type"`
-	ID             string       `json:"id"      yaml:"id"`
-	KnativeService string       `json:"service" yaml:"service"`
+	Type FunctionType `json:"type"    yaml:"type"`
+	ID   string       `json:"id"      yaml:"id"`
+	Path string       `json:"path" yaml:"path"`
 }
 
 // GetID returns the id of a namespace function.
@@ -38,8 +39,10 @@ func (o *NamespacedFunctionDefinition) Validate() error {
 		return fmt.Errorf("function id must match regex: %s", util.RegexPattern)
 	}
 
-	if o.KnativeService == "" {
-		return errors.New("service required")
+	filePathPattern := `^/([^/]+/?)+[^/]*$`
+	regex := regexp.MustCompile(filePathPattern)
+	if !regex.MatchString(o.Path) {
+		return fmt.Errorf("'%s' is a valid service file path", o.Path)
 	}
 
 	return nil

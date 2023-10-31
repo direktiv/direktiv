@@ -12,7 +12,6 @@ describe('Test services crud operations', () => {
     common.helpers.itShouldCreateServiceFile(it, expect, testNamespace,
         "/s1.yaml", `
 direktiv_api: service/v1
-name: s1
 image: redis
 cmd: redis-server
 scale: 1
@@ -21,7 +20,6 @@ scale: 1
     common.helpers.itShouldCreateServiceFile(it, expect, testNamespace,
         "/s2.yaml", `
 direktiv_api: service/v1
-name: s2
 image: redis
 cmd: redis-server
 scale: 2
@@ -39,9 +37,8 @@ scale: 2
                     "cmd": "redis-server",
                     "error": null,
                     "filePath": "/s1.yaml",
-                    "id": "test-services-a7861273a87a073a7fa1",
+                    "id": "test-services-s1-yaml-466337cb33",
                     "image": "redis",
-                    "name": "s1",
                     "namespace": "test-services",
                     "scale": 1,
                     "size": "medium",
@@ -51,9 +48,8 @@ scale: 2
                     "cmd": "redis-server",
                     "error": null,
                     "filePath": "/s2.yaml",
-                    "id": "test-services-7bbde10f8e01038d9849",
+                    "id": "test-services-s2-yaml-d396514862",
                     "image": "redis",
-                    "name": "s2",
                     "namespace": "test-services",
                     "scale": 2,
                     "size": "medium",
@@ -101,9 +97,8 @@ scale: 2
                     "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s1.yaml",
-                    "id": "test-services-a7861273a87a073a7fa1",
+                    "id": "test-services-s1-yaml-466337cb33",
                     "image": "redis",
-                    "name": "s1",
                     "namespace": "test-services",
                     "scale": 1,
                     "size": "medium",
@@ -114,9 +109,8 @@ scale: 2
                     "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s2.yaml",
-                    "id": "test-services-7bbde10f8e01038d9849",
+                    "id": "test-services-s2-yaml-d396514862",
                     "image": "redis",
-                    "name": "s2",
                     "namespace": "test-services",
                     "scale": 2,
                     "size": "medium",
