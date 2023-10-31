@@ -84,7 +84,7 @@ func (conf *Config) checkInvalidEmptyFields() error {
 		return nil
 	}
 
-	return fmt.Errorf("following fields are required but got emty strings: %v", invalidEmptyFields)
+	return fmt.Errorf("following fields are required but got empty strings: %v", invalidEmptyFields)
 }
 
 type Version struct {
