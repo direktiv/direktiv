@@ -81,6 +81,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 	}
 
 	return &manager{
+		cfg:           c,
 		list:          make([]*core.ServiceConfig, 0),
 		runtimeClient: client,
 
