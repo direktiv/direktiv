@@ -15,12 +15,13 @@ const (
 
 // nolint:tagliatelle
 type ServiceConfig struct {
+	// identification fields:
 	Typ       string `json:"type"`
 	Namespace string `json:"namespace"`
+	FilePath  string `json:"filePath"`
 	Name      string `json:"name"`
 
-	FilePath string `json:"filePath"`
-
+	// settings fields:
 	Image string `json:"image"`
 	CMD   string `json:"cmd"`
 	Size  string `json:"size"`
@@ -29,13 +30,17 @@ type ServiceConfig struct {
 	Error *string `json:"error"`
 }
 
+// GetID calculates a unique id string based on identification fields. This id helps in comparison different
+// lists of objects.
 func (c *ServiceConfig) GetID() string {
 	str := fmt.Sprintf("%s-%s-%s", c.Namespace, c.Name, c.FilePath)
 	sh := sha256.Sum256([]byte(str + c.Typ))
 
-	whitelist, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	whitelist := regexp.MustCompile("[^a-zA-Z0-9]+")
 	str = whitelist.ReplaceAllString(str, "-")
 
+	// Prevent too long ids
+	// nolint:gomnd
 	if len(str) > 50 {
 		str = str[:50]
 	}
@@ -43,6 +48,8 @@ func (c *ServiceConfig) GetID() string {
 	return fmt.Sprintf("%s-%x", str, sh[:5])
 }
 
+// GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
+// different lists of objects.
 func (c *ServiceConfig) GetValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	sh := sha256.Sum256([]byte(str))

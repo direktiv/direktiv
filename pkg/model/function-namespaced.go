@@ -10,8 +10,8 @@ import (
 
 // NamespacedFunctionDefinition defines a namespace service in the workflow.
 type NamespacedFunctionDefinition struct {
-	Type FunctionType `json:"type"    yaml:"type"`
-	ID   string       `json:"id"      yaml:"id"`
+	Type FunctionType `json:"type" yaml:"type"`
+	ID   string       `json:"id"   yaml:"id"`
 	Path string       `json:"path" yaml:"path"`
 }
 
