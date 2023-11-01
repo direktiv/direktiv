@@ -28,7 +28,10 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
 
   return (
     <div className={twMergeClsx("self-end text-right", className)}>
-      <Notification showIndicator={showIndicator}>
+      <Notification
+        showIndicator={showIndicator}
+        data-testid="notification-bell"
+      >
         <NotificationTitle>
           {t("components.notificationMenu.title")}
         </NotificationTitle>
@@ -70,6 +73,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
           )
         ) : (
           <NotificationMessage
+            data-testid="notification-text"
             text={t("components.notificationMenu.noIssues.description")}
             icon={Check}
           />
