@@ -16,8 +16,7 @@ type runtimeClient interface {
 	listServices() ([]status, error)
 	streamServiceLogs(id string, podID string) (io.ReadCloser, error)
 	listServicePods(id string) (any, error)
-	killService(id string) error
-	getServiceURL(id string) string
+	rebuildService(id string) error
 }
 
 type status interface {

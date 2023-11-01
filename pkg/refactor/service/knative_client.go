@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -114,15 +113,11 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 	return pods, nil
 }
 
-func (c *knativeClient) killService(id string) error {
+func (c *knativeClient) rebuildService(id string) error {
 	return c.k8sCli.CoreV1().Pods(c.config.KnativeNamespace).Delete(
 		context.Background(),
 		id,
 		metav1.DeleteOptions{})
-}
-
-func (c *knativeClient) getServiceURL(id string) string {
-	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, c.config.KnativeNamespace)
 }
 
 var _ runtimeClient = &knativeClient{}

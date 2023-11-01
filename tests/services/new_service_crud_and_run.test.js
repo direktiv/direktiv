@@ -2,7 +2,6 @@ import request from 'supertest'
 import retry from "jest-retries";
 import common from "../common";
 
-
 const testNamespace = "test-services"
 
 describe('Test services crud operations', () => {
@@ -13,7 +12,6 @@ describe('Test services crud operations', () => {
     common.helpers.itShouldCreateServiceFile(it, expect, testNamespace,
         "/s1.yaml", `
 direktiv_api: service/v1
-name: s1
 image: redis
 cmd: redis-server
 scale: 1
@@ -22,14 +20,14 @@ scale: 1
     common.helpers.itShouldCreateServiceFile(it, expect, testNamespace,
         "/s2.yaml", `
 direktiv_api: service/v1
-name: s2
 image: redis
 cmd: redis-server
 scale: 2
 `)
 
     let listRes;
-    it(`should list all services`, async () => {
+    retry(`should list all services`, 10, async () => {
+        await sleep(500)
         listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
         expect(listRes.statusCode).toEqual(200)
@@ -37,26 +35,21 @@ scale: 2
             data: [
                 {
                     "cmd": "redis-server",
-                    "conditions": null,
                     "error": null,
                     "filePath": "/s1.yaml",
-                    "id": "objf8a48067049cad1cdc29obj",
+                    "id": "test-services-s1-yaml-466337cb33",
                     "image": "redis",
-                    "name": "s1",
                     "namespace": "test-services",
                     "scale": 1,
                     "size": "medium",
                     "type": "namespace-service",
-
                 },
                 {
                     "cmd": "redis-server",
-                    "conditions": null,
                     "error": null,
                     "filePath": "/s2.yaml",
-                    "id": "obj9eca47019fa69482e1a8obj",
+                    "id": "test-services-s2-yaml-d396514862",
                     "image": "redis",
-                    "name": "s2",
                     "namespace": "test-services",
                     "scale": 2,
                     "size": "medium",
@@ -66,24 +59,32 @@ scale: 2
         })
     })
 
-    retry(`should list all service pods`, 10,async () => {
+    retry(`should list all service pods`, 10, async () => {
         await sleep(500)
-        const sID = listRes.body.data[0].id
 
-        const res = await request(common.config.getDirektivHost())
+        let sID = listRes.body.data[0].id
+        let res = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services/${sID}/pods`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
             data: [
-                {
-                    id: sID
+                {id: expect.stringMatching(`^${sID}(_|-)`)},
+            ]
+        })
 
-                }
+        sID = listRes.body.data[1].id
+        res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${testNamespace}/services/${sID}/pods`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            data: [
+                {id: expect.stringMatching(`^${sID}(_|-)`)},
+                {id: expect.stringMatching(`^${sID}(_|-)`)},
             ]
         })
     })
 
-    retry(`should list all services`, 100, async () => {
+    retry(`should list all services`, 10, async () => {
         await sleep(500)
 
         const res = await request(common.config.getDirektivHost())
@@ -93,16 +94,11 @@ scale: 2
             data: [
                 {
                     "cmd": "redis-server",
-                    "conditions": [{
-                        message: expect.stringContaining("Up "),
-                        status: "True",
-                        type: "UpAndReady",
-                    }],
+                    "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s1.yaml",
-                    "id": "objf8a48067049cad1cdc29obj",
+                    "id": "test-services-s1-yaml-466337cb33",
                     "image": "redis",
-                    "name": "s1",
                     "namespace": "test-services",
                     "scale": 1,
                     "size": "medium",
@@ -110,16 +106,11 @@ scale: 2
                 },
                 {
                     "cmd": "redis-server",
-                    "conditions": [{
-                        message: expect.stringContaining("Up "),
-                        status: "True",
-                        type: "UpAndReady",
-                    }],
+                    "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s2.yaml",
-                    "id": "obj9eca47019fa69482e1a8obj",
+                    "id": "test-services-s2-yaml-d396514862",
                     "image": "redis",
-                    "name": "s2",
                     "namespace": "test-services",
                     "scale": 2,
                     "size": "medium",

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"io"
 	"slices"
 	"sync"
@@ -18,6 +19,7 @@ import (
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
 // to reconcile the services in list param versus what is running in the runtime.
 type manager struct {
+	cfg *core.Config
 	// this list maintains all the service configurations that need to be running.
 	list []*core.ServiceConfig
 
@@ -33,16 +35,21 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 	if enableDocker {
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("creating docker client: %w", err)
 		}
 
-		client := dockerClient{
+		client := &dockerClient{
 			cli: cli,
+		}
+		err = client.cleanAll()
+		if err != nil {
+			return nil, fmt.Errorf("cleaning docker client: %w", err)
 		}
 
 		return &manager{
+			cfg:           c,
 			list:          make([]*core.ServiceConfig, 0),
-			runtimeClient: &client,
+			runtimeClient: client,
 
 			logger: logger,
 			lock:   &sync.Mutex{},
@@ -67,13 +74,6 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 		return nil, err
 	}
 
-	// TODO: remove dev code.
-	c.KnativeServiceAccount = "direktiv-functions-pod"
-	c.KnativeNamespace = "direktiv-services-direktiv"
-	c.KnativeIngressClass = "contour.ingress.networking.knative.dev"
-	c.KnativeMaxScale = 5
-	c.KnativeSidecar = "localhost:5000/direktiv"
-
 	client := &knativeClient{
 		config:     c,
 		knativeCli: knativeCli,
@@ -81,6 +81,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 	}
 
 	return &manager{
+		cfg:           c,
 		list:          make([]*core.ServiceConfig, 0),
 		runtimeClient: client,
 
@@ -118,7 +119,7 @@ func (m *manager) runCycle() []error {
 	errs := []error{}
 	for _, id := range result.deletes {
 		if err := m.runtimeClient.deleteService(id); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("delete service id: %s %w", id, err))
 		}
 	}
 
@@ -137,7 +138,8 @@ func (m *manager) runCycle() []error {
 		v.Error = nil
 		// v is passed un-cloned.
 		if err := m.runtimeClient.updateService(v); err != nil {
-			*v.Error = err.Error()
+			errStr := err.Error()
+			v.Error = &errStr
 		}
 	}
 
@@ -175,7 +177,7 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 	m.list = slices.Clone(list)
 	for i := range m.list {
 		cp := *m.list[i]
-		cp.SetDefaults()
+		m.setServiceDefaults(&cp)
 		m.list[i] = &cp
 	}
 }
@@ -287,7 +289,7 @@ func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (
 	return m.runtimeClient.streamServiceLogs(serviceID, podID)
 }
 
-func (m *manager) Kill(namespace string, serviceID string) error {
+func (m *manager) Rebuild(namespace string, serviceID string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -297,21 +299,20 @@ func (m *manager) Kill(namespace string, serviceID string) error {
 		return err
 	}
 
-	return m.runtimeClient.killService(serviceID)
+	return m.runtimeClient.rebuildService(serviceID)
 }
 
-func (m *manager) GetServiceURL(namespace string, file string, name string) (string, error) {
-	list, err := m.getList(namespace, "", file, name)
-	if err != nil {
-		return "", err
+func (m *manager) setServiceDefaults(cfg *core.ServiceConfig) {
+	// empty size string defaults to medium
+	if cfg.Size == "" {
+		m.logger.Warnw("empty service size, defaulting to medium", "service_file", cfg.FilePath)
+		cfg.Size = "medium"
 	}
-	if len(list) == 0 {
-		return "", core.ErrNotFound
+	if cfg.Scale > m.cfg.KnativeMaxScale {
+		m.logger.Warnw("service_scale is bigger than allowed max_scale, defaulting to max_scale",
+			"service_scale", cfg.Scale,
+			"max_scale", m.cfg.KnativeMaxScale,
+			"service_file", cfg.FilePath)
+		cfg.Scale = m.cfg.KnativeMaxScale
 	}
-	if len(list) > 1 {
-		panic("unexpected manager.getList() length")
-	}
-	item := list[0]
-
-	return m.runtimeClient.getServiceURL(item.GetID()), nil
 }

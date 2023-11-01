@@ -4,17 +4,24 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"regexp"
 	"sync"
+)
+
+const (
+	ServiceTypeNamespace = "namespace-service"
+	ServiceTypeWorkflow  = "workflow-service"
 )
 
 // nolint:tagliatelle
 type ServiceConfig struct {
+	// identification fields:
 	Typ       string `json:"type"`
 	Namespace string `json:"namespace"`
+	FilePath  string `json:"filePath"`
 	Name      string `json:"name"`
 
-	FilePath string `json:"filePath"`
-
+	// settings fields:
 	Image string `json:"image"`
 	CMD   string `json:"cmd"`
 	Size  string `json:"size"`
@@ -23,24 +30,31 @@ type ServiceConfig struct {
 	Error *string `json:"error"`
 }
 
+// GetID calculates a unique id string based on identification fields. This id helps in comparison different
+// lists of objects.
 func (c *ServiceConfig) GetID() string {
-	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.Typ, c.FilePath)
-	sh := sha256.Sum256([]byte(str))
+	str := fmt.Sprintf("%s-%s-%s", c.Namespace, c.Name, c.FilePath)
+	sh := sha256.Sum256([]byte(str + c.Typ))
 
-	return fmt.Sprintf("obj%xobj", sh[:10])
+	whitelist := regexp.MustCompile("[^a-zA-Z0-9]+")
+	str = whitelist.ReplaceAllString(str, "-")
+
+	// Prevent too long ids
+	// nolint:gomnd
+	if len(str) > 50 {
+		str = str[:50]
+	}
+
+	return fmt.Sprintf("%s-%x", str, sh[:5])
 }
 
+// GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
+// different lists of objects.
 func (c *ServiceConfig) GetValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	sh := sha256.Sum256([]byte(str))
 
 	return fmt.Sprintf("%x", sh[:10])
-}
-
-func (c *ServiceConfig) SetDefaults() {
-	if c.Size == "" {
-		c.Size = "medium"
-	}
 }
 
 type ServiceStatus struct {
@@ -55,6 +69,5 @@ type ServiceManager interface {
 	GeAll(namespace string) ([]*ServiceStatus, error)
 	GetPods(namespace string, serviceID string) (any, error)
 	StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error)
-	Kill(namespace string, serviceID string) error
-	GetServiceURL(namespace string, file string, name string) (string, error)
+	Rebuild(namespace string, serviceID string) error
 }

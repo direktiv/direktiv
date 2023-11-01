@@ -54,18 +54,46 @@ plugins:
     );
     expect(listRes.statusCode).toEqual(200);
     expect(listRes.body.data.length).toEqual(2);
-    expect(listRes.body).toMatchObject({
-      data: [
+    expect(listRes.body.data).toEqual(
+      expect.arrayContaining([
         {
+          error: "",
+          file_path: "/g1.yaml",
           method: "POST",
-          error: "",
+          plugins: [
+            {
+              configuration: { echo_value: "test_value" },
+              type: "example_plugin",
+            },
+            {
+              configuration: {
+                namespace: "gateway_namespace",
+                workflow: "noop.yaml",
+              },
+              type: "target_workflow",
+            },
+          ],
         },
         {
-          method: "GET",
           error: "",
+          file_path: "/g2.yaml",
+          method: "GET",
+          plugins: [
+            {
+              configuration: { echo_value: "test_value" },
+              type: "example_plugin",
+            },
+            {
+              configuration: {
+                namespace: "gateway_namespace",
+                workflow: "noop.yaml",
+              },
+              type: "target_workflow",
+            },
+          ],
         },
-      ],
-    });
+      ])
+    );
   });
 
   common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/g1.yaml");

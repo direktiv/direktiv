@@ -20,7 +20,6 @@ services:
     image: ${DIREKTIV_IMAGE}
     command: ["/bin/direktiv", "server"]
     volumes:
-      - ./config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DIREKTIV_APP=flow
@@ -33,6 +32,10 @@ services:
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRET_KEY=01234567890123456789012345678912
       - DIREKITV_ENABLE_DOCKER=true
+
+      - DIREKTIV_KNATIVE_NAMESPACE=direktiv-services-direktiv
+      - DIREKTIV_FUNCTIONS_TIMEOUT=7200
+      - DIREKTIV_LOG_JSON=console
 
     ports:
       # api v1 port

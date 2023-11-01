@@ -35,6 +35,8 @@ func RunApplication() {
 	sl := new(SignalListener)
 	sl.Start()
 
+	fmt.Printf("listener started\n")
+
 	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
 	telend, err := util.InitTelemetry(openTelemetryBackend, "direktiv/sidecar", "direktiv")
@@ -46,10 +48,12 @@ func RunApplication() {
 
 	local := new(LocalServer)
 	local.Start()
+	fmt.Printf("local started\n")
 
 	network := new(NetworkServer)
 	network.local = local
 	network.Start()
+	fmt.Printf("network started\n")
 
 	threads.Wait()
 

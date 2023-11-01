@@ -204,65 +204,35 @@ purge-images: ## Purge images from knative cache by matching $REGEX.
 	kubectl delete -l direktiv.io/scope=w  ksvc -n direktiv-services-direktiv
 	sudo k3s crictl rmi ${IMAGES}
 
-.PHONY: tail-api
-tail-api: ## Tail logs for currently active 'api' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
-	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl logs -f ${FLOW_POD} api
-
 .PHONY: tail-flow
 tail-flow: ## Tail logs for currently active 'flow' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
-	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl logs -f ${FLOW_POD} flow
+	$(eval FLOW_RS := $(shell kubectl -n direktiv get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl -n direktiv get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl -n direktiv logs -f ${FLOW_POD} flow
 
 .PHONY: fwd-flow
 fwd-flow: ## Tail logs for currently active 'flow' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
-	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl port-forward ${FLOW_POD} 6666:6666 --address 0.0.0.0
-
-.PHONY: tail-secrets
-tail-secrets: ## Tail logs for currently active 'secrets' container.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
-	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl logs -f ${FLOW_POD} secrets
-
-.PHONY: tail-functions
-tail-functions: ## Tail logs for currently active 'functions' container.
-	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
-	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
-	kubectl logs -f ${FUNCTIONS_POD} functions-controller
+	$(eval FLOW_RS := $(shell kubectl -n direktiv get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl -n direktiv get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl -n direktiv port-forward ${FLOW_POD} 6666:6666 --address 0.0.0.0
 
 .PHONY: reboot-api
 reboot-api: ## delete currently active api pod
-	kubectl delete pod -l app.kubernetes.io/instance=direktiv-api
+	kubectl -n direktiv delete pod -l app.kubernetes.io/instance=direktiv-api
 
 .PHONY: reboot-flow
 reboot-flow: ## delete currently active flow pod
-	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
+	kubectl -n direktiv delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 
 .PHONY: reboot-functions
 reboot-functions: ## delete currently active functions pod
-	kubectl delete pod -l app.kubernetes.io/instance=direktiv-functions
-
-.PHONY: wait-functions
-wait-functions: ## Wait for 'functions' pod to be ready.
-	$(eval FUNCTIONS_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/instance" == "direktiv-functions") | .metadata.name'))
-	$(eval FUNCTIONS_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FUNCTIONS_RS}) | .metadata.name'))
-	kubectl wait --for=condition=ready pod ${FUNCTIONS_POD}
+	kubectl -n direktiv delete pod -l app.kubernetes.io/instance=direktiv-functions
 
 .PHONY: wait-flow
 wait-flow: ## Wait for 'flow' pod to be ready.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
-	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl wait --for=condition=ready pod ${FLOW_POD}
-
-.PHONY: wait-api
-wait-api: ## Wait for 'api' pod to be ready.
-	$(eval FLOW_RS := $(shell kubectl get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv-api") | .metadata.name'))
-	$(eval FLOW_POD := $(shell kubectl get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
-	kubectl wait --for=condition=ready pod ${FLOW_POD}
+	$(eval FLOW_RS := $(shell kubectl -n direktiv get rs -o json | jq '.items[] | select(.metadata.labels."app.kubernetes.io/name" == "direktiv") | .metadata.name'))
+	$(eval FLOW_POD := $(shell kubectl -n direktiv get pods -o json | jq '.items[] | select(.metadata.ownerReferences[0].name == ${FLOW_RS}) | .metadata.name'))
+	kubectl -n direktiv wait --for=condition=ready pod ${FLOW_POD}
 
 .PHONY: upgrade-%
 upgrade-%: push-% ## Pushes new image deletes, reboots and tail new pod
@@ -274,8 +244,6 @@ upgrade-%: push-% ## Pushes new image deletes, reboots and tail new pod
 .PHONY: upgrade
 upgrade: push ## Pushes all images and reboots flow, function, and api pods
 	@$(MAKE) reboot-flow
-	@$(MAKE) reboot-api
-	@$(MAKE) reboot-functions
 
 .PHONY: dependencies
 dependencies: ## installs tools 
@@ -318,6 +286,7 @@ server-godoc:
 
 
 env-stop:
+	docker rm -f $$(docker ps -q -f "label=direktiv.io/object-type=container") || true
 	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
 env-start: env-stop
