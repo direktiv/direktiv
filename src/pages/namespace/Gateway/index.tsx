@@ -1,4 +1,3 @@
-import { Layers, Network } from "lucide-react";
 import {
   NoPermissions,
   NoResult,
@@ -11,6 +10,7 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
+import { Network } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useGatewayList } from "~/api/gateway/query/get";
@@ -49,7 +49,15 @@ const GatewayPage = () => {
         <Table>
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell>### HEADLINE ###</TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.gateway.columns.filePath")}
+              </TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.gateway.columns.method")}
+              </TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.gateway.columns.plugins")}
+              </TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -58,7 +66,9 @@ const GatewayPage = () => {
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                     <TableCell colSpan={1}>
-                      <NoResult icon={Layers}>### NO RESULT ###</NoResult>
+                      <NoResult icon={Network}>
+                        {t("pages.gateway.empty")}
+                      </NoResult>
                     </TableCell>
                   </TableRow>
                 ) : (

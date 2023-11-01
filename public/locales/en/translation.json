@@ -832,7 +832,13 @@
       }
     },
     "gateway": {
-      "title": "Gateway"
+      "title": "Gateway endpoints",
+      "columns": {
+        "filePath": "file path",
+        "method": "method",
+        "plugins": "plugins"
+      },
+      "empty": "No endpoints exist yet"
     },
     "jqPlayground": {
       "title": "jq Playground",
