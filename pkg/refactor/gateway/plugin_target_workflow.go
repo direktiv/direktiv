@@ -17,7 +17,7 @@ type workflowPluginConfig struct {
 	Namespace string `json:"namespace"`
 	Host      string `json:"host"`
 	Scheme    string `json:"scheme"`
-	Tls       bool   `json:"tls"`
+	UseTLS    bool   `json:"use_tls"`
 }
 
 func (e workflowPlugin) build(c map[string]interface{}) (serve, error) {
@@ -48,7 +48,7 @@ func (e workflowPlugin) build(c map[string]interface{}) (serve, error) {
 
 		proxy := httputil.NewSingleHostReverseProxy(&targetURL)
 		proxy.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !e.conf.Tls}, //nolint:gosec
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !e.conf.UseTLS}, //nolint:gosec
 		}
 
 		proxy.Director = func(req *http.Request) {
