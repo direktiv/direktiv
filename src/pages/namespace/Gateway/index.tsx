@@ -1,10 +1,12 @@
 import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
+import { useGatewayList } from "~/api/gatewawy/query/get";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
+  const { data } = useGatewayList();
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex">
@@ -21,7 +23,9 @@ const GatewayPage = () => {
           }}
         />
       </div>
-      <Card className="p-5 text-sm"></Card>
+      <Card className="p-5 text-sm">
+        <pre>{data && JSON.stringify(data)}</pre>
+      </Card>
     </div>
   );
 };
