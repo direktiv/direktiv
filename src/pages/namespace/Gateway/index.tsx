@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
-  const { data } = useGatewayList();
+  const { data, isFetching, refetch } = useGatewayList();
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex">
@@ -17,9 +17,9 @@ const GatewayPage = () => {
         <RefreshButton
           icon
           variant="outline"
-          // disabled={isFetching}
+          disabled={isFetching}
           onClick={() => {
-            // refetch();
+            refetch();
           }}
         />
       </div>
