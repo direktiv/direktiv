@@ -30,10 +30,7 @@ const PluginSchema = z.object({
 const GatewaySchema = z.object({
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   file_path: z.string(),
-  workflow: z.string(),
-  namespace: z.string(),
   error: z.string(),
-  status: z.enum(["healthy", "failed"]),
   plugins: z.array(PluginSchema),
 });
 
