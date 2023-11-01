@@ -184,7 +184,7 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 
 func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
 	// clone the list
-	cfgList := make([]*core.ServiceConfig, 0)
+	sList := make([]*core.ServiceConfig, 0)
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -199,7 +199,7 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 			continue
 		}
 
-		cfgList = append(cfgList, m.list[i])
+		sList = append(sList, m.list[i])
 	}
 
 	services, err := m.runtimeClient.listServices()
@@ -213,7 +213,7 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 
 	result := []*core.ServiceStatus{}
 
-	for _, v := range cfgList {
+	for _, v := range sList {
 		service := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
@@ -302,17 +302,17 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 	return m.runtimeClient.rebuildService(serviceID)
 }
 
-func (m *manager) setServiceDefaults(cfg *core.ServiceConfig) {
+func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
 	// empty size string defaults to medium
-	if cfg.Size == "" {
-		m.logger.Warnw("empty service size, defaulting to medium", "service_file", cfg.FilePath)
-		cfg.Size = "medium"
+	if sv.Size == "" {
+		m.logger.Warnw("empty service size, defaulting to medium", "service_file", sv.FilePath)
+		sv.Size = "medium"
 	}
-	if cfg.Scale > m.cfg.KnativeMaxScale {
+	if sv.Scale > m.cfg.KnativeMaxScale {
 		m.logger.Warnw("service_scale is bigger than allowed max_scale, defaulting to max_scale",
-			"service_scale", cfg.Scale,
+			"service_scale", sv.Scale,
 			"max_scale", m.cfg.KnativeMaxScale,
-			"service_file", cfg.FilePath)
-		cfg.Scale = m.cfg.KnativeMaxScale
+			"service_file", sv.FilePath)
+		sv.Scale = m.cfg.KnativeMaxScale
 	}
 }

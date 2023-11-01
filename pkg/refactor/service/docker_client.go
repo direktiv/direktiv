@@ -58,11 +58,11 @@ func (c *dockerClient) cleanAll() error {
 	return nil
 }
 
-func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
+func (c *dockerClient) createService(sv *core.ServiceConfig) error {
 	// Pull the image (if it doesn't exist locally).
 	// TODO: fix this 'local' convention.
-	if !strings.HasPrefix(cfg.Image, "local") {
-		out, err := c.cli.ImagePull(context.Background(), cfg.Image, types.ImagePullOptions{})
+	if !strings.HasPrefix(sv.Image, "local") {
+		out, err := c.cli.ImagePull(context.Background(), sv.Image, types.ImagePullOptions{})
 		if err != nil {
 			return fmt.Errorf("image pull, err: %w", err)
 		}
@@ -71,7 +71,7 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 	}
 
 	_, err := c.cli.VolumeCreate(context.Background(), volume.CreateOptions{
-		Name: cfg.GetID(),
+		Name: sv.GetID(),
 		Labels: map[string]string{
 			"direktiv.io/object-type": "volume",
 		},
@@ -82,19 +82,19 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 
 	volumeConfig := &mount.Mount{
 		Type:   mount.TypeVolume,
-		Source: cfg.GetID(),
+		Source: sv.GetID(),
 		Target: "/mnt/shared",
 	}
 
 	containerConfig := &types.ContainerCreateConfig{
-		Name: cfg.GetID(),
+		Name: sv.GetID(),
 		Config: &container.Config{
 			Image: "direktiv-dev",
 			Labels: map[string]string{
 				"direktiv.io/object-type":    "container",
 				"direktiv.io/container-type": "main",
-				"direktiv.io/inputHash":      cfg.GetValueHash(),
-				"directiv.io/scale":          strconv.Itoa(cfg.Scale),
+				"direktiv.io/inputHash":      sv.GetValueHash(),
+				"directiv.io/scale":          strconv.Itoa(sv.Scale),
 			},
 			Env: []string{
 				"DIREKTIV_APP=sidecar",
@@ -110,16 +110,16 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 		NetworkingConfig: &network.NetworkingConfig{
 			EndpointsConfig: map[string]*network.EndpointSettings{
 				"direktiv_default": {
-					Aliases: []string{cfg.GetID()},
+					Aliases: []string{sv.GetID()},
 				},
 			},
 		},
 	}
 
 	uContainerConfig := &types.ContainerCreateConfig{
-		Name: cfg.GetID() + "-user",
+		Name: sv.GetID() + "-user",
 		Config: &container.Config{
-			Image: cfg.Image,
+			Image: sv.Image,
 			Labels: map[string]string{
 				"direktiv.io/object-type":    "container",
 				"direktiv.io/container-type": "user",
@@ -127,12 +127,12 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 		},
 		HostConfig: &container.HostConfig{
 			Mounts:      []mount.Mount{*volumeConfig},
-			NetworkMode: container.NetworkMode("container:" + cfg.GetID()),
+			NetworkMode: container.NetworkMode("container:" + sv.GetID()),
 			AutoRemove:  false,
 		},
 	}
-	if cfg.CMD != "" {
-		uContainerConfig.Config.Cmd = []string{cfg.CMD}
+	if sv.CMD != "" {
+		uContainerConfig.Config.Cmd = []string{sv.CMD}
 	}
 
 	// Create a containers.
@@ -164,14 +164,14 @@ func (c *dockerClient) createService(cfg *core.ServiceConfig) error {
 	return nil
 }
 
-func (c *dockerClient) updateService(cfg *core.ServiceConfig) error {
+func (c *dockerClient) updateService(sv *core.ServiceConfig) error {
 	// Remove the container.
-	err := c.deleteService(cfg.GetID())
+	err := c.deleteService(sv.GetID())
 	if err != nil {
 		return err
 	}
 
-	return c.createService(cfg)
+	return c.createService(sv)
 }
 
 func (c *dockerClient) getContainerBy(id string) (*types.Container, error) {

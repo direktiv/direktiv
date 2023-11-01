@@ -12,8 +12,8 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-func buildService(c *core.Config, cfg *core.ServiceConfig) (*servingv1.Service, error) {
-	containers, err := buildContainers(c, cfg)
+func buildService(c *core.Config, sv *core.ServiceConfig) (*servingv1.Service, error) {
+	containers, err := buildContainers(c, sv)
 	if err != nil {
 		return nil, err
 	}
@@ -40,16 +40,16 @@ func buildService(c *core.Config, cfg *core.ServiceConfig) (*servingv1.Service, 
 			APIVersion: "serving.knative.dev/v1",
 			Kind:       "Service",
 		},
-		ObjectMeta: buildServiceMeta(c, cfg),
+		ObjectMeta: buildServiceMeta(c, sv),
 		Spec: servingv1.ServiceSpec{
 			ConfigurationSpec: servingv1.ConfigurationSpec{
 				Template: servingv1.RevisionTemplateSpec{
-					ObjectMeta: buildPodMeta(c, cfg),
+					ObjectMeta: buildPodMeta(c, sv),
 					Spec: servingv1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
 							ServiceAccountName: c.KnativeServiceAccount,
 							Containers:         containers,
-							Volumes:            buildVolumes(c, cfg),
+							Volumes:            buildVolumes(c, sv),
 							Affinity:           &corev1.Affinity{
 								// NodeAffinity: n,
 							},
@@ -73,22 +73,22 @@ func buildService(c *core.Config, cfg *core.ServiceConfig) (*servingv1.Service, 
 	return svc, nil
 }
 
-func buildServiceMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
+func buildServiceMeta(c *core.Config, sv *core.ServiceConfig) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
-		Name:        cfg.GetID(),
+		Name:        sv.GetID(),
 		Namespace:   c.KnativeNamespace,
 		Labels:      make(map[string]string),
 		Annotations: make(map[string]string),
 	}
 
-	meta.Annotations["direktiv.io/inputHash"] = cfg.GetValueHash()
+	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 	meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
 
 	return meta
 }
 
-func buildPodMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
+func buildPodMeta(c *core.Config, sv *core.ServiceConfig) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.KnativeNamespace,
 		Labels:      make(map[string]string),
@@ -96,9 +96,9 @@ func buildPodMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
 	}
 	metaSpec.Labels["direktiv-app"] = "direktiv"
 
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", sv.Scale)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.KnativeMaxScale)
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", cfg.Scale)
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", sv.Scale)
 
 	if len(c.KnativeNetShape) > 0 {
 		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = c.KnativeNetShape
@@ -109,7 +109,7 @@ func buildPodMeta(c *core.Config, cfg *core.ServiceConfig) metav1.ObjectMeta {
 }
 
 // nolint
-func buildVolumes(c *core.Config, cfg *core.ServiceConfig) []corev1.Volume {
+func buildVolumes(c *core.Config, sv *core.ServiceConfig) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -124,12 +124,12 @@ func buildVolumes(c *core.Config, cfg *core.ServiceConfig) []corev1.Volume {
 	return volumes
 }
 
-func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Container, error) {
+func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container, error) {
 	// TODO: yassir, we appear to have lost envs
 	envs := make(map[string]string)
 
 	// set resource limits.
-	rl, err := buildResourceLimits(c, cfg)
+	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
 		return nil, err
 	}
@@ -137,8 +137,8 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 	// user container
 	uc := corev1.Container{
 		Name:      containerUser,
-		Image:     cfg.Image,
-		Env:       buildEnvVars(false, c, cfg, envs),
+		Image:     sv.Image,
+		Env:       buildEnvVars(false, c, sv, envs),
 		Resources: *rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -148,8 +148,8 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 		},
 	}
 
-	if len(cfg.CMD) > 0 {
-		args, err := shellwords.Parse(cfg.CMD)
+	if len(sv.CMD) > 0 {
+		args, err := shellwords.Parse(sv.CMD)
 		if err != nil {
 			return []corev1.Container{}, err
 		}
@@ -167,7 +167,7 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
-		Env:          buildEnvVars(true, c, cfg, envs),
+		Env:          buildEnvVars(true, c, sv, envs),
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
@@ -180,14 +180,14 @@ func buildContainers(c *core.Config, cfg *core.ServiceConfig) ([]corev1.Containe
 }
 
 // nolint
-func buildResourceLimits(cf *core.Config, cfg *core.ServiceConfig) (*corev1.ResourceRequirements, error) {
+func buildResourceLimits(cf *core.Config, sv *core.ServiceConfig) (*corev1.ResourceRequirements, error) {
 	var (
 		m int
 		c string
 		d int
 	)
 
-	switch cfg.Size {
+	switch sv.Size {
 	case "small":
 		m = cf.KnativeSizeMemorySmall
 		c = cf.KnativeSizeCPUSmall
@@ -201,7 +201,7 @@ func buildResourceLimits(cf *core.Config, cfg *core.ServiceConfig) (*corev1.Reso
 		c = cf.KnativeSizeCPULarge
 		d = cf.KnativeSizeDiskLarge
 	default:
-		return nil, fmt.Errorf("service size: '%s' is invalid, expected value: ['small', 'medium', 'large']", cfg.Size)
+		return nil, fmt.Errorf("service size: '%s' is invalid, expected value: ['small', 'medium', 'large']", sv.Size)
 	}
 
 	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", d))
@@ -244,7 +244,7 @@ func buildResourceLimits(cf *core.Config, cfg *core.ServiceConfig) (*corev1.Reso
 }
 
 // nolint
-func buildEnvVars(withGrpc bool, c *core.Config, cfg *core.ServiceConfig, envs map[string]string) []corev1.EnvVar {
+func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig, envs map[string]string) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
 	// TODO: yassir
