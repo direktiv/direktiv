@@ -43,11 +43,12 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
-	r.Handle("/api/v2/gateway", app.GatewayManager)
+	r.Handle("/api/v2/gw/*", app.EndpointManager)
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, app.Version)
 	})
+
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
@@ -60,8 +61,18 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 				regCtr.mountRouter(r)
 			})
 
-			r.Get("/namespaces/{namespace}/gateway_endpoints", func(w http.ResponseWriter, r *http.Request) {
-				writeJSON(w, app.GatewayManager.ListEndpoints())
+			r.Get("/namespaces/{namespace}/endpoints", func(w http.ResponseWriter, r *http.Request) {
+				writeJSON(w, app.EndpointManager.GetAll())
+			})
+
+			r.Get("/namespaces/{namespace}/plugins", func(w http.ResponseWriter, r *http.Request) {
+				data, err := app.GetAllPluginSchemas()
+				if err != nil {
+					writeInternalError(w, err)
+
+					return
+				}
+				writeJSON(w, data)
 			})
 		})
 	})

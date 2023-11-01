@@ -1,12 +1,12 @@
-version: '3.9'
+version: "3.9"
 services:
-
   postgres:
     image: postgres:buster
-    command: [ "postgres",
-              ## "-c", "log_statement=all",
-              ## "-c", "log_destination=stderr",
-    ]
+    command: [
+        "postgres",
+        ## "-c", "log_statement=all",
+        ## "-c", "log_destination=stderr",
+      ]
     environment:
       POSTGRES_USER: myadmin
       POSTGRES_PASSWORD: mypassword
@@ -27,7 +27,6 @@ services:
       - DIREKTIV_API_V1_PORT=6665
       - DIREKTIV_GRPC_PORT=6666
       - DIREKTIV_API_V2_PORT=6667
-
       - DIREKTIV_DEBUG=true
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable

@@ -2,20 +2,28 @@ package core
 
 import (
 	"net/http"
-	"sync"
 )
 
 const MagicalGatewayNamespace = "gateway_namespace"
 
-type GatewayManager interface {
+type EndpointManager interface {
 	http.Handler
 
-	ListEndpoints() []*Endpoint
+	GetAll() []*EndpointStatus
 	SetEndpoints(endpoints []*Endpoint)
-
-	Start(done <-chan struct{}, wg *sync.WaitGroup)
 }
 
 type Endpoint struct {
-	Method string `json:"method"`
+	Method   string   `json:"method"`
+	FilePath string   `json:"file_path"`
+	Plugins  []Plugin `json:"plugins"`
+}
+type Plugin struct {
+	Type          string                 `json:"type"`
+	Configuration map[string]interface{} `json:"configuration"`
+}
+
+type EndpointStatus struct {
+	Endpoint
+	Error string `json:"error"`
 }
