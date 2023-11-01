@@ -55,8 +55,7 @@ const ServicesTableRow: FC<{
         <TableCell>
           <div className="flex flex-col gap-3">
             <div>
-              {service.name}{" "}
-              <span className="whitespace-pre-wrap break-all text-gray-9 dark:text-gray-dark-9">
+              <span className="whitespace-pre-wrap break-all">
                 <Link
                   to={linkToServiceSource(service)}
                   onClick={(e) => e.stopPropagation()}
@@ -64,6 +63,9 @@ const ServicesTableRow: FC<{
                 >
                   {service.filePath}
                 </Link>
+              </span>{" "}
+              <span className="text-gray-9 dark:text-gray-dark-9">
+                {service.name}
               </span>
             </div>
             <div className="flex gap-3">
