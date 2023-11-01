@@ -14,11 +14,9 @@ type EndpointManager interface {
 }
 
 type Endpoint struct {
-	Method    string   `json:"method"`
-	FilePath  string   `json:"file_path"`
-	Workflow  string   `json:"workflow"`
-	Namespace string   `json:"namespace"`
-	Plugins   []Plugin `json:"plugins"`
+	Method   string   `json:"method"`
+	FilePath string   `json:"file_path"`
+	Plugins  []Plugin `json:"plugins"`
 }
 type Plugin struct {
 	Type          string                 `json:"type"`

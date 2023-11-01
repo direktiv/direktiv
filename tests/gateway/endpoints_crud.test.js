@@ -17,12 +17,15 @@ describe("Test gateway endpoints crud operations", () => {
     `
 direktiv_api: endpoint/v1
 method: POST
-workflow: action.yaml
-namespace: ns
-plugins: 
-    - type: example_plugin
-      configuration:
-          echo_value: test_value
+plugins:
+  - type: example_plugin
+    configuration:
+      echo_value: test_value
+  - type: target_workflow
+    configuration:
+      namespace: ${testNamespace}
+      workflow: noop.yaml
+    
 `
   );
 
@@ -34,12 +37,14 @@ plugins:
     `
 direktiv_api: endpoint/v1
 method: GET
-workflow: action.yaml
-namespace: ns
 plugins: 
-    - type: example_plugin
-      configuration:
-          echo_value: test_value
+  - type: example_plugin
+    configuration:
+        echo_value: test_value
+  - type: target_workflow
+    configuration:
+      namespace: ${testNamespace}
+      workflow: noop.yaml
 `
   );
 
@@ -53,25 +58,11 @@ plugins:
       data: [
         {
           method: "POST",
-          workflow: "action.yaml",
-          namespace: "ns",
           error: "",
-          plugins: [
-            {
-              configuration: {},
-            },
-          ],
         },
         {
           method: "GET",
-          workflow: "action.yaml",
-          namespace: "ns",
           error: "",
-          plugins: [
-            {
-              configuration: {},
-            },
-          ],
         },
       ],
     });
@@ -107,12 +98,14 @@ describe("Test availability of gateway endpoints", () => {
     `
 direktiv_api: endpoint/v1
 method: GET
-workflow: my-workflow.yaml
-namespace: ${testNamespace}
 plugins: 
-    - type: example_plugin
-      configuration:
-          some_echo_value: test_value
+  - type: example_plugin
+    configuration:
+      some_echo_value: test_value
+  - type: target_workflow
+    configuration:
+      namespace: ${testNamespace}
+      workflow: noop.yaml
   `
   );
   it(`should execute endpoint plugins`, async () => {
@@ -124,18 +117,16 @@ plugins:
   });
   it(`should create a new direktiv file`, async () => {
     const res = await request(common.config.getDirektivHost())
-      .put(
-        `/api/namespaces/${testNamespace}/tree/my-workflow.yaml?op=create-workflow`
-      )
+      .put(`/api/namespaces/${testNamespace}/tree/noop.yaml?op=create-workflow`)
       .set({
         "Content-Type": "text/plain",
       }).send(`
-      description: A simple 'no-op' state that returns 'Hello world!'
-      states:
-      - id: helloworld
-        type: noop
-        transform:
-          result: Hello world!`);
+description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!`);
 
     expect(res.statusCode).toEqual(200);
 

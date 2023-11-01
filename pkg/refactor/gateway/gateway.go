@@ -2,12 +2,9 @@ package gateway
 
 import (
 	"crypto/sha256"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"strings"
 	"sync"
 
@@ -27,8 +24,6 @@ type serve func(w http.ResponseWriter, r *http.Request) bool
 type handler struct {
 	pluginPool map[string]endpointEntry
 	mu         sync.Mutex
-	host       string
-	tlsSkip    bool
 }
 
 type endpointEntry struct {
@@ -38,15 +33,8 @@ type endpointEntry struct {
 	plugins  []serve
 }
 
-func NewHandler(host string, port string, tlsSkip bool) (core.EndpointManager, error) {
-	if host == "" {
-		return nil, fmt.Errorf("host address was not providet")
-	}
-	if port == "" {
-		return nil, fmt.Errorf("port was not providet")
-	}
-
-	return &handler{host: host + ":" + port, tlsSkip: tlsSkip}, nil
+func NewHandler() core.EndpointManager {
+	return &handler{}
 }
 
 func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -66,34 +54,6 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	baseURL := "api/namespaces"
-	queryParams := url.Values{}
-	queryParams.Add("op", "execute")
-	queryParams.Add("ref", "latest")
-
-	pathWithoutQuery := fmt.Sprintf("/%s/%s/tree/%s", baseURL, endpoint.Namespace, endpoint.Workflow)
-
-	targetURL := url.URL{
-		Host:     gw.host,
-		Path:     pathWithoutQuery,
-		RawQuery: queryParams.Encode(),
-		Scheme:   "http",
-	}
-
-	proxy := httputil.NewSingleHostReverseProxy(&targetURL)
-	proxy.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: gw.tlsSkip}, //nolint:gosec
-	}
-
-	proxy.Director = func(req *http.Request) {
-		req.URL.Scheme = targetURL.Scheme
-		req.URL.Host = targetURL.Host
-		req.URL.Path = targetURL.Path
-		req.Host = targetURL.Host
-	}
-
-	proxy.ServeHTTP(w, r)
 }
 
 func (gw *handler) SetEndpoints(list []*core.Endpoint) {

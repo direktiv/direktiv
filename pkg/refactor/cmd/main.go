@@ -45,10 +45,8 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}
 
 	// Create endpoint manager
-	endpointManager, err := gateway.NewHandler("0.0.0.0", os.Getenv("DIREKTIV_API_V1_PORT"), true)
-	if err != nil {
-		log.Fatalf("error creating endpoint-manager: %v\n", err)
-	}
+	endpointManager := gateway.NewHandler()
+
 	// Create App
 	app := core.App{
 		Version: &core.Version{
@@ -140,11 +138,9 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 			})
 		}
 		endpoints = append(endpoints, &core.Endpoint{
-			Method:    item.Method,
-			Workflow:  item.Workflow,
-			Namespace: item.Namespace,
-			Plugins:   plConfig,
-			FilePath:  file.Path,
+			Method:   item.Method,
+			Plugins:  plConfig,
+			FilePath: file.Path,
 		})
 	}
 
