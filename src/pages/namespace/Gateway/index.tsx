@@ -1,12 +1,34 @@
+import { Layers, Network } from "lucide-react";
+import {
+  NoPermissions,
+  NoResult,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from "~/design/Table";
+
 import { Card } from "~/design/Card";
-import { Network } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
+import Row from "./Row";
 import { useGatewayList } from "~/api/gateway/query/get";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
-  const { data, isFetching, refetch } = useGatewayList();
+  const {
+    data: gatewayList,
+    isFetching,
+    refetch,
+    isSuccess,
+    isAllowed,
+    noPermissionMessage,
+  } = useGatewayList();
+
+  const noResults = isSuccess && gatewayList.data.length === 0;
+
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex">
@@ -23,8 +45,37 @@ const GatewayPage = () => {
           }}
         />
       </div>
-      <Card className="p-5 text-sm">
-        <pre>{data && JSON.stringify(data)}</pre>
+      <Card>
+        <Table>
+          <TableHead>
+            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+              <TableHeaderCell>### HEADLINE ###</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {isAllowed ? (
+              <>
+                {noResults ? (
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableCell colSpan={1}>
+                      <NoResult icon={Layers}>### NO RESULT ###</NoResult>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  gatewayList?.data?.map((gateway) => (
+                    <Row key={gateway.file_path} gateway={gateway} />
+                  ))
+                )}
+              </>
+            ) : (
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                <TableCell colSpan={1}>
+                  <NoPermissions>{noPermissionMessage}</NoPermissions>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );
