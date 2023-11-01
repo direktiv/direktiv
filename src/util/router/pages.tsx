@@ -15,6 +15,7 @@ import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import Activities from "~/pages/namespace/Mirror/Activities";
 import EventsPage from "~/pages/namespace/Events";
+import GatewayEditorPage from "~/pages/namespace/Explorer/Gateway";
 import GatewayPage from "~/pages/namespace/Gateway";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
@@ -434,7 +435,7 @@ export const pages: PageType & EnterprisePageType = {
         },
         {
           path: "gateway/*",
-          element: <ServiceEditorPage />,
+          element: <GatewayEditorPage />,
           handle: { isGatewayPage: true },
         },
       ],
