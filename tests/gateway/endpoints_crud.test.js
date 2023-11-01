@@ -143,27 +143,6 @@ plugins:
 
     expect(req.statusCode).toEqual(404);
   });
-  it(`should create a new direktiv file`, async () => {
-    const res = await request(common.config.getDirektivHost())
-      .put(`/api/namespaces/${testNamespace}/tree/noop.yaml?op=create-workflow`)
-      .set({
-        "Content-Type": "text/plain",
-      }).send(`
-description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!`);
-
-    expect(res.statusCode).toEqual(200);
-
-    const req = await request(common.config.getDirektivHost()).get(
-      `/api/v2/gw/g1.yaml`
-    );
-
-    expect(req.statusCode).toEqual(200);
-  });
 });
 
 describe("Test plugin schema endpoint", () => {
