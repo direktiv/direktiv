@@ -891,6 +891,7 @@
       "permissionsTokens": "Tokens",
       "permissionsGroups": "Groups",
       "settings": "Settings",
+      "gateway": "Gateway",
       "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {
