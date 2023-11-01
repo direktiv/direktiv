@@ -841,7 +841,7 @@
       "row": {
         "error": "error",
         "plugins": "{{count}} plugins",
-        "partial_one": "{{count}} plugin"
+        "plugins_one": "{{count}} plugin"
       },
       "empty": "No endpoints exist yet"
     },
