@@ -68,7 +68,8 @@ type ExplorerSubpages =
   | "workflow-overview"
   | "workflow-settings"
   | "workflow-services"
-  | "service";
+  | "service"
+  | "gateway";
 
 type ExplorerSubpagesParams =
   | {
@@ -110,6 +111,7 @@ type ExplorerPageSetup = Record<
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
       isServicePage: boolean;
+      isGatewayPage: boolean;
       serviceId: string | undefined;
     };
   }
@@ -321,6 +323,7 @@ export const pages: PageType & EnterprisePageType = {
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
+        gateway: "gateway",
         service: "service",
       };
 
@@ -357,7 +360,9 @@ export const pages: PageType & EnterprisePageType = {
       const isTreePage = checkHandler(thirdLvl, "isTreePage");
       const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
       const isServicePage = checkHandler(thirdLvl, "isServicePage");
-      const isExplorerPage = isTreePage || isWorkflowPage || isServicePage;
+      const isGatewayPage = checkHandler(thirdLvl, "isGatewayPage");
+      const isExplorerPage =
+        isTreePage || isWorkflowPage || isServicePage || isGatewayPage;
       const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
@@ -377,6 +382,7 @@ export const pages: PageType & EnterprisePageType = {
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
         isServicePage,
+        isGatewayPage,
         serviceId: searchParams.get("serviceId") ?? undefined,
       };
     },
@@ -425,6 +431,11 @@ export const pages: PageType & EnterprisePageType = {
           path: "service/*",
           element: <ServiceEditorPage />,
           handle: { isServicePage: true },
+        },
+        {
+          path: "gateway/*",
+          element: <ServiceEditorPage />,
+          handle: { isGatewayPage: true },
         },
       ],
     },
