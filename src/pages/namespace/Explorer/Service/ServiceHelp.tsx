@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 
 const exampleService = `direktiv_api: "service/v1"
 image: "redis"
-name: "my redis service"
 scale: 1 # number of standby service replicas (optional)
 size: "medium" # size of the image small, medium or large (optional)
 cmd: "redis-server" # container's cmd string (optional)`;
