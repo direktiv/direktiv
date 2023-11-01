@@ -31,7 +31,7 @@ const PluginPopover: FC<RowProps> = ({ gateway }) => {
                   className="flex flex-col gap-2 p-5"
                   noShadow
                 >
-                  <span className="font-bold">{plugin.type}</span>
+                  <span>{plugin.type}</span>
                   <pre className="whitespace-pre-wrap text-primary-500">
                     {prettifyJsonString(JSON.stringify(plugin.configuration))}
                   </pre>
