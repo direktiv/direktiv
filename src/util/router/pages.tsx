@@ -6,6 +6,7 @@ import {
   GitCompare,
   Layers,
   LucideIcon,
+  Network,
   PlaySquare,
   Radio,
   Settings,
@@ -14,6 +15,7 @@ import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import Activities from "~/pages/namespace/Mirror/Activities";
 import EventsPage from "~/pages/namespace/Events";
+import GatewayPage from "~/pages/namespace/Gateway";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
@@ -49,7 +51,11 @@ type PageBase = {
   route: RouteObject;
 };
 
-type KeysWithNoPathParams = "monitoring" | "settings" | "jqPlayground";
+type KeysWithNoPathParams =
+  | "monitoring"
+  | "settings"
+  | "gateway"
+  | "jqPlayground";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
@@ -512,15 +518,15 @@ export const pages: PageType & EnterprisePageType = {
       ],
     },
   },
-  // gateway: {
-  //   name: "components.mainMenu.gateway",
-  //   icon: Network,
-  //   createHref: (params) => `/${params.namespace}/gateway`,
-  //   route: {
-  //     path: "gateway",
-  //     element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
-  //   },
-  // },
+  gateway: {
+    name: "components.mainMenu.gateway",
+    icon: Network,
+    createHref: (params) => `/${params.namespace}/gateway`,
+    route: {
+      path: "gateway",
+      element: <GatewayPage />,
+    },
+  },
   services: {
     name: "components.mainMenu.services",
     icon: Layers,
