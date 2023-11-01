@@ -28,7 +28,7 @@ const PluginSchema = z.object({
   }
  */
 const GatewaySchema = z.object({
-  method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
+  method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH", ""]),
   file_path: z.string(),
   error: z.string(),
   plugins: z.array(PluginSchema),

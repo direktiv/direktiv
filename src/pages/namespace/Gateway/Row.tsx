@@ -16,7 +16,9 @@ export const Row: FC<RowProps> = ({ gateway }) => (
       {gateway.file_path} <ErrorBadge error={gateway.error} />
     </TableCell>
     <TableCell>
-      <Badge variant="secondary">{gateway.method}</Badge>
+      {gateway.method ? (
+        <Badge variant="secondary">{gateway.method}</Badge>
+      ) : null}
     </TableCell>
     <TableCell>
       <PluginPopover gateway={gateway} />
