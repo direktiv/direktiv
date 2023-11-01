@@ -195,6 +195,14 @@ type JqPlaygroundPageSetup = Record<
     };
   }
 >;
+type GatewayPageSetup = Record<
+  "gateway",
+  PageBase & {
+    useParams: () => {
+      isGatewayPage: boolean;
+    };
+  }
+>;
 
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
@@ -203,6 +211,7 @@ type PageType = DefaultPageSetup &
   EventsPageSetup &
   MonitoringPageSetup &
   SettingsPageSetup &
+  GatewayPageSetup &
   JqPlaygroundPageSetup &
   MirrorPageSetup;
 
@@ -522,9 +531,15 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.gateway",
     icon: Network,
     createHref: (params) => `/${params.namespace}/gateway`,
+    useParams: () => {
+      const [, secondLevel] = useMatches(); // first level is namespace level
+      const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
+      return { isGatewayPage };
+    },
     route: {
       path: "gateway",
       element: <GatewayPage />,
+      handle: { gateway: true, isGatewayPage: true },
     },
   },
   services: {
