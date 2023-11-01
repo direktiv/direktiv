@@ -8,7 +8,14 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { FC, Fragment, useEffect, useState } from "react";
-import { Folder, FolderTree, Layers, Play, PlusCircle } from "lucide-react";
+import {
+  Folder,
+  FolderTree,
+  Layers,
+  Network,
+  Play,
+  PlusCircle,
+} from "lucide-react";
 
 import Button from "~/design/Button";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
@@ -139,6 +146,17 @@ const ExplorerHeader: FC = () => {
                   <DropdownMenuItem>
                     <Layers className="mr-2 h-4 w-4" />{" "}
                     {t("pages.explorer.tree.header.newService")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-endpoint");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Network className="mr-2 h-4 w-4" />{" "}
+                    {t("pages.explorer.tree.header.newEndpoint")}
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuGroup>

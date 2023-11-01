@@ -49,6 +49,7 @@
             "title": "this directory is empty",
             "createWorkflow": "Create Workflow",
             "createService": "Create Service",
+            "createEndpoint": "Create Endpoint",
             "createDirectory": "Create Directory"
           }
         },
@@ -83,7 +84,8 @@
           "createLabel": "Create",
           "newDirectory": "New Directory",
           "newWorkflow": "New Workflow",
-          "newService": "New Service"
+          "newService": "New Service",
+          "newEndpoint": "New Endpoint"
         },
         "newWorkflow": {
           "title": "Create a new workflow",

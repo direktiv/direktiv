@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { Folder, FolderOpen, Layers, Play } from "lucide-react";
+import { Folder, FolderOpen, Layers, Network, Play } from "lucide-react";
 
 import Button from "~/design/Button";
 import { NewDialog } from "./types";
@@ -26,7 +26,7 @@ const EmptyDirectoryButton = () => {
   const wideOverlay = selectedDialog !== "new-dir";
 
   return (
-    <div className="flex flex-col gap-5 sm:flex-row">
+    <div className="grid gap-5 md:grid-cols-2">
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger
           asChild
@@ -48,6 +48,17 @@ const EmptyDirectoryButton = () => {
           <Button>
             <Layers />
             {t("pages.explorer.tree.list.empty.createService")}
+          </Button>
+        </DialogTrigger>
+        <DialogTrigger
+          asChild
+          onClick={() => {
+            setSelectedDialog("new-endpoint");
+          }}
+        >
+          <Button>
+            <Network />
+            {t("pages.explorer.tree.list.empty.createEndpoint")}
           </Button>
         </DialogTrigger>
         <DialogTrigger
