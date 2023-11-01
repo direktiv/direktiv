@@ -35,8 +35,8 @@ func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser
 	return logsStream, nil
 }
 
-func (c *knativeClient) createService(cfg *core.ServiceConfig) error {
-	svcDef, err := buildService(c.config, cfg)
+func (c *knativeClient) createService(sv *core.ServiceConfig) error {
+	svcDef, err := buildService(c.config, sv)
 	if err != nil {
 		return err
 	}
@@ -49,8 +49,8 @@ func (c *knativeClient) createService(cfg *core.ServiceConfig) error {
 	return nil
 }
 
-func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
-	svcDef, err := buildService(c.config, cfg)
+func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
+	svcDef, err := buildService(c.config, sv)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (c *knativeClient) updateService(cfg *core.ServiceConfig) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), cfg.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
+	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
