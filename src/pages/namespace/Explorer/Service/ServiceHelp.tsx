@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 
 const exampleService = `direktiv_api: "service/v1"
 image: "redis"
-name: "my redis service"
 scale: 1 # number of standby service replicas (optional)
 size: "medium" # size of the image small, medium or large (optional)
 cmd: "redis-server" # container's cmd string (optional)`;
@@ -39,7 +38,7 @@ const ServiceHelp = () => {
               }}
             />
           </h3>
-          <div className="flex h-[150px] w-[650px]">
+          <div className="flex h-[130px] w-[650px]">
             <Card className="flex  grow p-4" noShadow>
               <Editor
                 value={exampleService}

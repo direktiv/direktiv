@@ -7,10 +7,6 @@ export const serviceFormSchema: RJSFSchema = {
       title: "Image",
       type: "string",
     },
-    name: {
-      title: "Name",
-      type: "string",
-    },
     scale: {
       title: "Scale",
       type: "integer",
