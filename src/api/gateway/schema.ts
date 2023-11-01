@@ -3,38 +3,38 @@ import { z } from "zod";
 /**
  * example
   {
-    "name": "proxy",
-    "version": "1.0.0",
-    "runtimeConfig": {
+    "type": "proxy",
+    "configuration": {
       "key1": ["value1", "value2", "value3"],
       "key2": "value3"
     }
   }
  */
 const PluginSchema = z.object({
-  name: z.string(),
-  version: z.string(),
-  runtimeConfig: z.record(z.unknown()),
+  type: z.string(),
+  configuration: z.record(z.unknown()),
 });
 
 /**
  * example
   {
-    "path": "/path-to-service.yaml",
     "method": "POST",
-    "timeoutSeconds": 30,
-    "plugins": [{...}, {...}, {...}],
+    "file_path": "/path-to-service.yaml",
+    "workflow": "action.yaml",
+    "namespace": "ns",
     "error": "Error some error message",
     "status": "failed"
+    "plugins": [{...}, {...}, {...}],
   }
  */
 const GatewaySchema = z.object({
-  path: z.string(),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
-  timeoutSeconds: z.number(),
-  plugins: z.array(PluginSchema),
-  error: z.string().nullable(),
+  file_path: z.string(),
+  workflow: z.string(),
+  namespace: z.string(),
+  error: z.string(),
   status: z.enum(["healthy", "failed"]),
+  plugins: z.array(PluginSchema),
 });
 
 /**
