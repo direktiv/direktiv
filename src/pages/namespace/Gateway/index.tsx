@@ -12,7 +12,7 @@ import {
 import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
-import Row from "./Row";
+import { Row } from "./Row";
 import { useGatewayList } from "~/api/gateway/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -52,10 +52,10 @@ const GatewayPage = () => {
               <TableHeaderCell>
                 {t("pages.gateway.columns.filePath")}
               </TableHeaderCell>
-              <TableHeaderCell>
+              <TableHeaderCell className="w-32">
                 {t("pages.gateway.columns.method")}
               </TableHeaderCell>
-              <TableHeaderCell>
+              <TableHeaderCell className="w-32">
                 {t("pages.gateway.columns.plugins")}
               </TableHeaderCell>
             </TableRow>
@@ -65,7 +65,7 @@ const GatewayPage = () => {
               <>
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={1}>
+                    <TableCell colSpan={3}>
                       <NoResult icon={Network}>
                         {t("pages.gateway.empty")}
                       </NoResult>
@@ -79,7 +79,7 @@ const GatewayPage = () => {
               </>
             ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={1}>
+                <TableCell colSpan={3}>
                   <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>

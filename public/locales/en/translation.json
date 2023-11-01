@@ -838,6 +838,11 @@
         "method": "method",
         "plugins": "plugins"
       },
+      "row": {
+        "error": "error",
+        "plugins": "{{count}} plugins",
+        "partial_one": "{{count}} plugin"
+      },
       "empty": "No endpoints exist yet"
     },
     "jqPlayground": {
