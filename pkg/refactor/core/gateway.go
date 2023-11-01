@@ -10,23 +10,22 @@ type EndpointManager interface {
 	http.Handler
 
 	GetAll() []*EndpointStatus
-	SetEndpoints(endpoints []*Endpoint) []*EndpointStatus
+	SetEndpoints(endpoints []*Endpoint)
 }
 
 type Endpoint struct {
-	Method    string    `json:"method"`
-	FilePath  string    `json:"file_path"`
-	Workflow  string    `json:"workflow"`
-	Namespace string    `json:"namespace"`
-	Plugins   []Plugins `json:"plugins"`
+	Method    string   `json:"method"`
+	FilePath  string   `json:"file_path"`
+	Workflow  string   `json:"workflow"`
+	Namespace string   `json:"namespace"`
+	Plugins   []Plugin `json:"plugins"`
 }
-type Plugins struct {
+type Plugin struct {
 	Type          string                 `json:"type"`
 	Configuration map[string]interface{} `json:"configuration"`
 }
 
 type EndpointStatus struct {
 	Endpoint
-	Status string `json:"status"`
-	Error  string `json:"error"`
+	Error string `json:"error"`
 }

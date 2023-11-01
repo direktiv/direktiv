@@ -22,7 +22,7 @@ namespace: ns
 plugins: 
     - type: example_plugin
       configuration:
-          some_echo_value: test_value
+          echo_value: test_value
 `
   );
 
@@ -39,7 +39,7 @@ namespace: ns
 plugins: 
     - type: example_plugin
       configuration:
-          some_echo_value: test_value
+          echo_value: test_value
 `
   );
 
@@ -55,7 +55,7 @@ plugins:
           method: "POST",
           workflow: "action.yaml",
           namespace: "ns",
-          status: "healthy",
+          error: "",
           plugins: [
             {
               configuration: {},
@@ -66,7 +66,7 @@ plugins:
           method: "GET",
           workflow: "action.yaml",
           namespace: "ns",
-          status: "healthy",
+          error: "",
           plugins: [
             {
               configuration: {},
@@ -99,7 +99,6 @@ describe("Test availability of gateway endpoints", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
 
   common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-
   common.helpers.itShouldCreateEndpointFile(
     it,
     expect,
@@ -108,8 +107,8 @@ describe("Test availability of gateway endpoints", () => {
     `
 direktiv_api: endpoint/v1
 method: GET
-workflow: action.yaml
-namespace: ns
+workflow: my-workflow.yaml
+namespace: ${testNamespace}
 plugins: 
     - type: example_plugin
       configuration:
@@ -121,31 +120,55 @@ plugins:
       `/api/v2/gw/g1.yaml`
     );
 
+    expect(req.statusCode).toEqual(404);
+  });
+  it(`should create a new direktiv file`, async () => {
+    const res = await request(common.config.getDirektivHost())
+      .put(
+        `/api/namespaces/${testNamespace}/tree/my-workflow.yaml?op=create-workflow`
+      )
+      .set({
+        "Content-Type": "text/plain",
+      }).send(`
+      description: A simple 'no-op' state that returns 'Hello world!'
+      states:
+      - id: helloworld
+        type: noop
+        transform:
+          result: Hello world!`);
+
+    expect(res.statusCode).toEqual(200);
+
+    const req = await request(common.config.getDirektivHost()).get(
+      `/api/v2/gw/g1.yaml`
+    );
+
     expect(req.statusCode).toEqual(200);
   });
 });
 
 describe("Test plugin schema endpoint", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
   it(`should return all plugin schemas`, async () => {
     const req = await request(common.config.getDirektivHost()).get(
-      `/api/v2/resources/plugins/schemas`
+      `/api/v2/namespaces/${testNamespace}/plugins`
     );
 
     expect(req.body).toMatchObject({
       data: {
         example_plugin: {
           $defs: {
-            examplePluginSchemaDefinition: {
+            examplePluginConfig: {
               additionalProperties: false,
-              properties: { some_echo_value: { type: "string" } },
-              required: ["some_echo_value"],
+              properties: { echo_value: { type: "string" } },
+              required: ["echo_value"],
               type: "object",
             },
           },
-          $id: "https://github.com/direktiv/direktiv/pkg/refactor/gateway/example-plugin-schema-definition",
-          $ref: "#/$defs/examplePluginSchemaDefinition",
+          $id: "https://github.com/direktiv/direktiv/pkg/refactor/gateway/example-plugin-config",
+          $ref: "#/$defs/examplePluginConfig",
           $schema: "https://json-schema.org/draft/2020-12/schema",
         },
       },

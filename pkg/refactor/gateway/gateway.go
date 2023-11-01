@@ -38,8 +38,15 @@ type endpointEntry struct {
 	plugins  []serve
 }
 
-func NewHandler(host string, tlsSkip bool) core.EndpointManager {
-	return &handler{host: host, tlsSkip: tlsSkip}
+func NewHandler(host string, port string, tlsSkip bool) (core.EndpointManager, error) {
+	if host == "" {
+		return nil, fmt.Errorf("host address was not providet")
+	}
+	if port == "" {
+		return nil, fmt.Errorf("port was not providet")
+	}
+
+	return &handler{host: host + ":" + port, tlsSkip: tlsSkip}, nil
 }
 
 func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +96,7 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	proxy.ServeHTTP(w, r)
 }
 
-func (gw *handler) SetEndpoints(list []*core.Endpoint) []*core.EndpointStatus {
+func (gw *handler) SetEndpoints(list []*core.Endpoint) {
 	gw.mu.Lock() // Lock
 	defer gw.mu.Unlock()
 	newList := make([]*core.EndpointStatus, len(list))
@@ -108,7 +115,6 @@ func (gw *handler) SetEndpoints(list []*core.Endpoint) []*core.EndpointStatus {
 		if ok && value.checksum == checksum {
 			newPool[key] = value
 		}
-		newList[i].Status = "healthy"
 		newPool[key] = endpointEntry{
 			plugins:        buildPluginChain(newList[i]),
 			EndpointStatus: newList[i],
@@ -117,8 +123,6 @@ func (gw *handler) SetEndpoints(list []*core.Endpoint) []*core.EndpointStatus {
 		}
 	}
 	gw.pluginPool = newPool
-
-	return newList
 }
 
 func buildPluginChain(endpoint *core.EndpointStatus) []serve {
@@ -127,7 +131,6 @@ func buildPluginChain(endpoint *core.EndpointStatus) []serve {
 	for _, v := range endpoint.Plugins {
 		plugin, ok := registry[v.Type]
 		if !ok {
-			endpoint.Status = "failed"
 			endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.Type)
 
 			continue
@@ -135,7 +138,6 @@ func buildPluginChain(endpoint *core.EndpointStatus) []serve {
 
 		servePluginFunc, err := plugin.build(v.Configuration)
 		if err != nil {
-			endpoint.Status = "failed"
 			endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.Type, err)
 
 			continue
@@ -160,7 +162,7 @@ func (gw *handler) GetAll() []*core.EndpointStatus {
 	return newList
 }
 
-func GetAllSchemas() (map[string]interface{}, error) {
+func GetAllSchemas() (any, error) {
 	res := make(map[string]interface{})
 
 	for k, p := range registry {
