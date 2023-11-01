@@ -1,6 +1,7 @@
 import { TableCell, TableRow } from "~/design/Table";
 
 import Badge from "~/design/Badge";
+import ErrorBadge from "./ErrorBadge";
 import { FC } from "react";
 import { GatewaySchemeType } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,9 @@ export const Row: FC<RowProps> = ({ gateway }) => {
   const { t } = useTranslation();
   return (
     <TableRow>
-      <TableCell>{gateway.file_path}</TableCell>
+      <TableCell>
+        {gateway.file_path} <ErrorBadge error={gateway.error} />
+      </TableCell>
       <TableCell>
         <Badge variant="secondary">{gateway.method}</Badge>
       </TableCell>
