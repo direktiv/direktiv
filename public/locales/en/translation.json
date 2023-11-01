@@ -831,6 +831,9 @@
         "title": "Namespaces"
       }
     },
+    "gateway": {
+      "title": "Gateway"
+    },
     "jqPlayground": {
       "title": "jq Playground",
       "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
