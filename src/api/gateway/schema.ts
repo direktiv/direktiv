@@ -46,3 +46,5 @@ const GatewaySchema = z.object({
 export const GatewayListSchema = z.object({
   data: z.array(GatewaySchema),
 });
+
+export type GatewaySchemeType = z.infer<typeof GatewaySchema>;
