@@ -1,7 +1,7 @@
 import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
-import { useGatewayList } from "~/api/gatewawy/query/get";
+import { useGatewayList } from "~/api/gateway/query/get";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
