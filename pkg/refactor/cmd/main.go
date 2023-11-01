@@ -50,21 +50,19 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
 
-	// Create gateway manager
-	gw := gateway.NewHandler()
-	// Start service manager
-	wg.Add(1)
-	gw.Start(done, wg)
+	// Create endpoint manager
+	endpointManager := gateway.NewHandler()
 
 	// Create App
 	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:          config,
-		ServiceManager:  serviceManager,
-		RegistryManager: registryManager,
-		GatewayManager:  gw,
+		Config:              config,
+		ServiceManager:      serviceManager,
+		RegistryManager:     registryManager,
+		EndpointManager:     endpointManager,
+		GetAllPluginSchemas: gateway.GetAllSchemas,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -82,14 +80,14 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	renderServiceManager(db, serviceManager, logger)
 
 	pbus.Subscribe(func(_ string) {
-		renderGatewayManager(db, gw, logger)
+		renderEndpointManager(db, endpointManager, logger)
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,
 		pubsub.MirrorSync,
 	)
-	renderGatewayManager(db, gw, logger)
+	renderEndpointManager(db, endpointManager, logger)
 
 	// Start api v2 server
 	wg.Add(1)
@@ -106,7 +104,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	return wg
 }
 
-func renderGatewayManager(db *database.DB, gwManager core.GatewayManager, logger *zap.SugaredLogger) {
+func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
 	fStore, dStore := db.FileStore(), db.DataStore()
 	ctx := context.Background()
 
@@ -138,8 +136,17 @@ func renderGatewayManager(db *database.DB, gwManager core.GatewayManager, logger
 
 			continue
 		}
+		plConfig := make([]core.Plugin, 0, len(item.Plugins))
+		for _, v := range item.Plugins {
+			plConfig = append(plConfig, core.Plugin{
+				Type:          v.Type,
+				Configuration: v.Configuration,
+			})
+		}
 		endpoints = append(endpoints, &core.Endpoint{
-			Method: item.Method,
+			Method:   item.Method,
+			Plugins:  plConfig,
+			FilePath: file.Path,
 		})
 	}
 

@@ -1,74 +1,145 @@
 package gateway
 
 import (
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"sync"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/invopop/jsonschema"
 )
 
+var registry = make(map[string]plugin)
+
+type plugin interface {
+	build(config map[string]interface{}) (serve, error)
+	getSchema() interface{}
+}
+
+type serve func(w http.ResponseWriter, r *http.Request) bool
+
 type handler struct {
-	lock *sync.Mutex
-
-	endpoints []*core.Endpoint
+	pluginPool map[string]endpointEntry
+	mu         sync.Mutex
 }
 
-func NewHandler() core.GatewayManager {
-	return &handler{
-		lock:      &sync.Mutex{},
-		endpoints: make([]*core.Endpoint, 0),
+type endpointEntry struct {
+	*core.EndpointStatus
+	item     int
+	checksum string
+	plugins  []serve
+}
+
+func NewHandler() core.EndpointManager {
+	return &handler{}
+}
+
+func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	prefix := "/api/v2/gw/"
+	path, _ := strings.CutPrefix(r.URL.Path, prefix)
+	key := r.Method + ":/:" + path
+
+	endpoint, ok := gw.pluginPool[key]
+	if !ok {
+		http.NotFound(w, r)
+
+		return
 	}
-}
-
-func (gw *handler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
-	// nolint:errcheck
-	_, _ = w.Write([]byte("hello gateway"))
+	for _, f := range endpoint.plugins {
+		cont := f(w, r)
+		if !cont {
+			return
+		}
+	}
 }
 
 func (gw *handler) SetEndpoints(list []*core.Endpoint) {
-	gw.lock.Lock()
-	defer gw.lock.Unlock()
+	gw.mu.Lock() // Lock
+	defer gw.mu.Unlock()
+	newList := make([]*core.EndpointStatus, len(list))
+	newPool := make(map[string]endpointEntry)
+	oldPool := gw.pluginPool
 
-	// clone list to the gateway status.
-	newList := []*core.Endpoint{}
-	for i := range list {
-		cp := *list[i]
-		newList = append(newList, &cp)
+	for i, ep := range list {
+		cp := *ep
+		newList[i] = &core.EndpointStatus{Endpoint: cp}
+
+		path, _ := strings.CutPrefix(cp.FilePath, "/")
+		checksum := string(sha256.New().Sum([]byte(fmt.Sprint(cp))))
+
+		key := cp.Method + ":/:" + path
+		value, ok := oldPool[key]
+		if ok && value.checksum == checksum {
+			newPool[key] = value
+		}
+		newPool[key] = endpointEntry{
+			plugins:        buildPluginChain(newList[i]),
+			EndpointStatus: newList[i],
+			checksum:       checksum,
+			item:           i,
+		}
 	}
-	gw.endpoints = newList
+	gw.pluginPool = newPool
 }
 
-func (gw *handler) ListEndpoints() []*core.Endpoint {
-	newList := []*core.Endpoint{}
-	for i := range gw.endpoints {
-		cp := *gw.endpoints[i]
-		newList = append(newList, &cp)
+func buildPluginChain(endpoint *core.EndpointStatus) []serve {
+	res := make([]serve, 0, len(endpoint.Plugins))
+
+	for _, v := range endpoint.Plugins {
+		plugin, ok := registry[v.Type]
+		if !ok {
+			endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.Type)
+
+			continue
+		}
+
+		servePluginFunc, err := plugin.build(v.Configuration)
+		if err != nil {
+			endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.Type, err)
+
+			continue
+		}
+
+		res = append(res, servePluginFunc)
+	}
+
+	return res
+}
+
+func (gw *handler) GetAll() []*core.EndpointStatus {
+	gw.mu.Lock() // Lock
+	defer gw.mu.Unlock()
+
+	newList := make([]*core.EndpointStatus, len(gw.pluginPool))
+
+	for _, value := range gw.pluginPool {
+		newList[value.item] = value.EndpointStatus
 	}
 
 	return newList
 }
 
-func (gw *handler) Start(done <-chan struct{}, wg *sync.WaitGroup) {
-	go func() {
-	loop:
-		for {
-			select {
-			case <-done:
-				break loop
-			default:
-			}
-			gw.lock.Lock()
-			gw.runCycle()
-			gw.lock.Unlock()
-			time.Sleep(time.Second)
+func GetAllSchemas() (any, error) {
+	res := make(map[string]interface{})
+
+	for k, p := range registry {
+		schemaStruct := p.getSchema()
+		schema := jsonschema.Reflect(schemaStruct)
+
+		var schemaObj map[string]interface{}
+		b, err := schema.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(b, &schemaObj); err != nil {
+			return nil, err
 		}
 
-		wg.Done()
-	}()
-}
+		res[k] = schemaObj
+	}
 
-func (gw *handler) runCycle() {
-	// TODO: construct plugins from list.
-	time.Sleep(time.Millisecond)
+	return res, nil
 }
