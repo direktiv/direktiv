@@ -5,6 +5,7 @@ import { Folder, FolderOpen, Layers, Network, Play } from "lucide-react";
 import Button from "~/design/Button";
 import { NewDialog } from "./types";
 import NewDirectory from "./NewDirectory";
+import NewEndpoint from "./NewEndpoint";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
 import { NoResult as NoResultContainer } from "~/design/Table";
@@ -85,6 +86,9 @@ const EmptyDirectoryButton = () => {
           )}
           {selectedDialog === "new-service" && (
             <NewService path={path} close={() => setDialogOpen(false)} />
+          )}
+          {selectedDialog === "new-endpoint" && (
+            <NewEndpoint path={path} close={() => setDialogOpen(false)} />
           )}
         </DialogContent>
       </Dialog>

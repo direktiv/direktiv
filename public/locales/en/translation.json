@@ -104,6 +104,14 @@
           "cancelBtn": "Cancel",
           "createBtn": "Create"
         },
+        "newEndpoint": {
+          "title": "Create a new endpoint",
+          "nameLabel": "Name",
+          "namePlaceholder": "endpoint-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "workflow": {
           "revisions": {
             "overview": {

@@ -22,6 +22,7 @@ import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { Link } from "react-router-dom";
 import { NewDialog } from "./types";
 import NewDirectory from "./NewDirectory";
+import NewEndpoint from "./NewEndpoint";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
 import { RxChevronDown } from "react-icons/rx";
@@ -187,6 +188,15 @@ const ExplorerHeader: FC = () => {
             )}
             {selectedDialog === "new-service" && (
               <NewService
+                path={data?.node?.path}
+                unallowedNames={(data?.children?.results ?? []).map(
+                  (x) => x.name
+                )}
+                close={() => setDialogOpen(false)}
+              />
+            )}
+            {selectedDialog === "new-endpoint" && (
+              <NewEndpoint
                 path={data?.node?.path}
                 unallowedNames={(data?.children?.results ?? []).map(
                   (x) => x.name
