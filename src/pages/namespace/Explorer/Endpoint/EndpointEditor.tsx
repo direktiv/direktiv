@@ -3,7 +3,6 @@ import { FC, useState } from "react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
-import { RJSFSchema } from "@rjsf/utils";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { endpointBaseFormSchema } from "./utils";
@@ -60,12 +59,17 @@ const EndpointEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <Card className="flex flex-col p-4" noShadow>
+      <Card className="flex flex-col gap-2 p-4" noShadow>
         <div>Error: {error}</div>
         <div>hasUnsavedChanges: {hasUnsavedChanges ? "yes" : "no"}</div>
-        <pre>{workflowData}</pre>
-        <hr />
-        <pre>{stringify(endpointConfigJson)}</pre>
+        <Card className="p-4" noShadow>
+          before:
+          <pre>{workflowData}</pre>
+        </Card>
+        <Card className="p-4" noShadow>
+          after:
+          <pre>{stringify(endpointConfigJson)}</pre>
+        </Card>
       </Card>
       <Card className="flex grow flex-col">
         <ScrollArea className="h-full p-4">
