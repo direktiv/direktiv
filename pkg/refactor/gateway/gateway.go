@@ -41,6 +41,7 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	prefix := "/api/v2/gw/"
 	path, _ := strings.CutPrefix(r.URL.Path, prefix)
 	key := r.Method + ":/:" + path
+
 	endpoint, ok := gw.pluginPool[key]
 	if !ok {
 		http.NotFound(w, r)
