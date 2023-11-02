@@ -5,6 +5,10 @@ const (
 	DirektivLogJSON       = "DIREKTIV_LOG_JSON"
 	DirektivOpentelemetry = "DIREKTIV_OTLP"
 	DirektivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+
+	DirektivProxyHTTPS = "HTTPS_PROXY"
+	DirektivProxyHTTP  = "HTTP_PROXY"
+	DirektivProxyNO    = "NO_PROXY"
 )
 
 // // Environtment variable keys.

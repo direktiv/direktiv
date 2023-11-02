@@ -43,6 +43,10 @@ type Config struct {
 	KnativeSizeDiskMedium int `env:"DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM" envDefault:"1024"`
 	KnativeSizeDiskLarge  int `env:"DIREKTIV_KNATIVE_SIZE_DISK_LARGE"  envDefault:"4096"`
 
+	KnativeProxyNo    string `env:"DIREKTIV_KNATIVE_PROXY_NO"`
+	KnativeProxyHTTP  string `env:"DIREKTIV_KNATIVE_PROXY_HTTP"`
+	KnativeProxyHTTPS string `env:"DIREKTIV_KNATIVE_PROXY_HTTPS"`
+
 	FunctionsTimeout           int `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
 
