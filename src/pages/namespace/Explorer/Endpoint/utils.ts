@@ -110,7 +110,7 @@ export const useEndpointFormSchema = (
         },
       },
     },
-    required: ["method", "plugins"],
+    required: ["method"],
     type: "object",
   };
 };
