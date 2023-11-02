@@ -28,6 +28,8 @@ type manager struct {
 
 	logger *zap.SugaredLogger
 	lock   *sync.Mutex
+
+	servicesListHasBeenSet bool // NOTE: set to true the first time SetServices is called, and used to prevent any reconciles before that has happened.
 }
 
 func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (core.ServiceManager, error) {
@@ -91,6 +93,10 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 }
 
 func (m *manager) runCycle() []error {
+	if !m.servicesListHasBeenSet {
+		return nil
+	}
+
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
 	for i, v := range m.list {
@@ -173,6 +179,8 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 func (m *manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
+
+	m.servicesListHasBeenSet = true
 
 	m.list = slices.Clone(list)
 	for i := range m.list {
