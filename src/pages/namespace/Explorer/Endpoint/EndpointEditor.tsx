@@ -59,18 +59,6 @@ const EndpointEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <Card className="flex flex-col gap-2 p-4" noShadow>
-        <div>Error: {error}</div>
-        <div>hasUnsavedChanges: {hasUnsavedChanges ? "yes" : "no"}</div>
-        <Card className="p-4" noShadow>
-          before:
-          <pre>{workflowData}</pre>
-        </Card>
-        <Card className="p-4" noShadow>
-          after:
-          <pre>{stringify(endpointConfigJson)}</pre>
-        </Card>
-      </Card>
       <Card className="flex grow flex-col">
         <ScrollArea className="h-full p-4">
           <JSONSchemaForm
@@ -88,6 +76,18 @@ const EndpointEditor: FC<{
             schema={endpointBaseFormSchema}
           />
         </ScrollArea>
+      </Card>
+      <Card className="flex flex-col gap-2 p-4" noShadow>
+        <div>Error: {error}</div>
+        <div>hasUnsavedChanges: {hasUnsavedChanges ? "yes" : "no"}</div>
+        <Card className="p-4" noShadow>
+          before:
+          <pre>{workflowData}</pre>
+        </Card>
+        <Card className="p-4" noShadow>
+          after:
+          <pre>{stringify(endpointConfigJson)}</pre>
+        </Card>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <Button variant="outline" disabled={isLoading} onClick={onSaveClicked}>
