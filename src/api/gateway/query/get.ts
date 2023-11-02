@@ -21,7 +21,11 @@ const fetchGatewayList = async ({
     urlParams: { namespace },
   });
 
-export const useGatewayList = () => {
+export const useGatewayList = ({
+  enabled = true,
+}: {
+  enabled?: boolean;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -34,6 +38,6 @@ export const useGatewayList = () => {
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchGatewayList,
-    enabled: !!namespace,
+    enabled: !!namespace && enabled,
   });
 };

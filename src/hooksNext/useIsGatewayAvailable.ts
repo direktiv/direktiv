@@ -1,6 +1,6 @@
 import { useNamespace } from "~/util/store/namespace";
 
-const gatewayNamespaceName = "gateway_namespace";
+export const gatewayNamespaceName = "gateway_namespace";
 
 /**
  * this hook is used to check if the the current namespace
