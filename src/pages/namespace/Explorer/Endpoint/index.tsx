@@ -2,6 +2,7 @@ import { FileSymlink, Network } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import EndpointEditor from "./EndpointEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
@@ -58,6 +59,7 @@ const Header: FC = () => {
           </Button>
         </div>
       </div>
+      <EndpointEditor data={gatewayData} path={path} />
     </>
   );
 };
