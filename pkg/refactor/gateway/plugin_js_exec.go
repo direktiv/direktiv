@@ -3,6 +3,7 @@ package gateway
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -32,12 +33,17 @@ func (p *jsExecutionPlugin) build(c map[string]interface{}) (serve, error) {
 		defer r.Body.Close()
 
 		vm := goja.New()
-		vm.Set("body", string(bodyBytes))
+		err = vm.Set("body", string(bodyBytes)) // TODO: add metrics here
+		if err != nil {
+			slog.Debug("error setting body", "error", err)
 
+			return false
+		}
 		scriptWrapper := fmt.Sprintf(`function transform() { %s } transform();`, p.conf.Script)
 		_, err = vm.RunString(scriptWrapper)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Script execution error: %s", err), http.StatusInternalServerError)
+			slog.Debug("Script execution error", "error", err) // TODO: add metrics here
 
 			return false
 		}
