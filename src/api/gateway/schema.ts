@@ -44,4 +44,8 @@ export const EndpointListSchema = z.object({
   data: z.array(EndpointSchema),
 });
 
+export const PluginsListSchema = z.object({
+  data: z.record(z.unknown()),
+});
+
 export type GatewaySchemeType = z.infer<typeof EndpointSchema>;
