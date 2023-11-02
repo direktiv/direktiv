@@ -19,10 +19,43 @@ export const endpointBaseFormSchema: RJSFSchema = {
       items: {
         type: "object",
         properties: {
+          type: { enum: ["A", "B"] },
+        },
+        required: ["type"],
+        dependencies: {
           type: {
-            title: "Type",
-            type: "string",
-            enum: ["A", "B"],
+            oneOf: [
+              {
+                properties: {
+                  type: { enum: ["A"] },
+                  configuration: {
+                    type: "object",
+                    properties: {
+                      version: {
+                        type: "integer",
+                      },
+                    },
+                    required: ["version"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              {
+                properties: {
+                  type: { enum: ["B"] },
+                  configuration: {
+                    type: "object",
+                    properties: {
+                      some: {
+                        type: "integer",
+                      },
+                    },
+                    required: ["some"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+            ],
           },
         },
       },
