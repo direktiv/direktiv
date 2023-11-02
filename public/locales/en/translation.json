@@ -292,7 +292,8 @@
       "gateway": {
         "goToGateway": "Go to gateway",
         "editor": {
-          "saveBtn": "Save"
+          "saveBtn": "Save",
+          "previewTitle": "File Preview"
         }
       }
     },

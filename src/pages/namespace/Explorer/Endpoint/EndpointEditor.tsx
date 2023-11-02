@@ -3,6 +3,7 @@ import { addEndpointHeader, useEndpointFormSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import EndpointPreview from "./EndpointPreview";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
@@ -92,6 +93,7 @@ const EndpointEditor: FC<{
         </pre>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        <EndpointPreview fileContent={stringify(endpointConfigJson)} />
         <Button variant="outline" disabled={isLoading} onClick={onSaveClicked}>
           <Save />
           {t("pages.explorer.gateway.editor.saveBtn")}
