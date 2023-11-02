@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+export const endpointMethods = [
+  "GET",
+  "POST",
+  "PUT",
+  "DELETE",
+  "PATCH",
+] as const;
+
 /**
  * example
   {
@@ -28,7 +36,7 @@ const PluginSchema = z.object({
   }
  */
 const EndpointSchema = z.object({
-  method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH", ""]),
+  method: z.enum([...endpointMethods, ""]),
   file_path: z.string(),
   error: z.string(),
   plugins: z.array(PluginSchema),
