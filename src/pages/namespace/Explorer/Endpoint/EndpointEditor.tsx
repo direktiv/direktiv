@@ -75,6 +75,12 @@ const EndpointEditor: FC<{
                 // setValue("fileContent", stringify(formDataWithHeader));
               }
             }}
+            /**
+             * omitExtraData is important when a the plugin selector is used
+             * to change a plugin. This will wipe all the data from the previous
+             * plugin.
+             */
+            omitExtraData={true}
             schema={endpointFormSchema}
           />
         </ScrollArea>
