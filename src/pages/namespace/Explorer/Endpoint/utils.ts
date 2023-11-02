@@ -6,10 +6,13 @@ import {
 
 import type { JSONSchema7Definition } from "json-schema";
 import { RJSFSchema } from "@rjsf/utils";
+import { stringify } from "json-to-pretty-yaml";
 
 export const endpointHeader = {
   direktiv_api: "endpoint/v1",
 };
+
+export const defaultEndpointYaml = stringify(endpointHeader);
 
 /**
  * takes the plugins server response and returns an array of plugin names
