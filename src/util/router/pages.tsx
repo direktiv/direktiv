@@ -324,7 +324,7 @@ export const pages: PageType & EnterprisePageType = {
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
-        gateway: "gateway",
+        gateway: "endpoint",
         service: "service",
       };
 
@@ -434,7 +434,7 @@ export const pages: PageType & EnterprisePageType = {
           handle: { isServicePage: true },
         },
         {
-          path: "gateway/*",
+          path: "endpoint/*",
           element: <GatewayEditorPage />,
           handle: { isGatewayPage: true },
         },
