@@ -23,7 +23,7 @@ const PluginPopover: FC<RowProps> = ({ gateway }) => {
       wrapper={(children) => (
         <HoverCard>
           <HoverCardTrigger>{children}</HoverCardTrigger>
-          <HoverCardContent asChild align="end">
+          <HoverCardContent asChild align="center" side="left">
             <div className="flex flex-col gap-3">
               {gateway.plugins.map((plugin) => (
                 <Card
