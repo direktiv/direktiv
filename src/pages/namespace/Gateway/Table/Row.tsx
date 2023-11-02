@@ -28,7 +28,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
           })}
         >
           {gateway.file_path}
-        </Link>
+        </Link>{" "}
         <ErrorBadge error={gateway.error} />
       </TableCell>
       <TableCell>
