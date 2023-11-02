@@ -1,11 +1,11 @@
 import { FC, useState } from "react";
+import { addEndpointHeader, endpointBaseFormSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { endpointBaseFormSchema } from "./utils";
 import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
 import { usePlugins } from "~/api/gateway/query/getPlugins";
@@ -77,9 +77,9 @@ const EndpointEditor: FC<{
             formData={endpointConfigJson}
             onChange={(e) => {
               if (e.formData) {
-                console.log("🚀", e.formData);
+                const formDataWithHeader = addEndpointHeader(e.formData);
                 setHasUnsavedChanges(true);
-                setEndpointConfigJson(e.formData);
+                setEndpointConfigJson(formDataWithHeader);
                 // const formDataWithHeader = addServiceHeader(e.formData);
                 // setServiceConfigJson(formDataWithHeader);
                 // setValue("fileContent", stringify(formDataWithHeader));
