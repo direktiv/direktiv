@@ -27,7 +27,7 @@ const PluginSchema = z.object({
     "plugins": [{...}, {...}, {...}],
   }
  */
-const GatewaySchema = z.object({
+const EndpointSchema = z.object({
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH", ""]),
   file_path: z.string(),
   error: z.string(),
@@ -40,8 +40,8 @@ const GatewaySchema = z.object({
     "data": [{...}, {...}, {...}]
   } 
  */
-export const GatewayListSchema = z.object({
-  data: z.array(GatewaySchema),
+export const EndpointListSchema = z.object({
+  data: z.array(EndpointSchema),
 });
 
-export type GatewaySchemeType = z.infer<typeof GatewaySchema>;
+export type GatewaySchemeType = z.infer<typeof EndpointSchema>;

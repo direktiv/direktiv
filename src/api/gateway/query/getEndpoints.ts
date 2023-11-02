@@ -1,4 +1,4 @@
-import { GatewayListSchema } from "../schema";
+import { EndpointListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { gatewayKeys } from "..";
@@ -10,7 +10,7 @@ export const getEndpoints = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/endpoints`,
   method: "GET",
-  schema: GatewayListSchema,
+  schema: EndpointListSchema,
 });
 
 const fetchEndpoints = async ({
