@@ -94,5 +94,6 @@ export const PluginsListSchema = z.object({
 });
 
 export type PluginsListSchemaType = z.infer<typeof PluginsListSchema>;
+export type PluginJSONSchemaType = z.infer<typeof PluginJSONSchema>;
 
 export type GatewaySchemeType = z.infer<typeof EndpointSchema>;
