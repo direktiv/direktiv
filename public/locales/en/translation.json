@@ -102,7 +102,13 @@
           "namePlaceholder": "service-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
-          "createBtn": "Create"
+          "createBtn": "Create",
+          "form": {
+            "image": "Image",
+            "scale": "Scale",
+            "size": "Size",
+            "cmd": "Cmd"
+          }
         },
         "newEndpoint": {
           "title": "Create a new endpoint",

@@ -9,8 +9,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import {
   addServiceHeader,
   defaultServiceYaml,
-  serviceFormSchema,
   serviceHeader,
+  useServiceFormSchema,
 } from "./config";
 
 import Button from "~/design/Button";
@@ -58,6 +58,7 @@ const NewService = ({
 
   const [splitView, setSplitView] = useState(true);
   const [serviceConfigJson, setServiceConfigJson] = useState(serviceHeader);
+  const serviceFormSchema = useServiceFormSchema();
 
   const {
     register,

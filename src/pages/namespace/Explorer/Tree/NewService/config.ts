@@ -1,29 +1,33 @@
 import { RJSFSchema } from "@rjsf/utils";
 import { stringify } from "json-to-pretty-yaml";
+import { useTranslation } from "react-i18next";
 
-export const serviceFormSchema: RJSFSchema = {
-  properties: {
-    image: {
-      title: "Image",
-      type: "string",
+export const useServiceFormSchema = (): RJSFSchema => {
+  const { t } = useTranslation();
+  return {
+    properties: {
+      image: {
+        title: t("pages.explorer.tree.newService.form.image"),
+        type: "string",
+      },
+      scale: {
+        title: t("pages.explorer.tree.newService.form.scale"),
+        type: "integer",
+        enum: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      },
+      size: {
+        title: t("pages.explorer.tree.newService.form.size"),
+        type: "integer",
+        enum: ["large", "medium", "small"],
+      },
+      cmd: {
+        title: t("pages.explorer.tree.newService.form.cmd"),
+        type: "string",
+      },
     },
-    scale: {
-      title: "Scale",
-      type: "integer",
-      enum: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-    },
-    size: {
-      title: "size",
-      type: "integer",
-      enum: ["large", "medium", "small"],
-    },
-    cmd: {
-      title: "Cmd",
-      type: "string",
-    },
-  },
-  required: ["image", "name"],
-  type: "object",
+    required: ["image", "name"],
+    type: "object",
+  };
 };
 
 export const serviceHeader = {
