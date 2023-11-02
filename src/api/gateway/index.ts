@@ -1,8 +1,8 @@
 export const gatewayKeys = {
-  servicesList: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  endpointList: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "gateway-list",
+        scope: "endpoint-list",
         apiKey,
         namespace,
       },

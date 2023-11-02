@@ -6,22 +6,22 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-export const getGatewayList = apiFactory({
+export const getEndpointList = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/endpoints`,
   method: "GET",
   schema: GatewayListSchema,
 });
 
-const fetchGatewayList = async ({
+const fetchEndpointList = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof gatewayKeys)["servicesList"]>>) =>
-  getGatewayList({
+}: QueryFunctionContext<ReturnType<(typeof gatewayKeys)["endpointList"]>>) =>
+  getEndpointList({
     apiKey,
     urlParams: { namespace },
   });
 
-export const useGatewayList = ({
+export const useEndpointList = ({
   enabled = true,
 }: {
   enabled?: boolean;
@@ -34,10 +34,10 @@ export const useGatewayList = ({
   }
 
   return useQueryWithPermissions({
-    queryKey: gatewayKeys.servicesList(namespace, {
+    queryKey: gatewayKeys.endpointList(namespace, {
       apiKey: apiKey ?? undefined,
     }),
-    queryFn: fetchGatewayList,
+    queryFn: fetchEndpointList,
     enabled: !!namespace && enabled,
   });
 };
