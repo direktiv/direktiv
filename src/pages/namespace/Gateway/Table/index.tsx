@@ -12,7 +12,7 @@ import {
 import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import { Row } from "./Row";
-import { useEndpointList } from "~/api/gateway/query/getEndpoints";
+import { useEndpoints } from "~/api/gateway/query/getEndpoints";
 import { useTranslation } from "react-i18next";
 
 const GatewayTable = () => {
@@ -22,7 +22,7 @@ const GatewayTable = () => {
     isSuccess,
     isAllowed,
     noPermissionMessage,
-  } = useEndpointList();
+  } = useEndpoints();
 
   const noResults = isSuccess && gatewayList.data.length === 0;
   return (

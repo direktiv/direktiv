@@ -1,8 +1,16 @@
 export const gatewayKeys = {
-  endpointList: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  endpoints: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "endpoint-list",
+        scope: "gateway-endpoints",
+        apiKey,
+        namespace,
+      },
+    ] as const,
+  plugins: (namespace: string, { apiKey }: { apiKey?: string }) =>
+    [
+      {
+        scope: "gateway-plugins",
         apiKey,
         namespace,
       },

@@ -2,14 +2,14 @@ import GatewayTable from "./Table";
 import { Network } from "lucide-react";
 import NoGateway from "./NoGateway";
 import RefreshButton from "~/design/RefreshButton";
-import { useEndpointList } from "~/api/gateway/query/getEndpoints";
+import { useEndpoints } from "~/api/gateway/query/getEndpoints";
 import useIsGatewayAvailable from "~/hooksNext/useIsGatewayAvailable";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
   const isGatewayAvailable = useIsGatewayAvailable();
-  const { isFetching, refetch } = useEndpointList({
+  const { isFetching, refetch } = useEndpoints({
     enabled: !!isGatewayAvailable,
   });
 
