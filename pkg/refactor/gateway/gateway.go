@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -42,7 +41,6 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	prefix := "/api/v2/gw/"
 	path, _ := strings.CutPrefix(r.URL.Path, prefix)
 	key := r.Method + ":/:" + path
-	slog.Info("handle gateway request", "path", path, "method", r.Method)
 	endpoint, ok := gw.pluginPool[key]
 	if !ok {
 		http.NotFound(w, r)
