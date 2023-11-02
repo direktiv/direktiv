@@ -20,7 +20,7 @@ export const endpointMethods = [
  */
 const PluginSchema = z.object({
   type: z.string(),
-  configuration: z.record(z.unknown()),
+  configuration: z.record(z.unknown()).nullable(),
 });
 
 /**
