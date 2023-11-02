@@ -23,8 +23,8 @@ const EndpointEditor: FC<{
   const { t } = useTranslation();
   const workflowData = atob(data.revision?.source ?? "");
   const { data: plugins } = usePlugins();
-  // const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  // const [error, setError] = useState<string | undefined>();
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [endpointConfigJson, setEndpointConfigJson] = useState(() => {
     let json;
     try {
@@ -37,11 +37,8 @@ const EndpointEditor: FC<{
   });
 
   const { mutate: updateEndpoint, isLoading } = useUpdateWorkflow({
-    // onError: (error) => {
-    //   // error && setError(error);
-    // },
     onSuccess: () => {
-      // setHasUnsavedChanges(false);
+      setHasUnsavedChanges(false);
     },
   });
 
@@ -52,7 +49,6 @@ const EndpointEditor: FC<{
   const onSaveClicked = () => {
     const toSave = stringify(endpointConfigJson);
     if (toSave) {
-      // setError(undefined);
       updateEndpoint({
         path,
         fileContent: toSave,
@@ -62,35 +58,35 @@ const EndpointEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <Card className="flex grow flex-col">
-        <ScrollArea className="h-full p-4">
-          <JSONSchemaForm
-            formData={endpointConfigJson}
-            onChange={(e) => {
-              if (e.formData) {
-                const formDataWithHeader = addEndpointHeader(e.formData);
-                // setHasUnsavedChanges(true);
-                setEndpointConfigJson(formDataWithHeader);
-                // const formDataWithHeader = addServiceHeader(e.formData);
-                // setServiceConfigJson(formDataWithHeader);
-                // setValue("fileContent", stringify(formDataWithHeader));
-              }
-            }}
-            /**
-             * omitExtraData is important when a the plugin selector is used
-             * to change a plugin. This will wipe all the data from the previous
-             * plugin.
-             */
-            omitExtraData={true}
-            schema={endpointFormSchema}
-          />
-        </ScrollArea>
-      </Card>
-      <Card className="flex flex-col gap-2 p-4" noShadow>
-        <b>DEBUG PREVIEW</b>
-        <pre className="text-sm text-primary-500">
-          {stringify(endpointConfigJson)}
-        </pre>
+      <Card className="flex grow flex-col p-4">
+        <div className="grow">
+          <ScrollArea className="flex grow p-4">
+            <JSONSchemaForm
+              formData={endpointConfigJson}
+              onChange={(e) => {
+                if (e.formData) {
+                  const formDataWithHeader = addEndpointHeader(e.formData);
+                  setHasUnsavedChanges(true);
+                  setEndpointConfigJson(formDataWithHeader);
+                }
+              }}
+              /**
+               * omitExtraData is important when a the plugin selector is used
+               * to change a plugin. This will wipe all the data from the previous
+               * plugin.
+               */
+              omitExtraData={true}
+              schema={endpointFormSchema}
+            />
+          </ScrollArea>
+        </div>
+        <div className="flex justify-end gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8">
+          {hasUnsavedChanges && (
+            <span className="text-center">
+              {t("pages.explorer.workflow.editor.unsavedNote")}
+            </span>
+          )}
+        </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <EndpointPreview fileContent={stringify(endpointConfigJson)} />
