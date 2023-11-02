@@ -89,7 +89,7 @@ export const useEndpointFormSchema = (
     properties: {
       method: {
         title: t("pages.explorer.tree.newEndpoint.form.method"),
-        type: "integer",
+        type: "string",
         // spread operator is required to convert from readonly to mutable array
         enum: [...endpointMethods],
       },
