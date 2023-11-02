@@ -247,29 +247,26 @@ func buildResourceLimits(cf *core.Config, sv *core.ServiceConfig) (*corev1.Resou
 func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig, envs map[string]string) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
-	// TODO: yassir
-	// if len(functionsConfig.Proxy.HTTP) > 0 {
-	// 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-	// 		Name:  httpProxy,
-	// 		Value: functionsConfig.Proxy.HTTP,
-	// 	})
-	// }
+	if len(c.KnativeProxyHTTP) > 0 {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivProxyHTTP,
+			Value: c.KnativeProxyHTTP,
+		})
+	}
 
-	// TODO: yassir
-	// if len(functionsConfig.Proxy.HTTPS) > 0 {
-	// 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-	// 		Name:  httpsProxy,
-	// 		Value: functionsConfig.Proxy.HTTPS,
-	// 	})
-	// }
+	if len(c.KnativeProxyHTTPS) > 0 {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivProxyHTTPS,
+			Value: c.KnativeProxyHTTPS,
+		})
+	}
 
-	// TODO: yassir
-	// if len(functionsConfig.Proxy.No) > 0 {
-	// 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-	// 		Name:  noProxy,
-	// 		Value: functionsConfig.Proxy.No,
-	// 	})
-	// }
+	if len(c.KnativeProxyNo) > 0 {
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  util.DirektivProxyNO,
+			Value: c.KnativeProxyNo,
+		})
+	}
 
 	// add debug if there is an env
 	if c.LogDebug {

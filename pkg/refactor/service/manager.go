@@ -1,8 +1,10 @@
 package service
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
+	"math/big"
 	"slices"
 	"sync"
 	"time"
@@ -28,6 +30,8 @@ type manager struct {
 
 	logger *zap.SugaredLogger
 	lock   *sync.Mutex
+
+	servicesListHasBeenSet bool // NOTE: set to true the first time SetServices is called, and used to prevent any reconciles before that has happened.
 }
 
 func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (core.ServiceManager, error) {
@@ -91,6 +95,10 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 }
 
 func (m *manager) runCycle() []error {
+	if !m.servicesListHasBeenSet {
+		return nil
+	}
+
 	// clone the list
 	src := make([]reconcileObject, len(m.list))
 	for i, v := range m.list {
@@ -146,8 +154,16 @@ func (m *manager) runCycle() []error {
 	return errs
 }
 
+func jitter(base time.Duration) time.Duration {
+	// add maximum jitter of +/-20%
+	x, _ := rand.Int(rand.Reader, big.NewInt(40)) //nolint:gomnd
+	percentage := x.Int64() - 20                  //nolint:gomnd
+
+	return time.Duration(int64(base) * percentage / 100) //nolint:gomnd
+}
+
 func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
-	const cycleTime = 2 * time.Second
+	cycleTime := m.cfg.GetFunctionsReconcileInterval()
 
 	go func() {
 	loop:
@@ -163,7 +179,7 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				m.logger.Errorw("run cycle", "error", err)
 			}
-			time.Sleep(cycleTime)
+			time.Sleep(cycleTime + jitter(cycleTime))
 		}
 
 		wg.Done()
@@ -173,6 +189,8 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 func (m *manager) SetServices(list []*core.ServiceConfig) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
+
+	m.servicesListHasBeenSet = true
 
 	m.list = slices.Clone(list)
 	for i := range m.list {
