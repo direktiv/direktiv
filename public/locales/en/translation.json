@@ -1048,11 +1048,11 @@
         },
         "createWorkflow": {
           "success": {
-            "title": "Workflow created",
-            "description": "Workflow {{name}} was created in {{path}}"
+            "title": "File created",
+            "description": "File {{name}} was created in {{path}}"
           },
           "error": {
-            "description": "could not create workflow 😢"
+            "description": "could not create File 😢"
           }
         },
         "deleteNode": {
