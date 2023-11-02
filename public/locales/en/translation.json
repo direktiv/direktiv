@@ -116,7 +116,11 @@
           "namePlaceholder": "endpoint-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
-          "createBtn": "Create"
+          "createBtn": "Create",
+          "form": {
+            "method": "Method",
+            "plugins": "Plugins"
+          }
         },
         "workflow": {
           "revisions": {

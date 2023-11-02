@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { addEndpointHeader, endpointBaseFormSchema } from "./utils";
+import { addEndpointHeader, useEndpointFormSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -44,6 +44,8 @@ const EndpointEditor: FC<{
     },
   });
 
+  const endpointFormSchema = useEndpointFormSchema(plugins ?? { data: {} });
+
   if (!plugins) return null;
 
   const onSaveClicked = () => {
@@ -73,7 +75,7 @@ const EndpointEditor: FC<{
                 // setValue("fileContent", stringify(formDataWithHeader));
               }
             }}
-            schema={endpointBaseFormSchema(plugins)}
+            schema={endpointFormSchema}
           />
         </ScrollArea>
       </Card>

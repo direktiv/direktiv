@@ -7,6 +7,7 @@ import {
 import type { JSONSchema7Definition } from "json-schema";
 import { RJSFSchema } from "@rjsf/utils";
 import { stringify } from "json-to-pretty-yaml";
+import { useTranslation } from "react-i18next";
 
 export const endpointHeader = {
   direktiv_api: "endpoint/v1",
@@ -76,9 +77,10 @@ export const generatePluginJSONSchema = ({
   },
 });
 
-export const endpointBaseFormSchema = (
+export const useEndpointFormSchema = (
   pluginsObj: PluginsListSchemaType
 ): RJSFSchema => {
+  const { t } = useTranslation();
   const pluginSchemas = Object.entries(pluginsObj.data).map(([name, value]) =>
     generatePluginJSONSchema({ name, pluginsObj: value })
   );
@@ -86,13 +88,13 @@ export const endpointBaseFormSchema = (
   return {
     properties: {
       method: {
-        title: "method",
+        title: t("pages.explorer.tree.newEndpoint.form.method"),
         type: "integer",
         // spread operator is required to convert from readonly to mutable array
         enum: [...endpointMethods],
       },
       plugins: {
-        title: "Plugins",
+        title: t("pages.explorer.tree.newEndpoint.form.plugins"),
         type: "array",
         items: {
           type: "object",
