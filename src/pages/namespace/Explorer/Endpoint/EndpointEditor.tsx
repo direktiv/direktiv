@@ -67,7 +67,7 @@ const EndpointEditor: FC<{
         <hr />
         <pre>{stringify(endpointConfigJson)}</pre>
       </Card>
-      <Card className="flex grow flex-col p-4">
+      <Card className="flex grow flex-col">
         <ScrollArea className="h-full p-4">
           <JSONSchemaForm
             formData={endpointConfigJson}
