@@ -13,8 +13,22 @@ export const endpointBaseFormSchema: RJSFSchema = {
       // spread operator is required to convert from readonly to mutable array
       enum: [...endpointMethods],
     },
+    plugins: {
+      title: "Plugins",
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          type: {
+            title: "Type",
+            type: "string",
+            enum: ["A", "B"],
+          },
+        },
+      },
+    },
   },
-  required: ["method"],
+  required: ["method", "plugins"],
   type: "object",
 };
 
