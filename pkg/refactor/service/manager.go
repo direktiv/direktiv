@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"slices"
 	"sync"
 	"time"
@@ -153,7 +154,8 @@ func (m *manager) runCycle() []error {
 }
 
 func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
-	const cycleTime = 2 * time.Second
+	cycleTime := m.cfg.GetFunctionsReconcileInterval()
+	maxJitter := cycleTime / 5 // add maximum jitter of 20%
 
 	go func() {
 	loop:
@@ -169,7 +171,8 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				m.logger.Errorw("run cycle", "error", err)
 			}
-			time.Sleep(cycleTime)
+			jitter := time.Duration(float64(maxJitter) * rand.Float64())
+			time.Sleep(cycleTime + jitter)
 		}
 
 		wg.Done()
