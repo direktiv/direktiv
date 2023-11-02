@@ -1,11 +1,12 @@
 package gateway
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"github.com/dop251/goja"
 )
@@ -19,7 +20,7 @@ type jsExecutionPluginConfig struct {
 }
 
 func (p *jsExecutionPlugin) build(c map[string]interface{}) (serve, error) {
-	if err := unmarshalConfig(c, p.conf); err != nil {
+	if err := unmarshalConfig(c, &p.conf); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +36,7 @@ func (p *jsExecutionPlugin) build(c map[string]interface{}) (serve, error) {
 		vm := goja.New()
 		err = vm.Set("body", string(bodyBytes)) // TODO: add metrics here
 		if err != nil {
-			slog.Debug("error setting body", "error", err)
+			slog.Info("error setting body", "error", err)
 
 			return false
 		}
@@ -43,13 +44,20 @@ func (p *jsExecutionPlugin) build(c map[string]interface{}) (serve, error) {
 		_, err = vm.RunString(scriptWrapper)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Script execution error: %s", err), http.StatusInternalServerError)
-			slog.Debug("Script execution error", "error", err) // TODO: add metrics here
+			slog.Info("Script execution error", "error", err) // TODO: add metrics here
 
 			return false
 		}
 
 		modifiedBody := vm.Get("body").String()
-		r.Body = io.NopCloser(strings.NewReader(modifiedBody))
+
+		buffer := bytes.NewBufferString(modifiedBody)
+		r.Body = io.NopCloser(buffer)
+		r.ContentLength = int64(buffer.Len()) // Set the correct Content-Length
+
+		r.Header.Set("Content-Length", strconv.Itoa(buffer.Len()))
+
+		slog.Info("changed body", "body", modifiedBody)
 
 		return true
 	}, nil
