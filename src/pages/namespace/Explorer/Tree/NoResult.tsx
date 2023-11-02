@@ -11,6 +11,7 @@ import NewWorkflow from "./NewWorkflow";
 import { NoResult as NoResultContainer } from "~/design/Table";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
+import useIsGatewayAvailable from "~/hooksNext/useIsGatewayAvailable";
 import { useTranslation } from "react-i18next";
 
 const EmptyDirectoryButton = () => {
@@ -19,15 +20,22 @@ const EmptyDirectoryButton = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<NewDialog>();
+  const isGatwayAvailable = useIsGatewayAvailable();
 
   useEffect(() => {
     if (dialogOpen === false) setSelectedDialog(undefined);
   }, [dialogOpen, selectedDialog]);
 
-  const wideOverlay = selectedDialog !== "new-dir";
+  const wideOverlay =
+    !!selectedDialog && !["new-dir", "new-endpoint"].includes(selectedDialog);
 
   return (
-    <div className="grid gap-5 md:grid-cols-2">
+    <div
+      className={twMergeClsx(
+        "grid gap-5",
+        isGatwayAvailable ? "md:grid-cols-2" : "grid-cols-3"
+      )}
+    >
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger
           asChild
@@ -51,17 +59,19 @@ const EmptyDirectoryButton = () => {
             {t("pages.explorer.tree.list.empty.createService")}
           </Button>
         </DialogTrigger>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-endpoint");
-          }}
-        >
-          <Button>
-            <Network />
-            {t("pages.explorer.tree.list.empty.createEndpoint")}
-          </Button>
-        </DialogTrigger>
+        {isGatwayAvailable && (
+          <DialogTrigger
+            asChild
+            onClick={() => {
+              setSelectedDialog("new-endpoint");
+            }}
+          >
+            <Button>
+              <Network />
+              {t("pages.explorer.tree.list.empty.createEndpoint")}
+            </Button>
+          </DialogTrigger>
+        )}
         <DialogTrigger
           asChild
           onClick={() => {
