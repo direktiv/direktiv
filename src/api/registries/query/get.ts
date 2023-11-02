@@ -8,7 +8,7 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getRegistries = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
-    `/api/functions/registries/namespaces/${namespace}`,
+    `/api/v2/namespaces/${namespace}/registries`,
   method: "GET",
   schema: RegistryListSchema,
 });

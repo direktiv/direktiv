@@ -18,14 +18,13 @@ const updateCache = (
   deletedItem: RegistrySchemaType
 ) => {
   if (!oldData) return undefined;
-  const oldRegistries = oldData.registries;
-
+  const oldRegistries = oldData.data;
   return {
     ...oldData,
     ...(oldRegistries
       ? {
-          registries: oldRegistries.filter(
-            (item: RegistrySchemaType) => item.name !== deletedItem.name
+          data: oldRegistries.filter(
+            (item: RegistrySchemaType) => item.id !== deletedItem.id
           ),
         }
       : {}),
@@ -33,8 +32,8 @@ const updateCache = (
 };
 
 const deleteRegistry = apiFactory({
-  url: ({ namespace }: { namespace: string }) =>
-    `/api/functions/registries/namespaces/${namespace}`,
+  url: ({ namespace, gegistryId }: { namespace: string; gegistryId: string }) =>
+    `/api/v2/namespaces/${namespace}/registries/${gegistryId}`,
   method: "DELETE",
   schema: RegistryDeletedSchema,
 });
@@ -56,11 +55,9 @@ export const useDeleteRegistry = ({
     mutationFn: ({ registry }: { registry: RegistrySchemaType }) =>
       deleteRegistry({
         apiKey: apiKey ?? undefined,
-        payload: {
-          reg: registry.name,
-        },
         urlParams: {
           namespace,
+          gegistryId: registry.id,
         },
       }),
     onSuccess(_, variables) {
@@ -75,7 +72,7 @@ export const useDeleteRegistry = ({
         title: t("api.registries.mutate.deleteRegistry.success.title"),
         description: t(
           "api.registries.mutate.deleteRegistry.success.description",
-          { name: variables.registry.name }
+          { name: variables.registry.url }
         ),
         variant: "success",
       });
