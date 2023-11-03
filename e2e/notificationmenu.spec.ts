@@ -28,18 +28,14 @@ test("Notification Bell has an inactive state by default", async ({ page }) => {
   // visit page
   await page.goto("/");
 
-  const bodyTag = page.locator("body");
-
-  const userMenuBtn = page.getByTestId("dropdown-trg-user-menu");
+  const notificaionBell = page.getByTestId("notification-bell").nth(1);
 
   await expect(
-    // page.getByTestId("notification-bell"),
-    page.getByTestId("notification-bell"),
+    notificaionBell,
     "it renders the Notification Bell"
   ).toBeVisible();
 
-  const notificationMenuBtn = page.getByTestId("notification-bell");
-  await notificationMenuBtn.nth(1).click();
+  await notificaionBell.click();
 
   const notificationText = page.getByTestId("notification-text");
 
