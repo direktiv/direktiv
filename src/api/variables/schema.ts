@@ -26,14 +26,14 @@ export const VarDeletedSchema = z.null();
 export const VarContentSchema = z.object({
   body: z.string(),
   headers: z.object({
-    "content-type": z.string(),
+    "content-type": z.string().optional(),
   }),
 });
 
 export const VarDownloadSchema = z.object({
   blob: z.instanceof(Blob),
   headers: z.object({
-    "content-type": z.string(),
+    "content-type": z.string().optional(),
   }),
 });
 

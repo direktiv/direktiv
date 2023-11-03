@@ -41,14 +41,14 @@ export const WorkflowVariableListSchema = z.object({
 export const WorkflowVariableContentSchema = z.object({
   body: z.string(),
   headers: z.object({
-    "content-type": z.string(), // same as mimeType
+    "content-type": z.string().optional(), // same as mimeType
   }),
 });
 
 export const WorkflowVariableDownloadSchema = z.object({
   blob: z.instanceof(Blob),
   headers: z.object({
-    "content-type": z.string(),
+    "content-type": z.string().optional(),
   }),
 });
 
