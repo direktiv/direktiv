@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/go-chi/chi/v5"
 	"github.com/invopop/jsonschema"
 )
 
@@ -38,6 +39,10 @@ func NewHandler() core.EndpointManager {
 }
 
 func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	routePath := chi.URLParam(r, "*")
+
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v\n", routePath)
 	prefix := "/api/v2/gw/"
 	path, _ := strings.CutPrefix(r.URL.Path, prefix)
 	key := r.Method + ":/:" + path

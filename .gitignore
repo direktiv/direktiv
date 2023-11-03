@@ -33,7 +33,7 @@ issuer.*
 /build/apiserver
 /build/direktiv
 /build/direkcli
-/build/flow-dbinit
+/build/flow-dbinitcmd/sidecar/main.go
 /build/direkcli-linux
 /build/secrets
 /build/functions
@@ -107,3 +107,5 @@ direktivctl
 
 openapi/node_modules
 openapi/output
+
+direktiv.yaml
