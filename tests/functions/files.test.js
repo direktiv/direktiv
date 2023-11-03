@@ -20,7 +20,7 @@ describe('Test function files behaviour', () => {
         })
     })
 
-    common.helpers.itShouldCreateServiceFile(it, expect, namespaceName,
+    common.helpers.itShouldCreateFile(it, expect, namespaceName,
       "/bash.yaml", `
 direktiv_api: service/v1
 name: bash

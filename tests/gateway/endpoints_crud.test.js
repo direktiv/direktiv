@@ -9,7 +9,7 @@ describe("Test gateway endpoints crud operations", () => {
 
   common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-  common.helpers.itShouldCreateEndpointFile(
+  common.helpers.itShouldCreateFile(
     it,
     expect,
     testNamespace,
@@ -29,7 +29,7 @@ plugins:
 `
   );
 
-  common.helpers.itShouldCreateEndpointFile(
+  common.helpers.itShouldCreateFile(
     it,
     expect,
     testNamespace,
@@ -118,7 +118,7 @@ describe("Test availability of gateway endpoints", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
 
   common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-  common.helpers.itShouldCreateEndpointFile(
+  common.helpers.itShouldCreateFile(
     it,
     expect,
     testNamespace,
