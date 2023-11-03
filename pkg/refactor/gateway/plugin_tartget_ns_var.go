@@ -3,25 +3,25 @@ package gateway
 import (
 	"crypto/tls"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
 
-type variablePlugin struct {
-	conf workflowPluginConfig
+type nsVariablePlugin struct {
+	conf nsVariablePluginConfig
 }
 
-type variablePluginConfig struct {
-	Workflow  string `json:"workflow"`
-	Namespace string `json:"namespace"`
-	Variable  string `json:"variable"`
+type nsVariablePluginConfig struct {
+	Namespace string `json:"namespace" jsonschema:"required"`
+	Variable  string `json:"variable"  jsonschema:"required"`
 	Host      string `json:"host"`
 	Scheme    string `json:"scheme"`
 	UseTLS    bool   `json:"use_tls"`
 }
 
-func (e variablePlugin) build(c map[string]interface{}) (serve, error) {
+func (e nsVariablePlugin) build(c map[string]interface{}) (serve, error) {
 	if err := unmarshalConfig(c, &e.conf); err != nil {
 		return nil, err
 	}
@@ -36,15 +36,14 @@ func (e variablePlugin) build(c map[string]interface{}) (serve, error) {
 	return func(w http.ResponseWriter, r *http.Request) bool {
 		baseURL := "api/namespaces"
 		queryParams := url.Values{}
-		queryParams.Add("op", "var")
-		path := fmt.Sprintf("/%s/%s/tree/%s", baseURL, e.conf.Namespace, e.conf.Workflow)
+		path := fmt.Sprintf("/%s/%s/vars/%s", baseURL, e.conf.Namespace, e.conf.Variable)
 		targetURL := url.URL{
 			Host:     e.conf.Host,
 			Path:     path,
 			RawQuery: queryParams.Encode(),
 			Scheme:   e.conf.Scheme,
 		}
-
+		slog.Error(targetURL.String())
 		proxy := httputil.NewSingleHostReverseProxy(&targetURL)
 		proxy.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: !e.conf.UseTLS}, //nolint:gosec
@@ -63,11 +62,11 @@ func (e variablePlugin) build(c map[string]interface{}) (serve, error) {
 	}, nil
 }
 
-func (e variablePlugin) getSchema() interface{} {
-	return &variablePluginConfig{}
+func (e nsVariablePlugin) getSchema() interface{} {
+	return &nsVariablePluginConfig{}
 }
 
 //nolint:gochecknoinits
 func init() {
-	registry["target_workflow_var"] = variablePlugin{}
+	registry["target_namespace_var"] = nsVariablePlugin{}
 }
