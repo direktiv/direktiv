@@ -10,7 +10,6 @@ import (
 
 type rateLimitPlugin struct {
 	conf rateLimitConfig
-	mu   sync.RWMutex
 	ips  sync.Map
 }
 
