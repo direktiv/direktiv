@@ -15,6 +15,7 @@ type variablePlugin struct {
 type variablePluginConfig struct {
 	Workflow  string `json:"workflow"`
 	Namespace string `json:"namespace"`
+	Variable  string `json:"variable"`
 	Host      string `json:"host"`
 	Scheme    string `json:"scheme"`
 	UseTLS    bool   `json:"use_tls"`
@@ -68,5 +69,5 @@ func (e variablePlugin) getSchema() interface{} {
 
 //nolint:gochecknoinits
 func init() {
-	registry["target_workflow"] = variablePlugin{}
+	registry["target_workflow_var"] = variablePlugin{}
 }
