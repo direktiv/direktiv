@@ -1,4 +1,4 @@
-import { createNamespace, deleteNamespace } from "./utils/namespace";
+import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 let namespace = "";
@@ -36,7 +36,6 @@ test("Notification Bell has an inactive state by default", async ({ page }) => {
   ).toBeVisible();
 
   await notificaionBell.click();
-
   const notificationText = page.getByTestId("notification-text");
 
   expect(
@@ -50,8 +49,16 @@ test("Notification Bell has an inactive state by default", async ({ page }) => {
 
   // showIndicator = false
 
+  //
   // text = {NoIssues}
 });
+
+test("Notification Bell shows an active indicator", async ({ page }) => {
+  // visit page
+  await page.goto("/");
+});
+
+// setup with notification
 
 /*
 
