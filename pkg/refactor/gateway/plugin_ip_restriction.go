@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"net"
 	"net/http"
 )
 
@@ -18,7 +19,12 @@ func (ip ipRestrictionPlugin) build(c map[string]interface{}) (serve, error) {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) bool {
-		clientIP := r.RemoteAddr // TODO: test if this always works
+		clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			http.Error(w, "SplitHostPort failed", http.StatusInternalServerError)
+
+			return false
+		}
 		if !isIPAllowed(clientIP, ip.conf.Whitelist) {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 
