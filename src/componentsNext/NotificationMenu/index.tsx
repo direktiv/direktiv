@@ -70,7 +70,6 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
           )
         ) : (
           <NotificationMessage
-            data-testid="notification-text"
             text={t("components.notificationMenu.noIssues.description")}
             icon={Check}
           />

@@ -63,7 +63,10 @@ function NotificationMessage({
   icon: LucideIcon;
 }) {
   return (
-    <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
+    <div
+      className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3"
+      data-testid="notification-text"
+    >
       <div className="flex items-center px-2">
         <div className="w-max">
           <Icon
