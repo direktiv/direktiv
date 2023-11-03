@@ -1,5 +1,4 @@
 import request from 'supertest'
-import retry from "jest-retries";
 import common from "../common";
 
 const testNamespace = "test-services"
@@ -51,7 +50,7 @@ states:
         })
     })
 
-    retry(`should invoke the ${testWorkflow} workflow`, 10, async () => {
+    it(`should invoke the ${testWorkflow} workflow`, async () => {
         await sleep(500);
         const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/${testWorkflow}?op=wait`)
         expect(res.statusCode).toEqual(200)
