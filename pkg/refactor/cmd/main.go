@@ -226,7 +226,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore
 
 	for _, fn := range wf.Functions {
 		if fn.GetType() != model.ReusableContainerFunctionType {
-			return nil, nil
+			continue
 		}
 
 		serviceDef, ok := fn.(*model.ReusableFunctionDefinition)

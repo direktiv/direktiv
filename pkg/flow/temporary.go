@@ -533,7 +533,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
 
-	for i := 0; i < 9; i++ { // NOTE: careful not to raise 'i' too high. It exponentially increases the timeout. With '9' as the upper limit it should wait approx 4 minutes.
+	for i := 0; i < 300; i++ { // 5 minutes retries.
 		engine.sugar.Debugf("functions request (%d): %v", i, addr)
 		resp, err = client.Do(req)
 		if err != nil {
@@ -543,13 +543,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			}
 			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 
-			// NOTE: we used to do something smarter here if it was a DNS error.
-			// dnsErr := new(net.DNSError)
-			// if errors.As(err, &dnsErr) {
-			// 	continue
-			// }
-
-			time.Sleep(time.Millisecond * 500 * (1 << i))
+			time.Sleep(time.Second)
 		} else {
 			defer resp.Body.Close()
 			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID)
