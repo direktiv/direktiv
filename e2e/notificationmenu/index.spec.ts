@@ -1,6 +1,10 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { headers } from "e2e/utils/testutils";
+import { workflowWithSecrets } from "./workflow";
+
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -26,7 +30,7 @@ Initialize the secret. Check if "showIndicator=false"
 
 test("Notification Bell has an inactive state by default", async ({ page }) => {
   // visit page
-  await page.goto("/");
+  await page.goto(`/${namespace}/explorer/tree`);
 
   const notificaionBell = page.getByTestId("notification-bell").nth(1);
 
@@ -54,8 +58,20 @@ test("Notification Bell has an inactive state by default", async ({ page }) => {
 });
 
 test("Notification Bell shows an active indicator", async ({ page }) => {
+  await createWorkflow({
+    payload: workflowWithSecrets,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "worfklow-with-secrets.yaml",
+    },
+    headers,
+  });
+
   // visit page
-  await page.goto("/");
+  await page.goto(`/${namespace}/explorer/tree`, {
+    waitUntil: "networkidle",
+  });
 });
 
 // setup with notification
