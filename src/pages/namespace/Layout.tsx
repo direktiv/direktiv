@@ -55,7 +55,8 @@ const Layout = () => {
             />
             <Logo className="hidden h-8 w-auto justify-self-center sm:block" />
             <div className="flex gap-3 justify-self-end lg:hidden">
-              <NotificationMenu />
+              {/* error would be thrown if namespace is not yet defined */}
+              {!!namespace && <NotificationMenu />}
               <UserMenu />
             </div>
           </SidebarTop>
@@ -69,7 +70,8 @@ const Layout = () => {
               <Breadcrumb />
             </MainTopLeft>
             <MainTopRight>
-              <NotificationMenu className="max-lg:hidden" />
+              {/* error would be thrown if namespace is not yet defined */}
+              {!!namespace && <NotificationMenu className="max-lg:hidden" />}
               <UserMenu className="max-lg:hidden" />
             </MainTopRight>
           </MainTop>
