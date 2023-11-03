@@ -94,6 +94,7 @@ const Notification: FC<NotificationPropsType> = ({
           variant="ghost"
           className="group items-center px-1"
           role="button"
+          data-testid="notification-bell"
         >
           <div className="relative h-6 w-6">
             <Bell className="relative" />
