@@ -203,7 +203,7 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 	sort.Strings(paths)
 
 	for _, path := range paths {
-		data := o.parser.Services[path]
+		data := o.parser.Endpoints[path]
 		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeEndpoint, "application/direktiv", data)
 		if err != nil {
 			return err
