@@ -35,7 +35,7 @@ func (e workflowPlugin) build(c map[string]interface{}) (serve, error) {
 	return func(w http.ResponseWriter, r *http.Request) bool {
 		baseURL := "api/namespaces"
 		queryParams := url.Values{}
-		queryParams.Add("op", "execute")
+		queryParams.Add("op", "wait")
 		queryParams.Add("ref", "latest")
 
 		path := fmt.Sprintf("/%s/%s/tree/%s", baseURL, e.conf.Namespace, e.conf.Workflow)
@@ -45,6 +45,8 @@ func (e workflowPlugin) build(c map[string]interface{}) (serve, error) {
 			RawQuery: queryParams.Encode(),
 			Scheme:   e.conf.Scheme,
 		}
+
+		fmt.Printf("target url:%v\n", targetURL)
 
 		proxy := httputil.NewSingleHostReverseProxy(&targetURL)
 		proxy.Transport = &http.Transport{
@@ -56,6 +58,7 @@ func (e workflowPlugin) build(c map[string]interface{}) (serve, error) {
 			req.URL.Host = targetURL.Host
 			req.URL.Path = targetURL.Path
 			req.Host = targetURL.Host
+			req.URL.RawQuery = queryParams.Encode()
 		}
 
 		proxy.ServeHTTP(w, r)

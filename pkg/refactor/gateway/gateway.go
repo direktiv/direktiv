@@ -43,9 +43,14 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	routePath := chi.URLParam(r, "*")
 
 	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v\n", routePath)
-	prefix := "/api/v2/gw/"
-	path, _ := strings.CutPrefix(r.URL.Path, prefix)
-	key := r.Method + ":/:" + path
+
+	fmt.Println(gw.pluginPool)
+
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v\n", routePath)
+
+	// prefix := "/api/v2/gw/"
+	// path, _ := strings.CutPrefix(r.URL.Path, prefix)
+	key := r.Method + ":/:" + routePath
 
 	endpoint, ok := gw.pluginPool[key]
 	if !ok {
