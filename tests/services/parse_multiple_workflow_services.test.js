@@ -42,7 +42,6 @@ states:
         await sleep(500)
         const listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/services`)
-        console.log(listRes.body)
         expect(listRes.statusCode).toEqual(200)
         expect(listRes.body).toMatchObject({
             data: [

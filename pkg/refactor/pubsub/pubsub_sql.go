@@ -18,5 +18,6 @@ var (
 	EndpointDelete = "endpoint_delete"
 	EndpointUpdate = "endpoint_update"
 
-	MirrorSync = "mirror_sync"
+	MirrorSync      = "mirror_sync"
+	NamespaceDelete = "namespace_delete"
 )
