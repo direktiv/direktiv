@@ -55,9 +55,19 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy files into new filesystem root: %w", err)
 	}
 
+	err = o.copyServicesIntoRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy services into new filesystem root: %w", err)
+	}
+
 	err = o.copyWorkflowsIntoRoot(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to copy workflows into new filesystem root: %w", err)
+	}
+
+	err = o.copyEndpointsIntoRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy endpoints into new filesystem root: %w", err)
 	}
 
 	err = o.copyDeprecatedVariables(ctx)
@@ -158,6 +168,48 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 		}
 
 		o.log.Debugf("Created workflow in database: %s", path)
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
+	paths := []string{}
+	for k := range o.parser.Services {
+		paths = append(paths, k)
+	}
+
+	sort.Strings(paths)
+
+	for _, path := range paths {
+		data := o.parser.Services[path]
+		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeService, "application/direktiv", data)
+		if err != nil {
+			return err
+		}
+
+		o.log.Debugf("Created service in database: %s", path)
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
+	paths := []string{}
+	for k := range o.parser.Endpoints {
+		paths = append(paths, k)
+	}
+
+	sort.Strings(paths)
+
+	for _, path := range paths {
+		data := o.parser.Services[path]
+		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeEndpoint, "application/direktiv", data)
+		if err != nil {
+			return err
+		}
+
+		o.log.Debugf("Created endpoint in database: %s", path)
 	}
 
 	return nil
