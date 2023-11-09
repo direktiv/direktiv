@@ -15,10 +15,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -94,8 +94,6 @@ func (events *events) sendEvent(data []byte) {
 		return
 	}
 }
-
-var syncMtx sync.Mutex
 
 func (events *events) syncEventDelays() {
 	// syncMtx.Lock()
@@ -296,45 +294,71 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeEventListeners(ns)
-	defer flow.cleanup(sub.Close)
-resend:
-	var resListeners []*pkgevents.EventListener
-	totalListeners := 0
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
+	setErr := func(e error) {
+		if err == nil {
+			err = e
+			cancel()
 		}
-		resListeners = li
-		totalListeners = t
-		return nil
-	})
+	}
+
+	handler := func(data string) {
+		if ns.ID.String() != data {
+			return
+		}
+
+		var resListeners []*pkgevents.EventListener
+		totalListeners := 0
+
+		err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+			li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+			if err != nil {
+				return err
+			}
+			resListeners = li
+			totalListeners = t
+			return nil
+		})
+		if err != nil {
+			setErr(err)
+			return
+		}
+		resp := new(grpc.EventListenersResponse)
+		resp.Namespace = ns.Name
+		resp.PageInfo = &grpc.PageInfo{Total: int32(totalListeners)}
+
+		resp.Results = bytedata.ConvertEventListeners(resListeners)
+
+		nhash = bytedata.Checksum(resp)
+		if nhash != phash {
+			err := srv.Send(resp)
+			if err != nil {
+				setErr(err)
+				return
+			}
+		}
+		phash = nhash
+	}
+
+	subscriptionKey := flow.pubsub.Subscribe(pubsub.EventListenersNotify, handler)
+
+	defer func() {
+		_ = recover()
+
+		flow.pubsub.Unsubscribe(subscriptionKey)
+	}()
+
+	go handler(ns.ID.String()) // ensure it runs at least once
+
+	<-ctx.Done()
+
 	if err != nil {
 		return err
 	}
-	resp := new(grpc.EventListenersResponse)
-	resp.Namespace = ns.Name
-	resp.PageInfo = &grpc.PageInfo{Total: int32(totalListeners)}
 
-	resp.Results = bytedata.ConvertEventListeners(resListeners)
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err := srv.Send(resp)
-		if err != nil {
-			return err
-		}
-	}
-	phash = nhash
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
+	return nil
 }
 
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
@@ -550,77 +574,102 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeEvents(ns)
-	defer flow.cleanup(sub.Close)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-resend:
-
-	count := 0
-	var res []*pkgevents.Event
-	queryParams := []string{}
-	for _, f := range req.Pagination.Filter {
-		if f.Field == cr && f.Type == after {
-			queryParams = append(queryParams, "received_after", f.Val)
-		}
-		if f.Field == cr && f.Type == before {
-			queryParams = append(queryParams, "received_before", f.Val)
-		}
-		if f.Field == "TYPE" && f.Type == contains {
-			queryParams = append(queryParams, "type_contains", f.Val)
-		}
-		if f.Field == "TEXT" && f.Type == contains {
-			queryParams = append(queryParams, "event_contains", f.Val)
+	setErr := func(e error) {
+		if err == nil {
+			err = e
+			cancel()
 		}
 	}
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
-		if err != nil {
-			return err
+
+	handler := func(data string) {
+		if ns.ID.String() != data {
+			return
 		}
-		count = t
-		res = re
-		return nil
-	})
+
+		count := 0
+		var res []*pkgevents.Event
+		queryParams := []string{}
+		for _, f := range req.Pagination.Filter {
+			if f.Field == cr && f.Type == after {
+				queryParams = append(queryParams, "received_after", f.Val)
+			}
+			if f.Field == cr && f.Type == before {
+				queryParams = append(queryParams, "received_before", f.Val)
+			}
+			if f.Field == "TYPE" && f.Type == contains {
+				queryParams = append(queryParams, "type_contains", f.Val)
+			}
+			if f.Field == "TEXT" && f.Type == contains {
+				queryParams = append(queryParams, "event_contains", f.Val)
+			}
+		}
+		err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+			re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
+			if err != nil {
+				return err
+			}
+			count = t
+			res = re
+			return nil
+		})
+		if err != nil {
+			setErr(err)
+			return
+		}
+		resp := new(grpc.EventHistoryResponse)
+		resp.Namespace = ns.Name
+		resp.Events = new(grpc.Events)
+		finalResults := make([]*grpc.Event, 0, len(res))
+		for _, e := range res {
+			x := &grpc.Event{
+				ReceivedAt: timestamppb.New(e.ReceivedAt),
+				Id:         e.Event.ID(),
+				Source:     e.Event.Source(),
+				Type:       e.Event.Type(),
+			}
+
+			x.Cloudevent, err = e.Event.MarshalJSON()
+			if err != nil {
+				setErr(err)
+				return
+			}
+
+			finalResults = append(finalResults, x)
+		}
+		resp.Events.Results = finalResults
+		resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
+
+		nhash = bytedata.Checksum(resp)
+		if nhash != phash {
+			err := srv.Send(resp)
+			if err != nil {
+				setErr(err)
+				return
+			}
+		}
+		phash = nhash
+	}
+
+	subscriptionKey := flow.pubsub.Subscribe(pubsub.EventReceived, handler)
+
+	defer func() {
+		_ = recover()
+
+		flow.pubsub.Unsubscribe(subscriptionKey)
+	}()
+
+	go handler(ns.ID.String()) // ensure it runs at least once
+
+	<-ctx.Done()
+
 	if err != nil {
 		return err
 	}
-	resp := new(grpc.EventHistoryResponse)
-	resp.Namespace = ns.Name
-	resp.Events = new(grpc.Events)
-	finalResults := make([]*grpc.Event, 0, len(res))
-	for _, e := range res {
-		x := &grpc.Event{
-			ReceivedAt: timestamppb.New(e.ReceivedAt),
-			Id:         e.Event.ID(),
-			Source:     e.Event.Source(),
-			Type:       e.Event.Type(),
-		}
 
-		x.Cloudevent, err = e.Event.MarshalJSON()
-		if err != nil {
-			return err
-		}
-
-		finalResults = append(finalResults, x)
-	}
-	resp.Events.Results = finalResults
-	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err := srv.Send(resp)
-		if err != nil {
-			return err
-		}
-	}
-	phash = nhash
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
+	return nil
 }
 
 func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest) (*emptypb.Empty, error) {
@@ -691,7 +740,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 		return err
 	}
 
-	events.pubsub.NotifyEvents(ns)
+	events.pubsub.Publish(pubsub.EventReceived, ns.ID.String())
 
 	// handle event
 	if timer == 0 {
@@ -724,10 +773,6 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 	}
 
 	return nil
-}
-
-func (events *events) updateEventDelaysHandler(req *pubsub.PubsubUpdate) {
-	events.syncEventDelays()
 }
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
@@ -932,22 +977,14 @@ func (flow *flow) DeleteCloudEventFilter(ctx context.Context, in *grpc.DeleteClo
 
 	key := fmt.Sprintf("%s-%s", namespace, filterName)
 	eventFilterCache.delete(key)
-	flow.server.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: deleteFilterCache,
-		Key:     key,
-	})
+	flow.server.pubsub.Publish(pubsub.EventFilterCacheDelete, key)
 
 	return &resp, nil
 }
 
-const (
-	deleteFilterCache          = "deleteFilterCache"
-	deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
-)
-
-func (flow *flow) deleteCache(req *pubsub.PubsubUpdate) {
-	flow.sugar.Debugf("deleting filter cache key: %v\n", req.Key)
-	eventFilterCache.delete(req.Key)
+func (flow *flow) deleteCache(data string) {
+	flow.sugar.Debugf("deleting filter cache key: %v\n", data)
+	eventFilterCache.delete(data)
 }
 
 func deleteCacheNamespaceSync(delkey string) {
@@ -960,9 +997,9 @@ func deleteCacheNamespaceSync(delkey string) {
 	})
 }
 
-func (flow *flow) deleteCacheNamespace(req *pubsub.PubsubUpdate) {
-	flow.sugar.Debugf("deleting filter cache for namespace: %v\n", req.Key)
-	deleteCacheNamespaceSync(req.Key)
+func (flow *flow) deleteCacheNamespace(data string) {
+	flow.sugar.Debugf("deleting filter cache for namespace: %v\n", data)
+	deleteCacheNamespaceSync(data)
 }
 
 func (flow *flow) CreateCloudEventFilter(ctx context.Context, in *grpc.CreateCloudEventFilterRequest) (*emptypb.Empty, error) {

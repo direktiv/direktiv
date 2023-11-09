@@ -95,10 +95,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 	go func() {
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.MirrorSync, "no-data-to-send")
 	}()
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
@@ -172,10 +169,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	go func() {
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.MirrorSync, "no-data-to-send")
 	}()
 
 	var resp emptypb.Empty
@@ -230,10 +224,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 
 	go func() {
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.MirrorSync, "no-data-to-send")
 	}()
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
@@ -378,53 +369,81 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcess.ID)
-	defer flow.cleanup(sub.Close)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-resend:
-	qu := make(map[string]interface{})
-	qu["source"] = mirProcessID
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return err
-	}
-	le := make([]*logengine.LogEntry, 0)
-	res, total, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-	if err != nil {
-		return err
-	}
-	le = append(le, res...)
-
-	if err != nil {
-		return err
+	setErr := func(e error) {
+		if err == nil {
+			err = e
+			cancel()
+		}
 	}
 
-	resp := new(grpc.MirrorActivityLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Activity = mirProcessID.String()
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return err
-	}
-
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
-
-		err = srv.Send(resp)
-		if err != nil {
-			return err
+	handler := func(data string) {
+		if mirProcess.ID.String() != data {
+			return
 		}
 
-		req.Pagination.Offset += int32(len(resp.Results))
+		qu := make(map[string]interface{})
+		qu["source"] = mirProcessID
+		qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
+		if err != nil {
+			setErr(err)
+			return
+		}
+		le := make([]*logengine.LogEntry, 0)
+		res, total, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		if err != nil {
+			setErr(err)
+			return
+		}
+		le = append(le, res...)
+
+		if err != nil {
+			setErr(err)
+			return
+		}
+
+		resp := new(grpc.MirrorActivityLogsResponse)
+		resp.Namespace = ns.Name
+		resp.Activity = mirProcessID.String()
+		resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
+		resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
+		if err != nil {
+			setErr(err)
+			return
+		}
+
+		if len(resp.Results) != 0 || !tailing {
+			tailing = true
+
+			err = srv.Send(resp)
+			if err != nil {
+				setErr(err)
+				return
+			}
+
+			req.Pagination.Offset += int32(len(resp.Results))
+		}
 	}
 
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
+	subscriptionKey := flow.pubsub.Subscribe(pubsub.LogsNotify, handler)
+
+	defer func() {
+		_ = recover()
+
+		flow.pubsub.Unsubscribe(subscriptionKey)
+	}()
+
+	go handler(mirProcess.ID.String()) // ensure it runs at least once
+
+	<-ctx.Done()
+
+	if err != nil {
+		return err
 	}
 
-	goto resend
+	return nil
 }
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
@@ -436,12 +455,8 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 	}
 
 	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "cancelled by api request")
-	flow.pubsub.CancelMirrorProcess(mirProcessID)
+	flow.pubsub.Publish(pubsub.MirrorCancel, mirProcessID.String())
 
-	// err = flow.mirrorManager.Cancel(ctx, mirProcessID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	var resp emptypb.Empty
 
 	return &resp, nil

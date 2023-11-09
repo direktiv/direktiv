@@ -225,10 +225,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowDelete, file.Path)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.WorkflowDelete, file.Path)
 	} else {
 		// Broadcast Event
 		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
@@ -243,17 +240,11 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.ServiceDelete, file.Path)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.ServiceDelete, file.Path)
 	}
 
 	if file.Typ == filestore.FileTypeEndpoint {
-		err = flow.pBus.Publish(pubsub.EndpointDelete, file.Path)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.EndpointDelete, file.Path)
 	}
 
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)

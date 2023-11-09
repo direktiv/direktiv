@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 )
 
 func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, t time.Time, soft bool) {
@@ -24,8 +26,7 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 
 	// cancel existing timeouts
 
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldId)
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
+	engine.pubsub.Publish(pubsub.TimerDelete, oldId)
 
 	// schedule timeout
 

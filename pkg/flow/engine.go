@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -23,6 +24,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 	"go.opentelemetry.io/otel/trace"
@@ -234,7 +236,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
-	engine.pubsub.NotifyInstances(im.Namespace())
 	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
 	// TODO: alex, do we need to restore workflow logs?
 	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
@@ -369,8 +370,14 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	t := time.Now().UTC()
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		engine.CrashInstance(ctx, im, err)
+		return
+	}
+
 	im.instance.RuntimeInfo.Flow = flow
-	im.instance.RuntimeInfo.Controller = engine.pubsub.Hostname
+	im.instance.RuntimeInfo.Controller = hostname
 	im.instance.RuntimeInfo.Attempts = attempt
 	im.instance.RuntimeInfo.StateBeginTime = t
 	rtData, err := im.instance.RuntimeInfo.MarshalJSON()
@@ -625,8 +632,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 
-	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
-	defer engine.pubsub.NotifyInstances(im.Namespace())
+	defer engine.pubsub.Publish(pubsub.InstanceUpdate, im.instance.Instance.ID.String())
 
 	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
 		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),

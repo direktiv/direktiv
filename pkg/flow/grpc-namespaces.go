@@ -9,10 +9,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -246,7 +245,6 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	flow.sugar.Infof("Created namespace '%s'.", ns.Name)
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
-	flow.pubsub.NotifyNamespaces()
 
 	var resp grpc.CreateNamespaceResponse
 	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
@@ -293,23 +291,14 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	}
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
-	flow.pubsub.NotifyNamespaces()
-	flow.pubsub.CloseNamespace(ns)
 
 	// delete all knative services
 	// TODO: yassir, delete knative services here.
 
 	// delete filter cache
 	deleteCacheNamespaceSync(ns.Name)
-	flow.server.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: deleteFilterCacheNamespace,
-		Key:     ns.Name,
-	})
-
-	err = flow.pBus.Publish(pubsub2.NamespaceDelete, ns.Name)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
+	flow.pubsub.Publish(pubsub.EventFilterCacheDelete, ns.Name)
+	flow.pubsub.Publish(pubsub.NamespaceDelete, ns.Name)
 
 	return &resp, err
 }
@@ -350,8 +339,6 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyNamespaces()
-	flow.pubsub.CloseNamespace(ns)
 
 	var resp grpc.RenameNamespaceResponse
 	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)

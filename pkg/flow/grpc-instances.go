@@ -9,10 +9,10 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -411,66 +411,87 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 		return err
 	}
 
-	var sub *pubsub.Subscription
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-resend:
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummary(ctx)
-	if err != nil {
-		return err
-	}
-
-	tx.Rollback()
-
-	if sub == nil {
-		sub = flow.pubsub.SubscribeInstance(idata.ID)
-		defer flow.cleanup(sub.Close)
-		goto resend
-	}
-
-	instance, err := enginerefactor.ParseInstanceData(idata)
-	if err != nil {
-		return err
-	}
-
-	resp := new(grpc.InstanceResponse)
-	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-	resp.Flow = instance.RuntimeInfo.Flow
-
-	if l := len(instance.DescentInfo.Descent); l > 0 {
-		resp.InvokedBy = instance.DescentInfo.Descent[l-1].ID.String()
-	}
-
-	resp.Namespace = ns.Name
-
-	rwf := new(grpc.InstanceWorkflow)
-	rwf.Name = filepath.Base(instance.Instance.WorkflowPath)
-	rwf.Parent = filepath.Dir(instance.Instance.WorkflowPath)
-	rwf.Path = instance.Instance.WorkflowPath
-	rwf.Revision = instance.Instance.RevisionID.String()
-	resp.Workflow = rwf
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err = srv.Send(resp)
-		if err != nil {
-			return err
+	setErr := func(e error) {
+		if err == nil {
+			err = e
+			cancel()
 		}
 	}
-	phash = nhash
 
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
+	handler := func(data string) {
+		if instID.String() != data {
+			return
+		}
+
+		tx, err := flow.beginSqlTx(ctx)
+		if err != nil {
+			setErr(err)
+			return
+		}
+		defer tx.Rollback()
+
+		idata, err := tx.InstanceStore().ForInstanceID(instID).GetSummary(ctx)
+		if err != nil {
+			setErr(err)
+			return
+		}
+
+		tx.Rollback()
+
+		instance, err := enginerefactor.ParseInstanceData(idata)
+		if err != nil {
+			setErr(err)
+			return
+		}
+
+		resp := new(grpc.InstanceResponse)
+		resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
+		resp.Flow = instance.RuntimeInfo.Flow
+
+		if l := len(instance.DescentInfo.Descent); l > 0 {
+			resp.InvokedBy = instance.DescentInfo.Descent[l-1].ID.String()
+		}
+
+		resp.Namespace = ns.Name
+
+		rwf := new(grpc.InstanceWorkflow)
+		rwf.Name = filepath.Base(instance.Instance.WorkflowPath)
+		rwf.Parent = filepath.Dir(instance.Instance.WorkflowPath)
+		rwf.Path = instance.Instance.WorkflowPath
+		rwf.Revision = instance.Instance.RevisionID.String()
+		resp.Workflow = rwf
+
+		nhash = bytedata.Checksum(resp)
+		if nhash != phash {
+			err = srv.Send(resp)
+			if err != nil {
+				setErr(err)
+				return
+			}
+		}
+		phash = nhash
 	}
 
-	goto resend
+	subscriptionKey := flow.pubsub.Subscribe(pubsub.InstanceUpdate, handler)
+
+	defer func() {
+		_ = recover()
+
+		flow.pubsub.Unsubscribe(subscriptionKey)
+	}()
+
+	go handler(instID.String()) // ensure it runs at least once
+
+	<-ctx.Done()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
@@ -623,71 +644,91 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 		return err
 	}
 
-	sub := flow.pubsub.SubscribeInstance(im.instance.Instance.ID)
-	defer flow.cleanup(sub.Close)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	setErr := func(e error) {
+		if err == nil {
+			err = e
+			cancel()
+		}
+	}
+
+	handler := func(data string) {
+		if im.ID().String() != data {
+			return
+		}
+
+		instance, err := flow.getInstance(ctx, req.GetNamespace(), im.instance.Instance.ID.String())
+		if err != nil {
+			setErr(err)
+			return
+		}
+
+		resp := new(grpc.AwaitWorkflowResponse)
+		resp.Namespace = req.GetNamespace()
+		resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
+		resp.InvokedBy = instance.Instance.Invoker // TODO: is this accurate?
+		resp.Flow = instance.RuntimeInfo.Flow
+		resp.Data = instance.Instance.Output
+		rwf := new(grpc.InstanceWorkflow)
+		// rwf.Name = cached.File.Name()
+		// rwf.Parent = cached.Dir()
+		rwf.Path = instance.Instance.WorkflowPath
+		rwf.Revision = instance.Instance.RevisionID.String()
+		resp.Workflow = rwf
+
+		if instance.Instance.Status == instancestore.InstanceStatusComplete {
+			tx, err := flow.beginSqlTx(ctx)
+			if err != nil {
+				setErr(err)
+				return
+			}
+			defer tx.Rollback()
+
+			idata, err := tx.InstanceStore().ForInstanceID(instance.Instance.ID).GetSummaryWithOutput(ctx)
+			if err != nil {
+				setErr(err)
+				return
+			}
+
+			tx.Rollback()
+
+			resp.Data = idata.Output
+		}
+
+		nhash = bytedata.Checksum(resp)
+		if nhash != phash {
+			err = srv.Send(resp)
+			if err != nil {
+				setErr(err)
+				return
+			}
+		}
+		phash = nhash
+
+		if instance.Instance.Status != instancestore.InstanceStatusPending {
+			cancel()
+		}
+	}
+
+	subscriptionKey := flow.pubsub.Subscribe(pubsub.InstanceUpdate, handler)
+
+	defer func() {
+		_ = recover()
+
+		flow.pubsub.Unsubscribe(subscriptionKey)
+	}()
+
+	go handler(im.ID().String()) // ensure it runs at least once
 
 	flow.engine.queue(im)
 
-	var instance *enginerefactor.Instance
+	<-ctx.Done()
 
-resend:
-
-	instance, err = flow.getInstance(ctx, req.GetNamespace(), im.instance.Instance.ID.String())
 	if err != nil {
-		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
 		return err
 	}
 
-	resp := new(grpc.AwaitWorkflowResponse)
-	resp.Namespace = req.GetNamespace()
-	resp.Instance = bytedata.ConvertInstanceToGrpcInstance(instance)
-	resp.InvokedBy = instance.Instance.Invoker // TODO: is this accurate?
-	resp.Flow = instance.RuntimeInfo.Flow
-	resp.Data = instance.Instance.Output
-	rwf := new(grpc.InstanceWorkflow)
-	// rwf.Name = cached.File.Name()
-	// rwf.Parent = cached.Dir()
-	rwf.Path = instance.Instance.WorkflowPath
-	rwf.Revision = instance.Instance.RevisionID.String()
-	resp.Workflow = rwf
-
-	if instance.Instance.Status == instancestore.InstanceStatusComplete {
-		tx, err := flow.beginSqlTx(ctx)
-		if err != nil {
-			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
-			return err
-		}
-		defer tx.Rollback()
-
-		idata, err := tx.InstanceStore().ForInstanceID(instance.Instance.ID).GetSummaryWithOutput(ctx)
-		if err != nil {
-			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
-			return err
-		}
-
-		tx.Rollback()
-
-		resp.Data = idata.Output
-	}
-
-	nhash = bytedata.Checksum(resp)
-	if nhash != phash {
-		err = srv.Send(resp)
-		if err != nil {
-			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
-			return err
-		}
-	}
-	phash = nhash
-
-	if instance.Instance.Status != instancestore.InstanceStatusPending {
-		return nil
-	}
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
+	return nil
 }

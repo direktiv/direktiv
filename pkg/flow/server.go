@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -16,9 +15,6 @@ import (
 
 	"github.com/caarlos0/env/v9"
 	"github.com/direktiv/direktiv/pkg/dlog"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -32,11 +28,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -57,11 +52,7 @@ type server struct {
 	fnLogger *zap.SugaredLogger
 	conf     *core.Config
 
-	// db       *ent.Client
-	pubsub *pubsub.Pubsub
-
-	// the new pubsub bus
-	pBus pubsub2.Bus
+	pubsub pubsub.Bus
 
 	locks  *locks
 	timers *timers
@@ -297,13 +288,22 @@ func (srv *server) start(ctx context.Context) error {
 	srv.conf.SecretKey = srv.conf.SecretKey + "1234567890123456"
 	srv.conf.SecretKey = srv.conf.SecretKey[0:16]
 
-	srv.sugar.Info("Initializing pub-sub.")
+	var lock sync.Mutex
+	var wg sync.WaitGroup
 
-	srv.pubsub, err = pubsub.InitPubSub(srv.sugar, srv, db)
+	wg.Add(5)
+
+	cctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	srv.sugar.Info("Initializing pubsub routine.")
+	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, srv.conf.DB)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating pubsub, err: %w", err)
 	}
-	defer srv.cleanup(srv.pubsub.Close)
+	srv.pubsub = pBus
+	go pBus.Start(cctx.Done(), &wg)
+
 	srv.sugar.Info("Initializing timers.")
 
 	srv.timers, err = initTimers(srv.pubsub)
@@ -323,22 +323,6 @@ func (srv *server) start(ctx context.Context) error {
 		return err
 	}
 	defer srv.cleanup(srv.engine.Close)
-
-	var lock sync.Mutex
-	var wg sync.WaitGroup
-
-	wg.Add(5)
-
-	cctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	srv.sugar.Info("Initializing pubsub routine.")
-	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, srv.conf.DB)
-	if err != nil {
-		return fmt.Errorf("creating pubsub, err: %w", err)
-	}
-	srv.pBus = pBus
-	go pBus.Start(cctx.Done(), &wg)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 
@@ -362,7 +346,7 @@ func (srv *server) start(ctx context.Context) error {
 	dbLogger, logworker, closelogworker := logengine.NewCachedLogger(1024,
 		noTx.DataStore().Logs().Append,
 		func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
+			srv.pubsub.Publish(pubsub.LogsNotify, objectID.String())
 		},
 		srv.sugar.Errorf,
 	)
@@ -517,85 +501,12 @@ func (srv *server) cleanup(closer func() error) {
 	}
 }
 
-func (srv *server) NotifyCluster(msg string) error {
-	ctx := context.Background()
-
-	conn, err := srv.rawDB.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
-
-	perr := new(pq.Error)
-
-	if errors.As(err, &perr) {
-		srv.sugar.Errorf("db notification failed: %v", perr)
-		if perr.Code == "57014" {
-			return fmt.Errorf("canceled query")
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-func (srv *server) NotifyHostname(hostname, msg string) error {
-	ctx := context.Background()
-
-	conn, err := srv.rawDB.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	channel := fmt.Sprintf("hostname:%s", hostname)
-
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", channel, msg)
-
-	perr := new(pq.Error)
-
-	if errors.As(err, &perr) {
-		fmt.Fprintf(os.Stderr, "db notification failed: %v", perr)
-		if perr.Code == "57014" {
-			return fmt.Errorf("canceled query")
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-func (srv *server) PublishToCluster(payload string) {
-	srv.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: database.PubsubNotifyFunction,
-		Key:     payload,
-	})
-}
-
-func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
-	if srv.ID.String() == req.Sender {
-		return
-	}
-
-	// TODO: Alan, needfix.
-	// srv.database.HandleNotification(req.Key)
-}
-
 func (srv *server) registerFunctions() {
-	srv.pubsub.RegisterFunction(database.PubsubNotifyFunction, srv.CacheNotify)
-
-	srv.pubsub.RegisterFunction(pubsub.PubsubNotifyFunction, srv.pubsub.Notify)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDisconnectFunction, srv.pubsub.Disconnect)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelMirrorProcessFunction, srv.engine.finishCancelMirrorProcess)
-	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
+	srv.pubsub.Subscribe(pubsub.TimerDelete, srv.timers.deleteTimerHandler)
+	srv.pubsub.Subscribe(pubsub.TimersInstanceDelete, srv.timers.deleteTimersForInstanceNoBroadcast)
+	srv.pubsub.Subscribe(pubsub.EngineCancelInstance, srv.engine.finishCancelWorkflow)
+	srv.pubsub.Subscribe(pubsub.MirrorCancel, srv.engine.finishCancelMirrorProcess)
+	srv.pubsub.Subscribe(pubsub.ConfigureRouterCron, srv.flow.configureRouterHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
@@ -603,10 +514,8 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-
-	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
-	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
+	srv.pubsub.Subscribe(pubsub.EventFilterCacheDelete, srv.flow.deleteCache)
+	srv.pubsub.Subscribe(pubsub.EventFilterCacheDeleteNamespace, srv.flow.deleteCacheNamespace)
 }
 
 func (srv *server) cronPoller() {

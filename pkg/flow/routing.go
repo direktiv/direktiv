@@ -12,13 +12,13 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
@@ -321,21 +321,16 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	return file, rev, nil
 }
 
-const (
-	rcfNone       = 0
-	rcfNoPriors   = 1 << iota
-	rcfBreaking   // don't throw a router validation error if the router was already invalid before the change
-	rcfNoValidate // skip validation of new workflow if old router has one or fewer routes
-)
-
-func hasFlag(flags, flag int) bool {
-	return flags&flag != 0
+type configureRouterMessage struct {
+	ID      string
+	Cron    string
+	Enabled bool
 }
 
-func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
-	msg := new(pubsub.ConfigureRouterMessage)
+func (flow *flow) configureRouterHandler(data string) {
+	msg := new(configureRouterMessage)
 
-	err := json.Unmarshal([]byte(req.Key), msg)
+	err := json.Unmarshal([]byte(data), msg)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -436,6 +431,12 @@ func (flow *flow) cronHandler(data []byte) {
 	flow.engine.queue(im)
 }
 
+type ConfigureRouterMessage struct {
+	ID      string
+	Cron    string
+	Enabled bool
+}
+
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
 	ms, verr, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
@@ -459,7 +460,15 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID u
 		return err
 	}
 
-	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron, ms.Enabled)
+	msg := &ConfigureRouterMessage{
+		ID:      file.ID.String(),
+		Cron:    ms.Cron,
+		Enabled: ms.Enabled,
+	}
+
+	data := bytedata.Marshal(msg)
+
+	flow.pubsub.Publish(pubsub.ConfigureRouterCron, data)
 
 	return nil
 }

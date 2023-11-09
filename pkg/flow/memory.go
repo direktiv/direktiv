@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 )
 
@@ -70,8 +71,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
 
-	im.engine.pubsub.NotifyInstance(im.instance.Instance.ID)
-	im.engine.pubsub.NotifyInstances(im.Namespace())
+	im.engine.pubsub.Publish(pubsub.InstanceUpdate, im.instance.Instance.ID.String())
 
 	return nil
 }

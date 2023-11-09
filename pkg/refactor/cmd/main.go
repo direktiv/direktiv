@@ -65,30 +65,32 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		GetAllPluginSchemas: gateway.GetAllSchemas,
 	}
 
-	pbus.Subscribe(func(_ string) {
+	serviceManagerHandler := func(_ string) {
 		renderServiceManager(db, serviceManager, logger)
-	},
-		pubsub.WorkflowCreate,
-		pubsub.WorkflowUpdate,
-		pubsub.WorkflowDelete,
-		pubsub.ServiceCreate,
-		pubsub.ServiceUpdate,
-		pubsub.ServiceDelete,
-		pubsub.MirrorSync,
-		pubsub.NamespaceDelete,
-	)
+	}
+
+	_ = pbus.Subscribe(pubsub.WorkflowCreate, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.WorkflowUpdate, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.WorkflowDelete, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.ServiceCreate, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.ServiceUpdate, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.ServiceDelete, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.MirrorSync, serviceManagerHandler)
+	_ = pbus.Subscribe(pubsub.NamespaceDelete, serviceManagerHandler)
+
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
 
-	pbus.Subscribe(func(_ string) {
+	endpointManagerHandler := func(_ string) {
 		renderEndpointManager(db, endpointManager, logger)
-	},
-		pubsub.EndpointCreate,
-		pubsub.EndpointUpdate,
-		pubsub.EndpointDelete,
-		pubsub.MirrorSync,
-		pubsub.NamespaceDelete,
-	)
+	}
+
+	_ = pbus.Subscribe(pubsub.EndpointCreate, endpointManagerHandler)
+	_ = pbus.Subscribe(pubsub.EndpointUpdate, endpointManagerHandler)
+	_ = pbus.Subscribe(pubsub.EndpointDelete, endpointManagerHandler)
+	_ = pbus.Subscribe(pubsub.MirrorSync, endpointManagerHandler)
+	_ = pbus.Subscribe(pubsub.NamespaceDelete, endpointManagerHandler)
+
 	renderEndpointManager(db, endpointManager, logger)
 
 	// Start api v2 server

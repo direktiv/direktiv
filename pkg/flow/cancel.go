@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 )
 
@@ -50,6 +51,13 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []
 	return living
 }
 
+type cancelWorkflowMessage struct {
+	ID      string
+	Code    string
+	Message string
+	Soft    bool
+}
+
 func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
 	children := engine.LivingChildren(ctx, im)
 
@@ -62,7 +70,14 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 				engine.sugar.Warn("missing child service name")
 			}
 		case "subflow":
-			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
+			x := &cancelWorkflowMessage{
+				ID:      child.Id,
+				Code:    ErrCodeCancelledByParent,
+				Message: "cancelled by parent workflow",
+				Soft:    false,
+			}
+			data := bytedata.Marshal(x)
+			engine.pubsub.Publish(pubsub.EngineCancelInstance, data)
 		default:
 			engine.sugar.Errorf("unrecognized child type: %s", child.Type)
 		}
@@ -93,56 +108,20 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 	go engine.runState(ctx, im, nil, err)
 }
 
-func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
-	args := make([]interface{}, 0)
+func (engine *engine) finishCancelWorkflow(data string) {
+	args := new(cancelWorkflowMessage)
 
-	err := json.Unmarshal([]byte(req.Key), &args)
+	err := json.Unmarshal([]byte(data), &args)
 	if err != nil {
 		engine.sugar.Error(err)
 		return
 	}
 
-	var soft, ok bool
-	var id, code, msg string
-
-	if len(args) != 4 {
-		goto bad
-	}
-
-	id, ok = args[0].(string)
-	if !ok {
-		goto bad
-	}
-
-	code, ok = args[1].(string)
-	if !ok {
-		goto bad
-	}
-
-	msg, ok = args[2].(string)
-	if !ok {
-		goto bad
-	}
-
-	soft, ok = args[3].(bool)
-	if !ok {
-		goto bad
-	}
-
-	engine.cancelInstance(id, code, msg, soft)
-
-	return
-
-bad:
-
-	engine.sugar.Error(errors.New("bad input to workflow cancel pubsub"))
+	engine.cancelInstance(args.ID, args.Code, args.Message, args.Soft)
 }
 
 func (engine *engine) cancelRunning(id string) {
-	im, err := engine.getInstanceMemory(context.Background(), id)
-	if err == nil {
-		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.Hostname, id)
-	}
+	engine.pubsub.Publish(pubsub.TimerDelete, id)
 
 	engine.cancellersLock.Lock()
 	cancel, exists := engine.cancellers[id]
@@ -152,10 +131,10 @@ func (engine *engine) cancelRunning(id string) {
 	engine.cancellersLock.Unlock()
 }
 
-func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
+func (engine *engine) finishCancelMirrorProcess(data string) {
 	args := make([]interface{}, 0)
 
-	err := json.Unmarshal([]byte(req.Key), &args)
+	err := json.Unmarshal([]byte(data), &args)
 	if err != nil {
 		engine.sugar.Error(err)
 		return

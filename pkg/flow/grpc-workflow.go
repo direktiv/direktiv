@@ -131,10 +131,7 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created service '%s'.", file.Path)
 
-	err = flow.pBus.Publish(pubsub.ServiceCreate, file.Path)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
+	flow.pubsub.Publish(pubsub.ServiceCreate, file.Path)
 
 	return resp, nil
 }
@@ -171,10 +168,7 @@ func (flow *flow) createEndpoint(ctx context.Context, req *grpc.CreateWorkflowRe
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created endpoint '%s'.", file.Path)
 
-	err = flow.pBus.Publish(pubsub.EndpointCreate, file.Path)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
+	flow.pubsub.Publish(pubsub.EndpointCreate, file.Path)
 
 	return resp, nil
 }
@@ -260,10 +254,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.pBus.Publish(pubsub.WorkflowCreate, file.Path)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
+	flow.pubsub.Publish(pubsub.WorkflowCreate, file.Path)
 
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
@@ -330,10 +321,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.WorkflowUpdate, file.Path)
 	}
 
 	if err = tx.Commit(ctx); err != nil {
@@ -341,17 +329,11 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.ServiceUpdate, file.Path)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.ServiceUpdate, file.Path)
 	}
 
 	if file.Typ == filestore.FileTypeEndpoint {
-		err = flow.pBus.Publish(pubsub.EndpointUpdate, file.Path)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
+		flow.pubsub.Publish(pubsub.EndpointUpdate, file.Path)
 	}
 
 	var resp grpc.UpdateWorkflowResponse
@@ -418,10 +400,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
+	flow.pubsub.Publish(pubsub.WorkflowUpdate, file.Path)
 
 	var resp grpc.SaveHeadResponse
 
@@ -510,10 +489,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
+	flow.pubsub.Publish(pubsub.WorkflowUpdate, file.Path)
 
 	var resp grpc.DiscardHeadResponse
 

@@ -84,26 +84,28 @@ func (p *PostgresBus) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	}
 }
 
-func (p *PostgresBus) Publish(channel string, data string) error {
+func (p *PostgresBus) Publish(channel string, data string) {
 	if channel == "" || strings.Contains(channel, " ") {
-		return fmt.Errorf("channel name is empty or has spaces: >%s<", channel)
+		panic(fmt.Errorf("channel name is empty or has spaces: >%s<", channel))
 	}
 	dataString, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("encoding data, data: %s, err: %w", data, err)
+		panic(fmt.Errorf("encoding data, data: %s, err: %w", data, err))
 	}
 	_, err = p.db.Exec(fmt.Sprintf("NOTIFY %s, '%s %s'", globalPostgresChannel, channel, dataString))
 	if err != nil {
-		return fmt.Errorf("send notify command, channel: %s, data: %v, err: %w", channel, data, err)
+		p.logger.Errorf("send notify command, channel: %s, data: %v, err: %w", channel, data, err)
 	}
-
-	return nil
 }
 
-func (p *PostgresBus) Subscribe(handler func(data string), channels ...string) {
-	for _, channel := range channels {
-		p.subscribers.Store(fmt.Sprintf("%s_%s", channel, uuid.New().String()), handler)
-	}
+func (p *PostgresBus) Subscribe(channel string, handler func(data string)) string {
+	key := fmt.Sprintf("%s_%s", channel, uuid.New().String())
+	p.subscribers.Store(key, handler)
+	return key
+}
+
+func (p *PostgresBus) Unsubscribe(key string) {
+	p.subscribers.Delete(key)
 }
 
 func splitNotificationText(text string) (string, string, error) {

@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 )
 
@@ -64,7 +65,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(nsID)
+	events.pubsub.Publish(pubsub.EventListenersNotify, nsID.String())
 
 	return nil
 }
@@ -89,7 +90,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
+	events.pubsub.Publish(pubsub.EventListenersNotify, im.ID().String())
 
 	return nil
 }
@@ -163,7 +164,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 	}
 
-	events.pubsub.NotifyEventListeners(nsID)
+	events.pubsub.Publish(pubsub.EventListenersNotify, nsID.String())
 
 	return nil
 }
@@ -218,7 +219,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(namespace)
+	events.pubsub.Publish(pubsub.EventListenersNotify, namespace.String())
 
 	return nil
 }
