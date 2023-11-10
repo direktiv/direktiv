@@ -103,6 +103,7 @@ const Notification: FC<NotificationPropsType> = ({
             <Bell className="relative" />
             {showIndicator && (
               <div
+                data-testid="notification-indicator"
                 data-state="open"
                 className={twMergeClsx(
                   "absolute top-0 right-0 rounded-full border-2 border-white bg-danger-10 p-1 transition-colors dark:border-black dark:bg-danger-dark-10",
