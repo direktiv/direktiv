@@ -42,6 +42,10 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	routePath := chi.URLParam(r, "*")
 
+	if !strings.HasSuffix(routePath, ".yaml") {
+		routePath = routePath + ".yaml"
+	}
+
 	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v\n", routePath)
 
 	fmt.Println(gw.pluginPool)
