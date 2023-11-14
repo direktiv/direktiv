@@ -75,6 +75,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		pubsub.ServiceUpdate,
 		pubsub.ServiceDelete,
 		pubsub.MirrorSync,
+		pubsub.NamespaceDelete,
 	)
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
@@ -86,6 +87,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,
 		pubsub.MirrorSync,
+		pubsub.NamespaceDelete,
 	)
 	renderEndpointManager(db, endpointManager, logger)
 

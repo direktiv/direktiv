@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -304,6 +305,11 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		Handler: deleteFilterCacheNamespace,
 		Key:     ns.Name,
 	})
+
+	err = flow.pBus.Publish(pubsub2.NamespaceDelete, ns.Name)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
 
 	return &resp, err
 }
