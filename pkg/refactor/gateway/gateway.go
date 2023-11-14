@@ -1,9 +1,9 @@
 package gateway
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -64,30 +64,37 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (gw *handler) SetEndpoints(list []*core.Endpoint) {
 	gw.mu.Lock() // Lock
 	defer gw.mu.Unlock()
-	newList := make([]*core.EndpointStatus, len(list))
-	newPool := make(map[string]endpointEntry)
-	oldPool := gw.pluginPool
+	// newList := make([]*core.EndpointStatus, len(list))
+	// newPool := make(map[string]endpointEntry)
+	// oldPool := gw.pluginPool
 
-	for i, ep := range list {
-		cp := *ep
-		newList[i] = &core.EndpointStatus{Endpoint: cp}
+	for i := range list {
 
-		path, _ := strings.CutPrefix(cp.FilePath, "/")
-		checksum := string(sha256.New().Sum([]byte(fmt.Sprint(cp))))
+		// flow.sugar.Error(fmt.Sprintf("deleting all logs since %v", t))
+		fmt.Printf("COUHTER %v\n", i)
 
-		key := cp.Method + ":/:" + path
-		value, ok := oldPool[key]
-		if ok && value.checksum == checksum {
-			newPool[key] = value
-		}
-		newPool[key] = endpointEntry{
-			plugins:        buildPluginChain(newList[i]),
-			EndpointStatus: newList[i],
-			checksum:       checksum,
-			item:           i,
-		}
+		slog.Info("hello", "count", i)
+		// cp := *ep
+		// newList[i] = &core.EndpointStatus{Endpoint: cp}
+
+		// path, _ := strings.CutPrefix(cp.FilePath, "/")
+		// checksum := string(sha256.New().Sum([]byte(fmt.Sprint(cp))))
+
+		// key := cp.Method + ":/:" + path
+
+		// fmt.Printf("!!!!!!!!!!!!!!!!!!! %v\n", key)
+		// value, ok := oldPool[key]
+		// if ok && value.checksum == checksum {
+		// 	newPool[key] = value
+		// }
+		// newPool[key] = endpointEntry{
+		// 	plugins:        buildPluginChain(newList[i]),
+		// 	EndpointStatus: newList[i],
+		// 	checksum:       checksum,
+		// 	item:           i,
+		// }
 	}
-	gw.pluginPool = newPool
+	// gw.pluginPool = newPool
 }
 
 func buildPluginChain(endpoint *core.EndpointStatus) []serve {
