@@ -457,11 +457,11 @@ install_direktiv() {
         exit 1
     fi
 
-    add_direktiv_helm_repo
-    if [ $? -ne 0 ]
-    then 
-        exit 1
-    fi
+    # add_direktiv_helm_repo
+    # if [ $? -ne 0 ]
+    # then 
+    #     exit 1
+    # fi
 
     chart="direktiv/direktiv"
 
