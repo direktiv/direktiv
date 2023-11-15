@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -14,10 +15,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gopkg.in/yaml.v2"
 )
 
 func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkflowUIDRequest) (*grpc.WorkflowResponse, error) {
@@ -99,7 +100,8 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	}
 }
 
-func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
+func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType,
+	pubSub string, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
@@ -110,11 +112,12 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 	if err != nil {
 		return nil, err
 	}
-
-	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeService, "application/direktiv", req.GetSource())
+	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(),
+		fileType, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
+
 	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -129,49 +132,9 @@ func (flow *flow) createService(ctx context.Context, req *grpc.CreateWorkflowReq
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created service '%s'.", file.Path)
-
-	err = flow.pBus.Publish(pubsub.ServiceCreate, file.Path)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
-
-	return resp, nil
-}
-
-func (flow *flow) createEndpoint(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeEndpoint, "application/direktiv", req.GetSource())
-	if err != nil {
-		return nil, err
-	}
-	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &grpc.CreateWorkflowResponse{}
-	resp.Namespace = ns.Name
-	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created endpoint '%s'.", file.Path)
-
-	err = flow.pBus.Publish(pubsub.EndpointCreate, file.Path)
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
+	fmt.Println("4")
+	err = flow.pBus.Publish(pubSub, file.Path)
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -186,14 +149,27 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, "direktiv spec file name should have either .yaml or .yaml extension")
 	}
 
-	if _, err := spec.ParseServiceFile(req.GetSource()); err == nil {
-		return flow.createService(ctx, req)
+	type APIFile struct {
+		DirektivAPI string `yaml:"direktiv_api"`
 	}
 
-	if _, err := spec.ParseEndpointFile(req.GetSource()); err == nil {
-		return flow.createEndpoint(ctx, req)
+	apiFile := &APIFile{}
+	err := yaml.Unmarshal(req.GetSource(), apiFile)
+	if err != nil {
+		return nil, err
 	}
 
+	// check for other file types first
+	switch apiFile.DirektivAPI {
+	case model.ServiceAPIV1:
+		return flow.createFileSystemObject(ctx, filestore.FileTypeService, pubsub.ServiceCreate, req)
+	case model.EndpointAPIV1:
+		return flow.createFileSystemObject(ctx, filestore.FileTypeEndpoint, pubsub.EndpointCreate, req)
+	case model.ConsumerAPIV1:
+		return flow.createFileSystemObject(ctx, filestore.FileTypeConsumer, pubsub.ConsumerCreate, req)
+	}
+
+	// do workflow if no other type detected
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err
@@ -349,6 +325,13 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	if file.Typ == filestore.FileTypeEndpoint {
 		err = flow.pBus.Publish(pubsub.EndpointUpdate, file.Path)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}
+
+	if file.Typ == filestore.FileTypeConsumer {
+		err = flow.pBus.Publish(pubsub.ConsumerUpdate, file.Path)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

@@ -35,6 +35,10 @@ const (
 	EndpointAPIV1 = "endpoint/v1"
 )
 
+const (
+	ConsumerAPIV1 = "consumer/v1"
+)
+
 var ErrNotDirektivAPIResource = errors.New("not a direktiv_api resource")
 
 func LoadResource(data []byte) (interface{}, error) {
@@ -81,7 +85,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		sf := new(spec.ServiceFile)
 		err = yaml.Unmarshal(data, &sf)
 		if err != nil {
-			return &Filters{
+			return &spec.ServiceFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
@@ -92,7 +96,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		ef := new(spec.EndpointFile)
 		err = yaml.Unmarshal(data, &ef)
 		if err != nil {
-			return &Filters{
+			return &spec.EndpointFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}

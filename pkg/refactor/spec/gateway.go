@@ -8,14 +8,37 @@ import (
 )
 
 type EndpointFile struct {
-	DirektivAPI string         `yaml:"direktiv_api"`
-	Method      string         `yaml:"method"`
-	Plugins     []PluginConfig `yaml:"plugins"`
+	DirektivAPI   string         `yaml:"direktiv_api"`
+	Methods       []string       `yaml:"methods"`
+	PathExtension string         `yaml:"path-extension"`
+	Plugins       []PluginConfig `yaml:"plugins"`
+}
+
+type ConsumerFile struct {
+	DirektivAPI string   `yaml:"direktiv_api"`
+	Username    string   `yaml:"username"`
+	Password    string   `yaml:"password"`
+	APIkey      string   `yaml:"apikey"`
+	Tags        []string `yaml:"tags"`
+	Groups      []string `yaml:"groups"`
 }
 
 type PluginConfig struct {
 	Type          string                 `yaml:"type"`
 	Configuration map[string]interface{} `yaml:"configuration"`
+}
+
+func ParseConsumerFile(data []byte) (*ConsumerFile, error) {
+	res := &ConsumerFile{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(res.DirektivAPI, "consumer/v1") {
+		return nil, fmt.Errorf("invalid consumer api version")
+	}
+
+	return res, nil
 }
 
 func ParseEndpointFile(data []byte) (*EndpointFile, error) {
