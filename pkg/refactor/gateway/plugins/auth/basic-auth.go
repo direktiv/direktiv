@@ -11,6 +11,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 )
 
+const basicAuthPluginName = "basic-auth"
+
 type BasicAuthPlugin struct {
 	config map[string]interface{}
 }
@@ -22,7 +24,7 @@ func (ba BasicAuthPlugin) Configure(config map[string]interface{}) (plugins.Plug
 }
 
 func (ba BasicAuthPlugin) Name() string {
-	return "basic-auth"
+	return basicAuthPluginName
 }
 
 func (ba BasicAuthPlugin) Type() plugins.PluginType {
