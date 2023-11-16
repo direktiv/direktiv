@@ -1,9 +1,14 @@
-name: Build
+name: backend-e2e-tests
 on:
-  workflow_dispatch:
   push:
     tags:
       - v*
+    branches:
+      - master 
+      - main
+  pull_request:
+permissions:
+  contents: read
 jobs:
   test:
     name: End-to-end tests
