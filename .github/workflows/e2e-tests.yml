@@ -1,12 +1,14 @@
 name: backend-e2e-tests
 on:
-    push:
-      tags:
-        - v*
-      branches:
-        - main
-    pull_request:
-    workflow_dispatch:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   e2e-test:
     name: End-to-end tests
