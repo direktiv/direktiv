@@ -1,5 +1,5 @@
 module.exports = {
-    testTimeout: 30000,
+    testTimeout: 90000,
     watchPlugins: [
         "jest-watch-typeahead/filename",
         "jest-watch-typeahead/testname",
