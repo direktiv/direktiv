@@ -10,7 +10,6 @@ GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
 RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
-JEST_PREFIX := "/tests/"
 
 .SECONDARY:
 
@@ -21,7 +20,6 @@ help: ## Prints usage information.
 	@echo "\033[36mVariables\033[0m"
 	@printf "  %-16s %s\n" '$$DOCKER_REPO' "${DOCKER_REPO}"
 	@printf "  %-16s %s\n" '$$RELEASE' "${RELEASE}"
-	@printf "  %-16s %s\n" '$$JEST_PREFIX' "${JEST_PREFIX}"
 	@echo ""
 	@echo "\033[36mTargets\033[0m"
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -150,12 +148,11 @@ k3s-tail: ## Tail the logs of the direktiv server running in the local k3s envir
 
 .PHONY: k3s-tests
 k3s-tests: k3s-wait
-k3s-tests: ## Runs end-to-end tests. make test [JEST_PREFIX=/tests/namespaces]
-	$(eval DIREKTIV_HOST := $(shell kubectl -n direktiv get svc direktiv-ingress-nginx-controller -o json | jq -r '.status.loadBalancer.ingress[0].ip'))
+k3s-tests: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
 	-v `pwd`/direktivctl:/bin/direktivctl \
-	-e 'DIREKTIV_HOST=http://${DIREKTIV_HOST}' \
+	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
 	node:alpine npm --prefix "/tests" run all -- ${JEST_PREFIX}
 
