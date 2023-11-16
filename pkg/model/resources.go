@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,6 +25,14 @@ type Filters struct {
 
 const (
 	WorkflowAPIV1 = "workflow/v1"
+)
+
+const (
+	ServiceAPIV1 = "service/v1"
+)
+
+const (
+	EndpointAPIV1 = "endpoint/v1"
 )
 
 var ErrNotDirektivAPIResource = errors.New("not a direktiv_api resource")
@@ -67,6 +76,29 @@ func LoadResource(data []byte) (interface{}, error) {
 		}
 
 		return wf, nil
+
+	case ServiceAPIV1:
+		sf := new(spec.ServiceFile)
+		err = yaml.Unmarshal(data, &sf)
+		if err != nil {
+			return &Filters{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		return sf, nil
+
+	case EndpointAPIV1:
+		ef := new(spec.EndpointFile)
+		err = yaml.Unmarshal(data, &ef)
+		if err != nil {
+			return &Filters{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		return ef, nil
+
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}

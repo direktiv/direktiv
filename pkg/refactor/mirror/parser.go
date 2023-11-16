@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -25,6 +26,8 @@ type Parser struct {
 
 	Filters   map[string][]byte
 	Workflows map[string][]byte
+	Services  map[string][]byte
+	Endpoints map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
@@ -45,6 +48,8 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 
 		Filters:   make(map[string][]byte),
 		Workflows: make(map[string][]byte),
+		Services:  make(map[string][]byte),
+		Endpoints: make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
@@ -272,6 +277,16 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
+	case *spec.EndpointFile:
+		err = p.handleEndpoint(path, data)
+		if err != nil {
+			return err
+		}
+	case *spec.ServiceFile:
+		err = p.handleService(path, data)
+		if err != nil {
+			return err
+		}
 	default:
 		panic(typ)
 	}
@@ -353,6 +368,22 @@ func (p *Parser) handleWorkflow(path string, data []byte) error {
 	p.log.Infof("Direktiv resource file containing a workflow definition found at '%s'", path)
 
 	p.Workflows[path] = data
+
+	return nil
+}
+
+func (p *Parser) handleService(path string, data []byte) error {
+	p.log.Infof("Direktiv resource file containing a service definition found at '%s'", path)
+
+	p.Services[path] = data
+
+	return nil
+}
+
+func (p *Parser) handleEndpoint(path string, data []byte) error {
+	p.log.Infof("Direktiv resource file containing an endpoint definition found at '%s'", path)
+
+	p.Endpoints[path] = data
 
 	return nil
 }
