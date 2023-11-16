@@ -1,5 +1,7 @@
 package gateway
 
+// This file has been copied and modified from https://github.com/go-chi/chi
+
 import (
 	"context"
 	"net/http"
@@ -36,10 +38,8 @@ func NewRouteContext() *Context {
 	return &Context{}
 }
 
-var (
-	// RouteCtxKey is the context.Context key to store the request context.
-	RouteCtxKey = &contextKey{"RouteContext"}
-)
+// RouteCtxKey is the context.Context key to store the request context.
+var RouteCtxKey = &contextKey{"RouteContext"}
 
 // Context is the default routing context set on the root node of a
 // request context to track route patterns, URL parameters and

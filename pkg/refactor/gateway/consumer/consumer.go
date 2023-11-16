@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"fmt"
 	"log/slog"
 	"sync"
 
@@ -25,15 +24,10 @@ func newConsumerList() *consumerList {
 }
 
 func SetConsumer(consumerList []*core.Consumer) {
-
-	fmt.Printf("SETTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT %v\n", consumerList)
-
 	newConsumer := newConsumerList()
 
 	for i := range consumerList {
 		c := consumerList[i]
-
-		fmt.Println("SETTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
 
 		_, ok := newConsumer.usernameView[c.Username]
 		if ok {
@@ -47,24 +41,20 @@ func SetConsumer(consumerList []*core.Consumer) {
 		newConsumer.usernameView[c.Username] = c
 
 		// set api key lookup
-		if c.APIkey != "" {
-			newConsumer.apiKeyView[c.APIkey] = c
+		if c.APIKey != "" {
+			newConsumer.apiKeyView[c.APIKey] = c
 		}
-
 	}
 
 	// replace with new consumer list
 	consumers.lock.Lock()
 	defer consumers.lock.Unlock()
 	consumers = newConsumer
-
 }
 
-func ConsumerByUser(user string) *core.Consumer {
+func FindByUser(user string) *core.Consumer {
 	consumers.lock.RLock()
 	defer consumers.lock.RUnlock()
-
-	fmt.Println(consumers)
 
 	c, ok := consumers.usernameView[user]
 	if !ok {
@@ -74,7 +64,14 @@ func ConsumerByUser(user string) *core.Consumer {
 	return c
 }
 
-func ConsumerByAPIKey(key string) {
+func FindByAPIKey(key string) *core.Consumer {
 	consumers.lock.RLock()
 	defer consumers.lock.RUnlock()
+
+	c, ok := consumers.apiKeyView[key]
+	if !ok {
+		return nil
+	}
+
+	return c
 }

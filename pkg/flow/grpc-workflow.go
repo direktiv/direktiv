@@ -101,7 +101,8 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 }
 
 func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType,
-	pubSub string, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
+	pubSub string, req *grpc.CreateWorkflowRequest,
+) (*grpc.CreateWorkflowResponse, error) {
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return nil, err

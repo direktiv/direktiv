@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -11,10 +10,10 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/go-chi/chi/v5"
-
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	// This triggers the init function within the plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
+	"github.com/go-chi/chi/v5"
 )
 
 var pathTree = &node{}
@@ -37,7 +36,6 @@ func NewHandler() core.EndpointManager {
 }
 
 func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	routePath := chi.URLParam(r, "*")
 
 	ctx := NewRouteContext()
@@ -45,17 +43,15 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if endpointEntry == nil {
 		w.WriteHeader(http.StatusNotFound)
+		// nolint
 		w.Write([]byte("not found"))
+
 		return
 	}
 
 	// TODO: set timeout
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(r.Context(), time.Second)
 	defer cancel()
-
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!>>>1 %v\n", endpointEntry)
-
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!>>>2 %v\n", endpointEntry.authPlugins)
 
 	// run auth
 	for i := range endpointEntry.authPlugins {
@@ -64,32 +60,12 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// chech if consumer is set in plugin context
 	}
-
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %v\n", endpointEntry.endpoint.FilePath)
-	// prefix := "/api/v2/gw/"
-	// path, _ := strings.CutPrefix(r.URL.Path, prefix)
-	// key := r.Method + ":/:" + path
-
-	// endpoint, ok := gw.pluginPool[key]
-	// if !ok {
-	// 	http.NotFound(w, r)
-
-	// 	return
-	// }
-	// for _, f := range endpoint.plugins {
-	// 	cont := f(w, r)
-	// 	if !cont {
-	// 		return
-	// 	}
-	// }
 }
 
 func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
-
-	var newTree = &node{}
+	newTree := &node{}
 
 	for i := range endpointList {
-
 		ep := endpointList[i]
 
 		slog.Debug("adding endpoint",
@@ -109,6 +85,7 @@ func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
 			slog.Error("configuring endpoint failed",
 				slog.String("endpoint", ep.FilePath),
 				slog.Any("error", err))
+
 			continue
 		}
 
@@ -120,8 +97,6 @@ func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
 			outboundPlugins: outbound,
 		}
 
-		fmt.Printf("!!!!!!!!!!!!!!!!!!!!>>> %v\n", auth)
-
 		// assign handler to all methods
 		for a := range ep.Methods {
 			m := ep.Methods[a]
@@ -130,6 +105,7 @@ func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
 				slog.Warn("http method unknown",
 					slog.String("endpoint", ep.FilePath),
 					slog.String("method", m))
+
 				continue
 			}
 
@@ -184,7 +160,6 @@ func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
 }
 
 func buildPluginChain(endpoint *core.Endpoint) ([]plugins.Plugin, []plugins.Plugin, []plugins.Plugin, error) {
-
 	authPlugins := make([]plugins.Plugin, 0)
 	inboundPlugins := make([]plugins.Plugin, 0)
 	outboundPlugins := make([]plugins.Plugin, 0)

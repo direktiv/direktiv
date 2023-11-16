@@ -16,7 +16,7 @@ type EndpointManager interface {
 type Endpoint struct {
 	Methods       []string `json:"methods"`
 	FilePath      string   `json:"file_path"`
-	PathExtension string   `yaml:"path-extension"`
+	PathExtension string   `yaml:"path_extension"`
 	Plugins       []Plugin `json:"plugins"`
 	Error         string   `json:"error"`
 }
@@ -24,7 +24,7 @@ type Endpoint struct {
 type Consumer struct {
 	Username string   `yaml:"username"`
 	Password string   `yaml:"password"`
-	APIkey   string   `yaml:"apikey"`
+	APIKey   string   `yaml:"api_key"`
 	Tags     []string `yaml:"tags"`
 	Groups   []string `yaml:"groups"`
 }

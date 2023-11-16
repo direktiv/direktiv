@@ -1,6 +1,8 @@
+//nolint
+
 package gateway
 
-//
+// This file has been copied and modified from https://github.com/go-chi/chi
 // Radix tree implementation below is a based on the original work by
 // Armon Dadgar in https://github.com/armon/go-radix/blob/master/radix.go
 // (MIT licensed). It's been heavily modified for use as a HTTP routing tree.
@@ -147,7 +149,7 @@ func (n *node) InsertRoute(method methodTyp, pattern string, handler *endpointEn
 		}
 		// We're going to be searching for a wild node next,
 		// in this case, we need to get the tail
-		var label = search[0]
+		label := search[0]
 		var segTail byte
 		var segEndIdx int
 		var segTyp nodeTyp

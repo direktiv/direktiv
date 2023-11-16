@@ -10,7 +10,7 @@ import (
 type EndpointFile struct {
 	DirektivAPI   string         `yaml:"direktiv_api"`
 	Methods       []string       `yaml:"methods"`
-	PathExtension string         `yaml:"path-extension"`
+	PathExtension string         `yaml:"path_extension"`
 	Plugins       []PluginConfig `yaml:"plugins"`
 }
 
@@ -18,7 +18,7 @@ type ConsumerFile struct {
 	DirektivAPI string   `yaml:"direktiv_api"`
 	Username    string   `yaml:"username"`
 	Password    string   `yaml:"password"`
-	APIkey      string   `yaml:"apikey"`
+	APIKey      string   `yaml:"api_key"`
 	Tags        []string `yaml:"tags"`
 	Groups      []string `yaml:"groups"`
 }

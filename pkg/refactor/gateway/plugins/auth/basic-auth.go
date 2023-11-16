@@ -2,10 +2,10 @@ package auth
 
 import (
 	"context"
-	"fmt"
+	"crypto/sha256"
+	"crypto/subtle"
 	"log/slog"
 	"net/http"
-	"net/http/httputil"
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
@@ -29,32 +29,36 @@ func (ba BasicAuthPlugin) Type() plugins.PluginType {
 	return plugins.AuthPluginType
 }
 
-func (ba BasicAuthPlugin) ExecutePlugin(ctx context.Context, w http.ResponseWriter, r *http.Request) bool {
-
-	fmt.Println("EXECUTE!!!!!!!!!!!!")
-
-	b, err := httputil.DumpRequest(r, false)
-
-	fmt.Println(string(b))
-	fmt.Println(err)
-
-	username, password, ok := r.BasicAuth()
+func (ba BasicAuthPlugin) ExecutePlugin(ctx context.Context, _ http.ResponseWriter, r *http.Request) bool {
+	user, pwd, ok := r.BasicAuth()
 
 	// no basic auth provided
 	if !ok {
 		return true
 	}
 
-	consumer := consumer.ConsumerByUser(username)
+	consumer := consumer.FindByUser(user)
 
 	// no consumer with that name
 	if consumer == nil {
 		slog.Debug("no consumer configured",
-			slog.String("user", username))
+			slog.String("user", user))
+
 		return true
 	}
 
-	// COMPARE PASSWORD
+	// comparing passwords
+	userHash := sha256.Sum256([]byte(user))
+	pwdHash := sha256.Sum256([]byte(pwd))
+	userHashExpected := sha256.Sum256([]byte(consumer.Username))
+	pwdHashExpected := sha256.Sum256([]byte(consumer.Password))
+
+	usernameMatch := (subtle.ConstantTimeCompare(userHash[:], userHashExpected[:]) == 1)
+	passwordMatch := (subtle.ConstantTimeCompare(pwdHash[:], pwdHashExpected[:]) == 1)
+
+	if usernameMatch && passwordMatch {
+		plugins.AddAuthToContext(ctx, consumer)
+	}
 
 	// basic auth always returns true to execute other auth plugins
 	return true

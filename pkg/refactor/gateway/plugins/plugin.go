@@ -4,7 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
+
+type AuthCtxKey int
+
+const authCtxKey AuthCtxKey = 1
 
 var registry = make(map[string]Plugin)
 
@@ -24,10 +30,12 @@ type Plugin interface {
 	// getSchema() interface{}
 }
 
-// type Serve func(w http.ResponseWriter, r *http.Request) bool
-
 func AddPluginToRegistry(plugin Plugin) {
 	registry[plugin.Name()] = plugin
+}
+
+func AddAuthToContext(ctx context.Context, c *core.Consumer) context.Context {
+	return context.WithValue(ctx, authCtxKey, c)
 }
 
 func GetPluginFromRegistry(plugin string) (Plugin, error) {

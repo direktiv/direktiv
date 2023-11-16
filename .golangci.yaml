@@ -3,7 +3,7 @@ run:
   go: 1.21.0
   issues-exit-code: 1
   tests: false
-  skip-files: [".pb.go"]
+  skip-files: [".pb.go", "pkg/refactor/gateway/tree.go", "pkg/refactor/gateway/context.go"]
 
 linters-settings:
   tagliatelle:

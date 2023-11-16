@@ -29,7 +29,6 @@ import (
 )
 
 func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
-
 	initSLog()
 
 	wg := &sync.WaitGroup{}
@@ -118,7 +117,6 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 }
 
 func initSLog() {
-
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
 
@@ -138,7 +136,6 @@ func initSLog() {
 	}
 
 	slog.SetDefault(slogger)
-
 }
 
 func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
@@ -161,7 +158,6 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 	consumers := make([]*core.Consumer, 0)
 
 	for _, file := range files {
-
 		if file.Typ != filestore.FileTypeConsumer &&
 			file.Typ != filestore.FileTypeEndpoint {
 			continue
@@ -174,8 +170,7 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 			continue
 		}
 
-		switch file.Typ {
-		case filestore.FileTypeConsumer:
+		if file.Typ == filestore.FileTypeConsumer {
 			item, err := spec.ParseConsumerFile(data)
 			if err != nil {
 				logger.Error("parse endpoint file", "error", err)
@@ -187,17 +182,18 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 			if item.Username == "" ||
 				strings.Contains(item.Username, ":") {
 				logger.Warnf("username '%s' invalid", item.Username)
+
 				continue
 			}
 
 			consumers = append(consumers, &core.Consumer{
 				Username: item.Username,
 				Password: item.Password,
-				APIkey:   item.APIkey,
+				APIKey:   item.APIKey,
 				Tags:     item.Tags,
 				Groups:   item.Groups,
 			})
-		case filestore.FileTypeEndpoint:
+		} else {
 			item, err := spec.ParseEndpointFile(data)
 			if err != nil {
 				logger.Error("parse endpoint file", "error", err)
@@ -218,58 +214,6 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 				PathExtension: item.PathExtension,
 			})
 		}
-
-		// if file.Typ == filestore.FileTypeConsumer {
-		// 	fmt.Println("#####################CONSUMER!!!!!!")
-		// 	continue
-		// }
-
-		// if file.Typ != filestore.FileTypeEndpoint {
-		// item, err := spec.ParseEndpointFile(data)
-		// if err != nil {
-		// 	logger.Error("parse endpoint file", "error", err)
-
-		// 	continue
-		// }
-		// plConfig := make([]core.Plugin, 0, len(item.Plugins))
-		// for _, v := range item.Plugins {
-		// 	plConfig = append(plConfig, core.Plugin{
-		// 		Type:          v.Type,
-		// 		Configuration: v.Configuration,
-		// 	})
-		// }
-		// endpoints = append(endpoints, &core.Endpoint{
-		// 	Methods:       item.Methods,
-		// 	Plugins:       plConfig,
-		// 	FilePath:      file.Path,
-		// 	PathExtension: item.PathExtension,
-		// })
-		// }
-		// data, err := fStore.ForFile(file).GetData(ctx)
-		// if err != nil {
-		// 	logger.Error("read file data", "error", err)
-
-		// 	continue
-		// }
-		// item, err := spec.ParseEndpointFile(data)
-		// if err != nil {
-		// 	logger.Error("parse endpoint file", "error", err)
-
-		// 	continue
-		// }
-		// plConfig := make([]core.Plugin, 0, len(item.Plugins))
-		// for _, v := range item.Plugins {
-		// 	plConfig = append(plConfig, core.Plugin{
-		// 		Type:          v.Type,
-		// 		Configuration: v.Configuration,
-		// 	})
-		// }
-		// endpoints = append(endpoints, &core.Endpoint{
-		// 	Methods:       item.Methods,
-		// 	Plugins:       plConfig,
-		// 	FilePath:      file.Path,
-		// 	PathExtension: item.PathExtension,
-		// })
 	}
 
 	gwManager.SetEndpoints(endpoints)
