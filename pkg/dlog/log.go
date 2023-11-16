@@ -56,7 +56,7 @@ func customLogger() (*zap.Logger, error) {
 		zapcore.NewCore(consoleEncoder, errOut, logLvl),
 	)
 
-	if os.Getenv(util.DirektivLogJSON) == "json" {
+	if os.Getenv(util.DirektivLogFormat) == "json" {
 		core = zapcore.NewTee(
 			zapcore.NewCore(jsonEncoder, errOut, logLvl),
 		)

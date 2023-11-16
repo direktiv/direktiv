@@ -282,7 +282,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig, envs ma
 	})
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  util.DirektivLogJSON,
+		Name:  util.DirektivLogFormat,
 		Value: c.LogFormat,
 	})
 
