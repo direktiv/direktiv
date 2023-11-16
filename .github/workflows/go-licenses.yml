@@ -20,9 +20,5 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-
-      - name: Install go-licenses
-        run: make dependencies
-
       - name: Run check
         run: make license-check

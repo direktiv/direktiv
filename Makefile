@@ -75,8 +75,11 @@ license-check: ## Scans dependencies looking for blacklisted licenses.
 	go install github.com/google/go-licenses@latest
 	go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
 
+TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
+UNITTEST_PACKAGES := $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')
+
 .PHONY: unittest
-unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining UNITTEST_PACKAGES relative to the root directory.
+unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit tests by defining UNITTEST_PACKAGES relative to the root directory.	
 	go test -cover -timeout 60s ${UNITTEST_PACKAGES}
 
 # 
