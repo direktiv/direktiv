@@ -4,6 +4,12 @@ import retry from "jest-retries";
 
 const testNamespace = "gateway_namespace";
 
+// test one auth
+// test no auth
+// test allow canonymous
+// test acl
+// test target workflow
+
 describe("Test gateway endpoints crud operations", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
 

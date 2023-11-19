@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
+func TestExecuteKeyAuthPluginConfigure(t *testing.T) {
 
-	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
+	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
 
 	// configure with nil
 	_, err := p.Configure(nil)
@@ -26,87 +26,93 @@ func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
 	_, err = p.Configure("random")
 	assert.Error(t, err)
 
-	config := &auth.BasicAuthConfig{}
+	// fails for missing name for the api key
+	config := &auth.KeyAuthConfig{}
+	_, err = p.Configure(config)
+	assert.NoError(t, err)
+
+	config.KeyName = "testme"
 	_, err = p.Configure(config)
 	assert.NoError(t, err)
 
 }
 
-func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
+func TestExecuteKeyAuthPluginNoConsumer(t *testing.T) {
 
 	w := httptest.NewRecorder()
-	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
+	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
 
-	config := &auth.BasicAuthConfig{
+	config := &auth.KeyAuthConfig{
 		AddUsernameHeader: true,
 	}
-	p.Configure(config)
+
+	p2, _ := p.Configure(config)
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
 	c := &core.Consumer{}
 
-	p.ExecutePlugin(r.Context(), c, w, r)
+	p2.ExecutePlugin(r.Context(), c, w, r)
 
 	// no consumer set, header is empty
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
 
 }
 
-func TestExecuteBasicAuthPlugin(t *testing.T) {
+func TestExecuteKeyAuthPlugin(t *testing.T) {
 
 	userName := "demo"
 	tags := []string{"tag1", "tag2"}
 	groups := []string{"group1"}
+	key := "mykey"
 
 	// test set header
-	_, r := runBasicAuthRequest("demo", "hello", true, true, true)
+	_, r := runKeyAuthRequest(key, true, true, true)
 	assert.Equal(t, userName, r.Header.Get(plugins.ConsumerUserHeader))
 	assert.Equal(t, strings.Join(tags, ","), r.Header.Get(plugins.ConsumerTagsHeader))
 	assert.Equal(t, strings.Join(groups, ","), r.Header.Get(plugins.ConsumerGroupsHeader))
 
-	_, r = runBasicAuthRequest("demo", "hello", false, false, false)
+	_, r = runKeyAuthRequest(key, false, false, false)
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
 	assert.Empty(t, r.Header.Get(plugins.ConsumerTagsHeader))
 	assert.Empty(t, r.Header.Get(plugins.ConsumerGroupsHeader))
 
-	// test invalid user
-	_, r = runBasicAuthRequest("doesnotexist", "hello", true, true, true)
-	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
-
-	// test invalid password
-	_, r = runBasicAuthRequest("demoo", "wrongpassword", true, true, true)
+	// test invalid key
+	_, r = runKeyAuthRequest("doesnotexist", true, true, true)
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
 
 }
 
-func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseRecorder, *http.Request) {
+func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder, *http.Request) {
 
 	// prepare consumer
 	cl := []*core.Consumer{
 		{
 			Username: "demo",
-			Password: "hello",
+			APIKey:   "mykey",
 			Tags:     []string{"tag1", "tag2"},
 			Groups:   []string{"group1"},
 		},
 	}
 	consumer.SetConsumer(cl)
 
-	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
-	config := &auth.BasicAuthConfig{
+	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
+	config := &auth.KeyAuthConfig{
 		AddUsernameHeader: c1,
 		AddTagsHeader:     c2,
 		AddGroupsHeader:   c3,
+		KeyName:           "testapikey",
 	}
 	p2, _ := p.Configure(config)
 
+	// fmt.Println(err)
+	// fmt.Println(p2)
+
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
-	r.SetBasicAuth(user, pwd)
+	r.Header.Add("testapikey", key)
 
 	c := &core.Consumer{}
-
 	p2.ExecutePlugin(r.Context(), c, w, r)
 
 	return w, r

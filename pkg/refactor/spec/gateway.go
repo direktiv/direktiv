@@ -8,10 +8,11 @@ import (
 )
 
 type EndpointFile struct {
-	DirektivAPI   string         `yaml:"direktiv_api"`
-	Methods       []string       `yaml:"methods"`
-	PathExtension string         `yaml:"path_extension"`
-	Plugins       []PluginConfig `yaml:"plugins"`
+	DirektivAPI    string         `yaml:"direktiv_api"`
+	Methods        []string       `yaml:"methods"`
+	PathExtension  string         `yaml:"path_extension"`
+	AllowAnonymous bool           `yaml:"allow_anonymous"`
+	Plugins        []PluginConfig `yaml:"plugins"`
 }
 
 type ConsumerFile struct {
@@ -24,8 +25,8 @@ type ConsumerFile struct {
 }
 
 type PluginConfig struct {
-	Type          string                 `yaml:"type"`
-	Configuration map[string]interface{} `yaml:"configuration"`
+	Type          string      `yaml:"type"`
+	Configuration interface{} `yaml:"configuration"`
 }
 
 func ParseConsumerFile(data []byte) (*ConsumerFile, error) {

@@ -3,14 +3,18 @@ package plugins
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
-type AuthCtxKey int
-
-const authCtxKey AuthCtxKey = 1
+// nolint
+const (
+	ConsumerUserHeader   = "Direktiv-Consumer-User"
+	ConsumerTagsHeader   = "Direktiv-Consumer-Tags"
+	ConsumerGroupsHeader = "Direktiv-Consumer-Groups"
+)
 
 var registry = make(map[string]Plugin)
 
@@ -23,19 +27,16 @@ var (
 )
 
 type Plugin interface {
-	Configure(config map[string]interface{}) (Plugin, error)
+	Configure(config interface{}) (Plugin, error)
 	Name() string
 	Type() PluginType
-	ExecutePlugin(ctx context.Context, w http.ResponseWriter, r *http.Request) bool
-	// getSchema() interface{}
+	ExecutePlugin(ctx context.Context, c *core.Consumer,
+		w http.ResponseWriter, r *http.Request) bool
 }
 
 func AddPluginToRegistry(plugin Plugin) {
+	slog.Info("adding plugin", slog.String("name", plugin.Name()))
 	registry[plugin.Name()] = plugin
-}
-
-func AddAuthToContext(ctx context.Context, c *core.Consumer) context.Context {
-	return context.WithValue(ctx, authCtxKey, c)
 }
 
 func GetPluginFromRegistry(plugin string) (Plugin, error) {
@@ -45,4 +46,14 @@ func GetPluginFromRegistry(plugin string) (Plugin, error) {
 	}
 
 	return p, nil
+}
+
+var URLParamCtxKey = &ContextKey{"URLParamContext"}
+
+type ContextKey struct {
+	name string
+}
+
+func (k *ContextKey) String() string {
+	return "plugin context value " + k.name
 }

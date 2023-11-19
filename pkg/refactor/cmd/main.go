@@ -158,6 +158,7 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 	consumers := make([]*core.Consumer, 0)
 
 	for _, file := range files {
+
 		if file.Typ != filestore.FileTypeConsumer &&
 			file.Typ != filestore.FileTypeEndpoint {
 			continue
@@ -208,10 +209,11 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 				})
 			}
 			endpoints = append(endpoints, &core.Endpoint{
-				Methods:       item.Methods,
-				Plugins:       plConfig,
-				FilePath:      file.Path,
-				PathExtension: item.PathExtension,
+				Methods:        item.Methods,
+				Plugins:        plConfig,
+				FilePath:       file.Path,
+				PathExtension:  item.PathExtension,
+				AllowAnonymous: item.AllowAnonymous,
 			})
 		}
 	}

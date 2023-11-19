@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -10,9 +11,12 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	// This triggers the init function within for auth plugins to register them.
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	// This triggers the init function within the plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
+
+	// This triggers the init function within for inbound plugins to register them.
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -38,8 +42,16 @@ func NewHandler() core.EndpointManager {
 func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	routePath := chi.URLParam(r, "*")
 
-	ctx := NewRouteContext()
-	_, _, endpointEntry := pathTree.FindRoute(ctx, mGET, "/"+routePath)
+	routeCtx := NewRouteContext()
+	_, _, endpointEntry := pathTree.FindRoute(routeCtx, mGET, "/"+routePath)
+
+	// add path extension variables in context, e.g. /{id}
+	urlParams := make(map[string]string)
+	for i := 0; i < len(routeCtx.URLParams.Keys); i++ {
+		key := routeCtx.URLParams.Keys[i]
+		urlParams[key] = routeCtx.URLParams.Values[i]
+	}
+	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
 
 	if endpointEntry == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -50,16 +62,38 @@ func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: set timeout
-	ctxTimeout, cancel := context.WithTimeout(r.Context(), time.Second)
+	ctxTimeout, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
+
+	c := &core.Consumer{}
 
 	// run auth
 	for i := range endpointEntry.authPlugins {
 		authPlugin := endpointEntry.authPlugins[i]
-		authPlugin.ExecutePlugin(ctxTimeout, w, r)
+		authPlugin.ExecutePlugin(ctxTimeout, c, w, r)
 
-		// chech if consumer is set in plugin context
+		// check and exit if consumer is set in plugin
+		if c.Username != "" {
+			slog.Info("user authenticated", "user", c.Username)
+			break
+		}
 	}
+
+	// if user not authenticated and anonymous access not enabled
+	if c.Username == "" && !endpointEntry.endpoint.AllowAnonymous {
+		w.WriteHeader(http.StatusUnauthorized)
+		// nolint
+		w.Write([]byte("unauthorized"))
+	}
+
+	for i := range endpointEntry.inboundPlugins {
+		inboundPlugin := endpointEntry.inboundPlugins[i]
+		result := inboundPlugin.ExecutePlugin(ctxTimeout, c, w, r)
+		if !result {
+			fmt.Println("DONT!")
+		}
+	}
+
 }
 
 func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
@@ -178,6 +212,10 @@ func buildPluginChain(endpoint *core.Endpoint) ([]plugins.Plugin, []plugins.Plug
 			return authPlugins, inboundPlugins, outboundPlugins, err
 		}
 
+		slog.Info("configure plugin",
+			slog.String("plugin", pluginDesc.Type),
+			slog.Any("configure", pluginDesc.Configuration))
+
 		pi, err := p.Configure(pluginDesc.Configuration)
 		if err != nil {
 			return authPlugins, inboundPlugins, outboundPlugins, err
@@ -192,9 +230,6 @@ func buildPluginChain(endpoint *core.Endpoint) ([]plugins.Plugin, []plugins.Plug
 			outboundPlugins = append(outboundPlugins, pi)
 		}
 	}
-
-	slog.Info("processing plugin!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
-		slog.Any("plugin", authPlugins))
 
 	return authPlugins, inboundPlugins, outboundPlugins, nil
 }
