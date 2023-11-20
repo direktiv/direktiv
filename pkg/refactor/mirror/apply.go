@@ -70,6 +70,11 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy endpoints into new filesystem root: %w", err)
 	}
 
+	err = o.copyConsumersIntoRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy consumers into new filesystem root: %w", err)
+	}
+
 	err = o.copyDeprecatedVariables(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to copy deprecated variables: %w", err)
@@ -210,6 +215,27 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 		}
 
 		o.log.Debugf("Created endpoint in database: %s", path)
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyConsumersIntoRoot(ctx context.Context) error {
+	paths := []string{}
+	for k := range o.parser.Consumers {
+		paths = append(paths, k)
+	}
+
+	sort.Strings(paths)
+
+	for _, path := range paths {
+		data := o.parser.Consumers[path]
+		_, _, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeConsumer, "application/direktiv", data)
+		if err != nil {
+			return err
+		}
+
+		o.log.Debugf("Created consumer in database: %s", path)
 	}
 
 	return nil
