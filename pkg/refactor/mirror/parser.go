@@ -28,6 +28,7 @@ type Parser struct {
 	Workflows map[string][]byte
 	Services  map[string][]byte
 	Endpoints map[string][]byte
+	Consumers map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
@@ -50,6 +51,7 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 		Workflows: make(map[string][]byte),
 		Services:  make(map[string][]byte),
 		Endpoints: make(map[string][]byte),
+		Consumers: make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
@@ -282,6 +284,11 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
+	case *spec.ConsumerFile:
+		err = p.handleConsumer(path, data)
+		if err != nil {
+			return err
+		}
 	case *spec.ServiceFile:
 		err = p.handleService(path, data)
 		if err != nil {
@@ -384,6 +391,14 @@ func (p *Parser) handleEndpoint(path string, data []byte) error {
 	p.log.Infof("Direktiv resource file containing an endpoint definition found at '%s'", path)
 
 	p.Endpoints[path] = data
+
+	return nil
+}
+
+func (p *Parser) handleConsumer(path string, data []byte) error {
+	p.log.Infof("Direktiv resource file containing a consumer definition found at '%s'", path)
+
+	p.Consumers[path] = data
 
 	return nil
 }
