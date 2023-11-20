@@ -155,42 +155,6 @@ func (gw *handler) SetEndpoints(endpointList []*core.Endpoint) {
 	gw.routeLock.Lock()
 	defer gw.routeLock.Unlock()
 	pathTree = newTree
-
-	// plugin, err := plugins.GetPluginFromRegistry("basic-auth")
-
-	// fmt.Println(err)
-	// fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ")
-
-	// fmt.Println(plugin.Name())
-	// fmt.Println(plugin)
-
-	// config := make(map[string]interface{})
-
-	// config["dsd"] = "sdd"
-
-	// fmt.Println(plugin.Configure(config))
-
-	// config["val2"] = "val3"
-	// fmt.Println(plugin.Configure(config))
-
-	// slog.Info("sss", "chidlren", pathTree.children)
-
-	// ctx := &Context{}
-	// // ctx.RoutePath = "/"
-	// a, b, c := pathTree.FindRoute(ctx, mGET, "/endpoints/image/123")
-
-	// fmt.Printf("%+v %v %v\n", a, b, c)
-
-	// fmt.Printf("%+v\n", ctx)
-
-	// for k := range a.endpoints {
-	// 	ep := a.endpoints[k]
-	// 	fmt.Println(ep.handler)
-	// 	fmt.Println(ep.paramKeys)
-	// 	fmt.Println(ep.pattern)
-	// }
-
-	// slog.Info("sss", "chidlren", newTree.routes())
 }
 
 func buildPluginChain(endpoint *core.Endpoint) ([]plugins.Plugin, []plugins.Plugin, []plugins.Plugin, error) {

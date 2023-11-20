@@ -7,6 +7,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -28,13 +30,12 @@ type ACLPlugin struct {
 }
 
 func (acl ACLPlugin) Configure(config interface{}) (plugins.Plugin, error) {
-	var ok bool
 	aclConfig := &ACLConfig{}
 
 	if config != nil {
-		aclConfig, ok = config.(*ACLConfig)
-		if !ok {
-			return nil, fmt.Errorf("configuration for acl-config invalid")
+		err := mapstructure.Decode(config, &aclConfig)
+		if err != nil {
+			return nil, errors.Wrap(err, "configuration for target-flow invalid")
 		}
 	}
 

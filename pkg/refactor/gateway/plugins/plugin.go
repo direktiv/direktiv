@@ -57,3 +57,12 @@ type ContextKey struct {
 func (k *ContextKey) String() string {
 	return "plugin context value " + k.name
 }
+
+func ReportError(w http.ResponseWriter, status int, msg string, err error) {
+	slog.Error("can not process plugin", slog.String("error", err.Error()))
+	w.WriteHeader(status)
+	errMsg := fmt.Sprintf("%s: %s", msg, err.Error())
+
+	// nolint
+	w.Write([]byte(errMsg))
+}

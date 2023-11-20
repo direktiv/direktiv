@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -12,6 +11,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -31,13 +32,11 @@ type BasicAuthPlugin struct {
 }
 
 func (ba BasicAuthPlugin) Configure(config interface{}) (plugins.Plugin, error) {
-	var ok bool
 	authConfig := &BasicAuthConfig{}
-
 	if config != nil {
-		authConfig, ok = config.(*BasicAuthConfig)
-		if !ok {
-			return nil, fmt.Errorf("configuration for basic-auth invalid")
+		err := mapstructure.Decode(config, &authConfig)
+		if err != nil {
+			return nil, errors.Wrap(err, "configuration for target-flow invalid")
 		}
 	}
 

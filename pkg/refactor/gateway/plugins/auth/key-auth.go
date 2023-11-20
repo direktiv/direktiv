@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -10,6 +9,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -34,15 +35,14 @@ type KeyAuthPlugin struct {
 }
 
 func (ka KeyAuthPlugin) Configure(config interface{}) (plugins.Plugin, error) {
-	var ok bool
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}
 
 	if config != nil {
-		keyAuthConfig, ok = config.(*KeyAuthConfig)
-		if !ok {
-			return nil, fmt.Errorf("configuration for key-auth invalid")
+		err := mapstructure.Decode(config, &keyAuthConfig)
+		if err != nil {
+			return nil, errors.Wrap(err, "configuration for target-flow invalid")
 		}
 
 		if keyAuthConfig.KeyName == "" {
