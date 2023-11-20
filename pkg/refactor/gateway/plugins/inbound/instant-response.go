@@ -27,23 +27,16 @@ type InstantResponsePlugin struct {
 }
 
 func (ir InstantResponsePlugin) Configure(config interface{}) (plugins.Plugin, error) {
-	// var ok bool
 	irConfig := &InstantResponseConfig{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
 	}
 
 	if config != nil {
-
 		err := mapstructure.Decode(config, &irConfig)
 		if err != nil {
 			return nil, errors.Wrap(err, "configuration for instant-response invalid")
 		}
-
-		// irConfig, ok = config.(*InstantResponseConfig)
-		// if !ok {
-		// 	return nil, fmt.Errorf("configuration for instant-response invalid")
-		// }
 	}
 
 	return &InstantResponsePlugin{
