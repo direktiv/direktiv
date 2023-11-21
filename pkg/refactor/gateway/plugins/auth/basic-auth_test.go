@@ -40,13 +40,14 @@ func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
 	config := &auth.BasicAuthConfig{
 		AddUsernameHeader: true,
 	}
-	p.Configure(config)
+
+	pi, _ := p.Configure(config)
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
 	c := &core.Consumer{}
 
-	p.ExecutePlugin(r.Context(), c, w, r)
+	pi.ExecutePlugin(r.Context(), c, w, r)
 
 	// no consumer set, header is empty
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))

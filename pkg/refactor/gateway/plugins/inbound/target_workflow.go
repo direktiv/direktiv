@@ -31,7 +31,7 @@ type TargetFlowPlugin struct {
 	config *TargetWorkflowConfig
 }
 
-func (tf TargetFlowPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (tf TargetFlowPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	targetflowConfig := &TargetWorkflowConfig{
 		Async: true,
 	}

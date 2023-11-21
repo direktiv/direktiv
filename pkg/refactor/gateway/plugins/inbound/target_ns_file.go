@@ -33,7 +33,7 @@ type TargetNamespaceFilePlugin struct {
 	config *TargetNamespaceFileConfig
 }
 
-func (tnf TargetNamespaceFilePlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (tnf TargetNamespaceFilePlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	targetNamespaceFileConfig := &TargetNamespaceFileConfig{}
 
 	if config != nil {

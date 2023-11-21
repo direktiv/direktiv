@@ -9,8 +9,8 @@ const MagicalGatewayNamespace = "gateway_namespace"
 type EndpointManager interface {
 	http.Handler
 
-	GetAll() []*Endpoint
-	SetEndpoints([]*Endpoint)
+	// GetAll() []*Endpoint
+	// SetEndpoints([]*Endpoint)
 }
 
 type Endpoint struct {

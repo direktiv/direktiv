@@ -31,7 +31,7 @@ type BasicAuthPlugin struct {
 	config *BasicAuthConfig
 }
 
-func (ba BasicAuthPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (ba BasicAuthPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	authConfig := &BasicAuthConfig{}
 	if config != nil {
 		err := mapstructure.Decode(config, &authConfig)

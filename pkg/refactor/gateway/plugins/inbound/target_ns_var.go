@@ -28,7 +28,7 @@ type TargetNamespaceVarPlugin struct {
 	config *TargetNamespaceVarConfig
 }
 
-func (tnv TargetNamespaceVarPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (tnv TargetNamespaceVarPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	targetNamespaceVarConfig := &TargetNamespaceVarConfig{}
 
 	if config != nil {

@@ -26,7 +26,7 @@ type InstantResponsePlugin struct {
 	config *InstantResponseConfig
 }
 
-func (ir InstantResponsePlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (ir InstantResponsePlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	irConfig := &InstantResponseConfig{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",

@@ -29,7 +29,7 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func (acl ACLPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (acl ACLPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	aclConfig := &ACLConfig{}
 
 	if config != nil {

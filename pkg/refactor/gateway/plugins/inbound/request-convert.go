@@ -31,7 +31,7 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func (rcp RequestConvertPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (rcp RequestConvertPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	var ok bool
 	requestConvertConfig := &RequestConvertConfig{}
 

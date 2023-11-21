@@ -26,12 +26,15 @@ var (
 	OutboundPluginType PluginType = "outbound"
 )
 
-type Plugin interface {
-	Configure(config interface{}) (Plugin, error)
-	Name() string
-	Type() PluginType
+type PluginInstance interface {
 	ExecutePlugin(ctx context.Context, c *core.Consumer,
 		w http.ResponseWriter, r *http.Request) bool
+}
+
+type Plugin interface {
+	Configure(config interface{}) (PluginInstance, error)
+	Name() string
+	Type() PluginType
 }
 
 func AddPluginToRegistry(plugin Plugin) {

@@ -65,14 +65,32 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 				writeJSON(w, app.EndpointManager.GetAll())
 			})
 
-			r.Get("/namespaces/{namespace}/plugins", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GetAllPluginSchemas()
-				if err != nil {
-					writeInternalError(w, err)
+			r.Get("/namespaces/{namespace}/gateway/plugins", func(w http.ResponseWriter, r *http.Request) {
+				// data, err := app.GetAllPluginSchemas()
+				// if err != nil {
+				// 	writeInternalError(w, err)
 
-					return
-				}
-				writeJSON(w, data)
+				// 	return
+				// }
+				// writeJSON(w, data)
+			})
+			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
+				// data, err := app.GetAllPluginSchemas()
+				// if err != nil {
+				// 	writeInternalError(w, err)
+
+				// 	return
+				// }
+				// writeJSON(w, data)
+			})
+			r.Get("/namespaces/{namespace}/gateway/routes", func(w http.ResponseWriter, r *http.Request) {
+				// data, err := app.GetAllPluginSchemas()
+				// if err != nil {
+				// 	writeInternalError(w, err)
+
+				// 	return
+				// }
+				// writeJSON(w, data)
 			})
 		})
 	})

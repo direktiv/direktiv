@@ -34,7 +34,7 @@ type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func (ka KeyAuthPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (ka KeyAuthPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}

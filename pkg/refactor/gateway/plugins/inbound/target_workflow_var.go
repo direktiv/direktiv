@@ -30,7 +30,7 @@ type TargetFlowVarPlugin struct {
 	config *TargetWorkflowVarConfig
 }
 
-func (tfv TargetFlowVarPlugin) Configure(config interface{}) (plugins.Plugin, error) {
+func (tfv TargetFlowVarPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
 	targetflowVarConfig := &TargetWorkflowVarConfig{}
 
 	if config != nil {

@@ -1,6 +1,4 @@
-//nolint
-
-package gateway
+package endpoints
 
 // This file has been copied and modified from https://github.com/go-chi/chi
 // Radix tree implementation below is a based on the original work by
