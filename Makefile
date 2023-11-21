@@ -159,12 +159,33 @@ k3s-tests: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PRE
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
 	node:alpine npm --prefix "/tests" run all -- ${JEST_PREFIX}
 
-# TODO: do we still need "template-configmaps"?
-# TODO: do we still need the docker all-in-one image?
-# TODO: what is "make scan"?
-# TODO: what is "make cross"?
-# TODO: can we get rid of "api-swagger"?
-# TODO: can we get rid of "api-docs"?
 # TODO: do we need "make binary"?
-# TODO: do we need "make clone"?
-# TODO: do we need to make all the cli images in here? Probably should move that to CI/CD scripts.
+
+# TODO: move this elsewhere
+.PHONY: cross
+cross:
+	@if [ "${RELEASE}" = "" ]; then\
+		echo "setting release to dev"; \
+		$(eval RELEASE=dev) \
+    fi
+	@docker buildx create --use --name=direktiv --node=direktiv
+	docker buildx build --build-arg RELEASE_VERSION=${FULL_VERSION} -f Dockerfile --platform linux/amd64,linux/arm64 \
+		-t ${DOCKER_REPO}/direktiv:${RELEASE} --push .
+
+# TODO: move this elsewhere
+.PHONY: scan
+scan: 
+scan: push
+	trivy image --exit-code 1 localhost:5000/direktiv
+
+# TODO: move this elsewhere
+.PHONY: cli
+cli:
+	@echo "Building linux cli binary...";
+	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direktivctl cmd/exec/main.go
+	@echo "Building mac cli binary...";
+	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin cmd/exec/main.go
+	@echo "Building mac cli arm64 binary...";
+	@export ${CGO_LDFLAGS} && GOOS=darwin GOARCH=arm64 go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin-arm64 cmd/exec/main.go
+	@echo "Building linux cli binary...";
+	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direktivctl-windows.exe cmd/exec/main.go
