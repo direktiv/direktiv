@@ -53,7 +53,7 @@ func (ba BasicAuthPlugin) Type() plugins.PluginType {
 	return plugins.AuthPluginType
 }
 
-func (ba BasicAuthPlugin) ExecutePlugin(_ context.Context, c *core.Consumer,
+func (ba BasicAuthPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
 	_ http.ResponseWriter, r *http.Request) bool {
 	user, pwd, ok := r.BasicAuth()
 
@@ -62,7 +62,15 @@ func (ba BasicAuthPlugin) ExecutePlugin(_ context.Context, c *core.Consumer,
 		return true
 	}
 
-	consumer := consumer.FindByUser(user)
+	gwObj := ctx.Value(plugins.ConsumersParamCtxKey)
+	if gwObj == nil {
+		slog.Debug("no consumer list in context",
+			slog.String("user", user))
+
+		return true
+	}
+	consumerList := gwObj.(*consumer.ConsumerList)
+	consumer := consumerList.FindByUser(user)
 
 	// no consumer with that name
 	if consumer == nil {

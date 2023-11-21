@@ -63,7 +63,7 @@ func (ka KeyAuthPlugin) Type() plugins.PluginType {
 	return plugins.AuthPluginType
 }
 
-func (ka KeyAuthPlugin) ExecutePlugin(_ context.Context, c *core.Consumer,
+func (ka KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
 	_ http.ResponseWriter, r *http.Request) bool {
 
 	key := r.Header.Get(ka.config.KeyName)
@@ -73,7 +73,14 @@ func (ka KeyAuthPlugin) ExecutePlugin(_ context.Context, c *core.Consumer,
 		return true
 	}
 
-	consumer := consumer.FindByAPIKey(key)
+	gwObj := ctx.Value(plugins.ConsumersParamCtxKey)
+	if gwObj == nil {
+		slog.Debug("no consumer list in context")
+
+		return true
+	}
+	consumerList := gwObj.(*consumer.ConsumerList)
+	consumer := consumerList.FindByAPIKey(key)
 
 	// no consumer with that name
 	if consumer == nil {

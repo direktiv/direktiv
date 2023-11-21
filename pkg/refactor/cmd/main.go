@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -19,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
@@ -57,18 +57,17 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}
 
 	// Create endpoint manager
-	endpointManager := gateway.NewHandler()
+	gatewayManager := gateway.NewGatewayManager(db)
 
 	// Create App
 	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:              config,
-		ServiceManager:      serviceManager,
-		RegistryManager:     registryManager,
-		EndpointManager:     endpointManager,
-		GetAllPluginSchemas: gateway.GetAllSchemas,
+		Config:          config,
+		ServiceManager:  serviceManager,
+		RegistryManager: registryManager,
+		GatewayManager:  gatewayManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -86,9 +85,24 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
 
-	// endpoint manager handles consumers and endpoints
-	pbus.Subscribe(func(_ string) {
-		renderEndpointManager(db, endpointManager, logger)
+	// endpoint manager deletes routes/consumers on namespace delete
+	pbus.Subscribe(func(ns string) {
+		gatewayManager.DeleteNamespace(ns)
+	},
+		pubsub.NamespaceDelete,
+	)
+
+	// on sync redo all consumers and routes
+	pbus.Subscribe(func(info string) {
+		gatewayManager.UpdateNamespace(info)
+	},
+		pubsub.MirrorSync,
+	)
+
+	// gateway manager handles consumers and endpoints
+	pbus.Subscribe(func(path string) {
+		fmt.Printf("FILE %v\n", path)
+		// gatewayManager.UpdateNamespace()
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -96,10 +110,11 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		pubsub.ConsumerCreate,
 		pubsub.ConsumerDelete,
 		pubsub.ConsumerUpdate,
-		pubsub.MirrorSync,
-		pubsub.NamespaceDelete,
 	)
-	renderEndpointManager(db, endpointManager, logger)
+	// initial loading of routes and consumers
+	gatewayManager.UpdateAll()
+
+	// renderEndpointManager(db, gatewayManager, logger)
 
 	// Start api v2 server
 	wg.Add(1)
@@ -138,7 +153,7 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
+func renderEndpointManager(db *database.DB, gwManager core.GatewayManager, logger *zap.SugaredLogger) {
 	fStore, dStore := db.FileStore(), db.DataStore()
 	ctx := context.Background()
 
@@ -218,8 +233,8 @@ func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logg
 		}
 	}
 
-	gwManager.SetEndpoints(endpoints)
-	consumer.SetConsumer(consumers)
+	// gwManager.SetEndpoints(endpoints)
+	// consumer.SetConsumer(consumers)
 }
 
 func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, logger *zap.SugaredLogger) {

@@ -95,7 +95,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 	go func() {
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -172,7 +172,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	go func() {
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -230,7 +230,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 
 	go func() {
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-		err := flow.pBus.Publish(pubsub.MirrorSync, "no-data-to-send")
+		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

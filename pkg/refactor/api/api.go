@@ -43,7 +43,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
-	r.Handle("/gw/*", app.EndpointManager)
+	// handle namespace and gateway
+	r.Handle("/gw/*", app.GatewayManager)
+	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, app.Version)
@@ -62,7 +64,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 			})
 
 			r.Get("/namespaces/{namespace}/endpoints", func(w http.ResponseWriter, r *http.Request) {
-				writeJSON(w, app.EndpointManager.GetAll())
+				// writeJSON(w, app.EndpointManager.GetAll())
 			})
 
 			r.Get("/namespaces/{namespace}/gateway/plugins", func(w http.ResponseWriter, r *http.Request) {

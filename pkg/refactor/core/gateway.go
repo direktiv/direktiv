@@ -1,16 +1,15 @@
 package core
 
-import (
-	"net/http"
-)
+import "net/http"
 
 const MagicalGatewayNamespace = "gateway_namespace"
 
-type EndpointManager interface {
+type GatewayManager interface {
 	http.Handler
 
-	// GetAll() []*Endpoint
-	// SetEndpoints([]*Endpoint)
+	DeleteNamespace(string)
+	UpdateNamespace(string)
+	UpdateAll()
 }
 
 type Endpoint struct {

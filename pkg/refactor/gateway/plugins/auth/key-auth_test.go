@@ -85,6 +85,8 @@ func TestExecuteKeyAuthPlugin(t *testing.T) {
 
 func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder, *http.Request) {
 
+	consumerList := consumer.NewConsumerList()
+
 	// prepare consumer
 	cl := []*core.Consumer{
 		{
@@ -94,7 +96,7 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 			Groups:   []string{"group1"},
 		},
 	}
-	consumer.SetConsumer(cl)
+	consumerList.SetConsumers(cl)
 
 	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
 	config := &auth.KeyAuthConfig{
@@ -104,9 +106,6 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 		KeyName:           "testapikey",
 	}
 	p2, _ := p.Configure(config)
-
-	// fmt.Println(err)
-	// fmt.Println(p2)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)

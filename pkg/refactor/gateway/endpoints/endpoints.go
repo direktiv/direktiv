@@ -10,32 +10,48 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 )
 
-// var pathTree = &node{}
-
-type endpointEntry struct {
-	endpoint        *core.Endpoint
-	authPlugins     []plugins.PluginInstance
-	inboundPlugins  []plugins.PluginInstance
-	outboundPlugins []plugins.PluginInstance
+type EndpointEntry struct {
+	Endpoint        *core.Endpoint
+	AuthPlugins     []plugins.PluginInstance
+	InboundPlugins  []plugins.PluginInstance
+	OutboundPlugins []plugins.PluginInstance
 }
 
-type endpointList struct {
+type EndpointList struct {
 	currentTree *node
 
 	lock sync.Mutex
 }
 
-var CurrentEndpointList = &endpointList{
-	currentTree: &node{},
+func NewEndpointList() *EndpointList {
+	return &EndpointList{
+		currentTree: &node{},
+	}
 }
 
-// func NewEndpointList() *EndpointList {
-// 	return &EndpointList{
-// 		currentTree: &node{},
-// 	}
-// }
+func (e *EndpointList) FindRoute(route string) (*EndpointEntry, map[string]string) {
 
-func (e *endpointList) SetEndpoints(endpointList []*core.Endpoint) {
+	if !strings.HasPrefix(route, "/") {
+		route = "/" + route
+	}
+
+	routeCtx := NewRouteContext()
+	_, _, endpointEntry := e.currentTree.FindRoute(routeCtx, mGET, route)
+	if endpointEntry == nil {
+		return nil, nil
+	}
+
+	// add path extension variables in context, e.g. /{id}
+	urlParams := make(map[string]string)
+	for i := 0; i < len(routeCtx.URLParams.Keys); i++ {
+		key := routeCtx.URLParams.Keys[i]
+		urlParams[key] = routeCtx.URLParams.Values[i]
+	}
+
+	return endpointEntry, urlParams
+}
+
+func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	newTree := &node{}
 
 	for i := range endpointList {
@@ -63,11 +79,11 @@ func (e *endpointList) SetEndpoints(endpointList []*core.Endpoint) {
 		}
 
 		// create endpoint
-		entry := &endpointEntry{
-			endpoint:        ep,
-			authPlugins:     auth,
-			inboundPlugins:  inbound,
-			outboundPlugins: outbound,
+		entry := &EndpointEntry{
+			Endpoint:        ep,
+			AuthPlugins:     auth,
+			InboundPlugins:  inbound,
+			OutboundPlugins: outbound,
 		}
 
 		// assign handler to all methods

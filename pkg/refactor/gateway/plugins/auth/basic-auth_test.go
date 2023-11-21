@@ -83,6 +83,8 @@ func TestExecuteBasicAuthPlugin(t *testing.T) {
 
 func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseRecorder, *http.Request) {
 
+	consumerList := consumer.NewConsumerList()
+
 	// prepare consumer
 	cl := []*core.Consumer{
 		{
@@ -92,7 +94,7 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 			Groups:   []string{"group1"},
 		},
 	}
-	consumer.SetConsumer(cl)
+	consumerList.SetConsumers(cl)
 
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
 	config := &auth.BasicAuthConfig{

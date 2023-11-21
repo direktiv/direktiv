@@ -11,11 +11,14 @@ func TestConsumerNoUsername(t *testing.T) {
 	cl := []*core.Consumer{
 		{},
 	}
-	SetConsumer(cl)
-	assert.Len(t, GetConsumers(), 0)
+
+	consumerList := NewConsumerList()
+	consumerList.SetConsumers(cl)
+	assert.Len(t, consumerList.GetConsumers(), 0)
 }
 
 func TestConsumerWithAttributes(t *testing.T) {
+	consumerList := NewConsumerList()
 	cl := []*core.Consumer{
 		{
 			Username: "user",
@@ -25,18 +28,18 @@ func TestConsumerWithAttributes(t *testing.T) {
 			APIKey:   "123",
 		},
 	}
-	SetConsumer(cl)
-	assert.Len(t, GetConsumers(), 1)
+	consumerList.SetConsumers(cl)
+	assert.Len(t, consumerList.GetConsumers(), 1)
 
-	assert.NotNil(t, FindByUser("user"))
-	assert.NotNil(t, FindByAPIKey("123"))
+	assert.NotNil(t, consumerList.FindByUser("user"))
+	assert.NotNil(t, consumerList.FindByAPIKey("123"))
 
-	assert.Nil(t, FindByUser("doesnotexist"))
-	assert.Nil(t, FindByAPIKey("doesnotexist"))
+	assert.Nil(t, consumerList.FindByUser("doesnotexist"))
+	assert.Nil(t, consumerList.FindByAPIKey("doesnotexist"))
 }
 
 func TestConsumerDuplicate(t *testing.T) {
-
+	consumerList := NewConsumerList()
 	cl := []*core.Consumer{
 		{
 			Username: "user",
@@ -45,7 +48,7 @@ func TestConsumerDuplicate(t *testing.T) {
 			Username: "user",
 		},
 	}
-	SetConsumer(cl)
-	assert.Len(t, GetConsumers(), 1)
+	consumerList.SetConsumers(cl)
+	assert.Len(t, consumerList.GetConsumers(), 1)
 
 }

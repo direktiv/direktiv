@@ -4,12 +4,11 @@
 package consumer
 
 import (
+	"log/slog"
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
-
-// var consumers = NewConsumerList()
 
 // consumerList holds different `views` on the consumers for faster lookup.
 // That means apiKey is an unique key as well. Duplicate api keys are not allowed.
@@ -30,84 +29,85 @@ func NewConsumerList() *ConsumerList {
 }
 
 // GetConsumers returns a list of all consumers in the system.
-func GetConsumers() []*core.Consumer {
+func (cl *ConsumerList) GetConsumers() []*core.Consumer {
+	cl.lock.RLock()
+	defer cl.lock.RUnlock()
 
-	return nil
-	// consumers.lock.RLock()
-	// defer consumers.lock.RUnlock()
-
-	// return consumers.listView
+	return cl.listView
 }
 
-// SetConsumers set a new list of consumers in the system. The new list
+// SetConsumers set a new lists of consumers in the system. The new lists
 // is getting swapped out at the end of processing.
-func SetConsumer(consumerList []*core.Consumer) {
-	// newConsumer := newConsumerList()
+func (cl *ConsumerList) SetConsumers(consumerList []*core.Consumer) {
+	apiKeyView := make(map[string]*core.Consumer, 0)
+	usernameView := make(map[string]*core.Consumer, 0)
+	listView := make([]*core.Consumer, 0)
 
-	// for i := range consumerList {
-	// 	c := consumerList[i]
+	for i := range consumerList {
+		c := consumerList[i]
 
-	// 	// username is the primary key.
-	// 	if c.Username == "" {
-	// 		slog.Warn("consumer name empty")
+		// username is the primary key.
+		if c.Username == "" {
+			slog.Warn("consumer name empty")
 
-	// 		continue
-	// 	}
+			continue
+		}
 
-	// 	// skip duplicates
-	// 	_, ok := newConsumer.usernameView[c.Username]
-	// 	if ok {
-	// 		slog.Warn("consumer already defined",
-	// 			slog.String("consumer", c.Username))
+		// skip duplicates
+		_, ok := usernameView[c.Username]
+		if ok {
+			slog.Warn("consumer already defined",
+				slog.String("consumer", c.Username))
 
-	// 		continue
-	// 	}
+			continue
+		}
 
-	// 	slog.Info("adding consumer",
-	// 		slog.String("user", c.Username))
+		slog.Info("adding consumer",
+			slog.String("user", c.Username))
 
-	// 	// add to list view
-	// 	newConsumer.listView = append(newConsumer.listView, c)
+		// add to list view
+		listView = append(listView, c)
 
-	// 	// add to username view
-	// 	newConsumer.usernameView[c.Username] = c
+		// add to username view
+		usernameView[c.Username] = c
 
-	// 	// add to api key view
-	// 	if c.APIKey != "" {
-	// 		newConsumer.apiKeyView[c.APIKey] = c
-	// 	}
-	// }
+		// add to api key view
+		if c.APIKey != "" {
+			apiKeyView[c.APIKey] = c
+		}
+	}
 
-	// // replace with new consumer list
-	// consumers.lock.Lock()
-	// defer consumers.lock.Unlock()
-	// consumers = newConsumer
+	// replace with new consumer lists
+	cl.lock.Lock()
+	defer cl.lock.Unlock()
+
+	cl.apiKeyView = apiKeyView
+	cl.listView = listView
+	cl.usernameView = usernameView
 }
 
 // FindByUser returns a consumer with the provided name, nil if not found.
-func FindByUser(user string) *core.Consumer {
-	// consumers.lock.RLock()
-	// defer consumers.lock.RUnlock()
+func (cl *ConsumerList) FindByUser(user string) *core.Consumer {
+	cl.lock.RLock()
+	defer cl.lock.RUnlock()
 
-	// c, ok := consumers.usernameView[user]
-	// if !ok {
-	// 	return nil
-	// }
+	c, ok := cl.usernameView[user]
+	if !ok {
+		return nil
+	}
 
-	// return c
-	return nil
+	return c
 }
 
 // FindByAPIKey returns a consumer with the provided key, nil if not found.
-func FindByAPIKey(key string) *core.Consumer {
-	// consumers.lock.RLock()
-	// defer consumers.lock.RUnlock()
+func (cl *ConsumerList) FindByAPIKey(key string) *core.Consumer {
+	cl.lock.RLock()
+	defer cl.lock.RUnlock()
 
-	// c, ok := consumers.apiKeyView[key]
-	// if !ok {
-	// 	return nil
-	// }
+	c, ok := cl.apiKeyView[key]
+	if !ok {
+		return nil
+	}
 
-	// return c
-	return nil
+	return c
 }

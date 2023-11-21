@@ -52,6 +52,7 @@ func GetPluginFromRegistry(plugin string) (Plugin, error) {
 }
 
 var URLParamCtxKey = &ContextKey{"URLParamContext"}
+var ConsumersParamCtxKey = &ContextKey{"ConsumersParamCtxKey"}
 
 type ContextKey struct {
 	name string
@@ -68,4 +69,10 @@ func ReportError(w http.ResponseWriter, status int, msg string, err error) {
 
 	// nolint
 	w.Write([]byte(errMsg))
+}
+
+func ReportNotFound(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNotFound)
+	// nolint
+	w.Write([]byte("not found"))
 }

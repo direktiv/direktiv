@@ -116,7 +116,7 @@ type endpoints map[methodTyp]*endpoint
 
 type endpoint struct {
 	// endpoint handler
-	handler *endpointEntry
+	handler *EndpointEntry
 
 	// pattern is the routing pattern for handler nodes
 	pattern string
@@ -134,7 +134,7 @@ func (s endpoints) Value(method methodTyp) *endpoint {
 	return mh
 }
 
-func (n *node) InsertRoute(method methodTyp, pattern string, handler *endpointEntry) *node {
+func (n *node) InsertRoute(method methodTyp, pattern string, handler *EndpointEntry) *node {
 	var parent *node
 	search := pattern
 
@@ -337,7 +337,7 @@ func (n *node) getEdge(ntyp nodeTyp, label, tail byte, prefix string) *node {
 	return nil
 }
 
-func (n *node) setEndpoint(method methodTyp, handler *endpointEntry, pattern string) {
+func (n *node) setEndpoint(method methodTyp, handler *EndpointEntry, pattern string) {
 	// Set the handler for the method type on the node
 	if n.endpoints == nil {
 		n.endpoints = make(endpoints)
@@ -367,7 +367,7 @@ func (n *node) setEndpoint(method methodTyp, handler *endpointEntry, pattern str
 	}
 }
 
-func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, endpoints, *endpointEntry) {
+func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, endpoints, *EndpointEntry) {
 	// Reset the context routing pattern and params
 	rctx.routePattern = ""
 	rctx.routeParams.Keys = rctx.routeParams.Keys[:0]
