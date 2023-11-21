@@ -4,12 +4,10 @@ on:
     tags:
       - v*
     branches:
-      - master
       - main
   pull_request:
 permissions:
   contents: read
-
 jobs:
   golangci:
     name: lint

@@ -2,7 +2,7 @@ package util
 
 const (
 	DirektivDebug         = "DIREKTIV_DEBUG"
-	DirektivLogJSON       = "DIREKTIV_LOG_JSON"
+	DirektivLogFormat     = "DIREKTIV_LOG_FORMAT"
 	DirektivOpentelemetry = "DIREKTIV_OTLP"
 	DirektivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
 
@@ -19,6 +19,4 @@ const (
 //
 // 	DirektivFunctionsEndpoint = "DIREKTIV_FUNCTIONS_ENDPOINT"
 // 	DirektivIngressEndpoint   = "DIREKTIV_INTERNAL_ENDPOINT"
-//
-// 	DirektivLogJSON       = "DIREKTIV_LOG_JSON"
 // )

@@ -4,13 +4,10 @@ on:
     tags:
       - v*
     branches:
-      - master
       - main
   pull_request:
 permissions:
   contents: read
-  # Optional: allow read access to pull request. Use with `only-new-issues` option.
-  # pull-requests: read
 jobs:
   golangci:
     name: licenses-check
@@ -20,9 +17,5 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-
-      - name: Install go-licenses
-        run: make dependencies
-
       - name: Run check
         run: make license-check

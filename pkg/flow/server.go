@@ -217,8 +217,6 @@ var _ mirror.Callbacks = &mirrorCallbacks{}
 
 func (srv *server) start(ctx context.Context) error {
 	var err error
-	// enableExperimentalFeatures := os.Getenv("ENABLE_EXPERIMENTAL_FEATURES") == "true"
-	enableDeveloperMode := os.Getenv("ENABLE_DEVELOPER_MODE") == "true"
 
 	srv.sugar.Info("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
@@ -373,18 +371,13 @@ func (srv *server) start(ctx context.Context) error {
 		toTags["trace"] = tid.String()
 		return toTags
 	}
-	if enableDeveloperMode {
-		addTrace = func(ctx context.Context, toTags map[string]string) map[string]string {
-			_ = ctx
-			return toTags
-		}
-	}
+
 	var sugarBetterLogger logengine.BetterLogger
 	sugarBetterLogger = logengine.SugarBetterJSONLogger{
 		Sugar:        srv.sugar.Named("userLogger"),
 		AddTraceFrom: addTrace,
 	}
-	if os.Getenv(util.DirektivLogJSON) != "json" {
+	if os.Getenv(util.DirektivLogFormat) != "json" {
 		sugarBetterLogger = logengine.SugarBetterConsoleLogger{
 			Sugar:        srv.sugar.Named("userLogger"),
 			AddTraceFrom: addTrace,
