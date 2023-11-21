@@ -212,9 +212,7 @@ func (x serviceList) Less(i, j int) bool {
 }
 
 func (x serviceList) Swap(i, j int) {
-	tmp := x[i]
-	x[i] = x[j]
-	x[j] = tmp
+	x[i], x[j] = x[j], x[i]
 }
 
 func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
