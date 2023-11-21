@@ -414,16 +414,13 @@ generate_direktiv_config() {
         cat <<EOF > $DIREKTIV_CONFIG
 logging: console
 registry: localhost:5000
-imageTag: latest
+image: ${backend_image}
+tag: ${DIREKTIV_VERSION}
 
 EOF
         fi
 
         cat <<EOF >> $DIREKTIV_CONFIG
-flow:
-  image: "${backend_image}"
-  tag: "${DIREKTIV_VERSION}"
-  dbimage: "${backend_image}"
 
 frontend:
   image: "${frontend_image}"
@@ -469,7 +466,7 @@ install_direktiv() {
         chart="scripts/direktiv-charts/charts/direktiv/"
         if [ ! -d "./scripts/direktiv-charts" ]; then
             git clone https://github.com/direktiv/direktiv-charts.git ./scripts/direktiv-charts;
-            git -C ./scripts/direktiv-charts checkout single-container; # TODO: this branch is temporary
+            git -C ./scripts/direktiv-charts checkout alan/small_charts_cleanup; # TODO: this branch is temporary
         fi
 
         # TODO: when did this become important, and why?

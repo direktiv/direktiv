@@ -1,4 +1,4 @@
-name: golangci-lint
+name: backend-e2e-tests
 on:
   push:
     tags:
@@ -6,19 +6,17 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  golangci:
-    name: lint
+  e2e-test:
+    name: End-to-end tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.54
+      - name: Run end-to-end tests.
+        run: make docker-tests

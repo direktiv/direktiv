@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/big"
 	"slices"
+	"sort"
 	"sync"
 	"time"
 
@@ -200,6 +201,20 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 	}
 }
 
+type serviceList []*core.ServiceStatus
+
+func (x serviceList) Len() int {
+	return len(x)
+}
+
+func (x serviceList) Less(i, j int) bool {
+	return x[i].FilePath < x[j].FilePath
+}
+
+func (x serviceList) Swap(i, j int) {
+	x[i], x[j] = x[j], x[i]
+}
+
 func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
 	// clone the list
 	sList := make([]*core.ServiceConfig, 0)
@@ -244,10 +259,12 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 			result = append(result, &core.ServiceStatus{
 				ID:            v.GetID(),
 				ServiceConfig: *v,
-				Conditions:    nil,
+				Conditions:    make([]any, 0),
 			})
 		}
 	}
+
+	sort.Sort(serviceList(result))
 
 	return result, nil
 }

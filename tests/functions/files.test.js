@@ -131,7 +131,7 @@ states:
             success: true
         })
         expect(req.body.return.bash[8].result).toBe("")
-    }, 30000)
+    })
 
     it(`should create a workflow called /e.yaml`, async () => {
 
