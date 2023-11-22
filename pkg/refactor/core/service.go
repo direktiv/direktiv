@@ -13,7 +13,7 @@ const (
 	ServiceTypeWorkflow  = "workflow-service"
 )
 
-type ServiceConfigEnvironmentVariable struct {
+type EnvironmentVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
@@ -27,11 +27,11 @@ type ServiceConfig struct {
 	Name      string `json:"name"`
 
 	// settings fields:
-	Image     string                             `json:"image"`
-	CMD       string                             `json:"cmd"`
-	Size      string                             `json:"size"`
-	Scale     int                                `json:"scale"`
-	Variables []ServiceConfigEnvironmentVariable `json:"variables"`
+	Image     string                `json:"image"`
+	CMD       string                `json:"cmd"`
+	Size      string                `json:"size"`
+	Scale     int                   `json:"scale"`
+	Variables []EnvironmentVariable `json:"variables"`
 
 	Error *string `json:"error"`
 }
