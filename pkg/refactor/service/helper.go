@@ -287,23 +287,25 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig, envs ma
 	})
 
 	if withGrpc {
+		namespace := c.DirektivNamespace
+
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  util.DirektivFlowEndpoint,
-			Value: "direktiv-flow.direktiv", // TODO: alan
+			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
-	}
 
-	for k, v := range envs {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  k,
-			Value: v,
+			Name:  "DIREKTIV_APP",
+			Value: "sidecar",
 		})
+	} else {
+		for k, v := range envs {
+			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+				Name:  k,
+				Value: v,
+			})
+		}
 	}
-
-	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  "DIREKTIV_APP",
-		Value: "sidecar",
-	})
 
 	return proxyEnvs
 }
