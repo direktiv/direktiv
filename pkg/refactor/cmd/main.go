@@ -192,14 +192,6 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					continue
 				}
 
-				envVars := make([]core.ServiceConfigEnvironmentVariable, 0)
-				for _, v := range serviceDef.Vars {
-					envVars = append(envVars, core.ServiceConfigEnvironmentVariable{
-						Name:  v.Name,
-						Value: v.Value,
-					})
-				}
-
 				funConfigList = append(funConfigList, &core.ServiceConfig{
 					Typ:       core.ServiceTypeNamespace,
 					Name:      "",
@@ -209,7 +201,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					CMD:       serviceDef.Cmd,
 					Size:      serviceDef.Size,
 					Scale:     serviceDef.Scale,
-					Variables: envVars,
+					Variables: serviceDef.Vars,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file, data)
