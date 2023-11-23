@@ -23,6 +23,7 @@ import (
 
 	// This triggers the init function within for inbound plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 )
 
 type namespaceGateway struct {
@@ -31,29 +32,21 @@ type namespaceGateway struct {
 }
 
 type gatewayManager struct {
-	db *database.DB
-
+	db         *database.DB
 	nsGateways map[string]*namespaceGateway
-
-	// 	// pluginPool map[string]endpointEntry
-
-	// 	// EndpointList *endpoints.EndpointList
-	// 	// ConsumerList *consumer.ConsumerList
-
-	lock sync.RWMutex
+	lock       sync.RWMutex
 }
 
 func NewGatewayManager(db *database.DB) core.GatewayManager {
 	return &gatewayManager{
 		db:         db,
 		nsGateways: make(map[string]*namespaceGateway),
-		// EndpointList: endpoints.NewEndpointList(),
-		// ConsumerList: consumer.NewConsumerList(),
 	}
 }
 
 func (ep *gatewayManager) DeleteNamespace(ns string) {
-	fmt.Println("DELETE NAMESPACE!!!!!")
+	slog.Info("deleting namespace from gateway", "namespace", ns)
+	delete(ep.nsGateways, ns)
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
@@ -72,7 +65,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		ep.nsGateways[ns] = gw
 	}
 
-	fStore, _ := ep.db.FileStore(), ep.db.DataStore()
+	fStore := ep.db.FileStore()
 	ctx := context.Background()
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFiles(ctx)
@@ -82,7 +75,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 	}
 
 	endpoints := make([]*core.Endpoint, 0)
-	consumers := make([]*core.Consumer, 0)
+	consumers := make([]*spec.ConsumerFile, 0)
 
 	for _, file := range files {
 
@@ -114,13 +107,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				continue
 			}
 
-			consumers = append(consumers, &core.Consumer{
-				Username: item.Username,
-				Password: item.Password,
-				APIKey:   item.APIKey,
-				Tags:     item.Tags,
-				Groups:   item.Groups,
-			})
+			consumers = append(consumers, item)
 		} else {
 			item, err := spec.ParseEndpointFile(data)
 			if err != nil {
@@ -128,20 +115,48 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 				continue
 			}
-			plConfig := make([]core.Plugin, 0, len(item.Plugins))
-			for _, v := range item.Plugins {
-				plConfig = append(plConfig, core.Plugin{
-					Type:          v.Type,
-					Configuration: v.Configuration,
-				})
-			}
+
 			endpoints = append(endpoints, &core.Endpoint{
-				Methods:        item.Methods,
-				Plugins:        plConfig,
-				FilePath:       file.Path,
-				PathExtension:  item.PathExtension,
-				AllowAnonymous: item.AllowAnonymous,
+				EndpointFile: item,
+				FilePath:     file.Path,
 			})
+
+			// e := core.Endpoint{
+			// 	EndpointFile: item,
+			// 	FilePath:     file.Path,
+			// }
+
+			// plConfig := make([]core.Plugin, 0, len(item.Plugins))
+			// for _, v := range item.Plugins {
+			// 	plConfig = append(plConfig, core.Plugin{
+			// 		Type:          v.Type,
+			// 		Configuration: v.Configuration,
+			// 	})
+			// }
+			// item.FilePath = file.Path
+			// endpoints = append(endpoints, &core)
+			// endpoints = append(endpoints, &core.Endpoint{
+			// 	Methods: item.Methods,
+			// 	Plugins: core.Plugins{
+			// 		Auth: item.Plugins.Auth,
+			// 	},
+			// 	// Plugins: struct {
+			// 	// 	Auth     []core.Plugin "yaml:\"auth\""
+			// 	// 	Inboud   []core.Plugin "yaml:\"inbound\""
+			// 	// 	Target   []core.Plugin "yaml:\"target\""
+			// 	// 	Outbound []core.Plugin "yaml:\"outbound\""
+			// 	// }{},
+			// 	// Plugins: struct {
+			// 	// 	Auth     []core.Plugin "yaml:\"auth\""
+			// 	// 	Inboud   []core.Plugin "yaml:\"inbound\""
+			// 	// 	Target   []core.Plugin "yaml:\"target\""
+			// 	// 	Outbound []core.Plugin "yaml:\"outbound\""
+			// 	// }{
+			// 	// 	Auth: []core.Plugin{},
+			// 	// },
+			// 	// PathExtension:  item.PathExtension,
+			// 	AllowAnonymous: item.AllowAnonymous,
+			// })
 		}
 	}
 
@@ -165,22 +180,7 @@ func (ep *gatewayManager) UpdateAll() {
 	}
 }
 
-// func (ep *gatewayManager) getNamespaceConfig(ns string) *namespaceGateway {
-
-// 	gw, ok := ep.nsGateways[ns]
-// 	if !ok {
-// 		gw = &namespaceGateway{
-// 			EndpointList: endpoints.NewEndpointList(),
-// 			ConsumerList: consumer.NewConsumerList(),
-// 		}
-// 		ep.nsGateways[ns] = gw
-// 	}
-
-// 	return gw
-// }
-
 func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.MagicalGatewayNamespace
 	routePath := chi.URLParam(r, "*")
@@ -208,7 +208,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: timeout
 
-	c := &core.Consumer{}
+	c := &spec.ConsumerFile{}
 
 	// run auth
 	for i := range endpointEntry.AuthPlugins {

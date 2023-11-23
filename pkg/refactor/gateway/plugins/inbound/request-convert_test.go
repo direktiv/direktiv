@@ -16,6 +16,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestConfigRequestConvertPlugin(t *testing.T) {
+
+	config := inbound.RequestConvertConfig{
+		OmitHeaders: true,
+		OmitQueries: true,
+		OmitBody:    true,
+	}
+
+	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
+	p2, _ := p.Configure(config)
+
+	configOut := p2.Config().(*inbound.RequestConvertConfig)
+	assert.Equal(t, config.OmitBody, configOut.OmitBody)
+	assert.Equal(t, config.OmitHeaders, configOut.OmitHeaders)
+	assert.Equal(t, config.OmitQueries, configOut.OmitQueries)
+}
+
 func TestExecuteRequestConvertPlugin(t *testing.T) {
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy?key=val&key=val2&hello=world",

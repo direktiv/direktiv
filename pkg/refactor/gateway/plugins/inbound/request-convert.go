@@ -12,6 +12,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -32,19 +34,22 @@ type RequestConvertPlugin struct {
 }
 
 func (rcp RequestConvertPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
-	var ok bool
 	requestConvertConfig := &RequestConvertConfig{}
 
 	if config != nil {
-		requestConvertConfig, ok = config.(*RequestConvertConfig)
-		if !ok {
-			return nil, fmt.Errorf("configuration for request-convert invalid")
+		err := mapstructure.Decode(config, &requestConvertConfig)
+		if err != nil {
+			return nil, errors.Wrap(err, "configuration for request-convert invalid")
 		}
 	}
 
 	return &RequestConvertPlugin{
 		config: requestConvertConfig,
 	}, nil
+}
+
+func (rcp RequestConvertPlugin) Config() interface{} {
+	return rcp.config
 }
 
 func (rcp RequestConvertPlugin) Name() string {
@@ -108,7 +113,7 @@ func (rcp RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *core.Consu
 	}
 
 	// add json content or base64 if binary
-	if isJSON(string(content)) {
+	if plugins.IsJSON(string(content)) {
 		response.Body = content
 	} else {
 		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
@@ -131,11 +136,6 @@ func (rcp RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *core.Consu
 		slog.String("body", string(newBody)))
 
 	return true
-}
-
-func isJSON(str string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(str), &js) == nil
 }
 
 //nolint:gochecknoinits

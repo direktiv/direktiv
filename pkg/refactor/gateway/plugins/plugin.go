@@ -2,11 +2,12 @@ package plugins
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 // nolint
@@ -27,8 +28,9 @@ var (
 )
 
 type PluginInstance interface {
-	ExecutePlugin(ctx context.Context, c *core.Consumer,
+	ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
 		w http.ResponseWriter, r *http.Request) bool
+	Config() interface{}
 }
 
 type Plugin interface {
@@ -75,4 +77,9 @@ func ReportNotFound(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
 	// nolint
 	w.Write([]byte("not found"))
+}
+
+func IsJSON(str string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(str), &js) == nil
 }

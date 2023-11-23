@@ -14,6 +14,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestConfigBasicAuthPlugin(t *testing.T) {
+	config := auth.BasicAuthConfig{
+		AddUsernameHeader: true,
+		AddTagsHeader:     true,
+		AddGroupsHeader:   true,
+	}
+
+	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
+	p2, _ := p.Configure(config)
+
+	configOut := p2.Config().(*auth.BasicAuthConfig)
+	assert.Equal(t, config.AddGroupsHeader, configOut.AddGroupsHeader)
+	assert.Equal(t, config.AddTagsHeader, configOut.AddTagsHeader)
+	assert.Equal(t, config.AddUsernameHeader, configOut.AddUsernameHeader)
+}
+
 func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
 
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)

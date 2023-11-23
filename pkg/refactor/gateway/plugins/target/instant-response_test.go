@@ -1,4 +1,4 @@
-package inbound_test
+package target_test
 
 import (
 	"context"
@@ -7,16 +7,28 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 	"github.com/stretchr/testify/assert"
 )
 
+func TestConfigInstaneResponsePlugin(t *testing.T) {
+	config := target.InstantResponseConfig{
+		StatusCode:    205,
+		StatusMessage: "test",
+	}
+
+	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
+	p2, _ := p.Configure(config)
+
+	configOut := p2.Config().(*target.InstantResponseConfig)
+	assert.Equal(t, config.StatusCode, configOut.StatusCode)
+	assert.Equal(t, config.StatusMessage, configOut.StatusMessage)
+}
+
 func TestExecuteInstantResponsePlugin(t *testing.T) {
 
-	p, _ := plugins.GetPluginFromRegistry(inbound.InstantResponsePluginName)
+	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
 
-	// config := &inbound.InstantResponseConfig{
-	// }
 	p2, _ := p.Configure(nil)
 
 	w := httptest.NewRecorder()
@@ -27,7 +39,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 	assert.Equal(t, "This is the end!", w.Body.String())
 
-	config := &inbound.InstantResponseConfig{
+	config := &target.InstantResponseConfig{
 		StatusCode:    http.StatusInternalServerError,
 		StatusMessage: "HELLO WORLD",
 	}
@@ -39,7 +51,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 	assert.Equal(t, "HELLO WORLD", w.Body.String())
 
-	config = &inbound.InstantResponseConfig{
+	config = &target.InstantResponseConfig{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "{ \"hello\": \"world\" }",
 	}

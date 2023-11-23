@@ -1,4 +1,4 @@
-package inbound
+package target
 
 import (
 	"context"
@@ -51,6 +51,10 @@ func (tnf TargetNamespaceFilePlugin) Configure(config interface{}) (plugins.Plug
 	return &TargetNamespaceFilePlugin{
 		config: targetNamespaceFileConfig,
 	}, nil
+}
+
+func (tnf TargetNamespaceFilePlugin) Config() interface{} {
+	return tnf.config
 }
 
 func (tnf TargetNamespaceFilePlugin) Name() string {

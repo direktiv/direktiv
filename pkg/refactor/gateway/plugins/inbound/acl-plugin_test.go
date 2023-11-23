@@ -12,6 +12,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestConfigACLPlugin(t *testing.T) {
+
+	config := &inbound.ACLConfig{
+		AllowGroups: []string{"group1"},
+		DenyGroups:  []string{"group2"},
+		AllowTags:   []string{"tag1"},
+		DenyTags:    []string{"tag2"},
+	}
+
+	p, _ := plugins.GetPluginFromRegistry(inbound.ACLPluginName)
+	p2, _ := p.Configure(config)
+
+	configOut := p2.Config().(*inbound.ACLConfig)
+
+	assert.Equal(t, config.AllowGroups, configOut.AllowGroups)
+	assert.Equal(t, config.DenyGroups, configOut.DenyGroups)
+	assert.Equal(t, config.AllowTags, configOut.AllowTags)
+	assert.Equal(t, config.DenyTags, configOut.DenyTags)
+
+}
+
 func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	c := &core.Consumer{

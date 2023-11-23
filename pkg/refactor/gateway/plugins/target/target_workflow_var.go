@@ -1,4 +1,4 @@
-package inbound
+package target
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
@@ -15,51 +16,57 @@ import (
 )
 
 const (
-	TargetNamespaceVarPluginName = "target-namespace-var"
+	TargetFlowVarPluginName = "target-flow-var"
 )
 
-type TargetNamespaceVarConfig struct {
+type TargetWorkflowVarConfig struct {
 	Namespace string `yaml:"namespace"`
+	Flow      string `yaml:"flow"`
 	Variable  string `yaml:"variable"`
 }
 
-// TargetFlowVarPlugin returns a namespace variable
-type TargetNamespaceVarPlugin struct {
-	config *TargetNamespaceVarConfig
+// TargetFlowVarPlugin returns a workflow variable
+type TargetFlowVarPlugin struct {
+	config *TargetWorkflowVarConfig
 }
 
-func (tnv TargetNamespaceVarPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
-	targetNamespaceVarConfig := &TargetNamespaceVarConfig{}
+func (tfv TargetFlowVarPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
+	targetflowVarConfig := &TargetWorkflowVarConfig{}
 
 	if config != nil {
-		err := mapstructure.Decode(config, &targetNamespaceVarConfig)
+		err := mapstructure.Decode(config, &targetflowVarConfig)
 		if err != nil {
-			return nil, errors.Wrap(err, "configuration for target-ns-var invalid")
+			return nil, errors.Wrap(err, "configuration for target-flow-var invalid")
 		}
 	}
 
 	// set default to gateway namespace
-	if targetNamespaceVarConfig.Namespace == "" {
-		targetNamespaceVarConfig.Namespace = core.MagicalGatewayNamespace
+	if targetflowVarConfig.Namespace == "" {
+		targetflowVarConfig.Namespace = core.MagicalGatewayNamespace
 	}
 
-	return &TargetNamespaceVarPlugin{
-		config: targetNamespaceVarConfig,
+	return &TargetFlowVarPlugin{
+		config: targetflowVarConfig,
 	}, nil
 }
 
-func (tnv TargetNamespaceVarPlugin) Name() string {
-	return TargetNamespaceVarPluginName
+func (tfv TargetFlowVarPlugin) Config() interface{} {
+	return tfv.config
 }
 
-func (tnv TargetNamespaceVarPlugin) Type() plugins.PluginType {
+func (tfv TargetFlowVarPlugin) Name() string {
+	return TargetFlowVarPluginName
+}
+
+func (tfv TargetFlowVarPlugin) Type() plugins.PluginType {
 	return plugins.InboundPluginType
 }
 
-func (tnv TargetNamespaceVarPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
+func (tfv TargetFlowVarPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
 	w http.ResponseWriter, r *http.Request) bool {
 
-	url, err := createURLNamespaceVar(tnv.config.Namespace, tnv.config.Variable)
+	url, err := createURLFlowVar(tfv.config.Namespace, tfv.config.Flow,
+		tfv.config.Variable)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create url", err)
@@ -99,12 +106,18 @@ func (tnv TargetNamespaceVarPlugin) ExecutePlugin(ctx context.Context, c *core.C
 
 //nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(TargetNamespaceVarPlugin{})
+	plugins.AddPluginToRegistry(TargetFlowVarPlugin{})
 }
 
-func createURLNamespaceVar(ns, v string) (*url.URL, error) {
-	urlString := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/vars/%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), ns, v)
+func createURLFlowVar(ns, flow, v string) (*url.URL, error) {
+
+	// prefix with slash if set relative
+	if !strings.HasPrefix(flow, "/") {
+		flow = "/" + flow
+	}
+
+	urlString := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=var&var=%s",
+		os.Getenv("DIREKTIV_API_V1_PORT"), ns, flow, v)
 
 	return url.Parse(urlString)
 }

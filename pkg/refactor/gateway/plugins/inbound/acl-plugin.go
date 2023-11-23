@@ -17,7 +17,7 @@ const (
 
 // ACLConfig configures the ACL Plugin to allow, deny groups and tags.
 type ACLConfig struct {
-	AllowGroups []string `yaml:"allos_groups"`
+	AllowGroups []string `yaml:"allow_groups"`
 	DenyGroups  []string `yaml:"deny_groups"`
 	AllowTags   []string `yaml:"allow_tags"`
 	DenyTags    []string `yaml:"deny_tags"`
@@ -42,6 +42,10 @@ func (acl ACLPlugin) Configure(config interface{}) (plugins.PluginInstance, erro
 	return &ACLPlugin{
 		config: aclConfig,
 	}, nil
+}
+
+func (acl ACLPlugin) Config() interface{} {
+	return acl.config
 }
 
 func (acl ACLPlugin) Name() string {

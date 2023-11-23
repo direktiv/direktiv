@@ -4,6 +4,7 @@ package endpoints
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -30,6 +31,10 @@ func URLParamFromCtx(ctx context.Context, key string) string {
 // http.Request Context.
 func RouteContext(ctx context.Context) *Context {
 	val, _ := ctx.Value(RouteCtxKey).(*Context)
+	fmt.Printf("INCTX!!! %v\n", val)
+	fmt.Printf("INCTX!!! %v\n", ctx)
+	fmt.Printf("222 >%v<\n", RouteCtxKey.String())
+	fmt.Printf("!33 %v\n", ctx.Value(RouteCtxKey))
 	return val
 }
 

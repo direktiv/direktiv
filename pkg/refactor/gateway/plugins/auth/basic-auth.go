@@ -45,6 +45,10 @@ func (ba BasicAuthPlugin) Configure(config interface{}) (plugins.PluginInstance,
 	}, nil
 }
 
+func (ba BasicAuthPlugin) Config() interface{} {
+	return ba.config
+}
+
 func (ba BasicAuthPlugin) Name() string {
 	return BasicAuthPluginName
 }

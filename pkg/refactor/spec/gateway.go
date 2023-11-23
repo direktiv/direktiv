@@ -7,12 +7,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Plugins struct {
+	Auth     []PluginConfig `yaml:"auth"`
+	Inboud   []PluginConfig `yaml:"inbound"`
+	Target   []PluginConfig `yaml:"target"`
+	Outbound []PluginConfig `yaml:"outbound"`
+}
+
 type EndpointFile struct {
-	DirektivAPI    string         `yaml:"direktiv_api"`
-	Methods        []string       `yaml:"methods"`
-	PathExtension  string         `yaml:"path_extension"`
-	AllowAnonymous bool           `yaml:"allow_anonymous"`
-	Plugins        []PluginConfig `yaml:"plugins"`
+	DirektivAPI    string   `yaml:"direktiv_api"`
+	Methods        []string `yaml:"methods"`
+	PathExtension  string   `yaml:"path_extension"`
+	AllowAnonymous bool     `yaml:"allow_anonymous"`
+	Plugins        Plugins  `yaml:"plugins"`
 }
 
 type ConsumerFile struct {

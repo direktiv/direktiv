@@ -7,29 +7,29 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 // consumerList holds different `views` on the consumers for faster lookup.
 // That means apiKey is an unique key as well. Duplicate api keys are not allowed.
 type ConsumerList struct {
-	apiKeyView   map[string]*core.Consumer
-	usernameView map[string]*core.Consumer
-	listView     []*core.Consumer
+	apiKeyView   map[string]*spec.ConsumerFile
+	usernameView map[string]*spec.ConsumerFile
+	listView     []*spec.ConsumerFile
 
 	lock sync.RWMutex
 }
 
 func NewConsumerList() *ConsumerList {
 	return &ConsumerList{
-		apiKeyView:   make(map[string]*core.Consumer, 0),
-		usernameView: make(map[string]*core.Consumer, 0),
-		listView:     make([]*core.Consumer, 0),
+		apiKeyView:   make(map[string]*spec.ConsumerFile, 0),
+		usernameView: make(map[string]*spec.ConsumerFile, 0),
+		listView:     make([]*spec.ConsumerFile, 0),
 	}
 }
 
 // GetConsumers returns a list of all consumers in the system.
-func (cl *ConsumerList) GetConsumers() []*core.Consumer {
+func (cl *ConsumerList) GetConsumers() []*spec.ConsumerFile {
 	cl.lock.RLock()
 	defer cl.lock.RUnlock()
 
@@ -38,10 +38,10 @@ func (cl *ConsumerList) GetConsumers() []*core.Consumer {
 
 // SetConsumers set a new lists of consumers in the system. The new lists
 // is getting swapped out at the end of processing.
-func (cl *ConsumerList) SetConsumers(consumerList []*core.Consumer) {
-	apiKeyView := make(map[string]*core.Consumer, 0)
-	usernameView := make(map[string]*core.Consumer, 0)
-	listView := make([]*core.Consumer, 0)
+func (cl *ConsumerList) SetConsumers(consumerList []*spec.ConsumerFile) {
+	apiKeyView := make(map[string]*spec.ConsumerFile, 0)
+	usernameView := make(map[string]*spec.ConsumerFile, 0)
+	listView := make([]*spec.ConsumerFile, 0)
 
 	for i := range consumerList {
 		c := consumerList[i]
@@ -87,7 +87,7 @@ func (cl *ConsumerList) SetConsumers(consumerList []*core.Consumer) {
 }
 
 // FindByUser returns a consumer with the provided name, nil if not found.
-func (cl *ConsumerList) FindByUser(user string) *core.Consumer {
+func (cl *ConsumerList) FindByUser(user string) *spec.ConsumerFile {
 	cl.lock.RLock()
 	defer cl.lock.RUnlock()
 
@@ -100,7 +100,7 @@ func (cl *ConsumerList) FindByUser(user string) *core.Consumer {
 }
 
 // FindByAPIKey returns a consumer with the provided key, nil if not found.
-func (cl *ConsumerList) FindByAPIKey(key string) *core.Consumer {
+func (cl *ConsumerList) FindByAPIKey(key string) *spec.ConsumerFile {
 	cl.lock.RLock()
 	defer cl.lock.RUnlock()
 

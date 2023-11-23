@@ -14,6 +14,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestConfigKeyAuthPlugin(t *testing.T) {
+	config := auth.KeyAuthConfig{
+		AddUsernameHeader: true,
+		AddTagsHeader:     true,
+		AddGroupsHeader:   true,
+	}
+
+	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
+	p2, _ := p.Configure(config)
+
+	configOut := p2.Config().(*auth.KeyAuthConfig)
+	assert.Equal(t, config.AddGroupsHeader, configOut.AddGroupsHeader)
+	assert.Equal(t, config.AddTagsHeader, configOut.AddTagsHeader)
+	assert.Equal(t, config.AddUsernameHeader, configOut.AddUsernameHeader)
+}
+
 func TestExecuteKeyAuthPluginConfigure(t *testing.T) {
 
 	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)

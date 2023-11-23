@@ -22,12 +22,12 @@ const (
 // The plugin can be configured to set consumer information (name, groups, tags)
 // and the name of the header for the api key.
 type KeyAuthConfig struct {
-	AddUsernameHeader bool `yaml:"add_username_header"`
-	AddTagsHeader     bool `yaml:"add_tags_header"`
-	AddGroupsHeader   bool `yaml:"add_groups_header"`
+	AddUsernameHeader bool `yaml:"add_username_header" mapstructure:"add_username_header"`
+	AddTagsHeader     bool `yaml:"add_tags_header" mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `yaml:"add_groups_header" mapstructure:"add_groups_header"`
 
 	// KeyName defines the header for the key
-	KeyName string `yaml:"key_name"`
+	KeyName string `yaml:"key_name" mapstructure:"key_name"`
 }
 
 type KeyAuthPlugin struct {
@@ -53,6 +53,10 @@ func (ka KeyAuthPlugin) Configure(config interface{}) (plugins.PluginInstance, e
 	return &KeyAuthPlugin{
 		config: keyAuthConfig,
 	}, nil
+}
+
+func (ka KeyAuthPlugin) Config() interface{} {
+	return ka.config
 }
 
 func (ka KeyAuthPlugin) Name() string {

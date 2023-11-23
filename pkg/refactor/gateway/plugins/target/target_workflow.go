@@ -1,4 +1,4 @@
-package inbound
+package target
 
 import (
 	"context"
@@ -51,6 +51,10 @@ func (tf TargetFlowPlugin) Configure(config interface{}) (plugins.PluginInstance
 	return &TargetFlowPlugin{
 		config: targetflowConfig,
 	}, nil
+}
+
+func (tf TargetFlowPlugin) Config() interface{} {
+	return tf.config
 }
 
 func (tf TargetFlowPlugin) Name() string {

@@ -1,4 +1,4 @@
-package inbound
+package target
 
 import (
 	"context"
@@ -17,8 +17,8 @@ const (
 
 // InstantResponseConfig configures the status code and response for InstantResponsePlugin.
 type InstantResponseConfig struct {
-	StatusCode    int    `yaml:"status_code"`
-	StatusMessage string `yaml:"status_message"`
+	StatusCode    int    `yaml:"status_code" mapstructure:"status_code"`
+	StatusMessage string `yaml:"status_message" mapstructure:"status_message"`
 }
 
 // InstantResponsePlugin responds instantly with the provided status code and message.
@@ -44,6 +44,10 @@ func (ir InstantResponsePlugin) Configure(config interface{}) (plugins.PluginIns
 	}, nil
 }
 
+func (ir InstantResponsePlugin) Config() interface{} {
+	return ir.config
+}
+
 func (ir InstantResponsePlugin) Name() string {
 	return InstantResponsePluginName
 }
@@ -55,7 +59,7 @@ func (ir InstantResponsePlugin) Type() plugins.PluginType {
 func (ir InstantResponsePlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
 	w http.ResponseWriter, r *http.Request) bool {
 
-	if isJSON(ir.config.StatusMessage) {
+	if plugins.IsJSON(ir.config.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}
 
