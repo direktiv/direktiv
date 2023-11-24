@@ -21,9 +21,9 @@ const (
 
 // RequestConvertConfig converts the whole request into JSON.
 type RequestConvertConfig struct {
-	OmitHeaders  bool `yaml:"omit_headers" mapstructure:"omit_headers"`
-	OmitQueries  bool `yaml:"omit_queries" mapstructure:"omit_queries"`
-	OmitBody     bool `yaml:"omit_body" mapstructure:"omit_body"`
+	OmitHeaders  bool `yaml:"omit_headers"  mapstructure:"omit_headers"`
+	OmitQueries  bool `yaml:"omit_queries"  mapstructure:"omit_queries"`
+	OmitBody     bool `yaml:"omit_body"     mapstructure:"omit_body"`
 	OmitConsumer bool `yaml:"omit_consumer" mapstructure:"omit_consumer"`
 }
 
@@ -59,8 +59,8 @@ type RequestConsumer struct {
 }
 
 type RequestConvertResponse struct {
-	URLParams   map[string]string   `json:"url-params"`
-	QueryParams map[string][]string `json:"query-params"`
+	URLParams   map[string]string   `json:"url_params"`
+	QueryParams map[string][]string `json:"query_params"`
 	Headers     http.Header         `json:"headers"`
 	Body        json.RawMessage     `json:"body"`
 	Consumer    RequestConsumer     `json:"consumer"`
@@ -82,6 +82,7 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	// convert uri extension
 	up := r.Context().Value(plugins.URLParamCtxKey)
 	if up != nil {
+		// nolint cvoming from gateway
 		response.URLParams = up.(map[string]string)
 	}
 
@@ -117,6 +118,7 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
 			w.WriteHeader(http.StatusBadRequest)
 			// nolint
 			w.Write([]byte("can not read content"))
+
 			return false
 		}
 		r.Body.Close()
@@ -137,6 +139,7 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
 		w.WriteHeader(http.StatusInternalServerError)
 		// nolint
 		w.Write([]byte("can not marshal content"))
+
 		return false
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
@@ -148,6 +151,7 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	return true
 }
 
+//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		RequestConvertPluginName,

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -20,8 +21,8 @@ const (
 // and the name of the header for the api key.
 type KeyAuthConfig struct {
 	AddUsernameHeader bool `yaml:"add_username_header" mapstructure:"add_username_header"`
-	AddTagsHeader     bool `yaml:"add_tags_header" mapstructure:"add_tags_header"`
-	AddGroupsHeader   bool `yaml:"add_groups_header" mapstructure:"add_groups_header"`
+	AddTagsHeader     bool `yaml:"add_tags_header"     mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `yaml:"add_groups_header"   mapstructure:"add_groups_header"`
 
 	// KeyName defines the header for the key
 	KeyName string `yaml:"key_name" mapstructure:"key_name"`
@@ -62,7 +63,13 @@ func (ka *KeyAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 		return true
 	}
 
-	consumerList := gwObj.(*consumer.ConsumerList)
+	consumerList, ok := gwObj.(*consumer.ConsumerList)
+	if !ok {
+		plugins.ReportError(w, http.StatusInternalServerError,
+			"consumerlist", fmt.Errorf("wrong object in context"))
+
+		return false
+	}
 	consumer := consumerList.FindByAPIKey(key)
 
 	// no consumer with that name

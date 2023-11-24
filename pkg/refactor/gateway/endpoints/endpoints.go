@@ -173,6 +173,7 @@ func configurePlugin(config spec.PluginConfig, t plugins.PluginType, ns string) 
 
 	if p.Type() != t {
 		slog.Error("plugin type mismatch", slog.String(string(p.Type()), string(t)))
+
 		return nil, fmt.Errorf("plugin %s not of type %s", config.Type, t)
 	}
 

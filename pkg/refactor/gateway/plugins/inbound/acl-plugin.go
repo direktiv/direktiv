@@ -17,9 +17,9 @@ const (
 // ACLConfig configures the ACL Plugin to allow, deny groups and tags.
 type ACLConfig struct {
 	AllowGroups []string `yaml:"allow_groups" mapstructure:"allow_groups"`
-	DenyGroups  []string `yaml:"deny_groups" mapstructure:"deny_groups"`
-	AllowTags   []string `yaml:"allow_tags" mapstructure:"allow_tags"`
-	DenyTags    []string `yaml:"deny_tags" mapstructure:"deny_tags"`
+	DenyGroups  []string `yaml:"deny_groups"  mapstructure:"deny_groups"`
+	AllowTags   []string `yaml:"allow_tags"   mapstructure:"allow_tags"`
+	DenyTags    []string `yaml:"deny_tags"    mapstructure:"deny_tags"`
 }
 
 // ACLPlugin is a simple access control method. It checks the incoming consumer
@@ -52,6 +52,7 @@ func (acl *ACLPlugin) ExecutePlugin(c *spec.ConsumerFile,
 
 	if c == nil {
 		deny("missing consumer", w)
+
 		return false
 	}
 
@@ -61,6 +62,7 @@ func (acl *ACLPlugin) ExecutePlugin(c *spec.ConsumerFile,
 
 	if result(acl.config.DenyGroups, c.Groups) {
 		deny("group", w)
+
 		return false
 	}
 
@@ -70,10 +72,12 @@ func (acl *ACLPlugin) ExecutePlugin(c *spec.ConsumerFile,
 
 	if result(acl.config.DenyTags, c.Tags) {
 		deny("tag", w)
+
 		return false
 	}
 
 	deny("fallback", w)
+
 	return false
 }
 
@@ -95,6 +99,7 @@ func deny(t string, w http.ResponseWriter) {
 	plugins.ReportError(w, http.StatusForbidden, msg, fmt.Errorf("forbidden"))
 }
 
+//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		ACLPluginName,

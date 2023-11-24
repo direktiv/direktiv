@@ -55,7 +55,6 @@ func (ep *gatewayManager) DeleteNamespace(ns string) {
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
-
 	slog.Info("updating namespace gateway", slog.String("namespace", ns))
 
 	ep.lock.Lock()
@@ -76,6 +75,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 	files, err := fStore.ForNamespace(ns).ListDirektivFiles(ctx)
 	if err != nil {
 		slog.Error("error listing files", slog.String("error", err.Error()))
+
 		return
 	}
 
@@ -83,7 +83,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 	consumers := make([]*spec.ConsumerFile, 0)
 
 	for _, file := range files {
-
 		if file.Typ != filestore.FileTypeConsumer &&
 			file.Typ != filestore.FileTypeEndpoint {
 			continue
@@ -114,7 +113,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 			consumers = append(consumers, item)
 		} else {
-
 			ep := &core.Endpoint{
 				Namespace: ns,
 				FilePath:  file.Path,
@@ -139,7 +137,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 }
 
 func (ep *gatewayManager) UpdateAll() {
-
 	_, dStore := ep.db.FileStore(), ep.db.DataStore()
 
 	nsList, err := dStore.Namespaces().GetAll(context.Background())
@@ -164,7 +161,7 @@ func NewDummyWriter() *DummyWriter {
 	return &DummyWriter{
 		HeaderMap: make(http.Header),
 		Body:      new(bytes.Buffer),
-		Code:      200,
+		Code:      http.StatusOK,
 	}
 }
 
@@ -193,12 +190,14 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	gw, ok := ep.nsGateways[namespace]
 	if !ok {
 		plugins.ReportNotFound(w)
+
 		return
 	}
 
 	endpointEntry, urlParams := gw.EndpointList.FindRoute(routePath, r.Method)
 	if endpointEntry == nil {
 		plugins.ReportNotFound(w)
+
 		return
 	}
 
@@ -208,7 +207,13 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// timeout
 	t := endpointEntry.EndpointFile.Timeout
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(time.Second*time.Duration(t)))
+
+	// timeout is 30 secs if not set
+	if t == 0 {
+		t = 30
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
 	defer cancel()
 	r = r.WithContext(ctx)
 
@@ -222,6 +227,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// check and exit if consumer is set in plugin
 		if c.Username != "" {
 			slog.Info("user authenticated", "user", c.Username)
+
 			break
 		}
 	}
@@ -230,6 +236,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if c.Username == "" && !endpointEntry.EndpointFile.AllowAnonymous {
 		plugins.ReportError(w, http.StatusUnauthorized, "no permission",
 			fmt.Errorf("request not authorized"))
+
 		return
 	}
 
@@ -262,13 +269,16 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := range endpointEntry.OutboundPluginInstances {
-
 		outboundPlugin := endpointEntry.OutboundPluginInstances[i]
+
+		// nolint
 		tw := targetWriter.(*DummyWriter)
-		rin, err := swapRequestResponse(r.Context(), tw)
+
+		rin, err := swapRequestResponse(r, tw)
 		if err != nil {
 			plugins.ReportError(w, http.StatusUnauthorized, "output plugin failed",
 				err)
+
 			return
 		}
 
@@ -284,7 +294,9 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// response already written, except if there are outbound plugins
 	if len(endpointEntry.OutboundPluginInstances) > 0 {
+		// nolint
 		tw := targetWriter.(*DummyWriter)
+
 		for k, v := range tw.HeaderMap {
 			for a := range v {
 				w.Header().Add(k, v[a])
@@ -306,16 +318,15 @@ func executePlugin(c *spec.ConsumerFile, w http.ResponseWriter, r *http.Request,
 		w.WriteHeader(http.StatusRequestTimeout)
 		//nolint
 		w.Write([]byte("request timed out"))
+
 		return false
 	default:
-
 	}
 
 	return fn(c, w, r)
 }
 
-func swapRequestResponse(ctx context.Context, w *DummyWriter) (*http.Request, error) {
-
+func swapRequestResponse(rin *http.Request, w *DummyWriter) (*http.Request, error) {
 	r, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
 	if err != nil {
 		return nil, err
@@ -323,5 +334,6 @@ func swapRequestResponse(ctx context.Context, w *DummyWriter) (*http.Request, er
 	r.Response = &http.Response{
 		StatusCode: w.Code,
 	}
-	return r.WithContext(ctx), nil
+
+	return r.WithContext(rin.Context()), nil
 }

@@ -49,6 +49,7 @@ func ConfigureTargetFlowPlugin(config interface{}, ns string) (plugins.PluginIns
 	if targetflowConfig.Namespace != ns && ns != core.MagicalGatewayNamespace {
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
+
 	return &TargetFlowPlugin{
 		config: targetflowConfig,
 	}, nil
@@ -65,16 +66,18 @@ func (tf TargetFlowPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create url", err)
+
 		return false
 	}
 
 	client := http.Client{}
 
-	req, err := http.NewRequest(http.MethodPost,
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodPost,
 		url.String(), io.NopCloser(r.Body))
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create request", err)
+
 		return false
 	}
 	defer r.Body.Close()
@@ -83,6 +86,7 @@ func (tf TargetFlowPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not execute flow", err)
+
 		return false
 	}
 
@@ -95,6 +99,7 @@ func (tf TargetFlowPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not serve response", err)
+
 		return false
 	}
 	resp.Body.Close()

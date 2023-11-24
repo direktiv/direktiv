@@ -66,6 +66,7 @@ func (tnf TargetNamespaceFilePlugin) ExecutePlugin(
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not fetch file data", err)
+
 		return false
 	}
 
@@ -90,6 +91,7 @@ func (tnf TargetNamespaceFilePlugin) ExecutePlugin(
 	return true
 }
 
+// nolint
 type Node struct {
 	Namespace string `json:"namespace"`
 	Node      struct {
@@ -116,7 +118,6 @@ type Node struct {
 }
 
 func fetchObjectData(ns, path string) ([]byte, error) {
-
 	// prefix with slash if set relative
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path

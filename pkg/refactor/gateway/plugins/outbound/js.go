@@ -78,10 +78,10 @@ func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 		if err != nil {
 			plugins.ReportError(w, http.StatusInternalServerError,
 				"can not set read body for js plugin", err)
+
 			return false
 		}
 		defer r.Body.Close()
-
 	}
 
 	if r.Response == nil {
@@ -104,6 +104,7 @@ func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not set input object", err)
+
 		return false
 	}
 
@@ -113,6 +114,7 @@ func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not set log function", err)
+
 		return false
 	}
 
@@ -126,6 +128,7 @@ func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not set sleep function", err)
+
 		return false
 	}
 
@@ -136,6 +139,7 @@ func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not execute script", err)
+
 		return false
 	}
 
@@ -143,12 +147,15 @@ func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 		o := val.ToObject(vm)
 		// make sure the input object got returned
 		if o.ExportType() == reflect.TypeOf(resp) {
+			// nolint checked before
 			responseDone := o.Export().(response)
 			for k, v := range responseDone.Headers.h {
 				for a := range v {
 					w.Header().Add(k, v[a])
 				}
 			}
+
+			// nolint
 			w.Write([]byte(responseDone.Body))
 			w.WriteHeader(responseDone.Code)
 		}
@@ -161,6 +168,7 @@ func (js *JSOutboundPlugin) Config() interface{} {
 	return js.config
 }
 
+//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		JSOutboundPluginName,

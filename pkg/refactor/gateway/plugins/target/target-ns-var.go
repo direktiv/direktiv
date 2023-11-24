@@ -61,15 +61,17 @@ func (tnv TargetNamespaceVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create url", err)
+
 		return false
 	}
 
 	client := http.Client{}
 
-	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, url.String(), nil)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create request", err)
+
 		return false
 	}
 
@@ -77,6 +79,7 @@ func (tnv TargetNamespaceVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not serve variable", err)
+
 		return false
 	}
 
@@ -93,6 +96,7 @@ func (tnv TargetNamespaceVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not serve variable", err)
+
 		return false
 	}
 	resp.Body.Close()

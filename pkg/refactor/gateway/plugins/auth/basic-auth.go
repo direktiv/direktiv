@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/sha256"
 	"crypto/subtle"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -20,8 +21,8 @@ const (
 // The plugin can be configured to set consumer information (name, groups, tags).
 type BasicAuthConfig struct {
 	AddUsernameHeader bool `yaml:"add_username_header" mapstructure:"add_username_header"`
-	AddTagsHeader     bool `yaml:"add_tags_header" mapstructure:"add_tags_header"`
-	AddGroupsHeader   bool `yaml:"add_groups_header" mapstructure:"add_groups_header"`
+	AddTagsHeader     bool `yaml:"add_tags_header"     mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `yaml:"add_groups_header"   mapstructure:"add_groups_header"`
 }
 
 type BasicAuthPlugin struct {
@@ -58,7 +59,13 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 
 		return true
 	}
-	consumerList := gwObj.(*consumer.ConsumerList)
+	consumerList, ok := gwObj.(*consumer.ConsumerList)
+	if !ok {
+		plugins.ReportError(w, http.StatusInternalServerError,
+			"consumerlist", fmt.Errorf("wrong object in context"))
+
+		return false
+	}
 	consumer := consumerList.FindByUser(user)
 
 	// no consumer with that name
