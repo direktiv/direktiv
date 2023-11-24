@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -47,7 +46,7 @@ func ConfigureKeyAuthPlugin(config interface{}, ns string) (plugins.PluginInstan
 	}, nil
 }
 
-func (ka *KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (ka *KeyAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 	key := r.Header.Get(ka.config.KeyName)
 
@@ -56,7 +55,7 @@ func (ka *KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile
 		return true
 	}
 
-	gwObj := ctx.Value(plugins.ConsumersParamCtxKey)
+	gwObj := r.Context().Value(plugins.ConsumersParamCtxKey)
 	if gwObj == nil {
 		slog.Debug("no consumer list in context")
 

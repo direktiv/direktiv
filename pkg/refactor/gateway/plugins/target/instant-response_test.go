@@ -1,7 +1,6 @@
 package target_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +36,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
-	p2.ExecutePlugin(context.Background(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 	assert.Equal(t, "This is the end!", w.Body.String())
@@ -50,7 +49,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 
 	w = httptest.NewRecorder()
-	p2.ExecutePlugin(context.Background(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	b, _ := httputil.DumpResponse(w.Result(), true)
 	fmt.Println(string(b))
@@ -66,7 +65,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 
 	w = httptest.NewRecorder()
-	p2.ExecutePlugin(context.Background(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	assert.JSONEq(t, "{ \"hello\": \"world\" }", w.Body.String())
 	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))

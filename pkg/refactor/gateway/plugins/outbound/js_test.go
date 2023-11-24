@@ -2,7 +2,6 @@ package outbound_test
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"net/http"
 	"testing"
@@ -34,7 +33,7 @@ func TestJSOutboundPlugin(t *testing.T) {
 	r.Body = io.NopCloser(bytes.NewBufferString("{ \"string1\": \"value2\" }"))
 
 	w := gateway.NewDummyWriter()
-	p2.ExecutePlugin(context.Background(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	assert.Equal(t, 204, w.Code)
 
@@ -53,7 +52,7 @@ func TestJSOutboundPluginBroken(t *testing.T) {
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 
 	w := gateway.NewDummyWriter()
-	p2.ExecutePlugin(context.Background(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	assert.Equal(t, 500, w.Code)
 }

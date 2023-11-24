@@ -1,7 +1,6 @@
 package target
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -59,7 +58,7 @@ func (tnf TargetNamespaceFilePlugin) Config() interface{} {
 	return tnf.config
 }
 
-func (tnf TargetNamespaceFilePlugin) ExecutePlugin(ctx context.Context,
+func (tnf TargetNamespaceFilePlugin) ExecutePlugin(
 	c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 

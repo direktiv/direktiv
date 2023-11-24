@@ -1,7 +1,6 @@
 package target
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,7 +56,7 @@ func (tfv TargetFlowVarPlugin) Config() interface{} {
 	return tfv.config
 }
 
-func (tfv TargetFlowVarPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (tfv TargetFlowVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	url, err := createURLFlowVar(tfv.config.Namespace, tfv.config.Flow,
@@ -70,7 +69,7 @@ func (tfv TargetFlowVarPlugin) ExecutePlugin(ctx context.Context, c *spec.Consum
 
 	client := http.Client{}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create request", err)

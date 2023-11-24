@@ -1,7 +1,6 @@
 package inbound
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -48,7 +47,7 @@ func (acl *ACLPlugin) Config() interface{} {
 	return acl.config
 }
 
-func (acl *ACLPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (acl *ACLPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	if c == nil {

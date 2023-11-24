@@ -1,12 +1,12 @@
 package outbound
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
@@ -65,7 +65,7 @@ func (h Headers) Delete(key string) {
 	h.h.Del(key)
 }
 
-func (js *JSOutboundPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	var (
@@ -98,9 +98,6 @@ func (js *JSOutboundPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerF
 		Code: r.Response.StatusCode,
 	}
 
-	fmt.Println("COMING IN ")
-	fmt.Println(resp)
-
 	// extract all response headers and body
 	vm := goja.New()
 	err = vm.Set("input", resp)
@@ -116,6 +113,19 @@ func (js *JSOutboundPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerF
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not set log function", err)
+		return false
+	}
+
+	err = vm.Set("sleep", func(t interface{}) {
+		tt, ok := t.(int64)
+		if !ok {
+			return
+		}
+		time.Sleep(time.Duration(tt) * time.Second)
+	})
+	if err != nil {
+		plugins.ReportError(w, http.StatusInternalServerError,
+			"can not set sleep function", err)
 		return false
 	}
 

@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -79,7 +78,7 @@ func ConvertConfig(name string, config interface{}, target interface{}) error {
 }
 
 type PluginInstance interface {
-	ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+	ExecutePlugin(c *spec.ConsumerFile,
 		w http.ResponseWriter, r *http.Request) bool
 	Config() interface{}
 }

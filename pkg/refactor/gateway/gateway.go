@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -120,7 +121,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				Errors:    make([]string, 0),
 				Warnings:  make([]string, 0),
 			}
-
 			item, err := spec.ParseEndpointFile(data)
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
@@ -206,14 +206,18 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
 	ctx = context.WithValue(ctx, plugins.ConsumersParamCtxKey, gw.ConsumerList)
 
-	// TODO: timeout
+	// timeout
+	t := endpointEntry.EndpointFile.Timeout
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(time.Second*time.Duration(t)))
+	defer cancel()
+	r = r.WithContext(ctx)
 
 	c := &spec.ConsumerFile{}
 	for i := range endpointEntry.AuthPluginInstances {
 		authPlugin := endpointEntry.AuthPluginInstances[i]
 
 		// auth plugins always return true to check all of them
-		authPlugin.ExecutePlugin(ctx, c, w, r)
+		authPlugin.ExecutePlugin(c, w, r)
 
 		// check and exit if consumer is set in plugin
 		if c.Username != "" {
@@ -237,7 +241,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// run inbound
 	for i := range endpointEntry.InboundPluginInstances {
 		inboundPlugin := endpointEntry.InboundPluginInstances[i]
-		proceed := inboundPlugin.ExecutePlugin(ctx, c, w, r)
+		proceed := inboundPlugin.ExecutePlugin(c, w, r)
 		if !proceed {
 			return
 		}
@@ -248,26 +252,28 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// on the wire immediatley.
 	targetWriter := w
 	if len(endpointEntry.OutboundPluginInstances) > 0 {
-		slog.Info("using dummy writer")
 		targetWriter = NewDummyWriter()
 	}
 
 	// run target if it exists
 	if endpointEntry.TargetPluginInstance != nil &&
-		!endpointEntry.TargetPluginInstance.ExecutePlugin(ctx, c, targetWriter, r) {
+		!endpointEntry.TargetPluginInstance.ExecutePlugin(c, targetWriter, r) {
 		return
 	}
 
 	for i := range endpointEntry.OutboundPluginInstances {
+
 		outboundPlugin := endpointEntry.OutboundPluginInstances[i]
 		tw := targetWriter.(*DummyWriter)
-		r, err := swapRequestResponse(tw)
+		rin, err := swapRequestResponse(r.Context(), tw)
 		if err != nil {
 			plugins.ReportError(w, http.StatusUnauthorized, "output plugin failed",
 				err)
 			return
 		}
-		proceed := outboundPlugin.ExecutePlugin(ctx, c, tw, r)
+
+		proceed := executePlugin(c, tw, rin,
+			outboundPlugin.ExecutePlugin)
 
 		// in outbound we need to break and not return
 		// to write the actual output
@@ -290,92 +296,26 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			slog.Error("can not write api repsonse", slog.Any("error", err.Error()))
 		}
 	}
-
-	// tw := targetWriter.(*DummyWriter)
-	// w2 := httptest.NewRecorder()
-	// // for k := range tw.HeaderMap {
-	// w2.HeaderMap = tw.HeaderMap
-	// w2.Body = tw.Body
-	// w2.WriteHeader(tw.Code)
-	// // }
-
-	// b, _ := httputil.DumpResponse(w2.Result(), true)
-	// fmt.Printf("%v\n", string(b))
-
-	// for i := range endpointEntry.TargetPluginInstances {
-
-	// }
-
-	// for i := range endpointEntry.InboundPlugins {
-	// 	inboundPlugin := endpointEntry.InboundPlugins[i]
-	// 	result := inboundPlugin.ExecutePlugin(ctx, c, w, r)
-	// 	if !result {
-	// 		fmt.Println("DONT!")
-	// 	}
-	// }
-
-	// // if user not authenticated and anonymous access not enabled
-	// if c.Username == "" && !endpointEntry.endpoint.AllowAnonymous {
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	// nolint
-	// 	w.Write([]byte("unauthorized"))
-	// }
-
-	// routeCtx := NewRouteContext()
-	// _, _, endpointEntry := pathTree.FindRoute(routeCtx, mGET, "/"+routePath)
-
-	// // add path extension variables in context, e.g. /{id}
-	// urlParams := make(map[string]string)
-	// for i := 0; i < len(routeCtx.URLParams.Keys); i++ {
-	// 	key := routeCtx.URLParams.Keys[i]
-	// 	urlParams[key] = routeCtx.URLParams.Values[i]
-	// }
-	// ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
-
-	// if endpointEntry == nil {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	// nolint
-	// 	w.Write([]byte("not found"))
-
-	// 	return
-	// }
-
-	// // TODO: set timeout
-	// ctxTimeout, cancel := context.WithTimeout(ctx, time.Second)
-	// defer cancel()
-
-	// c := &core.Consumer{}
-
-	// // run auth
-	// for i := range endpointEntry.authPlugins {
-	// 	authPlugin := endpointEntry.authPlugins[i]
-	// 	authPlugin.ExecutePlugin(ctxTimeout, c, w, r)
-
-	// 	// check and exit if consumer is set in plugin
-	// 	if c.Username != "" {
-	// 		slog.Info("user authenticated", "user", c.Username)
-	// 		break
-	// 	}
-	// }
-
-	// // if user not authenticated and anonymous access not enabled
-	// if c.Username == "" && !endpointEntry.endpoint.AllowAnonymous {
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	// nolint
-	// 	w.Write([]byte("unauthorized"))
-	// }
-
-	// for i := range endpointEntry.inboundPlugins {
-	// 	inboundPlugin := endpointEntry.inboundPlugins[i]
-	// 	result := inboundPlugin.ExecutePlugin(ctxTimeout, c, w, r)
-	// 	if !result {
-	// 		fmt.Println("DONT!")
-	// 	}
-	// }
-
 }
 
-func swapRequestResponse(w *DummyWriter) (*http.Request, error) {
+func executePlugin(c *spec.ConsumerFile, w http.ResponseWriter, r *http.Request,
+	fn func(*spec.ConsumerFile, http.ResponseWriter, *http.Request) bool) bool {
+
+	select {
+	case <-r.Context().Done():
+		w.WriteHeader(http.StatusRequestTimeout)
+		//nolint
+		w.Write([]byte("request timed out"))
+		return false
+	default:
+
+	}
+
+	return fn(c, w, r)
+}
+
+func swapRequestResponse(ctx context.Context, w *DummyWriter) (*http.Request, error) {
+
 	r, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
 	if err != nil {
 		return nil, err
@@ -383,65 +323,5 @@ func swapRequestResponse(w *DummyWriter) (*http.Request, error) {
 	r.Response = &http.Response{
 		StatusCode: w.Code,
 	}
-	return r, nil
+	return r.WithContext(ctx), nil
 }
-
-// 	res := make([]plugins.Serve, 0, len(endpoint.Plugins))
-
-// 	// for _, v := range endpoint.Plugins {
-// 	// 	plugin, ok := registry[v.Type]
-// 	// 	if !ok {
-// 	// 		endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.Type)
-
-// 	// 		continue
-// 	// 	}
-
-// 	// 	servePluginFunc, err := plugin.build(v.Configuration)
-// 	// 	if err != nil {
-// 	// 		endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.Type, err)
-
-// 	// 		continue
-// 	// 	}
-
-// 	// 	res = append(res, servePluginFunc)
-// 	// }
-
-// 	return res
-// }
-
-// func (gw *endpointManager) GetAll() []*core.Endpoint {
-// 	// gw.mu.Lock() // Lock
-// 	// defer gw.mu.Unlock()
-
-// 	// newList := make([]*core.Endpoint, len(gw.pluginPool))
-
-// 	// for _, value := range gw.pluginPool {
-// 	// 	// newList[value.item] = value.Endpoint
-// 	// }
-
-// 	// return newList
-
-// 	return nil
-// }
-
-// func GetAllSchemas() (any, error) {
-// 	res := make(map[string]interface{})
-
-// 	// for k, p := range registry {
-// 	// 	schemaStruct := p.getSchema()
-// 	// 	schema := jsonschema.Reflect(schemaStruct)
-
-// 	// 	var schemaObj map[string]interface{}
-// 	// 	b, err := schema.MarshalJSON()
-// 	// 	if err != nil {
-// 	// 		return nil, err
-// 	// 	}
-// 	// 	if err := json.Unmarshal(b, &schemaObj); err != nil {
-// 	// 		return nil, err
-// 	// 	}
-
-// 	// 	res[k] = schemaObj
-// 	// }
-
-// 	return res, nil
-// }

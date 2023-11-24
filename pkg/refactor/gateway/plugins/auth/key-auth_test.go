@@ -70,7 +70,7 @@ func TestExecuteKeyAuthPluginNoConsumer(t *testing.T) {
 
 	c := &spec.ConsumerFile{}
 
-	p2.ExecutePlugin(r.Context(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 
 	// no consumer set, header is empty
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
@@ -132,7 +132,7 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 	r.Header.Add("testapikey", key)
 
 	c := &spec.ConsumerFile{}
-	p2.ExecutePlugin(r.Context(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 
 	return w, r
 

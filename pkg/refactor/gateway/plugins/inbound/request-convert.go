@@ -2,7 +2,6 @@ package inbound
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -67,7 +66,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	response := &RequestConvertResponse{
@@ -81,7 +80,7 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *spec.Cons
 	}
 
 	// convert uri extension
-	up := ctx.Value(plugins.URLParamCtxKey)
+	up := r.Context().Value(plugins.URLParamCtxKey)
 	if up != nil {
 		response.URLParams = up.(map[string]string)
 	}

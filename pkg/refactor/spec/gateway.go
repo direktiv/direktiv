@@ -20,6 +20,7 @@ type EndpointFile struct {
 	PathExtension  string   `yaml:"path_extension"`
 	AllowAnonymous bool     `yaml:"allow_anonymous"`
 	Plugins        Plugins  `yaml:"plugins"`
+	Timeout        int      `yaml:"timeout"`
 }
 
 type ConsumerFile struct {

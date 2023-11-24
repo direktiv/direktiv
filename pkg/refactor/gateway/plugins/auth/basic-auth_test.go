@@ -65,7 +65,7 @@ func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
 
 	c := &spec.ConsumerFile{}
 
-	pi.ExecutePlugin(r.Context(), c, w, r)
+	pi.ExecutePlugin(c, w, r)
 
 	// no consumer set, header is empty
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
@@ -129,7 +129,7 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 
 	c := &spec.ConsumerFile{}
 
-	p2.ExecutePlugin(r.Context(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 
 	return w, r
 

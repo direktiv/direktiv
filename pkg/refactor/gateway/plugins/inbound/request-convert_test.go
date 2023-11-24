@@ -43,13 +43,15 @@ func TestExecuteRequestConvertPlugin(t *testing.T) {
 
 	urlParams := make(map[string]string)
 	urlParams["test"] = "value"
-	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
+	// ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
+
+	r = r.WithContext(context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams))
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
 	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
-	p2.ExecutePlugin(ctx, nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	b, _ := io.ReadAll(r.Body)
 
@@ -71,7 +73,7 @@ func TestExecuteRequestConvertPluginNoContent(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
 	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
 
-	p2.ExecutePlugin(r.Context(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	b, _ := io.ReadAll(r.Body)
 
@@ -93,7 +95,7 @@ func TestExecuteRequestConvertPluginBinaryContent(t *testing.T) {
 	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
-	p2.ExecutePlugin(r.Context(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	b, _ := io.ReadAll(r.Body)
 
@@ -120,7 +122,7 @@ func TestExecuteRequestConvertPluginSkip(t *testing.T) {
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
-	p2.ExecutePlugin(r.Context(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	b, _ := io.ReadAll(r.Body)
 
@@ -151,7 +153,7 @@ func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
-	p2.ExecutePlugin(r.Context(), &spec.ConsumerFile{Username: "hello", Tags: []string{"tag1"}}, w, r)
+	p2.ExecutePlugin(&spec.ConsumerFile{Username: "hello", Tags: []string{"tag1"}}, w, r)
 
 	b, _ := io.ReadAll(r.Body)
 

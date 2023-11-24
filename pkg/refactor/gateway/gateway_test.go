@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/http/httputil"
 	"testing"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -88,6 +89,24 @@ tags:
 - tag1
 groups:
 - group1`
+
+var timeout = `direktiv_api: endpoint/v1
+allow_anonymous: true
+timeout: 2
+plugins:
+  outbound:
+    - type: js-outbound
+      configuration:
+       script: |
+          sleep(5)
+    - type: js-outbound
+      configuration:
+        script: |
+          log(input)
+          input["Headers"].Add("demo3", "value3")
+methods: 
+  - GET
+  - POST`
 
 func TestBasicGateway(t *testing.T) {
 
@@ -188,4 +207,46 @@ func doRequest(t *testing.T, url string, headers http.Header, gm core.GatewayMan
 
 	return w.Result()
 
+}
+
+func do(ctx context.Context) {
+
+	for {
+		select {
+		case <-time.After(1 * time.Second):
+			fmt.Println("overslept")
+		case <-ctx.Done():
+			fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+			fmt.Println(ctx.Err()) // prints "context deadline exceeded"
+		default:
+			fmt.Println("COUNT")
+			fmt.Printf("%+v\n", ctx)
+			time.Sleep(1 * time.Second)
+		}
+	}
+
+}
+
+func TestTimeoutRequest(t *testing.T) {
+
+	// ctx := context.Background()
+	// ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	// defer cancel()
+	// do(ctx)
+	// fmt.Println("DONE!!")
+
+	dbMock, _ := database.NewMockGorm()
+
+	db := database.NewDB(dbMock, "dummy")
+	createNS(db, core.MagicalGatewayNamespace)
+	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(timeout))
+
+	gm := gateway.NewGatewayManager(db)
+	gm.UpdateAll()
+
+	doRequest(t, "/gw/test", make(http.Header), gm)
+	// assert.Equal(t, http.StatusAccepted, resp.StatusCode)
+	// assert.Equal(t, "value", resp.Header.Get("demo"))
+	// assert.Equal(t, "value3", resp.Header.Get("demo3"))
 }

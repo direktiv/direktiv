@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/sha256"
 	"crypto/subtle"
 	"log/slog"
@@ -42,7 +41,7 @@ func ConfigureBasicAuthPlugin(config interface{}, ns string) (plugins.PluginInst
 	}, nil
 }
 
-func (ba *BasicAuthPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	user, pwd, ok := r.BasicAuth()
@@ -52,7 +51,7 @@ func (ba *BasicAuthPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFi
 		return true
 	}
 
-	gwObj := ctx.Value(plugins.ConsumersParamCtxKey)
+	gwObj := r.Context().Value(plugins.ConsumersParamCtxKey)
 	if gwObj == nil {
 		slog.Debug("no consumer list in context",
 			slog.String("user", user))

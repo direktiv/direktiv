@@ -1,7 +1,6 @@
 package inbound_test
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,7 +49,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
-	p2.ExecutePlugin(context.Background(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
 	assert.Equal(t, "access denied by fallback: forbidden", w.Body.String())
@@ -62,7 +61,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
-	p2.ExecutePlugin(context.Background(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
 	// test deny groups
@@ -72,7 +71,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
-	p2.ExecutePlugin(context.Background(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
 	assert.Equal(t, "access denied by group: forbidden", w.Body.String())
@@ -84,7 +83,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
-	p2.ExecutePlugin(context.Background(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
 	// deny tag
@@ -94,7 +93,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
-	p2.ExecutePlugin(context.Background(), c, w, r)
+	p2.ExecutePlugin(c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
 	assert.Equal(t, "access denied by tag: forbidden", w.Body.String())
@@ -102,7 +101,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	// missing consumer
 	w = httptest.NewRecorder()
 	p2, _ = p.Configure(&inbound.ACLConfig{}, core.MagicalGatewayNamespace)
-	p2.ExecutePlugin(context.Background(), nil, w, r)
+	p2.ExecutePlugin(nil, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
 	assert.Equal(t, "access denied by missing consumer: forbidden", w.Body.String())

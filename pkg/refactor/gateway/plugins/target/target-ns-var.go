@@ -1,7 +1,6 @@
 package target
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -55,7 +54,7 @@ func (tnv TargetNamespaceVarPlugin) Config() interface{} {
 	return tnv.config
 }
 
-func (tnv TargetNamespaceVarPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (tnv TargetNamespaceVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	url, err := createURLNamespaceVar(tnv.config.Namespace, tnv.config.Variable)
@@ -67,7 +66,7 @@ func (tnv TargetNamespaceVarPlugin) ExecutePlugin(ctx context.Context, c *spec.C
 
 	client := http.Client{}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create request", err)

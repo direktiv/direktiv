@@ -1,7 +1,6 @@
 package target
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -59,7 +58,7 @@ func (tf TargetFlowPlugin) Config() interface{} {
 	return tf.config
 }
 
-func (tf TargetFlowPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (tf TargetFlowPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	url, err := createURL(tf.config.Namespace, tf.config.Flow, tf.config.Async)
@@ -71,7 +70,7 @@ func (tf TargetFlowPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFi
 
 	client := http.Client{}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+	req, err := http.NewRequest(http.MethodPost,
 		url.String(), io.NopCloser(r.Body))
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,

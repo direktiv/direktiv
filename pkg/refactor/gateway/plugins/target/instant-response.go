@@ -1,7 +1,6 @@
 package target
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
@@ -38,7 +37,7 @@ func ConfigureInstantResponse(config interface{}, ns string) (plugins.PluginInst
 	}, nil
 }
 
-func (ir *InstantResponsePlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+func (ir *InstantResponsePlugin) ExecutePlugin(c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 	if plugins.IsJSON(ir.config.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
