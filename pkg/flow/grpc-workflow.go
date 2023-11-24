@@ -133,7 +133,13 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 		return nil, err
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
-	err = flow.pBus.Publish(pubSub, filepath.Join(req.GetNamespace(), file.Path))
+
+	// do we need the path for services?
+	if fileType == filestore.FileTypeService {
+		err = flow.pBus.Publish(pubSub, filepath.Join(req.GetNamespace(), file.Path))
+	} else {
+		err = flow.pBus.Publish(pubSub, filepath.Join(req.GetNamespace(), ns.Name))
+	}
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -323,14 +329,14 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	if file.Typ == filestore.FileTypeEndpoint {
-		err = flow.pBus.Publish(pubsub.EndpointUpdate, filepath.Join(ns.Name, file.Path))
+		err = flow.pBus.Publish(pubsub.EndpointUpdate, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
 	}
 
 	if file.Typ == filestore.FileTypeConsumer {
-		err = flow.pBus.Publish(pubsub.ConsumerUpdate, filepath.Join(ns.Name, file.Path))
+		err = flow.pBus.Publish(pubsub.ConsumerUpdate, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
@@ -23,7 +24,7 @@ func TestConfigBasicAuthPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	configOut := p2.Config().(*auth.BasicAuthConfig)
 	assert.Equal(t, config.AddGroupsHeader, configOut.AddGroupsHeader)
@@ -36,15 +37,15 @@ func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
 
 	// configure with nil
-	_, err := p.Configure(nil)
+	_, err := p.Configure(nil, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
 
 	// configure with nonsense
-	_, err = p.Configure("random")
+	_, err = p.Configure("random", core.MagicalGatewayNamespace)
 	assert.Error(t, err)
 
 	config := &auth.BasicAuthConfig{}
-	_, err = p.Configure(config)
+	_, err = p.Configure(config, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
 
 }
@@ -58,7 +59,7 @@ func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
 		AddUsernameHeader: true,
 	}
 
-	pi, _ := p.Configure(config)
+	pi, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
@@ -119,7 +120,7 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 		AddTagsHeader:     c2,
 		AddGroupsHeader:   c3,
 	}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)

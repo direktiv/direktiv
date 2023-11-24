@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
@@ -22,7 +23,7 @@ func TestConfigACLPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.ACLPluginName)
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	configOut := p2.Config().(*inbound.ACLConfig)
 
@@ -45,7 +46,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(inbound.ACLPluginName)
 
 	config := &inbound.ACLConfig{}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
@@ -60,7 +61,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config)
+	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 	p2.ExecutePlugin(context.Background(), c, w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
@@ -70,7 +71,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config)
+	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 	p2.ExecutePlugin(context.Background(), c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
@@ -82,7 +83,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config)
+	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 	p2.ExecutePlugin(context.Background(), c, w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
@@ -92,7 +93,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config)
+	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 	p2.ExecutePlugin(context.Background(), c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
@@ -100,7 +101,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	// missing consumer
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(&inbound.ACLConfig{})
+	p2, _ = p.Configure(&inbound.ACLConfig{}, core.MagicalGatewayNamespace)
 	p2.ExecutePlugin(context.Background(), nil, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)

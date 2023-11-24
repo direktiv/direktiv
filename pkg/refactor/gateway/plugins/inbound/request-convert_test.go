@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
@@ -26,7 +27,7 @@ func TestConfigRequestConvertPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	configOut := p2.Config().(*inbound.RequestConvertConfig)
 	assert.Equal(t, config.OmitBody, configOut.OmitBody)
@@ -45,7 +46,7 @@ func TestExecuteRequestConvertPlugin(t *testing.T) {
 	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(&inbound.RequestConvertConfig{})
+	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(ctx, nil, w, r)
@@ -68,7 +69,7 @@ func TestExecuteRequestConvertPluginNoContent(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(&inbound.RequestConvertConfig{})
+	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
 
 	p2.ExecutePlugin(r.Context(), nil, w, r)
 
@@ -89,7 +90,7 @@ func TestExecuteRequestConvertPluginBinaryContent(t *testing.T) {
 		strings.NewReader("NONJSON"))
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(&inbound.RequestConvertConfig{})
+	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(r.Context(), nil, w, r)
@@ -116,7 +117,7 @@ func TestExecuteRequestConvertPluginSkip(t *testing.T) {
 		OmitQueries: true,
 		OmitBody:    true,
 	}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(r.Context(), nil, w, r)
@@ -147,7 +148,7 @@ func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
 		OmitQueries: true,
 		OmitBody:    true,
 	}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(r.Context(), &spec.ConsumerFile{Username: "hello", Tags: []string{"tag1"}}, w, r)

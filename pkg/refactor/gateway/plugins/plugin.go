@@ -31,7 +31,7 @@ var (
 )
 
 type Plugin interface {
-	Configure(config interface{}) (PluginInstance, error)
+	Configure(config interface{}, namespace string) (PluginInstance, error)
 	Name() string
 	Type() PluginType
 }
@@ -40,7 +40,7 @@ type Plugin interface {
 type PluginBase struct {
 	pname    string
 	ptype    PluginType
-	configFn func(interface{}) (PluginInstance, error)
+	configFn func(interface{}, string) (PluginInstance, error)
 }
 
 func (p PluginBase) Name() string {
@@ -51,12 +51,12 @@ func (p PluginBase) Type() PluginType {
 	return p.ptype
 }
 
-func (p PluginBase) Configure(config interface{}) (PluginInstance, error) {
-	return p.configFn(config)
+func (p PluginBase) Configure(config interface{}, ns string) (PluginInstance, error) {
+	return p.configFn(config, ns)
 }
 
 func NewPluginBase(pname string, ptype PluginType,
-	configFn func(interface{}) (PluginInstance, error)) Plugin {
+	configFn func(interface{}, string) (PluginInstance, error)) Plugin {
 	return &PluginBase{
 		pname:    pname,
 		ptype:    ptype,

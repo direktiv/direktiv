@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
@@ -25,7 +26,7 @@ func TestJSOutboundPlugin(t *testing.T) {
 		input["Code"] = 204
 		`,
 	}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Header.Add("header1", "value1")
@@ -47,7 +48,7 @@ func TestJSOutboundPluginBroken(t *testing.T) {
 		random stuff / 2
 		`,
 	}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 

@@ -29,7 +29,7 @@ type BasicAuthPlugin struct {
 	config *BasicAuthConfig
 }
 
-func ConfigureBasicAuthPlugin(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureBasicAuthPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
 	authConfig := &BasicAuthConfig{}
 
 	err := plugins.ConvertConfig(BasicAuthPluginName, config, &authConfig)
@@ -112,91 +112,3 @@ func init() {
 		plugins.AuthPluginType,
 		ConfigureBasicAuthPlugin))
 }
-
-// func (ba BasicAuthPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
-// 	authConfig := &BasicAuthConfig{}
-// 	if config != nil {
-// 		err := mapstructure.Decode(config, &authConfig)
-// 		if err != nil {
-// 			return nil, errors.Wrap(err, "configuration for target-flow invalid")
-// 		}
-// 	}
-
-// 	return &BasicAuthPlugin{
-// 		config: authConfig,
-// 	}, nil
-// }
-
-// func (ba BasicAuthPlugin) Config() interface{} {
-// 	return ba.config
-// }
-
-// func (ba BasicAuthPlugin) Name() string {
-// 	return BasicAuthPluginName
-// }
-
-// func (ba BasicAuthPlugin) Type() plugins.PluginType {
-// 	return plugins.AuthPluginType
-// }
-
-// func (ba BasicAuthPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
-// 	_ http.ResponseWriter, r *http.Request) bool {
-// 	user, pwd, ok := r.BasicAuth()
-
-// 	// no basic auth provided
-// 	if !ok {
-// 		return true
-// 	}
-
-// 	gwObj := ctx.Value(plugins.ConsumersParamCtxKey)
-// 	if gwObj == nil {
-// 		slog.Debug("no consumer list in context",
-// 			slog.String("user", user))
-
-// 		return true
-// 	}
-// 	consumerList := gwObj.(*consumer.ConsumerList)
-// 	consumer := consumerList.FindByUser(user)
-
-// 	// no consumer with that name
-// 	if consumer == nil {
-// 		slog.Debug("no consumer configured",
-// 			slog.String("user", user))
-
-// 		return true
-// 	}
-
-// 	// comparing passwords
-// 	userHash := sha256.Sum256([]byte(user))
-// 	pwdHash := sha256.Sum256([]byte(pwd))
-// 	userHashExpected := sha256.Sum256([]byte(consumer.Username))
-// 	pwdHashExpected := sha256.Sum256([]byte(consumer.Password))
-
-// 	usernameMatch := (subtle.ConstantTimeCompare(userHash[:], userHashExpected[:]) == 1)
-// 	passwordMatch := (subtle.ConstantTimeCompare(pwdHash[:], pwdHashExpected[:]) == 1)
-
-// 	if usernameMatch && passwordMatch {
-// 		*c = *consumer
-
-// 		// set headers if configured.
-// 		if ba.config.AddUsernameHeader {
-// 			r.Header.Set(plugins.ConsumerUserHeader, c.Username)
-// 		}
-
-// 		if ba.config.AddTagsHeader && len(c.Tags) > 0 {
-// 			r.Header.Set(plugins.ConsumerTagsHeader, strings.Join(c.Tags, ","))
-// 		}
-
-// 		if ba.config.AddGroupsHeader && len(c.Groups) > 0 {
-// 			r.Header.Set(plugins.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
-// 		}
-// 	}
-
-// 	// basic auth always returns true to execute other auth plugins
-// 	return true
-// }
-
-// //nolint:gochecknoinits
-// func init() {
-// 	plugins.AddPluginToRegistry(BasicAuthPlugin{})
-// }

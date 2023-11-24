@@ -32,7 +32,7 @@ type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}

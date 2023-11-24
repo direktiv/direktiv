@@ -113,7 +113,7 @@ func buildPluginChain(endpoint *core.Endpoint) {
 	// add target if set
 	if endpoint.EndpointFile.Plugins.Target.Type != "" {
 		targetPlugin, err := configurePlugin(endpoint.EndpointFile.Plugins.Target,
-			plugins.TargetPluginType)
+			plugins.TargetPluginType, endpoint.Namespace)
 		if err != nil {
 			endpoint.Errors = append(endpoint.Errors, err.Error())
 		} else {
@@ -125,31 +125,31 @@ func buildPluginChain(endpoint *core.Endpoint) {
 
 	// add auth plugins
 	authPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Auth,
-		plugins.AuthPluginType)
+		plugins.AuthPluginType, endpoint.Namespace)
 	endpoint.AuthPluginInstances = authPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 	// inbound
 	inboundPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Inbound,
-		plugins.InboundPluginType)
+		plugins.InboundPluginType, endpoint.Namespace)
 	endpoint.InboundPluginInstances = inboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 	// outbound
 	outboundPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Outbound,
-		plugins.OutboundPluginType)
+		plugins.OutboundPluginType, endpoint.Namespace)
 	endpoint.OutboundPluginInstances = outboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 }
 
-func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType) ([]plugins.PluginInstance, []string) {
+func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType, ns string) ([]plugins.PluginInstance, []string) {
 	errors := make([]string, 0)
 	configuredPlugins := make([]plugins.PluginInstance, 0)
 
 	for i := range pluginConfigs {
 		config := pluginConfigs[i]
-		pi, err := configurePlugin(config, t)
+		pi, err := configurePlugin(config, t, ns)
 		if err != nil {
 			// add error of the plugin to error array
 			errors = append(errors, fmt.Sprintf("%s: %s", config.Type, err.Error()))
@@ -162,7 +162,7 @@ func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType) ([]
 	return configuredPlugins, errors
 }
 
-func configurePlugin(config spec.PluginConfig, t plugins.PluginType) (plugins.PluginInstance, error) {
+func configurePlugin(config spec.PluginConfig, t plugins.PluginType, ns string) (plugins.PluginInstance, error) {
 	slog.Info("processing plugin",
 		slog.String("plugin", config.Type))
 
@@ -176,5 +176,5 @@ func configurePlugin(config spec.PluginConfig, t plugins.PluginType) (plugins.Pl
 		return nil, fmt.Errorf("plugin %s not of type %s", config.Type, t)
 	}
 
-	return p.Configure(config.Configuration)
+	return p.Configure(config.Configuration, ns)
 }

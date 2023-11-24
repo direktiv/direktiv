@@ -115,9 +115,10 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		} else {
 
 			ep := &core.Endpoint{
-				FilePath: file.Path,
-				Errors:   make([]string, 0),
-				Warnings: make([]string, 0),
+				Namespace: ns,
+				FilePath:  file.Path,
+				Errors:    make([]string, 0),
+				Warnings:  make([]string, 0),
 			}
 
 			item, err := spec.ParseEndpointFile(data)
@@ -130,43 +131,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			ep.EndpointFile = item
 
 			endpoints = append(endpoints, ep)
-
-			// e := core.Endpoint{
-			// 	EndpointFile: item,
-			// 	FilePath:     file.Path,
-			// }
-
-			// plConfig := make([]core.Plugin, 0, len(item.Plugins))
-			// for _, v := range item.Plugins {
-			// 	plConfig = append(plConfig, core.Plugin{
-			// 		Type:          v.Type,
-			// 		Configuration: v.Configuration,
-			// 	})
-			// }
-			// item.FilePath = file.Path
-			// endpoints = append(endpoints, &core)
-			// endpoints = append(endpoints, &core.Endpoint{
-			// 	Methods: item.Methods,
-			// 	Plugins: core.Plugins{
-			// 		Auth: item.Plugins.Auth,
-			// 	},
-			// 	// Plugins: struct {
-			// 	// 	Auth     []core.Plugin "yaml:\"auth\""
-			// 	// 	Inboud   []core.Plugin "yaml:\"inbound\""
-			// 	// 	Target   []core.Plugin "yaml:\"target\""
-			// 	// 	Outbound []core.Plugin "yaml:\"outbound\""
-			// 	// }{},
-			// 	// Plugins: struct {
-			// 	// 	Auth     []core.Plugin "yaml:\"auth\""
-			// 	// 	Inboud   []core.Plugin "yaml:\"inbound\""
-			// 	// 	Target   []core.Plugin "yaml:\"target\""
-			// 	// 	Outbound []core.Plugin "yaml:\"outbound\""
-			// 	// }{
-			// 	// 	Auth: []core.Plugin{},
-			// 	// },
-			// 	// PathExtension:  item.PathExtension,
-			// 	AllowAnonymous: item.AllowAnonymous,
-			// })
 		}
 	}
 

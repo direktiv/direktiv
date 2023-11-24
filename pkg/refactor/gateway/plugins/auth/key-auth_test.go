@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
@@ -23,7 +24,7 @@ func TestConfigKeyAuthPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	configOut := p2.Config().(*auth.KeyAuthConfig)
 	assert.Equal(t, config.AddGroupsHeader, configOut.AddGroupsHeader)
@@ -36,20 +37,20 @@ func TestExecuteKeyAuthPluginConfigure(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
 
 	// configure with nil
-	_, err := p.Configure(nil)
+	_, err := p.Configure(nil, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
 
 	// configure with nonsense
-	_, err = p.Configure("random")
+	_, err = p.Configure("random", core.MagicalGatewayNamespace)
 	assert.Error(t, err)
 
 	// fails for missing name for the api key
 	config := &auth.KeyAuthConfig{}
-	_, err = p.Configure(config)
+	_, err = p.Configure(config, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
 
 	config.KeyName = "testme"
-	_, err = p.Configure(config)
+	_, err = p.Configure(config, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
 
 }
@@ -63,7 +64,7 @@ func TestExecuteKeyAuthPluginNoConsumer(t *testing.T) {
 		AddUsernameHeader: true,
 	}
 
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
@@ -122,7 +123,7 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 		AddGroupsHeader:   c3,
 		KeyName:           "testapikey",
 	}
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)

@@ -2,10 +2,13 @@ package target_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +21,7 @@ func TestConfigInstaneResponsePlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
-	p2, _ := p.Configure(config)
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	configOut := p2.Config().(*target.InstantResponseConfig)
 	assert.Equal(t, config.StatusCode, configOut.StatusCode)
@@ -29,7 +32,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 
 	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
 
-	p2, _ := p.Configure(nil)
+	p2, _ := p.Configure(nil, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
 
@@ -42,20 +45,25 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 	config := &target.InstantResponseConfig{
 		StatusCode:    http.StatusInternalServerError,
 		StatusMessage: "HELLO WORLD",
+		ContentType:   "application/demo",
 	}
-	p2, _ = p.Configure(config)
+	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 
 	w = httptest.NewRecorder()
 	p2.ExecutePlugin(context.Background(), nil, w, r)
 
+	b, _ := httputil.DumpResponse(w.Result(), true)
+	fmt.Println(string(b))
+
 	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 	assert.Equal(t, "HELLO WORLD", w.Body.String())
+	assert.Equal(t, "application/demo", w.Header().Get("Content-Type"))
 
 	config = &target.InstantResponseConfig{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "{ \"hello\": \"world\" }",
 	}
-	p2, _ = p.Configure(config)
+	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
 
 	w = httptest.NewRecorder()
 	p2.ExecutePlugin(context.Background(), nil, w, r)

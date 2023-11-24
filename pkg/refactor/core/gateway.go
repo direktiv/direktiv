@@ -19,6 +19,7 @@ type GatewayManager interface {
 
 type Endpoint struct {
 	EndpointFile            *spec.EndpointFile
+	Namespace               string
 	FilePath                string
 	AuthPluginInstances     []plugins.PluginInstance
 	InboundPluginInstances  []plugins.PluginInstance

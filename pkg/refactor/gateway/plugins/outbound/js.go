@@ -25,7 +25,7 @@ type JSOutboundPlugin struct {
 	config *JSOutboundConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
 	jsConfig := &JSOutboundConfig{}
 
 	err := plugins.ConvertConfig(JSOutboundPluginName, config, jsConfig)

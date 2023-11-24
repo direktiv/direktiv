@@ -34,7 +34,7 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func ConfigureRequestConvert(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureRequestConvert(config interface{}, ns string) (plugins.PluginInstance, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
 	if config != nil {
