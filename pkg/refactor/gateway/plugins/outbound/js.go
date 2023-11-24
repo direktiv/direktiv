@@ -18,17 +18,17 @@ const (
 )
 
 type JSOutboundConfig struct {
-	Script string `yaml:"script" mapstructure:"script"`
+	Script string `mapstructure:"script" yaml:"script"`
 }
 
 type JSOutboundPlugin struct {
 	config *JSOutboundConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
 	jsConfig := &JSOutboundConfig{}
 
-	err := plugins.ConvertConfig(JSOutboundPluginName, config, jsConfig)
+	err := plugins.ConvertConfig(config, jsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +65,9 @@ func (h Headers) Delete(key string) {
 	h.h.Del(key)
 }
 
-func (js *JSOutboundPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+func (js *JSOutboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	var (
 		err error
 		b   []byte

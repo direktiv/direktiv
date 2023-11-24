@@ -20,24 +20,24 @@ const (
 // The plugin can be configured to set consumer information (name, groups, tags)
 // and the name of the header for the api key.
 type KeyAuthConfig struct {
-	AddUsernameHeader bool `yaml:"add_username_header" mapstructure:"add_username_header"`
-	AddTagsHeader     bool `yaml:"add_tags_header"     mapstructure:"add_tags_header"`
-	AddGroupsHeader   bool `yaml:"add_groups_header"   mapstructure:"add_groups_header"`
+	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
 
 	// KeyName defines the header for the key
-	KeyName string `yaml:"key_name" mapstructure:"key_name"`
+	KeyName string `mapstructure:"key_name" yaml:"key_name"`
 }
 
 type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}
 
-	err := plugins.ConvertConfig(BasicAuthPluginName, config, keyAuthConfig)
+	err := plugins.ConvertConfig(config, keyAuthConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,8 @@ func ConfigureKeyAuthPlugin(config interface{}, ns string) (plugins.PluginInstan
 }
 
 func (ka *KeyAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	key := r.Header.Get(ka.config.KeyName)
 
 	// no basic auth provided
@@ -63,7 +64,7 @@ func (ka *KeyAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 		return true
 	}
 
-	consumerList, ok := gwObj.(*consumer.ConsumerList)
+	consumerList, ok := gwObj.(*consumer.List)
 	if !ok {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"consumerlist", fmt.Errorf("wrong object in context"))
@@ -97,7 +98,6 @@ func (ka *KeyAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 	}
 
 	return true
-
 }
 
 func (ka *KeyAuthPlugin) Config() interface{} {

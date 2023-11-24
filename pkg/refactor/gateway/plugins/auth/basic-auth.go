@@ -20,19 +20,19 @@ const (
 // BasicAuthConfig configures a basic-auth plugin instance.
 // The plugin can be configured to set consumer information (name, groups, tags).
 type BasicAuthConfig struct {
-	AddUsernameHeader bool `yaml:"add_username_header" mapstructure:"add_username_header"`
-	AddTagsHeader     bool `yaml:"add_tags_header"     mapstructure:"add_tags_header"`
-	AddGroupsHeader   bool `yaml:"add_groups_header"   mapstructure:"add_groups_header"`
+	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
 }
 
 type BasicAuthPlugin struct {
 	config *BasicAuthConfig
 }
 
-func ConfigureBasicAuthPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureBasicAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
 	authConfig := &BasicAuthConfig{}
 
-	err := plugins.ConvertConfig(BasicAuthPluginName, config, &authConfig)
+	err := plugins.ConvertConfig(config, &authConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func ConfigureBasicAuthPlugin(config interface{}, ns string) (plugins.PluginInst
 }
 
 func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	user, pwd, ok := r.BasicAuth()
 
 	// no basic auth provided
@@ -59,7 +59,7 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 
 		return true
 	}
-	consumerList, ok := gwObj.(*consumer.ConsumerList)
+	consumerList, ok := gwObj.(*consumer.List)
 	if !ok {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"consumerlist", fmt.Errorf("wrong object in context"))
@@ -104,7 +104,6 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 
 	// basic auth always returns true to execute other auth plugins
 	return true
-
 }
 
 func (ba *BasicAuthPlugin) Config() interface{} {

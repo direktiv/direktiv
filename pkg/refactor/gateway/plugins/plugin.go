@@ -35,7 +35,7 @@ type Plugin interface {
 	Type() PluginType
 }
 
-// PluginBase is a basic implementation of the Plugin interface
+// PluginBase is a basic implementation of the Plugin interface.
 type PluginBase struct {
 	pname    string
 	ptype    PluginType
@@ -55,7 +55,8 @@ func (p PluginBase) Configure(config interface{}, ns string) (PluginInstance, er
 }
 
 func NewPluginBase(pname string, ptype PluginType,
-	configFn func(interface{}, string) (PluginInstance, error)) Plugin {
+	configFn func(interface{}, string) (PluginInstance, error),
+) Plugin {
 	return &PluginBase{
 		pname:    pname,
 		ptype:    ptype,
@@ -64,13 +65,12 @@ func NewPluginBase(pname string, ptype PluginType,
 }
 
 // ConvertConfig converts an interface into the config struct of the plugin.
-// It is used in the `Configure` function of the Plugin
-func ConvertConfig(name string, config interface{}, target interface{}) error {
-
+// It is used in the `Configure` function of the Plugin.
+func ConvertConfig(config interface{}, target interface{}) error {
 	if config != nil {
 		err := mapstructure.Decode(config, target)
 		if err != nil {
-			return errors.Wrap(err, "configuration for request-convert invalid")
+			return errors.Wrap(err, "configuration invalid")
 		}
 	}
 
@@ -97,8 +97,10 @@ func GetPluginFromRegistry(plugin string) (Plugin, error) {
 	return p, nil
 }
 
-var URLParamCtxKey = &ContextKey{"URLParamContext"}
-var ConsumersParamCtxKey = &ContextKey{"ConsumersParamCtxKey"}
+var (
+	URLParamCtxKey       = &ContextKey{"URLParamContext"}
+	ConsumersParamCtxKey = &ContextKey{"ConsumersParamCtxKey"}
+)
 
 type ContextKey struct {
 	name string

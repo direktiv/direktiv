@@ -6,8 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
-	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -16,10 +14,10 @@ const (
 
 // ACLConfig configures the ACL Plugin to allow, deny groups and tags.
 type ACLConfig struct {
-	AllowGroups []string `yaml:"allow_groups" mapstructure:"allow_groups"`
-	DenyGroups  []string `yaml:"deny_groups"  mapstructure:"deny_groups"`
-	AllowTags   []string `yaml:"allow_tags"   mapstructure:"allow_tags"`
-	DenyTags    []string `yaml:"deny_tags"    mapstructure:"deny_tags"`
+	AllowGroups []string `mapstructure:"allow_groups" yaml:"allow_groups"`
+	DenyGroups  []string `mapstructure:"deny_groups"  yaml:"deny_groups"`
+	AllowTags   []string `mapstructure:"allow_tags"   yaml:"allow_tags"`
+	DenyTags    []string `mapstructure:"deny_tags"    yaml:"deny_tags"`
 }
 
 // ACLPlugin is a simple access control method. It checks the incoming consumer
@@ -28,14 +26,12 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func ConfigureACL(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureACL(config interface{}, _ string) (plugins.PluginInstance, error) {
 	aclConfig := &ACLConfig{}
 
-	if config != nil {
-		err := mapstructure.Decode(config, &aclConfig)
-		if err != nil {
-			return nil, errors.Wrap(err, "configuration for target-flow invalid")
-		}
+	err := plugins.ConvertConfig(config, aclConfig)
+	if err != nil {
+		return nil, err
 	}
 
 	return &ACLPlugin{
@@ -48,8 +44,8 @@ func (acl *ACLPlugin) Config() interface{} {
 }
 
 func (acl *ACLPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+	w http.ResponseWriter, _ *http.Request,
+) bool {
 	if c == nil {
 		deny("missing consumer", w)
 

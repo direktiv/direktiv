@@ -16,21 +16,20 @@ const (
 	TargetNamespaceVarPluginName = "target-namespace-var"
 )
 
-type TargetNamespaceVarConfig struct {
-	Namespace   string `yaml:"namespace" mapstructure:"namespace"`
-	Variable    string `yaml:"variable" mapstructure:"variable"`
-	ContentType string `yaml:"content_type"  mapstructure:"content_type"`
+type NamespaceVarConfig struct {
+	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
+	Variable    string `mapstructure:"variable"     yaml:"variable"`
+	ContentType string `mapstructure:"content_type" yaml:"content_type"`
 }
 
-// TargetFlowVarPlugin returns a namespace variable
-type TargetNamespaceVarPlugin struct {
-	config *TargetNamespaceVarConfig
+type NamespaceVarPlugin struct {
+	config *NamespaceVarConfig
 }
 
 func ConfigureNamespaceVarPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
-	targetNamespaceVarConfig := &TargetNamespaceVarConfig{}
+	targetNamespaceVarConfig := &NamespaceVarConfig{}
 
-	err := plugins.ConvertConfig(TargetNamespaceFilePluginName, config, targetNamespaceVarConfig)
+	err := plugins.ConvertConfig(config, targetNamespaceVarConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -45,18 +44,18 @@ func ConfigureNamespaceVarPlugin(config interface{}, ns string) (plugins.PluginI
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 
-	return &TargetNamespaceVarPlugin{
+	return &NamespaceVarPlugin{
 		config: targetNamespaceVarConfig,
 	}, nil
 }
 
-func (tnv TargetNamespaceVarPlugin) Config() interface{} {
+func (tnv NamespaceVarPlugin) Config() interface{} {
 	return tnv.config
 }
 
-func (tnv TargetNamespaceVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+func (tnv NamespaceVarPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	url, err := createURLNamespaceVar(tnv.config.Namespace, tnv.config.Variable)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,

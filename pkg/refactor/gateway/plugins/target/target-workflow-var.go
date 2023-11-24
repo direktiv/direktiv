@@ -17,22 +17,22 @@ const (
 	TargetFlowVarPluginName = "target-flow-var"
 )
 
-type TargetWorkflowVarConfig struct {
-	Namespace   string `yaml:"namespace" mapstructure:"namespace"`
-	Flow        string `yaml:"flow" mapstructure:"flow"`
-	Variable    string `yaml:"variable" mapstructure:"variable"`
-	ContentType string `yaml:"content_type"  mapstructure:"content_type"`
+type WorkflowVarConfig struct {
+	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
+	Flow        string `mapstructure:"flow"         yaml:"flow"`
+	Variable    string `mapstructure:"variable"     yaml:"variable"`
+	ContentType string `mapstructure:"content_type" yaml:"content_type"`
 }
 
-// TargetFlowVarPlugin returns a workflow variable
-type TargetFlowVarPlugin struct {
-	config *TargetWorkflowVarConfig
+// TargetFlowVarPlugin returns a workflow variable.
+type FlowVarPlugin struct {
+	config *WorkflowVarConfig
 }
 
 func ConfigureWorkflowVar(config interface{}, ns string) (plugins.PluginInstance, error) {
-	targetflowVarConfig := &TargetWorkflowVarConfig{}
+	targetflowVarConfig := &WorkflowVarConfig{}
 
-	err := plugins.ConvertConfig(TargetNamespaceFilePluginName, config, targetflowVarConfig)
+	err := plugins.ConvertConfig(config, targetflowVarConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -47,18 +47,18 @@ func ConfigureWorkflowVar(config interface{}, ns string) (plugins.PluginInstance
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 
-	return &TargetFlowVarPlugin{
+	return &FlowVarPlugin{
 		config: targetflowVarConfig,
 	}, nil
 }
 
-func (tfv TargetFlowVarPlugin) Config() interface{} {
+func (tfv FlowVarPlugin) Config() interface{} {
 	return tfv.config
 }
 
-func (tfv TargetFlowVarPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+func (tfv FlowVarPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	url, err := createURLFlowVar(tfv.config.Namespace, tfv.config.Flow,
 		tfv.config.Variable)
 	if err != nil {

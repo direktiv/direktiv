@@ -17,24 +17,24 @@ import (
 )
 
 const (
-	TargetNamespaceFilePluginName = "target-namespace-file"
+	NamespaceFilePluginName = "target-namespace-file"
 )
 
-type TargetNamespaceFileConfig struct {
-	Namespace   string `yaml:"namespace" mapstructure:"namespace"`
-	File        string `yaml:"file"  mapstructure:"file"`
-	ContentType string `yaml:"content_type"  mapstructure:"content_type"`
+type NamespaceFileConfig struct {
+	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
+	File        string `mapstructure:"file"         yaml:"file"`
+	ContentType string `mapstructure:"content_type" yaml:"content_type"`
 }
 
-// TargetNamespaceFilePlugin returns a files in the explorer tree
-type TargetNamespaceFilePlugin struct {
-	config *TargetNamespaceFileConfig
+// TargetNamespaceFilePlugin returns a files in the explorer tree.
+type NamespaceFilePlugin struct {
+	config *NamespaceFileConfig
 }
 
 func ConfigureNamespaceFilePlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
-	targetNamespaceFileConfig := &TargetNamespaceFileConfig{}
+	targetNamespaceFileConfig := &NamespaceFileConfig{}
 
-	err := plugins.ConvertConfig(TargetNamespaceFilePluginName, config, targetNamespaceFileConfig)
+	err := plugins.ConvertConfig(config, targetNamespaceFileConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -49,19 +49,19 @@ func ConfigureNamespaceFilePlugin(config interface{}, ns string) (plugins.Plugin
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 
-	return &TargetNamespaceFilePlugin{
+	return &NamespaceFilePlugin{
 		config: targetNamespaceFileConfig,
 	}, nil
 }
 
-func (tnf TargetNamespaceFilePlugin) Config() interface{} {
+func (tnf NamespaceFilePlugin) Config() interface{} {
 	return tnf.config
 }
 
-func (tnf TargetNamespaceFilePlugin) ExecutePlugin(
-	c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+func (tnf NamespaceFilePlugin) ExecutePlugin(
+	_ *spec.ConsumerFile,
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	data, err := fetchObjectData(tnf.config.Namespace, tnf.config.File)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
@@ -126,6 +126,7 @@ func fetchObjectData(ns, path string) ([]byte, error) {
 	urlString := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s",
 		os.Getenv("DIREKTIV_API_V1_PORT"), ns, path)
 
+	// nolint
 	res, err := http.Get(urlString)
 	if err != nil {
 		return nil, err
@@ -154,7 +155,7 @@ func fetchObjectData(ns, path string) ([]byte, error) {
 //nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		TargetNamespaceFilePluginName,
+		NamespaceFilePluginName,
 		plugins.TargetPluginType,
 		ConfigureNamespaceFilePlugin))
 }

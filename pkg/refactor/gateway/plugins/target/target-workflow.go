@@ -14,28 +14,28 @@ import (
 )
 
 const (
-	TargetFlowPluginName = "target-flow"
+	FlowPluginName = "target-flow"
 )
 
-type TargetWorkflowConfig struct {
-	Namespace   string `yaml:"namespace" mapstructure:"namespace"`
-	Flow        string `yaml:"flow" mapstructure:"flow"`
-	Async       bool   `yaml:"async" mapstructure:"async"`
-	ContentType string `yaml:"content_type"  mapstructure:"content_type"`
+type WorkflowConfig struct {
+	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
+	Flow        string `mapstructure:"flow"         yaml:"flow"`
+	Async       bool   `mapstructure:"async"        yaml:"async"`
+	ContentType string `mapstructure:"content_type" yaml:"content_type"`
 }
 
 // TargetFlowPlugin executes a flow in a configured namespace.
-// Flows can be executed async and sync
-type TargetFlowPlugin struct {
-	config *TargetWorkflowConfig
+// Flows can be executed async and sync.
+type FlowPlugin struct {
+	config *WorkflowConfig
 }
 
 func ConfigureTargetFlowPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
-	targetflowConfig := &TargetWorkflowConfig{
+	targetflowConfig := &WorkflowConfig{
 		Async: true,
 	}
 
-	err := plugins.ConvertConfig(TargetNamespaceFilePluginName, config, targetflowConfig)
+	err := plugins.ConvertConfig(config, targetflowConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -50,18 +50,18 @@ func ConfigureTargetFlowPlugin(config interface{}, ns string) (plugins.PluginIns
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 
-	return &TargetFlowPlugin{
+	return &FlowPlugin{
 		config: targetflowConfig,
 	}, nil
 }
 
-func (tf TargetFlowPlugin) Config() interface{} {
+func (tf FlowPlugin) Config() interface{} {
 	return tf.config
 }
 
-func (tf TargetFlowPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+func (tf FlowPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	url, err := createURL(tf.config.Namespace, tf.config.Flow, tf.config.Async)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
@@ -110,7 +110,7 @@ func (tf TargetFlowPlugin) ExecutePlugin(c *spec.ConsumerFile,
 //nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		TargetFlowPluginName,
+		FlowPluginName,
 		plugins.TargetPluginType,
 		ConfigureTargetFlowPlugin))
 }

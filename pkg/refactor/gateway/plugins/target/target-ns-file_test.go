@@ -11,9 +11,9 @@ import (
 
 func TestConfigNSFilePlugin(t *testing.T) {
 
-	p, _ := plugins.GetPluginFromRegistry(target.TargetNamespaceFilePluginName)
+	p, _ := plugins.GetPluginFromRegistry(target.NamespaceFilePluginName)
 
-	config := &target.TargetNamespaceFileConfig{
+	config := &target.NamespaceFileConfig{
 		File:      "/dummy",
 		Namespace: "somerandom",
 	}

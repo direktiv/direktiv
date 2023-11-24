@@ -140,7 +140,6 @@ func buildPluginChain(endpoint *core.Endpoint) {
 		plugins.OutboundPluginType, endpoint.Namespace)
 	endpoint.OutboundPluginInstances = outboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
-
 }
 
 func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType, ns string) ([]plugins.PluginInstance, []string) {

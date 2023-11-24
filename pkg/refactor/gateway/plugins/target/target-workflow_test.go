@@ -11,9 +11,9 @@ import (
 
 func TestConfigTargetFlowPlugin(t *testing.T) {
 
-	p, _ := plugins.GetPluginFromRegistry(target.TargetFlowPluginName)
+	p, _ := plugins.GetPluginFromRegistry(target.FlowPluginName)
 
-	config := &target.TargetWorkflowConfig{
+	config := &target.WorkflowConfig{
 		Flow:      "dummy",
 		Namespace: "somerandom",
 	}

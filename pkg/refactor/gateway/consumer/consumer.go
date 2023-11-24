@@ -12,7 +12,7 @@ import (
 
 // consumerList holds different `views` on the consumers for faster lookup.
 // That means apiKey is an unique key as well. Duplicate api keys are not allowed.
-type ConsumerList struct {
+type List struct {
 	apiKeyView   map[string]*spec.ConsumerFile
 	usernameView map[string]*spec.ConsumerFile
 	listView     []*spec.ConsumerFile
@@ -20,8 +20,8 @@ type ConsumerList struct {
 	lock sync.RWMutex
 }
 
-func NewConsumerList() *ConsumerList {
-	return &ConsumerList{
+func NewConsumerList() *List {
+	return &List{
 		apiKeyView:   make(map[string]*spec.ConsumerFile, 0),
 		usernameView: make(map[string]*spec.ConsumerFile, 0),
 		listView:     make([]*spec.ConsumerFile, 0),
@@ -29,7 +29,7 @@ func NewConsumerList() *ConsumerList {
 }
 
 // GetConsumers returns a list of all consumers in the system.
-func (cl *ConsumerList) GetConsumers() []*spec.ConsumerFile {
+func (cl *List) GetConsumers() []*spec.ConsumerFile {
 	cl.lock.RLock()
 	defer cl.lock.RUnlock()
 
@@ -38,7 +38,7 @@ func (cl *ConsumerList) GetConsumers() []*spec.ConsumerFile {
 
 // SetConsumers set a new lists of consumers in the system. The new lists
 // is getting swapped out at the end of processing.
-func (cl *ConsumerList) SetConsumers(consumerList []*spec.ConsumerFile) {
+func (cl *List) SetConsumers(consumerList []*spec.ConsumerFile) {
 	apiKeyView := make(map[string]*spec.ConsumerFile, 0)
 	usernameView := make(map[string]*spec.ConsumerFile, 0)
 	listView := make([]*spec.ConsumerFile, 0)
@@ -87,7 +87,7 @@ func (cl *ConsumerList) SetConsumers(consumerList []*spec.ConsumerFile) {
 }
 
 // FindByUser returns a consumer with the provided name, nil if not found.
-func (cl *ConsumerList) FindByUser(user string) *spec.ConsumerFile {
+func (cl *List) FindByUser(user string) *spec.ConsumerFile {
 	cl.lock.RLock()
 	defer cl.lock.RUnlock()
 
@@ -100,7 +100,7 @@ func (cl *ConsumerList) FindByUser(user string) *spec.ConsumerFile {
 }
 
 // FindByAPIKey returns a consumer with the provided key, nil if not found.
-func (cl *ConsumerList) FindByAPIKey(key string) *spec.ConsumerFile {
+func (cl *List) FindByAPIKey(key string) *spec.ConsumerFile {
 	cl.lock.RLock()
 	defer cl.lock.RUnlock()
 

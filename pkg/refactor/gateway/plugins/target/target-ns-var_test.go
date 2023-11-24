@@ -13,7 +13,7 @@ func TestConfigNSVarPlugin(t *testing.T) {
 
 	p, _ := plugins.GetPluginFromRegistry(target.TargetNamespaceVarPluginName)
 
-	config := &target.TargetNamespaceVarConfig{
+	config := &target.NamespaceVarConfig{
 		Variable:  "dummy",
 		Namespace: "somerandom",
 	}

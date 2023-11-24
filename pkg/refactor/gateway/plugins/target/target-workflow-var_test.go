@@ -13,7 +13,7 @@ func TestConfigTargetFlowVarPlugin(t *testing.T) {
 
 	p, _ := plugins.GetPluginFromRegistry(target.TargetFlowVarPluginName)
 
-	config := &target.TargetWorkflowVarConfig{
+	config := &target.WorkflowVarConfig{
 		Flow:      "dummy",
 		Variable:  "var",
 		Namespace: "somerandom",

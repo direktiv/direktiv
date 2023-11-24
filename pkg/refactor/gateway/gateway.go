@@ -13,25 +13,22 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
-	"github.com/go-chi/chi/v5"
-
-	// This triggers the init function within for auth plugins to register them.
-
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/endpoints"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 
 	// This triggers the init function within for inbound plugins to register them.
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
+	"github.com/go-chi/chi/v5"
 )
 
 type namespaceGateway struct {
 	EndpointList *endpoints.EndpointList
-	ConsumerList *consumer.ConsumerList
+	ConsumerList *consumer.List
 }
 
 type gatewayManager struct {
@@ -256,7 +253,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// if there are outbound plugins the reponsewrite is getting swapped out
 	// because target plugins can do io.copy and set headers which would go
-	// on the wire immediatley.
+	// on the wire immediately.
 	targetWriter := w
 	if len(endpointEntry.OutboundPluginInstances) > 0 {
 		targetWriter = NewDummyWriter()
@@ -305,14 +302,14 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(tw.Code)
 		_, err := w.Write(tw.Body.Bytes())
 		if err != nil {
-			slog.Error("can not write api repsonse", slog.Any("error", err.Error()))
+			slog.Error("can not write api response", slog.Any("error", err.Error()))
 		}
 	}
 }
 
 func executePlugin(c *spec.ConsumerFile, w http.ResponseWriter, r *http.Request,
-	fn func(*spec.ConsumerFile, http.ResponseWriter, *http.Request) bool) bool {
-
+	fn func(*spec.ConsumerFile, http.ResponseWriter, *http.Request) bool,
+) bool {
 	select {
 	case <-r.Context().Done():
 		w.WriteHeader(http.StatusRequestTimeout)

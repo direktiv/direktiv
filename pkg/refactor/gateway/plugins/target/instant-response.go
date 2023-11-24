@@ -16,18 +16,18 @@ type InstantResponsePlugin struct {
 }
 
 type InstantResponseConfig struct {
-	StatusCode    int    `yaml:"status_code" mapstructure:"status_code"`
-	StatusMessage string `yaml:"status_message" mapstructure:"status_message"`
-	ContentType   string `yaml:"content_type"  mapstructure:"content_type"`
+	StatusCode    int    `mapstructure:"status_code"    yaml:"status_code"`
+	StatusMessage string `mapstructure:"status_message" yaml:"status_message"`
+	ContentType   string `mapstructure:"content_type"   yaml:"content_type"`
 }
 
-func ConfigureInstantResponse(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureInstantResponse(config interface{}, _ string) (plugins.PluginInstance, error) {
 	irConfig := &InstantResponseConfig{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
 	}
 
-	err := plugins.ConvertConfig(InstantResponsePluginName, config, irConfig)
+	err := plugins.ConvertConfig(config, irConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +37,9 @@ func ConfigureInstantResponse(config interface{}, ns string) (plugins.PluginInst
 	}, nil
 }
 
-func (ir *InstantResponsePlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
+func (ir *InstantResponsePlugin) ExecutePlugin(_ *spec.ConsumerFile,
+	w http.ResponseWriter, _ *http.Request,
+) bool {
 	if plugins.IsJSON(ir.config.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}

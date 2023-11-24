@@ -11,8 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
-	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -21,10 +19,10 @@ const (
 
 // RequestConvertConfig converts the whole request into JSON.
 type RequestConvertConfig struct {
-	OmitHeaders  bool `yaml:"omit_headers"  mapstructure:"omit_headers"`
-	OmitQueries  bool `yaml:"omit_queries"  mapstructure:"omit_queries"`
-	OmitBody     bool `yaml:"omit_body"     mapstructure:"omit_body"`
-	OmitConsumer bool `yaml:"omit_consumer" mapstructure:"omit_consumer"`
+	OmitHeaders  bool `mapstructure:"omit_headers"  yaml:"omit_headers"`
+	OmitQueries  bool `mapstructure:"omit_queries"  yaml:"omit_queries"`
+	OmitBody     bool `mapstructure:"omit_body"     yaml:"omit_body"`
+	OmitConsumer bool `mapstructure:"omit_consumer" yaml:"omit_consumer"`
 }
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters
@@ -33,14 +31,12 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func ConfigureRequestConvert(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureRequestConvert(config interface{}, _ string) (plugins.PluginInstance, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
-	if config != nil {
-		err := mapstructure.Decode(config, &requestConvertConfig)
-		if err != nil {
-			return nil, errors.Wrap(err, "configuration for request-convert invalid")
-		}
+	err := plugins.ConvertConfig(config, requestConvertConfig)
+	if err != nil {
+		return nil, err
 	}
 
 	return &RequestConvertPlugin{
@@ -67,8 +63,8 @@ type RequestConvertResponse struct {
 }
 
 func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
-	w http.ResponseWriter, r *http.Request) bool {
-
+	w http.ResponseWriter, r *http.Request,
+) bool {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
