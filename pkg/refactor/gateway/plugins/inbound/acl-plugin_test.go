@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +35,7 @@ func TestConfigACLPlugin(t *testing.T) {
 
 func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
-	c := &core.Consumer{
+	c := &spec.ConsumerFile{
 		Username: "demo",
 		Password: "hello",
 		Tags:     []string{"tag1", "tag2"},
@@ -52,7 +52,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	p2.ExecutePlugin(context.Background(), c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
-	assert.Equal(t, "access denied by fallback", w.Body.String())
+	assert.Equal(t, "access denied by fallback: forbidden", w.Body.String())
 
 	// test allow groups
 	config = &inbound.ACLConfig{
@@ -74,7 +74,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	p2.ExecutePlugin(context.Background(), c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
-	assert.Equal(t, "access denied by group", w.Body.String())
+	assert.Equal(t, "access denied by group: forbidden", w.Body.String())
 
 	// test allow tags
 	config = &inbound.ACLConfig{
@@ -96,7 +96,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	p2.ExecutePlugin(context.Background(), c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
-	assert.Equal(t, "access denied by tag", w.Body.String())
+	assert.Equal(t, "access denied by tag: forbidden", w.Body.String())
 
 	// missing consumer
 	w = httptest.NewRecorder()
@@ -104,5 +104,5 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	p2.ExecutePlugin(context.Background(), nil, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
-	assert.Equal(t, "access denied by missing consumer", w.Body.String())
+	assert.Equal(t, "access denied by missing consumer: forbidden", w.Body.String())
 }

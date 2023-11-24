@@ -13,6 +13,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -130,5 +131,32 @@ func TestExecuteRequestConvertPluginSkip(t *testing.T) {
 	assert.Empty(t, response.Headers)
 	assert.Empty(t, response.QueryParams)
 	assert.Equal(t, json.RawMessage("{}"), response.Body)
+
+}
+
+func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
+
+	r, _ := http.NewRequest(http.MethodGet, "/dummy?key=val&key=val2&hello=world",
+		strings.NewReader("{ \"content\": \"value\" }"))
+	r.Header.Add("header1", "value1")
+
+	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
+
+	config := &inbound.RequestConvertConfig{
+		OmitHeaders: true,
+		OmitQueries: true,
+		OmitBody:    true,
+	}
+	p2, _ := p.Configure(config)
+
+	w := httptest.NewRecorder()
+	p2.ExecutePlugin(r.Context(), &spec.ConsumerFile{Username: "hello", Tags: []string{"tag1"}}, w, r)
+
+	b, _ := io.ReadAll(r.Body)
+
+	var response inbound.RequestConvertResponse
+	json.Unmarshal(b, &response)
+
+	assert.Equal(t, "hello", response.Consumer.Username)
 
 }

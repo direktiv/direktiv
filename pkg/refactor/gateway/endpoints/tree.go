@@ -11,6 +11,9 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/go-chi/chi/v5"
 )
 
 type methodTyp uint
@@ -85,7 +88,7 @@ const (
 
 type node struct {
 	// subroutes on the leaf node
-	// subroutes chi.Routes
+	subroutes chi.Routes
 
 	// regexp matcher for regexp nodes
 	rex *regexp.Regexp
@@ -116,7 +119,7 @@ type endpoints map[methodTyp]*endpoint
 
 type endpoint struct {
 	// endpoint handler
-	handler *EndpointEntry
+	handler *core.Endpoint
 
 	// pattern is the routing pattern for handler nodes
 	pattern string
@@ -134,7 +137,7 @@ func (s endpoints) Value(method methodTyp) *endpoint {
 	return mh
 }
 
-func (n *node) InsertRoute(method methodTyp, pattern string, handler *EndpointEntry) *node {
+func (n *node) InsertRoute(method methodTyp, pattern string, handler *core.Endpoint) *node {
 	var parent *node
 	search := pattern
 
@@ -337,7 +340,7 @@ func (n *node) getEdge(ntyp nodeTyp, label, tail byte, prefix string) *node {
 	return nil
 }
 
-func (n *node) setEndpoint(method methodTyp, handler *EndpointEntry, pattern string) {
+func (n *node) setEndpoint(method methodTyp, handler *core.Endpoint, pattern string) {
 	// Set the handler for the method type on the node
 	if n.endpoints == nil {
 		n.endpoints = make(endpoints)
@@ -367,7 +370,7 @@ func (n *node) setEndpoint(method methodTyp, handler *EndpointEntry, pattern str
 	}
 }
 
-func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, endpoints, *EndpointEntry) {
+func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, endpoints, *core.Endpoint) {
 	// Reset the context routing pattern and params
 	rctx.routePattern = ""
 	rctx.routeParams.Keys = rctx.routeParams.Keys[:0]
@@ -616,72 +619,72 @@ func (n *node) isLeaf() bool {
 // 	return false
 // }
 
-// func (n *node) routes() []Route {
-// 	rts := []Route{}
+func (n *node) Routes() []Route {
+	rts := []Route{}
 
-// 	n.walk(func(eps endpoints, subroutes chi.Routes) bool {
-// 		if eps[mSTUB] != nil && eps[mSTUB].handler != nil && subroutes == nil {
-// 			return false
-// 		}
+	n.walk(func(eps endpoints, subroutes chi.Routes) bool {
+		if eps[mSTUB] != nil && eps[mSTUB].handler != nil && subroutes == nil {
+			return false
+		}
 
-// 		// Group methodHandlers by unique patterns
-// 		pats := make(map[string]endpoints)
+		// Group methodHandlers by unique patterns
+		pats := make(map[string]endpoints)
 
-// 		for mt, h := range eps {
-// 			if h.pattern == "" {
-// 				continue
-// 			}
-// 			p, ok := pats[h.pattern]
-// 			if !ok {
-// 				p = endpoints{}
-// 				pats[h.pattern] = p
-// 			}
-// 			p[mt] = h
-// 		}
+		for mt, h := range eps {
+			if h.pattern == "" {
+				continue
+			}
+			p, ok := pats[h.pattern]
+			if !ok {
+				p = endpoints{}
+				pats[h.pattern] = p
+			}
+			p[mt] = h
+		}
 
-// 		for p, mh := range pats {
-// 			hs := make(map[string]http.Handler)
-// 			if mh[mALL] != nil && mh[mALL].handler != nil {
-// 				hs["*"] = mh[mALL].handler
-// 			}
+		for p, mh := range pats {
+			hs := make(map[string]*core.Endpoint)
+			if mh[mALL] != nil && mh[mALL].handler != nil {
+				hs["*"] = mh[mALL].handler
+			}
 
-// 			for mt, h := range mh {
-// 				if h.handler == nil {
-// 					continue
-// 				}
-// 				m := methodTypString(mt)
-// 				if m == "" {
-// 					continue
-// 				}
-// 				hs[m] = h.handler
-// 			}
+			for mt, h := range mh {
+				if h.handler == nil {
+					continue
+				}
+				m := methodTypString(mt)
+				if m == "" {
+					continue
+				}
+				hs[m] = h.handler
+			}
 
-// 			rt := Route{subroutes, hs, p}
-// 			rts = append(rts, rt)
-// 		}
+			rt := Route{subroutes, hs, p}
+			rts = append(rts, rt)
+		}
 
-// 		return false
-// 	})
+		return false
+	})
 
-// 	return rts
-// }
+	return rts
+}
 
-// func (n *node) walk(fn func(eps endpoints, subroutes chi.Routes) bool) bool {
-// 	// Visit the leaf values if any
-// 	if (n.endpoints != nil || n.subroutes != nil) && fn(n.endpoints, n.subroutes) {
-// 		return true
-// 	}
+func (n *node) walk(fn func(eps endpoints, subroutes chi.Routes) bool) bool {
+	// Visit the leaf values if any
+	if (n.endpoints != nil || n.subroutes != nil) && fn(n.endpoints, n.subroutes) {
+		return true
+	}
 
-// 	// Recurse on the children
-// 	for _, ns := range n.children {
-// 		for _, cn := range ns {
-// 			if cn.walk(fn) {
-// 				return true
-// 			}
-// 		}
-// 	}
-// 	return false
-// }
+	// Recurse on the children
+	for _, ns := range n.children {
+		for _, cn := range ns {
+			if cn.walk(fn) {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 // patNextSegment returns the next segment details from a pattern:
 // node type, param key, regexp string, param tail byte, param starting index, param ending index
@@ -789,14 +792,14 @@ func longestPrefix(k1, k2 string) int {
 	return i
 }
 
-// func methodTypString(method methodTyp) string {
-// 	for s, t := range methodMap {
-// 		if method == t {
-// 			return s
-// 		}
-// 	}
-// 	return ""
-// }
+func methodTypString(method methodTyp) string {
+	for s, t := range methodMap {
+		if method == t {
+			return s
+		}
+	}
+	return ""
+}
 
 type nodes []*node
 
@@ -839,11 +842,11 @@ func (ns nodes) findEdge(label byte) *node {
 
 // Route describes the details of a routing handler.
 // Handlers map key is an HTTP method
-// type Route struct {
-// 	SubRoutes chi.Routes
-// 	Handlers  map[string]http.Handler
-// 	Pattern   string
-// }
+type Route struct {
+	SubRoutes chi.Routes
+	Handlers  map[string]*core.Endpoint
+	Pattern   string
+}
 
 // WalkFunc is the type of the function called for each method and route visited by Walk.
 // type WalkFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error

@@ -8,6 +8,8 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 )
 
 // nolint
@@ -23,20 +25,63 @@ type PluginType string
 
 var (
 	AuthPluginType     PluginType = "auth"
+	TargetPluginType   PluginType = "target"
 	InboundPluginType  PluginType = "inbound"
 	OutboundPluginType PluginType = "outbound"
 )
-
-type PluginInstance interface {
-	ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
-		w http.ResponseWriter, r *http.Request) bool
-	Config() interface{}
-}
 
 type Plugin interface {
 	Configure(config interface{}) (PluginInstance, error)
 	Name() string
 	Type() PluginType
+}
+
+// PluginBase is a basic implementation of the Plugin interface
+type PluginBase struct {
+	pname    string
+	ptype    PluginType
+	configFn func(interface{}) (PluginInstance, error)
+}
+
+func (p PluginBase) Name() string {
+	return p.pname
+}
+
+func (p PluginBase) Type() PluginType {
+	return p.ptype
+}
+
+func (p PluginBase) Configure(config interface{}) (PluginInstance, error) {
+	return p.configFn(config)
+}
+
+func NewPluginBase(pname string, ptype PluginType,
+	configFn func(interface{}) (PluginInstance, error)) Plugin {
+	return &PluginBase{
+		pname:    pname,
+		ptype:    ptype,
+		configFn: configFn,
+	}
+}
+
+// ConvertConfig converts an interface into the config struct of the plugin.
+// It is used in the `Configure` function of the Plugin
+func ConvertConfig(name string, config interface{}, target interface{}) error {
+
+	if config != nil {
+		err := mapstructure.Decode(config, target)
+		if err != nil {
+			return errors.Wrap(err, "configuration for request-convert invalid")
+		}
+	}
+
+	return nil
+}
+
+type PluginInstance interface {
+	ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+		w http.ResponseWriter, r *http.Request) bool
+	Config() interface{}
 }
 
 func AddPluginToRegistry(plugin Plugin) {
@@ -83,3 +128,31 @@ func IsJSON(str string) bool {
 	var js json.RawMessage
 	return json.Unmarshal([]byte(str), &js) == nil
 }
+
+// type PluginBase struct {
+// 	Name2 string
+// 	ptype PluginType
+// }
+
+// func (pb PluginBase) Name() string {
+// 	return pb.Name2
+// }
+
+// func (pb PluginBase) Type() PluginType {
+// 	return pb.ptype
+// }
+
+// func (pb PluginBase) configure2(config interface{}) (PluginInstance, error) {
+// 	// if config != nil {
+// 	// 		err := mapstructure.Decode(config, &requestConvertConfig)
+// 	// 		if err != nil {
+// 	// 			return nil, errors.Wrap(err, "configuration for request-convert invalid")
+// 	// 		}
+// 	// 	}
+
+// 	// 	return &RequestConvertPlugin{
+// 	// 		config: requestConvertConfig,
+// 	// 	}, nil
+
+// 	return nil, nil
+// }

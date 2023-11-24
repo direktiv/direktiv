@@ -10,8 +10,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 )
@@ -22,9 +22,10 @@ const (
 
 // RequestConvertConfig converts the whole request into JSON.
 type RequestConvertConfig struct {
-	OmitHeaders bool `yaml:"omit_headers"`
-	OmitQueries bool `yaml:"omit_queries"`
-	OmitBody    bool `yaml:"omit_body"`
+	OmitHeaders  bool `yaml:"omit_headers" mapstructure:"omit_headers"`
+	OmitQueries  bool `yaml:"omit_queries" mapstructure:"omit_queries"`
+	OmitBody     bool `yaml:"omit_body" mapstructure:"omit_body"`
+	OmitConsumer bool `yaml:"omit_consumer" mapstructure:"omit_consumer"`
 }
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters
@@ -33,7 +34,7 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func (rcp RequestConvertPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureRequestConvert(config interface{}) (plugins.PluginInstance, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
 	if config != nil {
@@ -48,16 +49,14 @@ func (rcp RequestConvertPlugin) Configure(config interface{}) (plugins.PluginIns
 	}, nil
 }
 
-func (rcp RequestConvertPlugin) Config() interface{} {
+func (rcp *RequestConvertPlugin) Config() interface{} {
 	return rcp.config
 }
 
-func (rcp RequestConvertPlugin) Name() string {
-	return RequestConvertPluginName
-}
-
-func (rcp RequestConvertPlugin) Type() plugins.PluginType {
-	return plugins.InboundPluginType
+type RequestConsumer struct {
+	Username string   `json:"username"`
+	Tags     []string `json:"tags"`
+	Groups   []string `json:"groups"`
 }
 
 type RequestConvertResponse struct {
@@ -65,14 +64,20 @@ type RequestConvertResponse struct {
 	QueryParams map[string][]string `json:"query-params"`
 	Headers     http.Header         `json:"headers"`
 	Body        json.RawMessage     `json:"body"`
+	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
+func (rcp *RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
+		Consumer: RequestConsumer{
+			Username: "",
+			Tags:     make([]string, 0),
+			Groups:   make([]string, 0),
+		},
 	}
 
 	// convert uri extension
@@ -92,6 +97,12 @@ func (rcp RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *core.Consu
 	// convert headers
 	if !rcp.config.OmitHeaders {
 		response.Headers = r.Header
+	}
+
+	if !rcp.config.OmitConsumer && c != nil {
+		response.Consumer.Username = c.Username
+		response.Consumer.Tags = c.Tags
+		response.Consumer.Groups = c.Groups
 	}
 
 	// convert content
@@ -138,7 +149,9 @@ func (rcp RequestConvertPlugin) ExecutePlugin(ctx context.Context, c *core.Consu
 	return true
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(RequestConvertPlugin{})
+	plugins.AddPluginToRegistry(plugins.NewPluginBase(
+		RequestConvertPluginName,
+		plugins.InboundPluginType,
+		ConfigureRequestConvert))
 }

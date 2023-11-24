@@ -22,7 +22,10 @@ type Endpoint struct {
 	FilePath                string
 	AuthPluginInstances     []plugins.PluginInstance
 	InboundPluginInstances  []plugins.PluginInstance
+	TargetPluginInstance    plugins.PluginInstance
 	OutboundPluginInstances []plugins.PluginInstance
+	Errors                  []string
+	Warnings                []string
 }
 
 // type Plugins struct {

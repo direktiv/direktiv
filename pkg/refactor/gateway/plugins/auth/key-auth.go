@@ -6,11 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -34,20 +32,14 @@ type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func (ka KeyAuthPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}) (plugins.PluginInstance, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}
 
-	if config != nil {
-		err := mapstructure.Decode(config, &keyAuthConfig)
-		if err != nil {
-			return nil, errors.Wrap(err, "configuration for target-flow invalid")
-		}
-
-		if keyAuthConfig.KeyName == "" {
-			keyAuthConfig.KeyName = KeyName
-		}
+	err := plugins.ConvertConfig(BasicAuthPluginName, config, keyAuthConfig)
+	if err != nil {
+		return nil, err
 	}
 
 	return &KeyAuthPlugin{
@@ -55,21 +47,8 @@ func (ka KeyAuthPlugin) Configure(config interface{}) (plugins.PluginInstance, e
 	}, nil
 }
 
-func (ka KeyAuthPlugin) Config() interface{} {
-	return ka.config
-}
-
-func (ka KeyAuthPlugin) Name() string {
-	return KeyAuthPluginName
-}
-
-func (ka KeyAuthPlugin) Type() plugins.PluginType {
-	return plugins.AuthPluginType
-}
-
-func (ka KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
-	_ http.ResponseWriter, r *http.Request) bool {
-
+func (ka *KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
+	w http.ResponseWriter, r *http.Request) bool {
 	key := r.Header.Get(ka.config.KeyName)
 
 	// no basic auth provided
@@ -83,6 +62,7 @@ func (ka KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
 
 		return true
 	}
+
 	consumerList := gwObj.(*consumer.ConsumerList)
 	consumer := consumerList.FindByAPIKey(key)
 
@@ -111,9 +91,17 @@ func (ka KeyAuthPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
 	}
 
 	return true
+
+}
+
+func (ka *KeyAuthPlugin) Config() interface{} {
+	return ka.config
 }
 
 //nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(KeyAuthPlugin{})
+	plugins.AddPluginToRegistry(plugins.NewPluginBase(
+		KeyAuthPluginName,
+		plugins.AuthPluginType,
+		ConfigureKeyAuthPlugin))
 }

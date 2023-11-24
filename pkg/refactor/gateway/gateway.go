@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log/slog"
@@ -23,6 +24,7 @@ import (
 
 	// This triggers the init function within for inbound plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 )
 
@@ -36,6 +38,8 @@ type gatewayManager struct {
 	nsGateways map[string]*namespaceGateway
 	lock       sync.RWMutex
 }
+
+const anonymousUsername = "Anonymous"
 
 func NewGatewayManager(db *database.DB) core.GatewayManager {
 	return &gatewayManager{
@@ -109,17 +113,23 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 			consumers = append(consumers, item)
 		} else {
-			item, err := spec.ParseEndpointFile(data)
-			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()))
 
-				continue
+			ep := &core.Endpoint{
+				FilePath: file.Path,
+				Errors:   make([]string, 0),
+				Warnings: make([]string, 0),
 			}
 
-			endpoints = append(endpoints, &core.Endpoint{
-				EndpointFile: item,
-				FilePath:     file.Path,
-			})
+			item, err := spec.ParseEndpointFile(data)
+			// if parsing fails, the endpoint is still getting added to report
+			// an error in the API
+			if err != nil {
+				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+				ep.Errors = append(ep.Errors, err.Error())
+			}
+			ep.EndpointFile = item
+
+			endpoints = append(endpoints, ep)
 
 			// e := core.Endpoint{
 			// 	EndpointFile: item,
@@ -180,6 +190,32 @@ func (ep *gatewayManager) UpdateAll() {
 	}
 }
 
+type DummyWriter struct {
+	HeaderMap http.Header
+	Body      *bytes.Buffer
+	Code      int
+}
+
+func NewDummyWriter() *DummyWriter {
+	return &DummyWriter{
+		HeaderMap: make(http.Header),
+		Body:      new(bytes.Buffer),
+		Code:      200,
+	}
+}
+
+func (dr *DummyWriter) Header() http.Header {
+	return dr.HeaderMap
+}
+
+func (dr *DummyWriter) Write(buf []byte) (int, error) {
+	return dr.Body.Write(buf)
+}
+
+func (dr *DummyWriter) WriteHeader(statusCode int) {
+	dr.Code = statusCode
+}
+
 func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.MagicalGatewayNamespace
@@ -196,7 +232,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	endpointEntry, urlParams := gw.EndpointList.FindRoute(routePath)
+	endpointEntry, urlParams := gw.EndpointList.FindRoute(routePath, r.Method)
 	if endpointEntry == nil {
 		plugins.ReportNotFound(w)
 		return
@@ -209,10 +245,10 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: timeout
 
 	c := &spec.ConsumerFile{}
+	for i := range endpointEntry.AuthPluginInstances {
+		authPlugin := endpointEntry.AuthPluginInstances[i]
 
-	// run auth
-	for i := range endpointEntry.AuthPlugins {
-		authPlugin := endpointEntry.AuthPlugins[i]
+		// auth plugins always return true to check all of them
 		authPlugin.ExecutePlugin(ctx, c, w, r)
 
 		// check and exit if consumer is set in plugin
@@ -223,19 +259,96 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// if user not authenticated and anonymous access not enabled
-	if c.Username == "" && !endpointEntry.Endpoint.AllowAnonymous {
+	if c.Username == "" && !endpointEntry.EndpointFile.AllowAnonymous {
 		plugins.ReportError(w, http.StatusUnauthorized, "no permission",
 			fmt.Errorf("request not authorized"))
 		return
 	}
 
-	for i := range endpointEntry.InboundPlugins {
-		inboundPlugin := endpointEntry.InboundPlugins[i]
-		result := inboundPlugin.ExecutePlugin(ctx, c, w, r)
-		if !result {
-			fmt.Println("DONT!")
+	// set username Anonymous if allowed and not set via auth plugin
+	if c.Username == "" {
+		c.Username = anonymousUsername
+	}
+
+	// run inbound
+	for i := range endpointEntry.InboundPluginInstances {
+		inboundPlugin := endpointEntry.InboundPluginInstances[i]
+		proceed := inboundPlugin.ExecutePlugin(ctx, c, w, r)
+		if !proceed {
+			return
 		}
 	}
+
+	// if there are outbound plugins the reponsewrite is getting swapped out
+	// because target plugins can do io.copy and set headers which would go
+	// on the wire immediatley.
+	targetWriter := w
+	if len(endpointEntry.OutboundPluginInstances) > 0 {
+		slog.Info("using dummy writer")
+		targetWriter = NewDummyWriter()
+	}
+
+	// run target if it exists
+	if endpointEntry.TargetPluginInstance != nil &&
+		!endpointEntry.TargetPluginInstance.ExecutePlugin(ctx, c, targetWriter, r) {
+		return
+	}
+
+	for i := range endpointEntry.OutboundPluginInstances {
+		outboundPlugin := endpointEntry.OutboundPluginInstances[i]
+		tw := targetWriter.(*DummyWriter)
+		r, err := swapRequestResponse(tw)
+		if err != nil {
+			plugins.ReportError(w, http.StatusUnauthorized, "output plugin failed",
+				err)
+			return
+		}
+		proceed := outboundPlugin.ExecutePlugin(ctx, c, tw, r)
+
+		// in outbound we need to break and not return
+		// to write the actual output
+		if !proceed {
+			break
+		}
+	}
+
+	// response already written, except if there are outbound plugins
+	if len(endpointEntry.OutboundPluginInstances) > 0 {
+		tw := targetWriter.(*DummyWriter)
+		for k, v := range tw.HeaderMap {
+			for a := range v {
+				w.Header().Add(k, v[a])
+			}
+		}
+		w.WriteHeader(tw.Code)
+		_, err := w.Write(tw.Body.Bytes())
+		if err != nil {
+			slog.Error("can not write api repsonse", slog.Any("error", err.Error()))
+		}
+	}
+
+	// tw := targetWriter.(*DummyWriter)
+	// w2 := httptest.NewRecorder()
+	// // for k := range tw.HeaderMap {
+	// w2.HeaderMap = tw.HeaderMap
+	// w2.Body = tw.Body
+	// w2.WriteHeader(tw.Code)
+	// // }
+
+	// b, _ := httputil.DumpResponse(w2.Result(), true)
+	// fmt.Printf("%v\n", string(b))
+
+	// for i := range endpointEntry.TargetPluginInstances {
+
+	// }
+
+	// for i := range endpointEntry.InboundPlugins {
+	// 	inboundPlugin := endpointEntry.InboundPlugins[i]
+	// 	result := inboundPlugin.ExecutePlugin(ctx, c, w, r)
+	// 	if !result {
+	// 		fmt.Println("DONT!")
+	// 	}
+	// }
 
 	// // if user not authenticated and anonymous access not enabled
 	// if c.Username == "" && !endpointEntry.endpoint.AllowAnonymous {
@@ -296,6 +409,17 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 	}
 	// }
 
+}
+
+func swapRequestResponse(w *DummyWriter) (*http.Request, error) {
+	r, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
+	if err != nil {
+		return nil, err
+	}
+	r.Response = &http.Response{
+		StatusCode: w.Code,
+	}
+	return r, nil
 }
 
 // 	res := make([]plugins.Serve, 0, len(endpoint.Plugins))

@@ -1,15 +1,16 @@
 package auth_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -66,7 +67,7 @@ func TestExecuteKeyAuthPluginNoConsumer(t *testing.T) {
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
-	c := &core.Consumer{}
+	c := &spec.ConsumerFile{}
 
 	p2.ExecutePlugin(r.Context(), c, w, r)
 
@@ -104,7 +105,7 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 	consumerList := consumer.NewConsumerList()
 
 	// prepare consumer
-	cl := []*core.Consumer{
+	cl := []*spec.ConsumerFile{
 		{
 			Username: "demo",
 			APIKey:   "mykey",
@@ -125,9 +126,11 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
+	r = r.WithContext(context.WithValue(r.Context(), plugins.ConsumersParamCtxKey, consumerList))
+
 	r.Header.Add("testapikey", key)
 
-	c := &core.Consumer{}
+	c := &spec.ConsumerFile{}
 	p2.ExecutePlugin(r.Context(), c, w, r)
 
 	return w, r

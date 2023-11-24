@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 )
@@ -17,10 +17,10 @@ const (
 
 // ACLConfig configures the ACL Plugin to allow, deny groups and tags.
 type ACLConfig struct {
-	AllowGroups []string `yaml:"allow_groups"`
-	DenyGroups  []string `yaml:"deny_groups"`
-	AllowTags   []string `yaml:"allow_tags"`
-	DenyTags    []string `yaml:"deny_tags"`
+	AllowGroups []string `yaml:"allow_groups" mapstructure:"allow_groups"`
+	DenyGroups  []string `yaml:"deny_groups" mapstructure:"deny_groups"`
+	AllowTags   []string `yaml:"allow_tags" mapstructure:"allow_tags"`
+	DenyTags    []string `yaml:"deny_tags" mapstructure:"deny_tags"`
 }
 
 // ACLPlugin is a simple access control method. It checks the incoming consumer
@@ -29,7 +29,7 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func (acl ACLPlugin) Configure(config interface{}) (plugins.PluginInstance, error) {
+func ConfigureACL(config interface{}) (plugins.PluginInstance, error) {
 	aclConfig := &ACLConfig{}
 
 	if config != nil {
@@ -44,19 +44,11 @@ func (acl ACLPlugin) Configure(config interface{}) (plugins.PluginInstance, erro
 	}, nil
 }
 
-func (acl ACLPlugin) Config() interface{} {
+func (acl *ACLPlugin) Config() interface{} {
 	return acl.config
 }
 
-func (acl ACLPlugin) Name() string {
-	return ACLPluginName
-}
-
-func (acl ACLPlugin) Type() plugins.PluginType {
-	return plugins.InboundPluginType
-}
-
-func (acl ACLPlugin) ExecutePlugin(ctx context.Context, c *core.Consumer,
+func (acl *ACLPlugin) ExecutePlugin(ctx context.Context, c *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request) bool {
 
 	if c == nil {
@@ -101,13 +93,12 @@ func result(userValues []string, configValues []string) bool {
 
 func deny(t string, w http.ResponseWriter) {
 	msg := fmt.Sprintf("access denied by %s", t)
-	w.WriteHeader(http.StatusForbidden)
-
-	// nolilnt
-	w.Write([]byte(msg))
+	plugins.ReportError(w, http.StatusForbidden, msg, fmt.Errorf("forbidden"))
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(ACLPlugin{})
+	plugins.AddPluginToRegistry(plugins.NewPluginBase(
+		ACLPluginName,
+		plugins.InboundPluginType,
+		ConfigureACL))
 }

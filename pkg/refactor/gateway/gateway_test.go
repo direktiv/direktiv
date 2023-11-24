@@ -32,7 +32,8 @@ func createNS(db *database.DB, ns string) {
 var wf1 = `direktiv_api: endpoint/v1
 allow_anonymous: true
 plugins:
-  - type: instant-response
+  target:
+    type: instant-response
     configuration:
        status_code: 202
        status_message: "TEST"
@@ -42,13 +43,40 @@ methods:
 
 var wfAuth = `direktiv_api: endpoint/v1
 plugins:
+  auth:
   - type: "key-auth"
     configuration:
        key_name: secret
-  - type: instant-response
+  target:
+    type: instant-response
     configuration:
        status_code: 202
        status_message: "TEST"
+methods: 
+  - GET`
+
+var wfOutbound = `direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  target:
+    type: instant-response
+    configuration:
+       status_code: 202
+       status_message: content
+  outbound:
+    - type: js-outbound
+      configuration:
+         script: |
+            log(input)
+            input["Headers"].Add("demo", "value")
+            input["Headers"].Add("demo2", "value2")
+            input["Body"] = "changed"
+            input["Code"] = 202
+    - type: js-outbound
+      configuration:
+         script: |
+            log(input)
+            input["Headers"].Add("demo3", "value3")
 methods: 
   - GET`
 
@@ -121,6 +149,24 @@ func TestAuthGateway(t *testing.T) {
 	resp = doRequest(t, "/gw/test", h, gm)
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
 
+}
+
+func TestOutputPlugins(t *testing.T) {
+
+	dbMock, _ := database.NewMockGorm()
+
+	db := database.NewDB(dbMock, "dummy")
+	createNS(db, core.MagicalGatewayNamespace)
+	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(wfOutbound))
+
+	gm := gateway.NewGatewayManager(db)
+	gm.UpdateAll()
+
+	resp := doRequest(t, "/gw/test", make(http.Header), gm)
+	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
+	assert.Equal(t, "value", resp.Header.Get("demo"))
+	assert.Equal(t, "value3", resp.Header.Get("demo3"))
 }
 
 func doRequest(t *testing.T, url string, headers http.Header, gm core.GatewayManager) *http.Response {

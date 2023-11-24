@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"fmt"
 	"log/slog"
 	"path/filepath"
 	"strings"
@@ -10,13 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
-
-// type EndpointEntry struct {
-// 	Endpoint                *core.Endpoint
-// 	AuthPluginInstances     []plugins.PluginInstance
-// 	InboundPluginInstances  []plugins.PluginInstance
-// 	OutboundPluginInstances []plugins.PluginInstance
-// }
 
 type EndpointList struct {
 	currentTree *node
@@ -30,14 +24,23 @@ func NewEndpointList() *EndpointList {
 	}
 }
 
-func (e *EndpointList) FindRoute(route string) (*core.Endpoint, map[string]string) {
+func (e *EndpointList) Routes() []Route {
+	return e.currentTree.Routes()
+}
 
+func (e *EndpointList) FindRoute(route, method string) (*core.Endpoint, map[string]string) {
 	if !strings.HasPrefix(route, "/") {
 		route = "/" + route
 	}
 
+	// if unknown method
+	m, ok := methodMap[method]
+	if !ok {
+		return nil, nil
+	}
+
 	routeCtx := NewRouteContext()
-	_, _, endpointEntry := e.currentTree.FindRoute(routeCtx, mGET, route)
+	_, _, endpointEntry := e.currentTree.FindRoute(routeCtx, m, route)
 	if endpointEntry == nil {
 		return nil, nil
 	}
@@ -58,6 +61,11 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	for i := range endpointList {
 		ep := endpointList[i]
 
+		// skip the files with invalid content
+		if ep.EndpointFile == nil {
+			continue
+		}
+
 		slog.Debug("adding endpoint",
 			slog.String("path", ep.FilePath),
 			slog.String("extension", ep.EndpointFile.PathExtension))
@@ -70,41 +78,26 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 			storePath = filepath.Join(storePath, ep.EndpointFile.PathExtension)
 		}
 
-		auth, inbound, outbound, err := buildPluginChain(ep)
-		if err != nil {
-			slog.Error("configuring endpoint failed",
-				slog.String("endpoint", ep.FilePath),
-				slog.Any("error", err))
-
-			continue
-		}
-
-		// create endpoint
-		// entry := &EndpointEntry{
-		// 	Endpoint:                ep,
-		// 	AuthPluginInstances:     auth,
-		// 	InboundPluginInstances:  inbound,
-		// 	OutboundPluginInstances: outbound,
-		// }
+		buildPluginChain(ep)
 
 		// // assign handler to all methods
-		// for a := range ep.EndpointFile.Methods {
-		// 	m := ep.EndpointFile.Methods[a]
-		// 	mMethod, ok := methodMap[m]
-		// 	if !ok {
-		// 		slog.Warn("http method unknown",
-		// 			slog.String("endpoint", ep.FilePath),
-		// 			slog.String("method", m))
+		for a := range ep.EndpointFile.Methods {
+			m := ep.EndpointFile.Methods[a]
+			mMethod, ok := methodMap[m]
+			if !ok {
+				slog.Warn("http method unknown",
+					slog.String("endpoint", ep.FilePath),
+					slog.String("method", m))
 
-		// 		continue
-		// 	}
+				continue
+			}
 
-		// 	slog.Info("adding endpoint",
-		// 		slog.String("path", storePath),
-		// 		slog.String("method", m))
+			slog.Info("adding endpoint",
+				slog.String("path", storePath),
+				slog.String("method", m))
 
-		// 	newTree.InsertRoute(mMethod, storePath, entry)
-		// }
+			newTree.InsertRoute(mMethod, storePath, ep)
+		}
 	}
 
 	// replace real tree with new one
@@ -113,100 +106,75 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	e.currentTree = newTree
 }
 
-func buildPluginChain(endpoint *core.Endpoint) error {
-	// authPlugins := make([]plugins.PluginInstance, 0)
-	// inboundPlugins := make([]plugins.PluginInstance, 0)
-	// outboundPlugins := make([]plugins.PluginInstance, 0)
-
+func buildPluginChain(endpoint *core.Endpoint) {
 	slog.Info("building plugin chain for endpoint",
 		slog.String("endpoint", endpoint.FilePath))
 
-	createInstances := func(fc []spec.PluginConfig, pin *[]plugins.PluginInstance) error {
-		pss, err := processPlugins(fc)
+	// add target if set
+	if endpoint.EndpointFile.Plugins.Target.Type != "" {
+		targetPlugin, err := configurePlugin(endpoint.EndpointFile.Plugins.Target,
+			plugins.TargetPluginType)
 		if err != nil {
-			slog.Error("can not process plugins", slog.String("path", endpoint.FilePath))
-			return err
+			endpoint.Errors = append(endpoint.Errors, err.Error())
+		} else {
+			endpoint.TargetPluginInstance = targetPlugin
 		}
-		*pin = pss
-		return nil
+	} else {
+		endpoint.Warnings = append(endpoint.Warnings, "no target plugin set")
 	}
 
-	err := createInstances(endpoint.EndpointFile.Plugins.Auth, &endpoint.AuthPluginInstances)
-	if err != nil {
+	// add auth plugins
+	authPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Auth,
+		plugins.AuthPluginType)
+	endpoint.AuthPluginInstances = authPlugins
+	endpoint.Errors = append(endpoint.Errors, errors...)
 
-	}
+	// inbound
+	inboundPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Inbound,
+		plugins.InboundPluginType)
+	endpoint.InboundPluginInstances = inboundPlugins
+	endpoint.Errors = append(endpoint.Errors, errors...)
 
-	// auths, err := processPlugins(endpoint.EndpointFile.Plugins.Auth)
-	// if err != nil {
-	// 	slog.Error("can not process auth plugins", slog.String("path", endpoint.FilePath))
-	// 	return err
-	// }
-	// endpoint.AuthPluginInstances = auths
+	// outbound
+	outboundPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Outbound,
+		plugins.OutboundPluginType)
+	endpoint.OutboundPluginInstances = outboundPlugins
+	endpoint.Errors = append(endpoint.Errors, errors...)
 
-	// inbound, err := processPlugins(endpoint.EndpointFile.Plugins.Inboud)
-	// if err != nil {
-	// 	slog.Error("can not process inbound plugins", slog.String("path", endpoint.FilePath))
-	// 	return err
-	// }
-	// endpoint.InboundPluginInstances = inbound
-
-	// target, err := processPlugins(endpoint.EndpointFile.Plugins.Target)
-
-	// for a := range endpoint.Plugins {
-	// 	pluginDesc := endpoint.Plugins[a]
-
-	// 	slog.Info("processing plugin",
-	// 		slog.String("plugin", pluginDesc.Type))
-
-	// 	p, err := plugins.GetPluginFromRegistry(pluginDesc.Type)
-	// 	if err != nil {
-	// 		return authPlugins, inboundPlugins, outboundPlugins, err
-	// 	}
-
-	// 	slog.Info("configure plugin",
-	// 		slog.String("plugin", pluginDesc.Type),
-	// 		slog.Any("configure", pluginDesc.Configuration))
-
-	// 	pi, err := p.Configure(pluginDesc.Configuration)
-	// 	if err != nil {
-	// 		return authPlugins, inboundPlugins, outboundPlugins, err
-	// 	}
-
-	// 	switch p.Type() {
-	// 	case plugins.AuthPluginType:
-	// 		authPlugins = append(authPlugins, pi)
-	// 	case plugins.InboundPluginType:
-	// 		inboundPlugins = append(inboundPlugins, pi)
-	// 	case plugins.OutboundPluginType:
-	// 		outboundPlugins = append(outboundPlugins, pi)
-	// 	}
-	// }
-
-	return authPlugins, inboundPlugins, outboundPlugins, nil
 }
 
-func processPlugins(pluginConfigs []spec.PluginConfig) ([]plugins.PluginInstance, error) {
-
+func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType) ([]plugins.PluginInstance, []string) {
+	errors := make([]string, 0)
 	configuredPlugins := make([]plugins.PluginInstance, 0)
 
 	for i := range pluginConfigs {
-
 		config := pluginConfigs[i]
-		slog.Info("processing plugin",
-			slog.String("plugin", config.Type))
-
-		p, err := plugins.GetPluginFromRegistry(config.Type)
+		pi, err := configurePlugin(config, t)
 		if err != nil {
-			return configuredPlugins, err
-		}
+			// add error of the plugin to error array
+			errors = append(errors, fmt.Sprintf("%s: %s", config.Type, err.Error()))
 
-		pi, err := p.Configure(config.Configuration)
-		if err != nil {
-			return configuredPlugins, err
+			continue
 		}
-
 		configuredPlugins = append(configuredPlugins, pi)
 	}
 
-	return configuredPlugins, nil
+	return configuredPlugins, errors
+}
+
+func configurePlugin(config spec.PluginConfig, t plugins.PluginType) (plugins.PluginInstance, error) {
+	slog.Info("processing plugin",
+		slog.String("plugin", config.Type))
+
+	p, err := plugins.GetPluginFromRegistry(config.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.Type() != t {
+		slog.Error("plugin type mismatch", slog.String(string(p.Type()), string(t)))
+		return nil, fmt.Errorf("plugin %s not of type %s", config.Type, t)
+	}
+
+	return p.Configure(config.Configuration)
 }

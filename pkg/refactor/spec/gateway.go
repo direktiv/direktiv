@@ -9,8 +9,8 @@ import (
 
 type Plugins struct {
 	Auth     []PluginConfig `yaml:"auth"`
-	Inboud   []PluginConfig `yaml:"inbound"`
-	Target   []PluginConfig `yaml:"target"`
+	Inbound  []PluginConfig `yaml:"inbound"`
+	Target   PluginConfig   `yaml:"target"`
 	Outbound []PluginConfig `yaml:"outbound"`
 }
 
