@@ -28,7 +28,6 @@ func TestConfigInstaneResponsePlugin(t *testing.T) {
 }
 
 func TestExecuteInstantResponsePlugin(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
 
 	p2, _ := p.Configure(nil, core.MagicalGatewayNamespace)

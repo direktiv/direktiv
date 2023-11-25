@@ -18,7 +18,6 @@ import (
 )
 
 func createNS(db *database.DB, ns string) {
-
 	ctx := context.Background()
 
 	db.DataStore().Namespaces().Create(ctx, &core.Namespace{
@@ -26,7 +25,6 @@ func createNS(db *database.DB, ns string) {
 	})
 	root, _ := db.FileStore().CreateRoot(ctx, uuid.New(), ns)
 	db.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
-
 }
 
 var wf1 = `direktiv_api: endpoint/v1
@@ -108,7 +106,6 @@ methods:
   - POST`
 
 func TestBasicGateway(t *testing.T) {
-
 	ns1 := "ns1"
 
 	dbMock, _ := database.NewMockGorm()
@@ -140,11 +137,9 @@ func TestBasicGateway(t *testing.T) {
 	gm.DeleteNamespace(ns1)
 	resp = doRequest(t, fmt.Sprintf("/ns/%s/test", ns1), nil, gm)
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-
 }
 
 func TestAuthGateway(t *testing.T) {
-
 	dbMock, _ := database.NewMockGorm()
 
 	db := database.NewDB(dbMock, "dummy")
@@ -166,11 +161,9 @@ func TestAuthGateway(t *testing.T) {
 	h.Set("secret", "key")
 	resp = doRequest(t, "/gw/test", h, gm)
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
-
 }
 
 func TestOutputPlugins(t *testing.T) {
-
 	dbMock, _ := database.NewMockGorm()
 
 	db := database.NewDB(dbMock, "dummy")
@@ -188,7 +181,6 @@ func TestOutputPlugins(t *testing.T) {
 }
 
 func doRequest(t *testing.T, url string, headers http.Header, gm core.GatewayManager) *http.Response {
-
 	router := chi.NewRouter()
 	router.Handle("/gw/*", gm)
 	router.Handle("/ns/{namespace}/*", gm)
@@ -205,11 +197,9 @@ func doRequest(t *testing.T, url string, headers http.Header, gm core.GatewayMan
 	t.Log(string(b))
 
 	return w.Result()
-
 }
 
 func TestTimeoutRequest(t *testing.T) {
-
 	dbMock, _ := database.NewMockGorm()
 
 	db := database.NewDB(dbMock, "dummy")
@@ -225,7 +215,6 @@ func TestTimeoutRequest(t *testing.T) {
 }
 
 func TestGetAllEndpoints(t *testing.T) {
-
 	dbMock, _ := database.NewMockGorm()
 
 	db := database.NewDB(dbMock, "dummy")
@@ -236,6 +225,6 @@ func TestGetAllEndpoints(t *testing.T) {
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
 
-	gm.GetRoutes(core.MagicalGatewayNamespace)
-
+	items, _ := gm.GetRoutes(core.MagicalGatewayNamespace)
+	assert.Equal(t, "/test.yaml", items[0].Path)
 }

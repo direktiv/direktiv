@@ -50,5 +50,4 @@ func TestConsumerDuplicate(t *testing.T) {
 	}
 	consumerList.SetConsumers(cl)
 	assert.Len(t, consumerList.GetConsumers(), 1)
-
 }

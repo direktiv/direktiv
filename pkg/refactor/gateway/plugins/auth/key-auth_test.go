@@ -33,7 +33,6 @@ func TestConfigKeyAuthPlugin(t *testing.T) {
 }
 
 func TestExecuteKeyAuthPluginConfigure(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
 
 	// configure with nil
@@ -52,11 +51,9 @@ func TestExecuteKeyAuthPluginConfigure(t *testing.T) {
 	config.KeyName = "testme"
 	_, err = p.Configure(config, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
-
 }
 
 func TestExecuteKeyAuthPluginNoConsumer(t *testing.T) {
-
 	w := httptest.NewRecorder()
 	p, _ := plugins.GetPluginFromRegistry(auth.KeyAuthPluginName)
 
@@ -74,11 +71,9 @@ func TestExecuteKeyAuthPluginNoConsumer(t *testing.T) {
 
 	// no consumer set, header is empty
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
-
 }
 
 func TestExecuteKeyAuthPlugin(t *testing.T) {
-
 	userName := "demo"
 	tags := []string{"tag1", "tag2"}
 	groups := []string{"group1"}
@@ -98,11 +93,9 @@ func TestExecuteKeyAuthPlugin(t *testing.T) {
 	// test invalid key
 	_, r = runKeyAuthRequest("doesnotexist", true, true, true)
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
-
 }
 
 func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder, *http.Request) {
-
 	consumerList := consumer.NewConsumerList()
 
 	// prepare consumer
@@ -135,5 +128,4 @@ func runKeyAuthRequest(key string, c1, c2, c3 bool) (*httptest.ResponseRecorder,
 	p2.ExecutePlugin(c, w, r)
 
 	return w, r
-
 }

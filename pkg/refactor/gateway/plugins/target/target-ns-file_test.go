@@ -10,7 +10,6 @@ import (
 )
 
 func TestConfigNSFilePlugin(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(target.NamespaceFilePluginName)
 
 	config := &target.NamespaceFileConfig{
@@ -26,5 +25,4 @@ func TestConfigNSFilePlugin(t *testing.T) {
 
 	_, err = p.Configure(config, "somerandom")
 	assert.NoError(t, err)
-
 }

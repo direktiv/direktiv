@@ -15,7 +15,6 @@ import (
 )
 
 func TestSetEndpointsFileEmpty(t *testing.T) {
-
 	ep := &core.Endpoint{}
 
 	epl := endpoints.NewEndpointList()
@@ -25,7 +24,6 @@ func TestSetEndpointsFileEmpty(t *testing.T) {
 }
 
 func TestSetEndpointsWarnings(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost},
@@ -51,11 +49,9 @@ func TestSetEndpointsWarnings(t *testing.T) {
 
 	// should have a warning
 	assert.Len(t, r.Warnings, 1)
-
 }
 
 func TestSetEndpointsErrors(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost},
@@ -84,11 +80,9 @@ func TestSetEndpointsErrors(t *testing.T) {
 
 	// should have an error
 	assert.Len(t, r.Errors, 1)
-
 }
 
 func TestSetEndpoints(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost},
@@ -146,11 +140,9 @@ func TestSetEndpoints(t *testing.T) {
 	assert.Equal(t, "demo", ci.StatusMessage)
 
 	assert.Len(t, r.OutboundPluginInstances, 1)
-
 }
 
 func TestSetEndpointsFullError(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost},
@@ -199,11 +191,9 @@ func TestSetEndpointsFullError(t *testing.T) {
 
 	// should have an error but route still in there
 	assert.Len(t, r.Errors, 1)
-
 }
 
 func TestSetEndpointsFind(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost, http.MethodGet},
@@ -275,7 +265,6 @@ func TestSetEndpointsFind(t *testing.T) {
 }
 
 func TestSetEndpointsWrongMethod(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost, "DOESNOTEXIST"},
@@ -299,7 +288,6 @@ func TestSetEndpointsWrongMethod(t *testing.T) {
 }
 
 func TestSetEndpointsTypeErrors(t *testing.T) {
-
 	ep := &core.Endpoint{
 		EndpointFile: &spec.EndpointFile{
 			Methods:        []string{http.MethodPost},
@@ -325,5 +313,4 @@ func TestSetEndpointsTypeErrors(t *testing.T) {
 
 	// should have an error because wrong type
 	assert.Len(t, r.Errors, 1)
-
 }

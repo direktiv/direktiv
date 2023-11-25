@@ -14,14 +14,13 @@ import (
 )
 
 func TestJSOutboundPlugin(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(outbound.JSOutboundPluginName)
 
 	config := &outbound.JSOutboundConfig{
 		Script: `
 		input["Headers"].Delete("Header1")
 		input["Headers"].Add("demo", "value")
-		input["Headers"].Add("jens", "hallo2")
+		input["Headers"].Add("demo2", "value2")
 		input["Code"] = 204
 		`,
 	}
@@ -36,7 +35,6 @@ func TestJSOutboundPlugin(t *testing.T) {
 	p2.ExecutePlugin(nil, w, r)
 
 	assert.Equal(t, 204, w.Code)
-
 }
 
 func TestJSOutboundPluginBroken(t *testing.T) {

@@ -1,71 +1,77 @@
-package outbound
+package inbound
 
 import (
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"reflect"
-	"time"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/dop251/goja"
 )
 
 const (
-	JSOutboundPluginName = "js-outbound"
+	JSInboundPluginName = "js-inbound"
 )
 
-type JSOutboundConfig struct {
+type JSInboundConfig struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-type JSOutboundPlugin struct {
-	config *JSOutboundConfig
+// JSInboundPlugin allows to modify headers, contents and query params of the request.
+type JSInboundPlugin struct {
+	config *JSInboundConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
-	jsConfig := &JSOutboundConfig{}
+func ConfigureJSInbound(config interface{}, _ string) (plugins.PluginInstance, error) {
+	jsConfig := &JSInboundConfig{}
 
 	err := plugins.ConvertConfig(config, jsConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return &JSOutboundPlugin{
+	return &JSInboundPlugin{
 		config: jsConfig,
 	}, nil
 }
 
-type response struct {
-	// Headers http.Header
-	Headers Headers
+func (js *JSInboundPlugin) Config() interface{} {
+	return js.config
+}
+
+type Query struct {
+	U url.Values
+}
+
+func (q Query) Get(key string) []string {
+	return q.U[key]
+}
+
+func (q Query) Set(key string, value string) {
+	q.U.Set(key, value)
+}
+
+func (q Query) Add(key string, value string) {
+	q.U.Add(key, value)
+}
+
+func (q Query) Delete(key string) {
+	q.U.Del(key)
+}
+
+type request struct {
+	Headers outbound.Headers
+	Queries Query
 	Body    string
-	Code    int
 }
 
-type Headers struct {
-	H http.Header
-}
-
-func (h Headers) Get(key string) []string {
-	return h.H[key]
-}
-
-func (h Headers) Set(key string, value string) {
-	h.H.Set(key, value)
-}
-
-func (h Headers) Add(key string, value string) {
-	h.H.Add(key, value)
-}
-
-func (h Headers) Delete(key string) {
-	h.H.Del(key)
-}
-
-func (js *JSOutboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (js *JSInboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	var (
@@ -77,30 +83,28 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
 			plugins.ReportError(w, http.StatusInternalServerError,
-				"can not set read body for js plugin", err)
+				"can not set read body for js inbound plugin", err)
 
 			return false
 		}
 		defer r.Body.Close()
 	}
 
-	if r.Response == nil {
-		r.Response = &http.Response{
-			StatusCode: http.StatusOK,
-		}
-	}
+	// r.URL.Query()
 
-	resp := response{
-		Headers: Headers{
+	req := request{
+		Headers: outbound.Headers{
 			H: r.Header,
 		},
+		Queries: Query{
+			U: r.URL.Query(),
+		},
 		Body: string(b),
-		Code: r.Response.StatusCode,
 	}
 
 	// extract all response headers and body
 	vm := goja.New()
-	err = vm.Set("input", resp)
+	err = vm.Set("input", req)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not set input object", err)
@@ -118,20 +122,6 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
 		return false
 	}
 
-	err = vm.Set("sleep", func(t interface{}) {
-		tt, ok := t.(int64)
-		if !ok {
-			return
-		}
-		time.Sleep(time.Duration(tt) * time.Second)
-	})
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not set sleep function", err)
-
-		return false
-	}
-
 	script := fmt.Sprintf("function run() { %s; return input } run()",
 		js.config.Script)
 
@@ -144,34 +134,38 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
+		r.Header = http.Header{}
+
 		o := val.ToObject(vm)
 		// make sure the input object got returned
-		if o.ExportType() == reflect.TypeOf(resp) {
+		if o.ExportType() == reflect.TypeOf(req) {
 			// nolint checked before
-			responseDone := o.Export().(response)
+			responseDone := o.Export().(request)
 			for k, v := range responseDone.Headers.H {
 				for a := range v {
-					w.Header().Add(k, v[a])
+					r.Header.Add(k, v[a])
 				}
 			}
 
-			// nolint
-			w.Write([]byte(responseDone.Body))
-			w.WriteHeader(responseDone.Code)
+			// newQuery := make(url.Values, 0)
+			newQuery := make(url.Values)
+			for k, v := range responseDone.Queries.U {
+				for a := range v {
+					newQuery.Add(k, v[a])
+				}
+			}
+			r.URL.RawQuery = newQuery.Encode()
+			r.Body = io.NopCloser(strings.NewReader(responseDone.Body))
 		}
 	}
 
 	return true
 }
 
-func (js *JSOutboundPlugin) Config() interface{} {
-	return js.config
-}
-
 //nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		JSOutboundPluginName,
-		plugins.OutboundPluginType,
-		ConfigureKeyAuthPlugin))
+		JSInboundPluginName,
+		plugins.InboundPluginType,
+		ConfigureJSInbound))
 }

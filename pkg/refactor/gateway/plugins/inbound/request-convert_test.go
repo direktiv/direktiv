@@ -19,7 +19,6 @@ import (
 )
 
 func TestConfigRequestConvertPlugin(t *testing.T) {
-
 	config := inbound.RequestConvertConfig{
 		OmitHeaders: true,
 		OmitQueries: true,
@@ -36,7 +35,6 @@ func TestConfigRequestConvertPlugin(t *testing.T) {
 }
 
 func TestExecuteRequestConvertPlugin(t *testing.T) {
-
 	r, _ := http.NewRequest(http.MethodGet, "/dummy?key=val&key=val2&hello=world",
 		strings.NewReader("{ \"content\": \"value\" }"))
 	r.Header.Add("header1", "value1")
@@ -62,11 +60,9 @@ func TestExecuteRequestConvertPlugin(t *testing.T) {
 	assert.ElementsMatch(t, []string{"world"}, response.QueryParams["hello"])
 	assert.Equal(t, "value", response.URLParams["test"])
 	assert.Equal(t, "value1", response.Headers.Get("header1"))
-
 }
 
 func TestExecuteRequestConvertPluginNoContent(t *testing.T) {
-
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 
 	w := httptest.NewRecorder()
@@ -87,7 +83,6 @@ func TestExecuteRequestConvertPluginNoContent(t *testing.T) {
 }
 
 func TestExecuteRequestConvertPluginBinaryContent(t *testing.T) {
-
 	r, _ := http.NewRequest(http.MethodGet, "/dummy",
 		strings.NewReader("NONJSON"))
 
@@ -107,7 +102,6 @@ func TestExecuteRequestConvertPluginBinaryContent(t *testing.T) {
 }
 
 func TestExecuteRequestConvertPluginSkip(t *testing.T) {
-
 	r, _ := http.NewRequest(http.MethodGet, "/dummy?key=val&key=val2&hello=world",
 		strings.NewReader("{ \"content\": \"value\" }"))
 	r.Header.Add("header1", "value1")
@@ -134,11 +128,9 @@ func TestExecuteRequestConvertPluginSkip(t *testing.T) {
 	assert.Empty(t, response.Headers)
 	assert.Empty(t, response.QueryParams)
 	assert.Equal(t, json.RawMessage("{}"), response.Body)
-
 }
 
 func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
-
 	r, _ := http.NewRequest(http.MethodGet, "/dummy?key=val&key=val2&hello=world",
 		strings.NewReader("{ \"content\": \"value\" }"))
 	r.Header.Add("header1", "value1")
@@ -161,5 +153,4 @@ func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
 	json.Unmarshal(b, &response)
 
 	assert.Equal(t, "hello", response.Consumer.Username)
-
 }

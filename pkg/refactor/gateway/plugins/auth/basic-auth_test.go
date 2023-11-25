@@ -33,7 +33,6 @@ func TestConfigBasicAuthPlugin(t *testing.T) {
 }
 
 func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
 
 	// configure with nil
@@ -47,11 +46,9 @@ func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
 	config := &auth.BasicAuthConfig{}
 	_, err = p.Configure(config, core.MagicalGatewayNamespace)
 	assert.NoError(t, err)
-
 }
 
 func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
-
 	w := httptest.NewRecorder()
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
 
@@ -69,11 +66,9 @@ func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
 
 	// no consumer set, header is empty
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
-
 }
 
 func TestExecuteBasicAuthPlugin(t *testing.T) {
-
 	userName := "demo"
 	tags := []string{"tag1", "tag2"}
 	groups := []string{"group1"}
@@ -96,11 +91,9 @@ func TestExecuteBasicAuthPlugin(t *testing.T) {
 	// test invalid password
 	_, r = runBasicAuthRequest("demoo", "wrongpassword", true, true, true)
 	assert.Empty(t, r.Header.Get(plugins.ConsumerUserHeader))
-
 }
 
 func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseRecorder, *http.Request) {
-
 	consumerList := consumer.NewConsumerList()
 
 	// prepare consumer
@@ -132,5 +125,4 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 	p2.ExecutePlugin(c, w, r)
 
 	return w, r
-
 }

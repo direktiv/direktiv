@@ -13,7 +13,6 @@ import (
 )
 
 func TestConfigACLPlugin(t *testing.T) {
-
 	config := &inbound.ACLConfig{
 		AllowGroups: []string{"group1"},
 		DenyGroups:  []string{"group2"},
@@ -30,11 +29,9 @@ func TestConfigACLPlugin(t *testing.T) {
 	assert.Equal(t, config.DenyGroups, configOut.DenyGroups)
 	assert.Equal(t, config.AllowTags, configOut.AllowTags)
 	assert.Equal(t, config.DenyTags, configOut.DenyTags)
-
 }
 
 func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
-
 	c := &spec.ConsumerFile{
 		Username: "demo",
 		Password: "hello",

@@ -10,7 +10,6 @@ import (
 )
 
 func TestConfigTargetFlowVarPlugin(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(target.TargetFlowVarPluginName)
 
 	config := &target.WorkflowVarConfig{
@@ -27,5 +26,4 @@ func TestConfigTargetFlowVarPlugin(t *testing.T) {
 
 	_, err = p.Configure(config, "somerandom")
 	assert.NoError(t, err)
-
 }
