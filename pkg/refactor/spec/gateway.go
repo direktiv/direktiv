@@ -8,33 +8,33 @@ import (
 )
 
 type Plugins struct {
-	Auth     []PluginConfig `yaml:"auth"`
-	Inbound  []PluginConfig `yaml:"inbound"`
-	Target   PluginConfig   `yaml:"target"`
-	Outbound []PluginConfig `yaml:"outbound"`
+	Auth     []PluginConfig `json:"auth,omitempty"     yaml:"auth"`
+	Inbound  []PluginConfig `json:"inbound,omitempty"  yaml:"inbound"`
+	Target   PluginConfig   `json:"target,omitempty"   yaml:"target"`
+	Outbound []PluginConfig `json:"outbound,omitempty" yaml:"outbound"`
 }
 
 type EndpointFile struct {
-	DirektivAPI    string   `yaml:"direktiv_api"`
-	Methods        []string `yaml:"methods"`
-	PathExtension  string   `yaml:"path_extension"`
-	AllowAnonymous bool     `yaml:"allow_anonymous"`
-	Plugins        Plugins  `yaml:"plugins"`
-	Timeout        int      `yaml:"timeout"`
+	DirektivAPI    string   `json:"direktiv_api,omitempty" yaml:"direktiv_api"`
+	Methods        []string `json:"methods"                yaml:"methods"`
+	PathExtension  string   `json:"path_extension"         yaml:"path_extension"`
+	AllowAnonymous bool     `json:"allow_anonymous"        yaml:"allow_anonymous"`
+	Plugins        Plugins  `json:"plugins"                yaml:"plugins"`
+	Timeout        int      `json:"timeout"                yaml:"timeout"`
 }
 
 type ConsumerFile struct {
-	DirektivAPI string   `yaml:"direktiv_api"`
-	Username    string   `yaml:"username"`
-	Password    string   `yaml:"password"`
-	APIKey      string   `yaml:"api_key"`
-	Tags        []string `yaml:"tags"`
-	Groups      []string `yaml:"groups"`
+	DirektivAPI string   `json:"direktiv_api,omitempty" yaml:"direktiv_api"`
+	Username    string   `json:"username"               yaml:"username"`
+	Password    string   `json:"password"               yaml:"password"`
+	APIKey      string   `json:"api_key"                yaml:"api_key"`
+	Tags        []string `json:"tags"                   yaml:"tags"`
+	Groups      []string `json:"groups"                 yaml:"groups"`
 }
 
 type PluginConfig struct {
-	Type          string      `yaml:"type"`
-	Configuration interface{} `yaml:"configuration"`
+	Type          string      `json:"type"          yaml:"type"`
+	Configuration interface{} `json:"configuration" yaml:"configuration"`
 }
 
 func ParseConsumerFile(data []byte) (*ConsumerFile, error) {

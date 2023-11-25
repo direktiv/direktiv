@@ -83,6 +83,10 @@ type PluginInstance interface {
 	Config() interface{}
 }
 
+func GetAllPlugins() map[string]Plugin {
+	return registry
+}
+
 func AddPluginToRegistry(plugin Plugin) {
 	slog.Info("adding plugin", slog.String("name", plugin.Name()))
 	registry[plugin.Name()] = plugin

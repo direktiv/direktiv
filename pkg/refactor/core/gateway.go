@@ -15,6 +15,9 @@ type GatewayManager interface {
 	DeleteNamespace(string)
 	UpdateNamespace(string)
 	UpdateAll()
+
+	GetConsumers(string) ([]*spec.ConsumerFile, error)
+	GetRoutes(namespace string) ([]EndpointListItem, error)
 }
 
 type Endpoint struct {
@@ -27,4 +30,12 @@ type Endpoint struct {
 	OutboundPluginInstances []plugins.PluginInstance
 	Errors                  []string
 	Warnings                []string
+}
+
+type EndpointListItem struct {
+	spec.EndpointFile
+	Path     string   `json:"path"`
+	Pattern  string   `json:"pattern"`
+	Errors   []string `json:"errors"`
+	Warnings []string `json:"warnings"`
 }

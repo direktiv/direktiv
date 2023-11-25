@@ -334,3 +334,22 @@ func swapRequestResponse(rin *http.Request, w *DummyWriter) (*http.Request, erro
 
 	return r.WithContext(rin.Context()), nil
 }
+
+// API functions.
+func (ep *gatewayManager) GetConsumers(namespace string) ([]*spec.ConsumerFile, error) {
+	g, ok := ep.nsGateways[namespace]
+	if !ok {
+		return nil, fmt.Errorf("no consumers for namespace %s", namespace)
+	}
+
+	return g.ConsumerList.GetConsumers(), nil
+}
+
+func (ep *gatewayManager) GetRoutes(namespace string) ([]core.EndpointListItem, error) {
+	g, ok := ep.nsGateways[namespace]
+	if !ok {
+		return nil, fmt.Errorf("no routes for namespace %s", namespace)
+	}
+
+	return g.EndpointList.GetEndpoints(), nil
+}

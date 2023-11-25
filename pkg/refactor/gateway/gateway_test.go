@@ -223,3 +223,19 @@ func TestTimeoutRequest(t *testing.T) {
 	resp := doRequest(t, "/gw/test", make(http.Header), gm)
 	assert.Equal(t, http.StatusRequestTimeout, resp.StatusCode)
 }
+
+func TestGetAllEndpoints(t *testing.T) {
+
+	dbMock, _ := database.NewMockGorm()
+
+	db := database.NewDB(dbMock, "dummy")
+	createNS(db, core.MagicalGatewayNamespace)
+	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(timeout))
+
+	gm := gateway.NewGatewayManager(db)
+	gm.UpdateAll()
+
+	gm.GetRoutes(core.MagicalGatewayNamespace)
+
+}

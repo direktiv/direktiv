@@ -46,6 +46,9 @@ func (cl *List) SetConsumers(consumerList []*spec.ConsumerFile) {
 	for i := range consumerList {
 		c := consumerList[i]
 
+		// empty it for API response
+		c.DirektivAPI = ""
+
 		// username is the primary key.
 		if c.Username == "" {
 			slog.Warn("consumer name empty")

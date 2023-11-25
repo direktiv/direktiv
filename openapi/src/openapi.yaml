@@ -75,11 +75,14 @@ tags:
     description: Endpoints for managing services
   - name: registries
     description: Endpoints for managing registries
+  - name: gateway
+    description: Endpoints for fetchig API gateway information
 x-tagGroups:
   - name: Endpoints
     tags:
       - services
       - registries
+      - gateway
 components:
   parameters:
     $ref: "./parameters.yaml"

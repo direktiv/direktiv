@@ -55,6 +55,33 @@ func (e *EndpointList) FindRoute(route, method string) (*core.Endpoint, map[stri
 	return endpointEntry, urlParams
 }
 
+func (e *EndpointList) GetEndpoints() []core.EndpointListItem {
+	routes := e.Routes()
+	items := make([]core.EndpointListItem, 0)
+
+	for i := range routes {
+		r := routes[i]
+		methods := make([]string, 0)
+		ep := core.EndpointListItem{
+			Path:    r.FilePath,
+			Pattern: r.Pattern,
+		}
+		for m, h := range r.Handlers {
+			methods = append(methods, m)
+			ep.Warnings = h.Warnings
+			ep.Errors = h.Errors
+			ep.AllowAnonymous = h.EndpointFile.AllowAnonymous
+			ep.PathExtension = h.EndpointFile.PathExtension
+			ep.Plugins = h.EndpointFile.Plugins
+			ep.Timeout = h.EndpointFile.Timeout
+		}
+		ep.Methods = methods
+		items = append(items, ep)
+	}
+
+	return items
+}
+
 func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	newTree := &node{}
 

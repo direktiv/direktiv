@@ -46,37 +46,6 @@ var methodMap = map[string]methodTyp{
 	http.MethodTrace:   mTRACE,
 }
 
-// var reverseMethodMap = map[methodTyp]string{
-// 	mCONNECT: http.MethodConnect,
-// 	mDELETE:  http.MethodDelete,
-// 	mGET:     http.MethodGet,
-// 	mHEAD:    http.MethodHead,
-// 	mOPTIONS: http.MethodOptions,
-// 	mPATCH:   http.MethodPatch,
-// 	mPOST:    http.MethodPost,
-// 	mPUT:     http.MethodPut,
-// 	mTRACE:   http.MethodTrace,
-// }
-
-// // RegisterMethod adds support for custom HTTP method handlers, available
-// // via Router#Method and Router#MethodFunc
-// func RegisterMethod(method string) {
-// 	if method == "" {
-// 		return
-// 	}
-// 	method = strings.ToUpper(method)
-// 	if _, ok := methodMap[method]; ok {
-// 		return
-// 	}
-// 	n := len(methodMap)
-// 	if n > strconv.IntSize-2 {
-// 		panic(fmt.Sprintf("chi: max number of methods reached (%d)", strconv.IntSize))
-// 	}
-// 	mt := methodTyp(2 << n)
-// 	methodMap[method] = mt
-// 	mALL |= mt
-// }
-
 type nodeTyp uint8
 
 const (
@@ -545,79 +514,9 @@ func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
 	return nil
 }
 
-// func (n *node) findEdge(ntyp nodeTyp, label byte) *node {
-// 	nds := n.children[ntyp]
-// 	num := len(nds)
-// 	idx := 0
-
-// 	switch ntyp {
-// 	case ntStatic, ntParam, ntRegexp:
-// 		i, j := 0, num-1
-// 		for i <= j {
-// 			idx = i + (j-i)/2
-// 			if label > nds[idx].label {
-// 				i = idx + 1
-// 			} else if label < nds[idx].label {
-// 				j = idx - 1
-// 			} else {
-// 				i = num // breaks cond
-// 			}
-// 		}
-// 		if nds[idx].label != label {
-// 			return nil
-// 		}
-// 		return nds[idx]
-
-// 	default: // catch all
-// 		return nds[idx]
-// 	}
-// }
-
 func (n *node) isLeaf() bool {
 	return n.endpoints != nil
 }
-
-// func (n *node) findPattern(pattern string) bool {
-// 	nn := n
-// 	for _, nds := range nn.children {
-// 		if len(nds) == 0 {
-// 			continue
-// 		}
-
-// 		n = nn.findEdge(nds[0].typ, pattern[0])
-// 		if n == nil {
-// 			continue
-// 		}
-
-// 		var idx int
-// 		var xpattern string
-
-// 		switch n.typ {
-// 		case ntStatic:
-// 			idx = longestPrefix(pattern, n.prefix)
-// 			if idx < len(n.prefix) {
-// 				continue
-// 			}
-
-// 		case ntParam, ntRegexp:
-// 			idx = strings.IndexByte(pattern, '}') + 1
-
-// 		case ntCatchAll:
-// 			idx = longestPrefix(pattern, "*")
-
-// 		default:
-// 			panic("chi: unknown node type")
-// 		}
-
-// 		xpattern = pattern[idx:]
-// 		if len(xpattern) == 0 {
-// 			return true
-// 		}
-
-// 		return n.findPattern(xpattern)
-// 	}
-// 	return false
-// }
 
 func (n *node) Routes() []Route {
 	rts := []Route{}
@@ -648,6 +547,7 @@ func (n *node) Routes() []Route {
 				hs["*"] = mh[mALL].handler
 			}
 
+			path := p
 			for mt, h := range mh {
 				if h.handler == nil {
 					continue
@@ -657,9 +557,11 @@ func (n *node) Routes() []Route {
 					continue
 				}
 				hs[m] = h.handler
-			}
 
-			rt := Route{subroutes, hs, p}
+				// in direktiv methods can be only served from one file
+				path = h.handler.FilePath
+			}
+			rt := Route{subroutes, hs, p, path}
 			rts = append(rts, rt)
 		}
 
@@ -846,49 +748,6 @@ type Route struct {
 	SubRoutes chi.Routes
 	Handlers  map[string]*core.Endpoint
 	Pattern   string
+
+	FilePath string
 }
-
-// WalkFunc is the type of the function called for each method and route visited by Walk.
-// type WalkFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error
-
-// Walk walks any router tree that implements Routes interface.
-// func Walk(r chi.Routes, walkFn WalkFunc) error {
-// 	return walk(r, walkFn, "")
-// }
-
-// func walk(r chi.Routes, walkFn WalkFunc, parentRoute string, parentMw ...func(http.Handler) http.Handler) error {
-// 	for _, route := range r.Routes() {
-// 		mws := make([]func(http.Handler) http.Handler, len(parentMw))
-// 		copy(mws, parentMw)
-// 		mws = append(mws, r.Middlewares()...)
-
-// 		if route.SubRoutes != nil {
-// 			if err := walk(route.SubRoutes, walkFn, parentRoute+route.Pattern, mws...); err != nil {
-// 				return err
-// 			}
-// 			continue
-// 		}
-
-// 		for method, handler := range route.Handlers {
-// 			if method == "*" {
-// 				// Ignore a "catchAll" method, since we pass down all the specific methods for each route.
-// 				continue
-// 			}
-
-// 			fullRoute := parentRoute + route.Pattern
-// 			fullRoute = strings.Replace(fullRoute, "/*/", "/", -1)
-
-// 			if chain, ok := handler.(*chi.ChainHandler); ok {
-// 				if err := walkFn(method, fullRoute, chain.Endpoint, append(mws, chain.Middlewares...)...); err != nil {
-// 					return err
-// 				}
-// 			} else {
-// 				if err := walkFn(method, fullRoute, handler, mws...); err != nil {
-// 					return err
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }
