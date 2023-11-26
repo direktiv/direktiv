@@ -34,7 +34,7 @@ type ConsumerFile struct {
 
 type PluginConfig struct {
 	Type          string      `json:"type"          yaml:"type"`
-	Configuration interface{} `json:"configuration" yaml:"configuration"`
+	Configuration interface{} `json:"configuration" yaml:"configuration,omitempty"`
 }
 
 func ParseConsumerFile(data []byte) (*ConsumerFile, error) {
