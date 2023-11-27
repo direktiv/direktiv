@@ -166,7 +166,7 @@ test("it is possible to filter by date using created before", async ({
   await page.getByTestId("filter-add").click();
   await page.getByRole("option", { name: "created after" }).click();
   await page.getByLabel("Go to next month").click();
-  await page.getByText("28", { exact: true }).click();
+  await page.getByText("15", { exact: true }).click();
 
   await expect(
     page.getByTestId(/instance-row/),
