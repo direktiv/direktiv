@@ -49,6 +49,19 @@
                       error:
                         type: [ string, null ]
                         description: error string when service failed to be scheduled, otherwise null
+                      envs:
+                        type: array
+                        nullable: false
+                        description: environment variables used to exec the service
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: name of the variable
+                            value:
+                              type: string
+                              description: value of the variable
                       conditions:
                         type: array
                         nullable: true
