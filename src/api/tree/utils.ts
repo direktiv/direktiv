@@ -68,7 +68,9 @@ export const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
     case "service":
       return "service";
     case "endpoint":
-      return "gateway";
+      return "workflow";
+    case "consumer":
+      return "workflow";
     default:
       return undefined;
   }
