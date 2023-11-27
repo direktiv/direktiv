@@ -5,6 +5,8 @@ import { twMergeClsx } from "~/util/helpers";
 
 const Popover = PopoverPrimitive.Root;
 
+const PopoverClose = PopoverPrimitive.Close;
+
 const PopoverTrigger = PopoverPrimitive.Trigger;
 
 const PopoverContent = forwardRef<
@@ -28,4 +30,4 @@ const PopoverContent = forwardRef<
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverTrigger, PopoverContent };
+export { Popover, PopoverTrigger, PopoverContent, PopoverClose };

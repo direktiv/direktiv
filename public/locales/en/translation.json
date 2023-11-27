@@ -1001,6 +1001,21 @@
     "formErrors": {
       "fieldInvalid": "this field is invalid"
     },
+    "notificationMenu": {
+      "title": "Notifications",
+      "isLoading": {
+        "description": "Loading..."
+      },
+      "noIssues": {
+        "description": "You do not have any notifications."
+      },
+      "hasIssues": {
+        "secrets": {
+          "description": "You have {{count}} uninitialized secrets.",
+          "description_one": "You have {{count}} uninitialized secret."
+        }
+      }
+    },
     "userMenu": {
       "loggedIn": "You are logged in",
       "logout": "Logout",
