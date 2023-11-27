@@ -174,7 +174,7 @@ test("it renders, filters, and paginates events", async ({ page }) => {
   await page.getByTestId("add-filter").click();
   await page.getByRole("option", { name: "received after" }).click();
   await page.getByLabel("Go to next month").click();
-  await page.getByText("28", { exact: true }).click();
+  await page.getByText("15", { exact: true }).click();
 
   await expect(page.getByTestId("event-row")).toHaveCount(0);
 
