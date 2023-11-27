@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -106,8 +105,7 @@ func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
 
-	// TODO: increase this length.
-	buffer := make([]byte, 100)
+	buffer := make([]byte, 1024)
 	var n int
 	for {
 		// TODO: this would leak because read() could block forever.
@@ -120,12 +118,8 @@ func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 
 			break
 		}
+		_, _ = fmt.Fprintf(w, "%s", buffer[:n])
 
-		_, err := fmt.Fprintf(w, "%s", buffer[:n])
-		if err != nil {
-			slog.Error("TODO: add log here")
-			break
-		}
 		w.(http.Flusher).Flush()
 		time.Sleep(10 * time.Millisecond)
 	}
