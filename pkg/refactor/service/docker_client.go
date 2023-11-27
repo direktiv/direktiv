@@ -59,8 +59,7 @@ func (c *dockerClient) cleanAll() error {
 }
 
 func (c *dockerClient) createService(sv *core.ServiceConfig) error {
-	// Pull the image (if it doesn't exist locally).
-	// TODO: fix this 'local' convention.
+	// don't pull any image that has 'local' prefix.
 	if !strings.HasPrefix(sv.Image, "local") {
 		out, err := c.cli.ImagePull(context.Background(), sv.Image, types.ImagePullOptions{})
 		if err != nil {
