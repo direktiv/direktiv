@@ -52,6 +52,8 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
 		return true
 	}
 
+	slog.Debug("running basic-auth plugin", "user", user)
+
 	gwObj := r.Context().Value(plugins.ConsumersParamCtxKey)
 	if gwObj == nil {
 		slog.Debug("no consumer list in context",

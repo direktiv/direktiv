@@ -198,6 +198,13 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// if there are configuration errors, return it
+	if len(endpointEntry.Errors) > 0 {
+		plugins.ReportError(w, http.StatusForbidden, "plugin has errors",
+			fmt.Errorf(strings.Join(endpointEntry.Errors, ", ")))
+		return
+	}
+
 	// add url params e.g. /{id}
 	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
 	ctx = context.WithValue(ctx, plugins.ConsumersParamCtxKey, gw.ConsumerList)

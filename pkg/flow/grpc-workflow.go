@@ -136,9 +136,9 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 
 	// do we need the path for services?
 	if fileType == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubSub, filepath.Join(req.GetNamespace(), file.Path))
+		err = flow.pBus.Publish(pubSub, file.Path)
 	} else {
-		err = flow.pBus.Publish(pubSub, filepath.Join(req.GetNamespace(), ns.Name))
+		err = flow.pBus.Publish(pubSub, ns.Name)
 	}
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
