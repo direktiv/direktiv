@@ -31,10 +31,10 @@ const RegistriesList: FC = () => {
 
   const filteredItems = useMemo(
     () =>
-      (data?.registries ?? [])?.filter(
-        (item) => !isSearch || item.name.includes(search)
+      (data?.data ?? [])?.filter(
+        (item) => !isSearch || item.url.includes(search)
       ),
-    [data?.registries, isSearch, search]
+    [data?.data, isSearch, search]
   );
 
   const { mutate: deleteRegistryMutation } = useDeleteRegistry({
@@ -96,13 +96,22 @@ const RegistriesList: FC = () => {
                   {currentItems.length ? (
                     <Table>
                       <TableBody>
-                        {currentItems.map((item, i) => (
+                        {currentItems.map((item) => (
                           <ItemRow
-                            key={i}
-                            item={item}
+                            key={item.id}
+                            item={{
+                              ...item,
+                              /**
+                               * ItemRow is used by registies, secrets and variables
+                               * when all migrate to api V2 and have a unique id the
+                               * type signature of item can be updated from name to id
+                               * (all Playwright tests need to be updated as then)
+                               */
+                              name: item.url,
+                            }}
                             onDelete={setDeleteRegistry}
                           >
-                            {item.name}
+                            {item.url}
                           </ItemRow>
                         ))}
                       </TableBody>
@@ -144,7 +153,7 @@ const RegistriesList: FC = () => {
       </PaginationProvider>
       {deleteRegistry && (
         <Delete
-          name={deleteRegistry.name}
+          name={deleteRegistry.url}
           onConfirm={() => deleteRegistryMutation({ registry: deleteRegistry })}
         />
       )}

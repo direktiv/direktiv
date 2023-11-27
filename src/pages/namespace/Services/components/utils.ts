@@ -1,8 +1,12 @@
+import {
+  ServiceSchemaType,
+  StatusSchemaType,
+} from "~/api/services/schema/services";
+
 import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
-import { PodStatusSchemaType } from "~/api/services/schema/pods";
-import { StatusSchemaType } from "~/api/services/schema";
+import { pages } from "~/util/router/pages";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 type BadgeIcon = ComponentProps<typeof Badge>["icon"];
@@ -51,18 +55,9 @@ export const statusToAlertVariant = (
   }
 };
 
-export const podStatusToBadgeVariant = (
-  status: PodStatusSchemaType
-): BadgeVariant => {
-  switch (status) {
-    case "Succeeded":
-    case "Running":
-      return "success";
-    case "Failed":
-      return "destructive";
-    case "Unknown":
-      return "outline";
-    default:
-      break;
-  }
-};
+export const linkToServiceSource = (service: ServiceSchemaType) =>
+  pages.explorer.createHref({
+    namespace: service.namespace,
+    path: service.filePath,
+    subpage: service.type === "namespace-service" ? "service" : "workflow",
+  });

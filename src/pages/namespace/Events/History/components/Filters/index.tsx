@@ -115,7 +115,11 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   />
                 </PopoverContent>
               </Popover>
-              <Button variant="outline" icon>
+              <Button
+                variant="outline"
+                icon
+                data-testid={`clear-filter-${field}`}
+              >
                 <X onClick={() => clearFilter(field)} />
               </Button>
             </ButtonBar>
@@ -173,7 +177,11 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   />
                 </PopoverContent>
               </Popover>
-              <Button variant="outline" icon>
+              <Button
+                variant="outline"
+                icon
+                data-testid={`clear-filter-${field}`}
+              >
                 <X onClick={() => clearFilter(field)} />
               </Button>
             </ButtonBar>
@@ -188,11 +196,20 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         >
           <PopoverTrigger asChild>
             {hasFilters ? (
-              <Button variant="outline" icon onClick={() => toggleMenu("main")}>
+              <Button
+                data-testid="add-filter"
+                variant="outline"
+                icon
+                onClick={() => toggleMenu("main")}
+              >
                 <Plus />
               </Button>
             ) : (
-              <Button variant="outline" onClick={() => toggleMenu("main")}>
+              <Button
+                data-testid="add-filter"
+                variant="outline"
+                onClick={() => toggleMenu("main")}
+              >
                 <Plus />
                 {t("pages.events.history.filter.filterButton")}
               </Button>

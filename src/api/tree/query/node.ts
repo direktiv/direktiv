@@ -42,9 +42,11 @@ const fetchTree = async ({
 export const useNodeContent = ({
   path,
   revision,
+  enabled = true,
 }: {
   path?: string;
   revision?: string;
+  enabled?: boolean;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -72,6 +74,6 @@ export const useNodeContent = ({
       }
       return data;
     },
-    enabled: !!namespace,
+    enabled: !!namespace && enabled,
   });
 };

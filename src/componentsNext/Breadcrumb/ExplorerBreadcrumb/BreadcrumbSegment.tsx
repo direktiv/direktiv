@@ -1,10 +1,11 @@
-import { FolderOpen, Play } from "lucide-react";
+import { fileTypeToExplorerSubpage, fileTypeToIcon } from "~/api/tree/utils";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { useNodeContent } from "~/api/tree/query/node";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -12,17 +13,27 @@ const BreadcrumbSegment: FC<{
   isLast: boolean;
 }> = ({ absolute, relative, isLast }) => {
   const namespace = useNamespace();
+  /**
+   * the last breadcrumb item in the file browser can be a file
+   * we need to request file information to figure out which
+   * icon to use
+   */
+  const requestIconInformation = isLast;
+
+  const { data } = useNodeContent({
+    path: absolute,
+    enabled: requestIconInformation,
+  });
+
   if (!namespace) return null;
+  if (requestIconInformation && !data) return null;
 
-  const isWorkflow =
-    isLast && (relative.endsWith(".yml") || relative.endsWith(".yaml"));
-
-  const Icon = isWorkflow ? Play : FolderOpen;
+  const Icon = fileTypeToIcon(data?.node.type ?? "directory");
 
   const link = pages.explorer.createHref({
     namespace,
     path: absolute,
-    subpage: isWorkflow ? "workflow" : undefined,
+    subpage: fileTypeToExplorerSubpage(data?.node.type ?? "directory"),
   });
 
   return (

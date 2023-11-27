@@ -1,4 +1,4 @@
-import { File, Folder, Play } from "lucide-react";
+import { File, Folder, Layers, Play } from "lucide-react";
 
 import { NodeSchemaType } from "./schema/node";
 
@@ -44,13 +44,26 @@ export const sortByName = (a: { name: string }, b: { name: string }): number =>
 export const sortByRef = (a: { ref: string }, b: { ref: string }): number =>
   a.ref.localeCompare(b.ref);
 
-export const fileTypeToIcon = (type: NodeSchemaType["expandedType"]) => {
+export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
   switch (type) {
     case "directory":
       return Folder;
+    case "service":
+      return Layers;
     case "workflow":
       return Play;
     default:
       return File;
+  }
+};
+
+export const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
+  switch (type) {
+    case "workflow":
+      return "workflow";
+    case "service":
+      return "service";
+    default:
+      return undefined;
   }
 };
