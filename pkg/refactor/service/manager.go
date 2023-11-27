@@ -350,4 +350,7 @@ func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
 			"service_file", sv.FilePath)
 		sv.Scale = m.cfg.KnativeMaxScale
 	}
+	if len(sv.Envs) == 0 {
+		sv.Envs = make([]core.EnvironmentVariable, 0)
+	}
 }

@@ -201,7 +201,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					CMD:       serviceDef.Cmd,
 					Size:      serviceDef.Size,
 					Scale:     serviceDef.Scale,
-					Variables: serviceDef.Vars,
+					Envs:      serviceDef.Envs,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file, data)
