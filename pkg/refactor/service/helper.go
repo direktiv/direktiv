@@ -125,9 +125,6 @@ func buildVolumes(c *core.Config, sv *core.ServiceConfig) []corev1.Volume {
 }
 
 func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container, error) {
-	// TODO: yassir, we appear to have lost envs
-	envs := make(map[string]string)
-
 	// set resource limits.
 	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
@@ -138,7 +135,7 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 	uc := corev1.Container{
 		Name:      containerUser,
 		Image:     sv.Image,
-		Env:       buildEnvVars(false, c, sv, envs),
+		Env:       buildEnvVars(false, c, sv),
 		Resources: *rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -167,7 +164,7 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
-		Env:          buildEnvVars(true, c, sv, envs),
+		Env:          buildEnvVars(true, c, sv),
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
@@ -244,7 +241,7 @@ func buildResourceLimits(cf *core.Config, sv *core.ServiceConfig) (*corev1.Resou
 }
 
 // nolint
-func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig, envs map[string]string) []corev1.EnvVar {
+func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
 	if len(c.KnativeProxyHTTP) > 0 {
@@ -299,10 +296,10 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceConfig, envs ma
 			Value: "sidecar",
 		})
 	} else {
-		for k, v := range envs {
+		for _, v := range sv.Envs {
 			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-				Name:  k,
-				Value: v,
+				Name:  v.Name,
+				Value: v.Value,
 			})
 		}
 	}
