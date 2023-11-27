@@ -1,6 +1,5 @@
 import GatewayTable from "./Table";
 import { Network } from "lucide-react";
-import NoGateway from "./NoGateway";
 import RefreshButton from "~/design/RefreshButton";
 import { useEndpoints } from "~/api/gateway/query/getEndpoints";
 import useIsGatewayAvailable from "~/hooksNext/useIsGatewayAvailable";
@@ -31,7 +30,7 @@ const GatewayPage = () => {
           />
         )}
       </div>
-      {isGatewayAvailable ? <GatewayTable /> : <NoGateway />}
+      <GatewayTable />
     </div>
   );
 };

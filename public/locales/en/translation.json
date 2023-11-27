@@ -865,8 +865,7 @@
         "plugins": "{{count}} plugins",
         "plugins_one": "{{count}} plugin"
       },
-      "empty": "No endpoints exist yet",
-      "unavailable": "The Gateway feature is exclusively accessible within the \"<b>{{name}}</b>\" namespace.  If you haven't created this namespace yet, you can do so to access the feature."
+      "empty": "No endpoints exist yet"
     },
     "jqPlayground": {
       "title": "jq Playground",
