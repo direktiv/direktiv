@@ -15,7 +15,6 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
-import { TestConnectionButton } from "./TestConnectionButton";
 import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,8 +32,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   const {
     register,
     handleSubmit,
-    getValues,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<RegistryFormSchemaType>({
     resolver: zodResolver(RegistryFormSchema),
   });
@@ -94,7 +92,6 @@ const Create = ({ onSuccess }: CreateProps) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <TestConnectionButton getValues={getValues} isValid={isValid} />
           <Button data-testid="registry-create-submit" type="submit">
             {t("components.button.label.create")}
           </Button>

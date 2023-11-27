@@ -227,16 +227,24 @@ test("it is possible to provide the input via generated form", async ({
   await expect(page.getByLabel("First Name")).toBeVisible();
   await expect(page.getByLabel("Last Name")).toBeVisible();
   await expect(page.getByLabel("Age")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
   await expect(
-    page.getByRole("combobox", { name: "Select a string" })
-  ).toBeVisible();
+    await page.getByRole("combobox", { name: "role" }).innerText(),
+    "the select input shows a fallback text when it has no value"
+  ).toBe("Select role");
+
   await expect(page.getByTestId("json-schema-form-add-button")).toBeVisible();
   await expect(page.getByLabel("Age")).toBeVisible();
   await expect(page.getByLabel("File")).toBeVisible();
 
   // interact with the select input
-  await page.getByRole("combobox", { name: "Select a string" }).click();
-  await page.getByRole("option", { name: "Select 2" }).click();
+  await page.getByRole("combobox", { name: "role" }).click();
+  await page.getByRole("option", { name: "guest" }).click();
+  await expect(
+    await page.getByRole("combobox", { name: "role" }).innerText(),
+    "the select input now shows the selected value"
+  ).toBe("guest");
 
   // interact with the file input
   await page
@@ -300,7 +308,7 @@ test("it is possible to provide the input via generated form", async ({
     array: ["array item 1", "array item 2"],
     firstName: "Marty",
     lastName: "McFly",
-    select: "select 2",
+    select: "guest",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
   const inputResponseAsJson = JSON.parse(atob(res.data));
@@ -339,9 +347,7 @@ test("it is possible to provide the input via generated form and resolve form er
   // it generated a form (first and last name are required)
   await expect(page.getByLabel("First Name")).toBeVisible();
   await expect(page.getByLabel("Last Name")).toBeVisible();
-  await expect(
-    page.getByRole("combobox", { name: "Select a string" })
-  ).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
 
   //click on submit
   await page.getByTestId("run-workflow-submit-btn").click();
@@ -364,11 +370,11 @@ test("it is possible to provide the input via generated form and resolve form er
 
   await expect(
     page.getByTestId("jsonschema-form-error"),
-    "error message should be \"must have required property 'select a string'\""
-  ).toContainText("must have required property 'select a string'");
+    "error message should be \"must have required property 'role'\""
+  ).toContainText("must have required property 'role'");
   // interact with the select input
-  await page.getByRole("combobox", { name: "Select a string" }).click();
-  await page.getByRole("option", { name: "Select 2" }).click();
+  await page.getByRole("combobox", { name: "role" }).click();
+  await page.getByRole("option", { name: "guest" }).click();
   await page.getByTestId("run-workflow-submit-btn").click();
 
   const reg = new RegExp(`${namespace}/instances/(.*)`);
@@ -395,7 +401,7 @@ test("it is possible to provide the input via generated form and resolve form er
   const expectedJson = {
     firstName: "Marty",
     lastName: "McFly",
-    select: "select 2",
+    select: "guest",
   };
   const inputResponseAsJson = JSON.parse(atob(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);

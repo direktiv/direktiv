@@ -3,6 +3,7 @@ import { FC, PropsWithChildren } from "react";
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
 import { NodeSchemaType } from "~/api/tree/schema/node";
+import { fileTypeToExplorerSubpage } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
@@ -17,7 +18,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   onPreviewClicked,
   children,
 }) => {
-  const isFile = node.expandedType === "file";
+  const isFile = node.type === "file";
 
   if (isFile)
     return (
@@ -36,7 +37,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   const linkTarget = pages.explorer.createHref({
     namespace,
     path: node.path,
-    subpage: node.expandedType === "workflow" ? "workflow" : undefined,
+    subpage: fileTypeToExplorerSubpage(node.type),
   });
 
   return (
