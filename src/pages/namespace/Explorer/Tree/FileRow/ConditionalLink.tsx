@@ -1,9 +1,9 @@
 import { FC, PropsWithChildren } from "react";
+import { fileTypeToExplorerSubpage, isPreviewable } from "~/api/tree/utils";
 
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
 import { NodeSchemaType } from "~/api/tree/schema/node";
-import { fileTypeToExplorerSubpage } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
@@ -18,9 +18,8 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   onPreviewClicked,
   children,
 }) => {
-  const isFile = node.type === "file";
-
-  if (isFile)
+  const linkToPreview = isPreviewable(node.type);
+  if (linkToPreview)
     return (
       <DialogTrigger
         className="flex-1 hover:underline"
