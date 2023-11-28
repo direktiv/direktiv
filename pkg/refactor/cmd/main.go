@@ -91,6 +91,16 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	)
 	renderEndpointManager(db, endpointManager, logger)
 
+	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
+	pbus.Subscribe(func(ns string) {
+		err := registryManager.DeleteNamespace(ns)
+		if err != nil {
+			logger.Errorw("deleting registry namespace", "error", err)
+		}
+	},
+		pubsub.NamespaceDelete,
+	)
+
 	// Start api v2 server
 	wg.Add(1)
 	api.Start(app, db, "0.0.0.0:6667", done, wg)

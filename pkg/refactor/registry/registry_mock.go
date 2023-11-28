@@ -58,6 +58,19 @@ func (c *mockedManager) DeleteRegistry(namespace string, id string) error {
 	return nil
 }
 
+func (c *mockedManager) DeleteNamespace(namespace string) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	_, ok := c.list[namespace]
+	if !ok {
+		return core.ErrNotFound
+	}
+	delete(c.list, namespace)
+
+	return nil
+}
+
 func (c *mockedManager) StoreRegistry(registry *core.Registry) (*core.Registry, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()

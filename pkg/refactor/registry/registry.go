@@ -63,7 +63,28 @@ func (c *kManager) DeleteRegistry(namespace string, id string) error {
 
 	for _, s := range secrets.Items {
 		if s.Name == id {
-			return c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), secrets.Items[0].Name, metav1.DeleteOptions{})
+			return c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
+		}
+	}
+
+	return core.ErrNotFound
+}
+
+func (c *kManager) DeleteNamespace(namespace string) error {
+	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
+	if err != nil {
+		return fmt.Errorf("k8s secrets list: %s", err)
+	}
+	if len(secrets.Items) == 0 {
+		return core.ErrNotFound
+	}
+
+	for _, s := range secrets.Items {
+		err = c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
+		if err != nil {
+			return fmt.Errorf("k8s secrets delete: %s", err)
 		}
 	}
 

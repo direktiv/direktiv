@@ -110,7 +110,7 @@ docker-tail: ## Tail the logs for the direktiv container in the docker deploymen
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
 .PHONY: docker-tests
-docker-tests: docker-build
+docker-tests: docker-stop docker-build
 docker-tests: ## Perform backend end-to-end tests against the docker deployment.
 	DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
 
