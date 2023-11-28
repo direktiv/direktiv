@@ -312,7 +312,7 @@ test("it is not possible to create a workflow when the name already exixts", asy
   await page.getByTestId("new-workflow-name").fill(alreadyExists);
   await page.getByTestId("new-workflow-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -333,7 +333,7 @@ test("it is not possible to create a workflow when the name already exists and t
   await page.getByTestId("new-workflow-name").fill(typedInName);
   await page.getByTestId("new-workflow-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -358,6 +358,15 @@ test(`it is possible to delete a worfklow`, async ({ page }) => {
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-delete").click();
+
+  await expect(
+    page.getByText(
+      `Are you sure you want to delete ${name}? This cannot be undone.`,
+      {
+        exact: true,
+      }
+    )
+  ).toBeVisible();
   await page.getByTestId("node-delete-confirm").click();
 
   await expect(
@@ -520,7 +529,7 @@ test(`it is not possible to rename a workflow when the name already exists`, asy
   await page.getByTestId("node-rename-input").fill(alreadyExists);
   await page.getByTestId("node-rename-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -546,7 +555,7 @@ test(`it is not possible to rename a workflow when the name already exists and e
     .fill(alreadyExistsWithoutExtension);
   await page.getByTestId("node-rename-submit").click();
 
-  await expect(page.getByTestId("form-error")).toContainText(
+  await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
 });
@@ -571,6 +580,16 @@ test(`it is possible to delete a directory`, async ({ page }) => {
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-delete").click();
+
+  await expect(
+    page.getByText(
+      `Are you sure you want to delete ${name}? All content of this directory will be deleted as well.`,
+      {
+        exact: true,
+      }
+    )
+  ).toBeVisible();
+
   await page.getByTestId("node-delete-confirm").click();
 
   await expect(

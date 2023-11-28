@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Popover, PopoverContent, PopoverTrigger } from "./index";
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "./index";
 import Button from "../Button";
 
 const meta = {
@@ -42,8 +42,11 @@ export const Default: Story = {
 export const DefaultOpen = () => (
   <Popover defaultOpen>
     <PopoverTrigger>Open</PopoverTrigger>
-    <PopoverContent className="p-4">
-      Place content for the popover here.
+    <PopoverContent className="flex flex-col gap-3 p-4">
+      <div>Place content for the popover here.</div>
+      <PopoverClose asChild>
+        <Button>Close this popover</Button>
+      </PopoverClose>
     </PopoverContent>
   </Popover>
 );

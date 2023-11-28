@@ -20,11 +20,12 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addYamlFileExtension } from "./utils";
+import { addYamlFileExtension } from "../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
+import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -52,6 +53,7 @@ const NewWorkflow = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
+  const { refetch: updateNotificationBell } = useNamespaceLinting();
 
   const theme = useTheme();
   const [workflowData, setWorkflowData] = useState<string>(
@@ -86,6 +88,11 @@ const NewWorkflow = ({
 
   const { mutate: createWorkflow, isLoading } = useCreateWorkflow({
     onSuccess: (data) => {
+      /**
+       * creating a new workflow might introduce an uninitialized secret.
+       * We need to update the notification bell, to see potential new messages.
+       */
+      updateNotificationBell();
       namespace &&
         navigate(
           pages.explorer.createHref({

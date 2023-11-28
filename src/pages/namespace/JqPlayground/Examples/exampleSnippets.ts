@@ -1,4 +1,4 @@
-export default [
+const snippets = [
   {
     key: "unchangedInput",
     example: ".",
@@ -37,7 +37,7 @@ export default [
     input: '{"abc": 1, "abcd": 2, "Foo": 3}',
   },
   {
-    key: "feeedInput",
+    key: "feedInput",
     example: ",",
     query: "[.foo, .bar]",
     input: '{ "foo": 42, "bar": "something else", "baz": true}',
@@ -74,3 +74,4 @@ export default [
     input: '{"input": 42}',
   },
 ] as const;
+export default snippets;

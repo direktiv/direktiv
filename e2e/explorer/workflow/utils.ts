@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 
-export const actionWaitForSuccessToast = async (page: Page) => {
+export const waitForSuccessToast = async (page: Page) => {
   const successToast = page.getByTestId("toast-success");
   await expect(successToast, "a success toast appears").toBeVisible();
   await page.getByTestId("toast-close").click();
@@ -63,11 +63,11 @@ states:
         type: string
         title: Last name
       select:
-        title: select a string
+        title: role
         type: string
         enum: 
-          - select 1
-          - select 2
+          - admin
+          - guest
       array:
         title: A list of strings
         type: array
@@ -100,9 +100,9 @@ states:
         type: string
         title: Last name
       select:
-        title: select a string
+        title: role
         type: string
         enum: 
-          - select 1
-          - select 2
+          - admin
+          - guest
       `;
