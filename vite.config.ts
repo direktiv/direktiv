@@ -2,31 +2,10 @@
 import { defineConfig, loadEnv } from "vite";
 
 import { envVariablesSchema } from "./src/config/env/schema";
-import fs from "fs";
-import path from "path";
 import pluginRewriteAll from "vite-plugin-rewrite-all";
 import react from "@vitejs/plugin-react";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
-
-//  fix https://github.com/uber/baseweb/issues/4129
-const WRONG_CODE = `import { bpfrpt_proptype_WindowScroller } from "../WindowScroller.js";`;
-export function reactVirtualized() {
-  return {
-    name: "my:react-virtualized",
-    configResolved() {
-      const file = require
-        .resolve("react-virtualized")
-        .replace(
-          path.join("dist", "commonjs", "index.js"),
-          path.join("dist", "es", "WindowScroller", "utils", "onScroll.js")
-        );
-      const code = fs.readFileSync(file, "utf-8");
-      const modified = code.replace(WRONG_CODE, "");
-      fs.writeFileSync(file, modified);
-    },
-  };
-}
 
 export default ({ mode }) => {
   const env = loadEnv(mode, process.cwd());
@@ -82,13 +61,7 @@ export default ({ mode }) => {
         },
       },
     },
-    plugins: [
-      react(),
-      viteTsconfigPaths(),
-      svgrPlugin(),
-      reactVirtualized(),
-      pluginRewriteAll(),
-    ],
+    plugins: [react(), viteTsconfigPaths(), svgrPlugin(), pluginRewriteAll()],
     test: {
       globals: true,
       environment: "jsdom",
