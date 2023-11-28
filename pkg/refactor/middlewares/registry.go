@@ -2,14 +2,14 @@ package middlewares
 
 import "net/http"
 
-type middleware func(http.Handler) http.Handler
+type Middleware func(http.Handler) http.Handler
 
-var registry []middleware
+var registry []Middleware
 
-func RegisterHTTPMiddleware(m middleware) {
+func RegisterHTTPMiddleware(m Middleware) {
 	registry = append(registry, m)
 }
 
-func GetMiddlewares() []middleware {
+func GetMiddlewares() []Middleware {
 	return registry
 }
