@@ -14,15 +14,14 @@ import (
 	dClient "github.com/docker/docker/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 const (
 	annotationNamespace    = "direktiv.io/namespace"
-	annotationRegistryURL  = "direktiv.io/registry/url"
-	annotationRegistryUser = "direktiv.io/registry/user"
+	annotationRegistryURL  = "direktiv.io/registry_url"
+	annotationRegistryUser = "direktiv.io/registry_user"
 )
 
 type kManager struct {
@@ -55,18 +54,37 @@ func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
 }
 
 func (c *kManager) DeleteRegistry(namespace string, id string) error {
-	lo := metav1.ListOptions{LabelSelector: labels.Set(map[string]string{
-		annotationNamespace: namespace,
-	}).String()}
-
-	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).List(context.Background(), lo)
+	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
-		return fmt.Errorf("k8s list secrets: %s", err)
+		return err
 	}
 
 	for _, s := range secrets.Items {
 		if s.Name == id {
-			return c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), secrets.Items[0].Name, metav1.DeleteOptions{})
+			return c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
+		}
+	}
+
+	return core.ErrNotFound
+}
+
+func (c *kManager) DeleteNamespace(namespace string) error {
+	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
+	if err != nil {
+		return fmt.Errorf("k8s secrets list: %s", err)
+	}
+	if len(secrets.Items) == 0 {
+		return core.ErrNotFound
+	}
+
+	for _, s := range secrets.Items {
+		err = c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
+		if err != nil {
+			return fmt.Errorf("k8s secrets delete: %s", err)
 		}
 	}
 
@@ -77,26 +95,21 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 	str := fmt.Sprintf("%s-%s", registry.Namespace, registry.URL)
 	sh := sha256.Sum256([]byte(str))
 	id := fmt.Sprintf("secret-%x", sh[:10])
+	registry.ID = id
 
 	// delete the old registry is just a safety measure
-	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
+	_ = c.DeleteRegistry(registry.Namespace, id)
 
-	r := &core.Registry{
-		Namespace: registry.Namespace,
-		ID:        id,
-		URL:       registry.URL,
-		User:      obfuscateUser(registry.User),
-		Password:  registry.Password,
-	}
-
-	s, err := buildSecret(registry)
+	s, err := buildSecret(*registry)
 	if err != nil {
 		return nil, err
 	}
 	_, err = c.Clientset.CoreV1().Secrets(c.K8sNamespace).Create(context.Background(),
 		s, metav1.CreateOptions{})
 
-	return r, err
+	registry.Password = ""
+
+	return registry, err
 }
 
 func testLogin(registry *core.Registry) error {
@@ -119,7 +132,7 @@ func (c *kManager) TestLogin(registry *core.Registry) error {
 	return testLogin(registry)
 }
 
-func buildSecret(registry *core.Registry) (*v1.Secret, error) {
+func buildSecret(registry core.Registry) (*v1.Secret, error) {
 	_, err := url.Parse(registry.URL)
 	if err != nil {
 		return nil, err
@@ -144,7 +157,6 @@ func buildSecret(registry *core.Registry) (*v1.Secret, error) {
 	}
 
 	s.Labels = make(map[string]string)
-
 	s.Labels[annotationNamespace] = registry.Namespace
 
 	s.Annotations = make(map[string]string)
@@ -156,19 +168,6 @@ func buildSecret(registry *core.Registry) (*v1.Secret, error) {
 	s.Type = "kubernetes.io/dockerconfigjson"
 
 	return &s, nil
-}
-
-func obfuscateUser(user string) string {
-	switch len(user) {
-	case 1, 2, 3:
-		user = fmt.Sprintf("%s***", string(user[0]))
-	case 4, 5:
-		user = fmt.Sprintf("%s***%s", string(user[0]), string(user[len(user)-1]))
-	default:
-		user = fmt.Sprintf("%s***%s", user[:2], user[len(user)-2:])
-	}
-
-	return user
 }
 
 func NewManager(mocked bool) (core.RegistryManager, error) {
