@@ -67,3 +67,6 @@ export const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
       return undefined;
   }
 };
+
+export const isPreviewable = (type: NodeSchemaType["type"]) =>
+  type === "file" || type === "consumer" || type === "endpoint";
