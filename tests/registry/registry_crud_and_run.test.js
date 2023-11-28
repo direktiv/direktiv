@@ -23,7 +23,7 @@ describe('Test services crud operations', () => {
                 namespace: "test-services",
                 id: "secret-c163796084d652e67cb0",
                 url: "docker.io",
-                user: "m***",
+                user: "me",
             }
         })
     })
@@ -42,7 +42,7 @@ describe('Test services crud operations', () => {
                 namespace: "test-services",
                 id: "secret-7a95ae8578ed80f27403",
                 url: "docker2.io",
-                user: "m***",
+                user: "me2",
             }
         })
     })
@@ -58,13 +58,13 @@ describe('Test services crud operations', () => {
                     namespace: "test-services",
                     id: "secret-c163796084d652e67cb0",
                     url: "docker.io",
-                    user: "m***",
+                    user: "me",
                 },
                 {
                     namespace: "test-services",
                     id: "secret-7a95ae8578ed80f27403",
                     url: "docker2.io",
-                    user: "m***",
+                    user: "me2",
                 }]
         })
     })

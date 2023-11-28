@@ -67,7 +67,6 @@ func (c *mockedManager) StoreRegistry(registry *core.Registry) (*core.Registry, 
 	id := fmt.Sprintf("secret-%x", sh[:10])
 
 	registry.ID = id
-	registry.User = obfuscateUser(registry.User)
 	registry.Password = ""
 
 	cp := *registry
