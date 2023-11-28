@@ -14,15 +14,14 @@ import (
 	dClient "github.com/docker/docker/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 const (
 	annotationNamespace    = "direktiv.io/namespace"
-	annotationRegistryURL  = "direktiv.io/registry/url"
-	annotationRegistryUser = "direktiv.io/registry/user"
+	annotationRegistryURL  = "direktiv.io/registry_url"
+	annotationRegistryUser = "direktiv.io/registry_user"
 )
 
 type kManager struct {
@@ -55,13 +54,11 @@ func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
 }
 
 func (c *kManager) DeleteRegistry(namespace string, id string) error {
-	lo := metav1.ListOptions{LabelSelector: labels.Set(map[string]string{
-		annotationNamespace: namespace,
-	}).String()}
-
-	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).List(context.Background(), lo)
+	secrets, err := c.Clientset.CoreV1().Secrets(c.K8sNamespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
-		return fmt.Errorf("k8s list secrets: %s", err)
+		return err
 	}
 
 	for _, s := range secrets.Items {
@@ -79,24 +76,22 @@ func (c *kManager) StoreRegistry(registry *core.Registry) (*core.Registry, error
 	id := fmt.Sprintf("secret-%x", sh[:10])
 
 	// delete the old registry is just a safety measure
-	_ = c.DeleteRegistry(registry.Namespace, registry.ID)
+	_ = c.DeleteRegistry(registry.Namespace, id)
 
-	r := &core.Registry{
-		Namespace: registry.Namespace,
-		ID:        id,
-		URL:       registry.URL,
-		User:      obfuscateUser(registry.User),
-		Password:  registry.Password,
-	}
+	r := *registry
+	r.ID = id
 
-	s, err := buildSecret(registry)
+	s, err := buildSecret(r)
 	if err != nil {
 		return nil, err
 	}
 	_, err = c.Clientset.CoreV1().Secrets(c.K8sNamespace).Create(context.Background(),
 		s, metav1.CreateOptions{})
 
-	return r, err
+	r.Password = ""
+	r.User = obfuscateUser(r.User)
+
+	return &r, err
 }
 
 func testLogin(registry *core.Registry) error {
@@ -119,7 +114,7 @@ func (c *kManager) TestLogin(registry *core.Registry) error {
 	return testLogin(registry)
 }
 
-func buildSecret(registry *core.Registry) (*v1.Secret, error) {
+func buildSecret(registry core.Registry) (*v1.Secret, error) {
 	_, err := url.Parse(registry.URL)
 	if err != nil {
 		return nil, err
@@ -144,12 +139,11 @@ func buildSecret(registry *core.Registry) (*v1.Secret, error) {
 	}
 
 	s.Labels = make(map[string]string)
-
 	s.Labels[annotationNamespace] = registry.Namespace
 
 	s.Annotations = make(map[string]string)
 	s.Annotations[annotationRegistryURL] = registry.URL
-	s.Annotations[annotationRegistryUser] = registry.User
+	s.Annotations[annotationRegistryUser] = obfuscateUser(registry.User)
 
 	s.Name = registry.ID
 	s.Data[".dockerconfigjson"] = []byte(auth)

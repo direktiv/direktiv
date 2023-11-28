@@ -7,9 +7,6 @@ const testNamespace = "test-services"
 describe('Test services crud operations', () => {
     beforeAll(common.helpers.deleteAllNamespaces)
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
-
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should create a registry`, async () => {
@@ -26,8 +23,7 @@ describe('Test services crud operations', () => {
                 namespace: "test-services",
                 id: "secret-c163796084d652e67cb0",
                 url: "docker.io",
-                user: "me",
-                password: "secret",
+                user: "m***",
             }
         })
     })
@@ -46,8 +42,7 @@ describe('Test services crud operations', () => {
                 namespace: "test-services",
                 id: "secret-7a95ae8578ed80f27403",
                 url: "docker2.io",
-                user: "me2",
-                password: "secret2",
+                user: "m***",
             }
         })
     })
