@@ -1,5 +1,6 @@
 import {
   Table,
+  TableBody,
   TableCell,
   TableHead,
   TableHeaderCell,
@@ -11,7 +12,6 @@ import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import { Radio } from "lucide-react";
-import { TableBody } from "@mui/material";
 import { twMergeClsx } from "~/util/helpers";
 import { useBroadcasts } from "~/api/broadcasts/query/useBroadcasts";
 import { useTranslation } from "react-i18next";

@@ -10,6 +10,7 @@ import {
 
 // eslint-disable-next-line sort-imports
 import type { Meta, StoryObj } from "@storybook/react";
+import { NavigationLink } from "../NavigationLink";
 
 const meta = {
   title: "Components/Notification",
@@ -52,25 +53,25 @@ export const NotificationHasMessage = () => (
   <Notification showIndicator={true}>
     <NotificationTitle>Notifications</NotificationTitle>
     <NotificationMenuSeparator />
-    <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+    <NavigationLink>
       <NotificationMessage
         icon={Settings}
         text="Settings for the current workflow are incomplete."
       />
-    </div>
+    </NavigationLink>
     <NotificationMenuSeparator />
-    <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+    <NavigationLink>
       <NotificationMessage
         icon={BanIcon}
         text="An error occurred in one of your workflows."
       />
-    </div>
+    </NavigationLink>
     <NotificationMenuSeparator />
-    <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+    <NavigationLink>
       <NotificationMessage
         icon={LucideActivity}
         text="Please check the Monitoring Logs."
       />
-    </div>
+    </NavigationLink>
   </Notification>
 );

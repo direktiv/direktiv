@@ -48,6 +48,7 @@
           "empty": {
             "title": "this directory is empty",
             "createWorkflow": "Create Workflow",
+            "createService": "Create Service",
             "createDirectory": "Create Directory"
           }
         },
@@ -81,7 +82,8 @@
           "newBtn": "New",
           "createLabel": "Create",
           "newDirectory": "New Directory",
-          "newWorkflow": "New Workflow"
+          "newWorkflow": "New Workflow",
+          "newService": "New Service"
         },
         "newWorkflow": {
           "title": "Create a new workflow",
@@ -91,6 +93,20 @@
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create"
+        },
+        "newService": {
+          "title": "Create a new service",
+          "nameLabel": "Name",
+          "namePlaceholder": "service-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "form": {
+            "image": "Image",
+            "scale": "Scale",
+            "size": "Size",
+            "cmd": "Cmd"
+          }
         },
         "workflow": {
           "revisions": {
@@ -198,15 +214,7 @@
               "noResult": "Traffic shaping is not configured for this workflow."
             },
             "services": {
-              "header": "Workflow services",
-              "deleteMenuItem": "Redeploy",
-              "delete": {
-                "title": "Redeploy workflow service",
-                "message": "This will delete the pods running to support service <b>{{name}}</b>. They will be recreated the next time an action requiring this service is executed."
-              }
-            },
-            "serviceRevisions": {
-              "header": "Workflow service \"{{name}}\" revisions"
+              "header": "Workflow services"
             }
           }
         }
@@ -258,6 +266,13 @@
             "splitVertically": "Split Vertically",
             "splitHorizontally": "Split Horizontally"
           }
+        }
+      },
+      "service": {
+        "goToServices": "Go to services",
+        "editor": {
+          "saveBtn": "Save",
+          "helpTitle": "Example service file"
         }
       }
     },
@@ -528,7 +543,6 @@
     "services": {
       "list": {
         "title": "Services",
-        "create": "Create a new service",
         "tableHeader": {
           "name": "name",
           "image": "image",
@@ -536,102 +550,34 @@
           "size": "size",
           "cmd": "cmd"
         },
+        "tableRow": {
+          "errorLabel": "Error"
+        },
         "contextMenu": {
-          "delete": "Delete"
+          "rebuild": "Rebuild"
         },
         "empty": {
           "title": "No services exist yet"
         },
-        "delete": {
-          "title": "Delete service",
-          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+        "rebuild": {
+          "title": "Rebuild service",
+          "msg": "Are you sure you want to rebuild <b>{{name}}</b>? This will kill the running service, repull the image and start the service again.",
           "cancelBtn": "Cancel",
-          "deleteBtn": "Delete"
+          "deleteBtn": "Rebuild"
         }
       },
-      "revision": {
-        "list": {
-          "title": "Service \"{{name}}\" revisions",
-          "create": "Create a new revision",
-          "relativeTime": "{{relativeTime}} ago",
-          "tableHeader": {
-            "name": "name",
-            "image": "image",
-            "scale": "scale",
-            "size": "size",
-            "createdAt": "created at"
-          },
-          "contextMenu": {
-            "delete": "Delete"
-          },
-          "empty": {
-            "title": "No revisions exist yet"
-          },
-          "delete": {
-            "title": "Delete revision",
-            "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
-            "cancelBtn": "Cancel",
-            "deleteBtn": "Delete"
-          }
-        },
-        "create": {
-          "noChanges": "Please make some changes before creating a new revision",
-          "noDefaultValues": "There seems to be no previous revision, this service might be damaged.",
-          "title": "Create a new revision",
-          "imageLabel": "Image",
-          "imagePlaceholder": "image/name:tag",
-          "scaleLabel": "Scale",
-          "sizeLabel": "Size",
-          "sizePlaceholder": "Select size",
-          "sizeValues": {
-            "0": "Small",
-            "1": "Medium",
-            "2": "Large"
-          },
-          "cmdLabel": "Cmd",
-          "cmdPlaceholder": "Enter the cmd for a service",
-          "createBtn": "Create",
-          "cancelBtn": "Cancel"
-        },
-        "detail": {
-          "created": "Created",
-          "realtiveTime": "{{relativeTime}} ago",
-          "size": "Size",
-          "Generation": "Generation",
-          "scale": "Scale",
-          "replicas": "Replicas",
-          "logs": {
-            "noPods": "No running pods",
-            "title": "Logs for {{name}}",
-            "followLogs": "Follow logs",
-            "logsCount": "received {{count}} log entries",
-            "logsCount_one": "received {{count}} log entry",
-            "tab": "Pod {{number}} of {{total}}",
-            "tooltips": {
-              "copy": "Copy logs"
-            }
+      "detail": {
+        "logs": {
+          "noPods": "No running pods",
+          "title": "Logs for {{name}}",
+          "followLogs": "Follow logs",
+          "logsCount": "received {{count}} log entries",
+          "logsCount_one": "received {{count}} log entry",
+          "tab": "Pod {{number}} of {{total}}",
+          "tooltips": {
+            "copy": "Copy logs"
           }
         }
-      },
-      "create": {
-        "title": "Create a new service",
-        "nameLabel": "Name",
-        "namePlaceholder": "service-name",
-        "nameAlreadyExists": "The name already exists",
-        "imageLabel": "Image",
-        "imagePlaceholder": "image/name:tag",
-        "scaleLabel": "Scale",
-        "sizeLabel": "Size",
-        "sizePlaceholder": "Select size",
-        "sizeValues": {
-          "0": "Small",
-          "1": "Medium",
-          "2": "Large"
-        },
-        "cmdLabel": "Cmd",
-        "cmdPlaceholder": "Enter the cmd for a service",
-        "createBtn": "Create",
-        "cancelBtn": "Cancel"
       }
     },
     "permissions": {
@@ -804,12 +750,7 @@
           "description": "Add a container registry",
           "url": "URL",
           "user": "User",
-          "password": "Password",
-          "testConnectionBtn": {
-            "label": "Test connection",
-            "success": "Connection successful",
-            "error": "Connection failed"
-          }
+          "password": "Password"
         }
       },
       "variables": {
@@ -1035,7 +976,7 @@
       "hasIssues": {
         "secrets": {
           "description": "You have {{count}} uninitialized secrets.",
-          "description_one": "You have {{count}} uninitialized secret!"
+          "description_one": "You have {{count}} uninitialized secret."
         }
       }
     },
@@ -1123,11 +1064,11 @@
         },
         "createWorkflow": {
           "success": {
-            "title": "Workflow created",
-            "description": "Workflow {{name}} was created in {{path}}"
+            "title": "File created",
+            "description": "File {{name}} was created in {{path}}"
           },
           "error": {
-            "description": "could not create workflow 😢"
+            "description": "could not create File 😢"
           }
         },
         "deleteNode": {
@@ -1246,40 +1187,13 @@
     },
     "services": {
       "mutate": {
-        "createService": {
+        "rebuildService": {
           "success": {
-            "title": "Service created",
-            "description": "Service {{name}} was created."
+            "title": "Service rebuild",
+            "description": "Service was rebuild."
           },
           "error": {
-            "description": "Could not create service 😢"
-          }
-        },
-        "createServiceRevision": {
-          "success": {
-            "title": "Service revision created",
-            "description": "Service revision was created."
-          },
-          "error": {
-            "description": "Could not create service revision 😢"
-          }
-        },
-        "deleteService": {
-          "success": {
-            "title": "Service deleted",
-            "description": "Service {{name}} was deleted."
-          },
-          "error": {
-            "description": "Could not delete service 😢"
-          }
-        },
-        "deleteServiceRevision": {
-          "success": {
-            "title": "Service revision deleted",
-            "description": "Service revision {name}} was deleted."
-          },
-          "error": {
-            "description": "Could not delete service revision 😢"
+            "description": "Could not rebuild service 😢"
           }
         }
       }

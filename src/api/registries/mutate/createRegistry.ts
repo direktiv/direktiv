@@ -1,8 +1,4 @@
-import {
-  RegistryCreatedSchema,
-  RegistryCreatedSchemaType,
-  RegistryFormSchemaType,
-} from "../schema";
+import { RegistryCreatedSchema, RegistryFormSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { registriesKeys } from "..";
@@ -15,7 +11,7 @@ import { useTranslation } from "react-i18next";
 
 export const createRegistry = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/functions/registries/namespaces/${namespace}`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/registries`,
   method: "POST",
   schema: RegistryCreatedSchema,
 });
@@ -23,7 +19,7 @@ export const createRegistry = apiFactory({
 export const useCreateRegistry = ({
   onSuccess,
 }: {
-  onSuccess?: (registry: RegistryCreatedSchemaType) => void;
+  onSuccess?: () => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -38,7 +34,7 @@ export const useCreateRegistry = ({
   const mutationFn = ({ url, user, password }: RegistryFormSchemaType) =>
     createRegistry({
       apiKey: apiKey ?? undefined,
-      payload: { data: `${user}:${password}`, reg: url },
+      payload: { user, password, url },
       urlParams: {
         namespace,
       },
@@ -60,7 +56,7 @@ export const useCreateRegistry = ({
         ),
         variant: "success",
       });
-      onSuccess?.(null);
+      onSuccess?.();
     },
     onError: () => {
       toast({

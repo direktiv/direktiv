@@ -13,8 +13,9 @@ export const createRegistries = async (namespace: string, amount = 5) => {
     registries.map((registry) =>
       createRegistry({
         payload: {
-          data: `${registry.user}:${registry.password}`,
-          reg: registry.url,
+          user: registry.user,
+          password: registry.password,
+          url: registry.url,
         },
         urlParams: {
           baseUrl: process.env.VITE_DEV_API_DOMAIN,

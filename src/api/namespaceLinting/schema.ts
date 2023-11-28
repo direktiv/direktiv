@@ -9,7 +9,7 @@ import { z } from "zod";
     "level":  "critical"
   }
  */
-const IssueSchema = z.object({
+const LintingIssueSchema = z.object({
   type: z.enum(["secret"]),
   id: z.string(),
   issue: z.string(),
@@ -34,5 +34,7 @@ const IssueSchema = z.object({
   }
  */
 export const LintSchema = z.object({
-  issues: z.array(IssueSchema),
+  issues: z.array(LintingIssueSchema),
 });
+
+export type LintSchemaType = z.infer<typeof LintSchema>;

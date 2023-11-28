@@ -49,7 +49,7 @@ const SecretsList: FC = () => {
   const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
       /**
-       * When the user has uninitialized secrets, this will be shown behind
+       * When the user has uninitialized secrets, this will be reflected in
        * the notification bell. The user might just have deleted that secret
        * and we need to update the notification bell.
        */
@@ -205,7 +205,7 @@ const SecretsList: FC = () => {
           item={editItem}
           onSuccess={() => {
             /**
-             * When the user has uninitialized secrets, this will be shown behind
+             * When the user has uninitialized secrets, this will be reflected in
              * the notification bell. Updating a secret may have initialized it and
              * we need to update the notification bell.
              */

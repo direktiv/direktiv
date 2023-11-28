@@ -1,6 +1,5 @@
 import {
   Notification,
-  NotificationClose,
   NotificationLoading,
   NotificationMenuSeparator,
   NotificationMessage,
@@ -8,23 +7,18 @@ import {
 } from "~/design/Notification/";
 
 import { Check } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Fragment } from "react";
+import { NotificationItem } from "./NotificationItem";
 import { twMergeClsx } from "~/util/helpers";
+import { useGroupNotifications } from "./config";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useNotificationConfig } from "./config";
 import { useTranslation } from "react-i18next";
 
-interface NotificationMenuProps {
-  className?: string;
-}
-
-const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
+const NotificationMenu = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
   const { data, isLoading } = useNamespaceLinting();
-  const notificationConfig = useNotificationConfig();
   const showIndicator = !!data?.issues.length;
-
-  const possibleNotifications = Object.entries(notificationConfig ?? {});
+  const notificationItems = useGroupNotifications(data);
 
   return (
     <div className={twMergeClsx("self-end text-right", className)}>
@@ -39,35 +33,15 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({ className }) => {
           </NotificationLoading>
         )}
         {showIndicator ? (
-          possibleNotifications.map(
-            ([notificationType, notificationConfig], index, srcArr) => {
-              const isLastListItem = index === srcArr.length - 1;
-              const matchingNotification = data.issues.filter(
-                (issue) => notificationType === issue.type
-              );
-              if (matchingNotification.length <= 0) {
-                return null;
-              }
-              return (
-                <div key={notificationType}>
-                  <NotificationClose
-                    className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
-                    asChild
-                  >
-                    <Link to={notificationConfig.href}>
-                      <NotificationMessage
-                        text={notificationConfig.description(
-                          matchingNotification.length
-                        )}
-                        icon={notificationConfig.icon}
-                      />
-                    </Link>
-                  </NotificationClose>
-                  {!isLastListItem && <NotificationMenuSeparator />}
-                </div>
-              );
-            }
-          )
+          notificationItems.map((item, index) => {
+            const isLastListItem = index === notificationItems.length - 1;
+            return (
+              <Fragment key={index}>
+                <NotificationItem {...item} />
+                {!isLastListItem && <NotificationMenuSeparator />}
+              </Fragment>
+            );
+          })
         ) : (
           <NotificationMessage
             text={t("components.notificationMenu.noIssues.description")}

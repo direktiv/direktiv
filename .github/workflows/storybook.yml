@@ -1,7 +1,7 @@
 name: "Publish Storybook to Chromatic"
 on:
   push:
-    branches: [ "feature/redesign", "develop" ]
+    branches: [ "main", "develop" ]
 jobs:
   build:
     name: Build and test design system
