@@ -1,4 +1,5 @@
 import { FC, PropsWithChildren } from "react";
+import { fileTypeToExplorerSubpage, isPreviewable } from "~/api/tree/utils";
 
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
@@ -17,9 +18,8 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   onPreviewClicked,
   children,
 }) => {
-  const isFile = node.expandedType === "file";
-
-  if (isFile)
+  const linkToPreview = isPreviewable(node.type);
+  if (linkToPreview)
     return (
       <DialogTrigger
         className="flex-1 hover:underline"
@@ -36,7 +36,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   const linkTarget = pages.explorer.createHref({
     namespace,
     path: node.path,
-    subpage: node.expandedType === "workflow" ? "workflow" : undefined,
+    subpage: fileTypeToExplorerSubpage(node.type),
   });
 
   return (

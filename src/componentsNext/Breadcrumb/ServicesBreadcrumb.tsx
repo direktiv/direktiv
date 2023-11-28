@@ -7,13 +7,8 @@ import { useTranslation } from "react-i18next";
 
 const ServicesBreadcrumb = () => {
   const namespace = useNamespace();
-  const {
-    isServicePage,
-    isServiceDetailPage,
-    isServiceRevisionPage,
-    service,
-    revision,
-  } = pages.services.useParams();
+  const { isServicePage, isServiceDetailPage, service } =
+    pages.services.useParams();
   const { icon: Icon } = pages.services;
   const { t } = useTranslation();
 
@@ -32,7 +27,7 @@ const ServicesBreadcrumb = () => {
           {t("components.breadcrumb.services")}
         </Link>
       </BreadcrumbLink>
-      {isServiceDetailPage || (isServiceRevisionPage && service) ? (
+      {isServiceDetailPage && service ? (
         <BreadcrumbLink>
           <Diamond aria-hidden="true" />
           <Link
@@ -42,20 +37,6 @@ const ServicesBreadcrumb = () => {
             })}
           >
             {service}
-          </Link>
-        </BreadcrumbLink>
-      ) : null}
-      {isServiceRevisionPage && service ? (
-        <BreadcrumbLink>
-          <Diamond aria-hidden="true" />
-          <Link
-            to={pages.services.createHref({
-              namespace,
-              service,
-              revision,
-            })}
-          >
-            {revision}
           </Link>
         </BreadcrumbLink>
       ) : null}

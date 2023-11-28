@@ -1,9 +1,0 @@
-.event-split {
-}
-.event-split span:not(:last-child):after {
-  content: ", ";
-}
-.table-no-content {
-  line-height: 42px;
-  padding-left: 8px;
-}

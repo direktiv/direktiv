@@ -31,7 +31,7 @@ const FileRow = ({
   onPreviewClicked: (node: NodeSchemaType) => void;
 }) => {
   const { t } = useTranslation();
-  const Icon = fileTypeToIcon(node.expandedType);
+  const Icon = fileTypeToIcon(node.type);
 
   return (
     <TableRow data-testid={`explorer-item-${node.name}`}>

@@ -15,7 +15,7 @@ const EventsListenerBreadcrumb = () => {
 
   return (
     <>
-      <BreadcrumbLink>
+      <BreadcrumbLink data-testid="breadcrumb-event-history">
         <Link
           to={pages.events.createHref({
             namespace,
