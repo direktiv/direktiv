@@ -36,6 +36,8 @@ export const editorLanguageSchema = z
       case "application/x-csh":
         return "shell";
       case "text/yaml":
+      case "application/direktiv":
+        return "yaml";
       default:
         if (val.startsWith("text/")) {
           return "plaintext";

@@ -28,7 +28,7 @@ import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
 import ServiceDetailPage from "~/pages/namespace/Services/Detail";
-import ServiceRevisionPage from "~/pages/namespace/Services/Detail/Revision";
+import ServiceEditorPage from "~/pages/namespace/Explorer/Service";
 import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
@@ -61,16 +61,25 @@ type ExplorerSubpages =
   | "workflow-revisions"
   | "workflow-overview"
   | "workflow-settings"
-  | "workflow-services";
+  | "workflow-services"
+  | "service";
 
 type ExplorerSubpagesParams =
   | {
-      subpage?: Exclude<ExplorerSubpages, "workflow-revisions">;
+      subpage?: Exclude<
+        ExplorerSubpages,
+        "workflow-revisions" | "workflow-services"
+      >;
     }
-  // only workflow-revisions has a optional revision param
+  // workflow-revisions has an optional revision param
   | {
       subpage: "workflow-revisions";
       revision?: string;
+    }
+  // workflow-services must has an optional serviceId param
+  | {
+      subpage: "workflow-services";
+      serviceId?: string;
     };
 
 type ExplorerPageSetup = Record<
@@ -80,9 +89,6 @@ type ExplorerPageSetup = Record<
       params: {
         namespace: string;
         path?: string; // if no subpage is provided, it opens the tree view
-        serviceRevision?: string; // only needed on services sub page
-        serviceVersion?: string; // only needed on services sub page
-        serviceName?: string; // only needed on services sub page
       } & ExplorerSubpagesParams
     ) => string;
     useParams: () => {
@@ -97,6 +103,8 @@ type ExplorerPageSetup = Record<
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
+      isServicePage: boolean;
+      serviceId: string | undefined;
     };
   }
 >;
@@ -118,19 +126,13 @@ type InstancesPageSetup = Record<
 type ServicesPageSetup = Record<
   "services",
   PageBase & {
-    createHref: (params: {
-      namespace: string;
-      service?: string;
-      revision?: string;
-    }) => string;
+    createHref: (params: { namespace: string; service?: string }) => string;
     useParams: () => {
       namespace: string | undefined;
       service: string | undefined;
-      revision: string | undefined;
       isServicePage: boolean;
       isServiceListPage: boolean;
       isServiceDetailPage: boolean;
-      isServiceRevisionPage: boolean;
     };
   }
 >;
@@ -304,6 +306,7 @@ export const pages: PageType & EnterprisePageType = {
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
+        service: "service",
       };
 
       let searchParamsObj;
@@ -312,27 +315,9 @@ export const pages: PageType & EnterprisePageType = {
         searchParamsObj = { revision: params.revision };
       }
 
-      if (
-        params.subpage === "workflow-services" &&
-        params.serviceName &&
-        params.serviceVersion
-      ) {
+      if (params.subpage === "workflow-services" && params.serviceId) {
         searchParamsObj = {
-          name: params.serviceName,
-          version: params.serviceVersion,
-        };
-      }
-
-      if (
-        params.subpage === "workflow-services" &&
-        params.serviceName &&
-        params.serviceVersion &&
-        params.serviceRevision
-      ) {
-        searchParamsObj = {
-          name: params.serviceName,
-          version: params.serviceVersion,
-          revision: params.serviceRevision,
+          serviceId: params.serviceId,
         };
       }
 
@@ -356,7 +341,8 @@ export const pages: PageType & EnterprisePageType = {
       // we injected in the route objects
       const isTreePage = checkHandler(thirdLvl, "isTreePage");
       const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
-      const isExplorerPage = isTreePage || isWorkflowPage;
+      const isServicePage = checkHandler(thirdLvl, "isServicePage");
+      const isExplorerPage = isTreePage || isWorkflowPage || isServicePage;
       const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
@@ -366,7 +352,7 @@ export const pages: PageType & EnterprisePageType = {
       return {
         path: isExplorerPage ? path : undefined,
         namespace: isExplorerPage ? namespace : undefined,
-        isExplorerPage: isTreePage || isWorkflowPage,
+        isExplorerPage: isTreePage || isWorkflowPage || isServicePage,
         revision: searchParams.get("revision") ?? undefined,
         isTreePage,
         isWorkflowPage,
@@ -375,6 +361,8 @@ export const pages: PageType & EnterprisePageType = {
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
+        isServicePage,
+        serviceId: searchParams.get("serviceId") ?? undefined,
       };
     },
     route: {
@@ -417,6 +405,11 @@ export const pages: PageType & EnterprisePageType = {
               handle: { isServicesPage: true },
             },
           ],
+        },
+        {
+          path: "service/*",
+          element: <ServiceEditorPage />,
+          handle: { isServicePage: true },
         },
       ],
     },
@@ -534,33 +527,22 @@ export const pages: PageType & EnterprisePageType = {
     createHref: (params) =>
       `/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
-      }${params.revision ? `/${params.revision}` : ""}`,
+      }`,
     useParams: () => {
-      const { namespace, service, revision } = useParams();
+      const { namespace, service } = useParams();
 
-      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+      const [, , thirdLvl] = useMatches(); // first level is namespace level
 
       const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
-      const isServiceDetailPage = checkHandler(
-        fourthLvl,
-        "isServiceDetailPage"
-      );
-      const isServiceRevisionPage = checkHandler(
-        fourthLvl,
-        "isServiceRevisionPage"
-      );
-
-      const isServicePage =
-        isServiceListPage || isServiceDetailPage || isServiceRevisionPage;
+      const isServiceDetailPage = checkHandler(thirdLvl, "isServiceDetailPage");
+      const isServicePage = isServiceListPage || isServiceDetailPage;
 
       return {
         namespace: isServicePage ? namespace : undefined,
-        service: isServicePage || isServiceRevisionPage ? service : undefined,
-        revision: isServiceRevisionPage ? revision : undefined,
+        service: isServiceDetailPage ? service : undefined,
         isServicePage,
         isServiceListPage,
         isServiceDetailPage,
-        isServiceRevisionPage,
       };
     },
 
@@ -576,18 +558,8 @@ export const pages: PageType & EnterprisePageType = {
         },
         {
           path: ":service",
-          children: [
-            {
-              path: "",
-              element: <ServiceDetailPage />,
-              handle: { isServiceDetailPage: true },
-            },
-            {
-              path: ":revision",
-              element: <ServiceRevisionPage />,
-              handle: { isServiceRevisionPage: true },
-            },
-          ],
+          element: <ServiceDetailPage />,
+          handle: { isServiceDetailPage: true },
         },
       ],
     },

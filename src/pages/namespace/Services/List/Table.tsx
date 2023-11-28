@@ -9,38 +9,29 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import {
-  ServiceSchemaType,
-  ServicesListSchemaType,
-} from "~/api/services/schema/services";
 
 import { Layers } from "lucide-react";
 import Row from "./Row";
+import { ServiceSchemaType } from "~/api/services/schema/services";
 import { useTranslation } from "react-i18next";
 
 const ServicesTable = ({
-  items,
+  services,
   isSuccess = false,
-  setDeleteService,
-  createNewButton,
-  deleteMenuItem,
-  workflow,
+  setRebuildService,
   isAllowed,
   noPermissionMessage,
 }: {
-  items?: ServicesListSchemaType;
+  services?: ServiceSchemaType[];
   isSuccess: boolean;
-  setDeleteService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
-  createNewButton?: JSX.Element;
-  deleteMenuItem?: JSX.Element;
-  workflow?: string;
+  setRebuildService: Dispatch<SetStateAction<ServiceSchemaType | undefined>>;
   isAllowed: boolean;
   noPermissionMessage?: string;
 }) => {
   const { t } = useTranslation();
 
-  const showTable = (items?.functions?.length ?? 0) > 0;
-  const noResults = isSuccess && items?.functions?.length === 0;
+  const showTable = (services?.length ?? 0) > 0;
+  const noResults = isSuccess && services?.length === 0;
 
   return (
     <Table>
@@ -68,19 +59,17 @@ const ServicesTable = ({
         {isAllowed ? (
           <>
             {showTable &&
-              items?.functions.map((service) => (
+              services?.map((service) => (
                 <Row
                   service={service}
-                  key={service.serviceName}
-                  setDeleteService={setDeleteService}
-                  deleteMenuItem={deleteMenuItem}
-                  workflow={workflow}
+                  key={service.id}
+                  setRebuildService={setRebuildService}
                 />
               ))}
             {noResults && (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={6}>
-                  <NoResult icon={Layers} button={createNewButton}>
+                  <NoResult icon={Layers}>
                     {t("pages.services.list.empty.title")}
                   </NoResult>
                 </TableCell>

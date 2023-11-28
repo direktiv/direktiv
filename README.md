@@ -21,11 +21,12 @@ This repository contains the user interface for [direktiv](https://github.com/di
 - in the root directory, run `nvm use` to automatically switch to the required version
   - which will be read from `.nvmrc` file
   - please note that you always must run `nvm use` in every terminal session
+  - when the required nvm version is not installed on your machine yet, you have to run nvm install once to do so
 - run `yarn` to install all dependencies
 - create a `.env` file, copy the content from `.env.example` and change the variables to your needs
 - run `yarn start` to start the dev server
 - when you are using VSCode, make sure to install the recommended extensions for the best dev experience
-  - VSCode should suggest you the extensions when you open this folder in VSCode, but you can also check them in the `.vscode/extensions.json` file
+  - VSCode should suggest you the extensions when you open this folder in VSCode, but you can also check them in the `.vscode/extensions.json` file 
 
 # Scripts you might want to run
 

@@ -1,6 +1,9 @@
 variable "IMAGE" {
   type = string
 }
+variable "UI_BACKEND" {
+  type = string
+}
 
 
 job "DEPLOYMENT_NAME" {
@@ -20,6 +23,11 @@ job "DEPLOYMENT_NAME" {
         image      = var.IMAGE
         force_pull = true
         ports = ["http"]
+      }
+
+      env {
+        UI_PORT    = 1644
+        UI_BACKEND = var.UI_BACKEND
       }
 
       service {

@@ -4,77 +4,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
+import { Link, useNavigate } from "react-router-dom";
 import { MoreVertical, Trash } from "lucide-react";
-import {
-  ServiceSchemaType,
-  serviceConditionNames,
-} from "~/api/services/schema/services";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { FC } from "react";
-import { SizeSchema } from "~/api/services/schema";
+import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
+import { linkToServiceSource } from "../components/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
-const DefaultDeleteMenuItem = () => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <DropdownMenuItem>
-        <Trash className="mr-2 h-4 w-4" />
-        {t("pages.services.list.contextMenu.delete")}
-      </DropdownMenuItem>
-    </>
-  );
-};
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
-  setDeleteService: (service: ServiceSchemaType) => void;
-  deleteMenuItem?: JSX.Element;
-  workflow?: string;
-}> = ({
-  service,
-  setDeleteService,
-  deleteMenuItem = <DefaultDeleteMenuItem />,
-  workflow,
-}) => {
+  setRebuildService: (service: ServiceSchemaType) => void;
+}> = ({ service, setRebuildService }) => {
   const namespace = useNamespace();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   if (!namespace) return null;
 
-  const sizeParsed = SizeSchema.safeParse(service.info.size);
-  const sizeLabel = sizeParsed.success
-    ? t(`pages.services.create.sizeValues.${sizeParsed.data}`)
-    : "";
-
   return (
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          if (workflow) {
+          if (service.type === "workflow-service") {
             return navigate(
               pages.explorer.createHref({
                 namespace,
-                path: workflow,
+                path: service.filePath,
                 subpage: "workflow-services",
-                serviceName: service.info.name,
-                serviceVersion: service.info.revision,
+                serviceId: service.id,
               })
             );
           }
           return navigate(
             pages.services.createHref({
               namespace,
-              service: service.info.name,
+              service: service.id,
             })
           );
         }}
@@ -82,57 +54,79 @@ const ServicesTableRow: FC<{
       >
         <TableCell>
           <div className="flex flex-col gap-3">
-            {service.info.name}
+            <div>
+              <span className="whitespace-pre-wrap break-all">
+                <Link
+                  to={linkToServiceSource(service)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:underline"
+                >
+                  {service.filePath}
+                </Link>
+              </span>{" "}
+              <span className="text-gray-9 dark:text-gray-dark-9">
+                {service.name}
+              </span>
+            </div>
             <div className="flex gap-3">
-              {serviceConditionNames.map((condition) => {
-                const res = service.conditions.find(
-                  (c) => c.name === condition
-                );
-                return (
-                  <StatusBadge
-                    key={condition}
-                    status={res?.status ?? "Unknown"}
-                    title={res?.reason ?? undefined}
-                    message={res?.message ?? undefined}
-                    className="w-fit"
-                  >
-                    {condition}
-                  </StatusBadge>
-                );
-              })}
+              {service.error && (
+                <StatusBadge
+                  status="False"
+                  className="w-fit"
+                  message={service.error}
+                >
+                  {t("pages.services.list.tableRow.errorLabel")}
+                </StatusBadge>
+              )}
+              {(service.conditions ?? []).map((condition) => (
+                <StatusBadge
+                  key={condition.type}
+                  status={condition.status}
+                  message={condition.message}
+                  className="w-fit"
+                >
+                  {condition.type}
+                </StatusBadge>
+              ))}
             </div>
           </div>
         </TableCell>
-        <TableCell>{service.info.image}</TableCell>
-        <TableCell>{service.info.minScale}</TableCell>
-        <TableCell>{sizeLabel}</TableCell>
+        <TableCell>{service.image ? service.image : service.image}</TableCell>
+        <TableCell>{service.scale}</TableCell>
+        <TableCell>{service.size ? service.size : "-"}</TableCell>
         <TableCell className="whitespace-normal break-all">
-          {service.info.cmd}
+          {service.cmd ? service.cmd : "-"}
         </TableCell>
         <TableCell>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.preventDefault()}
-                icon
-              >
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DialogTrigger
-                className="w-full"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeleteService(service);
-                }}
-              >
-                <DropdownMenuItem>{deleteMenuItem}</DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* when the server  */}
+          {!service.error ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.preventDefault()}
+                  icon
+                >
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40">
+                <DialogTrigger
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRebuildService(service);
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Trash className="mr-2 h-4 w-4" />
+                    {t("pages.services.list.contextMenu.rebuild")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
         </TableCell>
       </TableRow>
     </TooltipProvider>

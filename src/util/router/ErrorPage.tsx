@@ -20,18 +20,34 @@ const ErrorPage = () => {
   return (
     <main className="flex h-screen w-full flex-col items-center justify-center gap-3">
       <Logo />
-      <div className="text-4xl font-bold">{errorTitle}</div>
-      <div>{errorMessage}</div>
+      <div className="text-4xl font-bold" data-testid="error-title">
+        {errorTitle}
+      </div>
+      <div data-testid="error-message">{errorMessage}</div>
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" onClick={() => window.history.back()}>
+        <Button
+          variant="outline"
+          onClick={() => window.history.back()}
+          data-testid="error-back-btn"
+        >
           <ArrowLeft />
           {t("pages.error.goBack")}
         </Button>
-        <Button variant="outline" onClick={() => location.reload()}>
+        <Button
+          variant="outline"
+          onClick={() => location.reload()}
+          data-testid="error-reload-btn"
+        >
           <RefreshCcw />
           {t("pages.error.reload")}
         </Button>
-        <Button variant="primary" asChild className="col-span-2">
+        <Button
+          variant="primary"
+          asChild
+          isAnchor
+          className="col-span-2"
+          data-testid="error-home-btn"
+        >
           <Link to="/">
             <Home />
             {t("pages.error.goHome")}

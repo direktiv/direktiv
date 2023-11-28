@@ -38,29 +38,6 @@ module.exports = {
     ".eslintrc.js",
     "env.d.ts",
     "playwright-report/",
-    /**
-     * 🚧
-     * TODO_HOOKS_TESTS
-     * The Problem: All hooks tests are currently not working and have some linting issues.
-     * We must decide:
-     *  - Do we keep the hooks as they are?
-     *    - when we migrate to typescript, we could potentially refactor them. There are a lot
-     *      of repeating patterns.
-     *  - if we want to keep the hooks, do we keep and update the tests
-     *    - PROS: they are already written and could be useful
-     *    - CONS: they are an impplementation detail and maybe
-     *      should not be tested
-     *    - if we delete them, we need to test the data fetching layer but on a
-     *      much higher level. We might use PlayWright for end to end tests.
-     *
-     */
-    /**
-     * 🚧
-     * as part of the redesign, these folders will be removed later
-     * and therefore be ignored by eslint to have a clean ci workflow
-     */
-    "src/hooks/*",
-    "src/components/*",
   ],
   rules: {
     // PLEASE ALWAYS PROVIDE A REASON FOR DISABLING/OVERWRITING A RULE

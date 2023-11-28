@@ -31,26 +31,19 @@ import Button from "../Button";
 import { Checkbox } from "../Checkbox";
 import Form from "@rjsf/core";
 import Input from "../Input";
+import { twMergeClsx } from "~/util/helpers";
 import validator from "@rjsf/validator-ajv8";
 
 const CustomSelectWidget: React.FC<WidgetProps> = (props) => (
   <div className="my-4">
-    <Select onValueChange={props.onChange}>
-      <SelectTrigger value={props.value} id={props.id}>
-        <SelectValue
-          placeholder={props.value ? props.value : `Select ${props.label}`}
-        >
-          {/* 
-          the blank space is weirdly important here, otherwise the first change
-          of this select will result in the select showing an empty text.
-           */}
-          {props.value}{" "}
-        </SelectValue>
+    <Select onValueChange={props.onChange} value={`${props.value ?? ""}`}>
+      <SelectTrigger id={props.id}>
+        <SelectValue>{props.value ?? `Select ${props.label}`}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           {props.options.enumOptions?.map((op) => (
-            <SelectItem key={`select-${op.value}`} value={op.value}>
+            <SelectItem key={`select-${op.value}`} value={`${op.value ?? ""}`}>
               {op.label}
             </SelectItem>
           ))}
@@ -233,6 +226,7 @@ type JSONSchemaFormProps = Omit<
 
 export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
   schema,
+  className,
   ...props
 }) => (
   <Form
@@ -250,6 +244,7 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
     validator={validator}
     widgets={widgets}
     {...props}
+    className={twMergeClsx("p-1", className)}
   />
 );
 

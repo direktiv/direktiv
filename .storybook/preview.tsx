@@ -3,8 +3,6 @@ import "reactflow/dist/base.css";
 import "../src/design/WorkflowDiagram/style.css";
 
 import React from "react";
-import { ThemeProvider } from "@mui/material/styles";
-import theme from "../src/theme/style";
 import withTailwindThemeDecorator from "./withTailwindTheme.decorator";
 
 export const parameters = {
@@ -32,11 +30,4 @@ export const globalTypes = {
   },
 };
 
-export const decorators = [
-  withTailwindThemeDecorator,
-  (Story) => (
-    <ThemeProvider theme={theme}>
-      <Story />
-    </ThemeProvider>
-  ),
-];
+export const decorators = [withTailwindThemeDecorator, (Story) => <Story />];

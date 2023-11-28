@@ -20,6 +20,7 @@ import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/componentsNext/PaginationProvider";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
+import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -35,6 +36,7 @@ const SecretsList: FC = () => {
   const isSearch = search.length > 0;
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useSecrets();
+  const { refetch: updateNotificationBell } = useNamespaceLinting();
 
   const filteredItems = useMemo(
     () =>
@@ -46,6 +48,12 @@ const SecretsList: FC = () => {
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
+      /**
+       * When the user has uninitialized secrets, this will be reflected in
+       * the notification bell. The user might just have deleted that secret
+       * and we need to update the notification bell.
+       */
+      updateNotificationBell();
       setDeleteSecret(undefined);
       setDialogOpen(false);
     },
@@ -196,6 +204,12 @@ const SecretsList: FC = () => {
         <CreateEdit
           item={editItem}
           onSuccess={() => {
+            /**
+             * When the user has uninitialized secrets, this will be reflected in
+             * the notification bell. Updating a secret may have initialized it and
+             * we need to update the notification bell.
+             */
+            updateNotificationBell();
             setDialogOpen(false);
           }}
         />
