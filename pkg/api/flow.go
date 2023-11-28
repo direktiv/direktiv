@@ -4357,7 +4357,6 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 	ces, err := ToGRPCCloudEvents(r)
 	if err != nil {
 		respond(w, nil, err)
-		fmt.Println(err)
 		return
 	}
 
@@ -4365,7 +4364,6 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request, filter
 		d, err := json.Marshal(ces[i])
 		if err != nil {
 			respond(w, nil, err)
-			fmt.Println(err)
 			return
 		}
 

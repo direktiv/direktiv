@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -51,7 +52,13 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
-			r.Use(mw.injectNamespace)
+			var chiMiddlewares []func(http.Handler) http.Handler
+			for i := range middlewares.GetMiddlewares() {
+				chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
+			}
+			chiMiddlewares = append(chiMiddlewares, mw.injectNamespace)
+
+			r.Use(chiMiddlewares...)
 
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)

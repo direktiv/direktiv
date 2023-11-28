@@ -1,11 +1,12 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -33,15 +34,6 @@ func (s *Server) GetRouter() *mux.Router {
 	return s.router
 }
 
-type mw struct {
-	h http.Handler
-}
-
-func (mw *mw) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	logger.Infof("request received: %v %v", r.Method, r.URL.String())
-	mw.h.ServeHTTP(w, r)
-}
-
 // NewServer return new API server.
 func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 	logger = l
@@ -55,7 +47,7 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 		router: r,
 		srv: &http.Server{
 			Handler:           r,
-			Addr:              ":6665",
+			Addr:              fmt.Sprintf(":%v", config.ApiV1Port),
 			ReadHeaderTimeout: time.Second * 60,
 		},
 	}
@@ -70,17 +62,16 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 	//     "description": "version query was successful"
 	r.HandleFunc("/version", s.version).Name(RN_Version).Methods(http.MethodGet)
 
-	r.Use(func(h http.Handler) http.Handler {
-		return &mw{h: h}
-	})
-
-	logger.Debug("Initializing telemetry.")
-	var err error
-	s.telend, err = util.InitTelemetry(s.config.OpenTelemetry, "direktiv/api", "direktiv")
-	if err != nil {
-		return nil, err
+	// cast to gorilla mux type
+	var gorillaMiddlewares []mux.MiddlewareFunc
+	for i := range middlewares.GetMiddlewares() {
+		gorillaMiddlewares = append(gorillaMiddlewares, mux.MiddlewareFunc(middlewares.GetMiddlewares()[i]))
 	}
-	r.Use(util.TelemetryMiddleware, s.logMiddleware)
+	gorillaMiddlewares = append(gorillaMiddlewares, s.logMiddleware)
+
+	r.Use(gorillaMiddlewares...)
+
+	var err error
 
 	s.flowHandler, err = newFlowHandler(logger, r, s.config)
 	if err != nil {
