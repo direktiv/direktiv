@@ -103,11 +103,9 @@ export const WithManyItemsBreadcrumbHeadingAndCloseFunctionAtItemClick = () => (
     <FilepickerList>
       {items.map((element) => (
         <Fragment key={element.filename}>
-          <FilepickerClose>
-            <FilepickerListItem icon={element.icon}>
-              {element.filename}
-            </FilepickerListItem>
-          </FilepickerClose>
+          <FilepickerListItem icon={element.icon} asChild>
+            <FilepickerClose>{element.filename}</FilepickerClose>
+          </FilepickerListItem>
           <FilepickerSeparator />
         </Fragment>
       ))}
