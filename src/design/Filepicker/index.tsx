@@ -42,10 +42,6 @@ const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
   <div className="max-h-96 overflow-auto">{children}</div>
 );
 
-const FilepickerListItemText: FC<PropsWithChildren> = ({ children }) => (
-  <div className="h-10 whitespace-nowrap px-3 py-2 text-sm">{children}</div>
-);
-
 // asChild only works with exactly one child, so when asChild is true, we can not have a loading property
 type AsChildOrLoading =
   | {
@@ -67,17 +63,17 @@ const FilepickerListItem: FC<FilepickerProps> = ({
 }) => {
   const Comp = asChild ? Slot : "div";
   return (
-    <Comp>
-      <div className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
-        <div
-          className="flex flex-col text-gray-11 focus:bg-gray-3 dark:text-gray-dark-11 dark:focus:bg-gray-dark-3"
-          data-testid="filepicker-list-item"
-        >
-          <div className="flex items-center px-2">
-            <div className="w-max">
-              <Icon className="h-4 w-4" aria-hidden="true" />
-            </div>
-            <FilepickerListItemText>{children}</FilepickerListItemText>
+    <Comp className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3">
+      <div
+        className="flex flex-col text-gray-11 focus:bg-gray-3 dark:text-gray-dark-11 dark:focus:bg-gray-dark-3"
+        data-testid="filepicker-list-item"
+      >
+        <div className="flex items-center px-2">
+          <div className="w-max">
+            <Icon className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div className="h-10 whitespace-nowrap px-3 py-2 text-sm">
+            {children}
           </div>
         </div>
       </div>
@@ -97,7 +93,7 @@ const Filepicker: FC<FilepickerPropsType> = ({ className, children }) => (
           <div className="relative">Browse Files</div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className=" bg-gray-1 dark:bg-gray-dark-1" align="start">
+      <PopoverContent className="bg-gray-1 dark:bg-gray-dark-1" align="start">
         {children}
       </PopoverContent>
     </Popover>
@@ -110,6 +106,5 @@ export {
   FilepickerHeading,
   FilepickerList,
   FilepickerListItem,
-  FilepickerListItemText,
   FilepickerSeparator,
 };
