@@ -53,8 +53,8 @@ type Plugins struct {
 }
 
 type PluginConfig struct {
-	Type          string      `json:"type"          yaml:"type"`
-	Configuration interface{} `json:"configuration" yaml:"configuration,omitempty"`
+	Type          string                 `json:"type"          yaml:"type"`
+	Configuration map[string]interface{} `json:"configuration" yaml:"configuration,omitempty"`
 }
 
 type EndpointFile struct {
