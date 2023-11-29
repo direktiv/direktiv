@@ -239,4 +239,3 @@ describe("Test availability of gateway endpoints", () => {
   });
 
 });
-

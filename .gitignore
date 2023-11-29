@@ -33,7 +33,7 @@ issuer.*
 /build/apiserver
 /build/direktiv
 /build/direkcli
-/build/flow-dbinitcmd/sidecar/main.go
+/build/flow-dbinit
 /build/direkcli-linux
 /build/secrets
 /build/functions
