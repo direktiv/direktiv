@@ -16,12 +16,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/endpoints"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+
 	// This triggers the init function within for inbound plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -92,7 +92,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		}
 
 		if file.Typ == filestore.FileTypeConsumer {
-			item, err := spec.ParseConsumerFile(data)
+			item, err := core.ParseConsumerFile(data)
 			if err != nil {
 				slog.Error("parse endpoint file", slog.String("error", err.Error()))
 
@@ -122,7 +122,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				Warnings:     make([]string, 0),
 				EndpointBase: &core.EndpointBase{},
 			}
-			item, err := spec.ParseEndpointFile(data)
+			item, err := core.ParseEndpointFile(data)
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {

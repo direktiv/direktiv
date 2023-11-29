@@ -1,7 +1,11 @@
 package core
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 const MagicalGatewayNamespace = "gateway_namespace"
@@ -51,4 +55,52 @@ type Plugins struct {
 type PluginConfig struct {
 	Type          string      `json:"type"          yaml:"type"`
 	Configuration interface{} `json:"configuration" yaml:"configuration,omitempty"`
+}
+
+type EndpointFile struct {
+	EndpointBase
+	DirektivAPI string `json:"direktiv_api,omitempty" yaml:"direktiv_api"`
+}
+
+type ConsumerFile struct {
+	ConsumerBase
+	DirektivAPI string `yaml:"direktiv_api"`
+}
+
+func ParseConsumerFile(data []byte) (*ConsumerFile, error) {
+	res := &ConsumerFile{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(res.DirektivAPI, "consumer/v1") {
+		return nil, fmt.Errorf("invalid consumer api version")
+	}
+
+	// to avoid the ugliness of the composition struct
+	err = yaml.Unmarshal(data, &res.ConsumerBase)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func ParseEndpointFile(data []byte) (*EndpointFile, error) {
+	res := &EndpointFile{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
+		return nil, fmt.Errorf("invalid endpoint api version")
+	}
+
+	// to avoid the ugliness of the composition struct
+	err = yaml.Unmarshal(data, &res.EndpointBase)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

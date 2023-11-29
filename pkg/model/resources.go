@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"gopkg.in/yaml.v3"
 )
@@ -93,10 +94,10 @@ func LoadResource(data []byte) (interface{}, error) {
 		return sf, nil
 
 	case EndpointAPIV1:
-		ef := new(spec.EndpointFile)
+		ef := new(core.EndpointFile)
 		err = yaml.Unmarshal(data, &ef)
 		if err != nil {
-			return &spec.EndpointFile{
+			return &core.EndpointFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
@@ -104,10 +105,10 @@ func LoadResource(data []byte) (interface{}, error) {
 		return ef, nil
 
 	case ConsumerAPIV1:
-		ef := new(spec.ConsumerFile)
+		ef := new(core.ConsumerFile)
 		err = yaml.Unmarshal(data, &ef)
 		if err != nil {
-			return &spec.ConsumerFile{
+			return &core.ConsumerFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
