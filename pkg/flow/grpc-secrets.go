@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -125,6 +126,11 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace secret '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
+	err = flow.pBus.Publish(pubsub.SecretCreate, ns.Name)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
+
 	var resp grpc.SetSecretResponse
 
 	resp.Namespace = ns.Name
@@ -160,6 +166,11 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	err = flow.pBus.Publish(pubsub.SecretDelete, ns.Name)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
 	// TODO: Alex please look into this.
@@ -207,6 +218,11 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	// TODO: Alex, please look into this.
 	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace secret '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
+
+	err = flow.pBus.Publish(pubsub.SecretUpdate, ns.Name)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
 
 	var resp grpc.UpdateSecretResponse
 
