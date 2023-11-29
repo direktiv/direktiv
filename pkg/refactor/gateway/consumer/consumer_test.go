@@ -3,12 +3,12 @@ package consumer
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestConsumerNoUsername(t *testing.T) {
-	cl := []*spec.ConsumerFile{
+	cl := []*core.ConsumerBase{
 		{},
 	}
 
@@ -19,7 +19,7 @@ func TestConsumerNoUsername(t *testing.T) {
 
 func TestConsumerWithAttributes(t *testing.T) {
 	consumerList := NewConsumerList()
-	cl := []*spec.ConsumerFile{
+	cl := []*core.ConsumerBase{
 		{
 			Username: "user",
 			Password: "pwd",
@@ -40,7 +40,7 @@ func TestConsumerWithAttributes(t *testing.T) {
 
 func TestConsumerDuplicate(t *testing.T) {
 	consumerList := NewConsumerList()
-	cl := []*spec.ConsumerFile{
+	cl := []*core.ConsumerBase{
 		{
 			Username: "user",
 		},

@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 )
@@ -78,7 +78,7 @@ func ConvertConfig(config interface{}, target interface{}) error {
 }
 
 type PluginInstance interface {
-	ExecutePlugin(c *spec.ConsumerFile,
+	ExecutePlugin(c *core.ConsumerBase,
 		w http.ResponseWriter, r *http.Request) bool
 	Config() interface{}
 }
@@ -134,31 +134,3 @@ func IsJSON(str string) bool {
 
 	return json.Unmarshal([]byte(str), &js) == nil
 }
-
-// type PluginBase struct {
-// 	Name2 string
-// 	ptype PluginType
-// }
-
-// func (pb PluginBase) Name() string {
-// 	return pb.Name2
-// }
-
-// func (pb PluginBase) Type() PluginType {
-// 	return pb.ptype
-// }
-
-// func (pb PluginBase) configure2(config interface{}) (PluginInstance, error) {
-// 	// if config != nil {
-// 	// 		err := mapstructure.Decode(config, &requestConvertConfig)
-// 	// 		if err != nil {
-// 	// 			return nil, errors.Wrap(err, "configuration for request-convert invalid")
-// 	// 		}
-// 	// 	}
-
-// 	// 	return &RequestConvertPlugin{
-// 	// 		config: requestConvertConfig,
-// 	// 	}, nil
-
-// 	return nil, nil
-// }

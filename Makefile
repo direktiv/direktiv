@@ -157,7 +157,7 @@ k3s-tests: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PRE
 	-v `pwd`/direktivctl:/bin/direktivctl \
 	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
-	node:alpine npm --prefix "/tests" run all -- ${JEST_PREFIX}
+	node:lts-alpine3.18 npm --prefix "/tests" run all -- ${JEST_PREFIX}
 
 # TODO: do we need "make binary"?
 

@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -56,7 +55,7 @@ func (tfv FlowVarPlugin) Config() interface{} {
 	return tfv.config
 }
 
-func (tfv FlowVarPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	url, err := createURLFlowVar(tfv.config.Namespace, tfv.config.Flow,

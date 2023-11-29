@@ -9,7 +9,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -53,7 +52,7 @@ func (tnv NamespaceVarPlugin) Config() interface{} {
 	return tnv.config
 }
 
-func (tnv NamespaceVarPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	url, err := createURLNamespaceVar(tnv.config.Namespace, tnv.config.Variable)

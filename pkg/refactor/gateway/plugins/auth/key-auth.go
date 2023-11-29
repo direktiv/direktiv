@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -47,7 +47,7 @@ func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstanc
 	}, nil
 }
 
-func (ka *KeyAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
+func (ka *KeyAuthPlugin) ExecutePlugin(c *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	key := r.Header.Get(ka.config.KeyName)

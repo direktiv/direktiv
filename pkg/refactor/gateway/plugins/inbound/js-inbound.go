@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/dop251/goja"
 )
 
@@ -71,7 +71,7 @@ type request struct {
 	Body    string
 }
 
-func (js *JSInboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	var (

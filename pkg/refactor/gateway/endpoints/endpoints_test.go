@@ -10,26 +10,26 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSetEndpointsFileEmpty(t *testing.T) {
-	ep := &core.Endpoint{}
+	ep := &endpoints.Endpoint{}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 0)
 }
 
 func TestSetEndpointsWarnings(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -40,7 +40,7 @@ func TestSetEndpointsWarnings(t *testing.T) {
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -52,12 +52,12 @@ func TestSetEndpointsWarnings(t *testing.T) {
 }
 
 func TestSetEndpointsErrors(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 						Configuration: map[string]interface{}{
@@ -67,11 +67,12 @@ func TestSetEndpointsErrors(t *testing.T) {
 				},
 			},
 		},
+
 		FilePath: "/route.yaml",
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -83,12 +84,12 @@ func TestSetEndpointsErrors(t *testing.T) {
 }
 
 func TestSetEndpoints(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -99,19 +100,19 @@ func TestSetEndpoints(t *testing.T) {
 						},
 					},
 				},
-				Inbound: []spec.PluginConfig{
+				Inbound: []core.PluginConfig{
 					{
 						Type: inbound.ACLPluginName,
 					},
 				},
-				Target: spec.PluginConfig{
+				Target: core.PluginConfig{
 					Type: target.InstantResponsePluginName,
 					Configuration: map[string]interface{}{
 						"status_code":    201,
 						"status_message": "demo",
 					},
 				},
-				Outbound: []spec.PluginConfig{
+				Outbound: []core.PluginConfig{
 					{
 						Type: outbound.JSOutboundPluginName,
 					},
@@ -122,7 +123,7 @@ func TestSetEndpoints(t *testing.T) {
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -143,12 +144,12 @@ func TestSetEndpoints(t *testing.T) {
 }
 
 func TestSetEndpointsFullError(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -159,19 +160,19 @@ func TestSetEndpointsFullError(t *testing.T) {
 						},
 					},
 				},
-				Inbound: []spec.PluginConfig{
+				Inbound: []core.PluginConfig{
 					{
 						Type: inbound.ACLPluginName,
 					},
 				},
-				Target: spec.PluginConfig{
+				Target: core.PluginConfig{
 					Type: target.InstantResponsePluginName,
 					Configuration: map[string]interface{}{
 						"status_code":    "textnotallowed",
 						"status_message": "demo",
 					},
 				},
-				Outbound: []spec.PluginConfig{
+				Outbound: []core.PluginConfig{
 					{
 						Type: outbound.JSOutboundPluginName,
 					},
@@ -182,7 +183,7 @@ func TestSetEndpointsFullError(t *testing.T) {
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -194,12 +195,12 @@ func TestSetEndpointsFullError(t *testing.T) {
 }
 
 func TestSetEndpointsFind(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost, http.MethodGet},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -209,12 +210,12 @@ func TestSetEndpointsFind(t *testing.T) {
 		FilePath: "/route.yaml",
 	}
 
-	ep1 := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep1 := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodGet},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -224,12 +225,12 @@ func TestSetEndpointsFind(t *testing.T) {
 		FilePath: "/path/to/route.yaml",
 	}
 
-	ep2 := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep2 := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodGet},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -241,7 +242,7 @@ func TestSetEndpointsFind(t *testing.T) {
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep, ep1, ep2})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep, ep1, ep2})
 
 	assert.Len(t, epl.Routes(), 3)
 
@@ -265,12 +266,12 @@ func TestSetEndpointsFind(t *testing.T) {
 }
 
 func TestSetEndpointsWrongMethod(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost, "DOESNOTEXIST"},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: auth.BasicAuthPluginName,
 					},
@@ -281,19 +282,19 @@ func TestSetEndpointsWrongMethod(t *testing.T) {
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	// should have only one route for post
 	assert.Len(t, epl.Routes()[0].Handlers, 1)
 }
 
 func TestSetEndpointsTypeErrors(t *testing.T) {
-	ep := &core.Endpoint{
-		EndpointFile: &spec.EndpointFile{
+	ep := &endpoints.Endpoint{
+		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost},
 			AllowAnonymous: true,
-			Plugins: spec.Plugins{
-				Auth: []spec.PluginConfig{
+			Plugins: core.Plugins{
+				Auth: []core.PluginConfig{
 					{
 						Type: inbound.RequestConvertPluginName,
 					},
@@ -304,7 +305,7 @@ func TestSetEndpointsTypeErrors(t *testing.T) {
 	}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*core.Endpoint{ep})
+	epl.SetEndpoints([]*endpoints.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 

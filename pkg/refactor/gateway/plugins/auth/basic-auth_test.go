@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -60,7 +59,7 @@ func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
-	c := &spec.ConsumerFile{}
+	c := &core.ConsumerBase{}
 
 	pi.ExecutePlugin(c, w, r)
 
@@ -97,7 +96,7 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 	consumerList := consumer.NewConsumerList()
 
 	// prepare consumer
-	cl := []*spec.ConsumerFile{
+	cl := []*core.ConsumerBase{
 		{
 			Username: "demo",
 			Password: "hello",
@@ -120,7 +119,7 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 	r = r.WithContext(context.WithValue(r.Context(), plugins.ConsumersParamCtxKey, consumerList))
 	r.SetBasicAuth(user, pwd)
 
-	c := &spec.ConsumerFile{}
+	c := &core.ConsumerBase{}
 
 	p2.ExecutePlugin(c, w, r)
 

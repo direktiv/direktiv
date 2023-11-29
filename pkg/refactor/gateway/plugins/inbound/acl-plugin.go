@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -43,7 +43,7 @@ func (acl *ACLPlugin) Config() interface{} {
 	return acl.config
 }
 
-func (acl *ACLPlugin) ExecutePlugin(c *spec.ConsumerFile,
+func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerBase,
 	w http.ResponseWriter, _ *http.Request,
 ) bool {
 	if c == nil {

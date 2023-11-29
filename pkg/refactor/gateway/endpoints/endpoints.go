@@ -9,13 +9,24 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 type EndpointList struct {
 	currentTree *node
 
 	lock sync.Mutex
+}
+
+type Endpoint struct {
+	EndpointBase            *core.EndpointBase
+	Namespace               string
+	FilePath                string
+	AuthPluginInstances     []plugins.PluginInstance
+	InboundPluginInstances  []plugins.PluginInstance
+	TargetPluginInstance    plugins.PluginInstance
+	OutboundPluginInstances []plugins.PluginInstance
+	Errors                  []string
+	Warnings                []string
 }
 
 func NewEndpointList() *EndpointList {
@@ -28,7 +39,7 @@ func (e *EndpointList) Routes() []Route {
 	return e.currentTree.Routes()
 }
 
-func (e *EndpointList) FindRoute(route, method string) (*core.Endpoint, map[string]string) {
+func (e *EndpointList) FindRoute(route, method string) (*Endpoint, map[string]string) {
 	if !strings.HasPrefix(route, "/") {
 		route = "/" + route
 	}
@@ -70,10 +81,10 @@ func (e *EndpointList) GetEndpoints() []core.EndpointListItem {
 			methods = append(methods, m)
 			ep.Warnings = h.Warnings
 			ep.Errors = h.Errors
-			ep.AllowAnonymous = h.EndpointFile.AllowAnonymous
-			ep.PathExtension = h.EndpointFile.PathExtension
-			ep.Plugins = h.EndpointFile.Plugins
-			ep.Timeout = h.EndpointFile.Timeout
+			ep.AllowAnonymous = h.EndpointBase.AllowAnonymous
+			ep.PathExtension = h.EndpointBase.PathExtension
+			ep.Plugins = h.EndpointBase.Plugins
+			ep.Timeout = h.EndpointBase.Timeout
 		}
 		ep.Methods = methods
 		items = append(items, ep)
@@ -82,34 +93,34 @@ func (e *EndpointList) GetEndpoints() []core.EndpointListItem {
 	return items
 }
 
-func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
+func (e *EndpointList) SetEndpoints(endpointList []*Endpoint) {
 	newTree := &node{}
 
 	for i := range endpointList {
 		ep := endpointList[i]
 
 		// skip the files with invalid content
-		if ep.EndpointFile == nil {
+		if ep.EndpointBase == nil {
 			continue
 		}
 
 		slog.Debug("adding endpoint",
 			slog.String("path", ep.FilePath),
-			slog.String("extension", ep.EndpointFile.PathExtension))
+			slog.String("extension", ep.EndpointBase.PathExtension))
 
 		// remove the file extension, most likely .yaml
 		storePath := strings.TrimSuffix(ep.FilePath, filepath.Ext(ep.FilePath))
 
 		// add path extension if there is any
-		if ep.EndpointFile.PathExtension != "" {
-			storePath = filepath.Join(storePath, ep.EndpointFile.PathExtension)
+		if ep.EndpointBase.PathExtension != "" {
+			storePath = filepath.Join(storePath, ep.EndpointBase.PathExtension)
 		}
 
 		buildPluginChain(ep)
 
-		// // assign handler to all methods
-		for a := range ep.EndpointFile.Methods {
-			m := ep.EndpointFile.Methods[a]
+		// assign handler to all methods
+		for a := range ep.EndpointBase.Methods {
+			m := ep.EndpointBase.Methods[a]
 			mMethod, ok := methodMap[m]
 			if !ok {
 				slog.Warn("http method unknown",
@@ -133,13 +144,13 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	e.currentTree = newTree
 }
 
-func buildPluginChain(endpoint *core.Endpoint) {
+func buildPluginChain(endpoint *Endpoint) {
 	slog.Info("building plugin chain for endpoint",
 		slog.String("endpoint", endpoint.FilePath))
 
 	// add target if set
-	if endpoint.EndpointFile.Plugins.Target.Type != "" {
-		targetPlugin, err := configurePlugin(endpoint.EndpointFile.Plugins.Target,
+	if endpoint.EndpointBase.Plugins.Target.Type != "" {
+		targetPlugin, err := configurePlugin(endpoint.EndpointBase.Plugins.Target,
 			plugins.TargetPluginType, endpoint.Namespace)
 		if err != nil {
 			endpoint.Errors = append(endpoint.Errors, err.Error())
@@ -151,25 +162,25 @@ func buildPluginChain(endpoint *core.Endpoint) {
 	}
 
 	// add auth plugins
-	authPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Auth,
+	authPlugins, errors := processPlugins(endpoint.EndpointBase.Plugins.Auth,
 		plugins.AuthPluginType, endpoint.Namespace)
 	endpoint.AuthPluginInstances = authPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 	// inbound
-	inboundPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Inbound,
+	inboundPlugins, errors := processPlugins(endpoint.EndpointBase.Plugins.Inbound,
 		plugins.InboundPluginType, endpoint.Namespace)
 	endpoint.InboundPluginInstances = inboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 	// outbound
-	outboundPlugins, errors := processPlugins(endpoint.EndpointFile.Plugins.Outbound,
+	outboundPlugins, errors := processPlugins(endpoint.EndpointBase.Plugins.Outbound,
 		plugins.OutboundPluginType, endpoint.Namespace)
 	endpoint.OutboundPluginInstances = outboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 }
 
-func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType, ns string) ([]plugins.PluginInstance, []string) {
+func processPlugins(pluginConfigs []core.PluginConfig, t plugins.PluginType, ns string) ([]plugins.PluginInstance, []string) {
 	errors := make([]string, 0)
 	configuredPlugins := make([]plugins.PluginInstance, 0)
 
@@ -188,7 +199,7 @@ func processPlugins(pluginConfigs []spec.PluginConfig, t plugins.PluginType, ns 
 	return configuredPlugins, errors
 }
 
-func configurePlugin(config spec.PluginConfig, t plugins.PluginType, ns string) (plugins.PluginInstance, error) {
+func configurePlugin(config core.PluginConfig, t plugins.PluginType, ns string) (plugins.PluginInstance, error) {
 	slog.Info("processing plugin",
 		slog.String("plugin", config.Type))
 

@@ -76,8 +76,8 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		return
 	}
 
-	endpoints := make([]*core.Endpoint, 0)
-	consumers := make([]*spec.ConsumerFile, 0)
+	eps := make([]*endpoints.Endpoint, 0)
+	consumers := make([]*core.ConsumerBase, 0)
 
 	for _, file := range files {
 		if file.Typ != filestore.FileTypeConsumer &&
@@ -108,13 +108,21 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				continue
 			}
 
-			consumers = append(consumers, item)
+			consumers = append(consumers, &core.ConsumerBase{
+				Username: item.Username,
+				Password: item.Password,
+				Tags:     item.Tags,
+				Groups:   item.Groups,
+				APIKey:   item.APIKey,
+			})
 		} else {
-			ep := &core.Endpoint{
-				Namespace: ns,
-				FilePath:  file.Path,
-				Errors:    make([]string, 0),
-				Warnings:  make([]string, 0),
+
+			ep := &endpoints.Endpoint{
+				Namespace:    ns,
+				FilePath:     file.Path,
+				Errors:       make([]string, 0),
+				Warnings:     make([]string, 0),
+				EndpointBase: &core.EndpointBase{},
 			}
 			item, err := spec.ParseEndpointFile(data)
 			// if parsing fails, the endpoint is still getting added to report
@@ -123,13 +131,13 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				slog.Error("parse endpoint file", slog.String("error", err.Error()))
 				ep.Errors = append(ep.Errors, err.Error())
 			}
-			ep.EndpointFile = item
 
-			endpoints = append(endpoints, ep)
+			ep.EndpointBase = &item.EndpointBase
+			eps = append(eps, ep)
 		}
 	}
 
-	gw.EndpointList.SetEndpoints(endpoints)
+	gw.EndpointList.SetEndpoints(eps)
 	gw.ConsumerList.SetConsumers(consumers)
 }
 
@@ -179,6 +187,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	namespace := core.MagicalGatewayNamespace
 	routePath := chi.URLParam(r, "*")
 
+	fmt.Println("!!!!!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>COMING IN")
+
 	// get namespace from URL or use magical one
 	if chiCtx.RoutePattern() == "/ns/{namespace}/*" {
 		namespace = chi.URLParam(r, "namespace")
@@ -210,7 +220,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, plugins.ConsumersParamCtxKey, gw.ConsumerList)
 
 	// timeout
-	t := endpointEntry.EndpointFile.Timeout
+	t := endpointEntry.EndpointBase.Timeout
 
 	// timeout is 30 secs if not set
 	if t == 0 {
@@ -221,7 +231,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	c := &spec.ConsumerFile{}
+	c := &core.ConsumerBase{}
 	for i := range endpointEntry.AuthPluginInstances {
 		authPlugin := endpointEntry.AuthPluginInstances[i]
 
@@ -237,7 +247,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// if user not authenticated and anonymous access not enabled
-	if c.Username == "" && !endpointEntry.EndpointFile.AllowAnonymous {
+	if c.Username == "" && !endpointEntry.EndpointBase.AllowAnonymous {
 		plugins.ReportError(w, http.StatusUnauthorized, "no permission",
 			fmt.Errorf("request not authorized"))
 
@@ -314,8 +324,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func executePlugin(c *spec.ConsumerFile, w http.ResponseWriter, r *http.Request,
-	fn func(*spec.ConsumerFile, http.ResponseWriter, *http.Request) bool,
+func executePlugin(c *core.ConsumerBase, w http.ResponseWriter, r *http.Request,
+	fn func(*core.ConsumerBase, http.ResponseWriter, *http.Request) bool,
 ) bool {
 	select {
 	case <-r.Context().Done():
@@ -343,7 +353,7 @@ func swapRequestResponse(rin *http.Request, w *DummyWriter) (*http.Request, erro
 }
 
 // API functions.
-func (ep *gatewayManager) GetConsumers(namespace string) ([]*spec.ConsumerFile, error) {
+func (ep *gatewayManager) GetConsumers(namespace string) ([]*core.ConsumerBase, error) {
 	g, ok := ep.nsGateways[namespace]
 	if !ok {
 		return nil, fmt.Errorf("no consumers for namespace %s", namespace)

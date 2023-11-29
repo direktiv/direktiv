@@ -3,8 +3,8 @@ package target
 import (
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -37,7 +37,7 @@ func ConfigureInstantResponse(config interface{}, _ string) (plugins.PluginInsta
 	}, nil
 }
 
-func (ir *InstantResponsePlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (ir *InstantResponsePlugin) ExecutePlugin(_ *core.ConsumerBase,
 	w http.ResponseWriter, _ *http.Request,
 ) bool {
 	if plugins.IsJSON(ir.config.StatusMessage) {

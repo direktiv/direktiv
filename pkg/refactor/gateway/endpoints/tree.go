@@ -12,7 +12,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -88,7 +87,7 @@ type endpoints map[methodTyp]*endpoint
 
 type endpoint struct {
 	// endpoint handler
-	handler *core.Endpoint
+	handler *Endpoint
 
 	// pattern is the routing pattern for handler nodes
 	pattern string
@@ -106,7 +105,7 @@ func (s endpoints) Value(method methodTyp) *endpoint {
 	return mh
 }
 
-func (n *node) InsertRoute(method methodTyp, pattern string, handler *core.Endpoint) *node {
+func (n *node) InsertRoute(method methodTyp, pattern string, handler *Endpoint) *node {
 	var parent *node
 	search := pattern
 
@@ -309,7 +308,7 @@ func (n *node) getEdge(ntyp nodeTyp, label, tail byte, prefix string) *node {
 	return nil
 }
 
-func (n *node) setEndpoint(method methodTyp, handler *core.Endpoint, pattern string) {
+func (n *node) setEndpoint(method methodTyp, handler *Endpoint, pattern string) {
 	// Set the handler for the method type on the node
 	if n.endpoints == nil {
 		n.endpoints = make(endpoints)
@@ -339,7 +338,7 @@ func (n *node) setEndpoint(method methodTyp, handler *core.Endpoint, pattern str
 	}
 }
 
-func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, endpoints, *core.Endpoint) {
+func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, endpoints, *Endpoint) {
 	// Reset the context routing pattern and params
 	rctx.routePattern = ""
 	rctx.routeParams.Keys = rctx.routeParams.Keys[:0]
@@ -542,7 +541,7 @@ func (n *node) Routes() []Route {
 		}
 
 		for p, mh := range pats {
-			hs := make(map[string]*core.Endpoint)
+			hs := make(map[string]*Endpoint)
 			if mh[mALL] != nil && mh[mALL].handler != nil {
 				hs["*"] = mh[mALL].handler
 			}
@@ -746,7 +745,7 @@ func (ns nodes) findEdge(label byte) *node {
 // Handlers map key is an HTTP method
 type Route struct {
 	SubRoutes chi.Routes
-	Handlers  map[string]*core.Endpoint
+	Handlers  map[string]*Endpoint
 	Pattern   string
 
 	FilePath string

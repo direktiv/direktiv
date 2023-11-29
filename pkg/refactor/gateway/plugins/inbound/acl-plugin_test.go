@@ -8,7 +8,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +31,7 @@ func TestConfigACLPlugin(t *testing.T) {
 }
 
 func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
-	c := &spec.ConsumerFile{
+	c := &core.ConsumerBase{
 		Username: "demo",
 		Password: "hello",
 		Tags:     []string{"tag1", "tag2"},

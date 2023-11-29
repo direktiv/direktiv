@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/dop251/goja"
 )
 
@@ -65,7 +65,7 @@ func (h Headers) Delete(key string) {
 	h.H.Del(key)
 }
 
-func (js *JSOutboundPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	var (

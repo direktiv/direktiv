@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -42,7 +42,7 @@ func ConfigureBasicAuthPlugin(config interface{}, _ string) (plugins.PluginInsta
 	}, nil
 }
 
-func (ba *BasicAuthPlugin) ExecutePlugin(c *spec.ConsumerFile,
+func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	user, pwd, ok := r.BasicAuth()

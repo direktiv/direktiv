@@ -12,7 +12,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/h2non/filetype"
 )
 
@@ -59,7 +58,7 @@ func (tnf NamespaceFilePlugin) Config() interface{} {
 }
 
 func (tnf NamespaceFilePlugin) ExecutePlugin(
-	_ *spec.ConsumerFile,
+	_ *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	data, err := fetchObjectData(tnf.config.Namespace, tnf.config.File)

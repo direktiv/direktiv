@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -59,7 +58,7 @@ func (tf FlowPlugin) Config() interface{} {
 	return tf.config
 }
 
-func (tf FlowPlugin) ExecutePlugin(_ *spec.ConsumerFile,
+func (tf FlowPlugin) ExecutePlugin(_ *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	url, err := createURL(tf.config.Namespace, tf.config.Flow, tf.config.Async)

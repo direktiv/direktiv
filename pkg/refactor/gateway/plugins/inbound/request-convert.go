@@ -9,8 +9,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 )
 
 const (
@@ -62,7 +62,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) ExecutePlugin(c *spec.ConsumerFile,
+func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerBase,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	response := &RequestConvertResponse{
