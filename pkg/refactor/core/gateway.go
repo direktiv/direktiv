@@ -18,11 +18,11 @@ type GatewayManager interface {
 }
 
 type EndpointBase struct {
-	Methods        []string `json:"methods"                yaml:"methods"`
-	PathExtension  string   `json:"path_extension"         yaml:"path_extension"`
-	AllowAnonymous bool     `json:"allow_anonymous"        yaml:"allow_anonymous"`
-	Plugins        Plugins  `json:"plugins"                yaml:"plugins"`
-	Timeout        int      `json:"timeout"                yaml:"timeout"`
+	Methods        []string `json:"methods"         yaml:"methods"`
+	PathExtension  string   `json:"path_extension"  yaml:"path_extension"`
+	AllowAnonymous bool     `json:"allow_anonymous" yaml:"allow_anonymous"`
+	Plugins        Plugins  `json:"plugins"         yaml:"plugins"`
+	Timeout        int      `json:"timeout"         yaml:"timeout"`
 }
 
 type EndpointListItem struct {
@@ -34,11 +34,11 @@ type EndpointListItem struct {
 }
 
 type ConsumerBase struct {
-	Username string   `json:"username"               yaml:"username"`
-	Password string   `json:"password"               yaml:"password"`
-	APIKey   string   `json:"api_key"                yaml:"api_key"`
-	Tags     []string `json:"tags"                   yaml:"tags"`
-	Groups   []string `json:"groups"                 yaml:"groups"`
+	Username string   `json:"username" yaml:"username"`
+	Password string   `json:"password" yaml:"password"`
+	APIKey   string   `json:"api_key"  yaml:"api_key"`
+	Tags     []string `json:"tags"     yaml:"tags"`
+	Groups   []string `json:"groups"   yaml:"groups"`
 }
 
 type Plugins struct {

@@ -16,7 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/endpoints"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-
 	// This triggers the init function within for inbound plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
@@ -116,7 +115,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				APIKey:   item.APIKey,
 			})
 		} else {
-
 			ep := &endpoints.Endpoint{
 				Namespace:    ns,
 				FilePath:     file.Path,
@@ -187,8 +185,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	namespace := core.MagicalGatewayNamespace
 	routePath := chi.URLParam(r, "*")
 
-	fmt.Println("!!!!!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>COMING IN")
-
 	// get namespace from URL or use magical one
 	if chiCtx.RoutePattern() == "/ns/{namespace}/*" {
 		namespace = chi.URLParam(r, "namespace")
@@ -212,6 +208,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(endpointEntry.Errors) > 0 {
 		plugins.ReportError(w, http.StatusForbidden, "plugin has errors",
 			fmt.Errorf(strings.Join(endpointEntry.Errors, ", ")))
+
 		return
 	}
 
