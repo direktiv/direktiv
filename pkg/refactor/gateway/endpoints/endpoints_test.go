@@ -23,7 +23,6 @@ func TestSetEndpointsFileEmpty(t *testing.T) {
 }
 
 func TestSetEndpointsWarnings(t *testing.T) {
-
 	ep := &endpoints.Endpoint{
 		EndpointBase: &core.EndpointBase{
 			Methods:        []string{http.MethodPost},

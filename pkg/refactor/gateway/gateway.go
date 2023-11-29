@@ -1,3 +1,4 @@
+// nolint
 package gateway
 
 import (
@@ -16,8 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/endpoints"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-
-	// This triggers the init function within for inbound plugins to register them.
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
