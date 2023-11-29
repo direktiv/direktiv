@@ -106,6 +106,16 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// initial loading of routes and consumers
 	gatewayManager.UpdateAll()
 
+	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
+	pbus.Subscribe(func(ns string) {
+		err := registryManager.DeleteNamespace(ns)
+		if err != nil {
+			logger.Errorw("deleting registry namespace", "error", err)
+		}
+	},
+		pubsub.NamespaceDelete,
+	)
+
 	// Start api v2 server
 	wg.Add(1)
 	api.Start(app, db, "0.0.0.0:6667", done, wg)
@@ -179,6 +189,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 
 					continue
 				}
+
 				funConfigList = append(funConfigList, &core.ServiceConfig{
 					Typ:       core.ServiceTypeNamespace,
 					Name:      "",
@@ -188,6 +199,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					CMD:       serviceDef.Cmd,
 					Size:      serviceDef.Size,
 					Scale:     serviceDef.Scale,
+					Envs:      serviceDef.Envs,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file, data)

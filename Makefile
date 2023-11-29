@@ -64,7 +64,6 @@ lint: VERSION="v1.54"
 lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \
-	--name golangci-lint-${VERSION}-direktiv \
 	-v `pwd`:/app \
 	-w /app \
 	golangci/golangci-lint:${VERSION} golangci-lint run
@@ -111,7 +110,7 @@ docker-tail: ## Tail the logs for the direktiv container in the docker deploymen
 	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
 .PHONY: docker-tests
-docker-tests: docker-build
+docker-tests: docker-stop docker-build
 docker-tests: ## Perform backend end-to-end tests against the docker deployment.
 	DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
 
@@ -189,3 +188,8 @@ cli:
 	@export ${CGO_LDFLAGS} && GOOS=darwin GOARCH=arm64 go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin-arm64 cmd/exec/main.go
 	@echo "Building linux cli binary...";
 	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direktivctl-windows.exe cmd/exec/main.go
+
+
+.PHONY: binary
+binary: ## Useful only to check that code compiles properly.
+	go build -o /dev/null cmd/direktiv/*.go

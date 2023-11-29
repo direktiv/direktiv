@@ -11,6 +11,7 @@ type Registry struct {
 type RegistryManager interface {
 	ListRegistries(namespace string) ([]*Registry, error)
 	DeleteRegistry(namespace string, id string) error
+	DeleteNamespace(namespace string) error
 	StoreRegistry(registry *Registry) (*Registry, error)
 	TestLogin(registry *Registry) error
 }

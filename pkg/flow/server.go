@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -31,6 +32,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
+	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
@@ -215,8 +217,35 @@ func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore 
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
+const (
+	APITokenHeader = "direktiv-token"
+)
+
+type apikeyHandler struct {
+	next http.Handler
+	key  string
+}
+
+func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get(APITokenHeader) != h.key {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	h.next.ServeHTTP(w, r)
+}
+
 func (srv *server) start(ctx context.Context) error {
 	var err error
+
+	if srv.conf.ApiKey != "" {
+		middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
+			return &apikeyHandler{
+				next: h,
+				key:  srv.conf.ApiKey,
+			}
+		})
+	}
 
 	srv.sugar.Info("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")

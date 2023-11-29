@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"time"
 
@@ -25,7 +24,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	inst, err := internal.getInstance(ctx, req.GetInstance())
 	if err != nil {
-		fmt.Println("> A", err)
 		return err
 	}
 
@@ -35,7 +33,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 		Key:       req.GetKey(),
 	})
 	if err != nil {
-		fmt.Println("> B", err)
 		return err
 	}
 
@@ -52,7 +49,6 @@ func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequ
 
 	err = srv.Send(iresp)
 	if err != nil {
-		fmt.Println("> C", err)
 		return err
 	}
 

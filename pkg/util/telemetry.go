@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
@@ -233,6 +234,8 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 			next:   h,
 		}
 	}
+
+	middlewares.RegisterHTTPMiddleware(TelemetryMiddleware)
 
 	return telemetryWaiter(tp, bsp), nil
 }

@@ -4,15 +4,17 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"gopkg.in/yaml.v3"
 )
 
 type ServiceFile struct {
-	DirektivAPI string `yaml:"direktiv_api"`
-	Image       string `yaml:"image"`
-	Cmd         string `yaml:"cmd"`
-	Size        string `yaml:"size"`
-	Scale       int    `yaml:"scale"`
+	DirektivAPI string                     `yaml:"direktiv_api"`
+	Image       string                     `yaml:"image"`
+	Cmd         string                     `yaml:"cmd"`
+	Size        string                     `yaml:"size"`
+	Scale       int                        `yaml:"scale"`
+	Envs        []core.EnvironmentVariable `yaml:"envs"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
