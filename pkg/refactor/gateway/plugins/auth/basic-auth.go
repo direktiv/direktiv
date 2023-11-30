@@ -32,7 +32,7 @@ type BasicAuthPlugin struct {
 func ConfigureBasicAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
 	authConfig := &BasicAuthConfig{}
 
-	err := plugins.ConvertConfig(config, &authConfig)
+	err := plugins.ConvertConfig(config, authConfig)
 	if err != nil {
 		return nil, err
 	}

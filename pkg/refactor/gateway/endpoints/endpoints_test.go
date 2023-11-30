@@ -94,7 +94,7 @@ func TestSetEndpoints(t *testing.T) {
 					},
 					{
 						Type: auth.KeyAuthPluginName,
-						Configuration: map[string]string{
+						Configuration: map[string]interface{}{
 							"key_name": "demo",
 						},
 					},
@@ -154,7 +154,7 @@ func TestSetEndpointsFullError(t *testing.T) {
 					},
 					{
 						Type: auth.KeyAuthPluginName,
-						Configuration: map[string]string{
+						Configuration: map[string]interface{}{
 							"key_name": "demo",
 						},
 					},
