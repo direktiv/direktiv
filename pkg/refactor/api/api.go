@@ -44,6 +44,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
+	for _, extraRoute := range GetExtraRoutes() {
+		extraRoute(r)
+	}
+
 	// handle namespace and gateway
 	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
