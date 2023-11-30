@@ -37,7 +37,7 @@ import {
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Checkbox } from "../Checkbox";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import Input from "../Input";
 import { InputWithButton } from "../InputWithButton";
 
@@ -867,6 +867,33 @@ export const AllForms = () => {
           </ButtonBar>
         </div>
       </div>
+    </div>
+  );
+};
+
+const CheckboxTest = () => (
+  <div className="flex flex-row py-2">
+    <div className="flex items-center justify-center">
+      <label
+        htmlFor="asynchronous"
+        className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        Asynchronous:
+      </label>
+    </div>
+    <div className="flex items-center">
+      <Checkbox id="asynchronous" />
+    </div>
+  </div>
+);
+
+export const AllFormsWithState = () => {
+  const [myCheckbox, setmyCheckox] = useState(false);
+  return (
+    <div>
+      <pre>{myCheckbox ? "TRUE" : "FALSE"}</pre>
+      <hr />
+      <CheckboxTest />
     </div>
   );
 };
