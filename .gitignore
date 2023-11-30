@@ -107,3 +107,5 @@ direktivctl
 
 openapi/node_modules
 openapi/output
+
+direktiv.yaml

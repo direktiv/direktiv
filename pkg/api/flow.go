@@ -49,7 +49,7 @@ func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *
 	}
 }
 
-func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *core.Config) (*flowHandler, error) {
+func newFlowHandler(logger *zap.SugaredLogger, base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
 	flowAddr := fmt.Sprintf("localhost:%d", conf.GrpcPort)
 	logger.Infof("connecting to flow %s", flowAddr)
 
@@ -84,6 +84,14 @@ func newFlowHandler(logger *zap.SugaredLogger, router *mux.Router, conf *core.Co
 		return req
 	})
 	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxy.ServeHTTP(w, r)
+	}))
+
+	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxy.ServeHTTP(w, r)
+	}))
+
+	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
 	}))
 

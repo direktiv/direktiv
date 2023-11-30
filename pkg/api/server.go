@@ -39,14 +39,15 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 	logger = l
 	logger.Infof("starting api server")
 
-	r := mux.NewRouter().PathPrefix("/api").Subrouter()
+	baseRouter := mux.NewRouter()
+	r := baseRouter.PathPrefix("/api").Subrouter()
 
 	s := &Server{
 		config: config,
 		logger: l,
 		router: r,
 		srv: &http.Server{
-			Handler:           r,
+			Handler:           baseRouter,
 			Addr:              fmt.Sprintf(":%v", config.ApiV1Port),
 			ReadHeaderTimeout: time.Second * 60,
 		},
@@ -73,7 +74,7 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 
 	var err error
 
-	s.flowHandler, err = newFlowHandler(logger, r, s.config)
+	s.flowHandler, err = newFlowHandler(logger, baseRouter, r, s.config)
 	if err != nil {
 		logger.Error("can not get flow handler: %v", err)
 		s.telend()

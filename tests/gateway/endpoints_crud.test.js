@@ -4,168 +4,238 @@ import retry from "jest-retries";
 
 const testNamespace = "gateway_namespace";
 
-describe("Test gateway endpoints crud operations", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
+const endpoint1 = `
+direktiv_api: endpoint/v1
+plugins:
+  auth:
+  - type: key-auth
+    configuration:
+        key_name: secret
+  target:
+    type: instant-response
+    configuration:
+        status_code: 201
+        status_message: "TEST1"
+methods: 
+  - GET`
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
+
+const endpoint2 = `
+direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  auth:
+  - type: basic-auth
+  - type: key-auth
+    configuration:
+        key_name: secret
+  target:
+    type: instant-response
+    configuration:
+        status_code: 202
+        status_message: "TEST2"
+methods: 
+  - GET`
+
+const consumer1 = `
+direktiv_api: "consumer/v1"
+username: consumer1
+password: pwd
+api_key: key1
+tags:
+- tag1
+groups:
+- group1`
+
+const consumer2 = `
+direktiv_api: "consumer/v1"
+username: consumer2
+password: pwd
+api_key: key2
+tags:
+- tag2
+groups:
+- group2`
+
+describe("Test gateway endpoints crud operations", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
 
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-    common.helpers.itShouldCreateFile(it, expect, testNamespace, "/g1.yaml", `
-direktiv_api: endpoint/v1
-method: POST
-plugins:
-  - type: example_plugin
-    configuration:
-      echo_value: test_value
-  - type: target_workflow
-    configuration:
-      namespace: ${testNamespace}
-      workflow: noop.yaml
-`
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint1.yaml",
+      endpoint1
     );
 
-    common.helpers.itShouldCreateFile(it, expect, testNamespace, "/g2.yaml", `
-direktiv_api: endpoint/v1
-method: GET
-plugins: 
-  - type: example_plugin
-    configuration:
-        echo_value: test_value
-  - type: target_workflow
-    configuration:
-      namespace: ${testNamespace}
-      workflow: noop.yaml
-`
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint2.yaml",
+      endpoint2
     );
 
-    it(`should list all endpoints`, async () => {
-        const listRes = await request(common.config.getDirektivHost()).get(
-            `/api/v2/namespaces/${testNamespace}/endpoints`
-        );
-        expect(listRes.statusCode).toEqual(200);
-        expect(listRes.body.data.length).toEqual(2);
-        expect(listRes.body).toMatchObject({
-            data: [
-                {
-                    error: "",
-                    file_path: "/g1.yaml",
-                    method: "POST",
-                    plugins: [
-                        {
-                            configuration: {echo_value: "test_value"},
-                            type: "example_plugin",
-                        },
-                        {
-                            configuration: {
-                                namespace: "gateway_namespace",
-                                workflow: "noop.yaml",
-                            },
-                            type: "target_workflow",
-                        },
-                    ],
-                },
-                {
-                    error: "",
-                    file_path: "/g2.yaml",
-                    method: "GET",
-                    plugins: [
-                        {
-                            configuration: {echo_value: "test_value"},
-                            type: "example_plugin",
-                        },
-                        {
-                            configuration: {
-                                namespace: "gateway_namespace",
-                                workflow: "noop.yaml",
-                            },
-                            type: "target_workflow",
-                        },
-                    ]
-                }]
-        });
-    });
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/consumer1.yaml",
+      consumer1
+    );
 
-  common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/g1.yaml");
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/consumer2.yaml",
+      consumer2
+    );
 
   it(`should list all endpoints`, async () => {
     const listRes = await request(common.config.getDirektivHost()).get(
-        `/api/v2/namespaces/${testNamespace}/endpoints`
+      `/api/v2/namespaces/${testNamespace}/gateway/routes`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data.length).toEqual(2);
+    expect(listRes.body.data).toEqual(
+      expect.arrayContaining(
+        [{"allow_anonymous": false, 
+        "errors": [], "methods": ["GET"], 
+        "path": "/endpoint1.yaml",
+        "path_extension": "", 
+        "pattern": "/endpoint1", 
+        "plugins": {"auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
+        "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, "type": "instant-response"}},
+        "timeout": 0, "warnings": []},
+        {
+        "allow_anonymous": true,
+        "errors": [],
+        "methods": ["GET"],
+        "path": "/endpoint2.yaml", 
+        "path_extension": "", 
+        "pattern": "/endpoint2", 
+        "plugins": {
+          "auth": [{"configuration": null, "type": "basic-auth"}, {"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
+          "target": {"configuration": {"status_code": 202, "status_message": "TEST2"}, "type": "instant-response"}
+        }, 
+        "timeout": 0, 
+        "warnings": []}]
+      )
+    );
+  });
+
+  it(`should list all consumers`, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/consumers`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data.length).toEqual(2);
+    expect(listRes.body.data).toEqual(
+      expect.arrayContaining(
+        [{
+         "api_key": "key2", 
+         "groups": ["group2"],
+         "password": "pwd",
+         "tags": ["tag2"],
+         "username": "consumer2"}, 
+         {
+         "api_key": "key1",
+         "groups": ["group1"],
+         "password": "pwd",
+         "tags": ["tag1"],
+         "username": "consumer1"
+        }]
+      )
+    );
+  });
+
+  common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/endpoint1.yaml");
+  common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/consumer1.yaml");
+
+  it(`should list one route after delete`, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes`
     );
     expect(listRes.statusCode).toEqual(200);
     expect(listRes.body.data.length).toEqual(1);
-    expect(listRes.body).toMatchObject({
-      data: [
-        {
-          method: "GET",
-        },
-      ],
-    });
+  });
+
+  it(`should list one consumer after delete`, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/consumers`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data.length).toEqual(1);
   });
 
 });
 
 describe("Test availability of gateway endpoints", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
+  beforeAll(common.helpers.deleteAllNamespaces);
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-    common.helpers.itShouldCreateFile(it, expect, testNamespace, "/g1.yaml", `
-direktiv_api: endpoint/v1
-method: GET
-plugins: 
-  - type: example_plugin
-    configuration:
-      some_echo_value: test_value
-  - type: target_workflow
-    configuration:
-      namespace: ${testNamespace}
-      workflow: noop.yaml
-  `
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/endpoint1.yaml",
+    endpoint1
+  );
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/endpoint2.yaml",
+    endpoint2
+  );
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/consumer1.yaml",
+    consumer1
+  );
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/consumer2.yaml",
+    consumer2
+  );
+
+  it(`should not run endpoint without authentication`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+      `/gw/endpoint1`
     );
+    expect(req.statusCode).toEqual(401);
+  });
 
-    it(`should execute endpoint plugins`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(
-            `/api/v2/gw/g1.yaml`
-        );
+  it(`should run endpoint without authentication but allow anonymous`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+      `/gw/endpoint2`
+    );
+    expect(req.statusCode).toEqual(202);
+  });
 
-        expect(req.statusCode).toEqual(404);
-    });
-});
+  it(`should run endpoint with key authentication`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+      `/gw/endpoint1`
+    ).set('secret', 'key2');
+    expect(req.statusCode).toEqual(201);
+  });
 
-describe("Test plugin schema endpoint", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
+  it(`should run endpoint with basic authentication`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+      `/gw/endpoint2`
+    ).auth('consumer1', 'pwd');
+    expect(req.statusCode).toEqual(202);
+  });
 
-    it(`TODO: enable this e2e tests.`, async () => {});
-    return;
-
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-
-    it(`should return all plugin schemas`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(
-            `/api/v2/namespaces/${testNamespace}/plugins`
-        );
-
-        expect(req.body).toMatchObject({
-            data: {
-                example_plugin: {
-                    $defs: {
-                        examplePluginConfig: {
-                            additionalProperties: false,
-                            properties: {echo_value: {type: "string"}},
-                            required: ["echo_value"],
-                            type: "object",
-                        },
-                    },
-                    $id: "https://github.com/direktiv/direktiv/pkg/refactor/gateway/example-plugin-config",
-                    $ref: "#/$defs/examplePluginConfig",
-                    $schema: "https://json-schema.org/draft/2020-12/schema",
-                },
-            },
-        });
-        expect(req.statusCode).toEqual(200);
-    });
 });

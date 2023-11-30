@@ -48,7 +48,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		extraRoute(r)
 	}
 
-	r.Handle("/api/v2/gw/*", app.EndpointManager)
+	// handle namespace and gateway
+	r.Handle("/gw/*", app.GatewayManager)
+	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, app.Version)
@@ -71,13 +73,17 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
 				regCtr.mountRouter(r)
 			})
+			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
+				data, err := app.GatewayManager.GetConsumers(chi.URLParam(r, "namespace"))
+				if err != nil {
+					writeInternalError(w, err)
 
-			r.Get("/namespaces/{namespace}/endpoints", func(w http.ResponseWriter, r *http.Request) {
-				writeJSON(w, app.EndpointManager.GetAll())
+					return
+				}
+				writeJSON(w, data)
 			})
-
-			r.Get("/namespaces/{namespace}/plugins", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GetAllPluginSchemas()
+			r.Get("/namespaces/{namespace}/gateway/routes", func(w http.ResponseWriter, r *http.Request) {
+				data, err := app.GatewayManager.GetRoutes(chi.URLParam(r, "namespace"))
 				if err != nil {
 					writeInternalError(w, err)
 

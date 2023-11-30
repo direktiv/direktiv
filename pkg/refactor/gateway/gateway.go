@@ -1,145 +1,368 @@
+// nolint
 package gateway
 
 import (
-	"crypto/sha256"
-	"encoding/json"
+	"bytes"
+	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/invopop/jsonschema"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/consumer"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/endpoints"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
+	"github.com/go-chi/chi/v5"
 )
 
-var registry = make(map[string]plugin)
-
-type plugin interface {
-	build(config map[string]interface{}) (serve, error)
-	getSchema() interface{}
+type namespaceGateway struct {
+	EndpointList *endpoints.EndpointList
+	ConsumerList *consumer.List
 }
 
-type serve func(w http.ResponseWriter, r *http.Request) bool
-
-type handler struct {
-	pluginPool map[string]endpointEntry
-	mu         sync.Mutex
+type gatewayManager struct {
+	db         *database.DB
+	nsGateways map[string]*namespaceGateway
+	lock       sync.RWMutex
 }
 
-type endpointEntry struct {
-	*core.EndpointStatus
-	item     int
-	checksum string
-	plugins  []serve
+const anonymousUsername = "Anonymous"
+
+func NewGatewayManager(db *database.DB) core.GatewayManager {
+	return &gatewayManager{
+		db:         db,
+		nsGateways: make(map[string]*namespaceGateway),
+	}
 }
 
-func NewHandler() core.EndpointManager {
-	return &handler{}
+func (ep *gatewayManager) DeleteNamespace(ns string) {
+	slog.Info("deleting namespace from gateway", "namespace", ns)
+	delete(ep.nsGateways, ns)
 }
 
-func (gw *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	prefix := "/api/v2/gw/"
-	path, _ := strings.CutPrefix(r.URL.Path, prefix)
-	key := r.Method + ":/:" + path
+func (ep *gatewayManager) UpdateNamespace(ns string) {
+	slog.Info("updating namespace gateway", slog.String("namespace", ns))
 
-	endpoint, ok := gw.pluginPool[key]
+	ep.lock.Lock()
+	defer ep.lock.Unlock()
+
+	gw, ok := ep.nsGateways[ns]
 	if !ok {
-		http.NotFound(w, r)
+		gw = &namespaceGateway{
+			EndpointList: endpoints.NewEndpointList(),
+			ConsumerList: consumer.NewConsumerList(),
+		}
+		ep.nsGateways[ns] = gw
+	}
+
+	fStore := ep.db.FileStore()
+	ctx := context.Background()
+
+	files, err := fStore.ForNamespace(ns).ListDirektivFiles(ctx)
+	if err != nil {
+		slog.Error("error listing files", slog.String("error", err.Error()))
 
 		return
 	}
-	for _, f := range endpoint.plugins {
-		cont := f(w, r)
-		if !cont {
+
+	eps := make([]*endpoints.Endpoint, 0)
+	consumers := make([]*core.ConsumerBase, 0)
+
+	for _, file := range files {
+		if file.Typ != filestore.FileTypeConsumer &&
+			file.Typ != filestore.FileTypeEndpoint {
+			continue
+		}
+
+		data, err := fStore.ForFile(file).GetData(ctx)
+		if err != nil {
+			slog.Error("read file data", slog.String("error", err.Error()))
+
+			continue
+		}
+
+		if file.Typ == filestore.FileTypeConsumer {
+			item, err := core.ParseConsumerFile(data)
+			if err != nil {
+				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+
+				continue
+			}
+
+			// username can not be empty or contain a colon for basic auth
+			if item.Username == "" ||
+				strings.Contains(item.Username, ":") {
+				slog.Warn("username invalid", slog.String("user", item.Username))
+
+				continue
+			}
+
+			consumers = append(consumers, &core.ConsumerBase{
+				Username: item.Username,
+				Password: item.Password,
+				Tags:     item.Tags,
+				Groups:   item.Groups,
+				APIKey:   item.APIKey,
+			})
+		} else {
+			ep := &endpoints.Endpoint{
+				Namespace:    ns,
+				FilePath:     file.Path,
+				Errors:       make([]string, 0),
+				Warnings:     make([]string, 0),
+				EndpointBase: &core.EndpointBase{},
+			}
+			item, err := core.ParseEndpointFile(data)
+			// if parsing fails, the endpoint is still getting added to report
+			// an error in the API
+			if err != nil {
+				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+				ep.Errors = append(ep.Errors, err.Error())
+			}
+
+			ep.EndpointBase = &item.EndpointBase
+			eps = append(eps, ep)
+		}
+	}
+
+	gw.EndpointList.SetEndpoints(eps)
+	gw.ConsumerList.SetConsumers(consumers)
+}
+
+func (ep *gatewayManager) UpdateAll() {
+	_, dStore := ep.db.FileStore(), ep.db.DataStore()
+
+	nsList, err := dStore.Namespaces().GetAll(context.Background())
+	if err != nil {
+		slog.Error("listing namespaces", slog.String("error", err.Error()))
+
+		return
+	}
+
+	for _, ns := range nsList {
+		ep.UpdateNamespace(ns.Name)
+	}
+}
+
+type DummyWriter struct {
+	HeaderMap http.Header
+	Body      *bytes.Buffer
+	Code      int
+}
+
+func NewDummyWriter() *DummyWriter {
+	return &DummyWriter{
+		HeaderMap: make(http.Header),
+		Body:      new(bytes.Buffer),
+		Code:      http.StatusOK,
+	}
+}
+
+func (dr *DummyWriter) Header() http.Header {
+	return dr.HeaderMap
+}
+
+func (dr *DummyWriter) Write(buf []byte) (int, error) {
+	return dr.Body.Write(buf)
+}
+
+func (dr *DummyWriter) WriteHeader(statusCode int) {
+	dr.Code = statusCode
+}
+
+func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	chiCtx := chi.RouteContext(r.Context())
+	namespace := core.MagicalGatewayNamespace
+	routePath := chi.URLParam(r, "*")
+
+	// get namespace from URL or use magical one
+	if chiCtx.RoutePattern() == "/ns/{namespace}/*" {
+		namespace = chi.URLParam(r, "namespace")
+	}
+
+	gw, ok := ep.nsGateways[namespace]
+	if !ok {
+		plugins.ReportNotFound(w)
+
+		return
+	}
+
+	endpointEntry, urlParams := gw.EndpointList.FindRoute(routePath, r.Method)
+	if endpointEntry == nil {
+		plugins.ReportNotFound(w)
+
+		return
+	}
+
+	// if there are configuration errors, return it
+	if len(endpointEntry.Errors) > 0 {
+		plugins.ReportError(w, http.StatusForbidden, "plugin has errors",
+			fmt.Errorf(strings.Join(endpointEntry.Errors, ", ")))
+
+		return
+	}
+
+	// add url params e.g. /{id}
+	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
+	ctx = context.WithValue(ctx, plugins.ConsumersParamCtxKey, gw.ConsumerList)
+
+	// timeout
+	t := endpointEntry.EndpointBase.Timeout
+
+	// timeout is 30 secs if not set
+	if t == 0 {
+		t = 30
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
+	defer cancel()
+	r = r.WithContext(ctx)
+
+	c := &core.ConsumerBase{}
+	for i := range endpointEntry.AuthPluginInstances {
+		authPlugin := endpointEntry.AuthPluginInstances[i]
+
+		// auth plugins always return true to check all of them
+		authPlugin.ExecutePlugin(c, w, r)
+
+		// check and exit if consumer is set in plugin
+		if c.Username != "" {
+			slog.Info("user authenticated", "user", c.Username)
+
+			break
+		}
+	}
+
+	// if user not authenticated and anonymous access not enabled
+	if c.Username == "" && !endpointEntry.EndpointBase.AllowAnonymous {
+		plugins.ReportError(w, http.StatusUnauthorized, "no permission",
+			fmt.Errorf("request not authorized"))
+
+		return
+	}
+
+	// set username Anonymous if allowed and not set via auth plugin
+	if c.Username == "" {
+		c.Username = anonymousUsername
+	}
+
+	// run inbound
+	for i := range endpointEntry.InboundPluginInstances {
+		inboundPlugin := endpointEntry.InboundPluginInstances[i]
+		proceed := inboundPlugin.ExecutePlugin(c, w, r)
+		if !proceed {
 			return
 		}
 	}
-}
 
-func (gw *handler) SetEndpoints(list []*core.Endpoint) {
-	gw.mu.Lock() // Lock
-	defer gw.mu.Unlock()
-	newList := make([]*core.EndpointStatus, len(list))
-	newPool := make(map[string]endpointEntry)
-	oldPool := gw.pluginPool
-
-	for i, ep := range list {
-		cp := *ep
-		newList[i] = &core.EndpointStatus{Endpoint: cp}
-
-		path, _ := strings.CutPrefix(cp.FilePath, "/")
-		checksum := string(sha256.New().Sum([]byte(fmt.Sprint(cp))))
-
-		key := cp.Method + ":/:" + path
-		value, ok := oldPool[key]
-		if ok && value.checksum == checksum {
-			newPool[key] = value
-		}
-		newPool[key] = endpointEntry{
-			plugins:        buildPluginChain(newList[i]),
-			EndpointStatus: newList[i],
-			checksum:       checksum,
-			item:           i,
-		}
+	// if there are outbound plugins the reponsewrite is getting swapped out
+	// because target plugins can do io.copy and set headers which would go
+	// on the wire immediately.
+	targetWriter := w
+	if len(endpointEntry.OutboundPluginInstances) > 0 {
+		targetWriter = NewDummyWriter()
 	}
-	gw.pluginPool = newPool
-}
 
-func buildPluginChain(endpoint *core.EndpointStatus) []serve {
-	res := make([]serve, 0, len(endpoint.Plugins))
+	// run target if it exists
+	if endpointEntry.TargetPluginInstance != nil &&
+		!endpointEntry.TargetPluginInstance.ExecutePlugin(c, targetWriter, r) {
+		return
+	}
 
-	for _, v := range endpoint.Plugins {
-		plugin, ok := registry[v.Type]
-		if !ok {
-			endpoint.Error = fmt.Sprintf("error: plugin %v not found", v.Type)
+	for i := range endpointEntry.OutboundPluginInstances {
+		outboundPlugin := endpointEntry.OutboundPluginInstances[i]
 
-			continue
-		}
+		// nolint
+		tw := targetWriter.(*DummyWriter)
 
-		servePluginFunc, err := plugin.build(v.Configuration)
+		rin, err := swapRequestResponse(r, tw)
 		if err != nil {
-			endpoint.Error = fmt.Sprintf("error: plugin %v configuration was rejected %v", v.Type, err)
+			plugins.ReportError(w, http.StatusUnauthorized, "output plugin failed",
+				err)
 
-			continue
+			return
 		}
 
-		res = append(res, servePluginFunc)
+		proceed := executePlugin(c, tw, rin,
+			outboundPlugin.ExecutePlugin)
+
+		// in outbound we need to break and not return
+		// to write the actual output
+		if !proceed {
+			break
+		}
 	}
 
-	return res
-}
+	// response already written, except if there are outbound plugins
+	if len(endpointEntry.OutboundPluginInstances) > 0 {
+		// nolint
+		tw := targetWriter.(*DummyWriter)
 
-func (gw *handler) GetAll() []*core.EndpointStatus {
-	gw.mu.Lock() // Lock
-	defer gw.mu.Unlock()
-
-	newList := make([]*core.EndpointStatus, len(gw.pluginPool))
-
-	for _, value := range gw.pluginPool {
-		newList[value.item] = value.EndpointStatus
-	}
-
-	return newList
-}
-
-func GetAllSchemas() (any, error) {
-	res := make(map[string]interface{})
-
-	for k, p := range registry {
-		schemaStruct := p.getSchema()
-		schema := jsonschema.Reflect(schemaStruct)
-
-		var schemaObj map[string]interface{}
-		b, err := schema.MarshalJSON()
+		for k, v := range tw.HeaderMap {
+			for a := range v {
+				w.Header().Add(k, v[a])
+			}
+		}
+		w.WriteHeader(tw.Code)
+		_, err := w.Write(tw.Body.Bytes())
 		if err != nil {
-			return nil, err
+			slog.Error("can not write api response", slog.Any("error", err.Error()))
 		}
-		if err := json.Unmarshal(b, &schemaObj); err != nil {
-			return nil, err
-		}
+	}
+}
 
-		res[k] = schemaObj
+func executePlugin(c *core.ConsumerBase, w http.ResponseWriter, r *http.Request,
+	fn func(*core.ConsumerBase, http.ResponseWriter, *http.Request) bool,
+) bool {
+	select {
+	case <-r.Context().Done():
+		w.WriteHeader(http.StatusRequestTimeout)
+		//nolint
+		w.Write([]byte("request timed out"))
+
+		return false
+	default:
 	}
 
-	return res, nil
+	return fn(c, w, r)
+}
+
+func swapRequestResponse(rin *http.Request, w *DummyWriter) (*http.Request, error) {
+	r, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
+	if err != nil {
+		return nil, err
+	}
+	r.Response = &http.Response{
+		StatusCode: w.Code,
+	}
+
+	return r.WithContext(rin.Context()), nil
+}
+
+// API functions.
+func (ep *gatewayManager) GetConsumers(namespace string) ([]*core.ConsumerBase, error) {
+	g, ok := ep.nsGateways[namespace]
+	if !ok {
+		return nil, fmt.Errorf("no consumers for namespace %s", namespace)
+	}
+
+	return g.ConsumerList.GetConsumers(), nil
+}
+
+func (ep *gatewayManager) GetRoutes(namespace string) ([]core.EndpointListItem, error) {
+	g, ok := ep.nsGateways[namespace]
+	if !ok {
+		return nil, fmt.Errorf("no routes for namespace %s", namespace)
+	}
+
+	return g.EndpointList.GetEndpoints(), nil
 }

@@ -109,8 +109,7 @@ type App struct {
 	Version *Version
 	Config  *Config
 
-	ServiceManager      ServiceManager
-	RegistryManager     RegistryManager
-	EndpointManager     EndpointManager
-	GetAllPluginSchemas func() (any, error)
+	ServiceManager  ServiceManager
+	RegistryManager RegistryManager
+	GatewayManager  GatewayManager
 }

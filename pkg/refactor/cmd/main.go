@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -21,10 +22,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
+	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
 
 func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
+	initSLog()
+
 	wg := &sync.WaitGroup{}
 
 	go api2.RunApplication(config)
@@ -51,18 +55,17 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	}
 
 	// Create endpoint manager
-	endpointManager := gateway.NewHandler()
+	gatewayManager := gateway.NewGatewayManager(db)
 
 	// Create App
 	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:              config,
-		ServiceManager:      serviceManager,
-		RegistryManager:     registryManager,
-		EndpointManager:     endpointManager,
-		GetAllPluginSchemas: gateway.GetAllSchemas,
+		Config:          config,
+		ServiceManager:  serviceManager,
+		RegistryManager: registryManager,
+		GatewayManager:  gatewayManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -80,16 +83,28 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
 
-	pbus.Subscribe(func(_ string) {
-		renderEndpointManager(db, endpointManager, logger)
+	// endpoint manager deletes routes/consumers on namespace delete
+	pbus.Subscribe(func(ns string) {
+		gatewayManager.DeleteNamespace(ns)
 	},
+		pubsub.NamespaceDelete,
+	)
+
+	// on sync redo all consumers and routes on sync or single file updates
+	pbus.Subscribe(func(ns string) {
+		gatewayManager.UpdateNamespace(ns)
+	},
+		pubsub.MirrorSync,
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,
-		pubsub.MirrorSync,
-		pubsub.NamespaceDelete,
+		pubsub.ConsumerCreate,
+		pubsub.ConsumerDelete,
+		pubsub.ConsumerUpdate,
 	)
-	renderEndpointManager(db, endpointManager, logger)
+
+	// initial loading of routes and consumers
+	gatewayManager.UpdateAll()
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
 	pbus.Subscribe(func(ns string) {
@@ -116,53 +131,26 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	return wg
 }
 
-func renderEndpointManager(db *database.DB, gwManager core.EndpointManager, logger *zap.SugaredLogger) {
-	fStore, dStore := db.FileStore(), db.DataStore()
-	ctx := context.Background()
+func initSLog() {
+	lvl := new(slog.LevelVar)
+	lvl.Set(slog.LevelInfo)
 
-	ns, err := dStore.Namespaces().GetByName(ctx, core.MagicalGatewayNamespace)
-	if err != nil {
-		logger.Errorw("fetching namespace", "error", err)
-
-		return
+	logDebug := os.Getenv(util.DirektivDebug)
+	if logDebug == "true" {
+		lvl.Set(slog.LevelDebug)
 	}
 
-	files, err := fStore.ForNamespace(ns.Name).ListDirektivFiles(ctx)
-	if err != nil {
-		logger.Error("listing direktiv files", "error", err)
-	}
-	endpoints := make([]*core.Endpoint, 0)
-	for _, file := range files {
-		if file.Typ != filestore.FileTypeEndpoint {
-			continue
-		}
-		data, err := fStore.ForFile(file).GetData(ctx)
-		if err != nil {
-			logger.Error("read file data", "error", err)
+	slogger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: lvl,
+	}))
 
-			continue
-		}
-		item, err := spec.ParseEndpointFile(data)
-		if err != nil {
-			logger.Error("parse endpoint file", "error", err)
-
-			continue
-		}
-		plConfig := make([]core.Plugin, 0, len(item.Plugins))
-		for _, v := range item.Plugins {
-			plConfig = append(plConfig, core.Plugin{
-				Type:          v.Type,
-				Configuration: v.Configuration,
-			})
-		}
-		endpoints = append(endpoints, &core.Endpoint{
-			Method:   item.Method,
-			Plugins:  plConfig,
-			FilePath: file.Path,
-		})
+	if os.Getenv(util.DirektivLogFormat) == "console" {
+		slogger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+			Level: lvl,
+		}))
 	}
 
-	gwManager.SetEndpoints(endpoints)
+	slog.SetDefault(slogger)
 }
 
 func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, logger *zap.SugaredLogger) {

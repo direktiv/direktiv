@@ -250,7 +250,14 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeEndpoint {
-		err = flow.pBus.Publish(pubsub.EndpointDelete, file.Path)
+		err = flow.pBus.Publish(pubsub.EndpointDelete, ns.Name)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+	}
+
+	if file.Typ == filestore.FileTypeConsumer {
+		err = flow.pBus.Publish(pubsub.ConsumerDelete, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

@@ -18,6 +18,10 @@ var (
 	EndpointDelete = "endpoint_delete"
 	EndpointUpdate = "endpoint_update"
 
+	ConsumerCreate = "consumer_create"
+	ConsumerDelete = "consumer_delete"
+	ConsumerUpdate = "consumer_update"
+
 	MirrorSync      = "mirror_sync"
 	NamespaceDelete = "namespace_delete"
 

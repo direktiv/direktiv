@@ -2,7 +2,6 @@ package sql
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -88,11 +87,7 @@ func (p *PostgresBus) Publish(channel string, data string) error {
 	if channel == "" || strings.Contains(channel, " ") {
 		return fmt.Errorf("channel name is empty or has spaces: >%s<", channel)
 	}
-	dataString, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("encoding data, data: %s, err: %w", data, err)
-	}
-	_, err = p.db.Exec(fmt.Sprintf("NOTIFY %s, '%s %s'", globalPostgresChannel, channel, dataString))
+	_, err := p.db.Exec(fmt.Sprintf("NOTIFY %s, '%s %s'", globalPostgresChannel, channel, data))
 	if err != nil {
 		return fmt.Errorf("send notify command, channel: %s, data: %v, err: %w", channel, data, err)
 	}
@@ -112,7 +107,7 @@ func splitNotificationText(text string) (string, string, error) {
 		return "", "", fmt.Errorf("no space in message: text: >%s<", text)
 	}
 
-	return text[:firstSpaceIndex], text[firstSpaceIndex:], nil
+	return text[:firstSpaceIndex], text[firstSpaceIndex+1:], nil
 }
 
 var _ pubsub.Bus = &PostgresBus{}
