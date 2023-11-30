@@ -44,6 +44,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
+	for _, extraRoute := range GetExtraRoutes() {
+		extraRoute(r)
+	}
+
 	r.Handle("/api/v2/gw/*", app.EndpointManager)
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
