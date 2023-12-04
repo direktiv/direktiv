@@ -13,6 +13,6 @@ COPY . .
 RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install
 
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
-RUN VITE_APP_VERSION=$FULL_VERSION VITE_BASE=/ui/ VITE_IS_ENTERPRISE=${IS_ENTERPRISE} yarn build
+RUN VITE_APP_VERSION=$FULL_VERSION VITE_IS_ENTERPRISE=${IS_ENTERPRISE} yarn build
 
 
