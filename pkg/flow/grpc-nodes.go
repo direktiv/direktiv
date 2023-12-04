@@ -225,7 +225,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowDelete, file.Path)
+		err = flow.pBus.Publish(pubsub.WorkflowDelete, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -243,7 +243,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.ServiceDelete, file.Path)
+		err = flow.pBus.Publish(pubsub.ServiceDelete, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -306,6 +306,18 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	renameTopic := map[filestore.FileType]string{
+		filestore.FileTypeWorkflow: pubsub.WorkflowRename,
+		filestore.FileTypeService:  pubsub.ServiceRename,
+		filestore.FileTypeEndpoint: pubsub.EndpointRename,
+		filestore.FileTypeConsumer: pubsub.ConsumerRename,
+	}[file.Typ]
+
+	err = flow.pBus.Publish(renameTopic, ns.Name)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())

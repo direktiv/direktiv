@@ -61,9 +61,21 @@ async function itShouldDeleteFile(it, expect, ns, path) {
     })
 }
 
+async function itShouldRenameFile(it, expect, ns, path, newPath) {
+    it(`should delete a file ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .post(`/api/namespaces/${ns}/tree${path}?op=rename-node`)
+            .send({new: newPath})
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({})
+    })
+}
+
 export default {
     deleteAllNamespaces,
     itShouldCreateNamespace,
     itShouldCreateFile,
-    itShouldDeleteFile
+    itShouldDeleteFile,
+    itShouldRenameFile,
 }
