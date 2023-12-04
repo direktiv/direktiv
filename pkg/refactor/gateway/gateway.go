@@ -116,7 +116,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		} else {
 			ep := &endpoints.Endpoint{
 				Namespace:    ns,
-				FilePath:     file.Path,
 				Errors:       make([]string, 0),
 				Warnings:     make([]string, 0),
 				EndpointBase: &core.EndpointBase{},
@@ -128,7 +127,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				slog.Error("parse endpoint file", slog.String("error", err.Error()))
 				ep.Errors = append(ep.Errors, err.Error())
 			}
-
+			ep.FilePath = item.Route
 			ep.EndpointBase = &item.EndpointBase
 			eps = append(eps, ep)
 		}

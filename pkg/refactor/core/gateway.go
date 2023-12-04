@@ -23,6 +23,7 @@ type GatewayManager interface {
 
 type EndpointBase struct {
 	Methods        []string `json:"methods"         yaml:"methods"`
+	Route          string   `json:"route"			yaml:"route"`
 	PathExtension  string   `json:"path_extension"  yaml:"path_extension"`
 	AllowAnonymous bool     `json:"allow_anonymous" yaml:"allow_anonymous"`
 	Plugins        Plugins  `json:"plugins"         yaml:"plugins"`
