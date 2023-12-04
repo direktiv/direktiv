@@ -78,6 +78,7 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 
 		if ep.Path == "" {
 			slog.Warn("no path configured for route", "path", ep.FilePath)
+
 			continue
 		}
 
@@ -116,7 +117,6 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 }
 
 func MakeEndpointPluginChain(endpoint *core.Endpoint, pluginList *core.Plugins) {
-
 	slog.Info("building plugin chain for endpoint",
 		slog.String("endpoint", endpoint.FilePath))
 

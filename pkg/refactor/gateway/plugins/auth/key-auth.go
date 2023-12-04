@@ -104,7 +104,7 @@ func (ka *KeyAuthPlugin) Config() interface{} {
 	return ka.config
 }
 
-func (ba *KeyAuthPlugin) Type() string {
+func (ka *KeyAuthPlugin) Type() string {
 	return KeyAuthPluginName
 }
 

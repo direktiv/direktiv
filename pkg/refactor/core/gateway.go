@@ -22,7 +22,7 @@ type GatewayManager interface {
 }
 
 type EndpointFile struct {
-	DirektivAPI    string   `json:"-" yaml:"direktiv_api"`
+	DirektivAPI    string   `json:"-"               yaml:"direktiv_api"`
 	Methods        []string `json:"methods"         yaml:"methods"`
 	Path           string   `json:"path"            yaml:"path"`
 	AllowAnonymous bool     `json:"allow_anonymous" yaml:"allow_anonymous"`
@@ -31,7 +31,7 @@ type EndpointFile struct {
 }
 
 type ConsumerFile struct {
-	DirektivAPI string   `json:"-" yaml:"direktiv_api"`
+	DirektivAPI string   `json:"-"        yaml:"direktiv_api"`
 	Username    string   `json:"username" yaml:"username"`
 	Password    string   `json:"password" yaml:"password"`
 	APIKey      string   `json:"api_key"  yaml:"api_key"`
@@ -47,7 +47,7 @@ type Plugins struct {
 }
 
 type PluginConfig struct {
-	Type          string                 `json:"type"          yaml:"type"`
+	Type          string                 `json:"type"                    yaml:"type"`
 	Configuration map[string]interface{} `json:"configuration,omitempty" yaml:"configuration"`
 }
 
