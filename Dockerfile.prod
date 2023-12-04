@@ -1,6 +1,8 @@
 # production environment
 FROM nginx:stable-alpine3.17-slim
 
+RUN apk add nginx-mod-http-lua lua-resty-http lua-resty-session lua-resty-jwt lua-resty-openidc
+
 COPY conf/prod/nginx.conf /etc/nginx/nginx.conf
 ADD dist /usr/share/nginx/html
 
