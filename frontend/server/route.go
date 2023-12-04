@@ -19,7 +19,6 @@ import (
 
 type RouteManager interface {
 	AddExtraRoutes(r *chi.Mux) error
-	IsAuthenticated(next http.Handler) http.Handler
 }
 
 const (
@@ -88,7 +87,7 @@ func (s *Server) addUIRoutes() {
 			http.Redirect(w, r, "/ui/", http.StatusPermanentRedirect)
 		})
 
-		router.With(s.routeManager.IsAuthenticated).Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
+		router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
 			serverFiles(w, r)
 		})
 
