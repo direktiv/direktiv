@@ -44,11 +44,11 @@ func (ir *InstantResponsePlugin) ExecutePlugin(_ *core.ConsumerFile,
 		w.Header().Add("Content-Type", "application/json")
 	}
 
-	w.WriteHeader(ir.config.StatusCode)
-
 	if ir.config.ContentType != "" {
 		w.Header().Set("Content-Type", ir.config.ContentType)
 	}
+
+	w.WriteHeader(ir.config.StatusCode)
 
 	// nolint
 	w.Write([]byte(ir.config.StatusMessage))
