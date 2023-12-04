@@ -119,6 +119,20 @@ scale: 2
             ]
         })
     })
+
+    it(`should rebuild all services`, async () => {
+        let sID = listRes.body.data[0].id
+        let res = await request(common.config.getDirektivHost())
+            .post(`/api/v2/namespaces/${testNamespace}/services/${sID}/actions/rebuild`).send()
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toEqual("")
+
+        sID = listRes.body.data[1].id
+        res = await request(common.config.getDirektivHost())
+            .post(`/api/v2/namespaces/${testNamespace}/services/${sID}/actions/rebuild`).send()
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toEqual("")
+    })
 });
 
 function sleep(ms) {
