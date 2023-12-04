@@ -2,6 +2,7 @@ docker_repo = $(if $(DOCKER_REPO),$(DOCKER_REPO),localhost:5000)
 docker_image = $(if $(DOCKER_IMAGE),$(DOCKER_IMAGE),frontend)
 docker_tag = $(if $(DOCKER_TAG),$(DOCKER_TAG),dev)
 enterprise = $(if $(ENTERPRISE),$(ENTERPRISE),FALSE)
+ui_base = $(if $(UI_BASE),$(UI_BASE),/)
 
 DOCKERFILE_REACT=Dockerfile.base
 DOCKERFILE_PROD=Dockerfile.prod
@@ -33,7 +34,7 @@ server-prod:
 react:
 	rm -Rf app.tar
 	rm -Rf dist/
-	docker build -t uibase --build-arg IS_ENTERPRISE=${enterprise} --build-arg FULL_VERSION=${FULL_VERSION} -f ${DOCKERFILE_REACT} .
+	docker build -t uibase --build-arg IS_ENTERPRISE=${enterprise} --build-arg UI_BASE=${ui_base} --build-arg FULL_VERSION=${FULL_VERSION} -f ${DOCKERFILE_REACT} .
 	container_id=$$(docker create "uibase"); \
 	docker cp $$container_id:/app/dist - > app.tar; \
 	docker rm -v $$container_id
