@@ -74,9 +74,11 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
 		pubsub.WorkflowDelete,
+		pubsub.WorkflowRename,
 		pubsub.ServiceCreate,
 		pubsub.ServiceUpdate,
 		pubsub.ServiceDelete,
+		pubsub.ServiceRename,
 		pubsub.MirrorSync,
 		pubsub.NamespaceDelete,
 	)
@@ -98,9 +100,11 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,
+		pubsub.EndpointRename,
 		pubsub.ConsumerCreate,
 		pubsub.ConsumerDelete,
 		pubsub.ConsumerUpdate,
+		pubsub.ConsumerRename,
 	)
 
 	// initial loading of routes and consumers

@@ -241,7 +241,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	err = flow.pBus.Publish(pubsub.WorkflowCreate, file.Path)
+	err = flow.pBus.Publish(pubsub.WorkflowCreate, ns.Name)
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -311,7 +311,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+		err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -322,7 +322,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	}
 
 	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.ServiceUpdate, file.Path)
+		err = flow.pBus.Publish(pubsub.ServiceUpdate, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -406,7 +406,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+	err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -498,7 +498,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 
-	err = flow.pBus.Publish(pubsub.WorkflowUpdate, file.Path)
+	err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
