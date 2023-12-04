@@ -15,7 +15,8 @@ plugins:
         namespace: ` + testNamespace + `
         file: /endpoint1.yaml
 methods: 
-  - GET`
+  - GET
+path: /endpoint1`
 
 const endpointNSFileAllowed = `
   direktiv_api: endpoint/v1
@@ -26,7 +27,8 @@ const endpointNSFileAllowed = `
       configuration:
           file: /endpoint1.yaml
   methods: 
-    - GET`
+    - GET
+  path: /endpoint2`
   
 
 describe("Test target namespace file plugin", () => {

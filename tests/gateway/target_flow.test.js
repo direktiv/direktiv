@@ -26,7 +26,8 @@ const endpointWorkflow = `
           namespace: ` + testNamespace + `
           flow: /workflow.yaml
   methods: 
-    - GET`
+    - GET
+  path: /endpoint1`
 
 const endpointWorkflowAllowed = `
   direktiv_api: endpoint/v1
@@ -39,8 +40,8 @@ const endpointWorkflowAllowed = `
           flow: /workflow.yaml
           content_type: text/json
   methods: 
-    - GET`
-
+    - GET
+  path: /endpoint2`
 
 describe("Test target workflow variable plugin", () => {
     beforeAll(common.helpers.deleteAllNamespaces);

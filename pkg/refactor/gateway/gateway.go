@@ -74,8 +74,8 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		return
 	}
 
-	eps := make([]*endpoints.Endpoint, 0)
-	consumers := make([]*core.ConsumerBase, 0)
+	eps := make([]*core.Endpoint, 0)
+	consumers := make([]*core.ConsumerFile, 0)
 
 	for _, file := range files {
 		if file.Typ != filestore.FileTypeConsumer &&
@@ -106,21 +106,20 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				continue
 			}
 
-			consumers = append(consumers, &core.ConsumerBase{
-				Username: item.Username,
-				Password: item.Password,
-				Tags:     item.Tags,
-				Groups:   item.Groups,
-				APIKey:   item.APIKey,
-			})
+			consumers = append(consumers, item)
 		} else {
-			ep := &endpoints.Endpoint{
-				Namespace:    ns,
-				FilePath:     file.Path,
-				Errors:       make([]string, 0),
-				Warnings:     make([]string, 0),
-				EndpointBase: &core.EndpointBase{},
+			ep := &core.Endpoint{
+				Methods:                 make([]string, 0),
+				Errors:                  make([]string, 0),
+				Warnings:                make([]string, 0),
+				AuthPluginInstances:     make([]core.PluginInstance, 0),
+				InboundPluginInstances:  make([]core.PluginInstance, 0),
+				OutboundPluginInstances: make([]core.PluginInstance, 0),
+				TargetPluginInstance:    nil,
+				FilePath:                file.Path,
+				Namespace:               ns,
 			}
+
 			item, err := core.ParseEndpointFile(data)
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
@@ -129,7 +128,14 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				ep.Errors = append(ep.Errors, err.Error())
 			}
 
-			ep.EndpointBase = &item.EndpointBase
+			ep.AllowAnonymous = item.AllowAnonymous
+			ep.Timeout = item.Timeout
+			ep.Methods = item.Methods
+			ep.Path = item.Path
+			ep.Plugins = item.Plugins
+
+			endpoints.MakeEndpointPluginChain(ep, &item.Plugins)
+
 			eps = append(eps, ep)
 		}
 	}
@@ -216,7 +222,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, plugins.ConsumersParamCtxKey, gw.ConsumerList)
 
 	// timeout
-	t := endpointEntry.EndpointBase.Timeout
+	t := endpointEntry.Timeout
 
 	// timeout is 30 secs if not set
 	if t == 0 {
@@ -227,7 +233,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	c := &core.ConsumerBase{}
+	c := &core.ConsumerFile{}
 	for i := range endpointEntry.AuthPluginInstances {
 		authPlugin := endpointEntry.AuthPluginInstances[i]
 
@@ -243,7 +249,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// if user not authenticated and anonymous access not enabled
-	if c.Username == "" && !endpointEntry.EndpointBase.AllowAnonymous {
+	if c.Username == "" && !endpointEntry.AllowAnonymous {
 		plugins.ReportError(w, http.StatusUnauthorized, "no permission",
 			fmt.Errorf("request not authorized"))
 
@@ -320,8 +326,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func executePlugin(c *core.ConsumerBase, w http.ResponseWriter, r *http.Request,
-	fn func(*core.ConsumerBase, http.ResponseWriter, *http.Request) bool,
+func executePlugin(c *core.ConsumerFile, w http.ResponseWriter, r *http.Request,
+	fn func(*core.ConsumerFile, http.ResponseWriter, *http.Request) bool,
 ) bool {
 	select {
 	case <-r.Context().Done():
@@ -349,7 +355,7 @@ func swapRequestResponse(rin *http.Request, w *DummyWriter) (*http.Request, erro
 }
 
 // API functions.
-func (ep *gatewayManager) GetConsumers(namespace string) ([]*core.ConsumerBase, error) {
+func (ep *gatewayManager) GetConsumers(namespace string) ([]*core.ConsumerFile, error) {
 	g, ok := ep.nsGateways[namespace]
 	if !ok {
 		return nil, fmt.Errorf("no consumers for namespace %s", namespace)
@@ -358,7 +364,7 @@ func (ep *gatewayManager) GetConsumers(namespace string) ([]*core.ConsumerBase, 
 	return g.ConsumerList.GetConsumers(), nil
 }
 
-func (ep *gatewayManager) GetRoutes(namespace string) ([]core.EndpointListItem, error) {
+func (ep *gatewayManager) GetRoutes(namespace string) ([]*core.Endpoint, error) {
 	g, ok := ep.nsGateways[namespace]
 	if !ok {
 		return nil, fmt.Errorf("no routes for namespace %s", namespace)

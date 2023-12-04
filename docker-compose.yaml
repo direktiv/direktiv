@@ -59,7 +59,7 @@ services:
       - flow
 
   e2e-tests:
-    image: node:alpine
+    image: node:lts-alpine3.18
     volumes:
       - ./tests:/tests
     environment:

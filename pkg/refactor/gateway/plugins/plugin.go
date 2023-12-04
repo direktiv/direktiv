@@ -30,7 +30,7 @@ var (
 )
 
 type Plugin interface {
-	Configure(config interface{}, namespace string) (PluginInstance, error)
+	Configure(config interface{}, namespace string) (core.PluginInstance, error)
 	Name() string
 	Type() PluginType
 }
@@ -39,7 +39,7 @@ type Plugin interface {
 type PluginBase struct {
 	pname    string
 	ptype    PluginType
-	configFn func(interface{}, string) (PluginInstance, error)
+	configFn func(interface{}, string) (core.PluginInstance, error)
 }
 
 func (p PluginBase) Name() string {
@@ -50,12 +50,12 @@ func (p PluginBase) Type() PluginType {
 	return p.ptype
 }
 
-func (p PluginBase) Configure(config interface{}, ns string) (PluginInstance, error) {
+func (p PluginBase) Configure(config interface{}, ns string) (core.PluginInstance, error) {
 	return p.configFn(config, ns)
 }
 
 func NewPluginBase(pname string, ptype PluginType,
-	configFn func(interface{}, string) (PluginInstance, error),
+	configFn func(interface{}, string) (core.PluginInstance, error),
 ) Plugin {
 	return &PluginBase{
 		pname:    pname,
@@ -75,12 +75,6 @@ func ConvertConfig(config interface{}, target interface{}) error {
 	}
 
 	return nil
-}
-
-type PluginInstance interface {
-	ExecutePlugin(c *core.ConsumerBase,
-		w http.ResponseWriter, r *http.Request) bool
-	Config() interface{}
 }
 
 func GetAllPlugins() map[string]Plugin {

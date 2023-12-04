@@ -28,7 +28,7 @@ type FlowVarPlugin struct {
 	config *WorkflowVarConfig
 }
 
-func ConfigureWorkflowVar(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureWorkflowVar(config interface{}, ns string) (core.PluginInstance, error) {
 	targetflowVarConfig := &WorkflowVarConfig{}
 
 	err := plugins.ConvertConfig(config, targetflowVarConfig)
@@ -55,7 +55,7 @@ func (tfv FlowVarPlugin) Config() interface{} {
 	return tfv.config
 }
 
-func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerBase,
+func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	url, err := createURLFlowVar(tfv.config.Namespace, tfv.config.Flow,
@@ -116,6 +116,10 @@ func createURLFlowVar(ns, flow, v string) (*url.URL, error) {
 		os.Getenv("DIREKTIV_API_V1_PORT"), ns, flow, v)
 
 	return url.Parse(urlString)
+}
+
+func (tfv FlowVarPlugin) Type() string {
+	return TargetFlowVarPluginName
 }
 
 //nolint:gochecknoinits

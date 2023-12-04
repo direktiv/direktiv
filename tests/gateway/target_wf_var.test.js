@@ -26,7 +26,8 @@ const endpointWorkflowVar = `
           flow: /workflow.yaml
           variable: test
   methods: 
-    - GET`
+    - GET
+  path: /endpoint1`
 
 const endpointWorkflowVarAllowed = `
   direktiv_api: endpoint/v1
@@ -40,7 +41,8 @@ const endpointWorkflowVarAllowed = `
           variable: test
           content_type: text/test
   methods: 
-    - GET`
+    - GET
+  path: endpoint2`
 
 
 describe("Test target workflow variable plugin", () => {

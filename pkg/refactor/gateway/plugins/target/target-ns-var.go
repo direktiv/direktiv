@@ -25,7 +25,7 @@ type NamespaceVarPlugin struct {
 	config *NamespaceVarConfig
 }
 
-func ConfigureNamespaceVarPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureNamespaceVarPlugin(config interface{}, ns string) (core.PluginInstance, error) {
 	targetNamespaceVarConfig := &NamespaceVarConfig{}
 
 	err := plugins.ConvertConfig(config, targetNamespaceVarConfig)
@@ -52,7 +52,7 @@ func (tnv NamespaceVarPlugin) Config() interface{} {
 	return tnv.config
 }
 
-func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerBase,
+func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	url, err := createURLNamespaceVar(tnv.config.Namespace, tnv.config.Variable)
@@ -107,6 +107,10 @@ func createURLNamespaceVar(ns, v string) (*url.URL, error) {
 		os.Getenv("DIREKTIV_API_V1_PORT"), ns, v)
 
 	return url.Parse(urlString)
+}
+
+func (tnv NamespaceVarPlugin) Type() string {
+	return TargetNamespaceVarPluginName
 }
 
 //nolint:gochecknoinits

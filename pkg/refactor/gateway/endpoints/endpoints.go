@@ -3,7 +3,6 @@ package endpoints
 import (
 	"fmt"
 	"log/slog"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -17,18 +16,6 @@ type EndpointList struct {
 	lock sync.Mutex
 }
 
-type Endpoint struct {
-	EndpointBase            *core.EndpointBase
-	Namespace               string
-	FilePath                string
-	AuthPluginInstances     []plugins.PluginInstance
-	InboundPluginInstances  []plugins.PluginInstance
-	TargetPluginInstance    plugins.PluginInstance
-	OutboundPluginInstances []plugins.PluginInstance
-	Errors                  []string
-	Warnings                []string
-}
-
 func NewEndpointList() *EndpointList {
 	return &EndpointList{
 		currentTree: &node{},
@@ -39,7 +26,7 @@ func (e *EndpointList) Routes() []Route {
 	return e.currentTree.Routes()
 }
 
-func (e *EndpointList) FindRoute(route, method string) (*Endpoint, map[string]string) {
+func (e *EndpointList) FindRoute(route, method string) (*core.Endpoint, map[string]string) {
 	if !strings.HasPrefix(route, "/") {
 		route = "/" + route
 	}
@@ -66,61 +53,45 @@ func (e *EndpointList) FindRoute(route, method string) (*Endpoint, map[string]st
 	return endpointEntry, urlParams
 }
 
-func (e *EndpointList) GetEndpoints() []core.EndpointListItem {
+func (e *EndpointList) GetEndpoints() []*core.Endpoint {
 	routes := e.Routes()
-	items := make([]core.EndpointListItem, 0)
+	items := make([]*core.Endpoint, 0)
 
 	for i := range routes {
 		r := routes[i]
-		methods := make([]string, 0)
-		ep := core.EndpointListItem{
-			Path:    r.FilePath,
-			Pattern: r.Pattern,
+		for _, h := range r.Handlers {
+			items = append(items, h)
+
+			// leave after first method, because they are all the same
+			break
 		}
-		for m, h := range r.Handlers {
-			methods = append(methods, m)
-			ep.Warnings = h.Warnings
-			ep.Errors = h.Errors
-			ep.AllowAnonymous = h.EndpointBase.AllowAnonymous
-			ep.PathExtension = h.EndpointBase.PathExtension
-			ep.Plugins = h.EndpointBase.Plugins
-			ep.Timeout = h.EndpointBase.Timeout
-		}
-		ep.Methods = methods
-		items = append(items, ep)
 	}
 
 	return items
 }
 
-func (e *EndpointList) SetEndpoints(endpointList []*Endpoint) {
+func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	newTree := &node{}
 
 	for i := range endpointList {
 		ep := endpointList[i]
 
-		// skip the files with invalid content
-		if ep.EndpointBase == nil {
+		if ep.Path == "" {
+			slog.Warn("no path configured for route", "path", ep.FilePath)
 			continue
 		}
 
-		slog.Debug("adding endpoint",
-			slog.String("path", ep.FilePath),
-			slog.String("extension", ep.EndpointBase.PathExtension))
-
-		// remove the file extension, most likely .yaml
-		storePath := strings.TrimSuffix(ep.FilePath, filepath.Ext(ep.FilePath))
-
-		// add path extension if there is any
-		if ep.EndpointBase.PathExtension != "" {
-			storePath = filepath.Join(storePath, ep.EndpointBase.PathExtension)
+		if !strings.HasPrefix(ep.Path, "/") {
+			ep.Path = "/" + ep.Path
 		}
 
-		buildPluginChain(ep)
+		slog.Debug("adding endpoint",
+			slog.String("file-path", ep.FilePath),
+			slog.String("path", ep.Path))
 
 		// assign handler to all methods
-		for a := range ep.EndpointBase.Methods {
-			m := ep.EndpointBase.Methods[a]
+		for a := range ep.Methods {
+			m := ep.Methods[a]
 			mMethod, ok := methodMap[m]
 			if !ok {
 				slog.Warn("http method unknown",
@@ -131,10 +102,10 @@ func (e *EndpointList) SetEndpoints(endpointList []*Endpoint) {
 			}
 
 			slog.Info("adding endpoint",
-				slog.String("path", storePath),
+				slog.String("path", ep.Path),
 				slog.String("method", m))
 
-			newTree.InsertRoute(mMethod, storePath, ep)
+			newTree.InsertRoute(mMethod, ep.Path, ep)
 		}
 	}
 
@@ -144,13 +115,14 @@ func (e *EndpointList) SetEndpoints(endpointList []*Endpoint) {
 	e.currentTree = newTree
 }
 
-func buildPluginChain(endpoint *Endpoint) {
+func MakeEndpointPluginChain(endpoint *core.Endpoint, pluginList *core.Plugins) {
+
 	slog.Info("building plugin chain for endpoint",
 		slog.String("endpoint", endpoint.FilePath))
 
-	// add target if set
-	if endpoint.EndpointBase.Plugins.Target.Type != "" {
-		targetPlugin, err := configurePlugin(endpoint.EndpointBase.Plugins.Target,
+	// warning if target not set
+	if pluginList.Target.Type != "" {
+		targetPlugin, err := configurePlugin(pluginList.Target,
 			plugins.TargetPluginType, endpoint.Namespace)
 		if err != nil {
 			endpoint.Errors = append(endpoint.Errors, err.Error())
@@ -161,28 +133,27 @@ func buildPluginChain(endpoint *Endpoint) {
 		endpoint.Warnings = append(endpoint.Warnings, "no target plugin set")
 	}
 
-	// add auth plugins
-	authPlugins, errors := processPlugins(endpoint.EndpointBase.Plugins.Auth,
+	authPlugins, errors := processPlugins(pluginList.Auth,
 		plugins.AuthPluginType, endpoint.Namespace)
 	endpoint.AuthPluginInstances = authPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 	// inbound
-	inboundPlugins, errors := processPlugins(endpoint.EndpointBase.Plugins.Inbound,
+	inboundPlugins, errors := processPlugins(pluginList.Inbound,
 		plugins.InboundPluginType, endpoint.Namespace)
 	endpoint.InboundPluginInstances = inboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 
 	// outbound
-	outboundPlugins, errors := processPlugins(endpoint.EndpointBase.Plugins.Outbound,
+	outboundPlugins, errors := processPlugins(pluginList.Outbound,
 		plugins.OutboundPluginType, endpoint.Namespace)
 	endpoint.OutboundPluginInstances = outboundPlugins
 	endpoint.Errors = append(endpoint.Errors, errors...)
 }
 
-func processPlugins(pluginConfigs []core.PluginConfig, t plugins.PluginType, ns string) ([]plugins.PluginInstance, []string) {
+func processPlugins(pluginConfigs []core.PluginConfig, t plugins.PluginType, ns string) ([]core.PluginInstance, []string) {
 	errors := make([]string, 0)
-	configuredPlugins := make([]plugins.PluginInstance, 0)
+	configuredPlugins := make([]core.PluginInstance, 0)
 
 	for i := range pluginConfigs {
 		config := pluginConfigs[i]
@@ -199,7 +170,7 @@ func processPlugins(pluginConfigs []core.PluginConfig, t plugins.PluginType, ns 
 	return configuredPlugins, errors
 }
 
-func configurePlugin(config core.PluginConfig, t plugins.PluginType, ns string) (plugins.PluginInstance, error) {
+func configurePlugin(config core.PluginConfig, t plugins.PluginType, ns string) (core.PluginInstance, error) {
 	slog.Info("processing plugin",
 		slog.String("plugin", config.Type))
 

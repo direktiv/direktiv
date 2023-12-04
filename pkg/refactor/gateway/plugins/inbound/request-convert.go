@@ -31,7 +31,7 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func ConfigureRequestConvert(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureRequestConvert(config interface{}, _ string) (core.PluginInstance, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
 	err := plugins.ConvertConfig(config, requestConvertConfig)
@@ -62,7 +62,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerBase,
+func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	response := &RequestConvertResponse{
@@ -145,6 +145,10 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerBase,
 		slog.String("body", string(newBody)))
 
 	return true
+}
+
+func (rcp *RequestConvertPlugin) Type() string {
+	return RequestConvertPluginName
 }
 
 //nolint:gochecknoinits

@@ -32,7 +32,7 @@ type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}, _ string) (core.PluginInstance, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}
@@ -47,7 +47,7 @@ func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstanc
 	}, nil
 }
 
-func (ka *KeyAuthPlugin) ExecutePlugin(c *core.ConsumerBase,
+func (ka *KeyAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	key := r.Header.Get(ka.config.KeyName)
@@ -102,6 +102,10 @@ func (ka *KeyAuthPlugin) ExecutePlugin(c *core.ConsumerBase,
 
 func (ka *KeyAuthPlugin) Config() interface{} {
 	return ka.config
+}
+
+func (ba *KeyAuthPlugin) Type() string {
+	return KeyAuthPluginName
 }
 
 //nolint:gochecknoinits

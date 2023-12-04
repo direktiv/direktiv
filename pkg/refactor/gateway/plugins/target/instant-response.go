@@ -21,7 +21,7 @@ type InstantResponseConfig struct {
 	ContentType   string `mapstructure:"content_type"   yaml:"content_type"`
 }
 
-func ConfigureInstantResponse(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureInstantResponse(config interface{}, _ string) (core.PluginInstance, error) {
 	irConfig := &InstantResponseConfig{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
@@ -37,7 +37,7 @@ func ConfigureInstantResponse(config interface{}, _ string) (plugins.PluginInsta
 	}, nil
 }
 
-func (ir *InstantResponsePlugin) ExecutePlugin(_ *core.ConsumerBase,
+func (ir *InstantResponsePlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, _ *http.Request,
 ) bool {
 	if plugins.IsJSON(ir.config.StatusMessage) {
@@ -58,6 +58,10 @@ func (ir *InstantResponsePlugin) ExecutePlugin(_ *core.ConsumerBase,
 
 func (ir *InstantResponsePlugin) Config() interface{} {
 	return ir.config
+}
+
+func (ir *InstantResponsePlugin) Type() string {
+	return InstantResponsePluginName
 }
 
 //nolint:gochecknoinits

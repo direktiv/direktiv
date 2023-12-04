@@ -29,7 +29,7 @@ type BasicAuthPlugin struct {
 	config *BasicAuthConfig
 }
 
-func ConfigureBasicAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureBasicAuthPlugin(config interface{}, _ string) (core.PluginInstance, error) {
 	authConfig := &BasicAuthConfig{}
 
 	err := plugins.ConvertConfig(config, authConfig)
@@ -42,7 +42,7 @@ func ConfigureBasicAuthPlugin(config interface{}, _ string) (plugins.PluginInsta
 	}, nil
 }
 
-func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerBase,
+func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	user, pwd, ok := r.BasicAuth()
@@ -106,6 +106,10 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerBase,
 
 	// basic auth always returns true to execute other auth plugins
 	return true
+}
+
+func (ba *BasicAuthPlugin) Type() string {
+	return BasicAuthPluginName
 }
 
 func (ba *BasicAuthPlugin) Config() interface{} {
