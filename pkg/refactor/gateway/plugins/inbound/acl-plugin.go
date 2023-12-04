@@ -26,7 +26,7 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func ConfigureACL(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureACL(config interface{}, _ string) (core.PluginInstance, error) {
 	aclConfig := &ACLConfig{}
 
 	err := plugins.ConvertConfig(config, aclConfig)
@@ -43,7 +43,11 @@ func (acl *ACLPlugin) Config() interface{} {
 	return acl.config
 }
 
-func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerBase,
+func (acl *ACLPlugin) Type() string {
+	return ACLPluginName
+}
+
+func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerFile,
 	w http.ResponseWriter, _ *http.Request,
 ) bool {
 	if c == nil {

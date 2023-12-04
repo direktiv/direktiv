@@ -1,6 +1,7 @@
 package endpoints_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,32 +15,31 @@ import (
 )
 
 func TestSetEndpointsFileEmpty(t *testing.T) {
-	ep := &endpoints.Endpoint{}
+	ep := &core.Endpoint{}
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 0)
 }
 
 func TestSetEndpointsWarnings(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
-				},
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
+	}
+	endpoints.MakeEndpointPluginChain(ep, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
 			},
 		},
-		FilePath: "/route.yaml",
-	}
+	})
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -51,27 +51,25 @@ func TestSetEndpointsWarnings(t *testing.T) {
 }
 
 func TestSetEndpointsErrors(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-						Configuration: map[string]interface{}{
-							"add_username_header": 1000,
-						},
-					},
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
+	}
+	endpoints.MakeEndpointPluginChain(ep, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
+				Configuration: map[string]interface{}{
+					"add_username_header": 1000,
 				},
 			},
 		},
-
-		FilePath: "/route.yaml",
-	}
+	})
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -83,46 +81,45 @@ func TestSetEndpointsErrors(t *testing.T) {
 }
 
 func TestSetEndpoints(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
-					{
-						Type: auth.KeyAuthPluginName,
-						Configuration: map[string]interface{}{
-							"key_name": "demo",
-						},
-					},
-				},
-				Inbound: []core.PluginConfig{
-					{
-						Type: inbound.ACLPluginName,
-					},
-				},
-				Target: core.PluginConfig{
-					Type: target.InstantResponsePluginName,
-					Configuration: map[string]interface{}{
-						"status_code":    201,
-						"status_message": "demo",
-					},
-				},
-				Outbound: []core.PluginConfig{
-					{
-						Type: outbound.JSOutboundPluginName,
-					},
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
+	}
+	endpoints.MakeEndpointPluginChain(ep, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
+			},
+			{
+				Type: auth.KeyAuthPluginName,
+				Configuration: map[string]interface{}{
+					"key_name": "demo",
 				},
 			},
 		},
-		FilePath: "/route.yaml",
-	}
+		Inbound: []core.PluginConfig{
+			{
+				Type: inbound.ACLPluginName,
+			},
+		},
+		Target: core.PluginConfig{
+			Type: target.InstantResponsePluginName,
+			Configuration: map[string]interface{}{
+				"status_code":    201,
+				"status_message": "demo",
+			},
+		},
+		Outbound: []core.PluginConfig{
+			{
+				Type: outbound.JSOutboundPluginName,
+			},
+		},
+	})
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -143,46 +140,46 @@ func TestSetEndpoints(t *testing.T) {
 }
 
 func TestSetEndpointsFullError(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
-					{
-						Type: auth.KeyAuthPluginName,
-						Configuration: map[string]interface{}{
-							"key_name": "demo",
-						},
-					},
-				},
-				Inbound: []core.PluginConfig{
-					{
-						Type: inbound.ACLPluginName,
-					},
-				},
-				Target: core.PluginConfig{
-					Type: target.InstantResponsePluginName,
-					Configuration: map[string]interface{}{
-						"status_code":    "textnotallowed",
-						"status_message": "demo",
-					},
-				},
-				Outbound: []core.PluginConfig{
-					{
-						Type: outbound.JSOutboundPluginName,
-					},
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
+	}
+
+	endpoints.MakeEndpointPluginChain(ep, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
+			},
+			{
+				Type: auth.KeyAuthPluginName,
+				Configuration: map[string]interface{}{
+					"key_name": "demo",
 				},
 			},
 		},
-		FilePath: "/route.yaml",
-	}
+		Inbound: []core.PluginConfig{
+			{
+				Type: inbound.ACLPluginName,
+			},
+		},
+		Target: core.PluginConfig{
+			Type: target.InstantResponsePluginName,
+			Configuration: map[string]interface{}{
+				"status_code":    "textnotallowed",
+				"status_message": "demo",
+			},
+		},
+		Outbound: []core.PluginConfig{
+			{
+				Type: outbound.JSOutboundPluginName,
+			},
+		},
+	})
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 
@@ -194,54 +191,57 @@ func TestSetEndpointsFullError(t *testing.T) {
 }
 
 func TestSetEndpointsFind(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost, http.MethodGet},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
-				},
-			},
-		},
-		FilePath: "/route.yaml",
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost, http.MethodGet},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
 	}
-
-	ep1 := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodGet},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
+	endpoints.MakeEndpointPluginChain(ep,
+		&core.Plugins{
+			Auth: []core.PluginConfig{
+				{
+					Type: auth.BasicAuthPluginName,
 				},
 			},
 		},
+	)
+
+	ep1 := &core.Endpoint{
+		Methods:        []string{http.MethodGet},
+		AllowAnonymous: true,
+		FilePath:       "/path/to/route.yaml",
+		Path:           "/path/to/route",
+	}
+	endpoints.MakeEndpointPluginChain(ep1, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
+			},
+		},
+	})
+
+	ep2 := &core.Endpoint{
+		// EndpointBase: &core.EndpointBase{
+		Methods:        []string{http.MethodGet},
+		AllowAnonymous: true,
+		// PathExtension: "/{id}",
+		// },
+		Path:     "/path/to/route/{id}",
 		FilePath: "/path/to/route.yaml",
 	}
-
-	ep2 := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodGet},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
-				},
+	endpoints.MakeEndpointPluginChain(ep2, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
 			},
-			PathExtension: "/{id}",
 		},
-		FilePath: "/path/to/route.yaml",
-	}
+	})
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep, ep1, ep2})
+	epl.SetEndpoints([]*core.Endpoint{ep, ep1, ep2})
+
+	fmt.Println(epl.Routes())
 
 	assert.Len(t, epl.Routes(), 3)
 
@@ -265,46 +265,46 @@ func TestSetEndpointsFind(t *testing.T) {
 }
 
 func TestSetEndpointsWrongMethod(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost, "DOESNOTEXIST"},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: auth.BasicAuthPluginName,
-					},
-				},
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost, "DOESNOTEXIST"},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
+	}
+	endpoints.MakeEndpointPluginChain(ep, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: auth.BasicAuthPluginName,
 			},
 		},
-		FilePath: "/route.yaml",
-	}
+	})
 
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	// should have only one route for post
+	assert.Len(t, epl.Routes(), 1)
 	assert.Len(t, epl.Routes()[0].Handlers, 1)
 }
 
 func TestSetEndpointsTypeErrors(t *testing.T) {
-	ep := &endpoints.Endpoint{
-		EndpointBase: &core.EndpointBase{
-			Methods:        []string{http.MethodPost},
-			AllowAnonymous: true,
-			Plugins: core.Plugins{
-				Auth: []core.PluginConfig{
-					{
-						Type: inbound.RequestConvertPluginName,
-					},
-				},
-			},
-		},
-		FilePath: "/route.yaml",
+	ep := &core.Endpoint{
+		Methods:        []string{http.MethodPost},
+		AllowAnonymous: true,
+		FilePath:       "/route.yaml",
+		Path:           "/route",
 	}
 
+	endpoints.MakeEndpointPluginChain(ep, &core.Plugins{
+		Auth: []core.PluginConfig{
+			{
+				Type: inbound.RequestConvertPluginName,
+			},
+		},
+	})
+
 	epl := endpoints.NewEndpointList()
-	epl.SetEndpoints([]*endpoints.Endpoint{ep})
+	epl.SetEndpoints([]*core.Endpoint{ep})
 
 	assert.Len(t, epl.Routes(), 1)
 

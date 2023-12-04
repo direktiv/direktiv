@@ -28,7 +28,7 @@ type JSInboundPlugin struct {
 	config *JSInboundConfig
 }
 
-func ConfigureJSInbound(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureJSInbound(config interface{}, _ string) (core.PluginInstance, error) {
 	jsConfig := &JSInboundConfig{}
 
 	err := plugins.ConvertConfig(config, jsConfig)
@@ -43,6 +43,10 @@ func ConfigureJSInbound(config interface{}, _ string) (plugins.PluginInstance, e
 
 func (js *JSInboundPlugin) Config() interface{} {
 	return js.config
+}
+
+func (js *JSInboundPlugin) Type() string {
+	return JSInboundPluginName
 }
 
 type Query struct {
@@ -71,7 +75,7 @@ type request struct {
 	Body    string
 }
 
-func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerBase,
+func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	var (

@@ -15,7 +15,8 @@ const endpointNSVar = `
           namespace: ` + testNamespace + `
           variable: plain
   methods: 
-    - GET`
+    - GET
+  path: endpoint1`
 
 const endpointNSVarAllowed = `
   direktiv_api: endpoint/v1
@@ -28,7 +29,8 @@ const endpointNSVarAllowed = `
           variable: plain
           content_type: text/test
   methods: 
-    - GET`
+    - GET
+  path: /endpoint2`
 
 
 describe("Test target namespace variable plugin", () => {

@@ -144,7 +144,7 @@ func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	w := httptest.NewRecorder()
-	p2.ExecutePlugin(&core.ConsumerBase{Username: "hello", Tags: []string{"tag1"}}, w, r)
+	p2.ExecutePlugin(&core.ConsumerFile{Username: "hello", Tags: []string{"tag1"}}, w, r)
 
 	b, _ := io.ReadAll(r.Body)
 

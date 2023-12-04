@@ -29,7 +29,7 @@ type FlowPlugin struct {
 	config *WorkflowConfig
 }
 
-func ConfigureTargetFlowPlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureTargetFlowPlugin(config interface{}, ns string) (core.PluginInstance, error) {
 	targetflowConfig := &WorkflowConfig{
 		Async: true,
 	}
@@ -54,11 +54,15 @@ func ConfigureTargetFlowPlugin(config interface{}, ns string) (plugins.PluginIns
 	}, nil
 }
 
+func (tf FlowPlugin) Type() string {
+	return FlowPluginName
+}
+
 func (tf FlowPlugin) Config() interface{} {
 	return tf.config
 }
 
-func (tf FlowPlugin) ExecutePlugin(_ *core.ConsumerBase,
+func (tf FlowPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	url, err := createURL(tf.config.Namespace, tf.config.Flow, tf.config.Async)

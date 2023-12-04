@@ -31,7 +31,7 @@ func TestConfigACLPlugin(t *testing.T) {
 }
 
 func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
-	c := &core.ConsumerBase{
+	c := &core.ConsumerFile{
 		Username: "demo",
 		Password: "hello",
 		Tags:     []string{"tag1", "tag2"},

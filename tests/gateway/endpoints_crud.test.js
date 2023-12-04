@@ -17,7 +17,8 @@ plugins:
         status_code: 201
         status_message: "TEST1"
 methods: 
-  - GET`
+  - GET
+path: /endpoint1`
 
 
 const endpoint2 = `
@@ -35,7 +36,8 @@ plugins:
         status_code: 202
         status_message: "TEST2"
 methods: 
-  - GET`
+  - GET
+path: /endpoint2`
 
 const consumer1 = `
 direktiv_api: "consumer/v1"
@@ -102,31 +104,40 @@ describe("Test gateway endpoints crud operations", () => {
     expect(listRes.body.data.length).toEqual(2);
     expect(listRes.body.data).toEqual(
       expect.arrayContaining(
-        [{"allow_anonymous": false, 
-        "errors": [], "methods": ["GET"], 
-        "path": "/endpoint1.yaml",
-        "path_extension": "", 
-        "pattern": "/endpoint1", 
-        "plugins": {"auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
-        "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, "type": "instant-response"}},
-        "timeout": 0, "warnings": []},
-        {
-        "allow_anonymous": true,
-        "errors": [],
-        "methods": ["GET"],
-        "path": "/endpoint2.yaml", 
-        "path_extension": "", 
-        "pattern": "/endpoint2", 
-        "plugins": {
-          "auth": [{"configuration": null, "type": "basic-auth"}, {"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
-          "target": {"configuration": {"status_code": 202, "status_message": "TEST2"}, "type": "instant-response"}
-        }, 
-        "timeout": 0, 
-        "warnings": []}]
+        [
+          { "allow_anonymous": false, 
+            "errors": [], 
+            "file_path": "/endpoint1.yaml", 
+            "methods": ["GET"], 
+            "path": "/endpoint1", 
+            "plugins": {
+              "auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
+              "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, 
+              "type": "instant-response"}
+            }, 
+            "timeout": 0, 
+            "warnings": []
+          }, {
+            "allow_anonymous": true, 
+            "errors": [], 
+            "file_path": "/endpoint2.yaml", 
+            "methods": ["GET"], 
+            "path": "/endpoint2", 
+            "plugins": {
+              "auth": [
+                {"type": "basic-auth"}, 
+                {"configuration": {"key_name": "secret"}, "type": "key-auth"}
+              ], 
+              "target": {"configuration": {"status_code": 202, "status_message": "TEST2"}, "type": "instant-response"}}, 
+            "timeout": 0, 
+            "warnings": []
+          }
+        ]
       )
     );
   });
 
+  
   it(`should list all consumers`, async () => {
     const listRes = await request(common.config.getDirektivHost()).get(
       `/api/v2/namespaces/${testNamespace}/gateway/consumers`

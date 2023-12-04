@@ -8,7 +8,7 @@ import (
 )
 
 func TestConsumerNoUsername(t *testing.T) {
-	cl := []*core.ConsumerBase{
+	cl := []*core.ConsumerFile{
 		{},
 	}
 
@@ -19,7 +19,7 @@ func TestConsumerNoUsername(t *testing.T) {
 
 func TestConsumerWithAttributes(t *testing.T) {
 	consumerList := NewConsumerList()
-	cl := []*core.ConsumerBase{
+	cl := []*core.ConsumerFile{
 		{
 			Username: "user",
 			Password: "pwd",
@@ -40,7 +40,7 @@ func TestConsumerWithAttributes(t *testing.T) {
 
 func TestConsumerDuplicate(t *testing.T) {
 	consumerList := NewConsumerList()
-	cl := []*core.ConsumerBase{
+	cl := []*core.ConsumerFile{
 		{
 			Username: "user",
 		},

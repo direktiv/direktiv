@@ -25,7 +25,7 @@ type JSOutboundPlugin struct {
 	config *JSOutboundConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}, _ string) (plugins.PluginInstance, error) {
+func ConfigureKeyAuthPlugin(config interface{}, _ string) (core.PluginInstance, error) {
 	jsConfig := &JSOutboundConfig{}
 
 	err := plugins.ConvertConfig(config, jsConfig)
@@ -65,7 +65,7 @@ func (h Headers) Delete(key string) {
 	h.H.Del(key)
 }
 
-func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerBase,
+func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	var (
@@ -162,6 +162,10 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerBase,
 	}
 
 	return true
+}
+
+func (js *JSOutboundPlugin) Type() string {
+	return JSOutboundPluginName
 }
 
 func (js *JSOutboundPlugin) Config() interface{} {

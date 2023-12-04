@@ -30,7 +30,7 @@ type NamespaceFilePlugin struct {
 	config *NamespaceFileConfig
 }
 
-func ConfigureNamespaceFilePlugin(config interface{}, ns string) (plugins.PluginInstance, error) {
+func ConfigureNamespaceFilePlugin(config interface{}, ns string) (core.PluginInstance, error) {
 	targetNamespaceFileConfig := &NamespaceFileConfig{}
 
 	err := plugins.ConvertConfig(config, targetNamespaceFileConfig)
@@ -57,8 +57,12 @@ func (tnf NamespaceFilePlugin) Config() interface{} {
 	return tnf.config
 }
 
+func (tnf NamespaceFilePlugin) Type() string {
+	return NamespaceFilePluginName
+}
+
 func (tnf NamespaceFilePlugin) ExecutePlugin(
-	_ *core.ConsumerBase,
+	_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	data, err := fetchObjectData(tnf.config.Namespace, tnf.config.File)
