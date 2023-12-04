@@ -21,9 +21,12 @@ import {
   FilepickerSeparator,
 } from "../Filepicker";
 
+import { GWForm, GWInput, GWSelect } from ".";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
+
+import React, { Fragment, useState } from "react";
 
 import {
   Select,
@@ -37,11 +40,12 @@ import {
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Checkbox } from "../Checkbox";
-import { Fragment, useState } from "react";
+
+import { GWCheckbox } from ".";
+
 import Input from "../Input";
 import { InputWithButton } from "../InputWithButton";
 
-import React from "react";
 import { Textarea } from "../TextArea";
 
 const meta = {
@@ -871,29 +875,47 @@ export const AllForms = () => {
   );
 };
 
-const CheckboxTest = () => (
-  <div className="flex flex-row py-2">
-    <div className="flex items-center justify-center">
-      <label
-        htmlFor="asynchronous"
-        className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        Asynchronous:
-      </label>
-    </div>
-    <div className="flex items-center">
-      <Checkbox id="asynchronous" />
-    </div>
-  </div>
-);
-
 export const AllFormsWithState = () => {
-  const [myCheckbox, setmyCheckox] = useState(false);
+  const [gwCheckbox, setgwCheckbox] = useState<boolean>(() => false);
+  const [namespace, setNamespace] = useState<string>(() => "init");
+  const [value, setValue] = useState<string>(() => "200");
+
+  const handleChange = () => {
+    setgwCheckbox(gwCheckbox ? false : true);
+  };
+
   return (
     <div>
-      <pre>{myCheckbox ? "TRUE" : "FALSE"}</pre>
-      <hr />
-      <CheckboxTest />
+      <h3 className="font-bold">Data</h3>
+      <p>Checkbox: {gwCheckbox ? "TRUE" : "FALSE"}</p>
+      <p>Select: {namespace}</p>
+      <p>Input: {value}</p>
+      <GWSelect onValueChange={setNamespace}>Label</GWSelect>
+      <GWCheckbox handleChange={handleChange} checked={gwCheckbox}>
+        Asynchronous:
+      </GWCheckbox>
+      <GWInput
+        value={value}
+        onValueChange={(v) => {
+          setValue(v);
+        }}
+        placeholder="Okay"
+      >
+        Hello
+      </GWInput>
+    </div>
+  );
+};
+
+export const ShowForm = () => <GWForm></GWForm>;
+
+export const Selector = () => {
+  const [namespace, setNamespace] = useState<string>(() => "init");
+
+  return (
+    <div>
+      <p>{namespace}</p>
+      <GWSelect onValueChange={setNamespace}>Label</GWSelect>
     </div>
   );
 };
