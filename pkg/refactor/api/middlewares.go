@@ -18,11 +18,6 @@ type appMiddlewares struct {
 func (a *appMiddlewares) injectNamespace(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		namespace := chi.URLParam(r, "namespace")
-		if namespace == "" {
-			next.ServeHTTP(w, r)
-
-			return
-		}
 
 		ns, err := a.dStore.Namespaces().GetByName(r.Context(), namespace)
 		if errors.Is(err, datastore.ErrNotFound) {
