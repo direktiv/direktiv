@@ -44,7 +44,6 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
-<<<<<<< Updated upstream
 	for _, extraRoute := range GetExtraRoutes() {
 		extraRoute(r)
 	}
@@ -52,9 +51,6 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	// handle namespace and gateway
 	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
-=======
-	r.Handle("/api/v2/gw/*", app.EndpointManager)
->>>>>>> Stashed changes
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, app.Version)
