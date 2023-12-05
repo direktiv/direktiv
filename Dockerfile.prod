@@ -1,9 +1,8 @@
-# production environment
-FROM nginx:stable-alpine3.17-slim
+FROM openresty/openresty:1.21.4.3-2-focal
 
-RUN apk add nginx-mod-http-lua lua-resty-http lua-resty-session lua-resty-jwt lua-resty-openidc
+RUN ["luarocks", "install", "lua-resty-session", "3.10"]
+RUN ["luarocks", "install", "lua-resty-http"]
+RUN ["luarocks", "install", "lua-resty-jwt"]
+RUN luarocks install lua-resty-openidc
 
-COPY conf/prod/nginx.conf /etc/nginx/nginx.conf
 ADD dist /usr/share/nginx/html
-
-CMD ["nginx", "-g", "daemon off;"]
