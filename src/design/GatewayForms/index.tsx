@@ -138,13 +138,10 @@ type InputPropsType2 = PropsWithChildren & {
   value?: string;
   placeholder?: string;
   handleChange?: any;
+  onChange?: (newValue: string) => void;
 };
 
-interface PassedProps extends InputPropsType2 {
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-const GWInput2: FC<PassedProps> = ({
+const GWInput2: FC<InputPropsType2> = ({
   value,
   children,
   placeholder,
@@ -161,7 +158,9 @@ const GWInput2: FC<PassedProps> = ({
         {children}
       </label>
       <Input
-        onChange={onChange}
+        onChange={(e) => {
+          onChange?.(e.target.value);
+        }}
         className="sm:w-max"
         id="add_key"
         placeholder={placeholder}

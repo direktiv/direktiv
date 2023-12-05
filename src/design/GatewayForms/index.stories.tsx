@@ -891,10 +891,6 @@ export const AllFormsFunctionalityDemo = () => {
     setgwCheckbox(gwCheckbox ? false : true);
   };
 
-  const onChangeDoSomething = (event: ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
-  };
-
   return (
     <div>
       <h3 className="font-bold">Data:</h3>
@@ -906,11 +902,7 @@ export const AllFormsFunctionalityDemo = () => {
       <GWCheckbox handleChange={handleChange} checked={gwCheckbox}>
         Asynchronous:
       </GWCheckbox>
-      <GWInput2
-        onChange={onChangeDoSomething}
-        value={value}
-        placeholder="insert text..."
-      >
+      <GWInput2 onChange={setValue} value={value} placeholder="insert text...">
         Label2
       </GWInput2>
     </div>
