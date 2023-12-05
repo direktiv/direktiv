@@ -883,9 +883,9 @@ export const AllFormsDesign = () => {
 };
 
 export const AllFormsFunctionalityDemo = () => {
-  const [gwCheckbox, setgwCheckbox] = useState<boolean>(() => false);
-  const [namespace, setNamespace] = useState<string>(() => "init");
-  const [value, setValue] = useState<string>(() => "");
+  const [gwCheckbox, setgwCheckbox] = useState(false);
+  const [namespace, setNamespace] = useState("init");
+  const [value, setValue] = useState("");
 
   const handleChange = () => {
     setgwCheckbox(gwCheckbox ? false : true);
