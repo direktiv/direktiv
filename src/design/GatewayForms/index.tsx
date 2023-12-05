@@ -1,10 +1,13 @@
 import {
+  ChangeEvent,
   ChangeEventHandler,
   FC,
   FormEventHandler,
+  MouseEventHandler,
   PropsWithChildren,
 } from "react";
 import { Fragment, useState } from "react";
+import { Plus, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   Select,
@@ -16,6 +19,7 @@ import {
 } from "../Select";
 
 import Button from "~/design/Button";
+import { ButtonBar } from "../ButtonBar";
 import { Checkbox } from "../Checkbox";
 import Input from "../Input";
 import { twMergeClsx } from "~/util/helpers";
@@ -75,6 +79,8 @@ const GWForm: FC = () => {
 
   return (
     <div>
+      <GWInputButtonList>Test </GWInputButtonList>
+      <GWInputButton placeholder="Insert Group Name">Old Input</GWInputButton>
       <GWCheckbox handleChange={handleChange} checked={gwCheckbox}>
         Asynchronous:
       </GWCheckbox>
@@ -126,36 +132,213 @@ const items: Namespace[] = [
   { name: "Namespace-with-a-very-long-name" },
 ];
 
-type InputPropsType = PropsWithChildren & {
+type InputPropsType2 = PropsWithChildren & {
   className?: string;
   onValueChange?: ChangeEventHandler;
-  // onValueChange?: React.Dispatch<React.SetStateAction<string>>;
   value?: string;
-  placeholder: string;
+  placeholder?: string;
+  handleChange?: any;
 };
 
-const GWInput: FC<InputPropsType> = ({
-  className,
-  children,
-  onValueChange,
-  value,
-  placeholder,
-}) => (
-  <div className="flex flex-col py-2 sm:flex-row">
-    <label
-      htmlFor="add_key"
-      className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-    >
-      {children}
-    </label>
-    <Input
-      onChange={onValueChange}
-      className="sm:w-max"
-      id="add_key"
-      placeholder={placeholder}
-      value={value}
-    />
-  </div>
-);
+interface PassedProps extends InputPropsType2 {
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
-export { Filepicker, GWCheckbox, GWForm, GWInput, GWSelect };
+const GWInput2: FC<PassedProps> = ({
+  value,
+  children,
+  placeholder,
+  onChange,
+}) => {
+  const x = 0;
+
+  return (
+    <div className="flex flex-col py-2 sm:flex-row">
+      <label
+        htmlFor="add_key"
+        className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        {children}
+      </label>
+      <Input
+        onChange={onChange}
+        className="sm:w-max"
+        id="add_key"
+        placeholder={placeholder}
+        value={value}
+      />
+    </div>
+  );
+};
+
+type InputButtonProps = PassedProps & {
+  rowFilled?: boolean;
+  value?: string;
+  onClick?: MouseEventHandler;
+  //onPreviewClicked: (file: NodeSchemaType) => void;
+};
+
+const GWInputButton: FC<InputButtonProps> = ({
+  value,
+  children,
+  placeholder,
+  onChange,
+  onClick,
+  rowFilled,
+}) => {
+  const b = 0;
+
+  return (
+    <div className="flex flex-col p-2">
+      <div className="flex flex-row py-2">
+        <div className="flex justify-center">
+          <label
+            htmlFor="add_variable"
+            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {children}
+          </label>
+        </div>
+        <div className="flex justify-start">
+          <ButtonBar>
+            <Input
+              onChange={onChange}
+              className="sm:w-max"
+              id="add_key"
+              placeholder={placeholder}
+              value={value}
+            />
+            <Button onClick={onClick} variant="outline" icon>
+              <X />
+            </Button>
+          </ButtonBar>
+        </div>
+        {rowFilled && (
+          <div className="flex flex-row py-2">
+            <div className="m-2 w-32"></div>
+            <div className="flex justify-start">
+              <ButtonBar>
+                <Button variant="outline" icon>
+                  <Plus />
+                  {/* onClick={newInput} */}
+                </Button>
+              </ButtonBar>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const GWInputButtonList: FC<InputButtonProps> = ({
+  value,
+  children,
+  placeholder,
+  onChange,
+  rowFilled,
+}) => {
+  const [inputvalue, setValue] = useState<string>(value ? value : "");
+
+  const onChangeDoSomething = (event: ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+    //  updateList(0, event.target.value);
+    rowFilled = true;
+  };
+
+  const emptyInput = () => {
+    setValue("");
+    rowFilled = false;
+  };
+  const elements: Filter[] = [{ name: "Example" }, { name: "Example2" }];
+  /*
+  const updateList = (index: number, val: string) => {
+    elements[index].name = val;
+  };
+*/
+  return (
+    <div className="flex flex-col p-2">
+      <p>Test</p>
+      <div className="flex flex-row py-2">
+        <div className="m-2 w-32"></div>
+        <div className="flex justify-start">
+          <ButtonBar>
+            <Button variant="outline" icon>
+              <Plus />
+            </Button>
+          </ButtonBar>
+        </div>
+      </div>
+      {elements.map((element) => (
+        <div key={element.name} className="flex justify-start">
+          <p>{element.name}</p>
+        </div>
+      ))}
+      <div className="flex flex-row py-2">
+        <div className="flex justify-center">
+          <label
+            htmlFor="add_variable"
+            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {children}
+          </label>
+        </div>
+        {elements.map((element) => (
+          <div key={element.name} className="flex justify-start">
+            <ButtonBar>
+              <GWInputButton
+                onChange={onChangeDoSomething}
+                placeholder={element.name}
+                value={inputvalue}
+                onClick={emptyInput}
+              ></GWInputButton>
+            </ButtonBar>
+          </div>
+        ))}
+      </div>
+      {rowFilled && (
+        <div className="flex flex-row py-2">
+          <div className="m-2 w-32"></div>
+          <div className="flex justify-start">
+            <ButtonBar>
+              <Button variant="outline" icon>
+                <Plus />
+              </Button>
+            </ButtonBar>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+type Filter = {
+  name: string;
+};
+
+/*
+Before:
+
+          <ButtonBar>
+            <Input
+              onChange={onChangeDoSomething}
+              className="sm:w-max"
+              id="add_key"
+              placeholder={placeholder}
+              value={value2}
+            />
+            <Button onClick={emptyInput} variant="outline" icon>
+              <X />
+            </Button>
+          </ButtonBar>
+*/
+
+export {
+  Filepicker,
+  GWCheckbox,
+  GWForm,
+  GWInput2,
+  GWSelect,
+  GWInputButton,
+  GWInputButtonList,
+};
