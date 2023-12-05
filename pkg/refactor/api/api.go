@@ -44,10 +44,6 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
-	for _, extraRoute := range GetExtraRoutes() {
-		extraRoute(r)
-	}
-
 	var chiMiddlewares []func(http.Handler) http.Handler
 	for i := range middlewares.GetMiddlewares() {
 		chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
