@@ -48,14 +48,6 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		extraRoute(r)
 	}
 
-	// handle namespace and gateway
-	r.Handle("/gw/*", app.GatewayManager)
-	r.Handle("/ns/{namespace}/*", app.GatewayManager)
-
-	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, app.Version)
-	})
-
 	var chiMiddlewares []func(http.Handler) http.Handler
 	for i := range middlewares.GetMiddlewares() {
 		chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
@@ -67,6 +59,14 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	for _, extraRoute := range GetExtraRoutes() {
 		extraRoute(r)
 	}
+
+	// handle namespace and gateway
+	r.Handle("/gw/*", app.GatewayManager)
+	r.Handle("/ns/{namespace}/*", app.GatewayManager)
+
+	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, app.Version)
+	})
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
