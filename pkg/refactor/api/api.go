@@ -44,6 +44,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
+<<<<<<< Updated upstream
 	for _, extraRoute := range GetExtraRoutes() {
 		extraRoute(r)
 	}
@@ -51,21 +52,28 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	// handle namespace and gateway
 	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
+=======
+	r.Handle("/api/v2/gw/*", app.EndpointManager)
+>>>>>>> Stashed changes
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, app.Version)
 	})
 
+	var chiMiddlewares []func(http.Handler) http.Handler
+	for i := range middlewares.GetMiddlewares() {
+		chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
+	}
+	chiMiddlewares = append(chiMiddlewares, mw.injectNamespace)
+
+	r.Use(chiMiddlewares...)
+
+	for _, extraRoute := range GetExtraRoutes() {
+		extraRoute(r)
+	}
+
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
-			var chiMiddlewares []func(http.Handler) http.Handler
-			for i := range middlewares.GetMiddlewares() {
-				chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
-			}
-			chiMiddlewares = append(chiMiddlewares, mw.injectNamespace)
-
-			r.Use(chiMiddlewares...)
-
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)
 			})
