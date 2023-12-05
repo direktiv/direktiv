@@ -335,6 +335,48 @@ Before:
           </ButtonBar>
 */
 
+type GETestProps = {
+  valueFromOutside: string[];
+  onChange: (newValue: string[]) => void;
+};
+
+const GWTest: FC<GETestProps> = ({ valueFromOutside, onChange }) => {
+  const [internalArray, setInternalArray] = useState(valueFromOutside);
+  const [inputVal, setInputVal] = useState("");
+
+  return (
+    <div>
+      <b>Array Form</b>
+      <div>
+        {internalArray.map((value) => (
+          <div key={value}>{value}</div>
+        ))}
+      </div>
+
+      <div className="flex">
+        <Input
+          value={inputVal}
+          onChange={(e) => {
+            setInputVal(e.target.value);
+          }}
+        />
+        <Button
+          onClick={() => {
+            setInternalArray((old) => {
+              const newValue = [...old, inputVal];
+              onChange(newValue);
+              setInputVal("");
+              return newValue;
+            });
+          }}
+        >
+          add
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export {
   Filepicker,
   GWCheckbox,
@@ -343,4 +385,5 @@ export {
   GWSelect,
   GWInputButton,
   GWInputButtonList,
+  GWTest,
 };

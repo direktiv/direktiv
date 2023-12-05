@@ -21,7 +21,7 @@ import {
   FilepickerSeparator,
 } from "../Filepicker";
 
-import { GWForm, GWInput, GWInput2, GWSelect } from ".";
+import { GWForm, GWInput, GWInput2, GWSelect, GWTest } from ".";
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
@@ -905,6 +905,22 @@ export const AllFormsFunctionalityDemo = () => {
       <GWInput2 onChange={setValue} value={value} placeholder="insert text...">
         Label2
       </GWInput2>
+    </div>
+  );
+};
+
+export const GWTesStory = () => {
+  const [ar, setArr] = useState(["a", "b", "c"]);
+
+  return (
+    <div>
+      <pre>{JSON.stringify(ar)}</pre>
+      <GWTest
+        valueFromOutside={ar}
+        onChange={(changedValue) => {
+          setArr(changedValue);
+        }}
+      />
     </div>
   );
 };
