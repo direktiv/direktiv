@@ -348,8 +348,23 @@ const GWTest: FC<GETestProps> = ({ valueFromOutside, onChange }) => {
     <div>
       <b>Array Form</b>
       <div>
-        {internalArray.map((value) => (
-          <div key={value}>{value}</div>
+        {internalArray.map((value, valueIndex) => (
+          <div key={value}>
+            {valueIndex} {value}{" "}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setInternalArray((old) => {
+                  const newValue = old.filter((_, i) => i !== valueIndex);
+                  onChange(newValue);
+                  return newValue;
+                });
+              }}
+            >
+              Delete me
+            </Button>
+          </div>
         ))}
       </div>
 
