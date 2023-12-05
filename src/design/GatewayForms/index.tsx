@@ -170,11 +170,14 @@ const GWInput2: FC<InputPropsType2> = ({
   );
 };
 
-type InputButtonProps = PassedProps & {
-  rowFilled?: boolean;
+type InputButtonProps = PropsWithChildren & {
+  className?: string;
+  onValueChange?: ChangeEventHandler;
   value?: string;
+  placeholder?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; // TODO: change to the same type as in GWInput2
+  rowFilled?: boolean;
   onClick?: MouseEventHandler;
-  //onPreviewClicked: (file: NodeSchemaType) => void;
 };
 
 const GWInputButton: FC<InputButtonProps> = ({
