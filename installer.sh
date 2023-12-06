@@ -483,6 +483,12 @@ install_direktiv() {
             assert_success 1 "Failed to add prometheus helm repo" "$output"
         fi
 
+        output=`helm dependency update $chart 2>&1 | tee /dev/fd/3`
+        if [ $? -ne 0 ] 
+        then 
+            assert_success 1 "Failed to build helm dependencies" "$output"
+        fi
+
         # TODO: when did this become important, and why?
         output=`helm dependency build $chart 2>&1 | tee /dev/fd/3`
         if [ $? -ne 0 ] 
