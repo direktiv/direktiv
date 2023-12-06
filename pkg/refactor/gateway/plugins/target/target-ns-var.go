@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
@@ -33,6 +31,10 @@ func ConfigureNamespaceVarPlugin(config interface{}, ns string) (core.PluginInst
 		return nil, err
 	}
 
+	if targetNamespaceVarConfig.Variable == "" {
+		return nil, fmt.Errorf("variable required")
+	}
+
 	// set default to gateway namespace
 	if targetNamespaceVarConfig.Namespace == "" {
 		targetNamespaceVarConfig.Namespace = ns
@@ -55,29 +57,12 @@ func (tnv NamespaceVarPlugin) Config() interface{} {
 func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
-	url, err := createURLNamespaceVar(tnv.config.Namespace, tnv.config.Variable)
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not create url", err)
-
-		return false
-	}
-
-	client := http.Client{}
-
-	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, url.String(), nil)
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not create request", err)
-
-		return false
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not serve variable", err)
-
+	// request failed if nil and response already written
+	resp := doDirektivRequest(direktivNamespaceVarRequest, map[string]string{
+		namespaceArg: tnv.config.Namespace,
+		varArg:       tnv.config.Variable,
+	}, w, r)
+	if resp == nil {
 		return false
 	}
 
@@ -90,7 +75,7 @@ func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		w.Header().Set("Content-Type", tnv.config.ContentType)
 	}
 
-	_, err = io.Copy(w, resp.Body)
+	_, err := io.Copy(w, resp.Body)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not serve variable", err)
@@ -100,13 +85,6 @@ func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	resp.Body.Close()
 
 	return true
-}
-
-func createURLNamespaceVar(ns, v string) (*url.URL, error) {
-	urlString := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/vars/%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), ns, v)
-
-	return url.Parse(urlString)
 }
 
 func (tnv NamespaceVarPlugin) Type() string {

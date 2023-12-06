@@ -1,5 +1,6 @@
 import common from "../common";
 import request from "supertest";
+import retry from "jest-retries";
 
 const testNamespace = "gateway_namespace";
 
@@ -43,7 +44,118 @@ const endpointWorkflowAllowed = `
     - GET
   path: /endpoint2`
 
-describe("Test target workflow variable plugin", () => {
+const endpointBroken= `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-flow
+  methods: 
+    - GET
+  path: /endpoint3`
+
+
+const endpointErrorWorkflow = `direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  target:
+    type: target-flow
+    configuration:
+      flow: /ep3.yaml
+methods: 
+  - GET
+path: /endpoint3`
+
+const errorWorkflow = `direktiv_api: workflow/v1
+states:
+- id: a
+  type: error
+  error: badinput
+  message: 'Missing or invalid value for required input.'
+`
+
+describe("Test target workflow wrong config", () => {
+    beforeAll(common.helpers.deleteAllNamespaces);
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/ep3.yaml",
+      endpointBroken
+    );
+
+    retry(`should list all services`, 10, async () => {
+      await sleep(500)
+      const listRes = await request(common.config.getDirektivHost()).get(
+        `/api/v2/namespaces/${testNamespace}/gateway/routes`
+      );
+      expect(listRes.statusCode).toEqual(200);
+      expect(listRes.body.data.length).toEqual(1);
+      expect(listRes.body.data).toEqual(
+        expect.arrayContaining(
+          [
+            {
+              file_path: '/ep3.yaml',
+              path: '/endpoint3',
+              methods: [ 'GET' ],
+              allow_anonymous: true,
+              server_path: '/gw/endpoint3',
+              timeout: 0,
+              errors: [ 'flow required' ],
+              warnings: [],
+              plugins: { target: {"type": "target-flow"} }
+            }
+          ]
+        )
+      );
+    })
+
+});
+
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+
+describe("Test target workflow with errors", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/ep3.yaml",
+    errorWorkflow
+  );
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/eperr3.yaml",
+    endpointErrorWorkflow
+  );
+
+  it(`should return a workflow run from magic namespace`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+        `/gw/endpoint3`
+    );
+    console.log(req.text)
+        expect(req.statusCode).toEqual(500);
+        expect(req.text).toContain("error executing workflow: badinput: Missing or invalid value for required input.")
+    });  
+
+});
+
+
+describe("Test target workflow plugin", () => {
     beforeAll(common.helpers.deleteAllNamespaces);
   
     common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace);
@@ -122,11 +234,11 @@ describe("Test target workflow variable plugin", () => {
         expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
     });
 
-    it(`should not return a var`, async () => {
+    it(`should not return a workflow in onn-magic namespace`, async () => {
     const req = await request(common.config.getDirektivHost()).get(
         `/ns/` + limitedNamespace + `/endpoint1`
     );
-        expect(req.statusCode).toEqual(403);
+        expect(req.statusCode).toEqual(500);
     });
 
   

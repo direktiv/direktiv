@@ -26,4 +26,8 @@ func TestConfigTargetFlowVarPlugin(t *testing.T) {
 
 	_, err = p.Configure(config, "somerandom")
 	assert.NoError(t, err)
+
+	config = &target.WorkflowVarConfig{}
+	_, err = p.Configure(config, "somerandom")
+	assert.Error(t, err)
 }

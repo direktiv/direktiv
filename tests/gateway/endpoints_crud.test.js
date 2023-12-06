@@ -59,6 +59,10 @@ tags:
 groups:
 - group2`
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 describe("Test gateway endpoints crud operations", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
 
@@ -96,7 +100,7 @@ describe("Test gateway endpoints crud operations", () => {
       consumer2
     );
 
-  it(`should list all endpoints`, async () => {
+  retry(`should list all endpoints`, 10, async () => {
     const listRes = await request(common.config.getDirektivHost()).get(
       `/api/v2/namespaces/${testNamespace}/gateway/routes`
     );
@@ -110,6 +114,7 @@ describe("Test gateway endpoints crud operations", () => {
             "file_path": "/endpoint1.yaml", 
             "methods": ["GET"], 
             "path": "/endpoint1", 
+            "server_path": "/gw/endpoint1",
             "plugins": {
               "auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
               "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, 
@@ -123,6 +128,7 @@ describe("Test gateway endpoints crud operations", () => {
             "file_path": "/endpoint2.yaml", 
             "methods": ["GET"], 
             "path": "/endpoint2", 
+            "server_path": "/gw/endpoint2",
             "plugins": {
               "auth": [
                 {"type": "basic-auth"}, 
@@ -138,7 +144,7 @@ describe("Test gateway endpoints crud operations", () => {
   });
 
   
-  it(`should list all consumers`, async () => {
+  retry(`should list all consumers`, 10, async () => {
     const listRes = await request(common.config.getDirektivHost()).get(
       `/api/v2/namespaces/${testNamespace}/gateway/consumers`
     );

@@ -211,7 +211,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// if there are configuration errors, return it
 	if len(endpointEntry.Errors) > 0 {
-		plugins.ReportError(w, http.StatusForbidden, "plugin has errors",
+		plugins.ReportError(w, http.StatusInternalServerError, "plugin has errors",
 			fmt.Errorf(strings.Join(endpointEntry.Errors, ", ")))
 
 		return
