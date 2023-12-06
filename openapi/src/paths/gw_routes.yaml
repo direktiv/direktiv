@@ -17,15 +17,11 @@ get:
                 items:
                   type: object
                   properties: 
-                    path:
+                    file_path:
                       type: string
                       description: path to file in file tree
                       example: /my/path.yaml
-                    path_extension:
-                      type: string
-                      description: path extension to consume parameters from the URL
-                      example: /{id}
-                    pattern:
+                    path:
                       type: string
                       description: full pattern including path_extension
                       example: /my/path/{id}

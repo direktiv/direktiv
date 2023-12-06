@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -38,6 +37,14 @@ func ConfigureNamespaceFilePlugin(config interface{}, ns string) (core.PluginIns
 		return nil, err
 	}
 
+	if targetNamespaceFileConfig.File == "" {
+		return nil, fmt.Errorf("file is required")
+	}
+
+	if !strings.HasPrefix(targetNamespaceFileConfig.File, "/") {
+		targetNamespaceFileConfig.File = "/" + targetNamespaceFileConfig.File
+	}
+
 	// set default to gateway namespace
 	if targetNamespaceFileConfig.Namespace == "" {
 		targetNamespaceFileConfig.Namespace = ns
@@ -65,7 +72,17 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 	_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
-	data, err := fetchObjectData(tnf.config.Namespace, tnf.config.File)
+	// request failed if nil and response already written
+	resp := doDirektivRequest(direktivFileRequest, map[string]string{
+		namespaceArg: tnf.config.Namespace,
+		pathArg:      tnf.config.File,
+	}, w, r)
+	if resp == nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	data, err := fetchObjectData(resp)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not fetch file data", err)
@@ -120,26 +137,11 @@ type Node struct {
 	Oid          string `json:"oid"`
 }
 
-func fetchObjectData(ns, path string) ([]byte, error) {
-	// prefix with slash if set relative
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-
-	urlString := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), ns, path)
-
-	// nolint
-	res, err := http.Get(urlString)
-	if err != nil {
-		return nil, err
-	}
-
+func fetchObjectData(res *http.Response) ([]byte, error) {
 	b, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
 	var node Node
 	err = json.Unmarshal(b, &node)

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"os"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -36,6 +34,10 @@ func ConfigureWorkflowVar(config interface{}, ns string) (core.PluginInstance, e
 		return nil, err
 	}
 
+	if targetflowVarConfig.Flow == "" || targetflowVarConfig.Variable == "" {
+		return nil, fmt.Errorf("flow and variable required")
+	}
+
 	// set default to gateway namespace
 	if targetflowVarConfig.Namespace == "" {
 		targetflowVarConfig.Namespace = ns
@@ -44,6 +46,10 @@ func ConfigureWorkflowVar(config interface{}, ns string) (core.PluginInstance, e
 	// throw error if non magic namespace targets different namespace
 	if targetflowVarConfig.Namespace != ns && ns != core.MagicalGatewayNamespace {
 		return nil, fmt.Errorf("plugin can not target different namespace")
+	}
+
+	if !strings.HasPrefix(targetflowVarConfig.Flow, "/") {
+		targetflowVarConfig.Flow = "/" + targetflowVarConfig.Flow
 	}
 
 	return &FlowVarPlugin{
@@ -58,30 +64,13 @@ func (tfv FlowVarPlugin) Config() interface{} {
 func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
-	url, err := createURLFlowVar(tfv.config.Namespace, tfv.config.Flow,
-		tfv.config.Variable)
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not create url", err)
-
-		return false
-	}
-
-	client := http.Client{}
-
-	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, url.String(), nil)
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not create request", err)
-
-		return false
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
-			"can not serve variable", err)
-
+	// request failed if nil and response already written
+	resp := doDirektivRequest(direktivWorkflowVarRequest, map[string]string{
+		namespaceArg: tfv.config.Namespace,
+		flowArg:      tfv.config.Flow,
+		varArg:       tfv.config.Variable,
+	}, w, r)
+	if resp == nil {
 		return false
 	}
 
@@ -94,7 +83,7 @@ func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		w.Header().Set("Content-Type", tfv.config.ContentType)
 	}
 
-	_, err = io.Copy(w, resp.Body)
+	_, err := io.Copy(w, resp.Body)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not serve variable", err)
@@ -104,18 +93,6 @@ func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	resp.Body.Close()
 
 	return true
-}
-
-func createURLFlowVar(ns, flow, v string) (*url.URL, error) {
-	// prefix with slash if set relative
-	if !strings.HasPrefix(flow, "/") {
-		flow = "/" + flow
-	}
-
-	urlString := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=var&var=%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), ns, flow, v)
-
-	return url.Parse(urlString)
 }
 
 func (tfv FlowVarPlugin) Type() string {

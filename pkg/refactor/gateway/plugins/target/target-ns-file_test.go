@@ -25,4 +25,8 @@ func TestConfigNSFilePlugin(t *testing.T) {
 
 	_, err = p.Configure(config, "somerandom")
 	assert.NoError(t, err)
+
+	config = &target.NamespaceFileConfig{}
+	_, err = p.Configure(config, "somerandom")
+	assert.Error(t, err)
 }

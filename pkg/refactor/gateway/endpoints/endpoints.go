@@ -3,6 +3,7 @@ package endpoints
 import (
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -60,6 +61,10 @@ func (e *EndpointList) GetEndpoints() []*core.Endpoint {
 	for i := range routes {
 		r := routes[i]
 		for _, h := range r.Handlers {
+			h.ServerPath = filepath.Join("/ns", h.Namespace, h.Path)
+			if h.Namespace == core.MagicalGatewayNamespace {
+				h.ServerPath = filepath.Join("/gw", h.Path)
+			}
 			items = append(items, h)
 
 			// leave after first method, because they are all the same

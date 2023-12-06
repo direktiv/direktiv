@@ -59,9 +59,10 @@ type PluginInstance interface {
 }
 
 type Endpoint struct {
-	Namespace string `json:"-"`
-	FilePath  string `json:"file_path,omitempty"`
-	Path      string `json:"path,omitempty"`
+	Namespace  string `json:"-"`
+	FilePath   string `json:"file_path,omitempty"`
+	Path       string `json:"path,omitempty"`
+	ServerPath string `json:"server_path"`
 
 	Methods        []string `json:"methods"`
 	AllowAnonymous bool     `json:"allow_anonymous"`

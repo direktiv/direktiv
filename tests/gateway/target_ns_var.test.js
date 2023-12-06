@@ -1,5 +1,6 @@
 import common from "../common";
 import request from "supertest";
+import retry from "jest-retries";
 
 const testNamespace = "gateway_namespace";
 
@@ -32,6 +33,60 @@ const endpointNSVarAllowed = `
     - GET
   path: /endpoint2`
 
+const endpointNSVarBroken = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-namespace-var
+  methods: 
+    - GET
+  path: ep3`
+
+  describe("Test target workflow var wrong config", () => {
+    beforeAll(common.helpers.deleteAllNamespaces);
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/ep3.yaml",
+      endpointNSVarBroken
+    );
+
+    retry(`should list all services`, 10, async () => {
+      await sleep(500)
+      const listRes = await request(common.config.getDirektivHost()).get(
+        `/api/v2/namespaces/${testNamespace}/gateway/routes`
+      );
+      expect(listRes.statusCode).toEqual(200);
+      expect(listRes.body.data.length).toEqual(1);
+      expect(listRes.body.data).toEqual(
+        expect.arrayContaining(
+          [
+            {
+              file_path: '/ep3.yaml',
+              path: '/ep3',
+              methods: [ 'GET' ],
+              allow_anonymous: true,
+              timeout: 0,
+              server_path: '/gw/ep3',
+              errors: [ 'variable required' ],
+              warnings: [],
+              plugins: { target: {"type": "target-namespace-var"} }
+            }
+          ]
+        )
+      );
+    })
+
+});
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 describe("Test target namespace variable plugin", () => {
     beforeAll(common.helpers.deleteAllNamespaces);
@@ -117,7 +172,7 @@ describe("Test target namespace variable plugin", () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/ns/` + limitedNamespace + `/endpoint1`
       );
-      expect(req.statusCode).toEqual(403);
+      expect(req.statusCode).toEqual(500);
     });
     
   
