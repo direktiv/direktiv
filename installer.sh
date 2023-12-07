@@ -412,10 +412,12 @@ generate_direktiv_config() {
         frontend_image="frontend"
 
         cat <<EOF > $DIREKTIV_CONFIG
-logging: console
 registry: localhost:5000
 image: ${backend_image}
 tag: ${DIREKTIV_VERSION}
+
+flow:
+  logging: console
 
 EOF
         fi
