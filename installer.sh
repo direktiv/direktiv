@@ -412,10 +412,12 @@ generate_direktiv_config() {
         frontend_image="frontend"
 
         cat <<EOF > $DIREKTIV_CONFIG
-logging: console
 registry: localhost:5000
 image: ${backend_image}
 tag: ${DIREKTIV_VERSION}
+
+flow:
+  logging: console
 
 EOF
         fi
@@ -481,6 +483,12 @@ install_direktiv() {
         if [ $? -ne 0 ] 
         then 
             assert_success 1 "Failed to add prometheus helm repo" "$output"
+        fi
+
+        output=`helm dependency update $chart 2>&1 | tee /dev/fd/3`
+        if [ $? -ne 0 ] 
+        then 
+            assert_success 1 "Failed to build helm dependencies" "$output"
         fi
 
         # TODO: when did this become important, and why?

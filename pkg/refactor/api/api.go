@@ -44,6 +44,13 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		})
 	})
 
+	chiMiddlewares := make([]func(http.Handler) http.Handler, 0)
+	for i := range middlewares.GetMiddlewares() {
+		chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
+	}
+
+	r.Use(chiMiddlewares...)
+
 	for _, extraRoute := range GetExtraRoutes() {
 		extraRoute(r)
 	}
@@ -58,13 +65,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
-			var chiMiddlewares []func(http.Handler) http.Handler
-			for i := range middlewares.GetMiddlewares() {
-				chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
-			}
-			chiMiddlewares = append(chiMiddlewares, mw.injectNamespace)
-
-			r.Use(chiMiddlewares...)
+			r.Use(mw.injectNamespace)
 
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)
