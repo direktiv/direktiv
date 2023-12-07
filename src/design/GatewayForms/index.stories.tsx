@@ -1,928 +1,406 @@
 import {
-  ArrowRight,
-  File,
-  FolderUp,
-  LucideIcon,
-  MenuSquareIcon,
-  Plus,
-  SettingsIcon,
-  X,
-} from "lucide-react";
-
-import { Breadcrumb, BreadcrumbRoot } from "../Breadcrumbs";
-import { Command, CommandGroup, CommandList } from "../Command";
-
-import {
-  Filepicker,
-  FilepickerClose,
-  FilepickerHeading,
-  FilepickerList,
-  FilepickerListItem,
-  FilepickerSeparator,
-} from "../Filepicker";
-
-import { GWForm, GWInput, GWInput2, GWSelect, GWTest } from ".";
+  GWArray,
+  GWCheckbox,
+  GWFilepicker,
+  GWInput,
+  GWSelect,
+  GWTextarea,
+} from ".";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
-
-import React, {
-  ChangeEvent,
-  ChangeEventHandler,
-  Fragment,
-  useState,
-} from "react";
-
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../Select";
-
-import Button from "../Button";
-import { ButtonBar } from "../ButtonBar";
-import { Checkbox } from "../Checkbox";
-
-import { GWCheckbox } from ".";
-
-import Input from "../Input";
-import { InputWithButton } from "../InputWithButton";
-
-import { Textarea } from "../TextArea";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuSeparator } from "../Dropdown";
+
+import { useState } from "react";
 
 const meta = {
   title: "Components/GatewayForms",
-  component: Filepicker,
-} satisfies Meta<typeof Filepicker>;
+  component: GWCheckbox,
+} satisfies Meta<typeof GWCheckbox>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ ...args }) => (
-    <Filepicker {...args}>content goes here...</Filepicker>
-  ),
+  render: () => <GWCheckbox checked={true}>Check</GWCheckbox>,
   argTypes: {},
 };
 
-export const BasicAuthFormPlugin = () => (
-  <div className="flex flex-col p-2">
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="add_header_username"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Add username header:
-        </label>
-        <Checkbox id="add_header_username" className="m-2" />
-      </div>
-    </div>
+export const BasicAuthFormPlugin = () => {
+  const [gwCheckbox1, setgwCheckbox1] = useState(false);
+  const [gwCheckbox2, setgwCheckbox2] = useState(false);
+  const [gwCheckbox3, setgwCheckbox3] = useState(false);
 
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="add_header_tags"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Add tags header:
-        </label>
-        <Checkbox id="add_header_tags" className="m-2" />
-      </div>
-    </div>
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="add_header_groups"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Add groups header:
-        </label>
-        <Checkbox id="add_header_groups" className="m-2" />
-      </div>
-    </div>
-  </div>
-);
-
-export const KeyAuthFormPlugin = () => (
-  <div className="flex flex-col p-2">
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="add_header_username"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Add username header:
-        </label>
-        <Checkbox id="add_header_username" className="m-2" />
-      </div>
-    </div>
-
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="add_header_tags"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Add tags header:
-        </label>
-        <Checkbox id="add_header_tags" className="m-2" />
-      </div>
-    </div>
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="add_header_groups"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Add groups header:
-        </label>
-        <Checkbox id="add_header_groups" className="m-2" />
-      </div>
-    </div>
-
-    <div className="flex flex-col py-2 sm:flex-row">
-      <label
-        htmlFor="add_key"
-        className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  return (
+    <div className="flex flex-col p-2">
+      <GWCheckbox
+        checked={gwCheckbox1}
+        onChange={() => {
+          setgwCheckbox1(gwCheckbox1 ? false : true);
+        }}
       >
-        Key name:
-      </label>
-      <Input className="sm:w-max" id="add_key" placeholder="Insert name" />
+        Add username header:
+      </GWCheckbox>
+      <GWCheckbox
+        checked={gwCheckbox2}
+        onChange={() => {
+          setgwCheckbox2(gwCheckbox2 ? false : true);
+        }}
+      >
+        Add tags header:
+      </GWCheckbox>
+      <GWCheckbox
+        checked={gwCheckbox3}
+        onChange={() => {
+          setgwCheckbox3(gwCheckbox3 ? false : true);
+        }}
+      >
+        Add groups header:
+      </GWCheckbox>
     </div>
-  </div>
-);
+  );
+};
+
+export const KeyAuthFormPlugin = () => {
+  const [gwCheckbox1, setgwCheckbox1] = useState(true);
+  const [gwCheckbox2, setgwCheckbox2] = useState(true);
+  const [gwCheckbox3, setgwCheckbox3] = useState(true);
+
+  return (
+    <div className="flex flex-col p-2">
+      <GWCheckbox
+        checked={gwCheckbox1}
+        onChange={() => {
+          setgwCheckbox1(gwCheckbox1 ? false : true);
+        }}
+      >
+        Add username header:
+      </GWCheckbox>
+      <GWCheckbox
+        checked={gwCheckbox2}
+        onChange={() => {
+          setgwCheckbox2(gwCheckbox2 ? false : true);
+        }}
+      >
+        Add tags header:
+      </GWCheckbox>
+      <GWCheckbox
+        checked={gwCheckbox3}
+        onChange={() => {
+          setgwCheckbox3(gwCheckbox3 ? false : true);
+        }}
+      >
+        Add groups header:
+      </GWCheckbox>
+
+      <GWInput placeholder="Insert key name">Key name:</GWInput>
+    </div>
+  );
+};
 
 export const ACLPlugin = () => {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
-  const [name, setName] = React.useState<string>(() => "Group 1");
-  const [name2, setName2] = React.useState<string>(() => "Group 2");
-  const [name3, setName3] = React.useState<string>(() => "No Entry");
-  const [name4, setName4] = React.useState<string>(() => "Group 4");
+  const [array, setArray] = useState(["a", "b", "c"]);
+  const [array2, setArray2] = useState(() => ["test"]);
 
   return (
-    <div className="flex flex-col p-2">
-      <div className="flex flex-row py-2">
-        <div className="flex justify-center">
-          <label
-            htmlFor="add_variable"
-            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Allow Groups:
-          </label>
-        </div>
-
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Input placeholder="Insert group name" value="Group 1" />
-            <Button variant="outline" icon>
-              <X />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-      <div className="flex flex-row py-2">
-        <div className="m-2 w-32"></div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Input placeholder="Insert group name" value="Group 2" />
-            <Button variant="outline" icon>
-              <X />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-
-      <div className="flex flex-row py-2">
-        <div className="m-2 w-32"></div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Button variant="outline" icon>
-              <Plus />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-
-      <div className="flex flex-row py-2">
-        <div className="flex justify-center">
-          <label
-            htmlFor="add_variable"
-            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Allow Tags:
-          </label>
-        </div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Input placeholder="No Entry" disabled />
-            <Button disabled variant="outline" icon>
-              <X />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-
-      <div className="flex flex-row py-2">
-        <div className="m-2 w-32"></div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Button variant="outline" icon>
-              <Plus />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-
-      <div className="flex flex-row py-2">
-        <div className="flex justify-center">
-          <label
-            htmlFor="add_variable"
-            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Deny Tags:
-          </label>
-        </div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Input placeholder="Insert group name" />
-            <Button variant="outline" icon>
-              <X />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-
-      <div className="flex flex-row py-2">
-        <div className="m-2 w-32"></div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Button variant="outline" icon>
-              <Plus />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
+    <div>
+      <GWArray
+        inputPlaceholder="insert group name"
+        externalArray={array}
+        onChange={(changedValue) => {
+          setArray(changedValue);
+        }}
+      >
+        Allow Groups:
+      </GWArray>
+      <GWArray
+        inputPlaceholder="insert group name"
+        externalArray={array2}
+        onChange={(changedValue) => {
+          setArray2(changedValue);
+        }}
+      >
+        Deny Groups:
+      </GWArray>
     </div>
   );
 };
 
-export const JSInboundPlugin = () => (
-  <div className="flex flex-col p-2">
-    <div className="flex flex-col py-2 sm:flex-row">
-      <label
-        htmlFor="add_script"
-        className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
+export const JSInboundPlugin = () => {
+  const [value, setValue] = useState(() => "");
+
+  return (
+    <div className="flex flex-col p-2">
+      <GWTextarea value={value} onChange={setValue} placeholder="Insert Script">
         Script:
-      </label>
-      <Textarea id="add_script" placeholder="Insert Script" />
+      </GWTextarea>
     </div>
-  </div>
-);
+  );
+};
 
-export const JSOutboundPlugin = () => (
-  <div className="flex flex-col p-2">
-    <div className="flex flex-col py-2 sm:flex-row">
-      <label
-        htmlFor="add_script"
-        className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
+export const JSOutboundPlugin = () => {
+  const [value, setValue] = useState(() => "");
+
+  return (
+    <div className="flex flex-col p-2">
+      <GWTextarea value={value} onChange={setValue} placeholder="Insert Script">
         Script:
-      </label>
+      </GWTextarea>
+    </div>
+  );
+};
 
-      <Textarea id="add_script" placeholder="No Entry" disabled />
-    </div>
-  </div>
-);
+export const RequestConverterPlugin = () => {
+  const [gwCheckbox1, setgwCheckbox1] = useState(false);
+  const [gwCheckbox2, setgwCheckbox2] = useState(false);
+  const [gwCheckbox3, setgwCheckbox3] = useState(false);
+  const [gwCheckbox4, setgwCheckbox4] = useState(false);
 
-export const RequestConverterPlugin = () => (
-  <div className="flex flex-col p-2">
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="omit_headers"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Omit Headers:
-        </label>
-        <Checkbox id="omit_headers" className="m-2" />
-      </div>
-    </div>
-
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="omit_queries"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Omit Queries:
-        </label>
-        <Checkbox id="omit_queries" className="m-2" />
-      </div>
-    </div>
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="omit_body"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Omit Body:
-        </label>
-        <Checkbox id="omit_body" className="m-2" />
-      </div>
-    </div>
-    <div className="flex flex-row py-2">
-      <div className="flex items-center justify-center">
-        <label
-          htmlFor="omit_consumer"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Omit Consumer:
-        </label>
-        <Checkbox id="omit_consumer" className="m-2" />
-      </div>
-    </div>
-  </div>
-);
-
-export const InstantResponse = () => (
-  <div className="flex flex-col p-2">
-    <div className="flex flex-col py-2 sm:flex-row">
-      <label
-        htmlFor="omit_headers"
-        className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  return (
+    <div className="flex flex-col p-2">
+      <GWCheckbox
+        checked={gwCheckbox1}
+        onChange={() => {
+          setgwCheckbox1(gwCheckbox1 ? false : true);
+        }}
       >
+        Omit Headers:
+      </GWCheckbox>
+
+      <GWCheckbox
+        checked={gwCheckbox2}
+        onChange={() => {
+          setgwCheckbox2(gwCheckbox2 ? false : true);
+        }}
+      >
+        Omit Queries:
+      </GWCheckbox>
+
+      <GWCheckbox
+        checked={gwCheckbox3}
+        onChange={() => {
+          setgwCheckbox3(gwCheckbox3 ? false : true);
+        }}
+      >
+        Omit Body:
+      </GWCheckbox>
+      <GWCheckbox
+        checked={gwCheckbox4}
+        onChange={() => {
+          setgwCheckbox4(gwCheckbox4 ? false : true);
+        }}
+      >
+        Omit Consumer:
+      </GWCheckbox>
+    </div>
+  );
+};
+export const InstantResponse = () => {
+  const [value1, setValue1] = useState(() => "200");
+  const [value2, setValue2] = useState(() => "");
+  const [value3, setValue3] = useState(() => "");
+
+  return (
+    <div className="flex flex-col p-2">
+      <GWInput placeholder="200" value={value1} onChange={setValue1}>
         Status Code:
-      </label>
-
-      <Input
-        className="sm:w-max"
-        id="add_status_code"
-        placeholder="200"
-        value="200"
-      />
-    </div>
-    <div className="flex flex-col py-2 sm:flex-row">
-      <label
-        htmlFor="omit_headers"
-        className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
+      </GWInput>
+      <GWInput placeholder="/json" value={value2} onChange={setValue2}>
         Content Type:
-      </label>
-
-      <Input className="sm:w-max" id="add_content_type" placeholder="/json" />
-    </div>
-    <div className="flex flex-col py-2 sm:flex-row">
-      <label
-        htmlFor="omit_headers"
-        className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
+      </GWInput>
+      <GWTextarea placeholder="Insert Text" value={value3} onChange={setValue3}>
         Status Message:
-      </label>
-
-      <Textarea id="add_status_message" placeholder="Insert Text" />
+      </GWTextarea>
     </div>
-  </div>
-);
+  );
+};
 
 export const NamespaceFileTarget = () => {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [value, setValue] = useState(() => "");
 
-  const [namespace, setNamespace] = React.useState<string | undefined>(
-    undefined
-  );
-  const [name2, setName2] = React.useState<string>(() => "Group 2");
+  const array = ["Example", "My-Namespace", "Namespace-with-a-very-long-name"];
 
   return (
     <div className="flex flex-col p-2">
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Namespace:
-        </label>
-
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a namespace" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Example">Example</SelectItem>
-              <SelectItem value="My-Namespace">My-Namespace</SelectItem>
-              <SelectItem value="Namespace-with-a-very-long-name">
-                Namespace-with-a-very-long-name
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          File:
-        </label>
-
-        <Filepicker>
-          {!namespace ? (
-            <FilepickerHeading>
-              Please select a namespace first!
-            </FilepickerHeading>
-          ) : (
-            <div>
-              <FilepickerHeading>{namespace}</FilepickerHeading>
-              <FilepickerSeparator />
-              <FilepickerHeading>
-                <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-                  <BreadcrumbRoot>
-                    <Breadcrumb noArrow>
-                      <a href="#">Root-Folder</a>
-                    </Breadcrumb>
-                    <Breadcrumb>
-                      <a href="#">Mid-Folder</a>
-                    </Breadcrumb>
-                    <Breadcrumb>
-                      <a href="#">Sub-Folder</a>
-                    </Breadcrumb>
-                  </BreadcrumbRoot>
-                </h3>
-              </FilepickerHeading>
-              <FilepickerSeparator />
-              <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
-              <FilepickerSeparator />
-              <FilepickerList>
-                {items.map((element) => (
-                  <Fragment key={element.filename}>
-                    <FilepickerClose>
-                      <FilepickerListItem icon={element.icon}>
-                        {element.filename}
-                      </FilepickerListItem>
-                    </FilepickerClose>
-                    <FilepickerSeparator />
-                  </Fragment>
-                ))}
-              </FilepickerList>
-            </div>
-          )}
-        </Filepicker>
-      </div>
-
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_content_type"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Content Type:
-        </label>
-        <Input
-          className="sm:w-max"
-          id="add_content_type"
-          placeholder="e.g. image/jpg"
-        />
-      </div>
+      <GWSelect
+        data={array}
+        placeholder="Select a namespace"
+        value={value}
+        onValueChange={setValue}
+      >
+        Namespace:
+      </GWSelect>
+      <GWFilepicker placeholder="Type file name" buttonText="Choose File">
+        File:
+      </GWFilepicker>
+      <GWInput placeholder="image/jpg">Content Type:</GWInput>
     </div>
   );
 };
 
-// Beginning of Mock Data
-
-const Example_items: Listitem[] = [
-  { filename: "image.jpg", icon: File },
-  { filename: "image1.jpg", icon: SettingsIcon },
-  { filename: "image2.jpg", icon: File },
-  { filename: "image3.jpg", icon: MenuSquareIcon },
-];
-
-const MyNamespace_items: Listitem[] = [
-  { filename: "hello.yaml", icon: File },
-  { filename: "hello1.yaml", icon: File },
-  { filename: "hello2.yaml", icon: File },
-  { filename: "hello3.yaml", icon: File },
-  { filename: "hello4.yaml", icon: File },
-  { filename: "Readme.txt", icon: MenuSquareIcon },
-  { filename: "Readme0.txt", icon: SettingsIcon },
-  { filename: "Readme1.txt", icon: SettingsIcon },
-];
-
-// End of Mock Data
-
-type Listitem = {
-  filename: string;
-  icon: LucideIcon;
-};
-
-const items: Listitem[] = [
-  { filename: "image.jpg", icon: File },
-  { filename: "image1.jpg", icon: SettingsIcon },
-  { filename: "image2.jpg", icon: File },
-  { filename: "image3.jpg", icon: MenuSquareIcon },
-  { filename: "hello.yaml", icon: File },
-  { filename: "hello1.yaml", icon: File },
-  { filename: "hello2.yaml", icon: File },
-  { filename: "hello3.yaml", icon: File },
-  { filename: "hello4.yaml", icon: File },
-  { filename: "Readme.txt", icon: MenuSquareIcon },
-  { filename: "Readme0.txt", icon: SettingsIcon },
-  { filename: "Readme1.txt", icon: SettingsIcon },
-  { filename: "Readme2.txt", icon: SettingsIcon },
-  { filename: "Readme3.txt", icon: SettingsIcon },
-  { filename: "Readme4.txt", icon: File },
-  { filename: "Readme5.txt", icon: File },
-  { filename: "Readme6.txt", icon: MenuSquareIcon },
-  { filename: "Readme7.txt", icon: SettingsIcon },
-  { filename: "Readme8.txt", icon: File },
-  { filename: "Readme9.txt", icon: SettingsIcon },
-  { filename: "Readme10.txt", icon: File },
-  { filename: "Readme11.txt", icon: File },
-];
-
 export const NamespaceVariableTarget = () => {
-  const [namespace, setNamespace] = React.useState<string>(
-    () => "My-Namespace"
-  );
+  const [value, setValue] = useState(() => "");
+
+  const array = ["Example", "My-Namespace", "Namespace-with-a-very-long-name"];
+
   return (
     <div className="flex flex-col p-2">
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Namespace:
-        </label>
-
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a namespace" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Example">Example</SelectItem>
-              <SelectItem value="My-Namespace">My-Namespace</SelectItem>
-              <SelectItem value="Namespace-with-a-very-long-name">
-                Namespace-with-a-very-long-name
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_variable"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Variable:
-        </label>
-
-        <Input
-          className="sm:w-max"
-          id="add_variable"
-          placeholder="insert name"
-        />
-      </div>
-
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_content_type"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Content Type:
-        </label>
-
-        <Input
-          className="sm:w-max"
-          id="add_content_type"
-          placeholder="e.g. image/jpg"
-        />
-      </div>
+      <GWSelect
+        data={array}
+        placeholder="Select a namespace"
+        value={value}
+        onValueChange={setValue}
+      >
+        Namespace:
+      </GWSelect>
+      <GWInput placeholder="Insert name">Variable:</GWInput>
+      <GWInput placeholder="image/jpg">Content Type:</GWInput>
     </div>
   );
 };
 
 export const WorkflowVariableTarget = () => {
-  const [namespace, setNamespace] = React.useState<string>(
-    () => "My-Namespace"
-  );
+  const [value1, setValue1] = useState(() => "");
+  const [value2, setValue2] = useState(() => "");
+
+  const array1 = ["Example", "My-Namespace", "Namespace-with-a-very-long-name"];
+  const array2 = ["a", "b", "c"];
+
   return (
     <div className="flex flex-col p-2">
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Namespace:
-        </label>
+      <GWSelect
+        data={array1}
+        placeholder="Select a namespace"
+        value={value1}
+        onValueChange={setValue1}
+      >
+        Namespace:
+      </GWSelect>
+      <GWSelect
+        data={array2}
+        placeholder="Select a workflow"
+        value={value2}
+        onValueChange={setValue2}
+      >
+        Workflow:
+      </GWSelect>
 
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a namespace" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Example">Example</SelectItem>
-              <SelectItem value="My-Namespace">My-Namespace</SelectItem>
-              <SelectItem value="Namespace-with-a-very-long-name">
-                Namespace-with-a-very-long-name
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Workflow:
-        </label>
-
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a workflow" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Workflow1">Workflow1</SelectItem>
-              <SelectItem value="Workflow22">Workflow22</SelectItem>
-              <SelectItem value="Workflow333">Workflow333</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_variable"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Variable:
-        </label>
-
-        <Input
-          className="sm:w-max"
-          id="add_variable"
-          placeholder="insert name"
-        />
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_content_type"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Content Type:
-        </label>
-
-        <Input
-          className="sm:w-max"
-          id="add_content_type"
-          placeholder="e.g. image/jpg"
-        />
-      </div>
+      <GWInput placeholder="Insert name">Variable:</GWInput>
+      <GWInput placeholder="image/jpg">Content Type:</GWInput>
     </div>
   );
 };
 
 export const WorkflowTarget = () => {
-  const [namespace, setNamespace] = React.useState<string>(
-    () => "My-Namespace"
-  );
+  const [value1, setValue1] = useState(() => "");
+  const [value2, setValue2] = useState(() => "");
+
+  const [gwCheckbox1, setgwCheckbox1] = useState(false);
+  const [value3, setValue3] = useState(() => "");
+
+  const array1 = ["Example", "My-Namespace", "Namespace-with-a-very-long-name"];
+  const array2 = ["a", "b", "c"];
+
   return (
     <div className="flex flex-col p-2">
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Namespace:
-        </label>
-
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a namespace" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Example">Example</SelectItem>
-              <SelectItem value="My-Namespace">My-Namespace</SelectItem>
-              <SelectItem value="Namespace-with-a-very-long-name">
-                Namespace-with-a-very-long-name
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Workflow:
-        </label>
-
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a workflow" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Workflow1">Workflow1</SelectItem>
-              <SelectItem value="Workflow22">Workflow22</SelectItem>
-              <SelectItem value="Workflow333">Workflow333</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-row py-2">
-        <div className="flex items-center justify-center">
-          <label
-            htmlFor="asynchronous"
-            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Asynchronous:
-          </label>
-        </div>
-        <div className="flex items-center">
-          <Checkbox id="asynchronous" />
-        </div>
-      </div>
-
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_content_type"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Content Type:
-        </label>
-
-        <Input
-          className="sm:w-max"
-          id="add_content_type"
-          placeholder="e.g. image/jpg"
-        />
-      </div>
-    </div>
-  );
-};
-
-export const AllFormsDesign = () => {
-  const [namespace, setNamespace] = React.useState<string>(
-    () => "My-Namespace"
-  );
-  return (
-    <div className="flex flex-col p-2">
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="select_namespace"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Namespace:
-        </label>
-
-        <Select onValueChange={setNamespace}>
-          <SelectTrigger variant="primary">
-            <SelectValue placeholder="Select a namespace" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="Example">Example</SelectItem>
-              <SelectItem value="My-Namespace">My-Namespace</SelectItem>
-              <SelectItem value="Namespace-with-a-very-long-name">
-                Namespace-with-a-very-long-name
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-row py-2">
-        <div className="flex items-center justify-center">
-          <label
-            htmlFor="asynchronous"
-            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Asynchronous:
-          </label>
-        </div>
-        <div className="flex items-center">
-          <Checkbox id="asynchronous" />
-        </div>
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="add_content_type"
-          className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Content Type:
-        </label>
-
-        <Input
-          className="sm:w-max"
-          id="add_content_type"
-          placeholder="e.g. image/jpg"
-        />
-      </div>
-      <div className="flex flex-col py-2 sm:flex-row">
-        <label
-          htmlFor="omit_headers"
-          className="m-2 w-40 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Status Message:
-        </label>
-
-        <Textarea id="add_status_message" placeholder="Insert Text" />
-      </div>
-      <div className="flex flex-row py-2">
-        <div className="flex justify-center">
-          <label
-            htmlFor="add_variable"
-            className="m-2 w-32 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Allow Groups:
-          </label>
-        </div>
-
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Input placeholder="Insert group name" value="Group 1" />
-            <Button variant="outline" icon>
-              <X />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-      <div className="flex flex-row py-2">
-        <div className="m-2 w-32"></div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Input placeholder="Insert group name" value="Group 2" />
-            <Button variant="outline" icon>
-              <X />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
-
-      <div className="flex flex-row py-2">
-        <div className="m-2 w-32"></div>
-        <div className="flex justify-start">
-          <ButtonBar>
-            <Button variant="outline" icon>
-              <Plus />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
+      <GWSelect
+        data={array1}
+        placeholder="Select a namespace"
+        value={value1}
+        onValueChange={setValue1}
+      >
+        Namespace:
+      </GWSelect>
+      <GWSelect
+        data={array2}
+        placeholder="Select a workflow"
+        value={value2}
+        onValueChange={setValue2}
+      >
+        Workflow:
+      </GWSelect>
+      <GWCheckbox
+        onChange={() => {
+          setgwCheckbox1(gwCheckbox1 ? false : true);
+        }}
+      >
+        Asynchronous:
+      </GWCheckbox>
+      <GWInput placeholder="image/jpg" value={value3} onChange={setValue3}>
+        Content Type:
+      </GWInput>
     </div>
   );
 };
 
 export const AllFormsFunctionalityDemo = () => {
   const [gwCheckbox, setgwCheckbox] = useState(false);
-  const [namespace, setNamespace] = useState("init");
   const [value, setValue] = useState("");
+  const [value1, setValue1] = useState("");
+  const array1 = ["Example", "My-Namespace", "Namespace-with-a-very-long-name"];
 
-  const handleChange = () => {
-    setgwCheckbox(gwCheckbox ? false : true);
-  };
+  const [array, setArray] = useState(["a", "b", "c"]);
+  const [value2, setValue2] = useState(() => "");
+
+  const [inputVal, setInputVal] = useState("whatever.png");
+  const [displayVal, setDisplayVal] = useState(inputVal);
 
   return (
     <div>
       <h3 className="font-bold">Data:</h3>
+      <p>Select: {value1}</p>
       <p>Checkbox: {gwCheckbox ? "TRUE" : "FALSE"}</p>
-      <p>Select: {namespace}</p>
       <p>Input: {value}</p>
+      <p>Array: {JSON.stringify(array)}</p>
+      <p>Textarea: {value2}</p>
+      <p>Filepicker: {displayVal}</p>
       <DropdownMenuSeparator />
-      <GWSelect onValueChange={setNamespace}>Label</GWSelect>
-      <GWCheckbox handleChange={handleChange} checked={gwCheckbox}>
-        Asynchronous:
-      </GWCheckbox>
-      <GWInput2 onChange={setValue} value={value} placeholder="insert text...">
-        Label2
-      </GWInput2>
-    </div>
-  );
-};
 
-export const GWTesStory = () => {
-  const [ar, setArr] = useState(["a", "b", "c"]);
-
-  return (
-    <div>
-      <pre>{JSON.stringify(ar)}</pre>
-      <GWTest
-        valueFromOutside={ar}
-        onChange={(changedValue) => {
-          setArr(changedValue);
+      <GWSelect
+        data={array1}
+        placeholder="Select a namespace"
+        value={value1}
+        onValueChange={setValue1}
+      >
+        Select:
+      </GWSelect>
+      <GWCheckbox
+        onChange={() => {
+          setgwCheckbox(gwCheckbox ? false : true);
         }}
-      />
+        checked={gwCheckbox}
+      >
+        Checkbox:
+      </GWCheckbox>
+      <GWInput onChange={setValue} value={value} placeholder="Insert text">
+        Input:
+      </GWInput>
+      <GWArray
+        inputPlaceholder="Insert group name"
+        externalArray={array}
+        onChange={(changedValue) => {
+          setArray(changedValue);
+        }}
+      >
+        Array:
+      </GWArray>
+      <GWTextarea
+        value={value2}
+        onChange={setValue2}
+        placeholder="Insert script"
+      >
+        Textarea:
+      </GWTextarea>
+      <GWFilepicker
+        onClick={() => {
+          setDisplayVal(inputVal);
+        }}
+        inputValue={inputVal}
+        displayValue={displayVal}
+        onChange={setInputVal}
+        placeholder="Type file name"
+        buttonText="Choose File"
+      >
+        File:
+      </GWFilepicker>
     </div>
   );
 };
-
-export const ShowForm = () => <GWForm></GWForm>;
