@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	//nolint:gosec
 	APITokenHeader = "direktiv-token"
 )
 
