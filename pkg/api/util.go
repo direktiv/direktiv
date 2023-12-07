@@ -590,7 +590,7 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// response
 	// token
 
-	h.srv.logger.Infow("Handling request", annotations...)
+	h.srv.logger.Debugw("Handling request", annotations...)
 
 	h.next.ServeHTTP(w, r)
 }
