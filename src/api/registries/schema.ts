@@ -16,20 +16,6 @@ export const RegistrySchema = z.object({
   user: z.string(),
 });
 
-/**
- * example
-  {
-    "id": "secret-3dbbd15c3b675a2a9cdb",
-    "namespace": "my-namespace",
-    "url": "https://domain.com",
-    "user": "username"
-    "password": "password"
-  }
- */
-const RegistrySchemaWithPassword = RegistrySchema.extend({
-  password: z.string(),
-});
-
 export const RegistryFormSchema = z.object({
   url: z.string().url(),
   user: z.string().nonempty(),
@@ -47,7 +33,7 @@ export const RegistryListSchema = z.object({
   }
  */
 export const RegistryCreatedSchema = z.object({
-  data: RegistrySchemaWithPassword,
+  data: RegistrySchema,
 });
 
 export const RegistryDeletedSchema = z.null();
