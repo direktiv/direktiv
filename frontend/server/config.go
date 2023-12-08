@@ -24,7 +24,6 @@ type APIServer struct {
 	Backend     string `yaml:"backend"`
 	BackendV2   string `yaml:"backendv2"`
 	BackendSkip bool   `yaml:"skipverify"`
-	APIKey      string `yaml:"apikey"`
 }
 
 type Config struct {
@@ -52,7 +51,6 @@ func ReadConfigAndPrepare(configDir string, c interface{}) error {
 	viper.SetDefault("server.backend", "http://localhost:1604")
 	viper.SetDefault("server.backendv2", "http://direktiv-flow.direktiv:6667")
 	viper.SetDefault("server.backendskip", true)
-	viper.SetDefault("server.apikey", "")
 	viper.SetDefault("server.tlscert", "")
 	viper.SetDefault("server.tlskey", "")
 

@@ -98,8 +98,6 @@ export default ({ mode }) => {
         "**/cypress/**",
         "**/.{idea,git,cache,output,temp}/**",
         "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
-        // all above this line are the default
-        "src/hooks/**/*", // 🚧 search for TODO_HOOKS_TESTS to find all places that needs some action 🚧
         "e2e/**", // playwright tests, vitest throws errors when parsing them.
       ],
     },
