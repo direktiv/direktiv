@@ -37,6 +37,25 @@ func TestJSOutboundPlugin(t *testing.T) {
 	assert.Equal(t, 204, w.Code)
 }
 
+func TestJsonModJSOutboundPlugin(t *testing.T) {
+	p, _ := plugins.GetPluginFromRegistry(outbound.JSOutboundPluginName)
+
+	config := &outbound.JSOutboundConfig{
+		Script: `
+        input["Body"] = JSON.parse(input["Body"]).csv
+		`,
+	}
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+
+	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
+	r.Body = io.NopCloser(bytes.NewBufferString("{ \"csv\": \"text\" }"))
+
+	w := gateway.NewDummyWriter()
+	p2.ExecutePlugin(nil, w, r)
+
+	assert.Equal(t, "text", w.Body.String())
+}
+
 func TestJSOutboundPluginBroken(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(outbound.JSOutboundPluginName)
 
