@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS "mirror_processes" (
 CREATE TABLE IF NOT EXISTS "secrets" (
     "namespace" text NOT NULL,
     "name" text NOT NULL,
-    "data" 	 text,
+    "data" 	 bytea,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("namespace", "name"),

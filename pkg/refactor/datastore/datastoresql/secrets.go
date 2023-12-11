@@ -6,14 +6,23 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/util"
 	"gorm.io/gorm"
 )
 
 type sqlSecretsStore struct {
-	db *gorm.DB
+	db        *gorm.DB
+	secretKey string
 }
 
 func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error {
+	if secret.Data != nil {
+		var err error
+		secret.Data, err = util.EncryptData([]byte(s.secretKey), secret.Data)
+		if err != nil {
+			return err
+		}
+	}
 	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data=? WHERE namespace=? and name=?`,
 		secret.Data, secret.Namespace, secret.Name)
 	if res.Error != nil {
@@ -51,6 +60,13 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string)
 	if res.Error != nil {
 		return nil, res.Error
 	}
+	if secret.Data != nil {
+		var err error
+		secret.Data, err = util.DecryptData([]byte(s.secretKey), secret.Data)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return secret, nil
 }
@@ -65,6 +81,11 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
 				INSERT INTO secrets(namespace, name) VALUES(?, ?)
 				`, secret.Namespace, secret.Name)
 		} else {
+			var err error
+			secret.Data, err = util.EncryptData([]byte(s.secretKey), secret.Data)
+			if err != nil {
+				return err
+			}
 			res = s.db.WithContext(ctx).Exec(`
 				INSERT INTO secrets(namespace, name, data) VALUES(?, ?, ?)
 				`, secret.Namespace, secret.Name, secret.Data)
@@ -77,6 +98,11 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
 				UPDATE secrets SET data=NULL WHERE namespace=? AND name=?
 				`, x.Namespace, x.Name)
 		} else {
+			var err error
+			secret.Data, err = util.EncryptData([]byte(s.secretKey), secret.Data)
+			if err != nil {
+				return err
+			}
 			res = s.db.WithContext(ctx).Exec(`
 				UPDATE secrets SET data=? WHERE namespace=? AND name=?
 				`, secret.Data, x.Namespace, x.Name)
@@ -99,6 +125,15 @@ func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*core.
 		Find(&secrets)
 	if res.Error != nil {
 		return nil, res.Error
+	}
+	for _, secret := range secrets {
+		if secret.Data != nil {
+			var err error
+			secret.Data, err = util.DecryptData([]byte(s.secretKey), secret.Data)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return secrets, nil
