@@ -209,9 +209,10 @@ const GatewayArray: FC<GatewayArrayProps> = ({
     if (val.length) {
       setInternalArray((old) => {
         const newValue = [...old, inputVal];
-        onChange(newValue);
+        const newValueRemovedEmpty = newValue.filter(Boolean);
+        onChange(newValueRemovedEmpty);
         setInputVal("");
-        return newValue;
+        return newValueRemovedEmpty;
       });
     }
   };
@@ -224,7 +225,10 @@ const GatewayArray: FC<GatewayArrayProps> = ({
         }
         return oldValue;
       });
-      onChange(newArray);
+
+      if (newValue) {
+        onChange(newArray);
+      }
       return newArray;
     });
   };
@@ -232,8 +236,9 @@ const GatewayArray: FC<GatewayArrayProps> = ({
   const deleteValue = (valueIndex: number) => {
     setInternalArray((old) => {
       const newValue = old.filter((_, i) => i !== valueIndex);
-      onChange(newValue);
-      return newValue;
+      const newValueRemovedEmpty = newValue.filter(Boolean);
+      onChange(newValueRemovedEmpty);
+      return newValueRemovedEmpty;
     });
   };
 
