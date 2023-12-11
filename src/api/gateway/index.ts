@@ -1,12 +1,13 @@
 export const gatewayKeys = {
-  endpoints: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  routes: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "gateway-endpoints",
+        scope: "gateway-routes",
         apiKey,
         namespace,
       },
     ] as const,
+  // TODO: REMOVE
   plugins: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {

@@ -1,27 +1,27 @@
-import { EndpointListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
+import { RoutesListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { gatewayKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-export const getEndpoints = apiFactory({
+export const getRoutes = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/endpoints`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/gateway/routes`,
   method: "GET",
-  schema: EndpointListSchema,
+  schema: RoutesListSchema,
 });
 
-const fetchEndpoints = async ({
+const fetchRoutes = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof gatewayKeys)["endpoints"]>>) =>
-  getEndpoints({
+}: QueryFunctionContext<ReturnType<(typeof gatewayKeys)["routes"]>>) =>
+  getRoutes({
     apiKey,
     urlParams: { namespace },
   });
 
-export const useEndpoints = ({
+export const useRoutes = ({
   enabled = true,
 }: {
   enabled?: boolean;
@@ -34,10 +34,10 @@ export const useEndpoints = ({
   }
 
   return useQueryWithPermissions({
-    queryKey: gatewayKeys.endpoints(namespace, {
+    queryKey: gatewayKeys.routes(namespace, {
       apiKey: apiKey ?? undefined,
     }),
-    queryFn: fetchEndpoints,
+    queryFn: fetchRoutes,
     enabled: !!namespace && enabled,
   });
 };

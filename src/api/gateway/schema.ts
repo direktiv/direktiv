@@ -2,11 +2,18 @@ import { z } from "zod";
 
 export const endpointMethods = [
   "GET",
+  "DELETE",
+  "HEAD",
   "POST",
   "PUT",
-  "DELETE",
-  "PATCH",
+  "TRACE",
+  "PATH",
+  "OPTIONS",
+  "CONNECT",
+  "*",
 ] as const;
+
+const MethodsSchema = z.enum(endpointMethods);
 
 /**
  * example
@@ -25,21 +32,21 @@ const PluginSchema = z.object({
 
 /**
  * example
-  {
-    "method": "POST",
-    "file_path": "/path-to-service.yaml",
-    "workflow": "action.yaml",
-    "namespace": "ns",
-    "error": "Error some error message",
-    "status": "failed"
-    "plugins": [{...}, {...}, {...}],
-  }
+// TODO: 
  */
-const EndpointSchema = z.object({
-  method: z.enum([...endpointMethods, ""]),
+const RouteSchema = z.object({
+  methods: z.array(MethodsSchema),
   file_path: z.string(),
-  error: z.string(),
-  plugins: z.array(PluginSchema),
+  path: z.string(),
+  allow_anonymous: z.boolean(),
+  errors: z.array(z.string()),
+  warnings: z.array(z.string()),
+  plugins: z.object({
+    outbound: z.array(PluginSchema),
+    inbound: z.array(PluginSchema),
+    auth: z.array(PluginSchema),
+    EventTarget: z.array(PluginSchema),
+  }),
 });
 
 /**
@@ -48,10 +55,11 @@ const EndpointSchema = z.object({
     "data": [{...}, {...}, {...}]
   } 
  */
-export const EndpointListSchema = z.object({
-  data: z.array(EndpointSchema),
+export const RoutesListSchema = z.object({
+  data: z.array(RouteSchema),
 });
 
+// TODO: delete all below
 /**
  * example
   {
@@ -96,4 +104,4 @@ export const PluginsListSchema = z.object({
 export type PluginsListSchemaType = z.infer<typeof PluginsListSchema>;
 export type PluginJSONSchemaType = z.infer<typeof PluginJSONSchema>;
 
-export type GatewaySchemeType = z.infer<typeof EndpointSchema>;
+export type GatewaySchemeType = z.infer<typeof RouteSchema>;
