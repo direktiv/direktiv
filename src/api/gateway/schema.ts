@@ -43,10 +43,10 @@ const RouteSchema = z.object({
   errors: z.array(z.string()),
   warnings: z.array(z.string()),
   plugins: z.object({
-    outbound: z.array(PluginSchema),
-    inbound: z.array(PluginSchema),
-    auth: z.array(PluginSchema),
-    EventTarget: z.array(PluginSchema),
+    outbound: z.array(PluginSchema).optional(),
+    inbound: z.array(PluginSchema).optional(),
+    auth: z.array(PluginSchema).optional(),
+    EventTarget: z.array(PluginSchema).optional(),
   }),
 });
 
