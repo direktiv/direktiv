@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 const GatewayPage = () => {
   const namespace = useNamespace();
   const { t } = useTranslation();
-  const { isGatewayEndpointPage, isGatewayConsumerPage } =
+  const { isGatewayRoutesPage, isGatewayConsumerPage } =
     pages.gateway.useParams();
 
   if (!namespace) return null;
@@ -17,9 +17,9 @@ const GatewayPage = () => {
   const tabs = [
     {
       value: "endpoints",
-      active: isGatewayEndpointPage,
+      active: isGatewayRoutesPage,
       icon: <Workflow aria-hidden="true" />,
-      title: t("pages.gateway.tabs.endpoints"),
+      title: t("pages.gateway.tabs.routes"),
       link: pages.gateway.createHref({
         namespace,
       }),

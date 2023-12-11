@@ -855,7 +855,7 @@
     },
     "gateway": {
       "tabs": {
-        "endpoints": "Endpoints",
+        "routes": "Routes",
         "consumers": "Consumers"
       },
       "title": "Gateway endpoints",
@@ -929,7 +929,7 @@
       "permissionsGroups": "Groups",
       "settings": "Settings",
       "gateway": "Gateway",
-      "gatewayEndpoint": "Endpoints",
+      "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumer",
       "jqPlayground": "jq Playground"
     },

@@ -17,8 +17,8 @@ import Activities from "~/pages/namespace/Mirror/Activities";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import EventsPage from "~/pages/namespace/Events";
 import GatewayConsumersPage from "~/pages/namespace/Gateway/Consumers";
-import GatewayEndpointsPage from "~/pages/namespace/Gateway/Endpoints";
 import GatewayPage from "~/pages/namespace/Gateway";
+import GatewayRoutesPage from "~/pages/namespace/Gateway/Routes";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
@@ -206,7 +206,7 @@ type GatewayPageSetup = Record<
     }) => string;
     useParams: () => {
       isGatewayPage: boolean;
-      isGatewayEndpointPage: boolean;
+      isGatewayRoutesPage: boolean;
       isGatewayConsumerPage: boolean;
     };
   }
@@ -549,14 +549,14 @@ export const pages: PageType & EnterprisePageType = {
     icon: Network,
     createHref: (params) =>
       `/${params.namespace}/gateway/${
-        params?.subpage === "consumers" ? `consumers` : "endpoints"
+        params?.subpage === "consumers" ? `consumers` : "routes"
       }`,
     useParams: () => {
       const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
       const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
-      const isGatewayEndpointPage = checkHandler(
+      const isGatewayRoutesPage = checkHandler(
         thirdLevel,
-        "isGatewayEndpointPage"
+        "isGatewayRoutesPage"
       );
       const isGatewayConsumerPage = checkHandler(
         thirdLevel,
@@ -564,7 +564,7 @@ export const pages: PageType & EnterprisePageType = {
       );
       return {
         isGatewayPage,
-        isGatewayEndpointPage,
+        isGatewayRoutesPage,
         isGatewayConsumerPage,
       };
     },
@@ -574,9 +574,9 @@ export const pages: PageType & EnterprisePageType = {
       handle: { gateway: true, isGatewayPage: true },
       children: [
         {
-          path: "endpoints",
-          element: <GatewayEndpointsPage />,
-          handle: { isGatewayEndpointPage: true },
+          path: "routes",
+          element: <GatewayRoutesPage />,
+          handle: { isGatewayRoutesPage: true },
         },
         {
           path: "consumers",

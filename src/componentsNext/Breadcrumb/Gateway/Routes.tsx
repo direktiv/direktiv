@@ -5,14 +5,14 @@ import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-const EndpointBreadcrumb = () => {
+const RoutesBreadcrumb = () => {
   const namespace = useNamespace();
-  const { isGatewayEndpointPage } = pages.gateway.useParams();
+  const { isGatewayRoutesPage } = pages.gateway.useParams();
 
   const { t } = useTranslation();
 
   if (!namespace) return null;
-  if (!isGatewayEndpointPage) return null;
+  if (!isGatewayRoutesPage) return null;
 
   return (
     <>
@@ -23,11 +23,11 @@ const EndpointBreadcrumb = () => {
           })}
         >
           <Workflow aria-hidden="true" />
-          {t("components.breadcrumb.gatewayEndpoint")}
+          {t("components.breadcrumb.gatewayRoutes")}
         </Link>
       </BreadcrumbLink>
     </>
   );
 };
 
-export default EndpointBreadcrumb;
+export default RoutesBreadcrumb;

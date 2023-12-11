@@ -1,7 +1,7 @@
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import ConsumerBreadcrumb from "./Consumer";
-import EndpointBreadcrumb from "./Endpoints";
 import { Link } from "react-router-dom";
+import RoutesBreadcrumb from "./Routes";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,7 @@ const GatewayBreadcrumb = () => {
           {t("components.breadcrumb.gateway")}
         </Link>
       </BreadcrumbLink>
-      <EndpointBreadcrumb />
+      <RoutesBreadcrumb />
       <ConsumerBreadcrumb />
     </>
   );
