@@ -9,7 +9,6 @@ import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
-import { usePlugins } from "~/api/gateway/query/getPlugins";
 import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 import yamljs from "js-yaml";
@@ -22,7 +21,6 @@ const EndpointEditor: FC<{
 }> = ({ data, path }) => {
   const { t } = useTranslation();
   const workflowData = atob(data.revision?.source ?? "");
-  const { data: plugins } = usePlugins();
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [endpointConfigJson, setEndpointConfigJson] = useState(() => {
@@ -42,9 +40,7 @@ const EndpointEditor: FC<{
     },
   });
 
-  const endpointFormSchema = useEndpointFormSchema(plugins ?? { data: {} });
-
-  if (!plugins) return null;
+  const endpointFormSchema = useEndpointFormSchema({ data: {} });
 
   const onSaveClicked = () => {
     const toSave = stringify(endpointConfigJson);

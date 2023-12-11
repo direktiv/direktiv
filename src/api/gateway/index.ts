@@ -7,13 +7,4 @@ export const gatewayKeys = {
         namespace,
       },
     ] as const,
-  // TODO: REMOVE
-  plugins: (namespace: string, { apiKey }: { apiKey?: string }) =>
-    [
-      {
-        scope: "gateway-plugins",
-        apiKey,
-        namespace,
-      },
-    ] as const,
 };
