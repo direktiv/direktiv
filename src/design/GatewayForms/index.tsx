@@ -216,12 +216,16 @@ const GatewayArray: FC<GatewayArrayProps> = ({
     }
   };
 
-  const changeValue = (valueIndex: number, value: string) => {
-    setInternalArray((old) => {
-      const newValue = [...old];
-      newValue[valueIndex] = value;
-      onChange(newValue);
-      return newValue;
+  const changeValue = (valueIndex: number, newValue: string) => {
+    setInternalArray((oldArray) => {
+      const newArray = oldArray.map((oldValue, index) => {
+        if (index === valueIndex) {
+          return newValue;
+        }
+        return oldValue;
+      });
+      onChange(newArray);
+      return newArray;
     });
   };
 
