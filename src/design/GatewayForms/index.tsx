@@ -1,5 +1,4 @@
 import {
-  ChangeEvent,
   FC,
   Fragment,
   MouseEventHandler,
@@ -217,13 +216,10 @@ const GatewayArray: FC<GatewayArrayProps> = ({
     }
   };
 
-  const changeValue = (
-    e: ChangeEvent<HTMLInputElement>,
-    valueIndex: number
-  ) => {
+  const changeValue = (valueIndex: number, value: string) => {
     setInternalArray((old) => {
       const newValue = [...old];
-      newValue[valueIndex] = e.target.value;
+      newValue[valueIndex] = value;
       onChange(newValue);
       return newValue;
     });
@@ -255,7 +251,7 @@ const GatewayArray: FC<GatewayArrayProps> = ({
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => {
-                  changeValue(e, valueIndex);
+                  changeValue(valueIndex, e.target.value);
                 }}
                 className="sm:w-max"
                 id="add_key"
