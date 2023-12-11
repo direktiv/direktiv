@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../utils";
-import { defaultEndpointYaml } from "../../Endpoint/utils";
+import { defaultRouteYaml } from "../../Route/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -53,14 +53,14 @@ const NewEndpoint = ({
                 (unallowedName) => unallowedName === nameWithExtension
               ),
             {
-              message: t("pages.explorer.tree.newEndpoint.nameAlreadyExists"),
+              message: t("pages.explorer.tree.newRoute.nameAlreadyExists"),
             }
           ),
         fileContent: z.string(),
       })
     ),
     defaultValues: {
-      fileContent: defaultEndpointYaml,
+      fileContent: defaultRouteYaml,
     },
   });
 
@@ -91,7 +91,7 @@ const NewEndpoint = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Network /> {t("pages.explorer.tree.newEndpoint.title")}
+          <Network /> {t("pages.explorer.tree.newRoute.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -100,11 +100,11 @@ const NewEndpoint = ({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-              {t("pages.explorer.tree.newEndpoint.nameLabel")}
+              {t("pages.explorer.tree.newRoute.nameLabel")}
             </label>
             <Input
               id="name"
-              placeholder={t("pages.explorer.tree.newEndpoint.namePlaceholder")}
+              placeholder={t("pages.explorer.tree.newRoute.namePlaceholder")}
               {...register("name")}
             />
           </fieldset>
@@ -113,7 +113,7 @@ const NewEndpoint = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.newEndpoint.cancelBtn")}
+            {t("pages.explorer.tree.newRoute.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -123,7 +123,7 @@ const NewEndpoint = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          {t("pages.explorer.tree.newEndpoint.createBtn")}
+          {t("pages.explorer.tree.newRoute.createBtn")}
         </Button>
       </DialogFooter>
     </>

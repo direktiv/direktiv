@@ -1,6 +1,6 @@
 import type { JSONSchema7Definition } from "json-schema";
 import { RJSFSchema } from "@rjsf/utils";
-import { endpointMethods } from "~/api/gateway/schema";
+import { routeMethods } from "~/api/gateway/schema";
 import { stringify } from "json-to-pretty-yaml";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +8,7 @@ export const endpointHeader = {
   direktiv_api: "endpoint/v1",
 };
 
-export const defaultEndpointYaml = stringify(endpointHeader);
+export const defaultRouteYaml = stringify(endpointHeader);
 
 /**
  * input:
@@ -65,19 +65,19 @@ export const generatePluginJSONSchema = ({
   },
 });
 
-export const useEndpointFormSchema = (): RJSFSchema => {
+export const useRouteFormSchema = (): RJSFSchema => {
   const { t } = useTranslation();
 
   return {
     properties: {
       method: {
-        title: t("pages.explorer.tree.newEndpoint.form.method"),
+        title: t("pages.explorer.tree.newRoute.form.method"),
         type: "string",
         // spread operator is required to convert from readonly to mutable array
-        enum: [...endpointMethods],
+        enum: [...routeMethods],
       },
       plugins: {
-        title: t("pages.explorer.tree.newEndpoint.form.plugins"),
+        title: t("pages.explorer.tree.newRoute.form.plugins"),
         type: "array",
         items: {},
       },
@@ -87,7 +87,7 @@ export const useEndpointFormSchema = (): RJSFSchema => {
   };
 };
 
-export const addEndpointHeader = (endpointJSON: object) => ({
+export const addRouteHeader = (routeJSON: object) => ({
   ...endpointHeader,
-  ...endpointJSON,
+  ...routeJSON,
 });

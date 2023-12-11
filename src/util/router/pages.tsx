@@ -14,7 +14,7 @@ import {
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import Activities from "~/pages/namespace/Mirror/Activities";
-import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
+import EndpointEditorPage from "~/pages/namespace/Explorer/Route";
 import EventsPage from "~/pages/namespace/Events";
 import GatewayConsumersPage from "~/pages/namespace/Gateway/Consumers";
 import GatewayPage from "~/pages/namespace/Gateway";

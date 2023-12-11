@@ -2,10 +2,10 @@ import { FileSymlink, Network } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import EndpointEditor from "./EndpointEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
+import RouteEditor from "./RouteEditor";
 // import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
@@ -59,7 +59,7 @@ const Header: FC = () => {
           </Button>
         </div>
       </div>
-      <EndpointEditor data={gatewayData} path={path} />
+      <RouteEditor data={gatewayData} path={path} />
     </>
   );
 };

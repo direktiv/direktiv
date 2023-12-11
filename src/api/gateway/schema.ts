@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const endpointMethods = [
+export const routeMethods = [
   "GET",
   "DELETE",
   "HEAD",
@@ -13,7 +13,7 @@ export const endpointMethods = [
   "*",
 ] as const;
 
-const MethodsSchema = z.enum(endpointMethods);
+const MethodsSchema = z.enum(routeMethods);
 
 /**
  * example

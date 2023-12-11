@@ -1,10 +1,10 @@
 import { FC, useState } from "react";
-import { addEndpointHeader, useEndpointFormSchema } from "./utils";
+import { addRouteHeader, useRouteFormSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import EndpointPreview from "./EndpointPreview";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
+import RoutePreview from "./RoutePreview";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { stringify } from "json-to-pretty-yaml";
@@ -15,7 +15,7 @@ import yamljs from "js-yaml";
 
 export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
-const EndpointEditor: FC<{
+const RouteEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
 }> = ({ data, path }) => {
@@ -23,7 +23,7 @@ const EndpointEditor: FC<{
   const workflowData = atob(data.revision?.source ?? "");
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [endpointConfigJson, setEndpointConfigJson] = useState(() => {
+  const [routeConfigJson, setRouteConfigJson] = useState(() => {
     let json;
     try {
       json = yamljs.load(workflowData);
@@ -34,18 +34,18 @@ const EndpointEditor: FC<{
     return json as Record<string, unknown>;
   });
 
-  const { mutate: updateEndpoint, isLoading } = useUpdateWorkflow({
+  const { mutate: updateRoute, isLoading } = useUpdateWorkflow({
     onSuccess: () => {
       setHasUnsavedChanges(false);
     },
   });
 
-  const endpointFormSchema = useEndpointFormSchema();
+  const routeFormSchema = useRouteFormSchema();
 
   const onSaveClicked = () => {
-    const toSave = stringify(endpointConfigJson);
+    const toSave = stringify(routeConfigJson);
     if (toSave) {
-      updateEndpoint({
+      updateRoute({
         path,
         fileContent: toSave,
       });
@@ -58,12 +58,12 @@ const EndpointEditor: FC<{
         <div className="grow">
           <ScrollArea className="flex grow p-4">
             <JSONSchemaForm
-              formData={endpointConfigJson}
+              formData={routeConfigJson}
               onChange={(e) => {
                 if (e.formData) {
-                  const formDataWithHeader = addEndpointHeader(e.formData);
+                  const formDataWithHeader = addRouteHeader(e.formData);
                   setHasUnsavedChanges(true);
-                  setEndpointConfigJson(formDataWithHeader);
+                  setRouteConfigJson(formDataWithHeader);
                 }
               }}
               /**
@@ -72,7 +72,7 @@ const EndpointEditor: FC<{
                * plugin.
                */
               omitExtraData={true}
-              schema={endpointFormSchema}
+              schema={routeFormSchema}
             />
           </ScrollArea>
         </div>
@@ -85,7 +85,7 @@ const EndpointEditor: FC<{
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EndpointPreview fileContent={stringify(endpointConfigJson)} />
+        <RoutePreview fileContent={stringify(routeConfigJson)} />
         <Button variant="outline" disabled={isLoading} onClick={onSaveClicked}>
           <Save />
           {t("pages.explorer.gateway.editor.saveBtn")}
@@ -95,4 +95,4 @@ const EndpointEditor: FC<{
   );
 };
 
-export default EndpointEditor;
+export default RouteEditor;

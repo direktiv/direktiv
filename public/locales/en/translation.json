@@ -116,10 +116,10 @@
             "cmd": "Cmd"
           }
         },
-        "newEndpoint": {
-          "title": "Create a new endpoint",
+        "newRoute": {
+          "title": "Create a new route",
           "nameLabel": "Name",
-          "namePlaceholder": "endpoint-name.yaml",
+          "namePlaceholder": "route-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
