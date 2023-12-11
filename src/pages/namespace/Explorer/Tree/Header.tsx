@@ -29,7 +29,6 @@ import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
-import useIsGatewayAvailable from "~/hooksNext/useIsGatewayAvailable";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -52,7 +51,6 @@ const ExplorerHeader: FC = () => {
   const { t } = useTranslation();
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-  const isGatwayAvailable = useIsGatewayAvailable();
 
   const { data } = useNodeContent({ path });
   const { segments } = analyzePath(path);
@@ -152,19 +150,18 @@ const ExplorerHeader: FC = () => {
                     {t("pages.explorer.tree.header.newService")}
                   </DropdownMenuItem>
                 </DialogTrigger>
-                {isGatwayAvailable && (
-                  <DialogTrigger
-                    className="w-full"
-                    onClick={() => {
-                      setSelectedDialog("new-endpoint");
-                    }}
-                  >
-                    <DropdownMenuItem>
-                      <Network className="mr-2 h-4 w-4" />{" "}
-                      {t("pages.explorer.tree.header.newEndpoint")}
-                    </DropdownMenuItem>
-                  </DialogTrigger>
-                )}
+
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-endpoint");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Network className="mr-2 h-4 w-4" />{" "}
+                    {t("pages.explorer.tree.header.newEndpoint")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

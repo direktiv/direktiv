@@ -7,10 +7,8 @@ import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
-  const isGatewayAvailable = useIsGatewayAvailable();
-  const { isFetching, refetch } = useRoutes({
-    enabled: !!isGatewayAvailable,
-  });
+
+  const { isFetching, refetch } = useRoutes();
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -19,16 +17,14 @@ const GatewayPage = () => {
           <Network className="h-5" />
           {t("pages.gateway.title")}
         </h3>
-        {isGatewayAvailable && (
-          <RefreshButton
-            icon
-            variant="outline"
-            disabled={isFetching}
-            onClick={() => {
-              refetch();
-            }}
-          />
-        )}
+        <RefreshButton
+          icon
+          variant="outline"
+          disabled={isFetching}
+          onClick={() => {
+            refetch();
+          }}
+        />
       </div>
       <GatewayTable />
     </div>

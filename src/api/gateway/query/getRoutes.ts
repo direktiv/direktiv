@@ -21,11 +21,7 @@ const fetchRoutes = async ({
     urlParams: { namespace },
   });
 
-export const useRoutes = ({
-  enabled = true,
-}: {
-  enabled?: boolean;
-} = {}) => {
+export const useRoutes = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -38,6 +34,6 @@ export const useRoutes = ({
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchRoutes,
-    enabled: !!namespace && enabled,
+    enabled: !!namespace,
   });
 };
