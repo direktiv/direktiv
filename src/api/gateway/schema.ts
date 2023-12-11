@@ -32,8 +32,28 @@ const PluginSchema = z.object({
 
 /**
  * example
-// TODO:     !!!
-
+{
+  "file_path": "/test/roottree.yaml",
+  "path": "/adon/",
+  "server_path": "/ns/git-test/adon",
+  "methods": [
+    "GET"
+  ],
+  "allow_anonymous": true,
+  "timeout": 0,
+  "errors": [],
+  "warnings": [],
+  "plugins": {
+    "target": {
+      "type": "instant-response",
+      "configuration": {
+        "content_type": "application/xml",
+        "status_code": 200,
+        "status_message": "..."
+      }
+    }
+  }
+}
  */
 const RouteSchema = z.object({
   methods: z.array(MethodsSchema),
