@@ -2,7 +2,7 @@ import { BreadcrumbRoot } from "~/design/Breadcrumbs";
 import EventHistoryBreadcrumb from "./Events/HistoryBreadcrumb";
 import EventListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
-import GatewayBreadcrumb from "./GatewayBreadcrumb";
+import GatewayBreadcrumb from "./Gateway";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
 import JqPlaygroundBreadcrumb from "./JqPlaygroundBreadcrumb";
 import MirrorBreadcrumb from "./MirrorBreadcrumb";

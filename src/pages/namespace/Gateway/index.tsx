@@ -1,37 +1,59 @@
-import GatewayTable from "./Table";
-import { Network } from "lucide-react";
-import RefreshButton from "~/design/RefreshButton";
-import useIsGatewayAvailable from "~/hooksNext/useIsGatewayAvailable";
-import { useRoutes } from "~/api/gateway/query/getRoutes";
+import { Link, Outlet } from "react-router-dom";
+import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
+import { Users, Workflow } from "lucide-react";
+
+import { pages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
+  const namespace = useNamespace();
   const { t } = useTranslation();
-  const isGatewayAvailable = useIsGatewayAvailable();
-  const { isFetching, refetch } = useRoutes({
-    enabled: !!isGatewayAvailable,
-  });
+  const { isGatewayEndpointPage, isGatewayConsumerPage } =
+    pages.gateway.useParams();
+
+  if (!namespace) return null;
+
+  const tabs = [
+    {
+      value: "endpoints",
+      active: isGatewayEndpointPage,
+      icon: <Workflow aria-hidden="true" />,
+      title: t("pages.gateway.tabs.endpoints"),
+      link: pages.gateway.createHref({
+        namespace,
+      }),
+    },
+    {
+      value: "consumers",
+      active: isGatewayConsumerPage,
+      icon: <Users aria-hidden="true" />,
+      title: t("pages.gateway.tabs.consumers"),
+      link: pages.gateway.createHref({
+        namespace,
+        subpage: "consumers",
+      }),
+    },
+  ] as const;
 
   return (
-    <div className="flex grow flex-col gap-y-4 p-5">
-      <div className="flex">
-        <h3 className="flex grow items-center gap-x-2 font-bold">
-          <Network className="h-5" />
-          {t("pages.gateway.title")}
-        </h3>
-        {isGatewayAvailable && (
-          <RefreshButton
-            icon
-            variant="outline"
-            disabled={isFetching}
-            onClick={() => {
-              refetch();
-            }}
-          />
-        )}
+    <>
+      <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+        <Tabs value={tabs.find((tab) => tab.active)?.value}>
+          <TabsList>
+            {tabs.map((tab) => (
+              <TabsTrigger asChild value={tab.value} key={tab.value}>
+                <Link to={tab.link}>
+                  {tab.icon}
+                  {tab.title}
+                </Link>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
-      <GatewayTable />
-    </div>
+      <Outlet />
+    </>
   );
 };
 

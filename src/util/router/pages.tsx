@@ -16,6 +16,8 @@ import { useMatches, useParams, useSearchParams } from "react-router-dom";
 import Activities from "~/pages/namespace/Mirror/Activities";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import EventsPage from "~/pages/namespace/Events";
+import GatewayConsumersPage from "~/pages/namespace/Gateway/Consumers";
+import GatewayEndpointsPage from "~/pages/namespace/Gateway/Endpoints";
 import GatewayPage from "~/pages/namespace/Gateway";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
@@ -52,11 +54,7 @@ type PageBase = {
   route: RouteObject;
 };
 
-type KeysWithNoPathParams =
-  | "monitoring"
-  | "settings"
-  | "gateway"
-  | "jqPlayground";
+type KeysWithNoPathParams = "monitoring" | "settings" | "jqPlayground";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
@@ -198,11 +196,18 @@ type JqPlaygroundPageSetup = Record<
     };
   }
 >;
+
 type GatewayPageSetup = Record<
   "gateway",
   PageBase & {
+    createHref: (params: {
+      namespace: string;
+      subpage?: "consumers";
+    }) => string;
     useParams: () => {
       isGatewayPage: boolean;
+      isGatewayEndpointPage: boolean;
+      isGatewayConsumerPage: boolean;
     };
   }
 >;
@@ -542,16 +547,43 @@ export const pages: PageType & EnterprisePageType = {
   gateway: {
     name: "components.mainMenu.gateway",
     icon: Network,
-    createHref: (params) => `/${params.namespace}/gateway`,
+    createHref: (params) =>
+      `/${params.namespace}/gateway/${
+        params?.subpage === "consumers" ? `consumers` : "endpoints"
+      }`,
     useParams: () => {
-      const [, secondLevel] = useMatches(); // first level is namespace level
+      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
       const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
-      return { isGatewayPage };
+      const isGatewayEndpointPage = checkHandler(
+        thirdLevel,
+        "isGatewayEndpointPage"
+      );
+      const isGatewayConsumerPage = checkHandler(
+        thirdLevel,
+        "isGatewayConsumerPage"
+      );
+      return {
+        isGatewayPage,
+        isGatewayEndpointPage,
+        isGatewayConsumerPage,
+      };
     },
     route: {
       path: "gateway",
       element: <GatewayPage />,
       handle: { gateway: true, isGatewayPage: true },
+      children: [
+        {
+          path: "endpoints",
+          element: <GatewayEndpointsPage />,
+          handle: { isGatewayEndpointPage: true },
+        },
+        {
+          path: "consumers",
+          element: <GatewayConsumersPage />,
+          handle: { isGatewayConsumerPage: true },
+        },
+      ],
     },
   },
   services: {
