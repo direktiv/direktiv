@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, Fragment, useEffect, useState } from "react";
-import NewFileButton, { FileTypeSelection } from "./components/NewFileBtn";
+import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -44,7 +44,7 @@ const ExplorerHeader: FC = () => {
   if (!namespace) return null;
 
   const wideOverlay =
-    !!selectedDialog && !["new-dir", "new-endpoint"].includes(selectedDialog);
+    !!selectedDialog && !["new-dir", "new-route"].includes(selectedDialog);
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -114,7 +114,7 @@ const ExplorerHeader: FC = () => {
                 close={() => setDialogOpen(false)}
               />
             )}
-            {selectedDialog === "new-endpoint" && (
+            {selectedDialog === "new-route" && (
               <NewEndpoint
                 path={data?.node?.path}
                 unallowedNames={(data?.children?.results ?? []).map(

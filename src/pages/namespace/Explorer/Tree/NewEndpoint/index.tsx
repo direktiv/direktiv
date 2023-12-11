@@ -86,7 +86,7 @@ const NewEndpoint = ({
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-endpoint-${path}`;
+  const formId = `new-route-${path}`;
   return (
     <>
       <DialogHeader>
