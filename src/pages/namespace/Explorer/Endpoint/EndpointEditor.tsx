@@ -40,7 +40,7 @@ const EndpointEditor: FC<{
     },
   });
 
-  const endpointFormSchema = useEndpointFormSchema({ data: {} });
+  const endpointFormSchema = useEndpointFormSchema();
 
   const onSaveClicked = () => {
     const toSave = stringify(endpointConfigJson);
