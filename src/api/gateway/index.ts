@@ -7,4 +7,12 @@ export const gatewayKeys = {
         namespace,
       },
     ] as const,
+  consumers: (namespace: string, { apiKey }: { apiKey?: string }) =>
+    [
+      {
+        scope: "gateway-consumers",
+        apiKey,
+        namespace,
+      },
+    ] as const,
 };

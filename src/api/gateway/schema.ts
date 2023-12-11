@@ -60,4 +60,22 @@ export const RoutesListSchema = z.object({
   data: z.array(RouteSchema),
 });
 
+const ConsumerSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+  api_key: z.string(),
+  tags: z.array(z.string()),
+  groups: z.array(z.string()),
+});
+
+/**
+ * example
+  {
+    "data": [{...}, {...}, {...}]
+  } 
+ */
+export const ConsumersListSchema = z.object({
+  data: z.array(ConsumerSchema),
+});
+
 export type GatewaySchemeType = z.infer<typeof RouteSchema>;
