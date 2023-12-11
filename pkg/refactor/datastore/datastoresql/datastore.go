@@ -56,7 +56,8 @@ func (s *sqlStore) Logs() logengine.LogStore {
 // Secrets returns secrets store.
 func (s *sqlStore) Secrets() core.SecretsStore {
 	return &sqlSecretsStore{
-		db: s.db,
+		db:        s.db,
+		secretKey: s.mirrorConfigEncryptionKey,
 	}
 }
 
