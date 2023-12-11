@@ -80,6 +80,24 @@ export const RoutesListSchema = z.object({
   data: z.array(RouteSchema),
 });
 
+/**
+ * example
+{
+  "data": [
+    {
+      "username": "user",
+      "password": "pwd",
+      "api_key": "key",
+      "tags": [
+        "tag1"
+      ],
+      "groups": [
+        "group1"
+      ]
+    }
+  ]
+}
+ */
 const ConsumerSchema = z.object({
   username: z.string(),
   password: z.string(),
