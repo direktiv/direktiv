@@ -28,6 +28,7 @@ var (
 
 	MirrorSync      = "mirror_sync"
 	NamespaceDelete = "namespace_delete"
+	NamespaceCreate = "namespace_create"
 
 	SecretCreate = "secret_create"
 	SecretDelete = "secret_delete"
