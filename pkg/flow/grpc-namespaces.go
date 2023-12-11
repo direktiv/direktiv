@@ -251,6 +251,11 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	var resp grpc.CreateNamespaceResponse
 	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
 
+	err = flow.pBus.Publish(pubsub2.NamespaceCreate, ns.Name)
+	if err != nil {
+		flow.sugar.Error("pubsub publish", "error", err)
+	}
+
 	return &resp, nil
 }
 
