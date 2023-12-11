@@ -12,7 +12,7 @@ import {
 import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import { Row } from "./Row";
-import { useRoutes } from "~/api/gateway/query/getEndpoints";
+import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const GatewayTable = () => {

@@ -2,7 +2,7 @@ import GatewayTable from "./Table";
 import { Network } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
 import useIsGatewayAvailable from "~/hooksNext/useIsGatewayAvailable";
-import { useRoutes } from "~/api/gateway/query/getEndpoints";
+import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
