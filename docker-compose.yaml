@@ -48,7 +48,7 @@ services:
       - postgres
 
   ui:
-    image: direktiv-ui-dev
+    image: ${DIREKTIV_UI_IMAGE}
     environment:
       - UI_BACKEND=http://flow:8181/api/
       - UI_PORT=8181
