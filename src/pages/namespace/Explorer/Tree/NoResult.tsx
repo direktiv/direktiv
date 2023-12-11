@@ -1,9 +1,8 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { Folder, FolderOpen, Layers, Network, Play } from "lucide-react";
+import NewFileButton, { FileTypeSelection } from "./components/NewFileBtn";
 
-import Button from "~/design/Button";
-import { NewDialog } from "./types";
+import { FolderOpen } from "lucide-react";
 import NewDirectory from "./NewDirectory";
 import NewEndpoint from "./NewEndpoint";
 import NewService from "./NewService";
@@ -15,10 +14,9 @@ import { useTranslation } from "react-i18next";
 
 const EmptyDirectoryButton = () => {
   const { path } = pages.explorer.useParams();
-  const { t } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDialog, setSelectedDialog] = useState<NewDialog>();
+  const [selectedDialog, setSelectedDialog] = useState<FileTypeSelection>();
 
   useEffect(() => {
     if (dialogOpen === false) setSelectedDialog(undefined);
@@ -28,53 +26,9 @@ const EmptyDirectoryButton = () => {
     !!selectedDialog && !["new-dir", "new-endpoint"].includes(selectedDialog);
 
   return (
-    <div className="grid gap-5 md:grid-cols-2">
+    <div className="grid gap-5">
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-workflow");
-          }}
-        >
-          <Button>
-            <Play />
-            {t("pages.explorer.tree.list.empty.createWorkflow")}
-          </Button>
-        </DialogTrigger>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-service");
-          }}
-        >
-          <Button>
-            <Layers />
-            {t("pages.explorer.tree.list.empty.createService")}
-          </Button>
-        </DialogTrigger>
-
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-endpoint");
-          }}
-        >
-          <Button>
-            <Network />
-            {t("pages.explorer.tree.list.empty.createEndpoint")}
-          </Button>
-        </DialogTrigger>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-dir");
-          }}
-        >
-          <Button>
-            <Folder />
-            {t("pages.explorer.tree.list.empty.createDirectory")}
-          </Button>
-        </DialogTrigger>
+        <NewFileButton setSelectedDialog={setSelectedDialog} />
         <DialogContent
           className={twMergeClsx(
             wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"

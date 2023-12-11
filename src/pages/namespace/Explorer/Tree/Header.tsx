@@ -1,37 +1,18 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, Fragment, useEffect, useState } from "react";
-import {
-  Folder,
-  FolderTree,
-  Layers,
-  Network,
-  Play,
-  PlusCircle,
-} from "lucide-react";
+import NewFileButton, { FileTypeSelection } from "./components/NewFileBtn";
 
-import Button from "~/design/Button";
-import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
+import { FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
-import { NewDialog } from "./types";
 import NewDirectory from "./NewDirectory";
 import NewEndpoint from "./NewEndpoint";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
-import { RxChevronDown } from "react-icons/rx";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
-import { useTranslation } from "react-i18next";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -48,14 +29,13 @@ const BreadcrumbSegment: FC<{
 );
 
 const ExplorerHeader: FC = () => {
-  const { t } = useTranslation();
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
   const { data } = useNodeContent({ path });
   const { segments } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDialog, setSelectedDialog] = useState<NewDialog>();
+  const [selectedDialog, setSelectedDialog] = useState<FileTypeSelection>();
 
   useEffect(() => {
     if (dialogOpen === false) setSelectedDialog(undefined);
@@ -101,70 +81,7 @@ const ExplorerHeader: FC = () => {
           </div>
         </h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="primary" data-testid="dropdown-trg-new">
-                <PlusCircle />
-                {t("pages.explorer.tree.header.newBtn")}
-                <RxChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              <DropdownMenuLabel>
-                {t("pages.explorer.tree.header.createLabel")}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DialogTrigger
-                  className="w-full"
-                  data-testid="new-dir"
-                  onClick={() => {
-                    setSelectedDialog("new-dir");
-                  }}
-                >
-                  <DropdownMenuItem>
-                    <Folder className="mr-2 h-4 w-4" />{" "}
-                    {t("pages.explorer.tree.header.newDirectory")}
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogTrigger
-                  className="w-full"
-                  data-testid="new-workflow"
-                  onClick={() => {
-                    setSelectedDialog("new-workflow");
-                  }}
-                >
-                  <DropdownMenuItem>
-                    <Play className="mr-2 h-4 w-4" />{" "}
-                    {t("pages.explorer.tree.header.newWorkflow")}
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogTrigger
-                  className="w-full"
-                  onClick={() => {
-                    setSelectedDialog("new-service");
-                  }}
-                >
-                  <DropdownMenuItem>
-                    <Layers className="mr-2 h-4 w-4" />{" "}
-                    {t("pages.explorer.tree.header.newService")}
-                  </DropdownMenuItem>
-                </DialogTrigger>
-
-                <DialogTrigger
-                  className="w-full"
-                  onClick={() => {
-                    setSelectedDialog("new-endpoint");
-                  }}
-                >
-                  <DropdownMenuItem>
-                    <Network className="mr-2 h-4 w-4" />{" "}
-                    {t("pages.explorer.tree.header.newEndpoint")}
-                  </DropdownMenuItem>
-                </DialogTrigger>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <NewFileButton setSelectedDialog={setSelectedDialog} />
           <DialogContent
             className={twMergeClsx(
               wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
