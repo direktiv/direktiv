@@ -63,6 +63,28 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+describe("Test gateway endpoints on create", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+    retry(`should list all endpoints`, 10, async () => {
+      const listRes = await request(common.config.getDirektivHost()).get(
+        `/api/v2/namespaces/${testNamespace}/gateway/routes`
+      );
+      expect(listRes.statusCode).toEqual(200);
+      expect(listRes.body.data.length).toEqual(0);
+      expect(listRes.body.data).toEqual(
+        expect.arrayContaining(
+          [
+          ]
+        )
+      );
+    });
+  
+
+});
+
 describe("Test gateway endpoints crud operations", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
 

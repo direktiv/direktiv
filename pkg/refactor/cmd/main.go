@@ -96,6 +96,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	pbus.Subscribe(func(ns string) {
 		gatewayManager.UpdateNamespace(ns)
 	},
+		pubsub.NamespaceCreate,
 		pubsub.MirrorSync,
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
