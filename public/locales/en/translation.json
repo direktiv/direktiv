@@ -864,18 +864,19 @@
         "routes": "Routes",
         "consumers": "Consumers"
       },
-      "title": "Gateway endpoints",
-      "columns": {
-        "filePath": "file path",
-        "method": "method",
-        "plugins": "plugins"
-      },
-      "row": {
-        "error": "error",
-        "plugins": "{{count}} plugins",
-        "plugins_one": "{{count}} plugin"
-      },
-      "empty": "No endpoints exist yet"
+      "routes": {
+        "columns": {
+          "filePath": "file path",
+          "method": "method",
+          "plugins": "plugins"
+        },
+        "row": {
+          "error": "error",
+          "plugins": "{{count}} plugins",
+          "plugins_one": "{{count}} plugin"
+        },
+        "empty": "No routes exist yet"
+      }
     },
     "jqPlayground": {
       "title": "jq Playground",

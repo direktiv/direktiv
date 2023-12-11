@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { Card } from "~/design/Card";
 import { Network } from "lucide-react";
 import { Row } from "./Row";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
@@ -25,49 +24,48 @@ const GatewayTable = () => {
   } = useRoutes();
 
   const noResults = isSuccess && gatewayList.data.length === 0;
+
   return (
-    <Card>
-      <Table>
-        <TableHead>
+    <Table className="border-t border-gray-5 dark:border-gray-dark-5">
+      <TableHead>
+        <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+          <TableHeaderCell>
+            {t("pages.gateway.routes.columns.filePath")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-32">
+            {t("pages.gateway.routes.columns.method")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-32">
+            {t("pages.gateway.routes.columns.plugins")}
+          </TableHeaderCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {isAllowed ? (
+          <>
+            {noResults ? (
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                <TableCell colSpan={3}>
+                  <NoResult icon={Network}>
+                    {t("pages.gateway.routes.empty")}
+                  </NoResult>
+                </TableCell>
+              </TableRow>
+            ) : (
+              gatewayList?.data?.map((gateway) => (
+                <Row key={gateway.file_path} gateway={gateway} />
+              ))
+            )}
+          </>
+        ) : (
           <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-            <TableHeaderCell>
-              {t("pages.gateway.columns.filePath")}
-            </TableHeaderCell>
-            <TableHeaderCell className="w-32">
-              {t("pages.gateway.columns.method")}
-            </TableHeaderCell>
-            <TableHeaderCell className="w-32">
-              {t("pages.gateway.columns.plugins")}
-            </TableHeaderCell>
+            <TableCell colSpan={3}>
+              <NoPermissions>{noPermissionMessage}</NoPermissions>
+            </TableCell>
           </TableRow>
-        </TableHead>
-        <TableBody>
-          {isAllowed ? (
-            <>
-              {noResults ? (
-                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                  <TableCell colSpan={3}>
-                    <NoResult icon={Network}>
-                      {t("pages.gateway.empty")}
-                    </NoResult>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                gatewayList?.data?.map((gateway) => (
-                  <Row key={gateway.file_path} gateway={gateway} />
-                ))
-              )}
-            </>
-          ) : (
-            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableCell colSpan={3}>
-                <NoPermissions>{noPermissionMessage}</NoPermissions>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </Card>
+        )}
+      </TableBody>
+    </Table>
   );
 };
 export default GatewayTable;
