@@ -79,13 +79,19 @@
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
         },
-        "header": {
-          "newBtn": "New",
-          "createLabel": "Create",
-          "newDirectory": "New Directory",
-          "newWorkflow": "New Workflow",
-          "newService": "New Service",
-          "newEndpoint": "New Endpoint"
+        "newFileButton": {
+          "buttonText": "New",
+          "label": "Create",
+          "items": {
+            "directory": "New Directory",
+            "workflow": "New Workflow",
+            "service": "New Service",
+            "gateway": {
+              "label": "Gateway",
+              "route": "New Route",
+              "consumer": "New Consumer"
+            }
+          }
         },
         "newWorkflow": {
           "title": "Create a new workflow",

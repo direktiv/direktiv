@@ -4,10 +4,21 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { Folder, Layers, Network, Play, PlusCircle } from "lucide-react";
+import {
+  Folder,
+  Layers,
+  Network,
+  Play,
+  PlusCircle,
+  Workflow,
+} from "lucide-react";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "@radix-ui/react-dialog";
@@ -19,7 +30,7 @@ export type FileTypeSelection =
   | "new-dir"
   | "new-workflow"
   | "new-service"
-  | "new-endpoint";
+  | "new-route";
 
 type NewFileButtonProps = {
   setSelectedDialog: (fileType: FileTypeSelection) => void;
@@ -32,28 +43,29 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
       <DropdownMenuTrigger asChild>
         <Button variant="primary" data-testid="dropdown-trg-new">
           <PlusCircle />
-          {t("pages.explorer.tree.header.newBtn")}
+          {t("pages.explorer.tree.newFileButton.buttonText")}
           <RxChevronDown />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40">
         <DropdownMenuLabel>
-          {t("pages.explorer.tree.header.createLabel")}
+          {t("pages.explorer.tree.newFileButton.label")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DialogTrigger
+          className="w-full"
+          data-testid="new-dir"
+          onClick={() => {
+            setSelectedDialog("new-dir");
+          }}
+        >
+          <DropdownMenuItem>
+            <Folder className="mr-2 h-4 w-4" />{" "}
+            {t("pages.explorer.tree.newFileButton.items.directory")}
+          </DropdownMenuItem>
+        </DialogTrigger>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DialogTrigger
-            className="w-full"
-            data-testid="new-dir"
-            onClick={() => {
-              setSelectedDialog("new-dir");
-            }}
-          >
-            <DropdownMenuItem>
-              <Folder className="mr-2 h-4 w-4" />{" "}
-              {t("pages.explorer.tree.header.newDirectory")}
-            </DropdownMenuItem>
-          </DialogTrigger>
           <DialogTrigger
             className="w-full"
             data-testid="new-workflow"
@@ -63,7 +75,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
           >
             <DropdownMenuItem>
               <Play className="mr-2 h-4 w-4" />{" "}
-              {t("pages.explorer.tree.header.newWorkflow")}
+              {t("pages.explorer.tree.newFileButton.items.workflow")}
             </DropdownMenuItem>
           </DialogTrigger>
           <DialogTrigger
@@ -74,21 +86,30 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
           >
             <DropdownMenuItem>
               <Layers className="mr-2 h-4 w-4" />{" "}
-              {t("pages.explorer.tree.header.newService")}
+              {t("pages.explorer.tree.newFileButton.items.service")}
             </DropdownMenuItem>
           </DialogTrigger>
-
-          <DialogTrigger
-            className="w-full"
-            onClick={() => {
-              setSelectedDialog("new-endpoint");
-            }}
-          >
-            <DropdownMenuItem>
-              <Network className="mr-2 h-4 w-4" />{" "}
-              {t("pages.explorer.tree.header.newEndpoint")}
-            </DropdownMenuItem>
-          </DialogTrigger>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Network className="mr-2 h-4 w-4" />
+              {t("pages.explorer.tree.newFileButton.items.gateway.label")}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-route");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Workflow className="mr-2 h-4 w-4" />
+                    {t("pages.explorer.tree.newFileButton.items.gateway.route")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
