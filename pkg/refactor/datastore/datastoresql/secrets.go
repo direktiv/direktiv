@@ -16,12 +16,13 @@ type sqlSecretsStore struct {
 }
 
 func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error {
-	var err error
-	secret.Data, err = util.EncryptData([]byte(s.secretKey), secret.Data)
-	if err != nil {
-		return err
+	if secret.Data != nil {
+		var err error
+		secret.Data, err = util.EncryptData([]byte(s.secretKey), secret.Data)
+		if err != nil {
+			return err
+		}
 	}
-
 	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data=? WHERE namespace=? and name=?`,
 		secret.Data, secret.Namespace, secret.Name)
 	if res.Error != nil {
