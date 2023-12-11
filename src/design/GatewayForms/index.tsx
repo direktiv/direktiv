@@ -31,7 +31,7 @@ type FilepickerPropsType = PropsWithChildren & {
   displayValue?: string;
 };
 
-const GWFilepicker: FC<FilepickerPropsType> = ({
+const GatewayFilepicker: FC<FilepickerPropsType> = ({
   children,
   buttonText,
   placeholder,
@@ -76,7 +76,11 @@ type CheckboxPropsType = PropsWithChildren & {
   onChange?: MouseEventHandler;
 };
 
-const GWCheckbox: FC<CheckboxPropsType> = ({ children, checked, onChange }) => (
+const GatewayCheckbox: FC<CheckboxPropsType> = ({
+  children,
+  checked,
+  onChange,
+}) => (
   <div className="flex flex-row py-2">
     <div className="flex items-center justify-center">
       <label
@@ -99,7 +103,7 @@ type SelectPropsType = PropsWithChildren & {
   value?: string;
 };
 
-const GWSelect: FC<SelectPropsType> = ({
+const GatewaySelect: FC<SelectPropsType> = ({
   children,
   onValueChange,
   placeholder,
@@ -137,7 +141,7 @@ type InputPropsType = PropsWithChildren & {
   onChange?: (newValue: string) => void;
 };
 
-const GWInput: FC<InputPropsType> = ({
+const GatewayInput: FC<InputPropsType> = ({
   value,
   children,
   placeholder,
@@ -162,7 +166,7 @@ const GWInput: FC<InputPropsType> = ({
   </div>
 );
 
-const GWTextarea: FC<InputPropsType> = ({
+const GatewayTextarea: FC<InputPropsType> = ({
   value,
   children,
   placeholder,
@@ -187,17 +191,17 @@ const GWTextarea: FC<InputPropsType> = ({
   </div>
 );
 
-type GWArrayProps = PropsWithChildren & {
-  inputPlaceholder?: string;
+type GatewayArrayProps = PropsWithChildren & {
+  placeholder?: string;
   externalArray: string[];
   onChange: (newValue: string[]) => void;
 };
 
-const GWArray: FC<GWArrayProps> = ({
+const GatewayArray: FC<GatewayArrayProps> = ({
   externalArray,
   onChange,
   children,
-  inputPlaceholder,
+  placeholder,
 }) => {
   const [internalArray, setInternalArray] = useState(externalArray);
   const [inputVal, setInputVal] = useState("");
@@ -248,7 +252,7 @@ const GWArray: FC<GWArrayProps> = ({
           <div key={valueIndex} className="flex justify-start py-2">
             <ButtonBar>
               <Input
-                placeholder={inputPlaceholder}
+                placeholder={placeholder}
                 value={value}
                 onChange={(e) => {
                   changeValue(e, valueIndex);
@@ -273,7 +277,7 @@ const GWArray: FC<GWArrayProps> = ({
         <div className="flex justify-start py-2">
           <ButtonBar>
             <Input
-              placeholder={inputPlaceholder}
+              placeholder={placeholder}
               value={inputVal}
               onChange={(e) => {
                 setInputVal(e.target.value);
@@ -295,4 +299,11 @@ const GWArray: FC<GWArrayProps> = ({
   );
 };
 
-export { GWFilepicker, GWArray, GWCheckbox, GWInput, GWSelect, GWTextarea };
+export {
+  GatewayFilepicker,
+  GatewayArray,
+  GatewayCheckbox,
+  GatewayInput,
+  GatewaySelect,
+  GatewayTextarea,
+};

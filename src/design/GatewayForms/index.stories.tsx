@@ -1,10 +1,10 @@
 import {
-  GWArray,
-  GWCheckbox,
-  GWFilepicker,
-  GWInput,
-  GWSelect,
-  GWTextarea,
+  GatewayArray,
+  GatewayCheckbox,
+  GatewayFilepicker,
+  GatewayInput,
+  GatewaySelect,
+  GatewayTextarea,
 } from ".";
 import type { Meta, StoryObj } from "@storybook/react";
 import { DropdownMenuSeparator } from "../Dropdown";
@@ -13,14 +13,14 @@ import { useState } from "react";
 
 const meta = {
   title: "Components/GatewayForms",
-  component: GWCheckbox,
-} satisfies Meta<typeof GWCheckbox>;
+  component: GatewayCheckbox,
+} satisfies Meta<typeof GatewayCheckbox>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => <GWCheckbox checked={true}>Check</GWCheckbox>,
+  render: () => <GatewayCheckbox checked={true}>Check</GatewayCheckbox>,
   argTypes: {},
 };
 
@@ -31,30 +31,30 @@ export const BasicAuthFormPlugin = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWCheckbox
+      <GatewayCheckbox
         checked={gwCheckbox1}
         onChange={() => {
           setgwCheckbox1(gwCheckbox1 ? false : true);
         }}
       >
         Add username header:
-      </GWCheckbox>
-      <GWCheckbox
+      </GatewayCheckbox>
+      <GatewayCheckbox
         checked={gwCheckbox2}
         onChange={() => {
           setgwCheckbox2(gwCheckbox2 ? false : true);
         }}
       >
         Add tags header:
-      </GWCheckbox>
-      <GWCheckbox
+      </GatewayCheckbox>
+      <GatewayCheckbox
         checked={gwCheckbox3}
         onChange={() => {
           setgwCheckbox3(gwCheckbox3 ? false : true);
         }}
       >
         Add groups header:
-      </GWCheckbox>
+      </GatewayCheckbox>
     </div>
   );
 };
@@ -66,32 +66,32 @@ export const KeyAuthFormPlugin = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWCheckbox
+      <GatewayCheckbox
         checked={gwCheckbox1}
         onChange={() => {
           setgwCheckbox1(gwCheckbox1 ? false : true);
         }}
       >
         Add username header:
-      </GWCheckbox>
-      <GWCheckbox
+      </GatewayCheckbox>
+      <GatewayCheckbox
         checked={gwCheckbox2}
         onChange={() => {
           setgwCheckbox2(gwCheckbox2 ? false : true);
         }}
       >
         Add tags header:
-      </GWCheckbox>
-      <GWCheckbox
+      </GatewayCheckbox>
+      <GatewayCheckbox
         checked={gwCheckbox3}
         onChange={() => {
           setgwCheckbox3(gwCheckbox3 ? false : true);
         }}
       >
         Add groups header:
-      </GWCheckbox>
+      </GatewayCheckbox>
 
-      <GWInput placeholder="Insert key name">Key name:</GWInput>
+      <GatewayInput placeholder="Insert key name">Key name:</GatewayInput>
     </div>
   );
 };
@@ -102,24 +102,24 @@ export const ACLPlugin = () => {
 
   return (
     <div>
-      <GWArray
-        inputPlaceholder="insert group name"
+      <GatewayArray
+        placeholder="insert group name"
         externalArray={array}
         onChange={(changedValue) => {
           setArray(changedValue);
         }}
       >
         Allow Groups:
-      </GWArray>
-      <GWArray
-        inputPlaceholder="insert group name"
+      </GatewayArray>
+      <GatewayArray
+        placeholder="insert group name"
         externalArray={array2}
         onChange={(changedValue) => {
           setArray2(changedValue);
         }}
       >
         Deny Groups:
-      </GWArray>
+      </GatewayArray>
     </div>
   );
 };
@@ -129,9 +129,13 @@ export const JSInboundPlugin = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWTextarea value={value} onChange={setValue} placeholder="Insert Script">
+      <GatewayTextarea
+        value={value}
+        onChange={setValue}
+        placeholder="Insert Script"
+      >
         Script:
-      </GWTextarea>
+      </GatewayTextarea>
     </div>
   );
 };
@@ -141,9 +145,13 @@ export const JSOutboundPlugin = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWTextarea value={value} onChange={setValue} placeholder="Insert Script">
+      <GatewayTextarea
+        value={value}
+        onChange={setValue}
+        placeholder="Insert Script"
+      >
         Script:
-      </GWTextarea>
+      </GatewayTextarea>
     </div>
   );
 };
@@ -156,40 +164,40 @@ export const RequestConverterPlugin = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWCheckbox
+      <GatewayCheckbox
         checked={gwCheckbox1}
         onChange={() => {
           setgwCheckbox1(gwCheckbox1 ? false : true);
         }}
       >
         Omit Headers:
-      </GWCheckbox>
+      </GatewayCheckbox>
 
-      <GWCheckbox
+      <GatewayCheckbox
         checked={gwCheckbox2}
         onChange={() => {
           setgwCheckbox2(gwCheckbox2 ? false : true);
         }}
       >
         Omit Queries:
-      </GWCheckbox>
+      </GatewayCheckbox>
 
-      <GWCheckbox
+      <GatewayCheckbox
         checked={gwCheckbox3}
         onChange={() => {
           setgwCheckbox3(gwCheckbox3 ? false : true);
         }}
       >
         Omit Body:
-      </GWCheckbox>
-      <GWCheckbox
+      </GatewayCheckbox>
+      <GatewayCheckbox
         checked={gwCheckbox4}
         onChange={() => {
           setgwCheckbox4(gwCheckbox4 ? false : true);
         }}
       >
         Omit Consumer:
-      </GWCheckbox>
+      </GatewayCheckbox>
     </div>
   );
 };
@@ -200,38 +208,52 @@ export const InstantResponse = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWInput placeholder="200" value={value1} onChange={setValue1}>
+      <GatewayInput placeholder="200" value={value1} onChange={setValue1}>
         Status Code:
-      </GWInput>
-      <GWInput placeholder="/json" value={value2} onChange={setValue2}>
+      </GatewayInput>
+      <GatewayInput placeholder="/json" value={value2} onChange={setValue2}>
         Content Type:
-      </GWInput>
-      <GWTextarea placeholder="Insert Text" value={value3} onChange={setValue3}>
+      </GatewayInput>
+      <GatewayTextarea
+        placeholder="Insert Text"
+        value={value3}
+        onChange={setValue3}
+      >
         Status Message:
-      </GWTextarea>
+      </GatewayTextarea>
     </div>
   );
 };
 
 export const NamespaceFileTarget = () => {
-  const [value, setValue] = useState(() => "");
+  const [value, setValue] = useState("");
+  const [value2, setValue2] = useState("");
+  const [value3, setValue3] = useState("");
 
   const array = ["Example", "My-Namespace", "Namespace-with-a-very-long-name"];
 
   return (
     <div className="flex flex-col p-2">
-      <GWSelect
+      <GatewaySelect
         data={array}
         placeholder="Select a namespace"
         value={value}
         onValueChange={setValue}
       >
         Namespace:
-      </GWSelect>
-      <GWFilepicker placeholder="Type file name" buttonText="Choose File">
+      </GatewaySelect>
+      <GatewayFilepicker
+        onChange={setValue2}
+        inputValue={value2}
+        displayValue={value2}
+        placeholder="Type file name"
+        buttonText="Choose File"
+      >
         File:
-      </GWFilepicker>
-      <GWInput placeholder="image/jpg">Content Type:</GWInput>
+      </GatewayFilepicker>
+      <GatewayInput value={value3} onChange={setValue3} placeholder="image/jpg">
+        Content Type:
+      </GatewayInput>
     </div>
   );
 };
@@ -243,16 +265,16 @@ export const NamespaceVariableTarget = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWSelect
+      <GatewaySelect
         data={array}
         placeholder="Select a namespace"
         value={value}
         onValueChange={setValue}
       >
         Namespace:
-      </GWSelect>
-      <GWInput placeholder="Insert name">Variable:</GWInput>
-      <GWInput placeholder="image/jpg">Content Type:</GWInput>
+      </GatewaySelect>
+      <GatewayInput placeholder="Insert name">Variable:</GatewayInput>
+      <GatewayInput placeholder="image/jpg">Content Type:</GatewayInput>
     </div>
   );
 };
@@ -266,25 +288,25 @@ export const WorkflowVariableTarget = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWSelect
+      <GatewaySelect
         data={array1}
         placeholder="Select a namespace"
         value={value1}
         onValueChange={setValue1}
       >
         Namespace:
-      </GWSelect>
-      <GWSelect
+      </GatewaySelect>
+      <GatewaySelect
         data={array2}
         placeholder="Select a workflow"
         value={value2}
         onValueChange={setValue2}
       >
         Workflow:
-      </GWSelect>
+      </GatewaySelect>
 
-      <GWInput placeholder="Insert name">Variable:</GWInput>
-      <GWInput placeholder="image/jpg">Content Type:</GWInput>
+      <GatewayInput placeholder="Insert name">Variable:</GatewayInput>
+      <GatewayInput placeholder="image/jpg">Content Type:</GatewayInput>
     </div>
   );
 };
@@ -301,32 +323,32 @@ export const WorkflowTarget = () => {
 
   return (
     <div className="flex flex-col p-2">
-      <GWSelect
+      <GatewaySelect
         data={array1}
         placeholder="Select a namespace"
         value={value1}
         onValueChange={setValue1}
       >
         Namespace:
-      </GWSelect>
-      <GWSelect
+      </GatewaySelect>
+      <GatewaySelect
         data={array2}
         placeholder="Select a workflow"
         value={value2}
         onValueChange={setValue2}
       >
         Workflow:
-      </GWSelect>
-      <GWCheckbox
+      </GatewaySelect>
+      <GatewayCheckbox
         onChange={() => {
           setgwCheckbox1(gwCheckbox1 ? false : true);
         }}
       >
         Asynchronous:
-      </GWCheckbox>
-      <GWInput placeholder="image/jpg" value={value3} onChange={setValue3}>
+      </GatewayCheckbox>
+      <GatewayInput placeholder="image/jpg" value={value3} onChange={setValue3}>
         Content Type:
-      </GWInput>
+      </GatewayInput>
     </div>
   );
 };
@@ -341,7 +363,6 @@ export const AllFormsFunctionalityDemo = () => {
   const [value2, setValue2] = useState(() => "");
 
   const [inputVal, setInputVal] = useState("whatever.png");
-  const [displayVal, setDisplayVal] = useState(inputVal);
 
   return (
     <div>
@@ -351,56 +372,53 @@ export const AllFormsFunctionalityDemo = () => {
       <p>Input: {value}</p>
       <p>Array: {JSON.stringify(array)}</p>
       <p>Textarea: {value2}</p>
-      <p>Filepicker: {displayVal}</p>
+      <p>Filepicker: {inputVal}</p>
       <DropdownMenuSeparator />
 
-      <GWSelect
+      <GatewaySelect
         data={array1}
         placeholder="Select a namespace"
         value={value1}
         onValueChange={setValue1}
       >
         Select:
-      </GWSelect>
-      <GWCheckbox
+      </GatewaySelect>
+      <GatewayCheckbox
         onChange={() => {
           setgwCheckbox(gwCheckbox ? false : true);
         }}
         checked={gwCheckbox}
       >
         Checkbox:
-      </GWCheckbox>
-      <GWInput onChange={setValue} value={value} placeholder="Insert text">
+      </GatewayCheckbox>
+      <GatewayInput onChange={setValue} value={value} placeholder="Insert text">
         Input:
-      </GWInput>
-      <GWArray
-        inputPlaceholder="Insert group name"
+      </GatewayInput>
+      <GatewayArray
+        placeholder="Insert group name"
         externalArray={array}
         onChange={(changedValue) => {
           setArray(changedValue);
         }}
       >
         Array:
-      </GWArray>
-      <GWTextarea
+      </GatewayArray>
+      <GatewayTextarea
         value={value2}
         onChange={setValue2}
         placeholder="Insert script"
       >
         Textarea:
-      </GWTextarea>
-      <GWFilepicker
-        onClick={() => {
-          setDisplayVal(inputVal);
-        }}
+      </GatewayTextarea>
+      <GatewayFilepicker
         inputValue={inputVal}
-        displayValue={displayVal}
+        displayValue={inputVal}
         onChange={setInputVal}
         placeholder="Type file name"
         buttonText="Choose File"
       >
         File:
-      </GWFilepicker>
+      </GatewayFilepicker>
     </div>
   );
 };
