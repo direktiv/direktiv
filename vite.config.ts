@@ -51,7 +51,7 @@ export default ({ mode }) => {
               target: apiDomain,
               secure: false,
             },
-            "/oidc": {
+            "/logout": {
               target: apiDomain,
               secure: false,
             },
