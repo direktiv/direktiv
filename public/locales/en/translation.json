@@ -867,13 +867,30 @@
       "routes": {
         "columns": {
           "filePath": "file path",
-          "method": "method",
-          "plugins": "plugins"
+          "methods": "methods",
+          "path": "path",
+          "plugins": "plugins",
+          "anonymous": "allow anonymous"
         },
         "row": {
-          "error": "error",
-          "plugins": "{{count}} plugins",
-          "plugins_one": "{{count}} plugin"
+          "allowAnonymous": {
+            "yes": "yes",
+            "no": "no"
+          },
+          "errors": {
+            "count": "{{count}} errors",
+            "count_one": "{{count}} error"
+          },
+          "warnings": {
+            "count": "{{count}} warnings",
+            "count_one": "{{count}} warning"
+          },
+          "plugin": {
+            "countAll": "{{count}} plugins",
+            "countAll_one": "{{count}} plugin",
+            "countType": "{{count}} {{type}} plugins",
+            "countType_one": "{{count}} {{type}} plugin"
+          }
         },
         "empty": "No routes exist yet"
       }

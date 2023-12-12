@@ -53,7 +53,7 @@ const ServicesTableRow: FC<{
         className="cursor-pointer"
       >
         <TableCell>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
             <div>
               <span className="whitespace-pre-wrap break-all">
                 <Link

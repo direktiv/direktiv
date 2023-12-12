@@ -66,9 +66,11 @@ const RouteSchema = z.object({
     outbound: z.array(PluginSchema).optional(),
     inbound: z.array(PluginSchema).optional(),
     auth: z.array(PluginSchema).optional(),
-    EventTarget: z.array(PluginSchema).optional(),
+    target: PluginSchema.optional(),
   }),
 });
+
+export type GatewaySchemeType = z.infer<typeof RouteSchema>;
 
 /**
  * example
@@ -115,5 +117,3 @@ const ConsumerSchema = z.object({
 export const ConsumersListSchema = z.object({
   data: z.array(ConsumerSchema),
 });
-
-export type GatewaySchemeType = z.infer<typeof RouteSchema>;

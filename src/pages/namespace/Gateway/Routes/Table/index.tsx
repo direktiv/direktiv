@@ -33,10 +33,16 @@ const GatewayTable = () => {
             {t("pages.gateway.routes.columns.filePath")}
           </TableHeaderCell>
           <TableHeaderCell className="w-32">
-            {t("pages.gateway.routes.columns.method")}
+            {t("pages.gateway.routes.columns.methods")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-52">
+            {t("pages.gateway.routes.columns.path")}
           </TableHeaderCell>
           <TableHeaderCell className="w-32">
             {t("pages.gateway.routes.columns.plugins")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-40">
+            {t("pages.gateway.routes.columns.anonymous")}
           </TableHeaderCell>
         </TableRow>
       </TableHead>
