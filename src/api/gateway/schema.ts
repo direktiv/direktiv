@@ -108,6 +108,8 @@ const ConsumerSchema = z.object({
   groups: z.array(z.string()),
 });
 
+export type ConsumerSchemaType = z.infer<typeof ConsumerSchema>;
+
 /**
  * example
   {
