@@ -1,3 +1,3 @@
 export default {
-  logoutPath: "/oidc/logout/ui",
+  logoutPath: "/logout",
 };
