@@ -1,8 +1,5 @@
 import enterpriseConfig from "~/config/enterprise";
-import env from "~/config/env";
 import { z } from "zod";
-
-const { VITE_IS_ENTERPRISE: isEnterprise } = env;
 
 /**
  * The ApiErrorSchema is a special schema we use to standardize api error handling
@@ -58,7 +55,7 @@ type PermissionStatus =
 
 export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
-    if (error.response.status === 401 && isEnterprise) {
+    if (error.response.status === 401) {
       window.location.href = enterpriseConfig.logoutPath;
     }
 
