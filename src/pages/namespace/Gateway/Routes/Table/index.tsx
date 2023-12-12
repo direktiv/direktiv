@@ -51,7 +51,7 @@ const RoutesTable = () => {
           <>
             {noResults ? (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={3}>
+                <TableCell colSpan={5}>
                   <NoResult icon={Network}>
                     {t("pages.gateway.routes.empty")}
                   </NoResult>
