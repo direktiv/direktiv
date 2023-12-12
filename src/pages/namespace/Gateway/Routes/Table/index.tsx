@@ -14,7 +14,7 @@ import { Row } from "./Row";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
-const GatewayTable = () => {
+const RoutesTable = () => {
   const { t } = useTranslation();
   const {
     data: gatewayList,
@@ -74,4 +74,4 @@ const GatewayTable = () => {
     </Table>
   );
 };
-export default GatewayTable;
+export default RoutesTable;

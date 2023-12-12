@@ -1,9 +1,9 @@
 import { Card } from "~/design/Card";
-import GatewayTable from "./Table";
 import RefreshButton from "~/design/RefreshButton";
+import RoutesTable from "./Table";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 
-const GatewayPage = () => {
+const RoutesPage = () => {
   const { isFetching, refetch } = useRoutes();
 
   return (
@@ -18,9 +18,9 @@ const GatewayPage = () => {
           }}
         />
       </div>
-      <GatewayTable />
+      <RoutesTable />
     </Card>
   );
 };
 
-export default GatewayPage;
+export default RoutesPage;
