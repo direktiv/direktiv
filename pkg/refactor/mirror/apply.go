@@ -16,7 +16,7 @@ import (
 )
 
 type Applyer interface {
-	apply(context.Context, Callbacks, *Process, *Parser, map[string]string) error
+	apply(ctx context.Context, callbacks Callbacks, proc *Process, parser *Parser, notes map[string]string) error
 }
 
 type DryrunApplyer struct{}
