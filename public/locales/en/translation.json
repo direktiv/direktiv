@@ -893,6 +893,16 @@
           }
         },
         "empty": "No routes exist yet"
+      },
+      "consumer": {
+        "columns": {
+          "username": "username",
+          "password": "password",
+          "apikey": "apikey",
+          "tags": "tags",
+          "groups": "groups"
+        },
+        "empty": "No consumers exist yet"
       }
     },
     "jqPlayground": {
