@@ -60,7 +60,7 @@ godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: lint 
-lint: VERSION="v1.54"
+lint: VERSION="v1.55"
 lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \

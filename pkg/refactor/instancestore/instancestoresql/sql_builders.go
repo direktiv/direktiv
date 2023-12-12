@@ -51,7 +51,7 @@ func generateGetInstancesOrderings(opts *instancestore.ListOpts) (string, error)
 	return ` ORDER BY ` + strings.Join(orderStrings, ", "), nil
 }
 
-//nolint:gocognit
+//nolint:gocognit,goconst
 func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []interface{}, error) {
 	if opts == nil {
 		return []string{}, []interface{}{}, nil
