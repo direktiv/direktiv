@@ -40,7 +40,7 @@ const Rename = ({
       z.object({
         name: fileNameSchema
           .transform((enteredName) => {
-            if (node.type === "workflow") {
+            if (node.type !== "directory" && node.type !== "file") {
               return addYamlFileExtension(enteredName);
             }
             return enteredName;
