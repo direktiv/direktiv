@@ -31,7 +31,6 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix before release.
-    - perfsprint
 
     - exhaustivestruct
     - structcheck
@@ -61,6 +60,7 @@ issues:
       - nosnakecase
       - scopelint
       - protogetter
+      - perfsprint
 
       - nlreturn
       - nonamedreturns

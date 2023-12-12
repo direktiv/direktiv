@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -103,7 +104,7 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 	}
 
 	// w.Header().Set("Content-Type", mtype.String())
-	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 
 	// nolint
 	w.Write(data)

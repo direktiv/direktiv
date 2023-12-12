@@ -277,7 +277,7 @@ func (cls *CachedSQLLogStore) Debugf(ctx context.Context, recipientID uuid.UUID,
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
+		recipientType: tags["recipientType"],
 		level:         Debug,
 	}:
 	default:
@@ -294,7 +294,7 @@ func (cls *CachedSQLLogStore) Errorf(ctx context.Context, recipientID uuid.UUID,
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
+		recipientType: tags["recipientType"],
 		level:         Error,
 	}:
 	default:
@@ -311,7 +311,7 @@ func (cls *CachedSQLLogStore) Warnf(ctx context.Context, recipientID uuid.UUID, 
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
+		recipientType: tags["recipientType"],
 		level:         Warn,
 	}:
 	default:
@@ -328,7 +328,7 @@ func (cls *CachedSQLLogStore) Infof(ctx context.Context, recipientID uuid.UUID, 
 		recipientID:   recipientID,
 		tags:          tags,
 		msg:           fmt.Sprintf(msg, a...),
-		recipientType: fmt.Sprintf("%v", tags["recipientType"]),
+		recipientType: tags["recipientType"],
 		level:         Info,
 	}:
 	default:
