@@ -2,6 +2,7 @@ package core
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"regexp"
@@ -60,7 +61,7 @@ func (c *ServiceConfig) GetValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	sh := sha256.Sum256([]byte(str))
 
-	return fmt.Sprintf("%x", sh[:10])
+	return hex.EncodeToString(sh[:10])
 }
 
 type ServiceStatus struct {

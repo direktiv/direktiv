@@ -59,6 +59,8 @@ issues:
       - cyclop
       - nosnakecase
       - scopelint
+      - protogetter
+      - perfsprint
 
       - nlreturn
       - nonamedreturns

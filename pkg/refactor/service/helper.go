@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -96,9 +97,9 @@ func buildPodMeta(c *core.Config, sv *core.ServiceConfig) metav1.ObjectMeta {
 	}
 	metaSpec.Labels["direktiv-app"] = "direktiv"
 
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", sv.Scale)
-	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = fmt.Sprintf("%d", c.KnativeMaxScale)
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = fmt.Sprintf("%d", sv.Scale)
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
+	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = strconv.Itoa(c.KnativeMaxScale)
+	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
 
 	if len(c.KnativeNetShape) > 0 {
 		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = c.KnativeNetShape
