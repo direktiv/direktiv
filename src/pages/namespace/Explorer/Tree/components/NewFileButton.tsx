@@ -17,6 +17,7 @@ import {
   Network,
   Play,
   PlusCircle,
+  Users,
   Workflow,
 } from "lucide-react";
 
@@ -30,7 +31,8 @@ export type FileTypeSelection =
   | "new-dir"
   | "new-workflow"
   | "new-service"
-  | "new-route";
+  | "new-route"
+  | "new-consumer";
 
 type NewFileButtonProps = {
   setSelectedDialog: (fileType: FileTypeSelection) => void;
@@ -95,7 +97,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
               {t("pages.explorer.tree.newFileButton.items.gateway.label")}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent>
+              <DropdownMenuSubContent className="w-40">
                 <DialogTrigger
                   className="w-full"
                   onClick={() => {
@@ -105,6 +107,19 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                   <DropdownMenuItem>
                     <Workflow className="mr-2 h-4 w-4" />
                     {t("pages.explorer.tree.newFileButton.items.gateway.route")}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-consumer");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <Users className="mr-2 h-4 w-4" />
+                    {t(
+                      "pages.explorer.tree.newFileButton.items.gateway.consumer"
+                    )}
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>

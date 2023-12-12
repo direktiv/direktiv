@@ -122,11 +122,15 @@
           "namePlaceholder": "route-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
-          "createBtn": "Create",
-          "form": {
-            "method": "Method",
-            "plugins": "Plugins"
-          }
+          "createBtn": "Create"
+        },
+        "newConsumer": {
+          "title": "Create a new consumer",
+          "nameLabel": "Name",
+          "namePlaceholder": "consumer-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
         },
         "workflow": {
           "revisions": {

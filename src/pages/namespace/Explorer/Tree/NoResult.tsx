@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderOpen } from "lucide-react";
+import NewConsumer from "./newConsumer";
 import NewDirectory from "./NewDirectory";
 import NewRoute from "./NewRoute";
 import NewService from "./NewService";
@@ -23,7 +24,8 @@ const EmptyDirectoryButton = () => {
   }, [dialogOpen, selectedDialog]);
 
   const wideOverlay =
-    !!selectedDialog && !["new-dir", "new-route"].includes(selectedDialog);
+    !!selectedDialog &&
+    !["new-dir", "new-route", "new-consumer"].includes(selectedDialog);
 
   return (
     <div className="grid gap-5">
@@ -45,6 +47,9 @@ const EmptyDirectoryButton = () => {
           )}
           {selectedDialog === "new-route" && (
             <NewRoute path={path} close={() => setDialogOpen(false)} />
+          )}
+          {selectedDialog === "new-consumer" && (
+            <NewConsumer path={path} close={() => setDialogOpen(false)} />
           )}
         </DialogContent>
       </Dialog>

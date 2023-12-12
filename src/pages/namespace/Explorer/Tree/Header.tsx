@@ -4,6 +4,7 @@ import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
+import NewConsumer from "./newConsumer";
 import NewDirectory from "./NewDirectory";
 import NewRoute from "./NewRoute";
 import NewService from "./NewService";
@@ -44,7 +45,8 @@ const ExplorerHeader: FC = () => {
   if (!namespace) return null;
 
   const wideOverlay =
-    !!selectedDialog && !["new-dir", "new-route"].includes(selectedDialog);
+    !!selectedDialog &&
+    !["new-dir", "new-route", "new-consumer"].includes(selectedDialog);
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -116,6 +118,15 @@ const ExplorerHeader: FC = () => {
             )}
             {selectedDialog === "new-route" && (
               <NewRoute
+                path={data?.node?.path}
+                unallowedNames={(data?.children?.results ?? []).map(
+                  (x) => x.name
+                )}
+                close={() => setDialogOpen(false)}
+              />
+            )}
+            {selectedDialog === "new-consumer" && (
+              <NewConsumer
                 path={data?.node?.path}
                 unallowedNames={(data?.children?.results ?? []).map(
                   (x) => x.name
