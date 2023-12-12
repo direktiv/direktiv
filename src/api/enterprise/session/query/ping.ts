@@ -29,6 +29,7 @@ export const useRefreshSession = ({ enabled }: { enabled: boolean }) => {
     queryFn: fetchSession,
     enabled,
     refetchInterval: 1000 * 10,
+    refetchIntervalInBackground: true,
   });
 
   if (isError && getPermissionStatus(error).isAllowed === false) {
