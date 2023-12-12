@@ -11,38 +11,38 @@ import {
 
 import { Network } from "lucide-react";
 import { Row } from "./Row";
-import { useRoutes } from "~/api/gateway/query/getRoutes";
+import { useConsumers } from "~/api/gateway/query/getConsumers";
 import { useTranslation } from "react-i18next";
 
-const RoutesTable = () => {
+const ConsumerTable = () => {
   const { t } = useTranslation();
   const {
-    data: gatewayList,
+    data: consumerList,
     isSuccess,
     isAllowed,
     noPermissionMessage,
-  } = useRoutes();
+  } = useConsumers();
 
-  const noResults = isSuccess && gatewayList.data.length === 0;
+  const noResults = isSuccess && consumerList.data.length === 0;
 
   return (
     <Table className="border-t border-gray-5 dark:border-gray-dark-5">
       <TableHead>
         <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
           <TableHeaderCell>
-            {t("pages.gateway.routes.columns.filePath")}
-          </TableHeaderCell>
-          <TableHeaderCell className="w-32">
-            {t("pages.gateway.routes.columns.methods")}
+            {t("pages.gateway.consumer.columns.username")}
           </TableHeaderCell>
           <TableHeaderCell className="w-52">
-            {t("pages.gateway.routes.columns.path")}
+            {t("pages.gateway.consumer.columns.password")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-32">
-            {t("pages.gateway.routes.columns.plugins")}
+          <TableHeaderCell className="w-52">
+            {t("pages.gateway.consumer.columns.apikey")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-40">
-            {t("pages.gateway.routes.columns.anonymous")}
+          <TableHeaderCell className="w-[200px]">
+            {t("pages.gateway.consumer.columns.groups")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-[200px]">
+            {t("pages.gateway.consumer.columns.tags")}
           </TableHeaderCell>
         </TableRow>
       </TableHead>
@@ -53,13 +53,13 @@ const RoutesTable = () => {
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={5}>
                   <NoResult icon={Network}>
-                    {t("pages.gateway.routes.empty")}
+                    {t("pages.gateway.consumer.empty")}
                   </NoResult>
                 </TableCell>
               </TableRow>
             ) : (
-              gatewayList?.data?.map((gateway) => (
-                <Row key={gateway.file_path} gateway={gateway} />
+              consumerList?.data?.map((consumer) => (
+                <Row key={consumer.username} consumer={consumer} />
               ))
             )}
           </>
@@ -74,4 +74,4 @@ const RoutesTable = () => {
     </Table>
   );
 };
-export default RoutesTable;
+export default ConsumerTable;
