@@ -3,6 +3,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * changes the focus outline color to the primary tailwind color
+ */
+
+:focus-visible {
+  outline-color: var(--color-primary);
+}
+
 body,
 html,
 .docs-story,
