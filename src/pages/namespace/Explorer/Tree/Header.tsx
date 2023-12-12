@@ -5,7 +5,7 @@ import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 import { FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
 import NewDirectory from "./NewDirectory";
-import NewEndpoint from "./NewEndpoint";
+import NewRoute from "./NewRoute";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
 import { analyzePath } from "~/util/router/utils";
@@ -115,7 +115,7 @@ const ExplorerHeader: FC = () => {
               />
             )}
             {selectedDialog === "new-route" && (
-              <NewEndpoint
+              <NewRoute
                 path={data?.node?.path}
                 unallowedNames={(data?.children?.results ?? []).map(
                   (x) => x.name

@@ -26,7 +26,7 @@ type FormInput = {
   fileContent: string;
 };
 
-const NewEndpoint = ({
+const NewRoute = ({
   path,
   close,
   unallowedNames,
@@ -130,4 +130,4 @@ const NewEndpoint = ({
   );
 };
 
-export default NewEndpoint;
+export default NewRoute;

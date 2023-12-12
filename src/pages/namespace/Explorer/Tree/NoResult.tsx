@@ -4,7 +4,7 @@ import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderOpen } from "lucide-react";
 import NewDirectory from "./NewDirectory";
-import NewEndpoint from "./NewEndpoint";
+import NewRoute from "./NewRoute";
 import NewService from "./NewService";
 import NewWorkflow from "./NewWorkflow";
 import { NoResult as NoResultContainer } from "~/design/Table";
@@ -44,7 +44,7 @@ const EmptyDirectoryButton = () => {
             <NewService path={path} close={() => setDialogOpen(false)} />
           )}
           {selectedDialog === "new-route" && (
-            <NewEndpoint path={path} close={() => setDialogOpen(false)} />
+            <NewRoute path={path} close={() => setDialogOpen(false)} />
           )}
         </DialogContent>
       </Dialog>
