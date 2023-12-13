@@ -138,15 +138,15 @@ const ExplorerPage: FC = () => {
                 <Fragment key={file.name}>
                   <FilepickerListItem icon={fileTypeToIcon(file.type)}>
                     {file.type === "directory" ? (
-                      <div>
-                        <ConditionalLink
-                          node={file}
-                          namespace={namespace}
-                          onPreviewClicked={setPreviewNode}
-                        >
-                          {file.name}
-                        </ConditionalLink>
-                      </div>
+                      <Link
+                        to={pages.explorer.createHref({
+                          namespace,
+                          path: file.path,
+                        })}
+                        className="hover:underline"
+                      >
+                        {file.name}
+                      </Link>
                     ) : (
                       <FilepickerClose onClick={() => setFile(file.path)}>
                         {file.name}
