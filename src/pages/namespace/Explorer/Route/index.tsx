@@ -13,7 +13,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
-const Header: FC = () => {
+const RoutePage: FC = () => {
   const { path } = pages.explorer.useParams();
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
@@ -64,4 +64,4 @@ const Header: FC = () => {
   );
 };
 
-export default Header;
+export default RoutePage;
