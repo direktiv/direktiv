@@ -10,7 +10,7 @@ export const EndpointFormSchema = z.object({
   methods: z.array(MethodsSchema).nonempty().optional(),
 });
 
-type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;
+export type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;
 
 const defaultEndpointFileJson: EndpointFormSchemaType = {
   direktiv_api: "endpoint/v1",
