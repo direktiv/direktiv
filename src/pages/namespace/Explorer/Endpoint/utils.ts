@@ -1,88 +1,17 @@
-import type { JSONSchema7Definition } from "json-schema";
-import { RJSFSchema } from "@rjsf/utils";
-import { routeMethods } from "~/api/gateway/schema";
+import { MethodsSchema } from "~/api/gateway/schema";
 import { stringify } from "json-to-pretty-yaml";
+import { z } from "zod";
 
-export const endpointHeader = {
+export const EndpointFormSchema = z.object({
+  direktiv_api: z.literal("endpoint/v1"),
+  methods: z.array(MethodsSchema).nonempty().optional(),
+  allow_anonymous: z.boolean().optional(),
+});
+
+type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;
+
+const defaultEndpointFileJson: EndpointFormSchemaType = {
   direktiv_api: "endpoint/v1",
 };
 
-export const defaultEndpointYaml = stringify(endpointHeader);
-
-/**
- * input:
- 
- {
-    "$defs": {
-      "examplePluginConfig": {
-        "additionalProperties": false,
-        "properties": {
-          "echo_value": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "echo_value"
-        ],
-        "type": "object"
-      }
-    },
-    "$id": "https://github.com/direktiv/direktiv/pkg/refactor/gateway/example-plugin-config",
-    "$ref": "#/$defs/examplePluginConfig",
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  } 
-
-  transformed output:
-  {
-    properties: {
-      type: { enum: ["examplePluginConfig"] },
-      configuration: {
-        "additionalProperties": false,
-        "properties": {
-          "echo_value": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "echo_value"
-        ],
-        "type": "object"
-      }
-    },
-  }
-
- */
-export const generatePluginJSONSchema = ({
-  name,
-}: {
-  name: string;
-  pluginsObj: unknown;
-}): JSONSchema7Definition => ({
-  properties: {
-    type: { enum: [name] },
-    configuration: {},
-  },
-});
-
-export const useEndpointFormSchema = (): RJSFSchema => ({
-  properties: {
-    method: {
-      title: "method",
-      type: "string",
-      // spread operator is required to convert from readonly to mutable array
-      enum: [...routeMethods],
-    },
-    plugins: {
-      title: "plugins",
-      type: "array",
-      items: {},
-    },
-  },
-  required: ["method"],
-  type: "object",
-});
-
-export const addEndpointHeader = (endpointJSON: object) => ({
-  ...endpointHeader,
-  ...endpointJSON,
-});
+export const defaultEndpointFileYaml = stringify(defaultEndpointFileJson);

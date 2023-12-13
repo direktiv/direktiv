@@ -13,7 +13,7 @@ export const routeMethods = [
   "*",
 ] as const;
 
-const MethodsSchema = z.enum(routeMethods);
+export const MethodsSchema = z.enum(routeMethods);
 
 /**
  * example

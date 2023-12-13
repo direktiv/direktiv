@@ -1,13 +1,10 @@
 import { FC, useState } from "react";
-import { addEndpointHeader, useEndpointFormSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import EndpointPreview from "./EndpointPreview";
-import { JSONSchemaForm } from "~/design/JSONschemaForm";
+import EndpointPreview from "../EndpointPreview";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
-import { ScrollArea } from "~/design/ScrollArea";
 import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -44,8 +41,6 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
     },
   });
 
-  const routeFormSchema = useEndpointFormSchema();
-
   const onSaveClicked = () => {
     const toSave = stringify(routeConfigJson);
     if (toSave) {
@@ -59,27 +54,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <Card className="flex grow flex-col p-4">
-        <div className="grow">
-          <ScrollArea className="flex grow p-4">
-            <JSONSchemaForm
-              formData={routeConfigJson}
-              onChange={(e) => {
-                if (e.formData) {
-                  const formDataWithHeader = addEndpointHeader(e.formData);
-                  setHasUnsavedChanges(true);
-                  setRouteConfigJson(formDataWithHeader);
-                }
-              }}
-              /**
-               * omitExtraData is important when a the plugin selector is used
-               * to change a plugin. This will wipe all the data from the previous
-               * plugin.
-               */
-              omitExtraData={true}
-              schema={routeFormSchema}
-            />
-          </ScrollArea>
-        </div>
+        <div className="grow">FORM goes here</div>
         <div className="flex justify-end gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8">
           {hasUnsavedChanges && (
             <span className="text-center">
