@@ -1,4 +1,4 @@
-import { File, Folder, Layers, Network, Play, Users } from "lucide-react";
+import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
 
 import { ExplorerSubpages } from "~/util/router/pages";
 import { NodeSchemaType } from "./schema/node";
@@ -54,7 +54,7 @@ export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
     case "workflow":
       return Play;
     case "endpoint":
-      return Network;
+      return Workflow;
     case "consumer":
       return Users;
     default:

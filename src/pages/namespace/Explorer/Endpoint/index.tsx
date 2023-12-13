@@ -1,4 +1,4 @@
-import { FileSymlink, Network } from "lucide-react";
+import { FileSymlink, Workflow } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -44,7 +44,7 @@ const EndpointPage: FC = () => {
       <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5  dark:border-gray-dark-5 dark:bg-gray-dark-1">
         <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <Network className="h-5" />
+            <Workflow className="h-5" />
             {filename?.relative}
           </h3>
           <Button isAnchor asChild variant="primary">
