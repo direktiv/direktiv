@@ -71,7 +71,7 @@ const NewConsumer = ({
           pages.explorer.createHref({
             namespace,
             path: data.node.path,
-            subpage: "workflow", // TODO: update subpage
+            subpage: "consumer",
           })
         );
       close();
