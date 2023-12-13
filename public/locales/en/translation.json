@@ -299,8 +299,15 @@
           "helpTitle": "Example service file"
         }
       },
-      "gateway": {
-        "goToGateway": "Go to gateway",
+      "endpoint": {
+        "goToRoutes": "Go to routes",
+        "editor": {
+          "saveBtn": "Save",
+          "previewTitle": "File Preview"
+        }
+      },
+      "consumer": {
+        "goToConsumer": "Go to consumer",
         "editor": {
           "saveBtn": "Save",
           "previewTitle": "File Preview"
