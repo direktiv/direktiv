@@ -58,6 +58,7 @@ func (c *dockerClient) cleanAll() error {
 	return nil
 }
 
+//nolint:goconst
 func (c *dockerClient) createService(sv *core.ServiceConfig) error {
 	// don't pull any image that has 'local' prefix.
 	if !strings.HasPrefix(sv.Image, "local") {

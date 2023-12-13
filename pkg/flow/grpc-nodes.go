@@ -270,6 +270,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	return &resp, nil
 }
 
+//nolint:goconst
 func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (*grpc.RenameNodeResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 

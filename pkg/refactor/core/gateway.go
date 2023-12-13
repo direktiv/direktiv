@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const MagicalGatewayNamespace = "gateway_namespace"
@@ -13,11 +13,11 @@ const MagicalGatewayNamespace = "gateway_namespace"
 type GatewayManager interface {
 	http.Handler
 
-	DeleteNamespace(string)
-	UpdateNamespace(string)
+	DeleteNamespace(namespace string)
+	UpdateNamespace(namespace string)
 	UpdateAll()
 
-	GetConsumers(string) ([]*ConsumerFile, error)
+	GetConsumers(namespace string) ([]*ConsumerFile, error)
 	GetRoutes(namespace string) ([]*Endpoint, error)
 }
 

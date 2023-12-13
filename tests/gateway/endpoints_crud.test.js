@@ -59,9 +59,88 @@ tags:
 groups:
 - group2`
 
+
+const endpointBroken = `direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  outbound:
+    type: js-outbound
+methods: 
+  - GET
+path: ep4`
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+describe("Test wrong endpoint config", () => {
+    beforeAll(common.helpers.deleteAllNamespaces);
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+    common.helpers.itShouldCreateFile(
+        it,
+        expect,
+        testNamespace,
+        "/endpointbroken.yaml",
+        endpointBroken
+    );
+
+    retry(`should list all endpoints`, 10, async () => {
+        const listRes = await request(common.config.getDirektivHost()).get(
+            `/api/v2/namespaces/${testNamespace}/gateway/routes`
+        );
+        expect(listRes.statusCode).toEqual(200);
+        expect(listRes.body.data.length).toEqual(1);
+        expect(listRes.body.data).toEqual(
+            expect.arrayContaining(
+                [
+                    {
+                        file_path: '/endpointbroken.yaml',
+                        server_path: '',
+                        methods: [],
+                        allow_anonymous: false,
+                        timeout: 0,
+                        errors: [
+                            'yaml: unmarshal errors:\n' +
+                            '  line 5: cannot unmarshal !!map into []core.PluginConfig'
+                        ],
+                        warnings: [],
+                        plugins: {
+                            target: {
+                                type: ""
+                            }
+                        }
+                    }
+                ]
+            )
+        );
+    });
+
+});
+
+
+describe("Test gateway endpoints on create", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+    retry(`should list all endpoints`, 10, async () => {
+      const listRes = await request(common.config.getDirektivHost()).get(
+        `/api/v2/namespaces/${testNamespace}/gateway/routes`
+      );
+      expect(listRes.statusCode).toEqual(200);
+      expect(listRes.body.data.length).toEqual(0);
+      expect(listRes.body.data).toEqual(
+        expect.arrayContaining(
+          [
+          ]
+        )
+      );
+    });
+
+
+});
 
 describe("Test gateway endpoints crud operations", () => {
   beforeAll(common.helpers.deleteAllNamespaces);

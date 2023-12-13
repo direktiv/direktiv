@@ -3,7 +3,6 @@ package endpoints
 import (
 	"fmt"
 	"log/slog"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -13,6 +12,8 @@ import (
 
 type EndpointList struct {
 	currentTree *node
+
+	setList []*core.Endpoint
 
 	lock sync.Mutex
 }
@@ -55,24 +56,7 @@ func (e *EndpointList) FindRoute(route, method string) (*core.Endpoint, map[stri
 }
 
 func (e *EndpointList) GetEndpoints() []*core.Endpoint {
-	routes := e.Routes()
-	items := make([]*core.Endpoint, 0)
-
-	for i := range routes {
-		r := routes[i]
-		for _, h := range r.Handlers {
-			h.ServerPath = filepath.Join("/ns", h.Namespace, h.Path)
-			if h.Namespace == core.MagicalGatewayNamespace {
-				h.ServerPath = filepath.Join("/gw", h.Path)
-			}
-			items = append(items, h)
-
-			// leave after first method, because they are all the same
-			break
-		}
-	}
-
-	return items
+	return e.setList
 }
 
 func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
@@ -118,6 +102,8 @@ func (e *EndpointList) SetEndpoints(endpointList []*core.Endpoint) {
 	// replace real tree with new one
 	e.lock.Lock()
 	defer e.lock.Unlock()
+
+	e.setList = endpointList
 	e.currentTree = newTree
 }
 

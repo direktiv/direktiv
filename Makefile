@@ -60,7 +60,7 @@ godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: lint 
-lint: VERSION="v1.54"
+lint: VERSION="v1.55"
 lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \
@@ -92,27 +92,29 @@ docker-build:
 .PHONY: docker-start
 docker-start: docker-build docker-stop
 docker-start: ## Create a local docker deployment.
-# TODO: do we need to build the ui here?
-	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-tests=0
+	rm -rf direktiv-ui
+	git clone https://github.com/direktiv/direktiv-ui.git
+	cd direktiv-ui && docker build -t direktiv-ui-dev .
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-tests=0
 
 .PHONY: docker-headless
 docker-headless: docker-stop docker-stop
 docker-headless: ## Create a local docker deployment without an included UI container.
-	DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0 --scale e2e-tests=0
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0 --scale e2e-tests=0
 
 .PHONY: docker-stop 
 docker-stop: ## Stop an existing docker deployment.
 	docker rm -f $$(docker ps -q -f "label=direktiv.io/object-type=container") || true
-	DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev docker compose down --remove-orphans -v
 
 .PHONY: docker-tail
 docker-tail: ## Tail the logs for the direktiv container in the docker deployment.
-	DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
 .PHONY: docker-tests
 docker-tests: docker-stop docker-build
 docker-tests: ## Perform backend end-to-end tests against the docker deployment.
-	DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
 
 # 
 # Targets for running a complete k3s local development deployment.

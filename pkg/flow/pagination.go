@@ -58,8 +58,8 @@ type customPaginationData interface {
 	Filter(filter *grpc.PageFilter) error
 	Order(order *grpc.PageOrder) error
 	Total() int
-	Value(int) map[string]interface{}
-	ID(int) string
+	Value(idx int) map[string]interface{}
+	ID(idx int) string
 }
 
 func (cp *customPagination) Paginate(req *pagination) (*cpdOutput, error) {

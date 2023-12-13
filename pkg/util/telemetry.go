@@ -17,6 +17,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -78,7 +79,7 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 
 	var prop propagation.TextMapPropagator
 	prop = propagation.TraceContext{}
-	otel.SetTracerProvider(trace.NewNoopTracerProvider())
+	otel.SetTracerProvider(noop.NewTracerProvider())
 	otel.SetTextMapPropagator(prop)
 
 	if addr == "" {

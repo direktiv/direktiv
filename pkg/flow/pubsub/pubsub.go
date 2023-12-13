@@ -67,8 +67,8 @@ type PubsubUpdate struct {
 }
 
 type Notifier interface {
-	NotifyCluster(string) error
-	NotifyHostname(string, string) error
+	NotifyCluster(msg string) error
+	NotifyHostname(hostname string, msg string) error
 }
 
 func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pubsub, error) {

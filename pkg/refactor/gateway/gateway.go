@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -126,6 +127,14 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			if err != nil {
 				slog.Error("parse endpoint file", slog.String("error", err.Error()))
 				ep.Errors = append(ep.Errors, err.Error())
+				eps = append(eps, ep)
+
+				continue
+			}
+
+			ep.ServerPath = filepath.Join("/ns", ns, item.Path)
+			if ns == core.MagicalGatewayNamespace {
+				ep.ServerPath = filepath.Join("/gw", item.Path)
 			}
 
 			ep.AllowAnonymous = item.AllowAnonymous

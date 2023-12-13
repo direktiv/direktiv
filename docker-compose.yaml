@@ -24,7 +24,7 @@ services:
     environment:
       - DIREKTIV_APP=flow
 
-      - DIREKTIV_API_V1_PORT=6665
+      - DIREKTIV_API_V1_PORT=8181
       - DIREKTIV_GRPC_PORT=6666
       - DIREKTIV_API_V2_PORT=6667
       - DIREKTIV_DEBUG=true
@@ -39,7 +39,7 @@ services:
 
     ports:
       # api v1 port
-      - "6665:6665"
+      - "8181:8181"
       # grpc port
       - "6666:6666"
       # api v2 port
@@ -48,10 +48,10 @@ services:
       - postgres
 
   ui:
-    image: direktiv-ui-dev
+    image: ${DIREKTIV_UI_IMAGE}
     environment:
-      - UI_BACKEND=http://flow:6665/api/
-      - UI_PORT=8080
+      - UI_BACKEND=http://flow:8181/api/
+      - UI_PORT=8181
     ports:
       # api port
       - "8080:8080"
@@ -64,7 +64,7 @@ services:
       - ./tests:/tests
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - DIREKTIV_HOST=http://flow:6665
+      - DIREKTIV_HOST=http://flow:8181
     command: npm --prefix /tests run all -- /
     depends_on:
       - flow

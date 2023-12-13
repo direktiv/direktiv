@@ -3,7 +3,7 @@ run:
   go: 1.21.0
   issues-exit-code: 1
   tests: false
-  skip-files: [".pb.go"]
+  skip-files: [ ".pb.go" ]
 
 linters-settings:
   tagliatelle:
@@ -47,57 +47,44 @@ issues:
   exclude-rules:
     - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|flow-dbinit|metrics)\/.*'
       linters:
-      - wrapcheck
-      - varnamelen
-      - exhaustivestruct
-      - exhaustruct
-      - golint
-      - wsl
-      - funlen
-      - paralleltest
-      - forbidigo
-      - cyclop
-      - nosnakecase
-      - scopelint
-
-      - nlreturn
-      - nonamedreturns
-      - stylecheck
-      - tagliatelle
-      - wastedassign
-      - gomnd
-      - testpackage
-      - gochecknoglobals
-      - asasalint
-      - predeclared
-      - musttag
-      - maintidx
-      - ireturn
-      - interfacebloat
-      - forcetypeassert
-      - exhaustive
-      - contextcheck
-      - unparam
-      - revive
-      - promlinter
-      - prealloc
-      - nestif
-      - makezero
-      - dogsled
-      - dupl
-      - gochecknoinits
-      - gocognit
-      - godox
-      - gosec
-      - lll
-      - gocritic
-      - rowserrcheck
-      - nakedret
-      - unused
+        - paralleltest
+        - forbidigo
+        - protogetter
+        - perfsprint
+        - nlreturn
+        - nonamedreturns
+        - stylecheck
+        - tagliatelle
+        - wastedassign
+        - gomnd
+        - testpackage
+        - asasalint
+        - predeclared
+        - musttag
+        - maintidx
+        - interfacebloat
+        - forcetypeassert
+        - exhaustive
+        - contextcheck
+        - unparam
+        - revive
+        - promlinter
+        - prealloc
+        - nestif
+        - makezero
+        - dogsled
+        - dupl
+        - gochecknoinits
+        - gocognit
+        - gosec
+        - gocritic
+        - rowserrcheck
+        - nakedret
+        - unused
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:
-      - goerr113
+        - goerr113
     - text: "ifElseChain: rewrite if-else to switch statement"
       linters:
         - gocritic
