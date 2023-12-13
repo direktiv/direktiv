@@ -1,10 +1,10 @@
 import { FC, useState } from "react";
-import { addRouteHeader, useRouteFormSchema } from "./utils";
+import { addEndpointHeader, useEndpointFormSchema } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import EndpointPreview from "./EndpointPreview";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
-import RoutePreview from "./RoutePreview";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { stringify } from "json-to-pretty-yaml";
@@ -15,7 +15,8 @@ import yamljs from "js-yaml";
 
 export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
-const RouteEditor: FC<{
+// TODO: rename  route to endpoint
+const EndpointEditor: FC<{
   data: NonNullable<NodeContentType>;
   path: string;
 }> = ({ data, path }) => {
@@ -40,7 +41,7 @@ const RouteEditor: FC<{
     },
   });
 
-  const routeFormSchema = useRouteFormSchema();
+  const routeFormSchema = useEndpointFormSchema();
 
   const onSaveClicked = () => {
     const toSave = stringify(routeConfigJson);
@@ -61,7 +62,7 @@ const RouteEditor: FC<{
               formData={routeConfigJson}
               onChange={(e) => {
                 if (e.formData) {
-                  const formDataWithHeader = addRouteHeader(e.formData);
+                  const formDataWithHeader = addEndpointHeader(e.formData);
                   setHasUnsavedChanges(true);
                   setRouteConfigJson(formDataWithHeader);
                 }
@@ -85,7 +86,7 @@ const RouteEditor: FC<{
         </div>
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <RoutePreview fileContent={stringify(routeConfigJson)} />
+        <EndpointPreview fileContent={stringify(routeConfigJson)} />
         <Button variant="outline" disabled={isLoading} onClick={onSaveClicked}>
           <Save />
           {t("pages.explorer.endpoint.editor.saveBtn")}
@@ -95,4 +96,4 @@ const RouteEditor: FC<{
   );
 };
 
-export default RouteEditor;
+export default EndpointEditor;

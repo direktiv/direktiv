@@ -8,7 +8,7 @@ import Editor from "~/design/Editor";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const RoutePreview = ({ fileContent }: { fileContent: string }) => {
+const EndpointPreview = ({ fileContent }: { fileContent: string }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   return (
@@ -49,4 +49,4 @@ const RoutePreview = ({ fileContent }: { fileContent: string }) => {
   );
 };
 
-export default RoutePreview;
+export default EndpointPreview;

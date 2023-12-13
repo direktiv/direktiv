@@ -7,7 +7,7 @@ export const endpointHeader = {
   direktiv_api: "endpoint/v1",
 };
 
-export const defaultRouteYaml = stringify(endpointHeader);
+export const defaultEndpointYaml = stringify(endpointHeader);
 
 /**
  * input:
@@ -64,7 +64,7 @@ export const generatePluginJSONSchema = ({
   },
 });
 
-export const useRouteFormSchema = (): RJSFSchema => ({
+export const useEndpointFormSchema = (): RJSFSchema => ({
   properties: {
     method: {
       title: "method",
@@ -82,7 +82,7 @@ export const useRouteFormSchema = (): RJSFSchema => ({
   type: "object",
 });
 
-export const addRouteHeader = (routeJSON: object) => ({
+export const addEndpointHeader = (endpointJSON: object) => ({
   ...endpointHeader,
-  ...routeJSON,
+  ...endpointJSON,
 });

@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultRouteYaml } from "~/pages/namespace/Explorer/Route/utils";
+import { defaultEndpointYaml } from "~/pages/namespace/Explorer/Endpoint/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -60,7 +60,7 @@ const NewRoute = ({
       })
     ),
     defaultValues: {
-      fileContent: defaultRouteYaml,
+      fileContent: defaultEndpointYaml,
     },
   });
 
