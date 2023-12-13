@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderOpen } from "lucide-react";
-import NewConsumer from "./newConsumer";
+import NewConsumer from "./CreateNew/Consumer";
 import NewDirectory from "./NewDirectory";
 import NewRoute from "./NewRoute";
 import NewService from "./NewService";
