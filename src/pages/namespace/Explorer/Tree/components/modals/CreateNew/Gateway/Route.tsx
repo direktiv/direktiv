@@ -10,8 +10,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
-import { addYamlFileExtension } from "../../utils";
-import { defaultConsumerYaml } from "../../../Consumer/utils";
+import { addYamlFileExtension } from "../../../../utils";
+import { defaultRouteYaml } from "~/pages/namespace/Explorer/Route/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -26,7 +26,7 @@ type FormInput = {
   fileContent: string;
 };
 
-const NewConsumer = ({
+const NewRoute = ({
   path,
   close,
   unallowedNames,
@@ -53,14 +53,14 @@ const NewConsumer = ({
                 (unallowedName) => unallowedName === nameWithExtension
               ),
             {
-              message: t("pages.explorer.tree.newConsumer.nameAlreadyExists"),
+              message: t("pages.explorer.tree.newRoute.nameAlreadyExists"),
             }
           ),
         fileContent: z.string(),
       })
     ),
     defaultValues: {
-      fileContent: defaultConsumerYaml,
+      fileContent: defaultRouteYaml,
     },
   });
 
@@ -71,7 +71,7 @@ const NewConsumer = ({
           pages.explorer.createHref({
             namespace,
             path: data.node.path,
-            subpage: "workflow", // TODO: update subpage
+            subpage: "gateway",
           })
         );
       close();
@@ -86,12 +86,12 @@ const NewConsumer = ({
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-consumer-${path}`;
+  const formId = `new-route-${path}`;
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <Network /> {t("pages.explorer.tree.newConsumer.title")}
+          <Network /> {t("pages.explorer.tree.newRoute.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -100,11 +100,11 @@ const NewConsumer = ({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-              {t("pages.explorer.tree.newConsumer.nameLabel")}
+              {t("pages.explorer.tree.newRoute.nameLabel")}
             </label>
             <Input
               id="name"
-              placeholder={t("pages.explorer.tree.newConsumer.namePlaceholder")}
+              placeholder={t("pages.explorer.tree.newRoute.namePlaceholder")}
               {...register("name")}
             />
           </fieldset>
@@ -113,7 +113,7 @@ const NewConsumer = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.newConsumer.cancelBtn")}
+            {t("pages.explorer.tree.newRoute.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -123,11 +123,11 @@ const NewConsumer = ({
           form={formId}
         >
           {!isLoading && <PlusCircle />}
-          {t("pages.explorer.tree.newConsumer.createBtn")}
+          {t("pages.explorer.tree.newRoute.createBtn")}
         </Button>
       </DialogFooter>
     </>
   );
 };
 
-export default NewConsumer;
+export default NewRoute;

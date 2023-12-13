@@ -6,7 +6,7 @@ import {
   waitForSuccessToast,
 } from "./utils";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/CreateNew/Workflow/templates";
+import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";

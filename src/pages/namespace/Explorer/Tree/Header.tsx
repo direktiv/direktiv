@@ -4,11 +4,11 @@ import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
-import NewConsumer from "./CreateNew/Gateway/Consumer";
-import NewDirectory from "./CreateNew/Directory";
-import NewRoute from "./CreateNew/Gateway/Route";
-import NewService from "./CreateNew/Service";
-import NewWorkflow from "./CreateNew/Workflow";
+import NewConsumer from "./components/modals/CreateNew/Gateway/Consumer";
+import NewDirectory from "./components/modals/CreateNew/Directory";
+import NewRoute from "./components/modals/CreateNew/Gateway/Route";
+import NewService from "./components/modals/CreateNew/Service";
+import NewWorkflow from "./components/modals/CreateNew/Workflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
