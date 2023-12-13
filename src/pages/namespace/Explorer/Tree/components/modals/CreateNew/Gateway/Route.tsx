@@ -71,7 +71,7 @@ const NewRoute = ({
           pages.explorer.createHref({
             namespace,
             path: data.node.path,
-            subpage: "gateway",
+            subpage: "endpoint",
           })
         );
       close();

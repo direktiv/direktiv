@@ -71,9 +71,9 @@ export const fileTypeToExplorerSubpage = (
     case "service":
       return "service";
     case "endpoint":
-      return "workflow";
+      return "endpoint";
     case "consumer":
-      return "workflow";
+      return "consumer";
     default:
       return undefined;
   }

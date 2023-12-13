@@ -30,7 +30,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
             to={pages.explorer.createHref({
               namespace,
               path: gateway.file_path,
-              subpage: "gateway",
+              subpage: "endpoint",
             })}
           >
             {gateway.file_path}

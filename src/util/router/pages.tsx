@@ -68,7 +68,8 @@ export type ExplorerSubpages =
   | "workflow-settings"
   | "workflow-services"
   | "service"
-  | "gateway";
+  | "endpoint"
+  | "consumer";
 
 type ExplorerSubpagesParams =
   | {
@@ -110,7 +111,8 @@ type ExplorerPageSetup = Record<
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
       isServicePage: boolean;
-      isGatewayPage: boolean;
+      isEndpointPage: boolean;
+      isConsumerPage: boolean;
       serviceId: string | undefined;
     };
   }
@@ -329,7 +331,8 @@ export const pages: PageType & EnterprisePageType = {
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
-        gateway: "endpoint",
+        endpoint: "endpoint",
+        consumer: "consumer",
         service: "service",
       };
 
@@ -366,9 +369,14 @@ export const pages: PageType & EnterprisePageType = {
       const isTreePage = checkHandler(thirdLvl, "isTreePage");
       const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
       const isServicePage = checkHandler(thirdLvl, "isServicePage");
-      const isGatewayPage = checkHandler(thirdLvl, "isGatewayPage");
+      const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
+      const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
       const isExplorerPage =
-        isTreePage || isWorkflowPage || isServicePage || isGatewayPage;
+        isTreePage ||
+        isWorkflowPage ||
+        isServicePage ||
+        isEndpointPage ||
+        isConsumerPage;
       const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
@@ -388,7 +396,8 @@ export const pages: PageType & EnterprisePageType = {
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
         isServicePage,
-        isGatewayPage,
+        isEndpointPage,
+        isConsumerPage,
         serviceId: searchParams.get("serviceId") ?? undefined,
       };
     },
@@ -441,7 +450,12 @@ export const pages: PageType & EnterprisePageType = {
         {
           path: "endpoint/*",
           element: <EndpointEditorPage />,
-          handle: { isGatewayPage: true },
+          handle: { isEndpointPage: true },
+        },
+        {
+          path: "consumer/*",
+          element: <div>CONSUMER PAGE</div>,
+          handle: { isConsumerPage: true },
         },
       ],
     },
