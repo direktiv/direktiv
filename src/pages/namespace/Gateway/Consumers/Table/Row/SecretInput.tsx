@@ -19,7 +19,7 @@ const SecretInput: FC<SecretInputProps> = ({ secret }) => {
         type={revealSecret ? "text" : "password"}
       />
       <Button
-        variant="outline"
+        variant="ghost"
         onClick={() => setRevealSecret(!revealSecret)}
         icon
       >
