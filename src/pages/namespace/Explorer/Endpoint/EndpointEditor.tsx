@@ -5,6 +5,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import EndpointPreview from "./EndpointPreview";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
+import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { stringify } from "json-to-pretty-yaml";
@@ -13,13 +14,15 @@ import { useTranslation } from "react-i18next";
 import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 import yamljs from "js-yaml";
 
-export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
-// TODO: rename  route to endpoint
-const EndpointEditor: FC<{
-  data: NonNullable<NodeContentType>;
+type EndpointEditorProps = {
   path: string;
-}> = ({ data, path }) => {
+  data: NonNullable<NodeContentType>;
+  route?: RouteSchemeType;
+};
+
+const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const workflowData = atob(data.revision?.source ?? "");
 

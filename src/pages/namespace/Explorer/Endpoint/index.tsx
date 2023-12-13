@@ -1,4 +1,5 @@
 import { FileSymlink, Workflow } from "lucide-react";
+import { removeLeadingSlash, removeTrailingSlash } from "~/api/tree/utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -10,6 +11,7 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
+import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const EndpointPage: FC = () => {
@@ -26,10 +28,13 @@ const EndpointPage: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useNodeContent({ path });
 
+  const { data: routes, isFetched: isRouteListFetched } = useRoutes();
+
   if (!namespace) return null;
   if (!path) return null;
   if (!gatewayData) return null;
   if (!isPermissionCheckFetched) return null;
+  if (!isRouteListFetched) return null;
 
   if (isAllowed === false)
     return (
@@ -37,6 +42,10 @@ const EndpointPage: FC = () => {
         <NoPermissions>{noPermissionMessage}</NoPermissions>
       </Card>
     );
+
+  const matchingRoute = routes?.data.find(
+    (route) => removeLeadingSlash(route.file_path) === removeLeadingSlash(path)
+  );
 
   return (
     <>
@@ -58,7 +67,7 @@ const EndpointPage: FC = () => {
           </Button>
         </div>
       </div>
-      <EndpointEditor data={gatewayData} path={path} />
+      <EndpointEditor data={gatewayData} path={path} route={matchingRoute} />
     </>
   );
 };
