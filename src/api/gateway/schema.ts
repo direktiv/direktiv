@@ -70,7 +70,7 @@ const RouteSchema = z.object({
   }),
 });
 
-export type GatewaySchemeType = z.infer<typeof RouteSchema>;
+export type RouteSchemeType = z.infer<typeof RouteSchema>;
 
 /**
  * example

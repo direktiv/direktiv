@@ -3,17 +3,17 @@ import { TableCell, TableRow } from "~/design/Table";
 import { AllowAnonymous } from "./Anonymous";
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import { GatewaySchemeType } from "~/api/gateway/schema";
 import { Link } from "react-router-dom";
 import MessagesOverlay from "./MessagesOverlay";
 import { Methods } from "./Methods";
 import Plugins from "./Plugins";
+import { RouteSchemeType } from "~/api/gateway/schema";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
-  gateway: GatewaySchemeType;
+  gateway: RouteSchemeType;
 };
 
 export const Row: FC<RowProps> = ({ gateway }) => {
