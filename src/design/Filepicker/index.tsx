@@ -93,7 +93,10 @@ const Filepicker: FC<FilepickerPropsType> = ({ className, children }) => (
           <div className="relative">Browse Files</div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="bg-gray-1 dark:bg-gray-dark-1" align="start">
+      <PopoverContent
+        className="w-screen min-w-full bg-gray-1  dark:bg-gray-dark-1 lg:w-3/4"
+        align="start"
+      >
         {children}
       </PopoverContent>
     </Popover>
