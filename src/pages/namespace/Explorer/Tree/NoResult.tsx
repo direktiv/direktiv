@@ -4,7 +4,7 @@ import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderOpen } from "lucide-react";
 import NewConsumer from "./CreateNew/Gateway/Consumer";
-import NewDirectory from "./NewDirectory";
+import NewDirectory from "./CreateNew/Directory";
 import NewRoute from "./CreateNew/Gateway/Route";
 import NewService from "./CreateNew/Service";
 import NewWorkflow from "./CreateNew/Workflow";
