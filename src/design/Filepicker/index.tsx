@@ -33,7 +33,7 @@ const FilepickerSeparator = React.forwardRef<
 FilepickerSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
 const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
-  <div className="px-2 py-1.5 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
+  <div className="px-2 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
     {children}
   </div>
 );
@@ -83,14 +83,19 @@ const FilepickerListItem: FC<FilepickerProps> = ({
 
 type FilepickerPropsType = PropsWithChildren & {
   className?: string;
+  buttonText: string;
 };
 
-const Filepicker: FC<FilepickerPropsType> = ({ className, children }) => (
+const Filepicker: FC<FilepickerPropsType> = ({
+  className,
+  children,
+  buttonText,
+}) => (
   <div className={twMergeClsx("", className)}>
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="primary" data-testid="filepicker-button">
-          <div className="relative">Browse Files</div>
+          <div className="relative">{buttonText}</div>
         </Button>
       </PopoverTrigger>
       <PopoverContent

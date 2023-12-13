@@ -87,8 +87,7 @@ const ExplorerPage: FC = () => {
       <div className="m-5 p-5">
         <Card className="p-3">
           <p>Filepicker Test</p>
-
-          <Filepicker>
+          <Filepicker buttonText="Browse Files">
             <FilepickerHeading>
               <BreadcrumbRoot>
                 <Breadcrumb noArrow>
@@ -97,11 +96,11 @@ const ExplorerPage: FC = () => {
                       namespace,
                       path: "/",
                     })}
+                    className="hover:underline"
                   >
-                    <Home />
+                    <Home className="hover:underline" />
                   </Link>
                 </Breadcrumb>
-
                 {segments.map((file) => (
                   <Breadcrumb key={file.relative}>
                     <Link
@@ -109,7 +108,7 @@ const ExplorerPage: FC = () => {
                         namespace,
                         path: file.absolute,
                       })}
-                      className="flex items-center space-x-3 hover:underline"
+                      className="hover:underline"
                     >
                       {file.relative}
                     </Link>
@@ -126,6 +125,7 @@ const ExplorerPage: FC = () => {
                       namespace,
                       path: parent?.absolute,
                     })}
+                    className="hover:underline"
                   >
                     ..
                   </Link>
@@ -158,7 +158,6 @@ const ExplorerPage: FC = () => {
               ))}
             </FilepickerList>
           </Filepicker>
-
           <p>Result:</p>
           <p>{file}</p>
         </Card>
