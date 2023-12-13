@@ -61,7 +61,7 @@ type DefaultPageSetup = Record<
   PageBase & { createHref: (params: { namespace: string }) => string }
 >;
 
-type ExplorerSubpages =
+export type ExplorerSubpages =
   | "workflow"
   | "workflow-revisions"
   | "workflow-overview"

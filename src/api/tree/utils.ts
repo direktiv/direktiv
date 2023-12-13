@@ -1,5 +1,6 @@
 import { File, Folder, Layers, Network, Play, Users } from "lucide-react";
 
+import { ExplorerSubpages } from "~/util/router/pages";
 import { NodeSchemaType } from "./schema/node";
 
 export const forceLeadingSlash = (path?: string) => {
@@ -61,7 +62,9 @@ export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
   }
 };
 
-export const fileTypeToExplorerSubpage = (type: NodeSchemaType["type"]) => {
+export const fileTypeToExplorerSubpage = (
+  type: NodeSchemaType["type"]
+): ExplorerSubpages | undefined => {
   switch (type) {
     case "workflow":
       return "workflow";
