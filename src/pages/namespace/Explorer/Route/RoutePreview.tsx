@@ -23,7 +23,7 @@ const RoutePreview = ({ fileContent }: { fileContent: string }) => {
           <h3 className="mb-5 flex items-center gap-x-2 font-bold">
             <Code className="h-5" />
             <div className="grow">
-              {t("pages.explorer.gateway.editor.previewTitle")}
+              {t("pages.explorer.endpoint.editor.previewTitle")}
             </div>
             <CopyButton
               value={fileContent}

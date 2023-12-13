@@ -54,7 +54,7 @@ const RoutePage: FC = () => {
               })}
             >
               <FileSymlink />
-              {t("pages.explorer.gateway.goToGateway")}
+              {t("pages.explorer.endpoint.goToRoutes")}
             </Link>
           </Button>
         </div>

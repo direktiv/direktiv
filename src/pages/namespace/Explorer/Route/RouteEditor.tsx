@@ -88,7 +88,7 @@ const RouteEditor: FC<{
         <RoutePreview fileContent={stringify(routeConfigJson)} />
         <Button variant="outline" disabled={isLoading} onClick={onSaveClicked}>
           <Save />
-          {t("pages.explorer.gateway.editor.saveBtn")}
+          {t("pages.explorer.endpoint.editor.saveBtn")}
         </Button>
       </div>
     </div>

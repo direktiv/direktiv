@@ -2,7 +2,6 @@ import type { JSONSchema7Definition } from "json-schema";
 import { RJSFSchema } from "@rjsf/utils";
 import { routeMethods } from "~/api/gateway/schema";
 import { stringify } from "json-to-pretty-yaml";
-import { useTranslation } from "react-i18next";
 
 export const endpointHeader = {
   direktiv_api: "endpoint/v1",
@@ -65,27 +64,23 @@ export const generatePluginJSONSchema = ({
   },
 });
 
-export const useRouteFormSchema = (): RJSFSchema => {
-  const { t } = useTranslation();
-
-  return {
-    properties: {
-      method: {
-        title: t("pages.explorer.tree.newRoute.form.method"),
-        type: "string",
-        // spread operator is required to convert from readonly to mutable array
-        enum: [...routeMethods],
-      },
-      plugins: {
-        title: t("pages.explorer.tree.newRoute.form.plugins"),
-        type: "array",
-        items: {},
-      },
+export const useRouteFormSchema = (): RJSFSchema => ({
+  properties: {
+    method: {
+      title: "method",
+      type: "string",
+      // spread operator is required to convert from readonly to mutable array
+      enum: [...routeMethods],
     },
-    required: ["method"],
-    type: "object",
-  };
-};
+    plugins: {
+      title: "plugins",
+      type: "array",
+      items: {},
+    },
+  },
+  required: ["method"],
+  type: "object",
+});
 
 export const addRouteHeader = (routeJSON: object) => ({
   ...endpointHeader,
