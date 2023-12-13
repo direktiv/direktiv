@@ -33,11 +33,14 @@ export const Default: Story = {
   render: ({ ...args }) => (
     <Filepicker {...args}>content goes here...</Filepicker>
   ),
+  args: {
+    buttonText: "Browse Files",
+  },
   argTypes: {},
 };
 
 export const WithFewItems = () => (
-  <Filepicker>
+  <Filepicker buttonText="Browse Files">
     <FilepickerHeading>Collection of Files</FilepickerHeading>
     <FilepickerSeparator />
     <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
@@ -83,7 +86,7 @@ const items: Listitem[] = [
 ];
 
 export const WithManyItemsBreadcrumbHeadingAndCloseFunctionAtItemClick = () => (
-  <Filepicker>
+  <Filepicker buttonText="Browse Files">
     <FilepickerHeading>
       <BreadcrumbRoot>
         <Breadcrumb noArrow>
