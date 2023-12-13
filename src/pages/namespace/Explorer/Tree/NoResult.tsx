@@ -3,11 +3,11 @@ import { FC, useEffect, useState } from "react";
 import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
 import { FolderOpen } from "lucide-react";
-import NewConsumer from "./CreateNew/Consumer";
+import NewConsumer from "./CreateNew/Gateway/Consumer";
 import NewDirectory from "./NewDirectory";
-import NewRoute from "./NewRoute";
-import NewService from "./NewService";
-import NewWorkflow from "./NewWorkflow";
+import NewRoute from "./CreateNew/Gateway/Route";
+import NewService from "./CreateNew/Service";
+import NewWorkflow from "./CreateNew/Workflow";
 import { NoResult as NoResultContainer } from "~/design/Table";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";

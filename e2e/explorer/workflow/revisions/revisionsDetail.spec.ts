@@ -2,7 +2,7 @@ import { createNamespace, deleteNamespace } from "../../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import { headers, radixClick } from "../../../utils/testutils";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
+import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { createWorkflowWithThreeRevisions } from "../../../utils/revisions";
 import { faker } from "@faker-js/faker";
