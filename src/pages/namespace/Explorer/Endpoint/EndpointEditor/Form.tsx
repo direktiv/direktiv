@@ -39,22 +39,31 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
     values,
     formMarkup: (
       <div className="flex flex-col gap-3">
-        <Input {...register("path")} />
-        <Input
-          {...register("timeout", {
-            valueAsNumber: true,
-          })}
-        />
+        <div>
+          path
+          <Input {...register("path")} />
+        </div>
+        <div>
+          timeout
+          <Input
+            {...register("timeout", {
+              valueAsNumber: true,
+            })}
+          />
+        </div>
         <Controller
           control={control}
           name="allow_anonymous"
           render={({ field }) => (
-            <Switch
-              defaultChecked={field.value ?? false}
-              onCheckedChange={(value) => {
-                field.onChange(value);
-              }}
-            />
+            <div>
+              allow_anonymous
+              <Switch
+                defaultChecked={field.value ?? false}
+                onCheckedChange={(value) => {
+                  field.onChange(value);
+                }}
+              />
+            </div>
           )}
         />
       </div>
