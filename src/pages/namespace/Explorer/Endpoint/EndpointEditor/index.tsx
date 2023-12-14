@@ -56,7 +56,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
             className="relative flex grow flex-col space-y-4 p-5"
           >
             <Card className="flex grow flex-col p-4">
-              <div className="grow">
+              <div className="flex grow">
                 <div className="grid grow grid-cols-2 gap-3">
                   {!endpointConfig ? (
                     <Alert variant="error">
@@ -70,12 +70,15 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                       {formMarkup}
                     </div>
                   )}
-                  <div className="grid grid-rows-3 gap-3">
+                  <div className="grid grow grid-rows-2 gap-3">
                     <Card className="p-5">
-                      <pre>{endpointFileContent}</pre>
-                    </Card>
-                    <Card className="p-5">
-                      <pre>{JSON.stringify(endpointConfig, null, 2)}</pre>
+                      <Editor
+                        value={endpointFileContent}
+                        theme={theme ?? undefined}
+                        options={{
+                          readOnly: true,
+                        }}
+                      />
                     </Card>
                     <Card className="p-5">
                       <Editor
