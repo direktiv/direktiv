@@ -1,5 +1,4 @@
 import { FileSymlink, Workflow } from "lucide-react";
-import { removeLeadingSlash, removeTrailingSlash } from "~/api/tree/utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -9,6 +8,7 @@ import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { removeLeadingSlash } from "~/api/tree/utils";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
