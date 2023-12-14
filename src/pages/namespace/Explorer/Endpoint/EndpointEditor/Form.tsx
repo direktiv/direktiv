@@ -70,6 +70,7 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             {...register("timeout", {
               valueAsNumber: true,
             })}
+            type="number"
           />
         </div>
         <Controller
