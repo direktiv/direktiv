@@ -5,6 +5,13 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/design/Dialog";
 import { EndpointFormSchema, EndpointFormSchemaType } from "./utils";
 import {
   Select,
@@ -15,6 +22,7 @@ import {
 } from "~/design/Select";
 
 import Badge from "~/design/Badge";
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
@@ -152,12 +160,28 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             name="plugins.target"
             render={({ field: { value: value } }) => {
               if (value.type === targetPluginTypes.instantResponse) {
-                return <div>instance response flow</div>;
+                return (
+                  <div>
+                    instance response flow
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button>Open</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Dialog Title</DialogTitle>
+                        </DialogHeader>
+                        <form action=""></form>
+                        Content goes here
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                );
               }
               if (value.type === targetPluginTypes.targetFlow) {
                 return <div>target flow</div>;
               }
-              return <></>;
+              return <div>no plugin selected</div>;
             }}
           />
         </Card>
