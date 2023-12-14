@@ -6,6 +6,13 @@ import {
   useWatch,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "./utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
 
 import Badge from "~/design/Badge";
 import { Card } from "~/design/Card";
@@ -113,19 +120,28 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
           )}
         />
         <Card className="p-5">
-          target plugin
           <Controller
             control={control}
             name="plugins.target.type"
             render={({ field }) => (
               <div>
-                <select {...field}>
-                  {Object.values(targetPluginTypes).map((targetPluginType) => (
-                    <option key={targetPluginType} value={targetPluginType}>
-                      {targetPluginType}
-                    </option>
-                  ))}
-                </select>
+                <Select onValueChange={field.onChange} {...field}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="please select a target plugin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(targetPluginTypes).map(
+                      (targetPluginType) => (
+                        <SelectItem
+                          key={targetPluginType}
+                          value={targetPluginType}
+                        >
+                          {targetPluginType}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           />
