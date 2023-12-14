@@ -1,12 +1,13 @@
-import { FC, useState } from "react";
+import { EndpointFormSchemaType, serializeEndpointFile } from "../utils";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import EndpointPreview from "../EndpointPreview";
+import { FC } from "react";
 import { Form } from "./Form";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
-import { serializeEndpointFile } from "../utils";
 import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -23,54 +24,62 @@ type EndpointEditorProps = {
 const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const endpointFileContent = atob(data.revision?.source ?? "");
-
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const endpointConfig = serializeEndpointFile(endpointFileContent);
+  const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
 
-  const { mutate: updateRoute, isLoading } = useUpdateWorkflow({
-    onSuccess: () => {
-      setHasUnsavedChanges(false);
-    },
-  });
-
-  const onSaveClicked = () => {
-    const toSave = stringify(endpointConfig);
-    if (toSave) {
-      updateRoute({
-        path,
-        fileContent: toSave,
-      });
-    }
+  const save = (data: EndpointFormSchemaType) => {
+    const toSave = stringify(data);
+    updateRoute({
+      path,
+      fileContent: toSave,
+    });
   };
 
   return (
-    <div className="relative flex grow flex-col space-y-4 p-5">
-      <Card className="flex grow flex-col p-4">
-        <div className="grid grow grid-cols-2">
-          <div>
-            <Form endpointConfig={endpointConfig} />
-          </div>
-          <Card className="grid grid-rows-2 p-5">
-            <pre>{endpointFileContent}</pre>
-            <pre>{JSON.stringify(endpointConfig, null, 2)}</pre>
+    <Form endpointConfig={endpointConfig}>
+      {({
+        formControls: {
+          formState: { isDirty },
+          handleSubmit,
+        },
+        formMarkup,
+      }) => (
+        <form
+          onSubmit={handleSubmit(save)}
+          className="relative flex grow flex-col space-y-4 p-5"
+        >
+          <Card className="flex grow flex-col p-4">
+            <div className="grid grow grid-cols-2">
+              {!endpointConfig ? (
+                <Alert variant="error">
+                  {t("pages.explorer.endpoint.editor.form.serialisationError")}
+                </Alert>
+              ) : (
+                <div>{formMarkup}</div>
+              )}
+              <Card className="grid grid-rows-2 p-5">
+                <pre>{endpointFileContent}</pre>
+                <pre>{JSON.stringify(endpointConfig, null, 2)}</pre>
+              </Card>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8">
+              {isDirty && (
+                <span className="text-center">
+                  {t("pages.explorer.workflow.editor.unsavedNote")}
+                </span>
+              )}
+            </div>
           </Card>
-        </div>
-        <div className="flex justify-end gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8">
-          {hasUnsavedChanges && (
-            <span className="text-center">
-              {t("pages.explorer.workflow.editor.unsavedNote")}
-            </span>
-          )}
-        </div>
-      </Card>
-      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EndpointPreview fileContent={stringify(endpointConfig)} />
-        <Button variant="outline" disabled={isLoading} onClick={onSaveClicked}>
-          <Save />
-          {t("pages.explorer.endpoint.editor.saveBtn")}
-        </Button>
-      </div>
-    </div>
+          <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+            <EndpointPreview fileContent={stringify(endpointConfig)} />
+            <Button variant="outline" disabled={isLoading}>
+              <Save />
+              {t("pages.explorer.endpoint.editor.saveBtn")}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Form>
   );
 };
 
