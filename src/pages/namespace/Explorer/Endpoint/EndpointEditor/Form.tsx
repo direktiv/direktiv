@@ -8,11 +8,13 @@ import {
 import { EndpointFormSchema, EndpointFormSchemaType } from "./utils";
 
 import Badge from "~/design/Badge";
+import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import Input from "~/design/Input";
 import { Switch } from "~/design/Switch";
 import { routeMethods } from "~/api/gateway/schema";
+import { targetPluginTypes } from "./plugins/target";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
@@ -110,6 +112,24 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             </div>
           )}
         />
+        <Card className="p-5">
+          target plugin
+          <Controller
+            control={control}
+            name="plugins.target.type"
+            render={({ field }) => (
+              <div>
+                <select {...field}>
+                  {Object.values(targetPluginTypes).map((targetPluginType) => (
+                    <option key={targetPluginType} value={targetPluginType}>
+                      {targetPluginType}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          />
+        </Card>
       </div>
     ),
   });

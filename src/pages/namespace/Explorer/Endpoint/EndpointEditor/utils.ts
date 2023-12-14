@@ -1,26 +1,12 @@
+import {
+  InstantResposeFormSchema,
+  TargetFlowFormSchema,
+} from "./plugins/target";
+
 import { MethodsSchema } from "~/api/gateway/schema";
 import { stringify } from "json-to-pretty-yaml";
 import yamljs from "js-yaml";
 import { z } from "zod";
-
-const InstantResposeFormSchema = z.object({
-  type: z.literal("instant-response"),
-  configuration: z.object({
-    content_type: z.string().nonempty(),
-    status_code: z.number().int().positive(),
-    status_message: z.string().nonempty(),
-  }),
-});
-
-const TargetFlowFormSchema = z.object({
-  type: z.literal("target-flow"),
-  configuration: z.object({
-    flow: z.string().nonempty(),
-    content_type: z.string().nonempty(),
-    namespace: z.string().nonempty().optional(),
-    async: z.boolean().optional(),
-  }),
-});
 
 export const EndpointFormSchema = z.object({
   direktiv_api: z.literal("endpoint/v1"),
