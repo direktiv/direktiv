@@ -56,7 +56,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
             className="relative flex grow flex-col space-y-4 p-5"
           >
             <Card className="flex grow flex-col p-4">
-              <div className="flex grow">
+              <div className="grow">
                 <div className="grid grow grid-cols-2 gap-3">
                   {!endpointConfig ? (
                     <Alert variant="error">
@@ -70,8 +70,8 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                       {formMarkup}
                     </div>
                   )}
-                  <div className="grid grow grid-rows-2 gap-3">
-                    <Card className="p-5">
+                  <div className="grid h-full grid-rows-2 gap-3">
+                    <Card className="h-[400px] p-5">
                       <Editor
                         value={endpointFileContent}
                         theme={theme ?? undefined}
@@ -80,7 +80,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                         }}
                       />
                     </Card>
-                    <Card className="p-5">
+                    <Card className="h-[400px] p-5">
                       <Editor
                         value={preview}
                         theme={theme ?? undefined}
