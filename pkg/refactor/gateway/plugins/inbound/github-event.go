@@ -1,6 +1,7 @@
 package inbound
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -46,23 +47,19 @@ func (p *GithubWebhookPlugin) Config() interface{} {
 func (p *GithubWebhookPlugin) ExecutePlugin(_ *core.ConsumerFile, w http.ResponseWriter, r *http.Request) bool {
 	eventType := r.Header.Get("X-GitHub-Event")
 	signature := r.Header.Get("X-Hub-Signature-256")
-	var (
-		payload []byte
-		err     error
-	)
 
-	payload, err = io.ReadAll(r.Body)
-	defer r.Body.Close()
+	body, err := io.ReadAll(r.Body)
+	// Replace the body with a new reader after reading from the original
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
+
 	if err != nil {
-		slog.Error("can not process content",
+		slog.Error("can not read the body",
 			slog.String("plugin", GithubWebhookPluginName))
-		w.WriteHeader(http.StatusBadRequest)
-		// nolint
-		w.Write([]byte("can not read content"))
 
 		return false
 	}
-	if (p.config.Secret != "" || signature != "") && !p.verifySignature(payload, signature) {
+
+	if (p.config.Secret != "" || signature != "") && !p.verifySignature(body, signature) {
 		slog.Warn("Got Github event with wrong signature", slog.String("plugin", GithubWebhookPluginName))
 		plugins.ReportError(w, http.StatusUnauthorized,
 			"github-event", fmt.Errorf("signature validation failed"))
