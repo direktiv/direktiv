@@ -1,9 +1,6 @@
-import {
-  InstantResposeFormSchema,
-  TargetFlowFormSchema,
-} from "./plugins/target";
-
+import { InstantResposeFormSchema } from "./plugins/target/InstantResponse";
 import { MethodsSchema } from "~/api/gateway/schema";
+import { TargetFlowFormSchema } from "./plugins/target/TargetFlow";
 import { stringify } from "json-to-pretty-yaml";
 import yamljs from "js-yaml";
 import { z } from "zod";

@@ -119,7 +119,9 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             </div>
           )}
         />
-        <Card className="p-5">
+
+        {/* TODO: make this one new form component in an overlay with a submit */}
+        <Card className="flex flex-col gap-3 p-5">
           <Controller
             control={control}
             name="plugins.target.type"
@@ -144,6 +146,19 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
                 </Select>
               </div>
             )}
+          />
+          <Controller
+            control={control}
+            name="plugins.target"
+            render={({ field: { value: value } }) => {
+              if (value.type === targetPluginTypes.instantResponse) {
+                return <div>instance response flow</div>;
+              }
+              if (value.type === targetPluginTypes.targetFlow) {
+                return <div>target flow</div>;
+              }
+              return <></>;
+            }}
           />
         </Card>
       </div>
