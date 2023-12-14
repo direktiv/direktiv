@@ -9,17 +9,19 @@ import (
 
 	"github.com/direktiv/direktiv/cmd/flow"
 	"github.com/direktiv/direktiv/cmd/sidecar"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 )
 
 const (
 	//nolint:gosec
+	// G101 -- This is a false positive.
 	APITokenHeader = "direktiv-token"
 )
 
 type apikeyHandler struct {
 	next http.Handler
-	key  string
+	key  []byte
 }
 
 func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -29,12 +31,16 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Header.Get(APITokenHeader) != h.key {
+	token := r.Header.Get(APITokenHeader)
+
+	expectedHMAC := core.ComputeHMAC(token, h.key)
+
+	// Compare the expected HMAC with the actual HMAC in a constant time manner.
+	if !core.CompareHMAC(expectedHMAC, []byte(token)) {
 		w.WriteHeader(http.StatusUnauthorized)
 
 		return
 	}
-
 	h.next.ServeHTTP(w, r)
 }
 
@@ -45,7 +51,7 @@ func main() {
 		middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
 			return &apikeyHandler{
 				next: h,
-				key:  key,
+				key:  []byte(key),
 			}
 		})
 	}
