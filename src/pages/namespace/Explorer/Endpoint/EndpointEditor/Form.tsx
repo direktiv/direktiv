@@ -7,9 +7,12 @@ import {
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../utils";
 
+import Badge from "~/design/Badge";
+import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import Input from "~/design/Input";
 import { Switch } from "~/design/Switch";
+import { routeMethods } from "~/api/gateway/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
@@ -38,7 +41,7 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
     formControls,
     values,
     formMarkup: (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-8">
         <div>
           path
           <Input {...register("path")} />
@@ -51,6 +54,46 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             })}
           />
         </div>
+        <Controller
+          control={control}
+          name="methods"
+          render={({ field }) => (
+            <div>
+              methods
+              <div className="grid grid-cols-5 gap-5">
+                {routeMethods.map((method) => {
+                  const isChecked = field.value?.includes(method);
+                  return (
+                    <label
+                      key={method}
+                      className="flex items-center gap-2 text-sm"
+                      htmlFor={method}
+                    >
+                      <Checkbox
+                        id={method}
+                        value={method}
+                        checked={isChecked}
+                        onCheckedChange={(checked) => {
+                          if (checked === true) {
+                            field.onChange([...(field.value ?? []), method]);
+                          }
+                          if (checked === false && field.value) {
+                            field.onChange(
+                              field.value.filter((v) => v !== method)
+                            );
+                          }
+                        }}
+                      />
+                      <Badge variant={isChecked ? undefined : "secondary"}>
+                        {method}
+                      </Badge>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        />
         <Controller
           control={control}
           name="allow_anonymous"
