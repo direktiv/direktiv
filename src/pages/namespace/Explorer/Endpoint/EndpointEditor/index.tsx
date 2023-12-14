@@ -55,6 +55,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
          * or it is working as soon as we have dirtyFields destructured from the formState
          */
         const isDirty = Object.keys(dirtyFields).length > 0;
+
         return (
           <form
             onSubmit={handleSubmit(save)}

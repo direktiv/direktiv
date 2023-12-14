@@ -37,6 +37,7 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
   });
 
   const { register, control } = formControls;
+
   return children({
     formControls,
     values,
