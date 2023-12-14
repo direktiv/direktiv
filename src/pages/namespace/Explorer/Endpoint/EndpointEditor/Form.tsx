@@ -127,7 +127,7 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             name="plugins.target.type"
             render={({ field }) => (
               <div>
-                <Select onValueChange={field.onChange} {...field}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
                     <SelectValue placeholder="please select a target plugin" />
                   </SelectTrigger>
