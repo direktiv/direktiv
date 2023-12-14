@@ -5,7 +5,7 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
-import { EndpointFormSchema, EndpointFormSchemaType } from "../utils";
+import { EndpointFormSchema, EndpointFormSchemaType } from "./utils";
 
 import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";

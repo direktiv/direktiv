@@ -1,4 +1,4 @@
-import { EndpointFormSchemaType, serializeEndpointFile } from "../utils";
+import { EndpointFormSchemaType, serializeEndpointFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";

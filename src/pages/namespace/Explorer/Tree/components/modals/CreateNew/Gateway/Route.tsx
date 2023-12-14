@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/utils";
+import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
