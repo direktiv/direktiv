@@ -27,6 +27,8 @@ import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import Input from "~/design/Input";
+import { InstantResponse } from "~/design/GatewayForms/index.stories";
+import { InstantResponseForm } from "./plugins/target/InstantResponseForm";
 import { Settings } from "lucide-react";
 import { Switch } from "~/design/Switch";
 import { routeMethods } from "~/api/gateway/schema";
@@ -143,17 +145,17 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               </Button>
             </DialogTrigger>
           </Card>
-          <DialogContent>
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>Configure Target plugin</DialogTitle>
             </DialogHeader>
-            <form action=""></form>
-            <Card className="flex flex-col gap-3 p-5">
+            <div className="my-3 flex flex-col gap-y-5">
               <Controller
                 control={control}
                 name="plugins.target.type"
                 render={({ field }) => (
-                  <div>
+                  <div className="flex items-center gap-3">
+                    select a target plugin
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="please select a target plugin" />
@@ -179,7 +181,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 name="plugins.target"
                 render={({ field: { value: value } }) => {
                   if (value.type === targetPluginTypes.instantResponse) {
-                    return <div>instance response flow</div>;
+                    return <InstantResponseForm />;
                   }
                   if (value.type === targetPluginTypes.targetFlow) {
                     return <div>target flow</div>;
@@ -187,7 +189,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                   return <div>no plugin selected</div>;
                 }}
               />
-            </Card>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
