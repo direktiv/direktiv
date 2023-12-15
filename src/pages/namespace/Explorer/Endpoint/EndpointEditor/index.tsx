@@ -40,7 +40,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   };
 
   return (
-    <Form endpointConfig={endpointConfig}>
+    <Form defaultConfig={endpointConfig}>
       {({
         formControls: {
           formState: { errors, dirtyFields },

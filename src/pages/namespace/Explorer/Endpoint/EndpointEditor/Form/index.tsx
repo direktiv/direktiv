@@ -34,7 +34,7 @@ import { targetPluginTypes } from "../schema/plugins/target";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  endpointConfig?: EndpointFormSchemaType;
+  defaultConfig?: EndpointFormSchemaType;
   children: (args: {
     formControls: UseFormReturn<EndpointFormSchemaType>;
     formMarkup: JSX.Element;
@@ -42,11 +42,11 @@ type FormProps = {
   }) => JSX.Element;
 };
 
-export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
+export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
     defaultValues: {
-      ...endpointConfig,
+      ...defaultConfig,
     },
   });
 
