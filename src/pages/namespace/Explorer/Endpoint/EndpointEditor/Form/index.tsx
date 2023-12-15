@@ -12,7 +12,7 @@ import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import Input from "~/design/Input";
 import { Switch } from "~/design/Switch";
-import { TargetPluginForm } from "./plugins/target";
+import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
