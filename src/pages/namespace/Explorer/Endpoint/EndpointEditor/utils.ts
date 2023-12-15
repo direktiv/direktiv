@@ -1,9 +1,14 @@
 import { EndpointFormSchema, EndpointFormSchemaType } from "./schema";
 
+import { ZodError } from "zod";
 import { stringify } from "json-to-pretty-yaml";
 import yamljs from "js-yaml";
 
-export const serializeEndpointFile = (yaml: string) => {
+type ReturnType =
+  | [EndpointFormSchemaType, undefined]
+  | [undefined, ZodError<EndpointFormSchemaType>];
+
+export const serializeEndpointFile = (yaml: string): ReturnType => {
   let json;
   try {
     json = yamljs.load(yaml);
@@ -13,9 +18,10 @@ export const serializeEndpointFile = (yaml: string) => {
 
   const jsonParsed = EndpointFormSchema.safeParse(json);
   if (jsonParsed.success) {
-    return jsonParsed.data;
+    return [jsonParsed.data, undefined];
   }
-  return undefined;
+
+  return [undefined, jsonParsed.error];
 };
 
 const defaultEndpointFileJson: EndpointFormSchemaType = {

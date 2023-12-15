@@ -9,6 +9,7 @@ import { Form } from "./Form";
 import FormErrors from "~/componentsNext/FormErrors";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
+import { ScrollArea } from "~/design/ScrollArea";
 import { serializeEndpointFile } from "./utils";
 import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -28,7 +29,8 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const endpointFileContent = atob(data.revision?.source ?? "");
-  const endpointConfig = serializeEndpointFile(endpointFileContent);
+  const [endpointConfig, endpointConfigError] =
+    serializeEndpointFile(endpointFileContent);
   const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
 
   const save = (data: EndpointFormSchemaType) => {
@@ -65,11 +67,18 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
               <div className="grow">
                 <div className="grid grow grid-cols-2 gap-3">
                   {!endpointConfig ? (
-                    <Alert variant="error">
-                      {t(
-                        "pages.explorer.endpoint.editor.form.serialisationError"
-                      )}
-                    </Alert>
+                    <div>
+                      <Alert variant="error">
+                        {t(
+                          "pages.explorer.endpoint.editor.form.serialisationError"
+                        )}
+                      </Alert>
+                      <ScrollArea className="h-full w-full whitespace-nowrap rounded-md border p-4">
+                        <pre>
+                          {JSON.stringify(endpointConfigError, null, 2)}
+                        </pre>
+                      </ScrollArea>
+                    </div>
                   ) : (
                     <div>
                       <FormErrors errors={errors} className="mb-5" />
