@@ -22,7 +22,7 @@ export const InstantResponseForm: FC<FormProps> = ({ defaultConfig }) => {
   return (
     <div className="flex flex-col gap-y-5">
       <fieldset className="flex items-center gap-5">
-        <label className="w-[250px] overflow-hidden text-right text-sm">
+        <label className="w-[150px] overflow-hidden text-right text-sm">
           content_type
         </label>
         <Input
@@ -31,7 +31,7 @@ export const InstantResponseForm: FC<FormProps> = ({ defaultConfig }) => {
         />
       </fieldset>
       <fieldset className="flex items-center gap-5">
-        <label className="w-[250px] overflow-hidden text-right text-sm">
+        <label className="w-[150px] overflow-hidden text-right text-sm">
           status_code
         </label>
         <Input
@@ -43,7 +43,7 @@ export const InstantResponseForm: FC<FormProps> = ({ defaultConfig }) => {
         />
       </fieldset>
       <fieldset className="flex items-center gap-5">
-        <label className="w-[250px] overflow-hidden text-right text-sm">
+        <label className="w-[150px] overflow-hidden text-right text-sm">
           status_message
         </label>
         <Textarea {...register("configuration.status_message")} />

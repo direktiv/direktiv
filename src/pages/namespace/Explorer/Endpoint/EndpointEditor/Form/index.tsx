@@ -154,25 +154,32 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 control={control}
                 name="plugins.target.type"
                 render={({ field }) => (
-                  <div className="flex items-center gap-3">
-                    select a target plugin
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="please select a target plugin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(targetPluginTypes).map(
-                          (targetPluginType) => (
-                            <SelectItem
-                              key={targetPluginType}
-                              value={targetPluginType}
-                            >
-                              {targetPluginType}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
+                  <div className="flex flex-col gap-y-5">
+                    <fieldset className="flex items-center gap-5">
+                      <label className="w-[150px] overflow-hidden text-right text-sm">
+                        select a target plugin
+                      </label>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="please select a target plugin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(targetPluginTypes).map(
+                            (targetPluginType) => (
+                              <SelectItem
+                                key={targetPluginType}
+                                value={targetPluginType}
+                              >
+                                {targetPluginType}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </fieldset>
                   </div>
                 )}
               />
