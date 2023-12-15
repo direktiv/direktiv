@@ -10,13 +10,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  defaultConfig?: InstantResponseFormSchemaType;
+  defaultConfig?: InstantResponseFormSchemaType["configuration"];
 };
 
 export const InstantResponseForm: FC<FormProps> = ({ defaultConfig }) => {
   const { register } = useForm<InstantResponseFormSchemaType>({
     resolver: zodResolver(InstantResponseFormSchema),
-    defaultValues: { ...defaultConfig },
+    defaultValues: {
+      type: "instant-response",
+      configuration: {
+        ...defaultConfig,
+      },
+    },
   });
 
   return (

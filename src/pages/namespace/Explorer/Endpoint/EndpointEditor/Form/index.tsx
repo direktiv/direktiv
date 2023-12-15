@@ -27,7 +27,6 @@ import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import Input from "~/design/Input";
-import { InstantResponse } from "~/design/GatewayForms/index.stories";
 import { InstantResponseForm } from "./plugins/target/InstantResponseForm";
 import { Settings } from "lucide-react";
 import { Switch } from "~/design/Switch";
@@ -186,9 +185,13 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               <Controller
                 control={control}
                 name="plugins.target"
-                render={({ field: { value: value } }) => {
+                render={({ field: { value } }) => {
                   if (value.type === targetPluginTypes.instantResponse) {
-                    return <InstantResponseForm />;
+                    return (
+                      <InstantResponseForm
+                        defaultConfig={value.configuration}
+                      />
+                    );
                   }
                   if (value.type === targetPluginTypes.targetFlow) {
                     return <div>target flow</div>;
