@@ -2,7 +2,6 @@ import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
 } from "../../../schema/plugins/target/InstantResponse";
-import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import { DialogFooter } from "~/design/Dialog";
@@ -10,6 +9,7 @@ import { FC } from "react";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
@@ -43,13 +43,14 @@ export const InstantResponseForm: FC<FormProps> = ({
       }}
     >
       {errors?.configuration && (
+        // @ts-expect-error
         <FormErrors errors={errors?.configuration} className="mb-5" />
       )}
 
       <div className="my-3 flex flex-col gap-y-5">
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            content_type
+            content type
           </label>
           <Input
             {...register("configuration.content_type")}
@@ -58,7 +59,7 @@ export const InstantResponseForm: FC<FormProps> = ({
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            status_code
+            status code
           </label>
           <Input
             {...register("configuration.status_code", {
@@ -70,7 +71,7 @@ export const InstantResponseForm: FC<FormProps> = ({
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            status_message
+            status message
           </label>
           <Textarea {...register("configuration.status_message")} />
         </fieldset>

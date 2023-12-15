@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
+import { FC, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -25,7 +26,6 @@ import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
-import { FC } from "react";
 import Input from "~/design/Input";
 import { InstantResponseForm } from "./plugins/target/InstantResponseForm";
 import { Settings } from "lucide-react";
@@ -44,6 +44,7 @@ type FormProps = {
 };
 
 export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
     defaultValues: {
@@ -115,7 +116,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             </div>
           )}
         />
-
         <Controller
           control={control}
           name="allow_anonymous"
@@ -133,8 +133,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           )}
         />
 
-        {/* TODO: make this one new form component in an overlay with a submit */}
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Card className="flex items-center gap-3 p-5">
             Target plugin
             <DialogTrigger asChild>
@@ -159,10 +158,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                         select a target plugin
                       </label>
                       <Select
+                        /**
+                         * TODO: this might not directly set the value, and more show which item is selected
+                         * maybe we can use this and create a new component form all of this
+                         */
                         onValueChange={field.onChange}
                         value={field.value}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger variant="outline">
                           <SelectValue placeholder="please select a target plugin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -191,6 +194,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                       <InstantResponseForm
                         defaultConfig={value.configuration}
                         onSubmit={(configuration) => {
+                          setDialogOpen(false);
                           formControls.setValue(
                             "plugins.target",
                             configuration
