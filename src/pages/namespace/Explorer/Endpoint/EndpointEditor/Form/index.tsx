@@ -138,7 +138,8 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             Target plugin
             <DialogTrigger asChild>
               <Button icon variant="outline">
-                <Settings />
+                <Settings />{" "}
+                {values.plugins?.target?.type ?? "no plugin set yet"}
               </Button>
             </DialogTrigger>
           </Card>
