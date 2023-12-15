@@ -94,12 +94,12 @@ const Filepicker: FC<FilepickerPropsType> = ({
   <div className={twMergeClsx("", className)}>
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="primary" data-testid="filepicker-button">
+        <Button data-testid="filepicker-button">
           <div className="relative">{buttonText}</div>
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-screen min-w-full bg-gray-1  dark:bg-gray-dark-1 lg:w-3/4"
+        className="w-screen min-w-full bg-gray-1 dark:bg-gray-dark-1 lg:w-3/4"
         align="start"
       >
         {children}
