@@ -1,15 +1,15 @@
-import { EndpointFormSchemaType, serializeEndpointFile } from "./utils";
-
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { EndpointFormSchemaType } from "./schema";
 import EndpointPreview from "../EndpointPreview";
 import { FC } from "react";
 import { Form } from "./Form";
 import FormErrors from "~/componentsNext/FormErrors";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
+import { serializeEndpointFile } from "./utils";
 import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";

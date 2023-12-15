@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/design/Dialog";
-import { EndpointFormSchema, EndpointFormSchemaType } from "./utils";
+import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 import {
   Select,
   SelectContent,
@@ -29,7 +29,7 @@ import { FC } from "react";
 import Input from "~/design/Input";
 import { Switch } from "~/design/Switch";
 import { routeMethods } from "~/api/gateway/schema";
-import { targetPluginTypes } from "./plugins/target";
+import { targetPluginTypes } from "../schema/plugins/target";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
