@@ -1,6 +1,5 @@
-import { InstantResposeFormSchema } from "./plugins/target/InstantResponse";
 import { MethodsSchema } from "~/api/gateway/schema";
-import { TargetFlowFormSchema } from "./plugins/target/TargetFlow";
+import { TargetPluginFormSchema } from "./plugins/target";
 import { z } from "zod";
 
 export const EndpointFormSchema = z.object({
@@ -11,10 +10,7 @@ export const EndpointFormSchema = z.object({
   methods: z.array(MethodsSchema).nonempty().optional(),
   plugins: z
     .object({
-      target: z.discriminatedUnion("type", [
-        InstantResposeFormSchema,
-        TargetFlowFormSchema,
-      ]),
+      target: TargetPluginFormSchema,
     })
     .optional(),
 });
