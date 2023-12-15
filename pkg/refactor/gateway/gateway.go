@@ -23,6 +23,7 @@ import (
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 	"github.com/go-chi/chi/v5"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type namespaceGateway struct {
@@ -195,6 +196,16 @@ func (dr *DummyWriter) WriteHeader(statusCode int) {
 }
 
 func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+	spanContext := span.SpanContext()
+	traceID := func() string {
+		return spanContext.TraceID().String()
+	}
+	slog := slog.With("trace", traceID(), "component", "gateway")
+	slog.Info("Serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.MagicalGatewayNamespace
 	routePath := chi.URLParam(r, "*")
@@ -227,7 +238,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// add url params e.g. /{id}
-	ctx := context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams)
+	ctx = context.WithValue(ctx, plugins.URLParamCtxKey, urlParams)
 	ctx = context.WithValue(ctx, plugins.ConsumersParamCtxKey, gw.ConsumerList)
 
 	// timeout
@@ -237,6 +248,15 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if t == 0 {
 		t = 30
 	}
+
+	tracer := trace.SpanFromContext(ctx).TracerProvider().Tracer("direktiv/flow")
+	ctx, childSpan := tracer.Start(ctx, "plugins-processing")
+	defer childSpan.End()
+	spanContext = childSpan.SpanContext()
+	traceID = func() string {
+		return spanContext.TraceID().String()
+	}
+	slog.Info("Serving plugins")
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
 	defer cancel()
@@ -278,7 +298,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 	// if there are outbound plugins the reponsewrite is getting swapped out
 	// because target plugins can do io.copy and set headers which would go
 	// on the wire immediately.
@@ -330,7 +349,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(tw.Code)
 		_, err := w.Write(tw.Body.Bytes())
 		if err != nil {
-			slog.Error("can not write api response", slog.Any("error", err.Error()))
+			slog.Error("can not write api response", "error", err.Error())
 		}
 	}
 }

@@ -254,7 +254,12 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer(h.imName)
-	ctx, span := tr.Start(ctx, mux.CurrentRoute(r).GetName(), trace.WithSpanKind(trace.SpanKindServer))
+	route := "apiv2"
+
+	if mux.CurrentRoute(r) != nil {
+		route = mux.CurrentRoute(r).GetName()
+	}
+	ctx, span := tr.Start(ctx, route, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	subr := r.WithContext(ctx)
