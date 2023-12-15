@@ -15,7 +15,7 @@ import { useTheme } from "~/util/store/theme";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  defaultConfig?: InstantResponseFormSchemaType["configuration"];
+  defaultConfig?: Partial<InstantResponseFormSchemaType["configuration"]>;
   onSubmit: (data: InstantResponseFormSchemaType) => void;
 };
 
