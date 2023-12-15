@@ -19,6 +19,7 @@ import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
+import { TargetFlowForm } from "./TargetFlowForm";
 import { targetPluginTypes } from "../../../schema/plugins/target";
 
 type TargetPluginFormProps = {
@@ -37,6 +38,11 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const defaultInstantResponseConfig =
     currentType === targetPluginTypes.instantResponse
+      ? values.plugins?.target?.configuration
+      : undefined;
+
+  const defaultTargetFlowConfig =
+    currentType === targetPluginTypes.targetFlow
       ? values.plugins?.target?.configuration
       : undefined;
 
@@ -83,6 +89,15 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           {selectedPlugin === targetPluginTypes.instantResponse && (
             <InstantResponseForm
               defaultConfig={defaultInstantResponseConfig}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                formControls.setValue("plugins.target", configuration);
+              }}
+            />
+          )}
+          {selectedPlugin === targetPluginTypes.targetFlow && (
+            <TargetFlowForm
+              defaultConfig={defaultTargetFlowConfig}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 formControls.setValue("plugins.target", configuration);

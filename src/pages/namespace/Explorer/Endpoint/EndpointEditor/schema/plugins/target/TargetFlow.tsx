@@ -7,6 +7,9 @@ export const TargetFlowFormSchema = z.object({
     flow: z.string().nonempty(),
     content_type: z.string().nonempty(),
     namespace: z.string().nonempty().optional(),
-    async: z.boolean().optional(),
+    // technically optional, but we a boolean is hard to represent in a form as not set
+    async: z.boolean(),
   }),
 });
+
+export type TargetFlowFormSchemaType = z.infer<typeof TargetFlowFormSchema>;
