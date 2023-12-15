@@ -16,7 +16,6 @@ import {
 } from "~/design/Select";
 
 import Button from "~/design/Button";
-import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
@@ -37,14 +36,14 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <Card className="flex items-center gap-3 p-5">
+      <div className="flex items-center gap-3">
         Target plugin
         <DialogTrigger asChild>
           <Button icon variant="outline">
             <Settings /> {values.plugins?.target?.type ?? "no plugin set yet"}
           </Button>
         </DialogTrigger>
-      </Card>
+      </div>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Configure Target plugin</DialogTitle>
