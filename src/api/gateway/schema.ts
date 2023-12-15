@@ -7,7 +7,7 @@ export const routeMethods = [
   "POST",
   "PUT",
   "TRACE",
-  "PATH",
+  "PATCH",
   "OPTIONS",
   "CONNECT",
   "*",
