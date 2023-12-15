@@ -112,8 +112,8 @@ func MakeEndpointPluginChain(endpoint *core.Endpoint, pluginList *core.Plugins) 
 		slog.String("endpoint", endpoint.FilePath))
 
 	// warning if target not set
-	if pluginList.Target.Type != "" {
-		targetPlugin, err := configurePlugin(pluginList.Target,
+	if pluginList.Target != nil && pluginList.Target.Type != "" {
+		targetPlugin, err := configurePlugin(*pluginList.Target,
 			plugins.TargetPluginType, endpoint.Namespace)
 		if err != nil {
 			endpoint.Errors = append(endpoint.Errors, err.Error())

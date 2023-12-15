@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const MagicalGatewayNamespace = "gateway_namespace"
+const MagicalGatewayNamespace = "gateway"
 
 type GatewayManager interface {
 	http.Handler
@@ -42,12 +42,12 @@ type ConsumerFile struct {
 type Plugins struct {
 	Auth     []PluginConfig `json:"auth,omitempty"     yaml:"auth"`
 	Inbound  []PluginConfig `json:"inbound,omitempty"  yaml:"inbound"`
-	Target   PluginConfig   `json:"target,omitempty"   yaml:"target"`
+	Target   *PluginConfig  `json:"target,omitempty"   yaml:"target"`
 	Outbound []PluginConfig `json:"outbound,omitempty" yaml:"outbound"`
 }
 
 type PluginConfig struct {
-	Type          string                 `json:"type"                    yaml:"type"`
+	Type          string                 `json:"type,omitempty"          yaml:"type"`
 	Configuration map[string]interface{} `json:"configuration,omitempty" yaml:"configuration"`
 }
 

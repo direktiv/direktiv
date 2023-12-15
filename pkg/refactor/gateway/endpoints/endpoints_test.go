@@ -104,7 +104,7 @@ func TestSetEndpoints(t *testing.T) {
 				Type: inbound.ACLPluginName,
 			},
 		},
-		Target: core.PluginConfig{
+		Target: &core.PluginConfig{
 			Type: target.InstantResponsePluginName,
 			Configuration: map[string]interface{}{
 				"status_code":    201,
@@ -164,7 +164,7 @@ func TestSetEndpointsFullError(t *testing.T) {
 				Type: inbound.ACLPluginName,
 			},
 		},
-		Target: core.PluginConfig{
+		Target: &core.PluginConfig{
 			Type: target.InstantResponsePluginName,
 			Configuration: map[string]interface{}{
 				"status_code":    "textnotallowed",
