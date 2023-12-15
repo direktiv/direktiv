@@ -190,6 +190,12 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                     return (
                       <InstantResponseForm
                         defaultConfig={value.configuration}
+                        onSubmit={(configuration) => {
+                          formControls.setValue(
+                            "plugins.target",
+                            configuration
+                          );
+                        }}
                       />
                     );
                   }
