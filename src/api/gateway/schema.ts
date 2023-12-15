@@ -1,16 +1,15 @@
 import { z } from "zod";
 
 export const routeMethods = [
-  "GET",
+  "CONNECT",
   "DELETE",
+  "GET",
   "HEAD",
+  "OPTIONS",
+  "PATCH",
   "POST",
   "PUT",
   "TRACE",
-  "PATCH",
-  "OPTIONS",
-  "CONNECT",
-  "*",
 ] as const;
 
 export const MethodsSchema = z.enum(routeMethods);
