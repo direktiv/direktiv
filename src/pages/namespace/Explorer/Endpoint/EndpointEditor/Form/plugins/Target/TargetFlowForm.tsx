@@ -70,7 +70,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
             asynchronous
           </label>
           <Checkbox
-            checked={getValues("configuration.async") ?? false}
+            checked={getValues("configuration.async")}
             onCheckedChange={(value) => {
               if (typeof value === "boolean") {
                 setValue("configuration.async", value);
