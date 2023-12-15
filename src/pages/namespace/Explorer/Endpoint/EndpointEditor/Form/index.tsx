@@ -27,6 +27,7 @@ import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import Input from "~/design/Input";
+import { Settings } from "lucide-react";
 import { Switch } from "~/design/Switch";
 import { routeMethods } from "~/api/gateway/schema";
 import { targetPluginTypes } from "../schema/plugins/target";
@@ -113,79 +114,81 @@ export const Form: FC<FormProps> = ({ endpointConfig, children }) => {
             </div>
           )}
         />
+
         <Controller
           control={control}
           name="allow_anonymous"
           render={({ field }) => (
-            <div>
-              allow_anonymous
+            <div className="flex items-center gap-3">
               <Switch
                 defaultChecked={field.value ?? false}
                 onCheckedChange={(value) => {
                   field.onChange(value);
                 }}
+                id={field.name}
               />
+              <label htmlFor={field.name}>allow anonymous</label>
             </div>
           )}
         />
 
         {/* TODO: make this one new form component in an overlay with a submit */}
-        <Card className="flex flex-col gap-3 p-5">
-          <Controller
-            control={control}
-            name="plugins.target.type"
-            render={({ field }) => (
-              <div>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="please select a target plugin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(targetPluginTypes).map(
-                      (targetPluginType) => (
-                        <SelectItem
-                          key={targetPluginType}
-                          value={targetPluginType}
-                        >
-                          {targetPluginType}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          />
-          <Controller
-            control={control}
-            name="plugins.target"
-            render={({ field: { value: value } }) => {
-              if (value.type === targetPluginTypes.instantResponse) {
-                return (
+        <Dialog>
+          <Card className="flex items-center gap-3 p-5">
+            Target plugin
+            <DialogTrigger asChild>
+              <Button icon variant="outline">
+                <Settings />
+              </Button>
+            </DialogTrigger>
+          </Card>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Configure Target plugin</DialogTitle>
+            </DialogHeader>
+            <form action=""></form>
+            <Card className="flex flex-col gap-3 p-5">
+              <Controller
+                control={control}
+                name="plugins.target.type"
+                render={({ field }) => (
                   <div>
-                    instance response flow
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button>Open</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Dialog Title</DialogTitle>
-                        </DialogHeader>
-                        <form action=""></form>
-                        Content goes here
-                      </DialogContent>
-                    </Dialog>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="please select a target plugin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(targetPluginTypes).map(
+                          (targetPluginType) => (
+                            <SelectItem
+                              key={targetPluginType}
+                              value={targetPluginType}
+                            >
+                              {targetPluginType}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
                   </div>
-                );
-              }
-              if (value.type === targetPluginTypes.targetFlow) {
-                return <div>target flow</div>;
-              }
-              return <div>no plugin selected</div>;
-            }}
-          />
-        </Card>
+                )}
+              />
+              <Controller
+                control={control}
+                name="plugins.target"
+                render={({ field: { value: value } }) => {
+                  if (value.type === targetPluginTypes.instantResponse) {
+                    return <div>instance response flow</div>;
+                  }
+                  if (value.type === targetPluginTypes.targetFlow) {
+                    return <div>target flow</div>;
+                  }
+                  return <div>no plugin selected</div>;
+                }}
+              />
+            </Card>
+          </DialogContent>
+        </Dialog>
       </div>
     ),
   });

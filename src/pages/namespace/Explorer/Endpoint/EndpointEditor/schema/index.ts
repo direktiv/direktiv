@@ -1,5 +1,5 @@
 import { MethodsSchema } from "~/api/gateway/schema";
-import { TargetPluginFormSchema } from "./plugins/target";
+import { TargetPluginFormSchema } from "./plugins/target/schema";
 import { z } from "zod";
 
 export const EndpointFormSchema = z.object({
