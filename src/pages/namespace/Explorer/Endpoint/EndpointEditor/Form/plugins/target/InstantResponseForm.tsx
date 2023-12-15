@@ -25,7 +25,10 @@ export const InstantResponseForm: FC<FormProps> = ({ defaultConfig }) => {
         <label className="w-[250px] overflow-hidden text-right text-sm">
           content_type
         </label>
-        <Input {...register("configuration.content_type")} />
+        <Input
+          {...register("configuration.content_type")}
+          placeholder="application/json"
+        />
       </fieldset>
       <fieldset className="flex items-center gap-5">
         <label className="w-[250px] overflow-hidden text-right text-sm">
@@ -36,6 +39,7 @@ export const InstantResponseForm: FC<FormProps> = ({ defaultConfig }) => {
             valueAsNumber: true,
           })}
           type="number"
+          placeholder="200"
         />
       </fieldset>
       <fieldset className="flex items-center gap-5">
