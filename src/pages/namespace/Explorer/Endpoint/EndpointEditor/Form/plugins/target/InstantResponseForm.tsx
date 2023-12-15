@@ -1,3 +1,4 @@
+import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
@@ -6,10 +7,11 @@ import {
 } from "../../../schema/plugins/target/InstantResponse";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { DialogFooter } from "~/design/Dialog";
+import Editor from "~/design/Editor";
 import Input from "~/design/Input";
-import { Textarea } from "~/design/TextArea";
-import { useForm } from "react-hook-form";
+import { useTheme } from "~/util/store/theme";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
@@ -25,6 +27,7 @@ export const InstantResponseForm: FC<FormProps> = ({
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm<InstantResponseFormSchemaType>({
     resolver: zodResolver(InstantResponseFormSchema),
     defaultValues: {
@@ -39,6 +42,8 @@ export const InstantResponseForm: FC<FormProps> = ({
     e.stopPropagation(); // prevent the parent form from submitting
     handleSubmit(onSubmit)(e);
   };
+
+  const theme = useTheme();
 
   return (
     <form onSubmit={submitForm}>
@@ -75,13 +80,23 @@ export const InstantResponseForm: FC<FormProps> = ({
           <label className="w-[150px] overflow-hidden text-right text-sm">
             status message
           </label>
-          <Textarea {...register("configuration.status_message")} />
+          <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
+            <Controller
+              control={control}
+              name="configuration.status_message"
+              render={({ field }) => (
+                <Editor
+                  theme={theme ?? undefined}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </Card>
         </fieldset>
       </div>
       <DialogFooter>
-        <Button type="submit" variant="primary">
-          Save
-        </Button>
+        <Button type="submit">Save</Button>
       </DialogFooter>
     </form>
   );
