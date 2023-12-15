@@ -43,8 +43,10 @@ export const InstantResponseForm: FC<FormProps> = ({
       }}
     >
       {errors?.configuration && (
-        // @ts-expect-error
-        <FormErrors errors={errors?.configuration} className="mb-5" />
+        <FormErrors
+          errors={errors?.configuration as errorsType}
+          className="mb-5"
+        />
       )}
 
       <div className="my-3 flex flex-col gap-y-5">
