@@ -1,8 +1,8 @@
-import { InstantResposeFormSchema } from "./InstantResponse";
+import { InstantResponseFormSchema } from "./InstantResponse";
 import { TargetFlowFormSchema } from "./TargetFlow";
 import { z } from "zod";
 
 export const TargetPluginFormSchema = z.discriminatedUnion("type", [
-  InstantResposeFormSchema,
+  InstantResponseFormSchema,
   TargetFlowFormSchema,
 ]);
