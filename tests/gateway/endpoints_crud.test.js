@@ -2,7 +2,7 @@ import common from "../common";
 import request from "supertest";
 import retry from "jest-retries";
 
-const testNamespace = "gateway_namespace";
+const testNamespace = "gateway";
 
 const endpoint1 = `
 direktiv_api: endpoint/v1
@@ -106,11 +106,7 @@ describe("Test wrong endpoint config", () => {
                             '  line 5: cannot unmarshal !!map into []core.PluginConfig'
                         ],
                         warnings: [],
-                        plugins: {
-                            target: {
-                                type: ""
-                            }
-                        }
+                        plugins: {}
                     }
                 ]
             )

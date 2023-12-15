@@ -2,7 +2,7 @@ import common from "../common";
 import request from "supertest";
 import retry from "jest-retries";
 
-const testNamespace = "gateway_namespace";
+const testNamespace = "gateway";
 
 const limitedNamespace = "limited_namespace";
 
