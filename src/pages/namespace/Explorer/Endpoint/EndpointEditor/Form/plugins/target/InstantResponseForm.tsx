@@ -1,3 +1,5 @@
+import { FC, FormEvent } from "react";
+import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
@@ -5,8 +7,6 @@ import {
 
 import Button from "~/design/Button";
 import { DialogFooter } from "~/design/Dialog";
-import { FC } from "react";
-import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { useForm } from "react-hook-form";
@@ -35,13 +35,13 @@ export const InstantResponseForm: FC<FormProps> = ({
     },
   });
 
+  const submitForm = (e: FormEvent<HTMLFormElement>) => {
+    e.stopPropagation(); // prevent the parent form from submitting
+    handleSubmit(onSubmit)(e);
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
-    >
+    <form onSubmit={submitForm}>
       {errors?.configuration && (
         <FormErrors
           errors={errors?.configuration as errorsType}
