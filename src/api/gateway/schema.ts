@@ -55,9 +55,9 @@ const PluginSchema = z.object({
 }
  */
 const RouteSchema = z.object({
-  methods: z.array(MethodsSchema),
+  methods: z.array(MethodsSchema).nullable(),
   file_path: z.string(),
-  path: z.string(),
+  path: z.string().optional(),
   allow_anonymous: z.boolean(),
   errors: z.array(z.string()),
   warnings: z.array(z.string()),

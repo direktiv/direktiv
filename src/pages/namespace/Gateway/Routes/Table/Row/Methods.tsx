@@ -8,7 +8,7 @@ type AllowAnonymousProps = {
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => (
   <div className="flex w-[190px] flex-wrap gap-1">
-    {methods.map((method) => (
+    {methods?.map((method) => (
       <Badge key={method} variant="outline">
         {method}
       </Badge>
