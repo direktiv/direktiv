@@ -77,24 +77,31 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                     </div>
                   )}
                   <div className="grid h-full grid-rows-2 gap-3">
-                    <Card className="h-[400px] p-5">
-                      <Editor
-                        value={endpointFileContent}
-                        theme={theme ?? undefined}
-                        options={{
-                          readOnly: true,
-                        }}
-                      />
-                    </Card>
-                    <Card className="h-[400px] p-5">
-                      <Editor
-                        value={preview}
-                        theme={theme ?? undefined}
-                        options={{
-                          readOnly: true,
-                        }}
-                      />
-                    </Card>
+                    <div>
+                      latest endpoint file
+                      <Card className="h-[400px] p-5">
+                        <Editor
+                          value={endpointFileContent}
+                          theme={theme ?? undefined}
+                          options={{
+                            readOnly: true,
+                          }}
+                        />
+                      </Card>
+                    </div>
+
+                    <div>
+                      preview endpoint file (unvalidated)
+                      <Card className="h-[400px] p-5">
+                        <Editor
+                          value={preview}
+                          theme={theme ?? undefined}
+                          options={{
+                            readOnly: true,
+                          }}
+                        />
+                      </Card>
+                    </div>
                   </div>
                 </div>
               </div>
