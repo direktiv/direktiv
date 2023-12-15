@@ -87,6 +87,7 @@ export const InstantResponseForm: FC<FormProps> = ({
               render={({ field }) => (
                 <Editor
                   theme={theme ?? undefined}
+                  language="plaintext"
                   value={field.value}
                   onChange={field.onChange}
                 />
