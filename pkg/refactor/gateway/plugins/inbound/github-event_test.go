@@ -17,30 +17,24 @@ func TestGithubEvent(t *testing.T) {
 	config := inbound.GithubWebhookPluginConfig{
 		Secret: "It's a Secret to Everybody",
 	}
-	assert.True(t, execute(config,"Hello, World!"))
+	assert.True(t, execute(config, "Hello, World!"))
 	config = inbound.GithubWebhookPluginConfig{
 		Secret: "It's a Secret to Everybody",
-		ListenForType: []string{"sometype","issues"},
 	}
-	assert.True(t, execute(config,"Hello, World!"))
-	config = inbound.GithubWebhookPluginConfig{
-		Secret: "It's a Secret to Everybody",
-		ListenForType: []string{"sometype","an other type"},
-	}
-	assert.False(t, execute(config,"Hello, World!"))
+	assert.True(t, execute(config, "Hello, World!"))
 }
 
 func TestGithubEventValidation(t *testing.T) {
-	assert.False(t, execute(inbound.GithubWebhookPluginConfig{Secret: "bad secret"},"Hello, World!"))
-	assert.False(t, execute(inbound.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"},"Hello, World!BadBody"))
-	assert.True(t, execute(inbound.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"},"Hello, World!"))
+	assert.False(t, execute(inbound.GithubWebhookPluginConfig{Secret: "bad secret"}, "Hello, World!"))
+	assert.False(t, execute(inbound.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, "Hello, World!BadBody"))
+	assert.True(t, execute(inbound.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, "Hello, World!"))
 }
 
 func TestGithubPluginPreservesBody(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(inbound.GithubWebhookPluginName)
 	config := inbound.GithubWebhookPluginConfig{
 		Secret: "It's a Secret to Everybody",
-		ListenForType: []string{"sometype","issues"},
+		// ListenForType: []string{"sometype", "issues"},
 	}
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
@@ -59,13 +53,11 @@ func TestGithubPluginPreservesBody(t *testing.T) {
 	b := p2.ExecutePlugin(nil, w, r)
 	assert.True(t, b, "Plugin did not executed as it should")
 	reader, err := r.GetBody()
-	assert.Nil(t,err,"could not read the body")
+	assert.Nil(t, err, "could not read the body")
 	body, err := io.ReadAll(reader)
-	assert.Nil(t,err,"could not read the body")
+	assert.Nil(t, err, "could not read the body")
 	assert.Equal(t, string(body), "Hello, World!")
 }
-
-
 
 func execute(config inbound.GithubWebhookPluginConfig, body string) bool {
 	p, _ := plugins.GetPluginFromRegistry(inbound.GithubWebhookPluginName)

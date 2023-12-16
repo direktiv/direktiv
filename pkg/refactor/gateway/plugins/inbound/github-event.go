@@ -2,16 +2,14 @@ package inbound
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+
+	"github.com/google/go-github/v57/github"
 )
 
 const (
@@ -19,8 +17,7 @@ const (
 )
 
 type GithubWebhookPluginConfig struct {
-	Secret        string   `mapstructure:"secret"          yaml:"secret"`
-	ListenForType []string `mapstructure:"listen_for_type" yaml:"listen_for_type"`
+	Secret string `mapstructure:"secret"          yaml:"secret"`
 }
 
 type GithubWebhookPlugin struct {
@@ -45,45 +42,21 @@ func (p *GithubWebhookPlugin) Config() interface{} {
 }
 
 func (p *GithubWebhookPlugin) ExecutePlugin(_ *core.ConsumerFile, w http.ResponseWriter, r *http.Request) bool {
-	eventType := r.Header.Get("X-GitHub-Event")
-	signature := r.Header.Get("X-Hub-Signature-256")
 
-	body, err := io.ReadAll(r.Body)
-	// Replace the body with a new reader after reading from the original
-	r.Body = io.NopCloser(bytes.NewBuffer(body))
+	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
 
 	if err != nil {
-		slog.Error("can not read the body",
-			slog.String("plugin", GithubWebhookPluginName))
+		slog.Error("can verify payload",
+			slog.String("error", err.Error()))
+		plugins.ReportError(w, http.StatusForbidden,
+			"signature", err)
 
 		return false
 	}
 
-	if (p.config.Secret != "" || signature != "") && !p.verifySignature(body, signature) {
-		slog.Warn("Got Github event with wrong signature", slog.String("plugin", GithubWebhookPluginName))
-		plugins.ReportError(w, http.StatusUnauthorized,
-			"github-event", fmt.Errorf("signature validation failed"))
-
-		return false
-	}
-	if len(p.config.ListenForType) > 0 {
-		var ret bool
-		for _, v := range p.config.ListenForType {
-			ret = ret || v == eventType
-		}
-
-		return ret
-	}
-
+	// reset body with payload
+	r.Body = io.NopCloser(bytes.NewBuffer(payload))
 	return true
-}
-
-func (p *GithubWebhookPlugin) verifySignature(payload []byte, signature string) bool {
-	digest := hmac.New(sha256.New, []byte(p.config.Secret))
-	_, _ = digest.Write([]byte(string(payload)))
-	sig1 := "sha256=" + hex.EncodeToString(digest.Sum(nil))
-
-	return hmac.Equal([]byte(sig1), []byte(signature))
 }
 
 func (*GithubWebhookPlugin) Type() string {
