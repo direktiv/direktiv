@@ -1,4 +1,4 @@
-package inbound_test
+package auth_test
 
 import (
 	"io"
@@ -9,30 +9,39 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGithubEvent(t *testing.T) {
-	config := inbound.GithubWebhookPluginConfig{
+
+	c := &core.ConsumerFile{}
+
+	config := auth.GithubWebhookPluginConfig{
 		Secret: "It's a Secret to Everybody",
 	}
-	assert.True(t, execute(config, "Hello, World!"))
-	config = inbound.GithubWebhookPluginConfig{
+	assert.True(t, execute(config, c, "Hello, World!"))
+	config = auth.GithubWebhookPluginConfig{
 		Secret: "It's a Secret to Everybody",
 	}
-	assert.True(t, execute(config, "Hello, World!"))
+	assert.True(t, execute(config, c, "Hello, World!"))
+
+	// consumer file is github
+	assert.Equal(t, c.Username, "github")
 }
 
 func TestGithubEventValidation(t *testing.T) {
-	assert.False(t, execute(inbound.GithubWebhookPluginConfig{Secret: "bad secret"}, "Hello, World!"))
-	assert.False(t, execute(inbound.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, "Hello, World!BadBody"))
-	assert.True(t, execute(inbound.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, "Hello, World!"))
+
+	c := &core.ConsumerFile{}
+
+	assert.False(t, execute(auth.GithubWebhookPluginConfig{Secret: "bad secret"}, c, "Hello, World!"))
+	assert.False(t, execute(auth.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, c, "Hello, World!BadBody"))
+	assert.True(t, execute(auth.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, c, "Hello, World!"))
 }
 
 func TestGithubPluginPreservesBody(t *testing.T) {
-	p, _ := plugins.GetPluginFromRegistry(inbound.GithubWebhookPluginName)
-	config := inbound.GithubWebhookPluginConfig{
+	p, _ := plugins.GetPluginFromRegistry(auth.GithubWebhookPluginName)
+	config := auth.GithubWebhookPluginConfig{
 		Secret: "It's a Secret to Everybody",
 		// ListenForType: []string{"sometype", "issues"},
 	}
@@ -59,8 +68,8 @@ func TestGithubPluginPreservesBody(t *testing.T) {
 	assert.Equal(t, string(body), "Hello, World!")
 }
 
-func execute(config inbound.GithubWebhookPluginConfig, body string) bool {
-	p, _ := plugins.GetPluginFromRegistry(inbound.GithubWebhookPluginName)
+func execute(config auth.GithubWebhookPluginConfig, c *core.ConsumerFile, body string) bool {
+	p, _ := plugins.GetPluginFromRegistry(auth.GithubWebhookPluginName)
 
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
@@ -76,5 +85,8 @@ func execute(config inbound.GithubWebhookPluginConfig, body string) bool {
 	r.Header.Add("X-GitHub-Hook-Installation-Target-Type", "repository")
 
 	w := httptest.NewRecorder()
-	return p2.ExecutePlugin(nil, w, r)
+
+	ret := p2.ExecutePlugin(c, w, r)
+
+	return ret
 }

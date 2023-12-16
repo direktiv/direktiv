@@ -1,4 +1,4 @@
-package inbound
+package auth
 
 import (
 	"bytes"
@@ -8,16 +8,15 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-
 	"github.com/google/go-github/v57/github"
 )
 
 const (
-	GithubWebhookPluginName = "github-event"
+	GithubWebhookPluginName = "github-webhook-auth"
 )
 
 type GithubWebhookPluginConfig struct {
-	Secret string `mapstructure:"secret"          yaml:"secret"`
+	Secret string `mapstructure:"secret" yaml:"secret"`
 }
 
 type GithubWebhookPlugin struct {
@@ -41,10 +40,8 @@ func (p *GithubWebhookPlugin) Config() interface{} {
 	return p.config
 }
 
-func (p *GithubWebhookPlugin) ExecutePlugin(_ *core.ConsumerFile, w http.ResponseWriter, r *http.Request) bool {
-
+func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, w http.ResponseWriter, r *http.Request) bool {
 	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
-
 	if err != nil {
 		slog.Error("can verify payload",
 			slog.String("error", err.Error()))
@@ -56,11 +53,18 @@ func (p *GithubWebhookPlugin) ExecutePlugin(_ *core.ConsumerFile, w http.Respons
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
+
+	if c != nil {
+		*c = core.ConsumerFile{
+			Username: "github",
+		}
+	}
+
 	return true
 }
 
 func (*GithubWebhookPlugin) Type() string {
-	return RequestConvertPluginName
+	return GithubWebhookPluginName
 }
 
 //nolint:gochecknoinits
