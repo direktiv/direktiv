@@ -16,6 +16,15 @@ const workflow = `
     transform:
       result: Hello world!
 `
+const workflowEcho = `
+  direktiv_api: workflow/v1
+  description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+  - id: helloworld
+    type: noop
+    transform:
+      result: 'jq(.)'
+`
 
 const endpointWorkflow = `
   direktiv_api: endpoint/v1
@@ -29,6 +38,37 @@ const endpointWorkflow = `
   methods: 
     - GET
   path: /endpoint1`
+
+const endpointPOSTWorkflow = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-flow
+      configuration:
+          namespace: ` + testNamespace + `
+          flow: /workflow.yaml
+  methods: 
+    - POST
+  path: /endpoint1`
+
+const endpointComplexPOSTWorkflow = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    inbound:
+      - type: js-inbound
+        configuration:
+          script: b = JSON.parse(input["Body"]); b["message"] = "Changed"; input["Body"] = JSON.stringify(b);
+    target:
+      type: target-flow
+      configuration:
+          namespace: ` + testNamespace + `
+          flow: /workflow.yaml
+  methods: 
+    - POST
+  path: /endpoint1`
+
 
 const endpointWorkflowAllowed = `
   direktiv_api: endpoint/v1
@@ -147,9 +187,8 @@ describe("Test target workflow with errors", () => {
     const req = await request(common.config.getDirektivHost()).get(
         `/gw/endpoint3`
     );
-    console.log(req.text)
-        expect(req.statusCode).toEqual(500);
-        expect(req.text).toContain("error executing workflow: badinput: Missing or invalid value for required input.")
+    expect(req.statusCode).toEqual(500);
+    expect(req.text).toContain("error executing workflow: badinput: Missing or invalid value for required input.")
     });  
 
 });
@@ -243,3 +282,66 @@ describe("Test target workflow plugin", () => {
 
   
   });
+
+describe("Test POST method for target workflow plugin", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace);
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/workflow.yaml",
+    workflowEcho
+  );
+
+  common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint1.yaml",
+      endpointPOSTWorkflow
+  );
+
+  it(`should return a workflow run from magic namespace`, async () => {
+  const req = await request(common.config.getDirektivHost()).post(
+      `/gw/endpoint1`
+  ).send({"message":"Hi"})
+      expect(req.statusCode).toEqual(200);
+      expect(req.text).toEqual("{\"result\":{\"message\":\"Hi\"}}")
+  });
+});
+
+
+describe("Test Complex POST method for target workflow plugin", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace);
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/workflow.yaml",
+    workflowEcho
+  );
+
+  common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint1.yaml",
+      endpointComplexPOSTWorkflow
+  );
+
+  it(`should return a workflow run from magic namespace`, async () => {
+  const req = await request(common.config.getDirektivHost()).post(
+      `/gw/endpoint1`
+  ).send({"message":"Hi"})
+      expect(req.statusCode).toEqual(200);
+      expect(req.text).toEqual("{\"result\":{\"message\":\"Changed\"}}")
+  });
+});

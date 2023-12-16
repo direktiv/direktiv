@@ -160,7 +160,6 @@ func doDirektivRequest(requestType direktivRequestType, args map[string]string,
 	}
 
 	client := http.Client{}
-
 	req, err := http.NewRequestWithContext(r.Context(), method, url, body)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
