@@ -45,10 +45,8 @@ func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, w http.Respons
 	if err != nil {
 		slog.Error("can verify payload",
 			slog.String("error", err.Error()))
-		plugins.ReportError(w, http.StatusUnauthorized,
-			"signature", err)
 
-		return false
+		return true
 	}
 
 	// reset body with payload

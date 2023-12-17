@@ -246,12 +246,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for i := range endpointEntry.AuthPluginInstances {
 		authPlugin := endpointEntry.AuthPluginInstances[i]
 
-		// if auth plugins fail, they need to manage the error
-		// otherwise it will be a generic 401 message
-		access := authPlugin.ExecutePlugin(c, w, r)
-		if !access {
-			return
-		}
+		// all authplugins succeed, the setting of the consumer is the success message
+		authPlugin.ExecutePlugin(c, w, r)
 
 		// check and exit if consumer is set in plugin
 		if c.Username != "" {
