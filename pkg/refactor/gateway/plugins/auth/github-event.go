@@ -40,7 +40,7 @@ func (p *GithubWebhookPlugin) Config() interface{} {
 	return p.config
 }
 
-func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, w http.ResponseWriter, r *http.Request) bool {
+func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
 	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
 	if err != nil {
 		slog.Error("can verify payload",
