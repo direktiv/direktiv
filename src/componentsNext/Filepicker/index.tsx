@@ -21,18 +21,24 @@ import { useTranslation } from "react-i18next";
 const FilepickerMenu = ({
   namespace,
   defaultPath,
+  onChange,
 }: {
   namespace: string;
   defaultPath?: string;
+  onChange: (newValue: string) => void;
 }) => {
   const [path, setPath] = useState(defaultPath ? defaultPath : "/");
 
   const givenNamespace = namespace ? namespace : "";
 
-  const { data, isFetched } = useNodeContent({
+  const { data, isFetched, isError } = useNodeContent({
     path,
     givenNamespace,
   });
+
+  // ... Quick Fix - Error Handling needs to be inside useNodeContent, like for the namespace
+  if (isError) setPath("/");
+  // ...
   const { parent, isRoot, segments } = analyzePath(path);
 
   const [file, setFile] = useState("");
@@ -109,7 +115,12 @@ const FilepickerMenu = ({
                     {file.name}
                   </Button>
                 ) : (
-                  <FilepickerClose onClick={() => setFile(file.path)}>
+                  <FilepickerClose
+                    onClick={() => {
+                      setFile(file.path);
+                      onChange(file.path);
+                    }}
+                  >
                     {file.name}
                   </FilepickerClose>
                 )}
@@ -125,6 +136,7 @@ const FilepickerMenu = ({
         className="w-80"
         onChange={(e) => {
           setFile(e.target.value);
+          onChange(e.target.value);
         }}
       />
     </ButtonBar>
