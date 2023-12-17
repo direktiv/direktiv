@@ -40,7 +40,6 @@ type ServiceConfig struct {
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
 // lists of objects.
 func (c *ServiceConfig) GetID() string {
-
 	var envString string
 	for i := range c.Envs {
 		env := c.Envs[i]
