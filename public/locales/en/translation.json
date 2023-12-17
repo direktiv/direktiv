@@ -49,6 +49,7 @@
             "title": "this directory is empty",
             "createWorkflow": "Create Workflow",
             "createService": "Create Service",
+            "createEndpoint": "Create Endpoint",
             "createDirectory": "Create Directory"
           }
         },
@@ -78,12 +79,19 @@
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
         },
-        "header": {
-          "newBtn": "New",
-          "createLabel": "Create",
-          "newDirectory": "New Directory",
-          "newWorkflow": "New Workflow",
-          "newService": "New Service"
+        "newFileButton": {
+          "buttonText": "New",
+          "label": "Create",
+          "items": {
+            "directory": "New Directory",
+            "workflow": "New Workflow",
+            "service": "New Service",
+            "gateway": {
+              "label": "Gateway",
+              "route": "New Route",
+              "consumer": "New Consumer"
+            }
+          }
         },
         "newWorkflow": {
           "title": "Create a new workflow",
@@ -107,6 +115,22 @@
             "size": "Size",
             "cmd": "Cmd"
           }
+        },
+        "newRoute": {
+          "title": "Create a new route",
+          "nameLabel": "Name",
+          "namePlaceholder": "route-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
+        "newConsumer": {
+          "title": "Create a new consumer",
+          "nameLabel": "Name",
+          "namePlaceholder": "consumer-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
         },
         "workflow": {
           "revisions": {
@@ -273,6 +297,23 @@
         "editor": {
           "saveBtn": "Save",
           "helpTitle": "Example service file"
+        }
+      },
+      "endpoint": {
+        "goToRoutes": "Go to routes",
+        "editor": {
+          "form": {
+            "serialisationError": "There was an error serializing the form data"
+          },
+          "saveBtn": "Save",
+          "previewTitle": "File Preview"
+        }
+      },
+      "consumer": {
+        "goToConsumer": "Go to consumer",
+        "editor": {
+          "saveBtn": "Save",
+          "previewTitle": "File Preview"
         }
       }
     },
@@ -832,6 +873,52 @@
         "title": "Namespaces"
       }
     },
+    "gateway": {
+      "tabs": {
+        "routes": "Routes",
+        "consumers": "Consumers"
+      },
+      "routes": {
+        "columns": {
+          "filePath": "file path",
+          "methods": "methods",
+          "path": "path",
+          "plugins": "plugins",
+          "anonymous": "allow anonymous"
+        },
+        "row": {
+          "allowAnonymous": {
+            "yes": "yes",
+            "no": "no"
+          },
+          "errors": {
+            "count": "{{count}} errors",
+            "count_one": "{{count}} error"
+          },
+          "warnings": {
+            "count": "{{count}} warnings",
+            "count_one": "{{count}} warning"
+          },
+          "plugin": {
+            "countAll": "{{count}} plugins",
+            "countAll_one": "{{count}} plugin",
+            "countType": "{{count}} {{type}} plugins",
+            "countType_one": "{{count}} {{type}} plugin"
+          }
+        },
+        "empty": "No routes exist yet"
+      },
+      "consumer": {
+        "columns": {
+          "username": "username",
+          "password": "password",
+          "apikey": "apikey",
+          "tags": "tags",
+          "groups": "groups"
+        },
+        "empty": "No consumers exist yet"
+      }
+    },
     "jqPlayground": {
       "title": "jq Playground",
       "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
@@ -889,6 +976,9 @@
       "permissionsTokens": "Tokens",
       "permissionsGroups": "Groups",
       "settings": "Settings",
+      "gateway": "Gateway",
+      "gatewayRoutes": "Routes",
+      "gatewayConsumers": "Consumer",
       "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {

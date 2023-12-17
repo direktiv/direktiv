@@ -39,7 +39,7 @@ const ServiceHelp = () => {
             />
           </h3>
           <div className="flex h-[130px] w-[650px]">
-            <Card className="flex  grow p-4" noShadow>
+            <Card className="flex grow p-4" noShadow>
               <Editor
                 value={exampleService}
                 theme={theme ?? undefined}

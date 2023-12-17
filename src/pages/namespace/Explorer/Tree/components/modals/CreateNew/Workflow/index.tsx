@@ -20,7 +20,7 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addYamlFileExtension } from "../utils";
+import { addYamlFileExtension } from "../../../../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
