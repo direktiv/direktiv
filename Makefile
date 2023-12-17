@@ -1,20 +1,11 @@
-# mkfile_path_main := $(abspath $(lastword $(MAKEFILE_LIST)))
-# mkfile_dir_main := $(dir $(mkfile_path_main))
 docker_repo = $(if $(DOCKER_REPO),$(DOCKER_REPO),localhost:5000)
 docker_image = $(if $(DOCKER_IMAGE),$(DOCKER_IMAGE),frontend)
 docker_tag = $(if $(DOCKER_TAG),$(DOCKER_TAG),dev)
-enterprise = $(if $(DOCKER_TAG),$(DOCKER_TAG),FALSE)
-# GIT_HASH := $(shell git rev-parse --short HEAD)
-# GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
-# RV := ""
-# RELEASE_TAG = $(shell v='$${RV:+:}$${RV}'; echo "$${v%.*}")
-# FULL_VERSION := $(shell v='$${RV}$${RV:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")   
-
+enterprise = $(if $(ENTERPRISE),$(ENTERPRISE),FALSE)
+ui_base = $(if $(UI_BASE),$(UI_BASE),/)
 
 DOCKERFILE_REACT=Dockerfile.base
-DOCKERFILE_SERVER=Dockerfile.frontend
-
-# .SECONDARY:
+DOCKERFILE_PROD=Dockerfile.prod
 
 # Build the new server on docker
 .PHONY: server
@@ -31,13 +22,19 @@ update-containers:
 	docker push direktiv/ui
 	docker push direktiv/ui${RELEASE_TAG}
 
+.PHONY: server-prod
+server-prod:
+	echo ${RELEASE_TAG}
+	docker build . --tag ${docker_repo}/${docker_image}${RELEASE_TAG} -f ${DOCKERFILE_PROD}
+	docker push ${docker_repo}/${docker_image}${RELEASE_TAG}
+
 # this builds the ui files and copies it from the container to dist/
 # used for cross-compilation but can be used locally as well
 .PHONY: react
 react:
 	rm -Rf app.tar
 	rm -Rf dist/
-	docker build -t uibase --build-arg IS_ENTERPRISE=${enterprise}  -f ${DOCKERFILE_REACT} .
+	docker build -t uibase --build-arg IS_ENTERPRISE=${enterprise} --build-arg UI_BASE=${ui_base} --build-arg FULL_VERSION=${FULL_VERSION} -f ${DOCKERFILE_REACT} .
 	container_id=$$(docker create "uibase"); \
 	docker cp $$container_id:/app/dist - > app.tar; \
 	docker rm -v $$container_id
@@ -45,17 +42,17 @@ react:
 	rm -Rf app.tar
 
 # local container build
-.PHONY: local
-local:
-	docker build -t ${docker_repo}/${docker_image}:${docker_tag} -f ${DOCKERFILE_SERVER} .
-	docker tag ${docker_repo}/${docker_image}:${docker_tag} ${docker_repo}/${docker_image}
-	docker push ${docker_repo}/${docker_image}:${docker_tag}
-	docker push ${docker_repo}/${docker_image}
+# .PHONY: local
+# local:
+# 	docker build -t ${docker_repo}/${docker_image}:${docker_tag} -f ${DOCKERFILE_SERVER} .
+# 	docker tag ${docker_repo}/${docker_image}:${docker_tag} ${docker_repo}/${docker_image}
+# 	docker push ${docker_repo}/${docker_image}:${docker_tag}
+# 	docker push ${docker_repo}/${docker_image}
 
 .PHONY: cross
 cross:
 	@docker buildx create --use --name=direktiv --node=direktiv
-	docker buildx build --platform linux/amd64,linux/arm64 -f ${DOCKERFILE_SERVER} \
+	docker buildx build --platform linux/amd64,linux/arm64 -f ${DOCKERFILE_PROD} \
 		-t ${docker_repo}/${docker_image}:${docker_tag} --push .
 
 
