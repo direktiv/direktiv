@@ -1,15 +1,5 @@
-import { Breadcrumb, BreadcrumbRoot } from "~/design/Breadcrumbs";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, Fragment, useEffect, useState } from "react";
-import {
-  Filepicker,
-  FilepickerClose,
-  FilepickerHeading,
-  FilepickerList,
-  FilepickerListItem,
-  FilepickerSeparator,
-} from "~/design/Filepicker";
-import { FolderUp, Home } from "lucide-react";
 import {
   NoPermissions,
   Table,
@@ -18,19 +8,17 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import Delete from "./Delete";
 import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
 import FileViewer from "./FileViewer";
-import Input from "~/design/Input";
+import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
 import { NodeSchemaType } from "~/api/tree/schema/node";
 import Rename from "./Rename";
 import { analyzePath } from "~/util/router/utils";
-import { fileTypeToIcon } from "~/api/tree/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
@@ -45,7 +33,7 @@ const ExplorerPage: FC = () => {
     useNodeContent({
       path,
     });
-  const { parent, isRoot, segments } = analyzePath(path);
+  const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // we only want to use one dialog component for the whole list,
@@ -54,8 +42,6 @@ const ExplorerPage: FC = () => {
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
   const [previewNode, setPreviewNode] = useState<NodeSchemaType>();
-
-  const [file, setFile] = useState("");
 
   const { t } = useTranslation();
 
@@ -86,92 +72,6 @@ const ExplorerPage: FC = () => {
     <>
       <ExplorerHeader />
       <div className="m-5 p-5">
-        <Card className="p-3">
-          <ButtonBar>
-            <Filepicker buttonText="Browse Files">
-              <FilepickerHeading>
-                <BreadcrumbRoot>
-                  <Breadcrumb noArrow>
-                    <Link
-                      to={pages.explorer.createHref({
-                        namespace,
-                        path: "/",
-                      })}
-                      className="hover:underline"
-                    >
-                      <Home className="hover:underline" />
-                    </Link>
-                  </Breadcrumb>
-                  {segments.map((file) => (
-                    <Breadcrumb key={file.relative}>
-                      <Link
-                        to={pages.explorer.createHref({
-                          namespace,
-                          path: file.absolute,
-                        })}
-                        className="hover:underline"
-                      >
-                        {file.relative}
-                      </Link>
-                    </Breadcrumb>
-                  ))}
-                </BreadcrumbRoot>
-              </FilepickerHeading>
-              <FilepickerSeparator />
-              {!isRoot && (
-                <Fragment>
-                  <FilepickerListItem icon={FolderUp}>
-                    <Link
-                      to={pages.explorer.createHref({
-                        namespace,
-                        path: parent?.absolute,
-                      })}
-                      className="hover:underline"
-                    >
-                      ..
-                    </Link>
-                  </FilepickerListItem>
-                  <FilepickerSeparator />
-                </Fragment>
-              )}
-              <FilepickerList>
-                {results.map((file) => (
-                  <Fragment key={file.name}>
-                    <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                      {file.type === "directory" ? (
-                        <Link
-                          to={pages.explorer.createHref({
-                            namespace,
-                            path: file.path,
-                          })}
-                          className="hover:underline"
-                        >
-                          {file.name}
-                        </Link>
-                      ) : (
-                        <FilepickerClose onClick={() => setFile(file.path)}>
-                          {file.name}
-                        </FilepickerClose>
-                      )}
-                    </FilepickerListItem>
-                    <FilepickerSeparator />
-                  </Fragment>
-                ))}
-              </FilepickerList>
-            </Filepicker>
-            <Input
-              placeholder="No File selected"
-              value={file}
-              className="w-80"
-              id="add_key"
-              onChange={(e) => {
-                setFile(e.target.value);
-              }}
-            />
-          </ButtonBar>
-        </Card>
-        <br></br>
-        {/* No Changes below */}
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

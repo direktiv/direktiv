@@ -43,13 +43,18 @@ export const useNodeContent = ({
   path,
   revision,
   enabled = true,
+  givenNamespace,
 }: {
   path?: string;
   revision?: string;
   enabled?: boolean;
+  givenNamespace?: string;
 } = {}) => {
   const apiKey = useApiKey();
-  const namespace = useNamespace();
+
+  const defaultNamespace = useNamespace();
+
+  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
 
   if (!namespace) {
     throw new Error("namespace is undefined");
