@@ -15,7 +15,7 @@ type ReusableFunctionDefinition struct {
 	Image string                     `json:"image"          yaml:"image"`
 	Size  Size                       `json:"size,omitempty" yaml:"size,omitempty"`
 	Cmd   string                     `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
-	Envs  []core.EnvironmentVariable `json:"envs,omitempty"  yaml:"envs,omitempty"`
+	Envs  []core.EnvironmentVariable `json:"envs,omitempty" yaml:"envs,omitempty"`
 }
 
 // GetID returns the ID of a reusable function.
