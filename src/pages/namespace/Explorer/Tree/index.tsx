@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { FC, Fragment, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   NoPermissions,
   Table,
@@ -28,7 +28,6 @@ import { useTranslation } from "react-i18next";
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
-
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
     useNodeContent({
       path,
@@ -42,7 +41,6 @@ const ExplorerPage: FC = () => {
   const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
   const [renameNode, setRenameNode] = useState<NodeSchemaType>();
   const [previewNode, setPreviewNode] = useState<NodeSchemaType>();
-
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -71,7 +69,7 @@ const ExplorerPage: FC = () => {
   return (
     <>
       <ExplorerHeader />
-      <div className="m-5 p-5">
+      <div className="p-5">
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
