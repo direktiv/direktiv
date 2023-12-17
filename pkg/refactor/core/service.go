@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"sort"
 	"sync"
 )
 
@@ -37,19 +38,34 @@ type ServiceConfig struct {
 	Error *string `json:"error"`
 }
 
-// GetID calculates a unique id string based on identification fields. This id helps in comparison different
-// lists of objects.
-func (c *ServiceConfig) GetID() string {
+// GetAdditionalInfoHash calculates a unique id string based on additional environment variables set
+// in the config object.
+func (c *ServiceConfig) GetAdditionalInfoHash() string {
+	sort.Slice(c.Envs, func(i, j int) bool {
+		return c.Envs[i].Name < c.Envs[j].Name
+	})
+
 	var envString string
 	for i := range c.Envs {
 		env := c.Envs[i]
 		envString = envString + env.Name + env.Value
 	}
 	envSh := sha256.New().Sum([]byte(envString))
+	st := hex.EncodeToString(envSh)
 
-	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.FilePath,
-		hex.EncodeToString(envSh))
-	sh := sha256.Sum256([]byte(str + c.Typ))
+	// nolint:gomnd
+	if len(st) > 16 {
+		st = st[:16]
+	}
+
+	return st
+}
+
+// GetID calculates a unique id string based on identification fields. This id helps in comparison different
+// lists of objects.
+func (c *ServiceConfig) GetID() string {
+	str := fmt.Sprintf("%s-%s-%s", c.Namespace, c.Name, c.FilePath)
+	sh := sha256.Sum256([]byte(str + c.Typ + c.GetAdditionalInfoHash()))
 
 	whitelist := regexp.MustCompile("[^a-zA-Z0-9]+")
 	str = whitelist.ReplaceAllString(str, "-")
@@ -66,7 +82,7 @@ func (c *ServiceConfig) GetID() string {
 // GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
 // different lists of objects.
 func (c *ServiceConfig) GetValueHash() string {
-	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
+	str := fmt.Sprintf("%s-%s-%s-%d-%s", c.Image, c.CMD, c.Size, c.Scale, c.GetAdditionalInfoHash())
 	sh := sha256.Sum256([]byte(str))
 
 	return hex.EncodeToString(sh[:10])
