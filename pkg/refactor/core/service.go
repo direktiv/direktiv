@@ -40,7 +40,16 @@ type ServiceConfig struct {
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
 // lists of objects.
 func (c *ServiceConfig) GetID() string {
-	str := fmt.Sprintf("%s-%s-%s", c.Namespace, c.Name, c.FilePath)
+
+	var envString string
+	for i := range c.Envs {
+		env := c.Envs[i]
+		envString = envString + env.Name + env.Value
+	}
+	envSh := sha256.New().Sum([]byte(envString))
+
+	str := fmt.Sprintf("%s-%s-%s-%s", c.Namespace, c.Name, c.FilePath,
+		hex.EncodeToString(envSh))
 	sh := sha256.Sum256([]byte(str + c.Typ))
 
 	whitelist := regexp.MustCompile("[^a-zA-Z0-9]+")

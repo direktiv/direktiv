@@ -25,3 +25,10 @@ registryID:
   schema:
     type: string
   required: true
+
+route-path:
+  name: route-path
+  in: path
+  schema:
+    type: string
+  required: true

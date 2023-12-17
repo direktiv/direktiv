@@ -1,0 +1,14 @@
+get:
+  tags:
+    - gateway
+  summary: Get individual route
+  parameters:
+    - $ref: '../parameters.yaml#/namespace'
+    - $ref: '../parameters.yaml#/route-path'
+  responses:
+    "200":
+      description: Get route information for individual path
+      content:
+        application/json:
+          schema:
+            $ref: '../objects.yaml#/route'

@@ -39,6 +39,39 @@ methods:
   - GET
 path: /endpoint2`
 
+
+const endpoint3 = `
+direktiv_api: endpoint/v1
+plugins:
+  auth:
+  - type: key-auth
+    configuration:
+        key_name: secret
+  target:
+    type: instant-response
+    configuration:
+        status_code: 201
+        status_message: "TEST1"
+methods: 
+  - GET
+path: /endpoint3/longer/path`
+
+const endpoint4 = `
+direktiv_api: endpoint/v1
+plugins:
+  auth:
+  - type: key-auth
+    configuration:
+        key_name: secret
+  target:
+    type: instant-response
+    configuration:
+        status_code: 201
+        status_message: "TEST1"
+methods: 
+  - GET
+path: /endpoint4/longer/path/{id}`
+
 const consumer1 = `
 direktiv_api: "consumer/v1"
 username: consumer1
@@ -137,6 +170,125 @@ describe("Test gateway endpoints on create", () => {
 
 
 });
+
+describe("Test gateway get single endpoint", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint1.yaml",
+      endpoint1
+    );
+
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint2.yaml",
+      endpoint2
+    );
+
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint3.yaml",
+      endpoint3
+    );
+
+
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint4.yaml",
+      endpoint4
+    );
+
+
+  retry(`should list simple endpoint`, 10, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes/endpoint1`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data).toEqual(
+          { "allow_anonymous": false, 
+            "errors": [], 
+            "file_path": "/endpoint1.yaml", 
+            "methods": ["GET"], 
+            "path": "/endpoint1", 
+            "server_path": "/gw/endpoint1",
+            "plugins": {
+              "auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
+              "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, 
+              "type": "instant-response"}
+            }, 
+            "timeout": 0, 
+            "warnings": []
+          }
+    );
+  });
+
+
+  retry(`should list long path endpoint`, 10, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes/endpoint3/longer/path`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data).toEqual(
+          { "allow_anonymous": false, 
+            "errors": [], 
+            "file_path": "/endpoint3.yaml", 
+            "methods": ["GET"], 
+            "path": "/endpoint3/longer/path", 
+            "server_path": "/gw/endpoint3/longer/path",
+            "plugins": {
+              "auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
+              "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, 
+              "type": "instant-response"}
+            }, 
+            "timeout": 0, 
+            "warnings": []
+          }
+    );
+  });
+
+  retry(`should list long path endpoint with var`, 10, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes/endpoint4/longer/path/{id}`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data).toEqual(
+          { "allow_anonymous": false, 
+            "errors": [], 
+            "file_path": "/endpoint4.yaml", 
+            "methods": ["GET"], 
+            "path": "/endpoint4/longer/path/{id}", 
+            "server_path": "/gw/endpoint4/longer/path/{id}",
+            "plugins": {
+              "auth": [{"configuration": {"key_name": "secret"}, "type": "key-auth"}], 
+              "target": {"configuration": {"status_code": 201, "status_message": "TEST1"}, 
+              "type": "instant-response"}
+            }, 
+            "timeout": 0, 
+            "warnings": []
+          }
+    );
+  });
+
+  retry(`should fail not found`, 10, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes/doesnotexist`
+    );
+    expect(listRes.statusCode).toEqual(404);
+  });
+
+});
+
 
 describe("Test gateway endpoints crud operations", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
@@ -331,3 +483,5 @@ describe("Test availability of gateway endpoints", () => {
   });
 
 });
+
+

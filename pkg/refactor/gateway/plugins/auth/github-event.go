@@ -45,7 +45,7 @@ func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, w http.Respons
 	if err != nil {
 		slog.Error("can verify payload",
 			slog.String("error", err.Error()))
-		plugins.ReportError(w, http.StatusForbidden,
+		plugins.ReportError(w, http.StatusUnauthorized,
 			"signature", err)
 
 		return false
@@ -71,6 +71,6 @@ func (*GithubWebhookPlugin) Type() string {
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		GithubWebhookPluginName,
-		plugins.InboundPluginType,
+		plugins.AuthPluginType,
 		ConfigureGithubWebhook))
 }

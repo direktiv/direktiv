@@ -86,6 +86,8 @@ x-tagGroups:
 components:
   parameters:
     $ref: "./parameters.yaml"
+  schemas:
+    $ref: "./objects.yaml"
 paths:
     $ref: "./paths/paths.yaml"
 
