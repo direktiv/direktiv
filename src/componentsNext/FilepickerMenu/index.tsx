@@ -25,7 +25,7 @@ const FilepickerMenu = ({
 }: {
   namespace: string;
   defaultPath?: string;
-  onChange: (newValue: string) => void;
+  onChange?: (newValue: string) => void;
 }) => {
   const [path, setPath] = useState(defaultPath ? defaultPath : "/");
 
@@ -116,7 +116,7 @@ const FilepickerMenu = ({
                   <FilepickerClose
                     onClick={() => {
                       setFile(file.path);
-                      onChange(file.path);
+                      onChange?.(file.path);
                     }}
                   >
                     {file.name}
@@ -134,7 +134,7 @@ const FilepickerMenu = ({
         className="w-80"
         onChange={(e) => {
           setFile(e.target.value);
-          onChange(e.target.value);
+          onChange?.(e.target.value);
         }}
       />
     </ButtonBar>
