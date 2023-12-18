@@ -14,7 +14,8 @@ scale: 1 # number of standby service replicas (optional)
 size: "medium" # size of the image small, medium or large (optional)
 cmd: "redis-server" # container's cmd string (optional)
 envs: # list of environment variables (optional)
-  - MY_ENV_VAR: "value"
+  - name: "MY_ENV_VAR"
+    value: "env-var-value"
 `;
 
 const ServiceHelp = () => {
@@ -41,7 +42,7 @@ const ServiceHelp = () => {
               }}
             />
           </h3>
-          <div className="flex h-[200px] w-[750px]">
+          <div className="flex h-[220px] w-[750px]">
             <Card className="flex  grow p-4" noShadow>
               <Editor
                 value={exampleService}
