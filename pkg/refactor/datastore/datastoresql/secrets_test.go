@@ -16,25 +16,25 @@ func Test_Secrets(t *testing.T) {
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	err = ds.Secrets().Set(context.Background(), &core.Secret{
-		Name: "test",
+		Name:      "test",
 		Namespace: "ns",
-		Data: []byte("value"),
+		Data:      []byte("value"),
 	})
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
-	res, err := ds.Secrets().Get(context.Background(),"ns", "test")
+	res, err := ds.Secrets().Get(context.Background(), "ns", "test")
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
 	if string(res.Data) != "value" {
 		t.Errorf("value does not match, was %v should %v", string(res.Data), "value")
 	}
-	
+
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
-	l, err := ds.Secrets().GetAll(context.Background(),"ns")
+	l, err := ds.Secrets().GetAll(context.Background(), "ns")
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
@@ -43,5 +43,4 @@ func Test_Secrets(t *testing.T) {
 			t.Errorf("value does not match, was %v should %v", string(s.Data), "value")
 		}
 	}
-
 }

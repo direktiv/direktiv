@@ -29,5 +29,4 @@ func TestConfigNSVarPlugin(t *testing.T) {
 	config = &target.NamespaceVarConfig{}
 	_, err = p.Configure(config, "somerandom")
 	assert.Error(t, err)
-
 }

@@ -353,4 +353,7 @@ func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
 	if len(sv.Envs) == 0 {
 		sv.Envs = make([]core.EnvironmentVariable, 0)
 	}
+	if len(sv.PostStartExec) == 0 {
+		sv.PostStartExec = make([]string, 0)
+	}
 }

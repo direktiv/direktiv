@@ -55,7 +55,7 @@ states:
                     size: 'small',
                     scale: 0,
                     error: null,
-                    id: 'test-services-image-magick-s2-yaml-e31981791f',
+                    id: 'test-services-image-magick-s2-yaml-864bf960ad',
                 }
             ]
         })
