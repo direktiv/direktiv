@@ -14,6 +14,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<TargetFlowFormSchemaType["configuration"]>;
 
+const predfinedConfig: OptionalConfig = {
+  async: false,
+};
+
 type FormProps = {
   defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetFlowFormSchemaType) => void;
@@ -31,6 +35,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
     defaultValues: {
       type: "target-flow",
       configuration: {
+        ...predfinedConfig,
         ...defaultConfig,
       },
     },
