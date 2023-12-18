@@ -51,7 +51,6 @@ func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.Respons
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
-
 	if c != nil {
 		*c = core.ConsumerFile{
 			Username: "github",

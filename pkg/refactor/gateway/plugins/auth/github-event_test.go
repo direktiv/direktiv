@@ -33,10 +33,23 @@ func TestGithubEvent(t *testing.T) {
 func TestGithubEventValidation(t *testing.T) {
 
 	c := &core.ConsumerFile{}
+	execute(auth.GithubWebhookPluginConfig{Secret: "bad secret"}, c, "Hello, World!")
 
-	assert.False(t, execute(auth.GithubWebhookPluginConfig{Secret: "bad secret"}, c, "Hello, World!"))
-	assert.False(t, execute(auth.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, c, "Hello, World!BadBody"))
-	assert.True(t, execute(auth.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, c, "Hello, World!"))
+	// consumer not set on error
+	if c.Username != "" {
+		t.Fail()
+	}
+
+	execute(auth.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, c, "Hello, World!BadBody")
+	if c.Username != "" {
+		t.Fail()
+	}
+
+	// successful, username set
+	execute(auth.GithubWebhookPluginConfig{Secret: "It's a Secret to Everybody"}, c, "Hello, World!")
+	if c.Username == "" {
+		t.Fail()
+	}
 }
 
 func TestGithubPluginPreservesBody(t *testing.T) {
