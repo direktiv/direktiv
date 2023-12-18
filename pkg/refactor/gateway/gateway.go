@@ -392,38 +392,18 @@ func (ep *gatewayManager) GetConsumers(namespace string) ([]*core.ConsumerFile, 
 	return g.ConsumerList.GetConsumers(), nil
 }
 
-func (ep *gatewayManager) GetRoutes(namespace string) ([]*core.Endpoint, error) {
+func (ep *gatewayManager) GetRoutes(namespace, filteredPath string) ([]*core.Endpoint, error) {
 	g, ok := ep.nsGateways[namespace]
 	if !ok {
 		return nil, fmt.Errorf("no routes for namespace %s", namespace)
 	}
 
-	return g.EndpointList.GetEndpoints(), nil
-}
-
-func (ep *gatewayManager) GetRoute(namespace, route string) (*core.Endpoint, error) {
-	g, ok := ep.nsGateways[namespace]
-	if !ok {
-		return nil, fmt.Errorf("no routes for namespace %s", namespace)
-	}
-
-	endpoints := g.EndpointList.GetEndpoints()
-
-	var endpoint *core.Endpoint
-	for i := range endpoints {
-		endpoint = endpoints[i]
-
-		// match route from :1, means comparing without leading slash
-		if endpoint.Path[1:] == route {
-			break
+	result := make([]*core.Endpoint, 0)
+	for _, v := range g.EndpointList.GetEndpoints() {
+		if v.Path == filteredPath || filteredPath == "" {
+			result = append(result, v)
 		}
-		endpoint = nil
 	}
 
-	// endpoint not found
-	if endpoint == nil {
-		return nil, fmt.Errorf("route not found")
-	}
-
-	return endpoint, nil
+	return result, nil
 }

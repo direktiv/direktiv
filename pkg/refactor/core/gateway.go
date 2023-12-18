@@ -18,8 +18,7 @@ type GatewayManager interface {
 	UpdateAll()
 
 	GetConsumers(namespace string) ([]*ConsumerFile, error)
-	GetRoutes(namespace string) ([]*Endpoint, error)
-	GetRoute(namespace, route string) (*Endpoint, error)
+	GetRoutes(namespace string, filteredPath string) ([]*Endpoint, error)
 }
 
 type EndpointFile struct {

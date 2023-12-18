@@ -84,21 +84,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 				writeJSON(w, data)
 			})
 			r.Get("/namespaces/{namespace}/gateway/routes", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GatewayManager.GetRoutes(chi.URLParam(r, "namespace"))
+				data, err := app.GatewayManager.GetRoutes(chi.URLParam(r, "namespace"), chi.URLParam(r, "path"))
 				if err != nil {
 					writeInternalError(w, err)
-
-					return
-				}
-				writeJSON(w, data)
-			})
-			r.Get("/namespaces/{namespace}/gateway/routes/*", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GatewayManager.GetRoute(chi.URLParam(r, "namespace"), chi.URLParam(r, "*"))
-				if err != nil {
-					writeError(w, &Error{
-						Code:    "resource_not_found",
-						Message: err.Error(),
-					})
 
 					return
 				}
