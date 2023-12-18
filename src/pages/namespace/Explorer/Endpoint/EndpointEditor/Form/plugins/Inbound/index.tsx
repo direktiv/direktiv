@@ -20,10 +20,21 @@ import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { RequestConvertForm } from "./RequestConvertForm";
+import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 
 type InboundPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
+};
+
+const readRequestConvertConfig = (
+  fields: InboundPluginFormSchemaType[] | undefined,
+  index: number | undefined
+): RequestConvertFormSchemaType["configuration"] | undefined => {
+  const plugin = index ? fields?.[index] : undefined;
+  return plugin?.type === inboundPluginTypes.requestConvert
+    ? plugin.configuration
+    : undefined;
 };
 
 export const InboundPluginForm: FC<InboundPluginFormProps> = ({
@@ -40,35 +51,18 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
     name: "plugins.inbound",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [edit, setEdit] = useState<number>();
+  const [editIndex, setEditIndex] = useState<number>();
 
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
   const pluginsCount = fields.length;
 
-  const readConfig = (index?: number) => {
-    if (index === undefined) return undefined;
-    const plugin = fields[index];
-
-    if (!plugin) return undefined;
-
-    if (plugin.type === inboundPluginTypes.requestConvert) {
-      return plugin.configuration;
-    }
-
-    if (plugin.type === inboundPluginTypes.acl) {
-      return plugin.configuration;
-    }
-
-    return undefined;
-  };
-
   return (
     <Dialog
       open={dialogOpen}
       onOpenChange={(isOpen) => {
-        if (isOpen === false) setEdit(undefined);
+        if (isOpen === false) setEditIndex(undefined);
         setDialogOpen(isOpen);
       }}
     >
@@ -100,7 +94,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
             onClick={() => {
               setSelectedPlugin(type);
               setDialogOpen(true);
-              setEdit(index);
+              setEditIndex(index);
             }}
           >
             <Edit />
@@ -110,7 +104,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {edit === undefined ? "add" : "edit"} Inbound Plugin
+            {editIndex === undefined ? "add" : "edit"} Inbound Plugin
           </DialogTitle>
         </DialogHeader>
         <div className="my-3 flex flex-col gap-y-5">
@@ -140,15 +134,15 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           </div>
           {selectedPlugin === inboundPluginTypes.requestConvert && (
             <RequestConvertForm
+              defaultConfig={readRequestConvertConfig(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
-                console.log("🚀", edit);
-                if (edit === undefined) {
+                if (editIndex === undefined) {
                   addPlugin(configuration);
                 } else {
-                  editPlugin(edit, configuration);
+                  editPlugin(editIndex, configuration);
                 }
-                setEdit(undefined);
+                setEditIndex(undefined);
               }}
             />
           )}
