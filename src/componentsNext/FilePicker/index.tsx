@@ -18,7 +18,7 @@ import { fileTypeToIcon } from "~/api/tree/utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
-const FilepickerMenu = ({
+const FilePicker = ({
   namespace,
   defaultPath,
   onChange,
@@ -163,4 +163,4 @@ const FilepickerMenu = ({
   );
 };
 
-export default FilepickerMenu;
+export default FilePicker;
