@@ -19,6 +19,22 @@ const ConditionSchema = z.object({
 });
 
 /**
+ * example
+  {
+    "name": "ENV_VARIABLE_NAME",
+    "value": "value"
+  }
+ */
+const EnvironementVariableSchema = z.object({
+  name: z.string(),
+  value: z.string(),
+});
+
+export type EnvironementVariableSchemaType = z.infer<
+  typeof EnvironementVariableSchema
+>;
+
+/**
   * example
   {
     "id": "obj949dad869e2ef05dbf77obj",
@@ -28,6 +44,7 @@ const ConditionSchema = z.object({
     "filePath": "/service-test.yaml",
     "image": "redis",
     "cmd": "redis-server",
+    "envs": [...],
     "size": "",
     "scale": 0,
     "error": null,
@@ -42,6 +59,7 @@ const ServiceSchema = z.object({
   filePath: z.string(),
   image: z.string(),
   cmd: z.string(),
+  envs: z.array(EnvironementVariableSchema).nullable(),
   size: z.string(),
   scale: z.number(),
   error: z.string().nullable(),
