@@ -229,6 +229,6 @@ func TestGetAllEndpoints(t *testing.T) {
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
 
-	items, _ := gm.GetRoutes(core.MagicalGatewayNamespace)
+	items, _ := gm.GetRoutes(core.MagicalGatewayNamespace, "")
 	assert.Equal(t, "/test", items[0].Path)
 }
