@@ -3,7 +3,6 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "./schema";
-import EndpointPreview from "../EndpointPreview";
 import { FC } from "react";
 import { Form } from "./Form";
 import FormErrors from "~/componentsNext/FormErrors";
@@ -63,9 +62,9 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
             onSubmit={handleSubmit(save)}
             className="relative flex grow flex-col space-y-4 p-5"
           >
-            <Card className="flex grow flex-col p-4">
-              <div className="grow">
-                <div className="grid grow grid-cols-2 gap-3">
+            <div className="flex grow">
+              <div className="grid grow grid-cols-2 gap-5">
+                <Card className="p-5">
                   {!endpointConfig ? (
                     <div>
                       <Alert variant="error">
@@ -85,46 +84,31 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                       {formMarkup}
                     </div>
                   )}
-                  <div className="grid h-full grid-rows-2 gap-3">
-                    <div>
-                      latest endpoint file
-                      <Card className="h-[400px] p-5">
-                        <Editor
-                          value={endpointFileContent}
-                          theme={theme ?? undefined}
-                          options={{
-                            readOnly: true,
-                          }}
-                        />
-                      </Card>
-                    </div>
-
-                    <div>
-                      preview endpoint file (unvalidated)
-                      <Card className="h-[400px] p-5">
-                        <Editor
-                          value={preview}
-                          theme={theme ?? undefined}
-                          options={{
-                            readOnly: true,
-                          }}
-                        />
-                      </Card>
-                    </div>
-                  </div>
-                </div>
+                </Card>
+                <Card className="flex grow p-4">
+                  <Editor
+                    value={preview}
+                    theme={theme ?? undefined}
+                    options={{
+                      readOnly: true,
+                    }}
+                  />
+                </Card>
               </div>
-              <div className="flex justify-end gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8">
-                {isDirty && (
+            </div>
+            <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+              {isDirty && (
+                <div className="text-sm text-gray-8 dark:text-gray-dark-8">
                   <span className="text-center">
                     {t("pages.explorer.workflow.editor.unsavedNote")}
                   </span>
-                )}
-              </div>
-            </Card>
-            <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-              <EndpointPreview fileContent={stringify(endpointConfig)} />
-              <Button variant="outline" disabled={isLoading} type="submit">
+                </div>
+              )}
+              <Button
+                variant={isDirty ? "primary" : "outline"}
+                disabled={isLoading}
+                type="submit"
+              >
                 <Save />
                 {t("pages.explorer.endpoint.editor.saveBtn")}
               </Button>
