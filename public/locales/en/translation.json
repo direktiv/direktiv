@@ -105,7 +105,8 @@
             "image": "Image",
             "scale": "Scale",
             "size": "Size",
-            "cmd": "Cmd"
+            "cmd": "Cmd",
+            "envs": "Envs"
           }
         },
         "workflow": {
