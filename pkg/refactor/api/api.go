@@ -84,7 +84,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 				writeJSON(w, data)
 			})
 			r.Get("/namespaces/{namespace}/gateway/routes", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GatewayManager.GetRoutes(chi.URLParam(r, "namespace"), chi.URLParam(r, "path"))
+				data, err := app.GatewayManager.GetRoutes(chi.URLParam(r, "namespace"), r.URL.Query().Get("path"))
 				if err != nil {
 					writeInternalError(w, err)
 
