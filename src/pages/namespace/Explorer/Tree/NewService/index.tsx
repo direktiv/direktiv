@@ -9,6 +9,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import {
   addServiceHeader,
   defaultServiceYaml,
+  sanitizeServiceJsonObj,
   serviceHeader,
   useServiceFormSchema,
 } from "./config";
@@ -152,7 +153,9 @@ const NewService = ({
                       if (e.formData) {
                         const formDataWithHeader = addServiceHeader(e.formData);
                         setServiceConfigJson(formDataWithHeader);
-                        setValue("fileContent", stringify(formDataWithHeader));
+                        const sanitizedJson =
+                          sanitizeServiceJsonObj(formDataWithHeader);
+                        setValue("fileContent", stringify(sanitizedJson));
                       }
                     }}
                     schema={serviceFormSchema}

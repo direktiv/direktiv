@@ -55,4 +55,22 @@ export const addServiceHeader = (serviceJSON: object) => ({
   ...serviceJSON,
 });
 
+export const sanitizeServiceJsonObj = (
+  serviceJSON: Record<string, unknown>
+) => {
+  let objectOverwrite = undefined;
+  // when user did not specify any envs, don't store it as an empty array
+  if (
+    serviceJSON?.envs &&
+    Array.isArray(serviceJSON?.envs) &&
+    serviceJSON?.envs.length === 0
+  ) {
+    objectOverwrite = {
+      envs: undefined,
+    };
+  }
+
+  return { ...serviceJSON, ...objectOverwrite };
+};
+
 export const defaultServiceYaml = stringify(serviceHeader);
