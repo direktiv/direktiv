@@ -5,8 +5,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/design/Dialog";
+import { Edit, Plus, Trash } from "lucide-react";
 import { FC, useState } from "react";
-import { Plus, Trash } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -33,23 +33,35 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   const {
     append: addPlugin,
     remove: deletePlugin,
+    update: editPlugin,
     fields,
   } = useFieldArray({
     control,
     name: "plugins.inbound",
   });
-  // const values = useWatch({ control });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [edit, setEdit] = useState<number>();
 
-  // TODO: replace all target occurrences with inbound
-  // const currentType = values.plugins?.target?.type; TODO:
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
   const pluginsCount = fields.length;
 
+  const defaultTest = fields.find((x, index) => {
+    if (x.type === inboundPluginTypes.requestConvert && index === edit) {
+      return true;
+    }
+    return false;
+  });
+
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <Dialog
+      open={dialogOpen}
+      onOpenChange={(isOpen) => {
+        if (isOpen === false) setEdit(undefined);
+        setDialogOpen(isOpen);
+      }}
+    >
       <div className="flex items-center gap-3">
         {pluginsCount} Inbound plugins
         <DialogTrigger asChild>
@@ -58,7 +70,6 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           </Button>
         </DialogTrigger>
       </div>
-
       {fields.map(({ id, type }, index) => (
         <div key={id} className="flex gap-2">
           {type}
@@ -72,12 +83,26 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           >
             <Trash />
           </Button>
+          <Button
+            variant="outline"
+            icon
+            size="sm"
+            onClick={() => {
+              setSelectedPlugin(type);
+              setDialogOpen(true);
+              setEdit(index);
+            }}
+          >
+            <Edit />
+          </Button>
         </div>
       ))}
-
+      EDIT {edit}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add Inbound Plugin</DialogTitle>
+          <DialogTitle>
+            {edit === undefined ? "add" : "edit"} Inbound Plugin
+          </DialogTitle>
         </DialogHeader>
         <div className="my-3 flex flex-col gap-y-5">
           <div className="flex flex-col gap-y-5">
@@ -104,12 +129,18 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
               </Select>
             </fieldset>
           </div>
-
           {selectedPlugin === inboundPluginTypes.requestConvert && (
             <RequestConvertForm
+              defaultConfig={defaultTest?.configuration}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
-                addPlugin(configuration);
+                console.log("🚀", edit);
+                if (edit === undefined) {
+                  addPlugin(configuration);
+                } else {
+                  editPlugin(edit, configuration);
+                }
+                setEdit(undefined);
               }}
             />
           )}
