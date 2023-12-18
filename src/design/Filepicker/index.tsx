@@ -82,7 +82,7 @@ const FilepickerListItem: FC<FilepickerProps> = ({
 type FilepickerPropsType = PropsWithChildren & {
   className?: string;
   buttonText: string;
-  onClick: React.MouseEventHandler;
+  onClick?: React.MouseEventHandler;
 };
 
 const Filepicker: FC<FilepickerPropsType> = ({

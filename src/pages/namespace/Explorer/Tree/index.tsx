@@ -11,6 +11,7 @@ import {
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
+import FilePicker from "~/componentsNext/FilePicker";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
@@ -70,6 +71,7 @@ const ExplorerPage: FC = () => {
     <>
       <ExplorerHeader />
       <div className="p-5">
+        <FilePicker></FilePicker>
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
