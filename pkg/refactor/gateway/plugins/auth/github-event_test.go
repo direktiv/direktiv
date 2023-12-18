@@ -14,7 +14,6 @@ import (
 )
 
 func TestGithubEvent(t *testing.T) {
-
 	c := &core.ConsumerFile{}
 
 	config := auth.GithubWebhookPluginConfig{
@@ -31,7 +30,6 @@ func TestGithubEvent(t *testing.T) {
 }
 
 func TestGithubEventValidation(t *testing.T) {
-
 	c := &core.ConsumerFile{}
 	execute(auth.GithubWebhookPluginConfig{Secret: "bad secret"}, c, "Hello, World!")
 

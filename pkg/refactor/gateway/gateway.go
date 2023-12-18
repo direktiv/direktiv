@@ -196,7 +196,6 @@ func (dr *DummyWriter) WriteHeader(statusCode int) {
 }
 
 func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
