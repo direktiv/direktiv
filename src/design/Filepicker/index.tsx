@@ -2,6 +2,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as React from "react";
 
 import { FC, PropsWithChildren } from "react";
+import { Loader2, LucideIcon } from "lucide-react";
 import {
   Popover,
   PopoverClose,
@@ -10,7 +11,6 @@ import {
 } from "~/design/Popover";
 
 import Button from "~/design/Button";
-import { LucideIcon } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 import { twMergeClsx } from "~/util/helpers";
 
@@ -35,6 +35,14 @@ FilepickerSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   <div className="px-2 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
     {children}
+  </div>
+);
+
+const FilepickerLoading: FC<PropsWithChildren> = ({ children }) => (
+  <div className="px-2 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
+    <div className="w-max">
+      <Loader2 className="h-4 w-4 animate-spin text-gray-11 dark:text-gray-dark-11" />
+    </div>
   </div>
 );
 
@@ -82,17 +90,19 @@ const FilepickerListItem: FC<FilepickerProps> = ({
 type FilepickerPropsType = PropsWithChildren & {
   className?: string;
   buttonText: string;
+  onClick: React.MouseEventHandler;
 };
 
 const Filepicker: FC<FilepickerPropsType> = ({
   className,
   children,
   buttonText,
+  onClick,
 }) => (
   <div className={twMergeClsx("", className)}>
     <Popover>
       <PopoverTrigger asChild>
-        <Button data-testid="filepicker-button">
+        <Button onClick={onClick} data-testid="filepicker-button">
           <div className="relative">{buttonText}</div>
         </Button>
       </PopoverTrigger>
@@ -112,5 +122,6 @@ export {
   FilepickerHeading,
   FilepickerList,
   FilepickerListItem,
+  FilepickerLoading,
   FilepickerSeparator,
 };
