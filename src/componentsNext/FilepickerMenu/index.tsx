@@ -42,122 +42,124 @@ const FilepickerMenu = ({
   const results = data?.children?.results ?? [];
 
   return (
-    <div>
-      <ButtonBar>
-        <Filepicker
-          buttonText={t("components.filepicker.buttonText")}
-          onClick={() => {
-            setPath(inputValue);
-          }}
-        >
-          <FilepickerHeading>
-            <BreadcrumbRoot className="py-3">
-              <Breadcrumb
-                noArrow
+    <ButtonBar>
+      <Filepicker
+        buttonText={t("components.filepicker.buttonText")}
+        onClick={() => {
+          setPath(inputValue);
+        }}
+      >
+        <FilepickerHeading>
+          <BreadcrumbRoot className="py-3">
+            <Breadcrumb
+              noArrow
+              onClick={() => {
+                setPath("/");
+              }}
+              className="h-5 hover:underline"
+            >
+              <Home />
+            </Breadcrumb>
+            {segments.map((file) => {
+              const isEmpty = file.absolute === "";
+
+              if (isEmpty) return null;
+              return (
+                <Breadcrumb
+                  key={file.relative}
+                  onClick={() => {
+                    setPath(file.absolute);
+                  }}
+                  className="h-5 hover:underline"
+                >
+                  {file.relative}
+                </Breadcrumb>
+              );
+            })}
+          </BreadcrumbRoot>
+        </FilepickerHeading>
+        <FilepickerSeparator />
+        {!data && (
+          <div>
+            <FilepickerHeading>
+              <div className="py-3">
+                {t("components.filepicker.error.title")}
+              </div>
+            </FilepickerHeading>
+            <FilepickerList>
+              <Button
                 onClick={() => {
                   setPath("/");
                 }}
-                className="h-5 hover:underline"
+                variant="link"
+                className="h-auto w-full p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
               >
-                <Home />
-              </Breadcrumb>
-              {segments.map((file) => {
-                const isEmpty = file.absolute === "";
-
-                if (isEmpty) return null;
-                return (
-                  <Breadcrumb
-                    key={file.relative}
-                    onClick={() => {
-                      setPath(file.absolute);
-                    }}
-                    className="h-5 hover:underline"
-                  >
-                    {file.relative}
-                  </Breadcrumb>
-                );
-              })}
-            </BreadcrumbRoot>
-          </FilepickerHeading>
-          <FilepickerSeparator />
-          {!data && (
-            <div>
-              <FilepickerHeading>
-                <div className="py-3">The provided Path was not found.</div>
-              </FilepickerHeading>
-              <FilepickerList>
                 <FilepickerListItem icon={ArrowLeftToLineIcon}>
-                  <Button
-                    onClick={() => {
-                      setPath("/");
-                    }}
-                    variant="link"
-                    className="h-auto p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                  >
-                    Go back to root directory
-                  </Button>
+                  {t("components.filepicker.error.linkText")}
                 </FilepickerListItem>
-              </FilepickerList>
-            </div>
-          )}
-          {!isRoot && data && (
-            <Fragment>
-              <FilepickerListItem icon={FolderUp}>
+              </Button>
+            </FilepickerList>
+          </div>
+        )}
+        {!isRoot && data && (
+          <Fragment>
+            <Button
+              variant="link"
+              onClick={() => {
+                parent ? setPath(parent.absolute) : null;
+              }}
+              className="h-auto w-full p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent "
+            >
+              <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
+            </Button>
+            <FilepickerSeparator />
+          </Fragment>
+        )}
+        <FilepickerList>
+          {results.map((file) => (
+            <Fragment key={file.name}>
+              {file.type === "directory" ? (
                 <Button
                   variant="link"
                   onClick={() => {
-                    parent ? setPath(parent.absolute) : null;
+                    setPath(file.path);
                   }}
-                  className="h-auto p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent "
+                  className="h-auto w-full p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
                 >
-                  ..
+                  <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+                    {file.name}
+                  </FilepickerListItem>
                 </Button>
-              </FilepickerListItem>
+              ) : (
+                <FilepickerClose
+                  className="w-full hover:underline "
+                  onClick={() => {
+                    setPath(file.parent);
+                    setInputValue(file.path);
+                    onChange?.(file.path);
+                  }}
+                >
+                  <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+                    {file.name}
+                  </FilepickerListItem>
+                </FilepickerClose>
+              )}
+
               <FilepickerSeparator />
             </Fragment>
-          )}
-          <FilepickerList>
-            {results.map((file) => (
-              <Fragment key={file.name}>
-                <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                  {file.type === "directory" ? (
-                    <Button
-                      variant="link"
-                      onClick={() => {
-                        setPath(file.path);
-                      }}
-                      className="h-auto p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                    >
-                      {file.name}
-                    </Button>
-                  ) : (
-                    <FilepickerClose
-                      onClick={() => {
-                        setPath(file.parent);
-                        setInputValue(file.path);
-                        onChange?.(file.path);
-                      }}
-                    >
-                      {file.name}
-                    </FilepickerClose>
-                  )}
-                </FilepickerListItem>
-                <FilepickerSeparator />
-              </Fragment>
-            ))}
-          </FilepickerList>
-        </Filepicker>
+          ))}
+        </FilepickerList>
+      </Filepicker>
 
-        <Input
-          placeholder={t("components.filepicker.placeholder")}
-          value={inputValue}
-          className="w-80"
-          onChange={(e) => {
-            setInputValue(e.target.value);
-          }}
-        />
-      </ButtonBar>
-    </div>
+      <Input
+        placeholder={t("components.filepicker.placeholder")}
+        value={inputValue}
+        className="w-80"
+        onChange={(e) => {
+          setInputValue(e.target.value);
+        }}
+      />
+    </ButtonBar>
   );
 };
 

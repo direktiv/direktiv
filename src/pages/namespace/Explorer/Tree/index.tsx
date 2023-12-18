@@ -13,7 +13,6 @@ import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
-import FilepickerMenu from "~/componentsNext/FilepickerMenu";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
@@ -71,10 +70,6 @@ const ExplorerPage: FC = () => {
     <>
       <ExplorerHeader />
       <div className="p-5">
-        <Card className="m-5 p-5">
-          <FilepickerMenu></FilepickerMenu>
-        </Card>
-        <br></br>
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

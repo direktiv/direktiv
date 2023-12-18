@@ -1072,7 +1072,11 @@
     },
     "filepicker": {
       "buttonText": "Browse Files",
-      "placeholder": "No File selected"
+      "placeholder": "No File selected",
+      "error": {
+        "title": "The provided Path was not found.",
+        "linkText": "Go back to root directory"
+      }
     },
     "userMenu": {
       "loggedIn": "You are logged in",
