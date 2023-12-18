@@ -145,7 +145,7 @@ const NewService = ({
           >
             {splitView && (
               <Card background="weight-1">
-                <ScrollArea className="h-full p-4">
+                <ScrollArea className="h-[600px] p-4">
                   <JSONSchemaForm
                     formData={serviceConfigJson}
                     onChange={(e) => {
