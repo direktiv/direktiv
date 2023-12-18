@@ -1070,11 +1070,9 @@
         }
       }
     },
-    "gatewayForms": {
-      "Filepicker": {
-        "buttonText": "Browse Files",
-        "placeholder": "No File selected"
-      }
+    "filepicker": {
+      "buttonText": "Browse Files",
+      "placeholder": "No File selected"
     },
     "userMenu": {
       "loggedIn": "You are logged in",

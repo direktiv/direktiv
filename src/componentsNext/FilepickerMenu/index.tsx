@@ -51,9 +51,7 @@ const FilepickerMenu = ({
 
   return (
     <ButtonBar>
-      <Filepicker
-        buttonText={t("components.gatewayForms.Filepicker.buttonText")}
-      >
+      <Filepicker buttonText={t("components.filepicker.buttonText")}>
         <FilepickerHeading>
           <BreadcrumbRoot className="py-3">
             <Breadcrumb
@@ -131,7 +129,7 @@ const FilepickerMenu = ({
         </FilepickerList>
       </Filepicker>
       <Input
-        placeholder={t("components.gatewayForms.Filepicker.placeholder")}
+        placeholder={t("components.filepicker.placeholder")}
         value={file}
         className="w-80"
         onChange={(e) => {
