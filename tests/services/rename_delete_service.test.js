@@ -65,7 +65,7 @@ states:
                     name: '',
                     image: 'redis',
                     error: null,
-                    id: 'test-services-s1-yaml-87063c0dba',
+                    id: 'test-services-s1-yaml-466337cb33',
                 },
                 {
                     type: 'namespace-service',
@@ -74,7 +74,7 @@ states:
                     name: '',
                     image: 'redis',
                     error: null,
-                    id: 'test-services-s2-yaml-d6f019ac00',
+                    id: 'test-services-s2-yaml-d396514862',
                 },
                 {
                     type: 'workflow-service',
@@ -83,7 +83,7 @@ states:
                     name: 'get',
                     image: 'direktiv/request:v4',
                     error: null,
-                    id: 'test-services-get-w1-yaml-7b7d9fdf2c',
+                    id: 'test-services-get-w1-yaml-e39f2311c0',
                 },
                 {
                     type: 'workflow-service',
@@ -92,7 +92,7 @@ states:
                     name: 'get',
                     image: 'direktiv/request:v4',
                     error: null,
-                    id: 'test-services-get-w2-yaml-6e890362ea',
+                    id: 'test-services-get-w2-yaml-9cca18d982',
                 }
 
             ]
@@ -116,7 +116,7 @@ states:
                     name: '',
                     image: 'redis',
                     error: null,
-                    id: 'test-services-s1-yaml-87063c0dba',
+                    id: 'test-services-s1-yaml-466337cb33',
                 },
                 {
                     type: 'namespace-service',
@@ -125,7 +125,7 @@ states:
                     name: '',
                     image: 'redis',
                     error: null,
-                    id: 'test-services-s3-yaml-92cf12cd53',
+                    id: 'test-services-s3-yaml-a8af2622f0',
                 },
                 {
                     type: 'workflow-service',
@@ -134,7 +134,7 @@ states:
                     name: 'get',
                     image: 'direktiv/request:v4',
                     error: null,
-                    id: 'test-services-get-w1-yaml-7b7d9fdf2c',
+                    id: 'test-services-get-w1-yaml-e39f2311c0',
                 },
                 {
                     type: 'workflow-service',
@@ -143,7 +143,7 @@ states:
                     name: 'get',
                     image: 'direktiv/request:v4',
                     error: null,
-                    id: 'test-services-get-w3-yaml-ff53e6667b',
+                    id: 'test-services-get-w3-yaml-aa1f397b0a',
                 }
 
             ]
@@ -167,7 +167,7 @@ states:
                     name: '',
                     image: 'redis',
                     error: null,
-                    id: 'test-services-s3-yaml-92cf12cd53',
+                    id: 'test-services-s3-yaml-a8af2622f0',
                 },
                 {
                     type: 'workflow-service',
@@ -176,7 +176,7 @@ states:
                     name: 'get',
                     image: 'direktiv/request:v4',
                     error: null,
-                    id: 'test-services-get-w3-yaml-ff53e6667b',
+                    id: 'test-services-get-w3-yaml-aa1f397b0a',
                 }
 
             ]
