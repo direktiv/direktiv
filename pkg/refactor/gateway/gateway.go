@@ -266,7 +266,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for i := range endpointEntry.AuthPluginInstances {
 		authPlugin := endpointEntry.AuthPluginInstances[i]
 
-		// auth plugins always return true to check all of them
+		// all authplugins succeed, the setting of the consumer is the success message
 		authPlugin.ExecutePlugin(c, w, r)
 
 		// check and exit if consumer is set in plugin
@@ -399,4 +399,31 @@ func (ep *gatewayManager) GetRoutes(namespace string) ([]*core.Endpoint, error) 
 	}
 
 	return g.EndpointList.GetEndpoints(), nil
+}
+
+func (ep *gatewayManager) GetRoute(namespace, route string) (*core.Endpoint, error) {
+	g, ok := ep.nsGateways[namespace]
+	if !ok {
+		return nil, fmt.Errorf("no routes for namespace %s", namespace)
+	}
+
+	endpoints := g.EndpointList.GetEndpoints()
+
+	var endpoint *core.Endpoint
+	for i := range endpoints {
+		endpoint = endpoints[i]
+
+		// match route from :1, means comparing without leading slash
+		if endpoint.Path[1:] == route {
+			break
+		}
+		endpoint = nil
+	}
+
+	// endpoint not found
+	if endpoint == nil {
+		return nil, fmt.Errorf("route not found")
+	}
+
+	return endpoint, nil
 }

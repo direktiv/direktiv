@@ -51,6 +51,23 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
     })
 }
 
+async function itShouldUpdateFile(it, expect, ns, path, content) {
+    it(`should update existing file ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .post(`/api/namespaces/${ns}/tree${path}?op=update-workflow`)
+            .set({
+                'Content-Type': 'text/plain',
+            })
+
+            .send(content)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            namespace: ns,
+        })
+    })
+}
+
 async function itShouldDeleteFile(it, expect, ns, path) {
     it(`should delete a file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
@@ -78,4 +95,5 @@ export default {
     itShouldCreateFile,
     itShouldDeleteFile,
     itShouldRenameFile,
+    itShouldUpdateFile,
 }

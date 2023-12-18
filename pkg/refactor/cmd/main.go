@@ -250,6 +250,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore
 			Image:     serviceDef.Image,
 			CMD:       serviceDef.Cmd,
 			Size:      serviceDef.Size.String(),
+			Envs:      serviceDef.Envs,
 		})
 	}
 

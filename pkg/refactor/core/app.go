@@ -37,7 +37,7 @@ type Config struct {
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
 	KnativeSidecar        string `env:"DIREKTIV_KNATIVE_SIDECAR"`
 	KnativeMaxScale       int    `env:"DIREKTIV_KNATIVE_MAX_SCALE"       envDefault:"5"`
-	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"       envDefault:"10M"`
+	KnativeNetShape       string `env:"DIREKTIV_KNATIVE_NET_SHAPE"`
 
 	KnativeSizeMemorySmall  int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL"  envDefault:"512"`
 	KnativeSizeMemoryMedium int `env:"DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM" envDefault:"1024"`

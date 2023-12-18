@@ -40,20 +40,17 @@ func (p *GithubWebhookPlugin) Config() interface{} {
 	return p.config
 }
 
-func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, w http.ResponseWriter, r *http.Request) bool {
+func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
 	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
 	if err != nil {
 		slog.Error("can verify payload",
 			slog.String("error", err.Error()))
-		plugins.ReportError(w, http.StatusForbidden,
-			"signature", err)
 
-		return false
+		return true
 	}
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
-
 	if c != nil {
 		*c = core.ConsumerFile{
 			Username: "github",
@@ -71,6 +68,6 @@ func (*GithubWebhookPlugin) Type() string {
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		GithubWebhookPluginName,
-		plugins.InboundPluginType,
+		plugins.AuthPluginType,
 		ConfigureGithubWebhook))
 }

@@ -19,6 +19,7 @@ type GatewayManager interface {
 
 	GetConsumers(namespace string) ([]*ConsumerFile, error)
 	GetRoutes(namespace string) ([]*Endpoint, error)
+	GetRoute(namespace, route string) (*Endpoint, error)
 }
 
 type EndpointFile struct {

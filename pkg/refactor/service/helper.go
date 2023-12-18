@@ -36,6 +36,8 @@ func buildService(c *core.Config, sv *core.ServiceConfig) (*servingv1.Service, e
 	//	}
 	//}
 
+	nonRoot := false
+
 	svc := &servingv1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -48,6 +50,13 @@ func buildService(c *core.Config, sv *core.ServiceConfig) (*servingv1.Service, e
 					ObjectMeta: buildPodMeta(c, sv),
 					Spec: servingv1.RevisionSpec{
 						PodSpec: corev1.PodSpec{
+							SecurityContext: &corev1.PodSecurityContext{
+								RunAsNonRoot: &nonRoot,
+								SeccompProfile: &corev1.SeccompProfile{
+									// should we change it to runtime?
+									Type: corev1.SeccompProfileTypeUnconfined,
+								},
+							},
 							ServiceAccountName: c.KnativeServiceAccount,
 							Containers:         containers,
 							Volumes:            buildVolumes(c, sv),
@@ -132,6 +141,16 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 		return nil, err
 	}
 
+	allowPrivilegeEscalation := false
+	secContext := &corev1.SecurityContext{
+		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{
+				corev1.Capability("ALL"),
+			},
+		},
+	}
+
 	// user container
 	uc := corev1.Container{
 		Name:      containerUser,
@@ -144,6 +163,7 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 				MountPath: "/mnt/shared",
 			},
 		},
+		SecurityContext: secContext,
 	}
 
 	if len(sv.CMD) > 0 {
@@ -172,6 +192,7 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 				ContainerPort: containerSidecarPort,
 			},
 		},
+		SecurityContext: secContext,
 	}
 
 	return []corev1.Container{uc, sc}, nil

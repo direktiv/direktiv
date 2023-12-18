@@ -1,0 +1,96 @@
+route:
+  type: object
+  properties: 
+    file_path:
+      type: string
+      description: path to file in file tree
+      example: /my/path.yaml
+    path:
+      type: string
+      description: full pattern including path_extension
+      example: /my/path/{id}
+    allow_anonymous:
+      type: boolean
+      description: if access is allowed if there are not authentication plugins or authentication failed  
+    methods:
+      type: array 
+      items:  
+        type: string
+        enum: [GET, DELETE, HEAD, POST, PUT, TRACE, PATH, OPTIONS, CONNECT, "*"]
+        description: HTTP method to listen to, `*` for all methods
+    errors:
+      type: array 
+      items:  
+        type: string
+        description: list of errors in plugins and the route itself, e.g. configuration errors in plugins
+    warnings:
+      type: array 
+      items:  
+        type: string
+        description: list of warnings in plugins and the route itself
+        example: no target plugin set
+    plugins:
+      type: object
+      properties: 
+        outbound:
+          type: array
+          items:  
+            type: object
+            properties: 
+              type: 
+                type: string
+                description: name of the outbound plugin
+                example: js-outbound
+              configuration:
+                type: {}
+                description: configuration for the plugin. can be of any type.
+                nullable: true
+                example: 
+                  script: sleep(5)
+        inbound:
+          type: array
+          items:  
+            type: object
+            properties: 
+              type: 
+                type: string
+                description: name of the inbound plugin
+                example: acl
+              configuration:
+                type: {}
+                description: configuration for the plugin. can be of any type.
+                nullable: true
+                example: 
+                  allowed-groups: 
+                  - group1
+                  - group2
+        auth:
+          type: array
+          description: all auth plugins are getting executed. first successful authentication sets the consumer. 
+          items:  
+            type: object
+            properties: 
+              type: 
+                type: string
+                description: name of the auth plugin
+                example: basic-auth
+              configuration:
+                type: {}
+                description: configuration for the plugin. can be of any type.
+                nullable: true
+                example: 
+                  add_username_header: true 
+        target:
+          type: object
+          nullable: true
+          properties: 
+            type: 
+              type: string
+              description: name of the target plugin. can only be one. 
+              example: target-flow
+            configuration:
+              type: {}
+              description: configuration for the plugin. can be of any type.
+              nullable: true
+              example: 
+                flow: /directory/myflow.yaml 
