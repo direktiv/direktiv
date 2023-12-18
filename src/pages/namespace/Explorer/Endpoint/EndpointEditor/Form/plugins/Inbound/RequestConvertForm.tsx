@@ -65,7 +65,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             omit headers
           </label>
           <Checkbox
-            checked={getValues("configuration.omit_headers")}
+            defaultChecked={getValues("configuration.omit_headers")}
             onCheckedChange={(value) => {
               if (typeof value === "boolean") {
                 setValue("configuration.omit_headers", value);
@@ -78,7 +78,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             omit queries
           </label>
           <Checkbox
-            checked={getValues("configuration.omit_queries")}
+            defaultChecked={getValues("configuration.omit_queries")}
             onCheckedChange={(value) => {
               if (typeof value === "boolean") {
                 setValue("configuration.omit_queries", value);
@@ -91,7 +91,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             omit body
           </label>
           <Checkbox
-            checked={getValues("configuration.omit_body")}
+            defaultChecked={getValues("configuration.omit_body")}
             onCheckedChange={(value) => {
               if (typeof value === "boolean") {
                 setValue("configuration.omit_body", value);
@@ -104,7 +104,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             omit consumer
           </label>
           <Checkbox
-            checked={getValues("configuration.omit_consumer")}
+            defaultChecked={getValues("configuration.omit_consumer")}
             onCheckedChange={(value) => {
               if (typeof value === "boolean") {
                 setValue("configuration.omit_consumer", value);
