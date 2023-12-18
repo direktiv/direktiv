@@ -14,8 +14,9 @@ import Input from "~/design/Input";
 import { useTheme } from "~/util/store/theme";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+type OptionalConfig = Partial<InstantResponseFormSchemaType["configuration"]>;
 type FormProps = {
-  defaultConfig?: Partial<InstantResponseFormSchemaType["configuration"]>;
+  defaultConfig?: OptionalConfig;
   onSubmit: (data: InstantResponseFormSchemaType) => void;
 };
 

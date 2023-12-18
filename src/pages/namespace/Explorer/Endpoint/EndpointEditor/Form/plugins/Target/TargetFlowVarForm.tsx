@@ -11,8 +11,10 @@ import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+type OptionalConfig = Partial<TargetFlowVarFormSchemaType["configuration"]>;
+
 type FormProps = {
-  defaultConfig?: Partial<TargetFlowVarFormSchemaType["configuration"]>;
+  defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetFlowVarFormSchemaType) => void;
 };
 
