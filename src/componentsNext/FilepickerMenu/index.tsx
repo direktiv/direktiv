@@ -1,9 +1,4 @@
-import {
-  AlertTriangle,
-  ArrowLeftToLineIcon,
-  FolderUp,
-  Home,
-} from "lucide-react";
+import { ArrowLeftToLineIcon, FolderUp, Home } from "lucide-react";
 import { Breadcrumb, BreadcrumbRoot } from "~/design/Breadcrumbs";
 import {
   Filepicker,
@@ -20,7 +15,6 @@ import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
 import { fileTypeToIcon } from "~/api/tree/utils";
-import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
@@ -34,18 +28,14 @@ const FilepickerMenu = ({
   onChange?: (filePath: string) => void;
 }) => {
   const [path, setPath] = useState(defaultPath ? defaultPath : "/");
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
 
-  const { data, isFetched } = useNodeContent({
+  const { data } = useNodeContent({
     path,
     namespace,
   });
 
-  const [file, setFile] = useState("");
-
   const { t } = useTranslation();
-
-  const defaultNamespace = useNamespace();
 
   const { parent, isRoot, segments } = analyzePath(path);
 
@@ -57,12 +47,11 @@ const FilepickerMenu = ({
         <Filepicker
           buttonText={t("components.filepicker.buttonText")}
           onClick={() => {
-            // inputValue?
             setPath(inputValue);
           }}
         >
           <FilepickerHeading>
-            <BreadcrumbRoot className=" py-3">
+            <BreadcrumbRoot className="py-3">
               <Breadcrumb
                 noArrow
                 onClick={() => {
@@ -94,14 +83,13 @@ const FilepickerMenu = ({
           {!data && (
             <div>
               <FilepickerHeading>
-                <div className=" py-3">The provided Path was not found.</div>
+                <div className="py-3">The provided Path was not found.</div>
               </FilepickerHeading>
               <FilepickerList>
                 <FilepickerListItem icon={ArrowLeftToLineIcon}>
                   <Button
                     onClick={() => {
                       setPath("/");
-                      setInputValue("");
                     }}
                     variant="link"
                     className="h-auto p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
@@ -145,7 +133,7 @@ const FilepickerMenu = ({
                   ) : (
                     <FilepickerClose
                       onClick={() => {
-                        setFile(file.path);
+                        setPath(file.parent);
                         setInputValue(file.path);
                         onChange?.(file.path);
                       }}

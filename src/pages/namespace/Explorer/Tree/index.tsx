@@ -72,7 +72,7 @@ const ExplorerPage: FC = () => {
       <ExplorerHeader />
       <div className="p-5">
         <Card className="m-5 p-5">
-          <FilepickerMenu namespace="test"></FilepickerMenu>
+          <FilepickerMenu></FilepickerMenu>
         </Card>
         <br></br>
         <Card>
