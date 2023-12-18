@@ -13,13 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import { UseFormReturn, useFieldArray } from "react-hook-form";
 
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
-import { UseFormReturn } from "react-hook-form";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 
 type InboundPluginFormProps = {
@@ -29,7 +29,11 @@ type InboundPluginFormProps = {
 export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   formControls,
 }) => {
-  // const { control } = formControls;
+  const { control } = formControls;
+  const { append: addPlugin } = useFieldArray({
+    control,
+    name: "plugins.inbound",
+  });
   // const values = useWatch({ control });
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -82,7 +86,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
             <RequestConvertForm
               onSubmit={(configuration) => {
                 setDialogOpen(false);
-                formControls.setValue("plugins.inbound", [configuration]);
+                addPlugin(configuration);
               }}
             />
           )}
