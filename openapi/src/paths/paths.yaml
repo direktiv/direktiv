@@ -4,9 +4,6 @@
 /api/v2/namespaces/{namespace}/gateway/routes:
   $ref: gw_routes.yaml
 
-/api/v2/namespaces/{namespace}/gateway/routes/{route-path}:
-  $ref: gw_route.yaml
-
 /api/v2/namespaces/{namespace}/services:
   get:
     tags:
