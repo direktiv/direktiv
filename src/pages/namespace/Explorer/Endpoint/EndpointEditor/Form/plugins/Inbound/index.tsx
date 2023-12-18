@@ -6,6 +6,7 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { Plus, Trash } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -18,7 +19,6 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
-import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 
@@ -30,7 +30,11 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   formControls,
 }) => {
   const { control } = formControls;
-  const { append: addPlugin } = useFieldArray({
+  const {
+    append: addPlugin,
+    remove: deletePlugin,
+    fields,
+  } = useFieldArray({
     control,
     name: "plugins.inbound",
   });
@@ -42,16 +46,35 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
+  const pluginsCount = fields.length;
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="flex items-center gap-3">
-        Inbound plugins
+        {pluginsCount} Inbound plugins
         <DialogTrigger asChild>
           <Button icon variant="outline">
             <Plus /> add inbound plugin
           </Button>
         </DialogTrigger>
       </div>
+
+      {fields.map(({ id, type }, index) => (
+        <div key={id} className="flex gap-2">
+          {type}
+          <Button
+            variant="destructive"
+            icon
+            size="sm"
+            onClick={() => {
+              deletePlugin(index);
+            }}
+          >
+            <Trash />
+          </Button>
+        </div>
+      ))}
+
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add Inbound Plugin</DialogTitle>
