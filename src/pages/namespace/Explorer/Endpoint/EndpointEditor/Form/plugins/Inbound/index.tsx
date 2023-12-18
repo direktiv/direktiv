@@ -47,12 +47,22 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
 
   const pluginsCount = fields.length;
 
-  const defaultTest = fields.find((x, index) => {
-    if (x.type === inboundPluginTypes.requestConvert && index === edit) {
-      return true;
+  const readConfig = (index?: number) => {
+    if (index === undefined) return undefined;
+    const plugin = fields[index];
+
+    if (!plugin) return undefined;
+
+    if (plugin.type === inboundPluginTypes.requestConvert) {
+      return plugin.configuration;
     }
-    return false;
-  });
+
+    if (plugin.type === inboundPluginTypes.acl) {
+      return plugin.configuration;
+    }
+
+    return undefined;
+  };
 
   return (
     <Dialog
@@ -97,7 +107,6 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           </Button>
         </div>
       ))}
-      EDIT {edit}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
@@ -131,7 +140,6 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           </div>
           {selectedPlugin === inboundPluginTypes.requestConvert && (
             <RequestConvertForm
-              defaultConfig={defaultTest?.configuration}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 console.log("🚀", edit);
