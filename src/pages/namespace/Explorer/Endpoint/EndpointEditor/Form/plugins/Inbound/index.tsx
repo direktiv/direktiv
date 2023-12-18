@@ -6,7 +6,6 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { Plus, Settings } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,11 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import { UseFormReturn, useWatch } from "react-hook-form";
 
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
+import { Plus } from "lucide-react";
+import { RequestConvertForm } from "./RequestConvertForm";
+import { UseFormReturn } from "react-hook-form";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 
 type InboundPluginFormProps = {
@@ -28,8 +29,8 @@ type InboundPluginFormProps = {
 export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   formControls,
 }) => {
-  const { control } = formControls;
-  const values = useWatch({ control });
+  // const { control } = formControls;
+  // const values = useWatch({ control });
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // TODO: replace all target occurrences with inbound
@@ -76,52 +77,15 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
               </Select>
             </fieldset>
           </div>
-          {/* 
-          {selectedPlugin === targetPluginTypes.instantResponse && (
-            <InstantResponseForm
-              defaultConfig={defaultInstantResponseConfig}
+
+          {selectedPlugin === inboundPluginTypes.requestConvert && (
+            <RequestConvertForm
               onSubmit={(configuration) => {
                 setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
+                formControls.setValue("plugins.inbound", [configuration]);
               }}
             />
           )}
-          {selectedPlugin === targetPluginTypes.targetFlow && (
-            <TargetFlowForm
-              defaultConfig={defaultTargetFlowConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetFlowVar && (
-            <TargetFlowVarForm
-              defaultConfig={defaultTargetFlowVarConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetNamespaceFile && (
-            <TargetNamespaceFileForm
-              defaultConfig={defaultTargetNamespaceFileConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetNamespaceVar && (
-            <TargetNamespaceVarForm
-              defaultConfig={defaultTargetNamespaceVarConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )} */}
         </div>
       </DialogContent>
     </Dialog>
