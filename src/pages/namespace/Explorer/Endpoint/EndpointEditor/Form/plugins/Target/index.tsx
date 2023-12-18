@@ -20,6 +20,7 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
 import { TargetFlowForm } from "./TargetFlowForm";
+import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { targetPluginTypes } from "../../../schema/plugins/target";
 
 type TargetPluginFormProps = {
@@ -43,6 +44,11 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const defaultTargetFlowConfig =
     currentType === targetPluginTypes.targetFlow
+      ? values.plugins?.target?.configuration
+      : undefined;
+
+  const defaultTargetFlowVarConfig =
+    currentType === targetPluginTypes.targetFlowVar
       ? values.plugins?.target?.configuration
       : undefined;
 
@@ -104,6 +110,17 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
               }}
             />
           )}
+          {selectedPlugin === targetPluginTypes.targetFlowVar && (
+            <TargetFlowVarForm
+              defaultConfig={defaultTargetFlowVarConfig}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                formControls.setValue("plugins.target", configuration);
+              }}
+            />
+          )}
+          {selectedPlugin === targetPluginTypes.targetNamespaceFile && null}
+          {selectedPlugin === targetPluginTypes.targetNamespaceVar && null}
         </div>
       </DialogContent>
     </Dialog>
