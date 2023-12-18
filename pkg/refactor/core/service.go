@@ -29,11 +29,12 @@ type ServiceConfig struct {
 	Name      string `json:"name"`
 
 	// settings fields:
-	Image string                `json:"image"`
-	CMD   string                `json:"cmd"`
-	Size  string                `json:"size"`
-	Scale int                   `json:"scale"`
-	Envs  []EnvironmentVariable `json:"envs"`
+	Image         string                `json:"image"`
+	CMD           string                `json:"cmd"`
+	Size          string                `json:"size"`
+	Scale         int                   `json:"scale"`
+	Envs          []EnvironmentVariable `json:"envs"`
+	PostStartExec []string              `json:"post_start_exec"`
 
 	Error *string `json:"error"`
 }
