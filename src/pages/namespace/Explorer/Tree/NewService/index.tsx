@@ -9,6 +9,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import {
   addServiceHeader,
   defaultServiceYaml,
+  sanitizeServiceJsonObj,
   serviceHeader,
   useServiceFormSchema,
 } from "./config";
@@ -145,14 +146,16 @@ const NewService = ({
           >
             {splitView && (
               <Card background="weight-1">
-                <ScrollArea className="h-full p-4">
+                <ScrollArea className="h-[600px] p-4">
                   <JSONSchemaForm
                     formData={serviceConfigJson}
                     onChange={(e) => {
                       if (e.formData) {
                         const formDataWithHeader = addServiceHeader(e.formData);
                         setServiceConfigJson(formDataWithHeader);
-                        setValue("fileContent", stringify(formDataWithHeader));
+                        const sanitizedJson =
+                          sanitizeServiceJsonObj(formDataWithHeader);
+                        setValue("fileContent", stringify(sanitizedJson));
                       }
                     }}
                     schema={serviceFormSchema}
