@@ -22,6 +22,7 @@ import { Settings } from "lucide-react";
 import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
+import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
 import { targetPluginTypes } from "../../../schema/plugins/target";
 
 type TargetPluginFormProps = {
@@ -55,6 +56,11 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const defaultTargetNamespaceFileConfig =
     currentType === targetPluginTypes.targetNamespaceFile
+      ? values.plugins?.target?.configuration
+      : undefined;
+
+  const defaultTargetNamespaceVarConfig =
+    currentType === targetPluginTypes.targetNamespaceVar
       ? values.plugins?.target?.configuration
       : undefined;
 
@@ -134,7 +140,15 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
               }}
             />
           )}
-          {selectedPlugin === targetPluginTypes.targetNamespaceVar && null}
+          {selectedPlugin === targetPluginTypes.targetNamespaceVar && (
+            <TargetNamespaceVarForm
+              defaultConfig={defaultTargetNamespaceVarConfig}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                formControls.setValue("plugins.target", configuration);
+              }}
+            />
+          )}
         </div>
       </DialogContent>
     </Dialog>
