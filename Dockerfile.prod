@@ -6,5 +6,6 @@ RUN ["luarocks", "install", "lua-resty-jwt"]
 RUN luarocks install lua-resty-openidc
 
 ADD dist /usr/share/nginx/html
+RUN echo '{ "response": "pong" }' > /usr/share/nginx/html/ping
 
 COPY conf/prod/nginx.conf /etc/nginx/conf.d/default.conf

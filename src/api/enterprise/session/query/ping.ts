@@ -8,8 +8,7 @@ import { sessionKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 
 const getSession = apiFactory({
-  url: ({ baseUrl }: { baseUrl?: string }) =>
-    `${baseUrl ?? ""}/api/v2/info/ping`,
+  url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/ping`,
   method: "GET",
   schema: SessionSchema,
 });
@@ -29,7 +28,8 @@ export const useRefreshSession = ({ enabled }: { enabled: boolean }) => {
     queryKey: sessionKeys.get(apiKey ?? undefined),
     queryFn: fetchSession,
     enabled,
-    refetchInterval: 1000 * 60,
+    refetchInterval: 1000 * 10,
+    refetchIntervalInBackground: true,
   });
 
   if (isError && getPermissionStatus(error).isAllowed === false) {
