@@ -1,7 +1,7 @@
 import { targetPluginTypes } from ".";
 import { z } from "zod";
 
-export const TargetNamespaceVar = z.object({
+export const TargetNamespaceVarFormSchema = z.object({
   type: z.literal(targetPluginTypes.targetNamespaceVar),
   configuration: z.object({
     namespace: z.string().nonempty().optional(),
@@ -10,4 +10,6 @@ export const TargetNamespaceVar = z.object({
   }),
 });
 
-export type TargetNamespaceVarType = z.infer<typeof TargetNamespaceVar>;
+export type TargetNamespaceVarFormSchemaType = z.infer<
+  typeof TargetNamespaceVarFormSchema
+>;

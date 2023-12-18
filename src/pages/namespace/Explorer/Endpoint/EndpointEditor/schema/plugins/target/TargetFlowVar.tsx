@@ -1,7 +1,7 @@
 import { targetPluginTypes } from ".";
 import { z } from "zod";
 
-export const TargetFlowVar = z.object({
+export const TargetFlowVarFormSchema = z.object({
   type: z.literal(targetPluginTypes.targetFlowVar),
   configuration: z.object({
     namespace: z.string().nonempty().optional(),
@@ -11,4 +11,6 @@ export const TargetFlowVar = z.object({
   }),
 });
 
-export type TargetFlowVarType = z.infer<typeof TargetFlowVar>;
+export type TargetFlowVarFormSchemaType = z.infer<
+  typeof TargetFlowVarFormSchema
+>;
