@@ -6,7 +6,7 @@ export const TargetNamespaceVarFormSchema = z.object({
   configuration: z.object({
     namespace: z.string().nonempty().optional(),
     variable: z.string().nonempty(),
-    content_type: z.string().nonempty(),
+    content_type: z.string().optional(),
   }),
 });
 

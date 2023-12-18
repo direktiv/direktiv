@@ -71,10 +71,12 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">
-            content type
+            content type (optional)
           </label>
           <Input
-            {...register("configuration.content_type")}
+            {...register("configuration.content_type", {
+              setValueAs: (value) => (value === "" ? undefined : value),
+            })}
             placeholder="application/json"
           />
         </fieldset>

@@ -76,16 +76,18 @@ export const InstantResponseForm: FC<FormProps> = ({
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            content type
+            content type (optional)
           </label>
           <Input
-            {...register("configuration.content_type")}
+            {...register("configuration.content_type", {
+              setValueAs: (value) => (value === "" ? undefined : value),
+            })}
             placeholder="application/json"
           />
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            status message
+            status message (optional)
           </label>
           <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
             <Controller
