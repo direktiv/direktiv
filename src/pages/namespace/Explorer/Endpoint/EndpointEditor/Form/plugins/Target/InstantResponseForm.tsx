@@ -4,7 +4,7 @@ import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
-} from "../../../schema/plugins/target/InstantResponse";
+} from "../../../schema/plugins/target/instantResponse";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";

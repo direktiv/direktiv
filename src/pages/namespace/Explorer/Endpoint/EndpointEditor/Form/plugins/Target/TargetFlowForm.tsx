@@ -3,7 +3,7 @@ import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetFlowFormSchema,
   TargetFlowFormSchemaType,
-} from "../../../schema/plugins/target/TargetFlow";
+} from "../../../schema/plugins/target/targetFlow";
 
 import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";

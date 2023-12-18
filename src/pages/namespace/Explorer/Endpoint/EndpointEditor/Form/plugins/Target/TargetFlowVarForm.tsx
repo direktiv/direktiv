@@ -3,7 +3,7 @@ import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetFlowVarFormSchema,
   TargetFlowVarFormSchemaType,
-} from "../../../schema/plugins/target/TargetFlowVar";
+} from "../../../schema/plugins/target/targetFlowVar";
 
 import Button from "~/design/Button";
 import { DialogFooter } from "~/design/Dialog";

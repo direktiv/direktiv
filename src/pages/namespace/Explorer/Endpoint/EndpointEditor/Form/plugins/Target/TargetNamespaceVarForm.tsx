@@ -3,7 +3,7 @@ import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetNamespaceVarFormSchema,
   TargetNamespaceVarFormSchemaType,
-} from "../../../schema/plugins/target/TargetNamespaceVar";
+} from "../../../schema/plugins/target/targetNamespaceVar";
 
 import Button from "~/design/Button";
 import { DialogFooter } from "~/design/Dialog";
