@@ -24,6 +24,22 @@ export const useServiceFormSchema = (): RJSFSchema => {
         title: t("pages.explorer.tree.newService.form.cmd"),
         type: "string",
       },
+      envs: {
+        title: t("pages.explorer.tree.newService.form.envs"),
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+            },
+            value: {
+              type: "string",
+            },
+          },
+          required: ["name", "value"],
+        },
+      },
     },
     required: ["image", "name"],
     type: "object",
@@ -38,5 +54,23 @@ export const addServiceHeader = (serviceJSON: object) => ({
   ...serviceHeader,
   ...serviceJSON,
 });
+
+export const sanitizeServiceJsonObj = (
+  serviceJSON: Record<string, unknown>
+) => {
+  let objectOverwrite = undefined;
+  // when user did not specify any envs, don't store it as an empty array
+  if (
+    serviceJSON?.envs &&
+    Array.isArray(serviceJSON?.envs) &&
+    serviceJSON?.envs.length === 0
+  ) {
+    objectOverwrite = {
+      envs: undefined,
+    };
+  }
+
+  return { ...serviceJSON, ...objectOverwrite };
+};
 
 export const defaultServiceYaml = stringify(serviceHeader);
