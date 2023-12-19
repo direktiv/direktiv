@@ -1,14 +1,14 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   GithubWebhookAuthFormSchema,
   GithubWebhookAuthFormSchemaType,
 } from "../../../schema/plugins/auth/githubWebhookAuth";
 
-import Button from "~/design/Button";
-import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<GithubWebhookAuthFormSchemaType["configuration"]>;
@@ -22,6 +22,7 @@ export const GithubWebhookAuthForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     handleSubmit,
     register,
@@ -43,29 +44,23 @@ export const GithubWebhookAuthForm: FC<FormProps> = ({
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            secret
-          </label>
-          <div>
-            <Input
-              {...register("configuration.secret")}
-              placeholder="name of key"
-            />
-          </div>
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.githubWebhookAuth.secret"
+          )}
+          htmlFor="secret"
+        >
+          <Input {...register("configuration.secret")} id="secret" />
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };
