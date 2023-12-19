@@ -8,3 +8,5 @@ export const AuthPluginFormSchema = z.discriminatedUnion("type", [
   GithubWebhookAuthFormSchema,
   KeyAuthFormSchema,
 ]);
+
+export type AuthPluginFormSchemaType = z.infer<typeof AuthPluginFormSchema>;
