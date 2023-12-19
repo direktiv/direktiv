@@ -314,6 +314,13 @@
                   "contentType": "Content Type",
                   "contentTypePlaceholder": "application/json",
                   "statusMessage": "Status Message (optional)"
+                },
+                "targetFlow": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "asynchronous": "Asynchronous",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
                 }
               }
             }

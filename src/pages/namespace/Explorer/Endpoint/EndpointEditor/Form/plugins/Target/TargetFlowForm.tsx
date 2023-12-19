@@ -1,15 +1,16 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetFlowFormSchema,
   TargetFlowFormSchemaType,
 } from "../../../schema/plugins/target/targetFlow";
 
-import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
-import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<TargetFlowFormSchemaType["configuration"]>;
@@ -24,6 +25,7 @@ type FormProps = {
 };
 
 export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -48,34 +50,37 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
 
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            namespace (optional)
-          </label>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.namespace"
+          )}
+        >
           <Input
             {...register("configuration.namespace", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            workflow
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.workflow"
+          )}
+        >
           <Input {...register("configuration.flow")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            asynchronous
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.asynchronous"
+          )}
+        >
           <Checkbox
             defaultChecked={getValues("configuration.async")}
             onCheckedChange={(value) => {
@@ -84,24 +89,23 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
               }
             }}
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            content type (optional)
-          </label>
-          <div>
-            <Input
-              {...register("configuration.content_type", {
-                setValueAs: (value) => (value === "" ? undefined : value),
-              })}
-              placeholder="application/json"
-            />
-          </div>
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.contentType"
+          )}
+        >
+          <Input
+            {...register("configuration.content_type", {
+              setValueAs: treatEmptyStringAsUndefined,
+            })}
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.contentTypePlaceholder"
+            )}
+          />
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };
