@@ -86,31 +86,29 @@ const FilePicker = ({
               </div>
             </FilepickerHeading>
             <FilepickerList>
-              <FilepickerListItem icon={ArrowLeftToLineIcon} asChild>
-                <div
-                  onClick={() => {
-                    setPath("/");
-                  }}
-                  className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                >
+              <div
+                onClick={() => {
+                  setPath("/");
+                }}
+                className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+              >
+                <FilepickerListItem icon={ArrowLeftToLineIcon}>
                   {t("components.filepicker.error.linkText")}
-                </div>
-              </FilepickerListItem>
+                </FilepickerListItem>
+              </div>
             </FilepickerList>
           </div>
         )}
         {!isRoot && data && (
           <Fragment>
-            <FilepickerListItem icon={FolderUp} asChild>
-              <div
-                onClick={() => {
-                  parent ? setPath(parent.absolute) : null;
-                }}
-                className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-              >
-                ..
-              </div>
-            </FilepickerListItem>
+            <div
+              onClick={() => {
+                parent ? setPath(parent.absolute) : null;
+              }}
+              className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+            >
+              <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
+            </div>
 
             <FilepickerSeparator />
           </Fragment>
@@ -119,16 +117,16 @@ const FilePicker = ({
           {results.map((file) => (
             <Fragment key={file.name}>
               {file.type === "directory" ? (
-                <FilepickerListItem icon={fileTypeToIcon(file.type)} asChild>
-                  <div
-                    className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                    onClick={() => {
-                      setPath(file.path);
-                    }}
-                  >
+                <div
+                  onClick={() => {
+                    setPath(file.path);
+                  }}
+                  className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                >
+                  <FilepickerListItem icon={fileTypeToIcon(file.type)}>
                     {file.name}
-                  </div>
-                </FilepickerListItem>
+                  </FilepickerListItem>
+                </div>
               ) : (
                 <FilepickerClose
                   className="h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11"
