@@ -864,13 +864,6 @@ describe('Test behaviour specific to the root node', () => {
         // TODO: the logic doesn't currently log many errors
     })
 
-    it(`should check for event filters`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/eventfilter`)
-        expect(req.statusCode).toEqual(200)
-        // console.log(req.body)
-        // TODO: I think was an idea for a feature that was never implemented.
-    })
-
     it(`should invoke the '/a.yaml' workflow`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/a.yaml?op=wait`)
         expect(req.statusCode).toEqual(200)
