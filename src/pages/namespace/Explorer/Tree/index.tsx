@@ -71,7 +71,6 @@ const ExplorerPage: FC = () => {
     <>
       <ExplorerHeader />
       <div className="p-5">
-        <FilePicker></FilePicker>
         <Card>
           {showTable && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
