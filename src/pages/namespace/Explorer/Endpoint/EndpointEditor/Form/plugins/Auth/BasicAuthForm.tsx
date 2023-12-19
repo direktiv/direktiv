@@ -1,41 +1,39 @@
+import {
+  BasicAuthFormSchema,
+  BasicAuthFormSchemaType,
+} from "../../../schema/plugins/auth/basicAuth";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
-import {
-  KeyAuthFormSchema,
-  KeyAuthFormSchemaType,
-} from "../../../schema/plugins/auth/keyAuth";
 
 import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
 import { DialogFooter } from "~/design/Dialog";
-import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type OptionalConfig = Partial<KeyAuthFormSchemaType["configuration"]>;
+type OptionalConfig = Partial<BasicAuthFormSchemaType["configuration"]>;
 
 const predfinedConfig: OptionalConfig = {
-  add_groups_header: true,
-  add_tags_header: true,
-  add_username_header: true,
+  add_groups_header: false,
+  add_tags_header: false,
+  add_username_header: false,
 };
 
 type FormProps = {
   defaultConfig?: OptionalConfig;
-  onSubmit: (data: KeyAuthFormSchemaType) => void;
+  onSubmit: (data: BasicAuthFormSchemaType) => void;
 };
 
-export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   const {
     handleSubmit,
     setValue,
     getValues,
-    register,
     formState: { errors },
-  } = useForm<KeyAuthFormSchemaType>({
-    resolver: zodResolver(KeyAuthFormSchema),
+  } = useForm<BasicAuthFormSchemaType>({
+    resolver: zodResolver(BasicAuthFormSchema),
     defaultValues: {
-      type: "key-auth",
+      type: "basic-auth",
       configuration: {
         ...predfinedConfig,
         ...defaultConfig,
@@ -96,19 +94,6 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
               }
             }}
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            key name (optional)
-          </label>
-          <div>
-            <Input
-              {...register("configuration.key_name", {
-                setValueAs: (value) => (value === "" ? undefined : value),
-              })}
-              placeholder="name of key"
-            />
-          </div>
         </fieldset>
       </div>
       <DialogFooter>
