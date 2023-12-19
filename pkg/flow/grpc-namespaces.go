@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -303,13 +302,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	// delete all knative services
 	// TODO: yassir, delete knative services here.
-
-	// delete filter cache
-	deleteCacheNamespaceSync(ns.Name)
-	flow.server.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: deleteFilterCacheNamespace,
-		Key:     ns.Name,
-	})
 
 	err = flow.pBus.Publish(pubsub2.NamespaceDelete, ns.Name)
 	if err != nil {

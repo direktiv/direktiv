@@ -4254,12 +4254,6 @@ func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request
 	h.doBroadcast(w, r)
 }
 
-func (h *flowHandler) BroadcastCloudeventFilter(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	h.doBroadcast(w, r)
-}
-
 func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 

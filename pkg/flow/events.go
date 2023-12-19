@@ -43,12 +43,6 @@ type events struct {
 	appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)
 }
 
-type CacheObject struct {
-	value sync.Map
-}
-
-var eventFilterCache = &CacheObject{}
-
 func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)) (*events, error) {
 	events := new(events)
 
@@ -759,49 +753,4 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
 
 	return nil
-}
-
-const (
-	deleteFilterCache          = "deleteFilterCache"
-	deleteFilterCacheNamespace = "deleteFilterCacheNamespace"
-)
-
-func (flow *flow) deleteCache(req *pubsub.PubsubUpdate) {
-	flow.sugar.Debugf("deleting filter cache key: %v\n", req.Key)
-	eventFilterCache.delete(req.Key)
-}
-
-func deleteCacheNamespaceSync(delkey string) {
-	eventFilterCache.value.Range(func(key, value any) bool {
-		if strings.HasPrefix(key.(string), fmt.Sprintf("%s-", delkey)) {
-			eventFilterCache.value.Delete(key.(string))
-		}
-
-		return true
-	})
-}
-
-func (flow *flow) deleteCacheNamespace(req *pubsub.PubsubUpdate) {
-	flow.sugar.Debugf("deleting filter cache for namespace: %v\n", req.Key)
-	deleteCacheNamespaceSync(req.Key)
-}
-
-func (c *CacheObject) get(key string) (string, bool) {
-	v, ok := c.value.Load(key)
-	var s string
-	if ok {
-		s, ok = v.(string)
-		if ok {
-			return s, true
-		}
-	}
-	return "", false
-}
-
-func (c *CacheObject) put(key string, value string) {
-	c.value.Store(key, value)
-}
-
-func (c *CacheObject) delete(key string) {
-	c.value.Delete(key)
 }
