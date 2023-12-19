@@ -96,19 +96,6 @@ type EventListenerStore interface {
 	DeleteAllForWorkflow(ctx context.Context, workflowID uuid.UUID) ([]*uuid.UUID, error)
 }
 
-type NamespaceCloudEventFilter struct {
-	Name        string
-	JSCode      string
-	NamespaceID uuid.UUID
-}
-
-type CloudEventsFilterStore interface {
-	Delete(ctx context.Context, nsID uuid.UUID, filterName string) error
-	Create(ctx context.Context, nsID uuid.UUID, filterName string, script string) error
-	Get(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, int, error)
-	GetAll(ctx context.Context, nsID uuid.UUID) ([]*NamespaceCloudEventFilter, error)
-}
-
 // Currently only in use for delayed events.
 type StagingEventStore interface {
 	Append(ctx context.Context, events ...*StagingEvent) ([]*StagingEvent, []error)

@@ -226,15 +226,6 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
 -- is a compound like this: "namespace-id:event-type"
 CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
 
-CREATE TABLE IF NOT EXISTS "events_filters" (
-    "id" uuid,
-    "namespace_id" uuid NOT NULL,
-    "name" text NOT NULL,
-    "js_code" text NOT NULL,
-    PRIMARY KEY ("id"),
-    FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS "metrics" (
     "id" serial,
     "namespace" text,

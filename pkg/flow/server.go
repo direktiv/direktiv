@@ -177,7 +177,6 @@ type mirrorCallbacks struct {
 	fstore               filestore.FileStore
 	varstore             core.RuntimeVariablesStore
 	fileAnnotationsStore core.FileAnnotationsStore
-	filterStore          eventsstore.CloudEventsFilterStore
 	wfconf               func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 }
 
@@ -207,10 +206,6 @@ func (c *mirrorCallbacks) VarStore() core.RuntimeVariablesStore {
 
 func (c *mirrorCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 	return c.fileAnnotationsStore
-}
-
-func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore {
-	return c.filterStore
 }
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
@@ -438,7 +433,6 @@ func (srv *server) start(ctx context.Context) error {
 			fstore:               noTx.FileStore(),
 			varstore:             noTx.DataStore().RuntimeVariables(),
 			fileAnnotationsStore: noTx.DataStore().FileAnnotations(),
-			filterStore:          noTx.DataStore().EventFilter(),
 			wfconf:               cc,
 		},
 	)
@@ -597,9 +591,6 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
-
-	srv.pubsub.RegisterFunction(deleteFilterCache, srv.flow.deleteCache)
-	srv.pubsub.RegisterFunction(deleteFilterCacheNamespace, srv.flow.deleteCacheNamespace)
 }
 
 func (srv *server) cronPoller() {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -22,7 +21,6 @@ type Callbacks interface {
 	FileStore() filestore.FileStore
 	VarStore() core.RuntimeVariablesStore
 	FileAnnotationsStore() core.FileAnnotationsStore
-	EventFilterStore() events.CloudEventsFilterStore
 }
 
 type ProcessLogger interface {

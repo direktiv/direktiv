@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -59,11 +58,11 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 	}, nil
 }
 
-func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) error {
+func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 	ctx := r.Context()
 	ctx, end := startIncomingEvent(ctx, "http")
 	defer end()
-	rcv.logger.Debugf("event for namespace %s (filter: %s)", name, filter)
+	rcv.logger.Debugf("event for namespace %s", name)
 
 	m := protocol.NewMessageFromHttpRequest(r)
 	ev, err := binding.ToEvent(ctx, m)
@@ -82,29 +81,6 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 
 	c := context.WithValue(ctx, EventingCtxKeySource, "eventing")
 
-	if filter != "" {
-		ce, err := ev.MarshalJSON()
-		if err != nil {
-			return err
-		}
-
-		b, err := rcv.flow.execFilter(c, name, filter, ce)
-		if err != nil {
-			return err
-		}
-
-		// dropped
-		if len(b) == 0 {
-			rcv.logger.Debugf("dropping event")
-			return nil
-		}
-
-		err = json.Unmarshal(b, ev)
-		if err != nil {
-			return err
-		}
-	}
-
 	return rcv.events.BroadcastCloudevent(c, ns, ev, 0)
 }
 
@@ -113,15 +89,7 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 
 	ns := mux.Vars(r)["ns"]
 
-	// check for filter
-	filter := r.URL.Query().Get("filter")
-	if filter != "" {
-		rcv.logger.Infof("using event filter %s", filter)
-	} else {
-		rcv.logger.Infof("using no event filter")
-	}
-
-	err := rcv.sendToNamespace(ns, filter, r)
+	err := rcv.sendToNamespace(ns, r)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
@@ -146,7 +114,7 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 	}
 
 	for i := range nss {
-		err := rcv.sendToNamespace(nss[i].Name, "", r)
+		err := rcv.sendToNamespace(nss[i].Name, r)
 		if err != nil {
 			rcv.logger.Errorf("error sending event: %s", err.Error())
 		}
