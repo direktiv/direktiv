@@ -7,6 +7,7 @@ import {
 import { FC, PropsWithChildren } from "react";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 
 type ModalWrapperProps = PropsWithChildren & {
   title: string;
@@ -21,11 +22,11 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => (
   </DialogContent>
 );
 
-type ModalPluginSelectorProps = PropsWithChildren & {
+type PluginSelectorProps = PropsWithChildren & {
   title: string;
 };
 
-export const ModalPluginSelector: FC<ModalPluginSelectorProps> = ({
+export const PluginSelector: FC<PluginSelectorProps> = ({
   title,
   children,
 }) => (
@@ -35,8 +36,28 @@ export const ModalPluginSelector: FC<ModalPluginSelectorProps> = ({
   </fieldset>
 );
 
+export const PluginWrapper: FC<PropsWithChildren> = ({ children }) => (
+  <Card className="flex flex-col gap-5 p-5" noShadow>
+    {children}
+  </Card>
+);
+
+type FieldsetProps = PropsWithChildren & {
+  label: string;
+  htmlFor?: string;
+};
+
+export const Fieldset: FC<FieldsetProps> = ({ label, htmlFor, children }) => (
+  <fieldset className="flex flex-col gap-2">
+    <label className="text-sm" htmlFor={htmlFor}>
+      {label}
+    </label>
+    {children}
+  </fieldset>
+);
+
 export const ModalFooter = () => (
-  <DialogFooter>
+  <DialogFooter className="pt-5">
     <Button type="submit">Save</Button>
   </DialogFooter>
 );
