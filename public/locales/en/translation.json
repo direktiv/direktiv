@@ -377,6 +377,22 @@
                 "jsOutbound": {
                   "script": "JavaScript"
                 }
+              },
+              "auth": {
+                "basciAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header"
+                },
+                "githubWebhookAuth": {
+                  "secret": "secret"
+                },
+                "keyAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header",
+                  "keyName": "Key name (optional)"
+                }
               }
             }
           },
